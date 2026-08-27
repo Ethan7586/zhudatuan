@@ -1,0 +1,77 @@
+import { randomUUID } from 'node:crypto';
+import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import { BenefitPort } from '../../benefit/BenefitModule';
+import { VoucherPort } from '../../voucher/VoucherModule';
+import { orderPort } from '../../order/OrderModule';
+
+const benefit = new BenefitPort();
+const voucher = new VoucherPort();
+
+interface RefundRow {
+  readonly id: string;
+  readonly payment_id: string;
+  readonly amount_minor: number;
+  readonly currency: string;
+  readonly state: string;
+  readonly aftersale_id: string | null;
+  readonly order_id: string;
+  readonly scope_id: string;
+  readonly mall_id: string;
+  readonly member_id: string;
+}
+
+interface RefundLeg {
+  readonly sequence: number;
+  readonly kind: 'wechat' | 'benefit' | 'voucher';
+  readonly reference_id: string | null;
+  readonly amount_minor: number;
+}
+
+export class RefundSettlement {
+  async complete(database: OperationDatabase, refundid: string, providerReference: string | null): Promise<void> {
+    const refund = (await database.query<RefundRow>(`select refund.id,refund.payment_id,refund.amount_minor::float8 amount_minor,refund.currency,
+      refund.state,refund.aftersale_id,intent.order_id,orders.scope_id,orders.mall_id,orders.member_id from payment.refund refund
+      join payment.payment payment on payment.id=refund.payment_id join payment.intent intent on intent.id=payment.intent_id
+      join ordering.orderrecord orders on orders.id=intent.order_id where refund.id=$1 for update of refund,payment,orders`, [refundid])).rows[0];
+    if (!refund || refund.state === 'succeeded') return;
+    if (!['requested','submitted','processing'].includes(refund.state)) throw new Error('PAYMENT_REFUND_STATE_INVALID');
+    const legs = (await database.query<RefundLeg>(`select sequence,kind,reference_id,amount_minor::float8 amount_minor
+      from payment.refundtender where refund_id=$1 and state in('planned','processing') order by sequence for update`, [refundid])).rows;
+    if (legs.length === 0 || legs.reduce((sum, leg) => sum + leg.amount_minor, 0) !== refund.amount_minor) throw new Error('PAYMENT_REFUND_PLAN_INTEGRITY_FAILED');
+    for (const leg of legs) {
+      if (leg.kind === 'benefit') await restoreBenefit(database, refund, leg);
+      if (leg.kind === 'voucher') await restoreVoucher(database, refund, leg);
+    }
+    const payment = await database.query<{ refunded_minor: number; captured_minor: number }>(`update payment.payment
+      set refunded_minor=refunded_minor+$2,state=case when refunded_minor+$2=captured_minor then 'refunded' else 'partially_refunded' end,
+        version=version+1 where id=$1 and refunded_minor+$2<=captured_minor returning refunded_minor::float8 refunded_minor,captured_minor::float8 captured_minor`,
+    [refund.payment_id, refund.amount_minor]);
+    const totals = payment.rows[0];
+    if (!totals) throw new Error('PAYMENT_REFUND_EXCEEDS_AVAILABLE');
+    await database.query(`update payment.refundtender set state='succeeded',provider_reference=case when kind='wechat' then $2 else provider_reference end
+      where refund_id=$1 and state in('planned','processing')`, [refundid, providerReference]);
+    await database.query(`update payment.refund set state='succeeded',external_transaction=$2,version=version+1 where id=$1`, [refundid, providerReference]);
+    await database.query(`update payment.recoverycase set state='resolved',resolved_at=clock_timestamp()
+      where state='open' and evidence->>'refund'=$1`, [refundid]);
+    await orderPort.markRefunded(database, { order: refund.order_id, refundedMinor: totals.refunded_minor,
+      capturedMinor: totals.captured_minor, aftersale: refund.aftersale_id });
+    await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
+      values($1,'payment.refunded',1,'refund',$2,$3,jsonb_build_object('refund',$2,'payment',$4,'amountMinor',$5,'currency',$6,
+        'member',$7,'order',$8,'mall',$9,'tenders',$10::jsonb,'scopes',(select jsonb_agg(ancestor_id order by depth)
+          from organization.unitclosure where descendant_id=$3),'timezone',(select timezone from organization.organization where id=$9)),
+        $1,clock_timestamp(),clock_timestamp())`, [`event:${randomUUID()}`, refundid, refund.scope_id, refund.payment_id,
+      refund.amount_minor, refund.currency, refund.member_id, refund.order_id, refund.mall_id, JSON.stringify(legs)]);
+  }
+}
+
+async function restoreBenefit(database: OperationDatabase, refund: RefundRow, leg: RefundLeg): Promise<void> {
+  if (!leg.reference_id) throw new Error('BENEFIT_REFUND_ACCOUNT_MISSING');
+  await benefit.refund(database, { id: refund.id, order: refund.order_id, member: refund.member_id, scope: refund.scope_id,
+    account: leg.reference_id, amountMinor: leg.amount_minor });
+}
+
+async function restoreVoucher(database: OperationDatabase, refund: RefundRow, leg: RefundLeg): Promise<void> {
+  if (!leg.reference_id) throw new Error('VOUCHER_REFUND_REFERENCE_MISSING');
+  await voucher.refund(database, { refund: refund.id, order: refund.order_id, member: refund.member_id,
+    voucher: leg.reference_id, amountMinor: leg.amount_minor });
+}

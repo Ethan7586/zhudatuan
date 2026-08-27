@@ -1,0 +1,13 @@
+version: 1
+owner: architecture
+production:
+  directory: ^[a-z][a-z0-9]*$
+  file: ^[A-Za-z][A-Za-z0-9]*\.[A-Za-z0-9]+$
+exceptions:
+  - cli
+  - audit
+  - test
+  - config
+  - sql
+  - migration
+  - generated

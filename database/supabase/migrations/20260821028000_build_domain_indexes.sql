@@ -1,0 +1,35 @@
+begin;
+
+create index access_scope_actor_path on access.scopegrant(membership_id,scope_path,effect,expires_at);
+create index identity_session_active on identity.session(token_hash,expires_at) where revoked_at is null;
+create index organization_parent_status on organization.organization(parent_id,status,id);
+create index member_scope_status on member.membership(organization_id,status,id);
+create index catalog_listing_scope on catalog.sourcelisting(scope_id,status,observed_at,id);
+create index catalog_product_category on catalog.product(category_id,status,updated_at,id);
+create index pricing_price_lookup on pricing.price(book_id,sku_id,effective_at desc);
+create index inventory_stock_scope on inventory.stockitem(scope_id,sku_id,status,id);
+create index inventory_reservation_active on inventory.reservation(stockitem_id,expires_at,id) where state='active';
+create index experience_release_active on experience.release(application_id,state,effective_at desc);
+create index cart_member_current on cart.cart(member_id,mall_id,updated_at desc,id);
+create index checkout_expiry on checkout.session(state,expires_at,id);
+create index ordering_scope_status on ordering.orderrecord(scope_id,lifecycle_state,created_at desc,id);
+create index ordering_member_status on ordering.orderrecord(member_id,mall_id,created_at desc,id);
+create index fulfillment_state on fulfillment.fulfillmentorder(provider,state,id);
+create index verification_session_expiry on verification.session(state,expires_at,id);
+create index payment_intent_state on payment.intent(state,expires_at,id);
+create index payment_refund_state on payment.refund(provider,state,id);
+create index voucher_state_expiry on voucher.voucher(state,expires_at,id);
+create index finance_journal_period on finance.journal(period,state,id);
+create index channel_connection_state on channel.connection(provider,status,id);
+create index channel_source_external on channel.sourcerecord(provider,externalid,observed_at desc);
+create index channel_sync_claim on channel.syncrun(state,started_at,id);
+create index support_case_queue on support.case(scope_id,state,priority,response_due_at,id);
+create index notification_dispatch_claim on notification.dispatch(state,available_at,id);
+create index reporting_fact_query on reporting.fact(scope_id,metric_id,period_end desc);
+create index risk_decision_actor on risk.decision(actor_id,decided_at desc,id);
+create index audit_scope_time on audit.record(scope_id,recorded_at desc,id);
+create index runtime_outbox_claim on runtime.outbox(published_at,available_at,id) where published_at is null;
+create index runtime_job_claim on runtime.job(state,available_at,priority,id);
+create index runtime_inbox_pending on runtime.inbox(consumer,processed_at,received_at,event_id) where processed_at is null;
+
+commit;

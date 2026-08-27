@@ -1,0 +1,6 @@
+flowchart LR
+  DB[Organization-native resources] --> ORG[org_units + closure]
+  ORG --> RPC[Server scope RPC]
+  RPC --> MATCH[Hierarchy-only matcher]
+  MEMBER[Organization bindings] --> MATCH
+  MATCH --> ACTION[Privileged action]

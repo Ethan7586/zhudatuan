@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.next/
+coverage/
+deliverables/
+mvp-preview/
+output/
+tmp/
+# User-owned handoff/document-generation artifacts are preserved byte-for-byte.
+00-甲方商品池接入-新Session必读.md
+docs/分销系统找回与严谨接入交接-2026-08-20.md
+scripts/create-wechat-review-compliance-doc.mjs
+supabase/migrations/
+drizzle/
+package-lock.json
+apps/wechat-miniapp/miniprogram/data/assets.generated.js
+apps/wechat-miniapp/miniprogram/data/catalog-seed.generated.js
+apps/wechat-miniapp/miniprogram/data/catalog-seed-critical.generated.js
+apps/wechat-miniapp/miniprogram/data/catalog-taxonomy.generated.js
+apps/wechat-miniapp/miniprogram/styles/icons.wxss
+apps/wechat-miniapp/miniprogram/styles/tokens.wxss
+packages/design-system/src/tokens.css

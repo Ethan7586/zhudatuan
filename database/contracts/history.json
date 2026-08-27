@@ -1,0 +1,383 @@
+{
+  "algorithm": "sha256",
+  "count": 94,
+  "head": "20260820133000",
+  "migrations": [
+    {
+      "file": "20260724070000_production_mvp.sql",
+      "sha256": "519b994f29e17b1fdb65c3e21dbf7fde08f016517384c681d86475eeb35c83f9"
+    },
+    {
+      "file": "20260724072000_integrity_corrections.sql",
+      "sha256": "d0db92a1aca3bec8755d143f6c715df69e821dd8b989b64656cb0365e56110db"
+    },
+    {
+      "file": "20260724090000_expand_mvp_catalog.sql",
+      "sha256": "2c8a86a98f246b0888511b80223166f0522cc1e25844daa3b0fdc2457db9f6ba"
+    },
+    {
+      "file": "20260724101500_order_read_model.sql",
+      "sha256": "1fc894b95feca2eecc15b4400b4d6d0ec0ec858bcfd162acef5bb677f953b3ff"
+    },
+    {
+      "file": "20260724113000_after_sales_and_ledgers.sql",
+      "sha256": "fa604c66b24d61faef84c7d3f07e107d0cf766978dfa9644f9f9e53b00f9c920"
+    },
+    {
+      "file": "20260724121500_fix_login_reset_return.sql",
+      "sha256": "0dd15966ed2bab07005a1e02242c76ad42ce57885a9a5693b1cd7fb8ddedd912"
+    },
+    {
+      "file": "20260724234000_test_catalog_flag.sql",
+      "sha256": "e36227acc9ffe1a15959603fa1e1b9b7a4b6954dbad8c520f2da1dc76cb82374"
+    },
+    {
+      "file": "20260725003000_test_catalog_import_rpc.sql",
+      "sha256": "7344dfb406efd139620e3b89fe1cacfd9a5fc82e31f22d0c3914767d52458428"
+    },
+    {
+      "file": "20260725005000_fix_test_catalog_import_rpc.sql",
+      "sha256": "9af9e89b1e03dc49bf3693ede59bb74a8b7ac88c62fb3898da3b82ca4d4f6c3c"
+    },
+    {
+      "file": "20260725006000_test_catalog_stats_rpc.sql",
+      "sha256": "189644bf96b977c34c243a7f30f847c2edefb54968a3e1aadae44d6c6ce37c75"
+    },
+    {
+      "file": "20260725007000_classify_test_catalog.sql",
+      "sha256": "b382975187eee8b91565c1134ac2902fa695c2ac05fad59cad7792221e8a6e17"
+    },
+    {
+      "file": "20260725008000_test_catalog_category_stats.sql",
+      "sha256": "e482375ae2e070e4081150a3cbe44bbd82b5eca2c99b424e30cc75386d2e3839"
+    },
+    {
+      "file": "20260725009000_bilingual_catalog_taxonomy.sql",
+      "sha256": "88a8a2759e41d279ee8a481ba121481ba3a64218353a8e6b39ce1cc82b4afdee"
+    },
+    {
+      "file": "20260725010000_bilingual_catalog_api.sql",
+      "sha256": "f297b756253d44583c6384a66f7d5fd6155dcd6c210045c446ac9d6a2d6450d7"
+    },
+    {
+      "file": "20260725011000_catalog_governance.sql",
+      "sha256": "ce9b5aa3f25c1e58c09e001da92b768307960047b5dd0141c71bf934ad6124c4"
+    },
+    {
+      "file": "20260725012000_recalibrate_abo_taxonomy.sql",
+      "sha256": "f6b6065768b3806354d210e5fdcc2c96f2bbd229515ecc09f623bcec636a091f"
+    },
+    {
+      "file": "20260725013000_enforce_strict_catalog_taxonomy.sql",
+      "sha256": "9433d6fbdf72a0e7a0523e7b17c31abeb70b585ab1ed57a039e4bd1147a62dfa"
+    },
+    {
+      "file": "20260725014000_payment_refund_reconciliation.sql",
+      "sha256": "5a0913329a2aebadadc0ee604256f96443862313186efb65462123f6dcb35c6f"
+    },
+    {
+      "file": "20260725090000_server_cart.sql",
+      "sha256": "e0700db93933d183d2d451bfe9c71a85836894fc763f62ba12b22607bcccac36"
+    },
+    {
+      "file": "20260725100000_encrypted_address_book.sql",
+      "sha256": "8cea274e6d867587f6468f9436912559e8d32e8f37ec318f04a471e5e244ac37"
+    },
+    {
+      "file": "20260726110000_delete_delivery_address.sql",
+      "sha256": "ed52a88f7b91fdc5a660f6850e21c720f1327b30fb72f20f83fa9a3b2d865993"
+    },
+    {
+      "file": "20260809093000_membership_authorization_foundation.sql",
+      "sha256": "09a2c244bd41306e8e3013fb6ea66cc73bb9fedd2ee8ae2ac222103c325e1678"
+    },
+    {
+      "file": "20260809094000_supplier_fulfillment_pii_boundary.sql",
+      "sha256": "53c89e5e8ea53c618f84d103c0ac02a451b2e32a985c9abf00ff080ec296160c"
+    },
+    {
+      "file": "20260810090000_retire_legacy_colon_permissions.sql",
+      "sha256": "6a87e04bbfe7bad56587b5fa79de3d71d1f8da11bdc747a64694145e45156dd7"
+    },
+    {
+      "file": "20260810110000_membership_runtime_cutover.sql",
+      "sha256": "a0aa8c5bbe5cd00126d58af73e17c505031bfff15c9eb5e8ca376316db42aadb"
+    },
+    {
+      "file": "20260810113000_harden_catalog_governance_rls.sql",
+      "sha256": "bb5677ae7d3af1f2299e5af880b760fc6455b6e67a9e548b64c6a69efbeba276"
+    },
+    {
+      "file": "20260810130000_admin_operations_real_write_path.sql",
+      "sha256": "d7aeb0af03c4d744363bd5476cd7791ce745490edbba95db5218e79c7d6a6b3e"
+    },
+    {
+      "file": "20260810150000_order_audit_authorization_evidence.sql",
+      "sha256": "6e055b5853a29cd354df4a0a9f33eb76526737960ad687ac25536d5bde9024df"
+    },
+    {
+      "file": "20260810160000_test_payment_simulation.sql",
+      "sha256": "17808ce6c38beb274f2a70999e04c637785b5a70925b057a303302df84ae7bf9"
+    },
+    {
+      "file": "20260810161000_fix_simulation_bank_channel.sql",
+      "sha256": "e42b060053300cbb0dac2d55cac22dcafa03ad8df565103577d93284b98ae0ad"
+    },
+    {
+      "file": "20260810162000_immutable_payment_simulation_events.sql",
+      "sha256": "288b2357e3e249756df6d2916b3d4a7ba6ce86ba1729c983dce1387d8b67bab1"
+    },
+    {
+      "file": "20260812130000_role_test_account_roster.sql",
+      "sha256": "963ebda89b67206f57b4751b192d010dc9356a167c25cbe12703aebe800558e5"
+    },
+    {
+      "file": "20260812160000_membership_permission_command_center.sql",
+      "sha256": "e8996126bc5e0f512d51ced553a5ca6c33963685ffca314fcf398096b60ebd98"
+    },
+    {
+      "file": "20260812170000_organization_hierarchy_and_authz_invalidation.sql",
+      "sha256": "fb4221cb961787a70c9ab0dccafd7c8667bacadb27631cf7c293a6be975efdd0"
+    },
+    {
+      "file": "20260812200000_commercial_resources_and_employee_qualification.sql",
+      "sha256": "75cc88308d2de3b0d2afd828ffa989525fbe5d4b7b9f7a97c3d007754c095d32"
+    },
+    {
+      "file": "20260812210000_qualification_admin_configuration.sql",
+      "sha256": "802054307c1ac746a1491def68e50b0dce9b870d568c47872cc9bde97597199a"
+    },
+    {
+      "file": "20260812220000_qualification_governance.sql",
+      "sha256": "33ba282655da9427e16e79ebf416d0730b17706b0c37645a1d08a6ae8c8a0ab2"
+    },
+    {
+      "file": "20260812230000_registered_member_identity.sql",
+      "sha256": "6b96773baa713add1b2487ddf0b2a3fcb90f6c98fd7f77589a2425bed96f6797"
+    },
+    {
+      "file": "20260812240000_account_security_center.sql",
+      "sha256": "a5eee4de2e8dccdfc9a454e9851843f864ee8cc8f7707867af7f3bb15cccad4f"
+    },
+    {
+      "file": "20260812250000_username_password_registration.sql",
+      "sha256": "fe79eb453f1b65ba7f75d87d82fe0bc76dfda948b1ec116ecbc4a4f569ad6312"
+    },
+    {
+      "file": "20260812260000_member_identity_assurance.sql",
+      "sha256": "013a9345cfb6a6ef5cbde8543ccecc5f63e13704579957da072e633243015276"
+    },
+    {
+      "file": "20260813010000_member_operations_center.sql",
+      "sha256": "4256a8a542b0add394e3fd4e6a246cebaaf4b4e0b380a109c07390347ce83988"
+    },
+    {
+      "file": "20260813020000_fix_initial_password_change_ambiguity.sql",
+      "sha256": "1d438ac4b184279055c282f297f2bba991e2d972b01b8e7a87b6380072336575"
+    },
+    {
+      "file": "20260813030000_custom_role_center_and_full_scopes.sql",
+      "sha256": "02966424bbd9808be9af0be507067017e235e0ea143ff31810928fed02b4b2d6"
+    },
+    {
+      "file": "20260813033000_payment_acceptance_test_account.sql",
+      "sha256": "abc89a94159f2e0831b872583d1cf9aa837d085ff7a5b294bc0d0368154723aa"
+    },
+    {
+      "file": "20260813040000_platform_owner_scope.sql",
+      "sha256": "8212d5ddc951b50d3fb8a0063ee30fdcba39cace087ea92b55e46c3f5524f07f"
+    },
+    {
+      "file": "20260813090000_storefront_member_profile.sql",
+      "sha256": "ee1a0340561b694e0b8d52bcf14a4e0c6278e843966c02e419bb504ea0ad48a0"
+    },
+    {
+      "file": "20260814130000_wechat_order_payment_compliance.sql",
+      "sha256": "d928cbe8912ccdc507f1dec6e23182dfa617df1f10a01efe28980b08a174ba7e"
+    },
+    {
+      "file": "20260814194000_fill_mobile_catalog_categories.sql",
+      "sha256": "1212d810b2feb5d83d8c68ce43f1516406aaf774d7ef705dc4d81c5bf4b5aca2"
+    },
+    {
+      "file": "20260815010000_cart_checkout_closure.sql",
+      "sha256": "d9671a7d698bb97f67490d343b8566b57acceb05e0be959c458232ce15d7dd7c"
+    },
+    {
+      "file": "20260815030000_catalog_media_cover_writeback.sql",
+      "sha256": "89a117a1003152fdf79751f2719ce1242048618c876a1a79642e5ac642c64da7"
+    },
+    {
+      "file": "20260815123000_wechat_registration_aliyun_sms.sql",
+      "sha256": "715f1a39f2175edc41f070d547e83dc919b3d67b02e628b3fb17d0fed44963f1"
+    },
+    {
+      "file": "20260815160000_dynamic_member_code.sql",
+      "sha256": "ca2c33e1b39a4b8d3d9ae047dcb258d9b0b91a52f66fb8c244cf058ac8a60a27"
+    },
+    {
+      "file": "20260815170000_cart_taxonomy_projection.sql",
+      "sha256": "9658ac9f44e2beb2652b2869a6f700f40a804a550fea943bdf41a472b25622ce"
+    },
+    {
+      "file": "20260815180000_wechat_silent_enrollment.sql",
+      "sha256": "3cdd46dfb237db12c0a34d44d0703535373d4a055552b39128dfa9aed5d9b1c7"
+    },
+    {
+      "file": "20260817110000_universal_storefront_access.sql",
+      "sha256": "e722ca444cee62cf28cd779587d67822d126fd5f73be5cedfc6a67fe37f591e3"
+    },
+    {
+      "file": "20260817113000_admin_mfa_step_up.sql",
+      "sha256": "65bb422c5ba99982b5c80eb5077e07aa8480b0b7100711c5602feba6071b1f1f"
+    },
+    {
+      "file": "20260817120000_login_runtime_fast_path.sql",
+      "sha256": "e6cfad98ad51f9a23c00e70fffa4005e669963c7bab54cc9024d31bb63d14902"
+    },
+    {
+      "file": "20260817190000_login_attempt_limit_ten.sql",
+      "sha256": "76b254917262a597c1cacbfa54fa2ff8870bc20d525e2a50dfd69140e5ed02b3"
+    },
+    {
+      "file": "20260817191000_bootstrap_ethan_platform_owner.sql",
+      "sha256": "a069e73089fdfa5b2e512885c95242f9b6c3303ab156e39db44b9c31650aeb45"
+    },
+    {
+      "file": "20260817194000_list_selectable_login_memberships.sql",
+      "sha256": "b6dbf0b609f7db1942b4d5ce26f614a49d50f7b050c822caa4d744bcbdb1afba"
+    },
+    {
+      "file": "20260818120000_mall_application_builder.sql",
+      "sha256": "81cb62043b0ccc0aa29097d7eaa3fb834f81e87fb58415ff108555fce8779db5"
+    },
+    {
+      "file": "20260818210000_admin_order_management_pages.sql",
+      "sha256": "b452089e38001d14f7d46cad545ecc87a84172c0254f4cb0c960ce6d752ad91c"
+    },
+    {
+      "file": "20260818211000_admin_order_management_exports.sql",
+      "sha256": "ec8bef5742cadd0899c1335d097db9891c2a5c2cae14f1b2cb46d0a8d5f44b49"
+    },
+    {
+      "file": "20260819100000_admin_sales_overview.sql",
+      "sha256": "ac10ef7f99b7d7fef78931b570cc4040bf744d19a4f9abc06054ce9380d00979"
+    },
+    {
+      "file": "20260819110000_supplier_catalog_write_path.sql",
+      "sha256": "a62b66d1c251414fb6f12ba3a5f58ca2e780bdb72ed27b19ebbf366e5917294d"
+    },
+    {
+      "file": "20260819120000_client_error_reports.sql",
+      "sha256": "07e222c7a4206de56bdc975d9e345df94116b0fe1ae467d36a098b6f56eb4b8b"
+    },
+    {
+      "file": "20260819123000_admin_order_line_count.sql",
+      "sha256": "92e726815f27d7b060b7e2cf9bcf28a13316b0adf5e69fcfacb3834866e0ae12"
+    },
+    {
+      "file": "20260819160000_distributor_channel_foundation.sql",
+      "sha256": "4d79d7a81d3ffc82add588a4f013fb09816025d8f9fb38f00627aeab0b2648fc"
+    },
+    {
+      "file": "20260820110000_voucher_operations_foundation.sql",
+      "sha256": "a2ed51c18537f5959f910090a8cb2bb9674eb0b7973b8027604a7d0aa0a31393"
+    },
+    {
+      "file": "20260820120000_after_sale_refund_approval.sql",
+      "sha256": "910102eee351c53a9a42eea0c7dc85d394875e8c859758374dd6a5e6da235024"
+    },
+    {
+      "file": "20260820121000_canonical_distributor_scope_bindings.sql",
+      "sha256": "0e64a288a978d8bdd67d0f167325977e3b7ca1e37e852d7a3574ac329b811b04"
+    },
+    {
+      "file": "20260820121500_distributor_anchor_authorization_closure.sql",
+      "sha256": "5e46ce5d2bca9e311319b4408d48e49b2cdf246db04d5bbcaf74a246ff67ebd4"
+    },
+    {
+      "file": "20260820122000_admin_order_query_export_authorization.sql",
+      "sha256": "d286a6a7adb8b697916c13951b7612d3b78184591dbf6c66bf4af14989d8e2f3"
+    },
+    {
+      "file": "20260820123000_inventory_reservation_lifecycle.sql",
+      "sha256": "dcb292196cc4597eb69453dcfb3c4ebc9b22011e5f3ec33d4a1458cba179ebfe"
+    },
+    {
+      "file": "20260820124000_payment_outbox_consumer.sql",
+      "sha256": "40dea03facec2e4a4ca100623359a03369b45224c2f1199e4e3db6bf6af16830"
+    },
+    {
+      "file": "20260820125000_atomic_checkout_inventory.sql",
+      "sha256": "4dd744789b68f9f27cdc44202d6b699bdcdc8603393b71f8a506b0f09640d406"
+    },
+    {
+      "file": "20260820126000_inventory_payment_expiry.sql",
+      "sha256": "5688c2ebb852fa74267ac9c142562979495bccfeeb12ce393f742b119a83f374"
+    },
+    {
+      "file": "20260820127000_payment_effect_processors.sql",
+      "sha256": "2dea0a4dddaaf97d8deff00353103d8f03e72a2268d468111a61d79ef15f4a01"
+    },
+    {
+      "file": "20260820127100_payment_domain_outbox.sql",
+      "sha256": "ae9e2271b39ec068fdb6042c3512a252b0fbc58ca3eb2d56b2bccc4e552b20ca"
+    },
+    {
+      "file": "20260820127200_payment_domain_relay.sql",
+      "sha256": "b84e512067858568d1074d660cfcca57bec17c645ae07b261793df5a51a9a605"
+    },
+    {
+      "file": "20260820127300_payment_domain_effects.sql",
+      "sha256": "b398e9920f152c712c01d750d14f0a01c33a54d6a706d976192d109e634d1403"
+    },
+    {
+      "file": "20260820127500_payment_outbox_cutover.sql",
+      "sha256": "74751174f2760d96ee6397ddb5391623086c44d530a20a604415483c82a01f53"
+    },
+    {
+      "file": "20260820127600_wechat_payment_query_queue.sql",
+      "sha256": "be590bf1ee0904059478fa928d242fe87109716d5291558f89b6a69d41f2da25"
+    },
+    {
+      "file": "20260820127700_payment_observation_lock_order.sql",
+      "sha256": "75316c9700d498761fb554317d39679a680bd3019e496c9f4c586b2144b379b7"
+    },
+    {
+      "file": "20260820127800_wechat_payment_query_result.sql",
+      "sha256": "ad8d182bfbab2d76a4c04b162c93d2c597a1fb0e44480fde9bfac402b7eb6dd5"
+    },
+    {
+      "file": "20260820127900_payment_expiry_guard.sql",
+      "sha256": "0a3bf79792b39b3214972925efec979e695b28ac2ac6e69953d843b8db603aab"
+    },
+    {
+      "file": "20260820128000_wechat_refund_closure.sql",
+      "sha256": "729923540c11a6f0fdd6653508f2204996dbd8dcaac8fa36c9589efd038a1d45"
+    },
+    {
+      "file": "20260820129000_payment_deadletter_alerts.sql",
+      "sha256": "47ce7660d528ef807f680aaadbf8e1335d3b7c454d590b8684e248c553b93fd8"
+    },
+    {
+      "file": "20260820129100_payment_deadletter_recovery.sql",
+      "sha256": "46a4517b7b78cee4f2f16fa728272ef2d2568717db6af91586462cc3e31450b9"
+    },
+    {
+      "file": "20260820130000_mall_application_schema_v2.sql",
+      "sha256": "399c51a970d038a1a7614c33ac1616a81ea2d03ddea86e12cbba23794d671516"
+    },
+    {
+      "file": "20260820131000_registration_terms_policy.sql",
+      "sha256": "db417e7952b702117134c0858f4370e0022256296dc723f12a4f92334201bed0"
+    },
+    {
+      "file": "20260820132000_platform_owner_reconciliation.sql",
+      "sha256": "18c3988079c7ac3044c9919f37c0007832c55369a95716ddaf6164f4e6c10335"
+    },
+    {
+      "file": "20260820133000_inventory_single_source_cutover.sql",
+      "sha256": "2389aadba4f46edeeb1cee8ba9f84f57ed76fcbcf898c6516db35867c788d98b"
+    }
+  ]
+}

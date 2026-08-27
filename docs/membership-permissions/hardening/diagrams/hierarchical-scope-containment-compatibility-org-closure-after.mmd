@@ -1,0 +1,7 @@
+flowchart LR
+  DB[Business row] --> RPC[Server scope RPC]
+  ORG[org_units + closure] --> RPC
+  RPC --> FACTS[Legacy facts + trusted ancestor path]
+  FACTS --> MATCH[Central matcher]
+  MEMBER[Membership bindings] --> MATCH
+  MATCH --> ACTION[Privileged action]

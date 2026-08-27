@@ -1,0 +1,6 @@
+flowchart LR
+  DB[Business row] --> FLAT[More flat scope IDs]
+  FLAT --> API[Commerce API]
+  API --> MATCH[Expanded switch matcher]
+  MEMBER[Membership bindings] --> MATCH
+  MATCH --> ACTION[Privileged action]

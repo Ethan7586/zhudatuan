@@ -1,0 +1,106 @@
+import { createHash } from 'node:crypto';
+import type { AuditDatabase } from '../../../../foundation/application/AuditSink';
+import type { AccessRecord } from '../../domain/model/AccessRecord';
+import type { AuditRecord } from '../../domain/model/AuditRecord';
+import type { ArchiveBatch, AuditPort } from '../../application/port/AuditPort';
+
+interface ArchiveRow { readonly id: string; readonly kind: 'command' | 'access'; readonly occurred: string; readonly record_hash: string;
+  readonly previous_hash: string | null; readonly payload: Readonly<Record<string, unknown>> }
+
+export class PgAuditRepository implements AuditPort {
+  async previous(database: AuditDatabase, scope: string): Promise<string | null> {
+    await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${scope}`]);
+    const result = await database.query<{ record_hash: string }>(`select record_hash from(
+      select record_hash,recorded_at occurred from audit.record where scope_id=$1
+      union all select record_hash,accessed_at from audit.accessrecord where scope_id=$1
+      union all select last_record_hash,through_at from audit.archiveref where scope_id=$1) chain
+      order by occurred desc limit 1`, [scope]);
+    return result.rows[0]?.record_hash ?? null;
+  }
+
+  async appendRecord(database: AuditDatabase, record: AuditRecord): Promise<void> {
+    const { input } = record;
+    await database.query(`insert into audit.record(id,scope_id,actor_id,actor_type,action,resource_type,resource_id,before_hash,after_hash,evidence,
+      trace_id,previous_hash,record_hash,recorded_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$13,$14)`,
+    [record.id,input.scope,input.actor,input.actorType,input.action,input.resourceType,input.resource,record.beforeHash,record.afterHash,
+      JSON.stringify(record.evidence),input.trace,record.previousHash,record.recordHash,record.recordedAt]);
+  }
+
+  async appendAccess(database: AuditDatabase, record: AccessRecord): Promise<void> {
+    const { input } = record;
+    await database.query(`insert into audit.accessrecord(id,scope_id,actor_id,actor_type,resource_type,resource_id,fields,purpose,trace_id,
+      previous_hash,record_hash,accessed_at) values($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12)`,
+    [record.id,input.scope,input.actor,input.actorType,input.resourceType,input.resource,JSON.stringify(record.fields),input.purpose,input.trace,
+      record.previousHash,record.recordHash,record.accessedAt]);
+  }
+
+  async records(database: AuditDatabase, scope: string, cursor: Readonly<{ sort: string | null; id: string | null }>, fetch: number) {
+    const result = await database.query(`select * from(
+      select record.id,'command' kind,record.scope_id,record.actor_id,record.actor_type,record.action,record.resource_type,record.resource_id,
+        record.before_hash,record.after_hash,record.evidence,record.trace_id,record.previous_hash,record.record_hash,record.recorded_at occurred_at
+      from audit.record record where audit.scope_allowed(record.scope_id)
+      union all select accessrecord.id,'access',accessrecord.scope_id,accessrecord.actor_id,accessrecord.actor_type,accessrecord.purpose,
+        accessrecord.resource_type,accessrecord.resource_id,null,null,accessrecord.fields,accessrecord.trace_id,accessrecord.previous_hash,
+        accessrecord.record_hash,accessrecord.accessed_at from audit.accessrecord accessrecord where audit.scope_allowed(accessrecord.scope_id)
+      union all select archive.id,'archive',archive.scope_id,null,'system','audit.archived','audit',archive.id,archive.first_record_hash,
+        archive.last_record_hash,jsonb_build_object('objectRef',archive.object_ref,'count',archive.record_count,'expiresAt',archive.expires_at,
+          'keyVersion',archive.key_version),archive.id,archive.first_record_hash,archive.last_record_hash,archive.archived_at
+        from audit.archiveref archive where audit.scope_allowed(archive.scope_id)) history
+      where $1=current_setting('app.scope_id',true) and ($2::timestamptz is null or (history.occurred_at,history.id)<($2::timestamptz,$3))
+      order by history.occurred_at desc,history.id desc limit $4`, [scope,cursor.sort,cursor.id,fetch]);
+    return result.rows;
+  }
+
+  async archiveBatch(database: AuditDatabase, limit: number): Promise<ArchiveBatch | null> {
+    const target = await database.query<{ scope: string; archive_years: number; hot_days: number }>(`with source as(
+      select scope_id,min(recorded_at) oldest from audit.record group by scope_id
+      union all select scope_id,min(accessed_at) from audit.accessrecord group by scope_id), candidate as(
+      select source.scope_id,min(source.oldest) oldest,coalesce(exact.hot_days,root.hot_days,90) hot_days,
+        coalesce(exact.archive_years,root.archive_years,7) archive_years,coalesce(exact.legal_hold,root.legal_hold,false) legal_hold
+      from source left join audit.retention exact on exact.scope_id=source.scope_id
+      left join audit.retention root on root.scope_id='organization-platform-root' group by source.scope_id,exact.hot_days,root.hot_days,
+        exact.archive_years,root.archive_years,exact.legal_hold,root.legal_hold)
+      select scope_id scope,archive_years,hot_days from candidate where not legal_hold
+        and oldest<clock_timestamp()-make_interval(days=>hot_days) order by oldest,scope_id limit 1`);
+    const selected = target.rows[0]; if (!selected) return null;
+    const rows = await database.query<ArchiveRow>(`select id,kind,to_char(occurred at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') occurred,
+      record_hash,previous_hash,payload from(
+        select record.id,'command' kind,record.recorded_at occurred,record.record_hash,record.previous_hash,to_jsonb(record) payload
+          from audit.record record where record.scope_id=$1 and record.recorded_at<clock_timestamp()-make_interval(days=>$3)
+        union all select accessrecord.id,'access',accessrecord.accessed_at,accessrecord.record_hash,accessrecord.previous_hash,to_jsonb(accessrecord)
+          from audit.accessrecord accessrecord where accessrecord.scope_id=$1
+            and accessrecord.accessed_at<clock_timestamp()-make_interval(days=>$3)) source
+      order by occurred,id limit $2`, [selected.scope,limit,selected.hot_days]);
+    if (rows.rows.length === 0) return null;
+    const first = rows.rows[0]!; const last = rows.rows.at(-1)!;
+    return Object.freeze({ scope:selected.scope,start:first.occurred,end:last.occurred,firstHash:first.record_hash,lastHash:last.record_hash,
+      rows:Object.freeze(rows.rows.map((row) => Object.freeze({ kind:row.kind,...row.payload }))),
+      recordIds:Object.freeze(rows.rows.filter(({kind}) => kind==='command').map(({id}) => id)),
+      accessIds:Object.freeze(rows.rows.filter(({kind}) => kind==='access').map(({id}) => id)),archiveYears:selected.archive_years });
+  }
+
+  async completeArchive(database: AuditDatabase, batch: ArchiveBatch, object: Readonly<{ reference: string; sha256: string; size: number;
+    keyVersion: string; expiresAt: string }>): Promise<void> {
+    await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${batch.scope}`]);
+    const id = `archive:${createHash('sha256').update(`${batch.scope}:${batch.start}:${batch.end}:${batch.lastHash}`).digest('hex').slice(0,32)}`;
+    await database.query(`insert into audit.archiveref(id,scope_id,period_start,period_end,through_at,object_ref,sha256,object_size,key_version,
+      first_record_hash,last_record_hash,record_count,expires_at,archived_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,clock_timestamp())
+      on conflict(id) do nothing`, [id,batch.scope,batch.start.slice(0,10),batch.end.slice(0,10),batch.end,object.reference,object.sha256,
+      object.size,object.keyVersion,batch.firstHash,batch.lastHash,batch.rows.length,object.expiresAt]);
+    const persisted = await database.query(`select 1 from audit.archiveref where id=$1 and scope_id=$2 and object_ref=$3 and sha256=$4
+      and object_size=$5 and key_version=$6 and first_record_hash=$7 and last_record_hash=$8 and record_count=$9`,
+    [id,batch.scope,object.reference,object.sha256,object.size,object.keyVersion,batch.firstHash,batch.lastHash,batch.rows.length]);
+    if (!persisted.rows[0]) throw new Error('AUDIT_ARCHIVE_REFERENCE_CONFLICT');
+    await database.query("select set_config('app.audit_archive','true',true)");
+    const records = await database.query('delete from audit.record where id=any($1::text[]) and scope_id=$2', [batch.recordIds,batch.scope]);
+    const accesses = await database.query('delete from audit.accessrecord where id=any($1::text[]) and scope_id=$2', [batch.accessIds,batch.scope]);
+    if ((records.rowCount ?? 0)+(accesses.rowCount ?? 0) !== batch.rows.length) throw new Error('AUDIT_ARCHIVE_SOURCE_CHANGED');
+  }
+
+  async scheduleArchive(database: AuditDatabase, immediate: boolean): Promise<void> {
+    await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+      select 'job:auditarchive:'||to_char(next_at,'YYYYMMDDHH24MI'),'auditarchive','audit','organization-platform-root','{}'::jsonb,
+        'queued',80,next_at,clock_timestamp(),clock_timestamp() from(select case when $1 then date_trunc('minute',clock_timestamp())+interval '1 minute'
+        else date_trunc('hour',clock_timestamp()+interval '1 hour') end next_at) schedule on conflict(id) do nothing`, [immediate]);
+  }
+}

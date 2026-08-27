@@ -1,0 +1,191 @@
+.orderdraweroverlay {
+  position: fixed;
+  inset: 3.6875rem 0 0;
+  z-index: 45;
+  display: flex;
+  justify-content: flex-end;
+  background: color-mix(in srgb, var(--sw-brand-ink) 6%, transparent);
+}
+.orderdrawermodal {
+  width: min(31.5rem, calc(100vw - 3rem));
+  height: 100%;
+  margin-left: auto;
+  outline: 0;
+}
+.orderdrawer {
+  display: grid;
+  height: 100%;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-left: 0.0625rem solid var(--sw-border);
+  background: var(--sw-surface);
+  box-shadow: var(--sw-shadow-overlay);
+  outline: 0;
+}
+.orderdrawerheader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  padding: var(--sw-space-2) var(--sw-space-2) var(--sw-space-1-5);
+}
+.orderdrawerheader p {
+  margin: 0 0 var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 600;
+}
+.orderdrawertitleline {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+}
+.orderdrawertitleline h2 {
+  margin: 0;
+  font-size: var(--sw-font-size-h2);
+}
+.orderdrawertitleline button,
+.orderdrawerclose {
+  display: grid;
+  min-height: 2rem;
+  border: 0;
+  background: transparent;
+  place-items: center;
+}
+.orderdrawertitleline button {
+  width: 2rem;
+  color: var(--sw-muted);
+}
+.orderdrawertitleline svg,
+.orderdrawerclose svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.orderdrawerclose {
+  width: 2.5rem;
+  color: var(--sw-text);
+}
+.orderdrawerbadges {
+  display: flex;
+  gap: var(--sw-space-1);
+  margin: var(--sw-space-1) 0 var(--sw-space-0-5);
+}
+.orderdrawerbadges .orderstatuspill {
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderdrawertabsystem {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.orderdrawertabs {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 0.0625rem solid var(--sw-border);
+  padding: 0 var(--sw-space-2);
+}
+.orderdrawertabs [role='tab'] {
+  position: relative;
+  min-height: 3.25rem;
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-1-5);
+  font-size: var(--sw-font-size-caption);
+}
+.orderdrawertabs [role='tab'][aria-selected='true'] {
+  color: var(--sw-brand);
+  font-weight: 700;
+}
+.orderdrawertabs [role='tab'][aria-selected='true']::after {
+  position: absolute;
+  right: var(--sw-space-1);
+  bottom: 0;
+  left: var(--sw-space-1);
+  height: 0.1875rem;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-brand);
+  content: '';
+}
+.orderdrawerbody {
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sw-space-1-5) var(--sw-space-2) var(--sw-space-3);
+  outline: 0;
+}
+.orderdrawerstack {
+  display: grid;
+  gap: var(--sw-space-1-5);
+}
+
+.ordersummarynote {
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-1-5);
+}
+.ordersummarynote p {
+  margin: 0 0 var(--sw-space-0-5);
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+}
+.ordersummarynote small {
+  color: var(--sw-warning-strong);
+}
+.ordermilestones {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  margin: 0;
+  padding: var(--sw-space-1-5) 0;
+  list-style: none;
+}
+.ordermilestones li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.1875rem;
+  color: var(--sw-text-secondary);
+  text-align: center;
+}
+.ordermilestones li:not(:last-child)::after {
+  position: absolute;
+  top: 0.8125rem;
+  left: calc(50% + 0.9rem);
+  width: calc(100% - 1.8rem);
+  height: 0.0625rem;
+  background: var(--sw-border-strong);
+  content: '';
+}
+.ordermilestones li > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 1.625rem;
+  height: 1.625rem;
+  place-items: center;
+  border: 0.0625rem solid currentColor;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-surface);
+}
+.ordermilestones svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.ordermilestones strong,
+.ordermilestones small {
+  font-size: 0.6875rem;
+}
+.ordermilestones small {
+  font-weight: 400;
+  white-space: nowrap;
+}
+.ordermilestones .is-complete {
+  color: var(--sw-success-strong);
+}
+.ordermilestones .is-current {
+  color: var(--sw-warning-strong);
+}
+.ordermilestones .is-warning {
+  color: var(--sw-danger-strong);
+}

@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "requiredDeliveryPlatforms": ["web", "wechat-miniapp"],
+  "reservedPlatforms": ["harmonyos", "ios", "android"],
+  "capabilities": [
+    {
+      "id": "public-catalog",
+      "consistency": "eventual-read",
+      "releaseReady": true,
+      "platforms": {
+        "web": { "status": "implemented", "evidence": ["apps/storefront-web/src/services/productionApi.ts::/api/v1/catalog/public/products"] },
+        "wechat-miniapp": { "status": "implemented", "evidence": ["apps/wechat-miniapp/miniprogram/utils/catalogApi.js::/api/v1/catalog/public/products"] },
+        "harmonyos": { "status": "reserved" },
+        "ios": { "status": "reserved" },
+        "android": { "status": "reserved" }
+      }
+    },
+    {
+      "id": "server-cart",
+      "consistency": "authoritative-command",
+      "releaseReady": true,
+      "platforms": {
+        "web": { "status": "implemented", "evidence": ["apps/storefront-web/src/services/productionApi.ts::/api/v1/cart"] },
+        "wechat-miniapp": { "status": "implemented", "evidence": ["apps/wechat-miniapp/miniprogram/utils/checkoutApi.js::/api/v1/cart"] },
+        "harmonyos": { "status": "reserved" },
+        "ios": { "status": "reserved" },
+        "android": { "status": "reserved" }
+      }
+    },
+    {
+      "id": "order-create",
+      "consistency": "authoritative-command",
+      "releaseReady": true,
+      "platforms": {
+        "web": { "status": "implemented", "evidence": ["apps/storefront-web/src/services/productionApi.ts::async createOrder"] },
+        "wechat-miniapp": { "status": "implemented", "evidence": ["apps/wechat-miniapp/miniprogram/utils/checkoutApi.js::createOrder: function"] },
+        "harmonyos": { "status": "reserved" },
+        "ios": { "status": "reserved" },
+        "android": { "status": "reserved" }
+      }
+    },
+    {
+      "id": "payment-confirmation",
+      "consistency": "tracked-async",
+      "releaseReady": false,
+      "platforms": {
+        "web": { "status": "partial", "note": "Only internal welfare and meal account payment is wired; external browser payment and authoritative polling are pending." },
+        "wechat-miniapp": { "status": "implemented", "evidence": ["apps/wechat-miniapp/miniprogram/utils/wechatPayment.js::pollPaymentStatus"] },
+        "harmonyos": { "status": "reserved" },
+        "ios": { "status": "reserved" },
+        "android": { "status": "reserved" }
+      }
+    },
+    {
+      "id": "dynamic-member-code",
+      "consistency": "tracked-async",
+      "releaseReady": false,
+      "platforms": {
+        "web": { "status": "planned", "note": "Web member-code center is not connected to the shared challenge contract." },
+        "wechat-miniapp": { "status": "partial", "note": "UI exists, but the real server challenge and consume path are not complete." },
+        "harmonyos": { "status": "reserved" },
+        "ios": { "status": "reserved" },
+        "android": { "status": "reserved" }
+      }
+    }
+  ]
+}

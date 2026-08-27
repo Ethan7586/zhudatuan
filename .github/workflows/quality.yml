@@ -1,0 +1,265 @@
+name: Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Promote the signed staging candidate to production
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  SHOP_CI_DATABASE_PASSWORD: shop-ci-${{ github.run_id }}-${{ github.run_attempt }}
+
+concurrency:
+  group: shop-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: ci/01-15 immutable verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: shop
+      PGUSER: postgres
+      PGPASSWORD: ${{ env.SHOP_CI_DATABASE_PASSWORD }}
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: shop
+          POSTGRES_PASSWORD: ${{ env.SHOP_CI_DATABASE_PASSWORD }}
+          POSTGRES_USER: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d shop"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+
+      - name: ci/01_preflight
+        run: |
+          npm ci
+          npm run check:cleaninstall
+          npm run check:migration-inventory
+
+      - name: ci/02_secretlicense
+        run: |
+          mkdir -p artifacts/work
+          npm run check:supplychain
+          npm audit --omit=dev --audit-level=high
+          npm sbom --omit=dev --sbom-format cyclonedx > artifacts/work/sbom.cdx.json
+
+      - name: ci/03_generate
+        run: |
+          npm run generate:design
+          npm run generate:clients
+          npm run generate --workspace @shop/contractgen
+          npm run generate --workspace @shop/requirementgen
+          npm run check:generated
+          git diff --exit-code
+
+      - name: ci/04_architecture
+        run: |
+          npm run audit:architecture
+          npm run check:lines
+          npm run check:deployment
+
+      - name: ci/05_typecheck
+        run: npm run typecheck
+
+      - name: ci/06_unit
+        run: npm run test:unit
+
+      - name: ci/07_database
+        run: |
+          npm run replay:fresh
+          npm run test:sql
+          npm run replay:postgres
+
+      - name: ci/08_contract
+        run: npm run test:contract
+
+      - name: ci/09_integration
+        env:
+          SHOP_TEST_REDIS_URL: redis://127.0.0.1:6379
+        run: |
+          npm run test:adapters
+          npm run test:integration
+
+      - name: ci/10_build
+        run: |
+          npm run build
+          npm run check:bundles
+
+      - name: ci/11_component
+        run: npm run test:component
+
+      - name: ci/12_journey
+        run: npm run test:journey
+
+      - name: ci/13_performance
+        run: npm run test:performance
+
+      - name: ci/14_security
+        run: npm run test:security
+
+      - name: ci/15_package
+        run: |
+          docker build --file infrastructure/aliyun/Dockerfile --output type=oci,dest=/tmp/shop-commerce.oci.tar .
+          oci_sha="$(sha256sum /tmp/shop-commerce.oci.tar | cut -d' ' -f1)"
+          node --import tsx scripts/release/candidate.mjs artifacts/release-candidate "$GITHUB_SHA" "oci-layout@sha256:$oci_sha" /tmp/shop-commerce.oci.tar artifacts/work/sbom.cdx.json
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign candidate provenance
+        if: github.event_name != 'pull_request'
+        run: cosign sign-blob --yes --bundle artifacts/release-candidate/candidate.sigstore.json artifacts/release-candidate/candidate.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate
+          path: artifacts/release-candidate
+          if-no-files-found: error
+          retention-days: 14
+
+  stage:
+    name: ci/16_stage
+    if: github.event_name == 'workflow_dispatch'
+    needs: verify
+    runs-on: [self-hosted, shop-stage]
+    timeout-minutes: 45
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - run: npm ci
+      - uses: sigstore/cosign-installer@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-candidate
+          path: bundle
+      - name: Verify immutable candidate
+        run: >-
+          cosign verify-blob
+          --bundle bundle/candidate.sigstore.json
+          --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/quality.yml@refs/heads/main"
+          --certificate-oidc-issuer https://token.actions.githubusercontent.com
+          bundle/candidate.json
+      - name: Run staging acceptance controller
+        env:
+          SHOP_STAGE_CONTROLLER: ${{ secrets.SHOP_STAGE_CONTROLLER }}
+        run: '"$SHOP_STAGE_CONTROLLER" accept --candidate "$PWD/bundle/candidate.json" --artifact "$PWD/bundle"'
+      - name: Fetch signed staging evidence
+        env:
+          SHOP_STAGE_EVIDENCE_URL: ${{ secrets.SHOP_STAGE_EVIDENCE_URL }}
+          SHOP_STAGE_SIGNATURE_URL: ${{ secrets.SHOP_STAGE_SIGNATURE_URL }}
+          SHOP_STAGE_IDENTITY: ${{ secrets.SHOP_STAGE_IDENTITY }}
+        run: |
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 "$SHOP_STAGE_EVIDENCE_URL" --output bundle/stage.json
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 "$SHOP_STAGE_SIGNATURE_URL" --output bundle/stage.sigstore.json
+          cosign verify-blob --bundle bundle/stage.sigstore.json --certificate-identity "$SHOP_STAGE_IDENTITY" --certificate-oidc-issuer https://token.actions.githubusercontent.com bundle/stage.json
+          node --import tsx scripts/release/stage.mjs bundle/stage.json bundle/candidate.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stage-evidence
+          path: |
+            bundle/stage.json
+            bundle/stage.sigstore.json
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: ci/17_release
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    needs: stage
+    runs-on: [self-hosted, shop-release]
+    timeout-minutes: 90
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - run: npm ci
+      - uses: sigstore/cosign-installer@v3
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-candidate
+          path: bundle
+      - uses: actions/download-artifact@v4
+        with:
+          name: stage-evidence
+          path: bundle
+      - name: Verify candidate and staging provenance
+        env:
+          SHOP_STAGE_IDENTITY: ${{ secrets.SHOP_STAGE_IDENTITY }}
+        run: |
+          cosign verify-blob --bundle bundle/candidate.sigstore.json --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/quality.yml@refs/heads/main" --certificate-oidc-issuer https://token.actions.githubusercontent.com bundle/candidate.json
+          cosign verify-blob --bundle bundle/stage.sigstore.json --certificate-identity "$SHOP_STAGE_IDENTITY" --certificate-oidc-issuer https://token.actions.githubusercontent.com bundle/stage.json
+      - name: Fetch signed production approval
+        env:
+          SHOP_PROMOTION_URL: ${{ secrets.SHOP_PROMOTION_URL }}
+          SHOP_PROMOTION_SIGNATURE_URL: ${{ secrets.SHOP_PROMOTION_SIGNATURE_URL }}
+          SHOP_PROMOTION_IDENTITY: ${{ secrets.SHOP_PROMOTION_IDENTITY }}
+        run: |
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 "$SHOP_PROMOTION_URL" --output bundle/promotion.json
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 "$SHOP_PROMOTION_SIGNATURE_URL" --output bundle/promotion.sigstore.json
+          cosign verify-blob --bundle bundle/promotion.sigstore.json --certificate-identity "$SHOP_PROMOTION_IDENTITY" --certificate-oidc-issuer https://token.actions.githubusercontent.com bundle/promotion.json
+      - name: Promote the same candidate
+        run: |
+          node --import tsx scripts/release/stage.mjs bundle/stage.json bundle/candidate.json
+          node --import tsx scripts/release/promote.mjs bundle/candidate.json bundle/stage.json bundle/promotion.json bundle/release.json
+          node scripts/release/inventory.mjs bundle
+          cosign sign-blob --yes --bundle bundle/release.sigstore.json bundle/release.json
+          node --import tsx scripts/release/validate.mjs bundle/release.json
+          node --import tsx scripts/release/validatebundle.mjs bundle
+      - name: Atomic production hard cut
+        env:
+          SHOP_CUTOVER_CONTROLLER: ${{ secrets.SHOP_CUTOVER_CONTROLLER }}
+          SHOP_CUTOVER_EVIDENCE: ${{ github.workspace }}/evidence/cutover.json
+          SHOP_NAMESPACE: ${{ secrets.SHOP_NAMESPACE }}
+          SHOP_RELEASE_IDENTITY: https://github.com/${{ github.repository }}/.github/workflows/quality.yml@refs/heads/main
+        run: |
+          mkdir -p evidence
+          bash infrastructure/aliyun/deploy.sh "$PWD/bundle"
+      - name: Sign and archive production evidence
+        run: cosign sign-blob --yes --bundle evidence/cutover.sigstore.json evidence/cutover.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-evidence
+          path: evidence
+          if-no-files-found: error
+          retention-days: 400

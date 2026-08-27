@@ -1,1 +1,40 @@
+<<<<<<< HEAD
 .DS_Store
+=======
+node_modules/
+.wrangler/
+.next/
+dist/
+coverage/
+storybook-static/
+.codex-temp/
+*.tsbuildinfo
+.DS_Store
+*.log
+.env*
+!.env.example
+secrets.local.json
+infrastructure/local/.tls/
+infrastructure/local/data/
+
+.vercel
+
+output/
+tmp/
+
+# Private source documents may contain credentials or customer information.
+docs/requirements/private/
+
+# Archived deliveries and parallel worktrees are artifacts, not canonical source.
+# They must not participate in search, build, format, test or release (P0A05).
+pre-contract-code-merge-20260820/
+smart-wing-branch-work/
+gitpointer.broken.txt
+
+# Local worker runtime secrets. Never commit.
+.dev.vars
+**/.dev.vars
+
+# Payment certificates and private keys belong in Secret Manager, never the workspace.
+config/payment/
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -1,0 +1,40 @@
+@media (max-width: 1160px) {
+  .productpage[data-drawer='open'] {
+    width: 100%;
+  }
+  .producttoolbar {
+    flex-wrap: wrap;
+  }
+  .producttoolspacer {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .producthero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .productheroactions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .producttabs {
+    overflow-x: auto;
+  }
+  .productsearchfield {
+    width: 100%;
+  }
+  .productpagination {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-block: 10px;
+  }
+  .productpagebuttons {
+    justify-content: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .productpage {
+    transition: none;
+  }
+}

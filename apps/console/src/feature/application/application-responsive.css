@@ -1,0 +1,30 @@
+@media (max-width: 1080px) {
+  .commercesummary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .commerceflow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .commerceflow li::after { display: none; }
+}
+
+@media (max-width: 720px) {
+  .commercecontent { padding: 12px; }
+  .commerceownership,
+  .commerceboundarybanner { align-items: flex-start; }
+  .commerceownership { flex-wrap: wrap; }
+  .commercevitheme { margin-left: 42px; }
+  .commerceboundarybanner { flex-wrap: wrap; }
+  .commerceboundarybanner button { margin-left: 42px; }
+  .commerceflow { grid-template-columns: 1fr 1fr; }
+  .commercefilterbar { align-items: stretch; flex-direction: column; }
+  .commercesearch { width: 100%; }
+  .commerceflowbody ol { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 460px) {
+  .commercesummary,
+  .commerceflow { grid-template-columns: 1fr; }
+  .commercesummary article { min-height: 92px; }
+  .commercefacts { grid-template-columns: 1fr; }
+  .commercefacts div { border-right: 0; }
+  .commercefacts div:nth-last-child(-n + 2) { border-bottom: 1px solid var(--vi-line); }
+  .commercefacts div:last-child { border-bottom: 0; }
+  .commercedrawer { border-radius: 0; }
+}

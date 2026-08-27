@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+@import './shell.css';
+@import './feature.css';
+@import './responsive.css';
+@import './legacy-admin-theme.css';
+@import './smart-wing-vi.css';

@@ -1,0 +1,83 @@
+@media (min-width: 48.01rem) {
+  [data-sidebar='expanded'] .workspacebody .resourceheading h1 {
+    position: absolute;
+    width: 0.0625rem;
+    height: 0.0625rem;
+    margin: -0.0625rem;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 70rem) {
+  .consoleheader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .consoleidentity {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 48rem) {
+  .consolelayout { grid-template-columns: minmax(0, 1fr); }
+
+  .consolesidebar,
+  .consolesidebar.iscollapsed {
+    position: sticky;
+    width: 100%;
+    height: auto;
+  }
+
+  .sidebarbrand,
+  .sidebarmeta { display: none; }
+
+  .consolesidebar nav {
+    display: flex;
+    overflow-x: auto;
+    padding: var(--sw-space-1);
+  }
+
+  .consolesidebar nav button,
+  .iscollapsed nav button {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    padding-inline: var(--sw-space-1);
+  }
+
+  .iscollapsed nav button .sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+  }
+
+  .consoleheader,
+  .scopebar,
+  .workspacebody { padding-inline: var(--sw-space-2); }
+
+  .consolebreadcrumb > span,
+  .consoleidentity time,
+  .consoleidentity > strong { display: none; }
+
+  .scopebar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .resourceheading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .datasource { align-self: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consolesidebar { transition: none; }
+}

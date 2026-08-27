@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-Hant" data-style="studio" data-mode="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>築店 · 商城後臺 VI 風格實驗室</title>
+  <meta name="description" content="三套商城裝修後臺 VI 方向，支援深色與淺色即時切換。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./variants.css">
+</head>
+<body>
+  <div class="style-lab">
+    <header class="lab-toolbar" aria-label="風格切換工具列">
+      <div class="lab-brand">
+        <span class="lab-mark" aria-hidden="true"><i></i><i></i></span>
+        <span>
+          <strong>商城後臺 VI 實驗室</strong>
+          <small>3 套風格 · 深淺雙模式</small>
+        </span>
+      </div>
+
+      <div class="style-switcher" role="group" aria-label="選擇 VI 風格">
+        <button type="button" data-style-choice="studio" aria-pressed="true">
+          <span class="style-dot style-dot-studio" aria-hidden="true"></span>
+          <span><b>工坊暖色</b><small>現在這套</small></span>
+        </button>
+        <button type="button" data-style-choice="editorial" aria-pressed="false">
+          <span class="style-dot style-dot-editorial" aria-hidden="true"></span>
+          <span><b>都會精品</b><small>更洋氣</small></span>
+        </button>
+        <button type="button" data-style-choice="classic" aria-pressed="false">
+          <span class="style-dot style-dot-classic" aria-hidden="true"></span>
+          <span><b>實用藍白</b><small>接近有贊</small></span>
+        </button>
+      </div>
+
+      <div class="mode-switcher" role="group" aria-label="切換深淺模式">
+        <button type="button" data-mode-choice="dark" aria-pressed="true">深色</button>
+        <button type="button" data-mode-choice="light" aria-pressed="false">淺色</button>
+      </div>
+    </header>
+
+    <section class="direction-summary" aria-live="polite">
+      <div>
+        <span class="direction-index" id="directionIndex">DIRECTION 01</span>
+        <h1 id="directionTitle">暖色店鋪工作室</h1>
+        <p id="directionDescription">像懂生意的設計工作室：可靠、溫暖、帶一點創作感。</p>
+      </div>
+      <div class="direction-dna" id="directionDna" aria-label="設計特徵"></div>
+    </section>
+
+    <section class="product-window" aria-label="商城裝修器演示">
+      <header class="product-commandbar">
+        <div class="product-identity">
+          <span class="product-logo" aria-hidden="true"><i></i><i></i></span>
+          <strong id="productName">築店 Studio</strong>
+          <span class="command-divider" aria-hidden="true"></span>
+          <button class="icon-button back-button" type="button" aria-label="返回">‹</button>
+          <span class="page-name">首頁 · 秋季新版</span>
+          <span class="draft-chip">草稿</span>
+        </div>
+        <div class="command-actions">
+          <span class="saved-note">所有修改已自動儲存</span>
+          <button class="icon-button" type="button" aria-label="復原">↶</button>
+          <button class="icon-button" type="button" aria-label="重做">↷</button>
+          <button class="secondary-button" type="button" data-action="preview">在微信中預覽</button>
+          <button class="primary-button" type="button" data-action="publish">準備發佈</button>
+        </div>
+      </header>
+
+      <div class="editor-layout">
+        <aside class="component-library" aria-label="元件庫">
+          <div class="panel-tabs" role="tablist" aria-label="左側面板">
+            <button type="button" role="tab" aria-selected="true">元件</button>
+            <button type="button" role="tab" aria-selected="false">圖層</button>
+            <button type="button" role="tab" aria-selected="false">頁面</button>
+          </div>
+
+          <div class="component-section">
+            <span class="section-label">基礎</span>
+            <div class="component-grid">
+              <button type="button" class="component-button" data-component="image" aria-pressed="true"><span>▧</span>圖片</button>
+              <button type="button" class="component-button" data-component="navigation" aria-pressed="false"><span>▦</span>圖文導航</button>
+            </div>
+          </div>
+          <div class="component-section">
+            <span class="section-label">商品</span>
+            <div class="component-grid">
+              <button type="button" class="component-button" data-component="hero" aria-pressed="false"><span>◫</span>主視覺</button>
+              <button type="button" class="component-button" data-component="products" aria-pressed="false"><span>▤</span>商品列表</button>
+              <button type="button" class="component-button" data-component="ranking" aria-pressed="false"><span>≋</span>商品排行</button>
+              <button type="button" class="component-button" data-component="category" aria-pressed="false"><span>◇</span>商品分類</button>
+            </div>
+          </div>
+          <div class="component-section">
+            <span class="section-label">行銷</span>
+            <div class="component-grid">
+              <button type="button" class="component-button" data-component="coupon" aria-pressed="false"><span>⌁</span>優惠券</button>
+              <button type="button" class="component-button" data-component="countdown" aria-pressed="false"><span>◴</span>倒計時</button>
+            </div>
+          </div>
+        </aside>
+
+        <main class="canvas-area">
+          <div class="canvas-toolbar">
+            <div><strong>手機</strong><span>375</span><span>100%</span></div>
+            <div class="device-switch" role="group" aria-label="預覽裝置">
+              <button type="button" aria-pressed="true">手機</button>
+              <button type="button" aria-pressed="false">平板</button>
+            </div>
+          </div>
+
+          <div class="phone-stage">
+            <article class="phone-preview" aria-label="商戶商城手機預覽">
+              <div class="phone-status"><span>9:41</span><span>⌁ ◉</span></div>
+              <div class="shop-head"><span>‹</span><strong>暮色選物</strong><span>•••</span></div>
+              <div class="shop-content">
+                <section class="shop-block hero-block is-selected" data-canvas-block="image">
+                  <span class="selection-label">圖片</span>
+                  <small>本週限定</small>
+                  <h2>把喜歡的日常<br>慢慢收藏</h2>
+                  <p>NEW AUTUMN EDIT</p>
+                </section>
+                <section class="shop-block nav-block" data-canvas-block="navigation">
+                  <div><i></i><span>新品</span></div><div><i></i><span>居家</span></div><div><i></i><span>香氛</span></div><div><i></i><span>全部</span></div>
+                </section>
+                <section class="shop-block product-block" data-canvas-block="products">
+                  <div class="shop-section-head"><strong>本週人氣</strong><span>查看全部</span></div>
+                  <div class="product-cards">
+                    <article><div class="product-image one"></div><span>亞麻抱枕</span><strong>¥ 129</strong></article>
+                    <article><div class="product-image two"></div><span>暮色香氛</span><strong>¥ 168</strong></article>
+                  </div>
+                </section>
+                <section class="shop-block coupon-block" data-canvas-block="coupon">
+                  <span>會員限定</span><strong>滿 299 減 30</strong><button type="button">領取</button>
+                </section>
+              </div>
+              <nav class="shop-tabbar" aria-label="商城底部導航"><b>首頁</b><span>分類</span><span>購物袋</span><span>我的</span></nav>
+            </article>
+          </div>
+        </main>
+
+        <aside class="property-panel" aria-label="屬性設定">
+          <div class="property-heading">
+            <div><span>當前元件</span><h2 id="propertyTitle">圖片</h2></div>
+            <button class="icon-button" type="button" aria-label="更多設定">•••</button>
+          </div>
+          <div class="panel-tabs inspector-tabs" role="tablist" aria-label="屬性頁籤">
+            <button type="button" role="tab" aria-selected="true">內容</button>
+            <button type="button" role="tab" aria-selected="false">樣式</button>
+            <button type="button" role="tab" aria-selected="false">資料</button>
+            <button type="button" role="tab" aria-selected="false">展示</button>
+          </div>
+          <form class="property-form" onsubmit="return false">
+            <label for="fieldTitle">標題</label>
+            <input id="fieldTitle" type="text" value="把喜歡的日常慢慢收藏">
+            <label for="fieldSource">資料來源</label>
+            <select id="fieldSource"><option>品牌素材庫</option><option>商品中心</option><option>商城分類樹</option></select>
+            <label for="fieldAudience">展示人群</label>
+            <select id="fieldAudience"><option>全部顧客</option><option>新客</option><option>會員</option></select>
+            <div class="field-row">
+              <label>內容寬度 <output id="widthValue">100%</output></label>
+              <input id="widthRange" type="range" min="70" max="100" value="100">
+            </div>
+            <div class="help-note"><span aria-hidden="true">✦</span><p id="propertyHint">圖片元件使用商戶素材；選中框仍使用平台操作色。</p></div>
+          </form>
+        </aside>
+      </div>
+
+      <footer class="product-statusbar">
+        <span><i class="status-dot" aria-hidden="true"></i>頁面檢查通過 · 0 個失效商品</span>
+        <span class="status-actions"><b>線上 v18</b><button type="button" data-action="save">保存為版本</button></span>
+      </footer>
+    </section>
+
+    <footer class="comparison-note">
+      <span>平台 VI 只改變後臺工作臺</span>
+      <span aria-hidden="true">→</span>
+      <strong>手機商城始終保留商戶自己的品牌</strong>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./variants.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+@media (max-width: 1040px) {
+  .financefilters {
+    flex-wrap: wrap;
+  }
+  .financefilterspacer {
+    display: none;
+  }
+  .financesearchfield {
+    width: min(320px, 100%);
+  }
+  .financecolumnsettings {
+    top: 98px;
+  }
+}
+
+@media (max-width: 720px) {
+  .financeworkspace {
+    border-radius: 0;
+  }
+  .financepageheader {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px 15px;
+  }
+  .financepageactions {
+    width: 100%;
+  }
+  .financepageactions button {
+    flex: 1;
+  }
+  .financestatusrail {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 9px 15px;
+  }
+  .financestatusrail dl {
+    flex-wrap: wrap;
+    gap: 7px 0;
+  }
+  .financestatusrail > div {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .financetabs {
+    padding-inline: 7px;
+  }
+  .financetoolbararea {
+    padding-inline: 10px;
+  }
+  .financesearchfield {
+    width: 100%;
+  }
+  .financefilterspacer {
+    display: block;
+    flex: 1 0 100%;
+  }
+  .financepagination {
+    grid-template-columns: 1fr auto;
+    padding: 9px 10px;
+  }
+  .financepagination > label {
+    display: none;
+  }
+  .financedraweroverlay {
+    inset: 0;
+  }
+  .financedrawermodal {
+    width: 100%;
+  }
+  .financedetailgrid {
+    grid-template-columns: 1fr;
+  }
+}

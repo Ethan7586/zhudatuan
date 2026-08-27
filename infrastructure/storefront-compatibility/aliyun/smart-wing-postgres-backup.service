@@ -1,0 +1,16 @@
+[Unit]
+Description=Smart Wing verified PostgreSQL backup
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/smart-wing
+EnvironmentFile=/opt/smart-wing/.env.backup
+ExecStart=/usr/bin/node /opt/smart-wing/scripts/postgres-backup.mjs
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/backups/smart-wing/postgres

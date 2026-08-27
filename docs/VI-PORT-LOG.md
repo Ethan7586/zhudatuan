@@ -1,0 +1,24 @@
+# VI 移植执行日志
+
+| 日期 | 任务 | 提交 | 结果 | 遗留项 |
+| --- | --- | --- | --- | --- |
+| 2026-08-22 | P0-1～P0-6 | 工作树 | 本地依赖、HTTPS 契约、142 个迁移、种子、API/Jobs 与六端并行验收通过 | 待阶段提交 |
+| 2026-08-22 | P2-1 | 工作树 | 幂等指纹排除 deadline、请求头与传输字段；相同 key 重放首次 201 | 待阶段提交 |
+| 2026-08-22 | P2-6 | 工作树 | 实际 CORS 响应补齐凭据头；真实浏览器跨源会话跳转通过 | 待阶段提交 |
+| 2026-08-22 | P2-7 | 工作树 | 四个 Web 调用端均取消 `expectedVersion ?? 0`；无版本时不发 `If-Match` | 待真实连续更新旅程、阶段提交 |
+| 2026-08-22 | P2-3 | 工作树 | 17 个员工端 Operation 的 audience 修正为 `member`；契约与客户端生成链 current，member Operation 共 35 个 | 待阶段提交 |
+| 2026-08-22 | P2-4 | 工作树 | Ethan 真实两步登录与 `identity.session` 验收通过；员工角色覆盖 13 项权限，self/owner 范围分离，旧会员表函数调用点清零 | 待阶段提交 |
+| 2026-08-22 | P2-2 | 工作树 | `errors.yml` 成为唯一错误源，显式声明 1,348 个稳定码与状态；生成 ErrorContract/ErrorMapper，795 个源码字面量零缺失，供应商原始错误不再直出 | 待阶段提交 |
+| 2026-08-22 | P2-5 GAP-1 | 工作树 | 新增 `observability.clienterrors.create/read` 完整合同链；客户端错误进入可清理 Telemetry 缓冲并统一脱敏、限流容量和组织范围读取，错误本体不落业务表且不进入 Audit；员工上报与运营查询真实 API 验收通过（208 Operations） | 待阶段提交 |
+| 2026-08-22 | P2-5 GAP-2 | 工作树 | 新增 `identity.invitations.create/revoke` 完整合同链；签发只回显一次随机邀请码、数据库仅保存 HMAC，固定注册协议版本并执行组织 Scope、乐观版本与撤销审计；真实签发→公开解析→撤销→失效链路通过（210 Operations） | 待阶段提交 |
+| 2026-08-22 | P2-5 GAP-3 | 工作树 | 新增 `identity.sessions.read/revoke` 与 `identity.session.revoked` 事件；仅返回本人有效会话且不暴露 Token/IP 摘要，支持指定会话及 `others` 原子撤销、幂等、Audit/Outbox，撤销当前会话时清 Cookie；真实双端登录→列表→撤销其他设备→仅保留当前会话通过（212 Operations） | 待阶段提交 |
+| 2026-08-22 | P2-5 GAP-4 | 工作树 | 新增 member audience 的 `benefit.ledgers.read`；按当前 Membership 限定本人福利账户，从 Finance 已过账不可变分录生成增减流水，不读取运营端广域账务且不维护第二份余额；真实员工会话读取通过（213 Operations） | 待阶段提交 |
+| 2026-08-22 | P2-5 GAP-5 | 工作树 | 新增 `organization.stores.read/manage`，实现 Partner Owner 下的门店主体读取、创建与乐观更新；门店地址经 KMS 信封加密、审计统一脱敏，资源 Scope 由服务端解析；同步修复无 Scope 拒绝审计 RLS，并仅给既有平台业主角色补门店权限；真实创建→密文核验→列表→更新→过期 ETag 409 通过（215 Operations） | 待阶段提交 |
+| 2026-08-22 | P2 收敛 | 工作树 | P2-1～P2-7 全部完成；五组缺失能力共新增 8 个 Operation 与 1 个撤销事件，Fresh Replay 156 个迁移、215 Operations；全仓 TypeScript、Contract、Requirement、Errors、调用图、重复逻辑与本地真实链路通过 | 进入 P3 Console VI 迁移 |
+| 2026-08-22 | P3-1 | 工作树 | 按 Shop 16 个生产 Service 建立同名 `adminBff` 门面；`adminJson` 保持界面签名但唯一传输归 `@shop/sdk`，旧 `/api/v1/admin/*`、`@smart-wing/*`、Supabase 与生产 Mock 命中为 0；Console 类型、构建、合同、调用图、重复项、迁移及本地浏览器启动页通过 | 聚合返回形状与真实工位动作在 P3-3 逐工位闭合；阶段提交待 P3 完成 |
+| 2026-08-22 | P3-2 | 工作树 | Shop 外壳组件原样迁入并由单一 `ScopeShell` 适配 smart-wing；补 Tailwind 编译入口；Chrome 真实两段登录与 1440 桌面视觉通过；160 个迁移 Fresh Replay 通过，平台组织/商品池/卡号库真实可读；调用图与重复逻辑 0 违规 | Shop 固定快捷文案与 Case 实时数据在 P3-3 对应工位闭合；阶段提交待 P3 完成 |
+| 2026-08-22 | P3-3 工位 1 | 工作树 | Shop 驾驶舱迁入集团/商城 Scope；`reporting.cockpit` 稳定只读投影汇总真实商品、库存、订单与销售，五个 Operation 并发加载；Chrome 显示 10 商品、29,930 库存、0 订单/成交；162 迁移 Fresh Replay、Build、Component、调用图与重复检查通过 | Excel 数据大屏四周期、应用筛选与 Watermark 随 P3-3 工位 17 共同验收；阶段提交待 P3 完成 |
+
+P3-2 完成后基线复核：`福利商城代码修改清单.md`、`福利商城根治实施方案.md`、`福利商城架构和补齐修改清单.md` 均重新读取；本修改点满足统一 SDK、真实 Scope、Capability 双门禁、无生产 Mock、Fresh Replay、调用点与重复逻辑门禁。React Router、Query Cache、完整状态矩阵和 18 个真实工位仍属于 P3-3～P3-5，未提前宣称完成。
+
+P3-3 工位 1 完成后基线复核：三份文档哈希分别为 `a379fa80…`、`eb12684e…`、`f4955a15…`。首次复核发现 Reporting Repository 直接跨域 JOIN，与“跨域只经稳定 View/函数”的规则不一致；已改为 `reporting.cockpit(text)` 并重新通过 Fresh Replay 和 Chrome。四周期、应用筛选、Watermark 与全状态矩阵未伪装为完成，留在工位 17/P3-5 闭合。
