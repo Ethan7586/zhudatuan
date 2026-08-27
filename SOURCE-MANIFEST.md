@@ -80,6 +80,8 @@
 - 建立 `config/artifacts.json`，鎖定三個 App、兩個 Service 與兩套隔離 Database。
 - 修復 Repository Root、Workspace Lock、Local Infra 與 Migration Replay 門禁。
 - 新增會員商城 Scope RLS 修復 Migration，以及兩套 API 的 Audience／Target 隔離。
+- 鎖定 Linux x64 GNU／musl 原生構建依賴，並新增 Lock 門禁避免 macOS Lock 漏包回歸。
+- 修復阿里雲 Commerce Docker 構建輸入與 Runtime 依賴閉包，加入秘密／本機產物隔離。
 
 沒有修改兩套前端的頁面、元件、樣式、互動或視覺資產。
 
@@ -93,7 +95,7 @@
 ## 待完成閘門
 
 1. 建立 Adapter/BFF，將消費端逐步切換到 Canonical Operation。
-2. 使用兩套隔離測試資料庫完成真實 E2E。
+2. 在雲端預發布環境完成 Compatibility Database、Canonical RDS／Redis 與完整瀏覽器 E2E。
 3. 通過後才將 `www`、`auth`、`console`、`api` 正式切換到本目錄制品。
 
 ## 搬入後驗證
@@ -107,6 +109,7 @@
 - 165 個 Migration Replay 與購物車／報價／訂單／支付／財務 MVP Kernel 通過。
 - 根工作區 typecheck、unit tests 與單命令 build 全部通過。
 - `npm audit --omit=dev`：0 個已知 production vulnerability。
+- GitHub 提交 `3a5f3a3` 的 [Main Baseline Run 33095749724](https://github.com/Ethan7586/zhudatuan/actions/runs/33095749724) 通過 PostgreSQL／Redis、全部測試、三端構建、Commerce Alpine Image 與 Source Drift 驗證。
 
 以 checksum dry-run 對照來源：Auth 的非生成檔完全一致；Console 只新增 `vitest.config.ts` 的自包含測試環境值；Storefront 只有 `package.json`、`tsconfig.json`、`vitest.config.ts` 三個必要工程檔不同。三套前端的頁面、元件、樣式、互動與視覺資產保持鎖定版本不變。
 
@@ -120,7 +123,7 @@ f256673552219b7b118ea9cd9766b60fa3b67e6df9b606d8906ca64dc1febca1  apps/storefron
 35f59c78ab484bc7c498b9f990d5b0f84ad2e250a5502cd386f714735f6f59cc  apps/console/src/route/ProfessionalRouteCatalog.ts
 18e988d19ddba5ab6d95d64ae96b39c375f499e21de26e044748a8830ec673c6  packages/contract/definitions/operations.yml
 8b0a2a3811f8e82bfaae84488f31e19113082b847a9f32fb22ba9b8f746c67ef  docs/decisions/zhudatuan.md
-935fd8ed660e5ec89c5cc7f32006e0210c358f8fbc488f6555eb7bc03e8f31c3  docs/decisions/每日問答.md
+bd4120cff919a7344f35f7677f792561d56740dbbf2f0b5a937fdde6b8367e07  docs/decisions/每日問答.md
 581c6132e8b82a28914a591ee32a9a31c1113d2c3e85d29049efc744f915b03f  config/artifacts.json
 8c5e8fd39acb950cf45d9017c1798d8e5e720f097919cf1aa20eaa13eb190750  database/supabase/migrations/20260821080000_restore_member_scope_authorization.sql
 ```
