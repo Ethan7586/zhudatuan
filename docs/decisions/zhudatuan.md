@@ -1,6 +1,7 @@
 # 築大團系統問答
 
 > 智慧翼／築大團 MVP 的產品口徑、系統邊界與已確認決策。  
+<<<<<<< HEAD
 > 最後更新：2026-08-28
 
 ## 2026-08-28：hbbtzn 成為築大團子項目
@@ -65,6 +66,21 @@
 6. 完成真雲端資料庫、短信、微信、支付及 Provider 驗收後，再將相應制品的 `releaseEligible` 由 `false` 改為 `true`。
 
 本次評估只記錄架構現況，未修改前端、後端、合同、資料庫或部署代碼。
+=======
+> 最後更新：2026-08-27
+
+## 2026-08-27：`archives/` 歷史提詞庫與代碼找回庫
+
+`/Users/Ethan/Desktop/Projects/zhudatuan` 是唯一核心工程；`archives/` 已移入核心工程目錄，作為築大團未來的歷史提詞庫與代碼找回庫。
+
+- 需要舊版 VI／UI／UE、登入、會員權限、商品、訂單、支付、供應商、接口契約或部署經驗時，先在 `archives/` 搜尋。
+- 找回時必須記錄來源路徑、Git commit／branch 與工作樹狀態，再判斷是否適合目前契約。
+- 只提取本次需要的最小代碼與業務語義，重新接入 `zhudatuan` 並補測試；不得整包搬運。
+- `archives/` 不是正式開發目錄、運行時依賴、現行契約真值或部署來源。
+- 兩棵原始 Smart Wing 資料樹由根 `.gitignore` 排除；主倉只保留提詞庫說明與未來整理出的純文字索引。
+
+完整使用規則見 [`archives/README.md`](./archives/README.md)。
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 ## 2026-08-27：會員與權限、渠道與分銷、系統治理台
 
@@ -118,7 +134,11 @@
 
 舊工作台位於：
 
+<<<<<<< HEAD
 `../../../archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
+=======
+`archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 它已包含：
 
@@ -179,6 +199,7 @@ MVP 階段應包含：
 5. 最後執行真實登入、真實 Scope、真實 API 與資料庫的 MVP 驗收。
 
 當前狀態：**只完成定義、審計與記錄；未開始修改業務代碼，等待下一條指令。**
+<<<<<<< HEAD
 
 ## 2026-08-28：財務與對帳 MVP 升級決策
 
@@ -218,3 +239,5 @@ Owner 批准財務系統解除暫停並向本地 MVP **90/100** 衝刺。本階�
 - 本階段只形成可重現的本地驗收基線，不提交、不推送、不部署，也不把目前工作樹標記為生產發布基線。
 
 完整 Migration、測試、得分與剩餘風險見 [`../operations/2026-08-28-finance-upgrade-log.md`](../operations/2026-08-28-finance-upgrade-log.md#2026-08-30本地-90-分驗收)。
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

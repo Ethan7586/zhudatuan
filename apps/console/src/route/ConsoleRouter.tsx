@@ -4,8 +4,11 @@ import { RouteError } from './RouteError';
 import { ScopeShell } from '../shell/ScopeShell';
 import { landingLoader, scopeLoader } from './SessionLoader';
 
+<<<<<<< HEAD
 const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export const consoleRouter = createBrowserRouter([
   {
     path: '/',
@@ -28,6 +31,7 @@ export const consoleRouter = createBrowserRouter([
       { path: 'products/:productId', lazy: () => import('../feature/product/ProductDetailRoute') },
       { path: 'orders', lazy: () => import('../feature/order/OrderRoute') },
       { path: 'orders/:orderId', lazy: () => import('../feature/order/OrderDetailRoute') },
+<<<<<<< HEAD
       { path: 'referral', element: <Navigate to="settings" replace /> },
       { path: 'referral/settings', lazy: () => import('../feature/referral/ReferralRoute') },
       { path: 'referral/products', lazy: () => import('../feature/referral/ReferralRoute') },
@@ -35,6 +39,8 @@ export const consoleRouter = createBrowserRouter([
       { path: 'referral/bindings', lazy: () => import('../feature/referral/ReferralRoute') },
       { path: 'referral/withdrawals', lazy: () => import('../feature/referral/ReferralRoute') },
       { path: 'referral/promotion', lazy: () => import('../feature/referral/ReferralRoute') },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       { path: 'finance', lazy: () => import('../feature/finance/FinanceRoute') },
       { path: 'finance/entries', lazy: () => import('../feature/finance/EntryRoute') },
       { path: 'finance/statements', lazy: () => import('../feature/finance/StatementRoute') },
@@ -56,4 +62,8 @@ export const consoleRouter = createBrowserRouter([
     ],
   },
   { path: '*', lazy: () => import('./NotFoundRoute') },
+<<<<<<< HEAD
 ], previewBasename === undefined ? undefined : { basename: previewBasename });
+=======
+]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

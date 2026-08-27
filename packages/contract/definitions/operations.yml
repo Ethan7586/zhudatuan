@@ -7,7 +7,11 @@ operations:
     audience: public
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
+=======
+    requirements: &a1
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - MVP03
       - MVP04
       - MVP05
@@ -29,6 +33,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/runtime.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.health.ready
     owner: runtime
     method: GET
@@ -36,6 +46,7 @@ operations:
     audience: public
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -58,6 +69,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/runtime.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.health.startup
     owner: runtime
     method: GET
@@ -65,6 +82,7 @@ operations:
     audience: public
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -87,6 +105,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/runtime.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.health.dependency
     owner: runtime
     method: GET
@@ -95,6 +119,7 @@ operations:
     permission: runtime.health.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -117,6 +142,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/runtime.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.sessions.create
     owner: identity
     method: POST
@@ -124,6 +155,7 @@ operations:
     audience: public
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -146,6 +178,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.tickets.exchange
     owner: identity
     method: POST
@@ -153,6 +191,7 @@ operations:
     audience: public
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -175,6 +214,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.session.read
     owner: identity
     method: GET
@@ -183,6 +228,7 @@ operations:
     permission: identity.session.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -205,6 +251,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.session.delete
     owner: identity
     method: DELETE
@@ -213,6 +265,7 @@ operations:
     permission: identity.session.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -235,6 +288,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.sessions.read
     owner: identity
     method: GET
@@ -245,6 +304,12 @@ operations:
     schema: structural
     requirements:
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.sessions.revoke
     owner: identity
     method: DELETE
@@ -255,6 +320,12 @@ operations:
     schema: structural
     requirements:
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.challenges.create
     owner: identity
     method: POST
@@ -262,6 +333,7 @@ operations:
     audience: public
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -284,6 +356,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.invitations.read
     owner: identity
     method: POST
@@ -291,6 +369,7 @@ operations:
     audience: public
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -313,6 +392,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.invitations.create
     owner: identity
     method: POST
@@ -324,6 +409,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.invitations.revoke
     owner: identity
     method: DELETE
@@ -335,6 +426,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.members.create
     owner: identity
     method: POST
@@ -342,6 +439,7 @@ operations:
     audience: public
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -364,6 +462,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.members.manage
     owner: identity
     method: PUT
@@ -375,6 +479,7 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
   - id: identity.members.reset
     owner: identity
     method: PUT
@@ -387,6 +492,11 @@ operations:
     requirements:
       - MVP13
       - MVP22
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.password.change
     owner: identity
     method: PUT
@@ -395,6 +505,7 @@ operations:
     permission: identity.credential.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -417,6 +528,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.password.verify
     owner: identity
     method: POST
@@ -428,6 +545,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.password.reset
     owner: identity
     method: POST
@@ -435,6 +558,7 @@ operations:
     audience: public
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -487,6 +611,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.mobile.manage
     owner: identity
     method: PUT
@@ -495,6 +625,7 @@ operations:
     permission: identity.mobile.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -517,6 +648,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.stepup.start
     owner: identity
     method: POST
@@ -525,6 +662,7 @@ operations:
     permission: identity.assurance.manage
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -547,6 +685,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.stepup.complete
     owner: identity
     method: POST
@@ -555,6 +699,7 @@ operations:
     permission: identity.assurance.manage
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -577,6 +722,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.wechat.session
     owner: identity
     method: POST
@@ -586,6 +737,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.wechat.bind
     owner: identity
     method: POST
@@ -596,6 +753,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.layers.read
     owner: organization
     method: GET
@@ -606,7 +769,13 @@ operations:
     schema: structural
     requirements:
       - MVP03
+<<<<<<< HEAD
       - OMS-004
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/organization.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.center.read
     owner: access
     method: GET
@@ -618,6 +787,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.roles.manage
     owner: access
     method: PUT
@@ -629,6 +804,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.scopes.manage
     owner: access
     method: PUT
@@ -640,6 +821,7 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
   - id: access.ownership.read
     owner: access
     method: GET
@@ -717,6 +899,11 @@ operations:
     requirements:
       - MVP13
       - MVP22
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.assignments.read
     owner: capability
     method: GET
@@ -729,6 +916,12 @@ operations:
       - MVP04
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/capability.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.assignments.manage
     owner: capability
     method: PUT
@@ -741,6 +934,12 @@ operations:
       - MVP04
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/capability.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: partner.partners.read
     owner: partner
     method: GET
@@ -752,6 +951,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/partner.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: partner.partners.manage
     owner: partner
     method: PUT
@@ -763,6 +968,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/partner.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.stores.read
     owner: partner
     method: GET
@@ -774,6 +985,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/organization.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.stores.manage
     owner: partner
     method: PUT
@@ -785,6 +1002,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/organization.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.members.read
     owner: member
     method: GET
@@ -796,6 +1019,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/member.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.profile.read
     owner: member
     method: GET
@@ -804,6 +1033,7 @@ operations:
     permission: member.profile.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -826,6 +1056,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/member.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.addresses.read
     owner: member
     method: GET
@@ -834,6 +1070,7 @@ operations:
     permission: member.address.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -856,6 +1093,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/member.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.addresses.manage
     owner: member
     method: PUT
@@ -864,6 +1107,7 @@ operations:
     permission: member.address.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -886,6 +1130,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/member.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.imports.create
     owner: member
     method: POST
@@ -897,6 +1147,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/member.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.imports.read
     owner: member
     method: GET
@@ -908,6 +1164,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/member.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.center.read
     owner: qualification
     method: GET
@@ -919,6 +1181,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/qualification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.decisions.preview
     owner: qualification
     method: POST
@@ -930,6 +1198,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/qualification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.policies.manage
     owner: qualification
     method: PUT
@@ -941,6 +1215,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/qualification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.distributors.create
     owner: channel
     method: POST
@@ -951,6 +1231,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.distributors.read
     owner: channel
     method: GET
@@ -961,6 +1247,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.distributors.update
     owner: channel
     method: PATCH
@@ -971,6 +1263,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.distributors.disable
     owner: channel
     method: DELETE
@@ -981,6 +1279,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.bindings.manage
     owner: channel
     method: PUT
@@ -991,6 +1295,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.quotas.manage
     owner: channel
     method: PUT
@@ -1001,6 +1311,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.pools.read
     owner: catalog
     method: GET
@@ -1012,6 +1328,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.pools.attach
     owner: catalog
     method: PUT
@@ -1022,6 +1344,12 @@ operations:
     schema: structural
     requirements:
       - MVP03
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.pools.detach
     owner: catalog
     method: DELETE
@@ -1032,6 +1360,12 @@ operations:
     schema: structural
     requirements:
       - MVP03
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.pools.allocate
     owner: catalog
     method: POST
@@ -1042,6 +1376,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.products.create
     owner: catalog
     method: POST
@@ -1053,6 +1393,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.products.update
     owner: catalog
     method: PATCH
@@ -1064,6 +1410,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.products.archive
     owner: catalog
     method: DELETE
@@ -1075,6 +1427,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.listings.read
     owner: catalog
     method: GET
@@ -1086,6 +1444,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.listings.publish
     owner: catalog
     method: PUT
@@ -1097,6 +1461,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.listings.unpublish
     owner: catalog
     method: DELETE
@@ -1108,6 +1478,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.listings.batch
     owner: catalog
     method: POST
@@ -1119,6 +1495,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.imports.create
     owner: catalog
     method: POST
@@ -1130,6 +1512,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.imports.read
     owner: catalog
     method: GET
@@ -1141,6 +1529,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/catalog.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.rules.create
     owner: pricing
     method: POST
@@ -1152,6 +1546,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/pricing.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.rules.publish
     owner: pricing
     method: PUT
@@ -1163,6 +1563,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/pricing.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.offers.read
     owner: pricing
     method: GET
@@ -1171,6 +1577,7 @@ operations:
     permission: pricing.offer.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1193,6 +1600,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/pricing.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.availability.read
     owner: inventory
     method: GET
@@ -1201,6 +1614,7 @@ operations:
     permission: inventory.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1223,6 +1637,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/inventory.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.imports.create
     owner: inventory
     method: POST
@@ -1234,6 +1654,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/inventory.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.imports.read
     owner: inventory
     method: GET
@@ -1245,6 +1671,12 @@ operations:
     requirements:
       - MVP07
       - MVP16
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/inventory.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: marketing.campaigns.read
     owner: marketing
     method: GET
@@ -1253,6 +1685,7 @@ operations:
     permission: marketing.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1425,6 +1858,12 @@ operations:
     schema: structural
     requirements:
       - MVP04
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/marketing.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.dashboard.read
     owner: reporting
     method: GET
@@ -1436,7 +1875,13 @@ operations:
     requirements:
       - MVP05
       - MVP14
+<<<<<<< HEAD
       - OMS-012
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.sales.read
     owner: reporting
     method: GET
@@ -1448,7 +1893,13 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
       - OMS-012
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.products.read
     owner: reporting
     method: GET
@@ -1460,6 +1911,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.malls.read
     owner: reporting
     method: GET
@@ -1471,6 +1928,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.categories.read
     owner: reporting
     method: GET
@@ -1482,6 +1945,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.channels.read
     owner: reporting
     method: GET
@@ -1493,6 +1962,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.powderclass.read
     owner: reporting
     method: GET
@@ -1504,6 +1979,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.voucherconsumption.read
     owner: reporting
     method: GET
@@ -1515,6 +1996,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.exports.create
     owner: reporting
     method: POST
@@ -1526,6 +2013,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.exports.read
     owner: reporting
     method: GET
@@ -1537,6 +2030,12 @@ operations:
     requirements:
       - MVP11
       - MVP20
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.applications.create
     owner: experience
     method: POST
@@ -1548,6 +2047,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.published.read
     owner: experience
     method: GET
@@ -1558,6 +2063,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.applications.copy
     owner: experience
     method: POST
@@ -1569,6 +2080,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.applications.read
     owner: experience
     method: GET
@@ -1580,6 +2097,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.applications.update
     owner: experience
     method: PATCH
@@ -1591,6 +2114,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.versions.save
     owner: experience
     method: POST
@@ -1602,6 +2131,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.versions.validate
     owner: experience
     method: POST
@@ -1613,6 +2148,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.versions.publish
     owner: experience
     method: PUT
@@ -1624,6 +2165,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.versions.restore
     owner: experience
     method: POST
@@ -1635,6 +2182,12 @@ operations:
     requirements:
       - MVP06
       - MVP15
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: cart.current.read
     owner: cart
     method: GET
@@ -1643,6 +2196,7 @@ operations:
     permission: cart.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1665,6 +2219,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/cart.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: cart.items.put
     owner: cart
     method: PUT
@@ -1673,6 +2233,7 @@ operations:
     permission: cart.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1695,6 +2256,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/cart.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: cart.items.batch
     owner: cart
     method: POST
@@ -1703,6 +2270,7 @@ operations:
     permission: cart.manage
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1725,6 +2293,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/cart.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: checkout.quote.create
     owner: checkout
     method: POST
@@ -1733,6 +2307,7 @@ operations:
     permission: checkout.create
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1755,6 +2330,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/checkout.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.orders.create
     owner: order
     method: POST
@@ -1763,6 +2344,7 @@ operations:
     permission: order.create
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1785,6 +2367,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.orders.read
     owner: order
     method: GET
@@ -1796,9 +2384,15 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
       - OMS-001
       - OMS-004
       - OMS-005
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.reminders.create
     owner: order
     method: POST
@@ -1807,6 +2401,7 @@ operations:
     permission: order.reminder.create
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1829,6 +2424,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.orders.export
     owner: order
     method: POST
@@ -1840,7 +2441,13 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
       - OMS-007
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.aftersales.read
     owner: order
     method: GET
@@ -1852,7 +2459,13 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
       - OMS-008
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.aftersales.apply
     owner: order
     method: POST
@@ -1864,7 +2477,13 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
       - OMS-008
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.aftersales.approve
     owner: order
     method: PUT
@@ -1876,7 +2495,13 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
       - OMS-008
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.aftersales.reject
     owner: order
     method: DELETE
@@ -1888,7 +2513,13 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
       - OMS-008
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.shipments.create
     owner: fulfillment
     method: POST
@@ -1900,6 +2531,12 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/fulfillment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.tracking.read
     owner: fulfillment
     method: GET
@@ -1908,6 +2545,7 @@ operations:
     permission: fulfillment.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1930,6 +2568,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/fulfillment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.returns.receive
     owner: fulfillment
     method: PUT
@@ -1941,6 +2585,12 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/fulfillment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.returns.inspect
     owner: fulfillment
     method: PUT
@@ -1952,6 +2602,12 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/fulfillment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.intents.create
     owner: payment
     method: POST
@@ -1960,6 +2616,7 @@ operations:
     permission: payment.create
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -1982,6 +2639,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/payment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: verification.challenges.issue
     owner: verification
     method: POST
@@ -1990,6 +2653,7 @@ operations:
     permission: verification.issue
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2012,6 +2676,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: verification.sessions.read
     owner: verification
     method: GET
@@ -2020,6 +2690,7 @@ operations:
     permission: verification.issue
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2042,6 +2713,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: verification.challenges.verify
     owner: verification
     method: POST
@@ -2050,6 +2727,7 @@ operations:
     permission: verification.verify
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2072,6 +2750,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: verification.history.read
     owner: verification
     method: GET
@@ -2080,6 +2764,7 @@ operations:
     permission: verification.verify
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2102,6 +2787,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: verification.devices.read
     owner: verification
     method: GET
@@ -2110,6 +2801,7 @@ operations:
     permission: verification.verify
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2132,6 +2824,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: verification.devices.manage
     owner: verification
     method: PUT
@@ -2140,6 +2838,7 @@ operations:
     permission: verification.verify
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2162,6 +2861,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/verification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.refunds.request
     owner: payment
     method: POST
@@ -2173,6 +2878,12 @@ operations:
     requirements:
       - MVP08
       - MVP17
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/payment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.recoveries.read
     owner: payment
     method: GET
@@ -2185,6 +2896,12 @@ operations:
       - MVP08
       - MVP17
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/payment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.recoveries.resolve
     owner: payment
     method: POST
@@ -2197,6 +2914,12 @@ operations:
       - MVP08
       - MVP17
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/payment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.webhooks.wechat
     owner: payment
     method: POST
@@ -2206,6 +2929,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/payment.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.cardlibraries.read
     owner: voucher
     method: GET
@@ -2217,6 +2946,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.cardlibraries.create
     owner: voucher
     method: POST
@@ -2229,6 +2964,12 @@ operations:
       - MVP03
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.cardlibraries.allocate
     owner: voucher
     method: POST
@@ -2242,6 +2983,12 @@ operations:
       - MVP04
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.imports.read
     owner: voucher
     method: GET
@@ -2253,6 +3000,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.programs.read
     owner: voucher
     method: GET
@@ -2264,6 +3017,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.programs.manage
     owner: voucher
     method: PUT
@@ -2275,6 +3034,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.reserves.read
     owner: voucher
     method: GET
@@ -2286,6 +3051,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.reserves.request
     owner: voucher
     method: POST
@@ -2297,6 +3068,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.reserves.decide
     owner: voucher
     method: PUT
@@ -2308,6 +3085,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.batches.read
     owner: voucher
     method: GET
@@ -2319,6 +3102,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.batches.issue
     owner: voucher
     method: POST
@@ -2330,6 +3119,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.batches.retry
     owner: voucher
     method: POST
@@ -2341,6 +3136,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.status.batch
     owner: voucher
     method: POST
@@ -2352,6 +3153,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.statusbatches.read
     owner: voucher
     method: GET
@@ -2363,6 +3170,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.bindings.read
     owner: voucher
     method: GET
@@ -2374,6 +3187,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.bindings.manage
     owner: voucher
     method: PUT
@@ -2385,6 +3204,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.redemptions.read
     owner: voucher
     method: GET
@@ -2396,6 +3221,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.history.read
     owner: voucher
     method: GET
@@ -2407,6 +3238,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: voucher.redemptions.reverse
     owner: voucher
     method: POST
@@ -2418,6 +3255,12 @@ operations:
     requirements:
       - MVP09
       - MVP18
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/voucher.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.accounts.read
     owner: benefit
     method: GET
@@ -2426,6 +3269,7 @@ operations:
     permission: benefit.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2448,6 +3292,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.ledgers.read
     owner: benefit
     method: GET
@@ -2458,6 +3308,12 @@ operations:
     schema: structural
     requirements:
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.plans.read
     owner: benefit
     method: GET
@@ -2466,6 +3322,7 @@ operations:
     permission: benefit.plan.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2488,6 +3345,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.plans.manage
     owner: benefit
     method: PUT
@@ -2496,6 +3359,7 @@ operations:
     permission: benefit.plan.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2518,6 +3382,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.budgets.read
     owner: benefit
     method: GET
@@ -2526,6 +3396,7 @@ operations:
     permission: benefit.budget.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2548,6 +3419,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.budgets.manage
     owner: benefit
     method: PUT
@@ -2556,6 +3433,7 @@ operations:
     permission: benefit.budget.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2578,6 +3456,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.grants.create
     owner: benefit
     method: POST
@@ -2586,6 +3470,7 @@ operations:
     permission: benefit.grant
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2608,6 +3493,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.grants.decide
     owner: benefit
     method: PUT
@@ -2616,6 +3507,7 @@ operations:
     permission: benefit.grant.decide
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2638,6 +3530,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.grants.read
     owner: benefit
     method: GET
@@ -2646,6 +3544,7 @@ operations:
     permission: benefit.grant.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2668,6 +3567,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.grants.control
     owner: benefit
     method: POST
@@ -2676,6 +3581,7 @@ operations:
     permission: benefit.grant.control
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2698,6 +3604,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.grants.revoke
     owner: benefit
     method: POST
@@ -2706,6 +3618,7 @@ operations:
     permission: benefit.revoke
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2728,6 +3641,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.lots.read
     owner: benefit
     method: GET
@@ -2736,6 +3655,7 @@ operations:
     permission: benefit.lot.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -2758,6 +3678,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/benefit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.overview.read
     owner: finance
     method: GET
@@ -2769,6 +3695,12 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.entries.read
     owner: finance
     method: GET
@@ -2780,6 +3712,12 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.statements.read
     owner: finance
     method: GET
@@ -2791,6 +3729,12 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.statements.export
     owner: finance
     method: POST
@@ -2802,6 +3746,12 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reconciliations.manage
     owner: finance
     method: PUT
@@ -2813,8 +3763,14 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
       - OMS-011
     expectedVersion: required
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reconciliations.read
     owner: finance
     method: GET
@@ -2823,6 +3779,7 @@ operations:
     permission: finance.reconciliation.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
@@ -2886,6 +3843,12 @@ operations:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.settlements.read
     owner: finance
     method: GET
@@ -2894,10 +3857,17 @@ operations:
     permission: finance.settlement.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
       - OMS-011
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.settlements.decide
     owner: finance
     method: POST
@@ -2906,10 +3876,17 @@ operations:
     permission: finance.settlement.decide
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.settlements.adjust
     owner: finance
     method: POST
@@ -2918,10 +3895,17 @@ operations:
     permission: finance.settlement.adjust
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawals.read
     owner: finance
     method: GET
@@ -2930,9 +3914,16 @@ operations:
     permission: finance.withdrawal.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawals.create
     owner: finance
     method: POST
@@ -2941,10 +3932,17 @@ operations:
     permission: finance.withdrawal.create
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawals.decide
     owner: finance
     method: POST
@@ -2953,10 +3951,17 @@ operations:
     permission: finance.withdrawal.decide
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawals.recover
     owner: finance
     method: POST
@@ -2965,10 +3970,17 @@ operations:
     permission: finance.withdrawal.recover
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.holds.read
     owner: finance
     method: GET
@@ -2977,9 +3989,16 @@ operations:
     permission: finance.hold.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.periods.read
     owner: finance
     method: GET
@@ -2988,9 +4007,16 @@ operations:
     permission: finance.period.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.periods.manage
     owner: finance
     method: POST
@@ -2999,10 +4025,17 @@ operations:
     permission: finance.period.manage
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.backfills.read
     owner: finance
     method: GET
@@ -3011,9 +4044,16 @@ operations:
     permission: finance.backfill.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.backfills.decide
     owner: finance
     method: POST
@@ -3022,10 +4062,17 @@ operations:
     permission: finance.backfill.decide
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.policies.manage
     owner: finance
     method: PUT
@@ -3037,6 +4084,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
     expectedVersion: required
   - id: finance.policies.preview
     owner: finance
@@ -3072,6 +4120,11 @@ operations:
     requirements:
       - MVP10
       - MVP19
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.profiles.manage
     owner: finance
     method: PUT
@@ -3083,7 +4136,13 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
     expectedVersion: required
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.profiles.read
     owner: finance
     method: GET
@@ -3096,6 +4155,7 @@ operations:
       - MVP10
       - MVP17
       - MVP19
+<<<<<<< HEAD
   - id: invoice.operatorprofiles.read
     owner: finance
     method: GET
@@ -3107,18 +4167,33 @@ operations:
     requirements:
       - MVP10
       - MVP19
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requests.create
     owner: finance
     method: POST
     path: /api/v1/invoices/requests
+<<<<<<< HEAD
     audience: operator
+=======
+    audience: member
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     permission: invoice.request.create
     idempotent: false
     schema: structural
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
     expectedVersion: required
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requests.read
     owner: finance
     method: GET
@@ -3130,6 +4205,12 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requests.cancel
     owner: finance
     method: DELETE
@@ -3141,7 +4222,13 @@ operations:
     requirements:
       - MVP10
       - MVP19
+<<<<<<< HEAD
     expectedVersion: required
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requests.decide
     owner: finance
     method: POST
@@ -3150,10 +4237,17 @@ operations:
     permission: invoice.request.decide
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requests.red
     owner: finance
     method: POST
@@ -3162,10 +4256,17 @@ operations:
     permission: invoice.request.red
     idempotent: false
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP10
       - MVP19
     expectedVersion: required
+=======
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.cases.create
     owner: support
     method: POST
@@ -3177,6 +4278,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.cases.read
     owner: support
     method: GET
@@ -3188,7 +4295,13 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
       - OMS-013
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.cases.update
     owner: support
     method: PATCH
@@ -3200,6 +4313,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.cases.close
     owner: support
     method: PUT
@@ -3211,6 +4330,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.cases.reopen
     owner: support
     method: DELETE
@@ -3222,6 +4347,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.messages.send
     owner: support
     method: POST
@@ -3233,6 +4364,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.messages.read
     owner: support
     method: GET
@@ -3244,6 +4381,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.attachments.create
     owner: support
     method: POST
@@ -3255,6 +4398,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.assignments.manage
     owner: support
     method: PUT
@@ -3266,6 +4415,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.agents.manage
     owner: support
     method: PUT
@@ -3277,6 +4432,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.agents.read
     owner: support
     method: GET
@@ -3285,9 +4446,16 @@ operations:
     permission: support.agent.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP12
       - MVP21
+=======
+    requirements: [MVP12, MVP21]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.accounts.manage
     owner: support
     method: PUT
@@ -3299,6 +4467,12 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.accounts.read
     owner: support
     method: GET
@@ -3307,9 +4481,16 @@ operations:
     permission: support.account.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP12
       - MVP21
+=======
+    requirements: [MVP12, MVP21]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.rules.read
     owner: support
     method: GET
@@ -3318,9 +4499,16 @@ operations:
     permission: support.rule.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP12
       - MVP21
+=======
+    requirements: [MVP12, MVP21]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.rules.manage
     owner: support
     method: PUT
@@ -3329,9 +4517,16 @@ operations:
     permission: support.rule.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP12
       - MVP21
+=======
+    requirements: [MVP12, MVP21]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.slas.read
     owner: support
     method: GET
@@ -3340,9 +4535,16 @@ operations:
     permission: support.sla.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP12
       - MVP21
+=======
+    requirements: [MVP12, MVP21]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.slas.manage
     owner: support
     method: PUT
@@ -3351,9 +4553,16 @@ operations:
     permission: support.sla.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP12
       - MVP21
+=======
+    requirements: [MVP12, MVP21]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.history.read
     owner: support
     method: GET
@@ -3365,7 +4574,13 @@ operations:
     requirements:
       - MVP12
       - MVP21
+<<<<<<< HEAD
       - OMS-013
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.notifications.read
     owner: notification
     method: GET
@@ -3377,6 +4592,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.preferences.read
     owner: notification
     method: GET
@@ -3385,6 +4606,7 @@ operations:
     permission: notification.preference.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -3407,6 +4629,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.preferences.manage
     owner: notification
     method: PUT
@@ -3415,6 +4643,7 @@ operations:
     permission: notification.preference.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -3437,6 +4666,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.endpoints.manage
     owner: notification
     method: PUT
@@ -3445,6 +4680,7 @@ operations:
     permission: notification.endpoint.manage
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -3467,6 +4703,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.templates.manage
     owner: notification
     method: PUT
@@ -3478,6 +4720,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.templates.read
     owner: notification
     method: GET
@@ -3489,6 +4737,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.announcements.read
     owner: notification
     method: GET
@@ -3500,6 +4754,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.announcements.manage
     owner: notification
     method: PUT
@@ -3511,6 +4771,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/notification.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.center.read
     owner: risk
     method: GET
@@ -3522,6 +4788,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/risk.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policies.manage
     owner: risk
     method: PUT
@@ -3533,6 +4805,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/risk.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.cases.review
     owner: risk
     method: PUT
@@ -3544,6 +4822,12 @@ operations:
     requirements:
       - MVP13
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/risk.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.records.read
     owner: audit
     method: GET
@@ -3552,6 +4836,7 @@ operations:
     permission: audit.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP03
       - MVP04
@@ -3574,6 +4859,12 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+=======
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/audit.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: observability.clienterrors.create
     owner: observability
     method: POST
@@ -3586,6 +4877,12 @@ operations:
       - MVP12
       - MVP21
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/observability.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: observability.clienterrors.read
     owner: observability
     method: GET
@@ -3598,6 +4895,12 @@ operations:
       - MVP12
       - MVP21
       - MVP22
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/observability.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.connections.read
     owner: channel
     method: GET
@@ -3606,8 +4909,15 @@ operations:
     permission: channel.connection.read
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP23
+=======
+    requirements: [MVP23]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.connections.create
     owner: channel
     method: POST
@@ -3618,6 +4928,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.connections.update
     owner: channel
     method: PATCH
@@ -3628,6 +4944,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.connections.test
     owner: channel
     method: POST
@@ -3638,6 +4960,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.connections.enable
     owner: channel
     method: PUT
@@ -3648,6 +4976,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.connections.disable
     owner: channel
     method: DELETE
@@ -3658,6 +4992,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.webhooks.receive
     owner: channel
     method: POST
@@ -3665,8 +5005,15 @@ operations:
     audience: provider
     idempotent: true
     schema: structural
+<<<<<<< HEAD
     requirements:
       - MVP23
+=======
+    requirements: [MVP23]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.syncruns.start
     owner: channel
     method: POST
@@ -3677,6 +5024,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.syncruns.read
     owner: channel
     method: GET
@@ -3687,6 +5040,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.syncruns.cancel
     owner: channel
     method: DELETE
@@ -3697,6 +5056,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.operations.read
     owner: channel
     method: GET
@@ -3707,6 +5072,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: channel.operations.replay
     owner: channel
     method: POST
@@ -3717,6 +5088,12 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/channel.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: extension.installations.read
     owner: extension
     method: GET
@@ -3727,6 +5104,7 @@ operations:
     schema: structural
     requirements:
       - MVP23
+<<<<<<< HEAD
   - id: partner.customers.create
     owner: partner
     method: POST
@@ -4919,3 +6297,8 @@ operations:
     requirements:
       - MVP09
       - MVP18
+=======
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/extension.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

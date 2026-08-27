@@ -20,11 +20,17 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'identity.invitations.revoke',
   'identity.members.create',
   'identity.members.manage',
+<<<<<<< HEAD
   'identity.members.reset',
   'identity.password.change',
   'identity.password.verify',
   'identity.password.reset',
   'identity.mobile.challenge',
+=======
+  'identity.password.change',
+  'identity.password.verify',
+  'identity.password.reset',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
@@ -34,6 +40,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'access.center.read',
   'access.roles.manage',
   'access.scopes.manage',
+<<<<<<< HEAD
   'access.ownership.read',
   'access.ownership.transfers.preview',
   'access.ownership.transfers.create',
@@ -41,6 +48,8 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'access.ownership.transfers.accept',
   'access.ownership.transfers.cancel',
   'access.ownership.transfers.cancel.preview',
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'capability.assignments.read',
   'capability.assignments.manage',
   'partner.partners.read',
@@ -82,6 +91,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'inventory.imports.create',
   'inventory.imports.read',
   'marketing.campaigns.read',
+<<<<<<< HEAD
   'referral.settings.read',
   'referral.settings.manage',
   'referral.products.read',
@@ -97,6 +107,8 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'referral.links.read',
   'referral.withdrawals.read',
   'referral.withdrawals.create',
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'reporting.dashboard.read',
   'reporting.sales.read',
   'reporting.products.read',
@@ -180,11 +192,14 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'finance.statements.export',
   'finance.reconciliations.manage',
   'finance.reconciliations.read',
+<<<<<<< HEAD
   'finance.reconciliationrepairs.read',
   'finance.reconciliationrepairs.preview',
   'finance.reconciliationrepairs.submit',
   'finance.reconciliationrepairs.decide',
   'finance.reconciliationrepairs.reverse',
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'finance.settlements.read',
   'finance.settlements.decide',
   'finance.settlements.adjust',
@@ -198,12 +213,17 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'finance.backfills.read',
   'finance.backfills.decide',
   'finance.policies.manage',
+<<<<<<< HEAD
   'finance.policies.preview',
   'finance.policies.read',
   'finance.audit.read',
   'invoice.profiles.manage',
   'invoice.profiles.read',
   'invoice.operatorprofiles.read',
+=======
+  'invoice.profiles.manage',
+  'invoice.profiles.read',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'invoice.requests.create',
   'invoice.requests.read',
   'invoice.requests.cancel',
@@ -264,8 +284,11 @@ export interface OperationInput {
   readonly rawBody: string;
   readonly deadline: number;
   readonly signal: AbortSignal;
+<<<<<<< HEAD
   /** Server-derived target used for authorization and action-proof binding. */
   readonly resource?: string;
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly idempotency?: string;
   readonly expectedVersion?: number;
 }

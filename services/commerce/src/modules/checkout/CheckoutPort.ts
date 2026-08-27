@@ -6,9 +6,16 @@ import { QuoteSigner } from './infrastructure/QuoteSigner';
 export type { CheckoutQuote, CheckoutSelection };
 
 export class CheckoutPort {
+<<<<<<< HEAD
   private readonly signer: QuoteSigner;
 
   constructor(key: string, private readonly reader: QuoteReader) { this.signer = new QuoteSigner(key); }
+=======
+  private readonly reader = new QuoteReader();
+  private readonly signer: QuoteSigner;
+
+  constructor(key: string) { this.signer = new QuoteSigner(key); }
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   selection(input: Readonly<Record<string, unknown>>): CheckoutSelection { return checkoutSelection(input); }
   read(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CheckoutQuote> {

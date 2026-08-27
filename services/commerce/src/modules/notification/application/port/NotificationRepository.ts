@@ -18,7 +18,10 @@ export interface DispatchRecord {
 }
 export interface EndpointRecord { readonly address_ciphertext: string; readonly address_token: string }
 export interface ChallengeRecord { readonly purpose: string; readonly code_ciphertext: string; readonly destination_ciphertext: string }
+<<<<<<< HEAD
 export interface ChallengeAttemptRecord { readonly sequence: number; readonly state: 'sending' | 'sent' | 'ambiguous'; readonly dispatch: boolean }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export interface QueuedDispatch {
   readonly id: string; readonly scope: string; readonly member: string | null; readonly template: string; readonly recipientToken: string;
@@ -51,10 +54,15 @@ export interface NotificationRepository {
   complete(dispatch: DispatchRecord, receipt: DeliveryReceipt): Promise<QueryResult<QueryResultRow>>;
   fail(dispatch: DispatchRecord, provider: string, code: string): Promise<QueryResult<QueryResultRow>>;
   challenge(id: string): Promise<QueryResult<ChallengeRecord>>;
+<<<<<<< HEAD
   beginChallengeAttempt(id: string, provider: string): Promise<QueryResult<ChallengeAttemptRecord>>;
   completeChallengeAttempt(id: string, sequence: number, provider: string, external: string): Promise<QueryResult<QueryResultRow>>;
   failChallengeAttempt(id: string, sequence: number, code: string): Promise<QueryResult<QueryResultRow>>;
   ambiguousChallengeAttempt(id: string, sequence: number, code: string): Promise<QueryResult<QueryResultRow>>;
+=======
+  challengeAttempt(id: string, provider: string, state: 'sent' | 'failed', external: string | null,
+    code: string | null): Promise<QueryResult<QueryResultRow>>;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export type NotificationRepositoryFactory = (database: OperationDatabase) => NotificationRepository;

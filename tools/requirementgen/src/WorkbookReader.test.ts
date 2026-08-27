@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
+<<<<<<< HEAD
 import { zipSync } from 'fflate';
 import { Workbook, sharedStrings, worksheet } from './WorkbookReader';
+=======
+import { sharedStrings, worksheet } from './WorkbookReader';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 describe('WorkbookReader', () => {
   it('keeps self-closing sparse cells from consuming the next cell', () => {
@@ -12,6 +16,7 @@ describe('WorkbookReader', () => {
     const xml = '<sst><si><r><t>卡券</t></r><r><t xml:space="preserve">\n&amp;福利</t></r></si><si><t>商城&#10;首页</t></si></sst>';
     expect(sharedStrings(xml)).toEqual(['卡券\n&福利', '商城\n首页']);
   });
+<<<<<<< HEAD
 
   it('reports a stable error when an evidence sheet is absent', () => {
     const workbook = new Workbook(fixtureWorkbook());
@@ -38,3 +43,6 @@ function fixtureWorkbook(): Uint8Array {
     'xl/worksheets/sheet1.xml': encode('<worksheet><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c></row></sheetData></worksheet>'),
   });
 }
+=======
+});
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

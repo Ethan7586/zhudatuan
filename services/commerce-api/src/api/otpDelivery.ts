@@ -2,8 +2,11 @@ import { sendVerificationSms, SmsDeliveryError, smsProviderAvailable, type Verif
 import { callRpc } from './supabase';
 import type { WorkerEnv } from './types';
 
+<<<<<<< HEAD
 export const OTP_RESEND_AFTER_SECONDS = 30 as const;
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export interface OtpDelivery {
   debugCode?: string;
   provider: 'debug' | 'aliyun';

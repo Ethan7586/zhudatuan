@@ -14,10 +14,15 @@
     "test": "vitest run"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@shop/sdk": "1.0.0",
     "@smart-wing/api-contract": "1.0.0",
     "@smart-wing/design-system": "1.0.0",
     "@shop/sdk": "1.0.0",
+=======
+    "@smart-wing/api-contract": "1.0.0",
+    "@smart-wing/design-system": "1.0.0",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "next": "16.3.1",

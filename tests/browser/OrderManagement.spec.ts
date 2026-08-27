@@ -2,17 +2,25 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { consoleSession } from './Fixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
 import { orderPreviewPage } from './OrderPreviewFixtures';
+<<<<<<< HEAD
 import { CONSOLE_ORIGIN } from './Origins';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
 const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: Object.freeze([previewScope]),
+<<<<<<< HEAD
   permissions: Object.freeze([...consoleSession.permissions, 'order.read']),
   capabilities: Object.freeze([...consoleSession.capabilities, 'order.orders.read']),
 });
 const ordersUrl = `${CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/orders`;
+=======
+});
+const ordersUrl = 'http://127.0.0.1:4173/scopes/platform/platform%3Apreview/orders';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 test('Console 订单管理呈现参考结构并只用服务端筛选结果', async ({ page }) => {
   const api = consoleOrderApi(page, (call) => orderPreviewPage(new URLSearchParams(call.query)));
@@ -20,10 +28,17 @@ test('Console 订单管理呈现参考结构并只用服务端筛选结果', asy
   await page.goto(ordersUrl);
 
   await expect(page.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeVisible();
+<<<<<<< HEAD
   await expect(page).toHaveTitle('订单管理 · 主打团');
   await expect(page.getByText('ORDER OPERATIONS', { exact: true })).toBeVisible();
   await expect(page.getByText('统一处理订单、支付、履约、退款与售后', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '导出当前页' })).toBeEnabled();
+=======
+  await expect(page).toHaveTitle('订单管理 · 智慧翼');
+  await expect(page.getByText('ORDER OPERATIONS', { exact: true })).toBeVisible();
+  await expect(page.getByText('统一处理订单、支付、履约、退款与售后', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '导出订单' })).toBeEnabled();
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await expect(page.getByRole('button', { name: '刷新数据' })).toBeEnabled();
   await expect(page.getByRole('button', { name: /全部订单\s*7/ })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: /异常\s*1/ })).toBeVisible();
@@ -118,7 +133,11 @@ test('Console 订单抽屉由 selected URL 驱动且最终动作失败关闭', a
   await expect(page).toHaveURL(/selected=order%3Apreview%3A00001.*tab=overview/);
   await expect(drawer).toBeVisible();
 
+<<<<<<< HEAD
   await expect(page.getByRole('button', { name: '导出当前页' })).toBeEnabled();
+=======
+  await expect(page.getByRole('button', { name: '导出订单' })).toBeEnabled();
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await expect(drawer.getByRole('button', { name: '确认发货' })).toBeEnabled();
   await expect(drawer.getByRole('button', { name: '更多', exact: true })).toBeEnabled();
   const detailRead = orderCalls(api).find((call) => new URLSearchParams(call.query).get('limit') === '1');
@@ -147,11 +166,15 @@ test('Console 订单预览操作全部可点击、可关闭且不会发送写请
   const table = page.getByRole('table', { name: '订单列表' });
   await expect(table.locator('tbody tr')).toHaveCount(7);
 
+<<<<<<< HEAD
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('button', { name: '导出当前页' }).click(),
   ]);
   expect(download.suggestedFilename()).toMatch(/^orders-current-page-.*\.csv$/);
+=======
+  await openAndCloseSafePreview(page, page.getByRole('button', { name: '导出订单' }), '导出订单预览');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await openAndCloseSafePreview(page, page.getByRole('button', { name: '更多筛选' }), '更多筛选');
   await openAndCloseSafePreview(page, page.getByRole('button', { name: '订单 SW202608240001 更多操作' }), '订单操作预览 SW202608240001');
 

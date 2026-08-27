@@ -65,11 +65,14 @@ capabilities:
     owner: identity
     permission: member.manage
     audience: operator
+<<<<<<< HEAD
   - code: identity.members.reset
     kind: operation
     owner: identity
     permission: identity.registration.reset
     audience: operator
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: identity.password.change
     kind: operation
     owner: identity
@@ -85,11 +88,14 @@ capabilities:
     owner: identity
     permission: null
     audience: public
+<<<<<<< HEAD
   - code: identity.mobile.challenge
     kind: operation
     owner: identity
     permission: identity.mobile.manage
     audience: member
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: identity.mobile.manage
     kind: operation
     owner: identity
@@ -125,6 +131,7 @@ capabilities:
     owner: access
     permission: access.scope.manage
     audience: operator
+<<<<<<< HEAD
   - code: access.ownership.read
     kind: operation
     owner: access
@@ -160,6 +167,8 @@ capabilities:
     owner: access
     permission: access.ownership.transfer
     audience: operator
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: capability.assignments.read
     kind: operation
     owner: capability
@@ -350,6 +359,7 @@ capabilities:
     owner: marketing
     permission: marketing.read
     audience: operator
+<<<<<<< HEAD
   - code: referral.settings.read
     kind: operation
     owner: referral
@@ -425,6 +435,8 @@ capabilities:
     owner: referral
     permission: referral.withdrawals.create
     audience: member
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: reporting.dashboard.read
     kind: operation
     owner: reporting
@@ -815,6 +827,7 @@ capabilities:
     owner: finance
     permission: finance.policy.manage
     audience: operator
+<<<<<<< HEAD
   - code: finance.policies.preview
     kind: operation
     owner: finance
@@ -830,6 +843,8 @@ capabilities:
     owner: finance
     permission: audit.read
     audience: operator
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: invoice.profiles.manage
     kind: operation
     owner: finance
@@ -840,16 +855,23 @@ capabilities:
     owner: finance
     permission: invoice.profile.read
     audience: member
+<<<<<<< HEAD
   - code: invoice.operatorprofiles.read
     kind: operation
     owner: finance
     permission: invoice.profile.read
     audience: operator
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: invoice.requests.create
     kind: operation
     owner: finance
     permission: invoice.request.create
+<<<<<<< HEAD
     audience: operator
+=======
+    audience: member
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: invoice.requests.read
     kind: operation
     owner: finance

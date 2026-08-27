@@ -73,7 +73,11 @@ function ReconciliationDrawerContent({
             </button>
           </div>
           <span className="financedrawerbadges">
+<<<<<<< HEAD
             <i>{preview === undefined ? '权威预览不可用' : '本地安全预览'}</i>
+=======
+            <i>服务端预览</i>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
             <i>{preview?.status === 'pending-review' ? '等待复核' : '待提交复核'}</i>
           </span>
           <small>

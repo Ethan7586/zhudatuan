@@ -19,8 +19,12 @@ describe('Console route manifest', () => {
 
   it('publishes every Batch 6 professional deep link without pretending blocked writes exist', () => {
     expect(professionalRoutes.map(({ featureKey }) => featureKey)).toEqual([
+<<<<<<< HEAD
       'applications', 'vouchers', 'reports', 'support', 'referralhome', 'referralsettings', 'referralproducts', 'referralreview',
       'referralbindings', 'referralwithdrawals', 'referralpromotion', 'channels', 'imports', 'entries', 'statements',
+=======
+      'applications', 'vouchers', 'reports', 'support', 'channels', 'imports', 'entries', 'statements',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       'reconciliations', 'settlements', 'withdrawals', 'invoices', 'access', 'members', 'qualification',
       'notification', 'productdetail', 'orderdetail',
     ]);
@@ -28,8 +32,11 @@ describe('Console route manifest', () => {
       .toBe('finance.settlements.read');
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/imports/voucher/job%3A1')?.operations)
       .toContain('voucher.imports.read');
+<<<<<<< HEAD
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/referral/withdrawals')?.operation)
       .toBe('referral.commissions.read');
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/products/product%3A1')?.blocker)
       .toContain('catalog.product.detail.read');
   });

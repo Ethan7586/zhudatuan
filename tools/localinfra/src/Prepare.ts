@@ -4,8 +4,12 @@ import { access, chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
+<<<<<<< HEAD
 import { LOCAL_ENVIRONMENT_KEYS, bearerToken } from '@shop/config/server';
 import { localBootstrapPassword } from './LocalPassword';
+=======
+import { LOCAL_ENVIRONMENT_KEYS } from '@shop/config/server';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -16,6 +20,7 @@ const privateKey = join(tls, 'local.key');
 const secretsFile = join(local, 'secrets.local.json');
 const infrastructureEnvironmentFile = join(local, '.env.local');
 const commerceEnvironmentFile = join(root, 'services', 'commerce', '.env.local');
+<<<<<<< HEAD
 const legacySecretStoreBearerRef = 'local/internal/secret-store-bearer';
 const legacyKmsBearerRef = 'local/internal/kms-bearer';
 
@@ -24,12 +29,15 @@ interface PreparedSecrets {
   readonly kmsBearerToken: string;
   readonly secretStoreBearerToken: string;
 }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 await Promise.all([
   mkdir(tls, { recursive: true }),
   mkdir(join(local, 'data', 'objects'), { recursive: true }),
 ]);
 await prepareCertificate();
+<<<<<<< HEAD
 const prepared = await loadOrCreateSecrets();
 await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(prepared));
 await writePrivate(commerceEnvironmentFile, commerceEnvironment(prepared));
@@ -49,6 +57,19 @@ for (const [application, environment] of clientEnvironments) {
   }
 }
 await Promise.all(clientEnvironmentWrites);
+=======
+const values = await loadOrCreateSecrets();
+await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(values));
+await writePrivate(commerceEnvironmentFile, commerceEnvironment());
+await Promise.all([
+  writePrivate(join(root, 'apps', 'console', '.env.local'), viteEnvironment(5173)),
+  writePrivate(join(root, 'apps', 'store', '.env.local'), viteEnvironment(5174)),
+  writePrivate(join(root, 'apps', 'supplier', '.env.local'), viteEnvironment(5175)),
+  writePrivate(join(root, 'apps', 'auth', '.env.local'), viteEnvironment(5176)),
+  writePrivate(join(root, 'apps', 'storefront', '.env.local'), viteEnvironment(3000)),
+  writePrivate(join(root, 'apps', 'miniapp', '.env.local'), miniappEnvironment()),
+]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 process.stdout.write('LOCAL_ENVIRONMENT_PREPARED\n');
 process.stdout.write(`LOCAL_CA_CERTIFICATE ${certificate}\n`);
@@ -66,6 +87,7 @@ async function prepareCertificate(): Promise<void> {
   await Promise.all([chmod(privateKey, 0o600), chmod(certificate, 0o644)]);
 }
 
+<<<<<<< HEAD
 async function loadOrCreateSecrets(): Promise<PreparedSecrets> {
   const persisted = await persistedBearerTokens();
   if (await exists(secretsFile)) {
@@ -91,6 +113,13 @@ async function loadOrCreateSecrets(): Promise<PreparedSecrets> {
       await writePrivate(secretsFile, `${JSON.stringify(catalog, null, 2)}\n`);
     }
     return Object.freeze({ catalog: Object.freeze(catalog), kmsBearerToken, secretStoreBearerToken });
+=======
+async function loadOrCreateSecrets(): Promise<Readonly<Record<string, string>>> {
+  if (await exists(secretsFile)) {
+    const parsed: unknown = JSON.parse(await readFile(secretsFile, 'utf8'));
+    if (!validSecretMap(parsed)) throw new Error('LOCAL_SECRETS_INVALID');
+    return parsed;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
   const postgresAdmin = secret();
   const postgresApi = secret();
@@ -119,13 +148,21 @@ async function loadOrCreateSecrets(): Promise<PreparedSecrets> {
     { appId: 'wxLocalMiniapp0001', scene: 'miniapp' },
     { appId: 'wxLocalJsapi000002', scene: 'jsapi' },
   ] };
+<<<<<<< HEAD
   const catalog: Readonly<Record<string, string>> = Object.freeze({
+=======
+  const values: Readonly<Record<string, string>> = Object.freeze({
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'local/postgres/admin-password': postgresAdmin,
     'local/postgres/api-password': postgresApi,
     'local/postgres/jobs-password': postgresJobs,
     'local/postgres/migration-password': postgresMigration,
     'local/redis/password': redisPassword,
+<<<<<<< HEAD
     'local/ethan/password': localBootstrapPassword(),
+=======
+    'local/ethan/password': secret(18),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'shop/local/database/admin': postgresUrl('shopadmin', postgresAdmin),
     'shop/local/database/api': postgresUrl('shopapp', postgresApi),
     'shop/local/database/jobs': postgresUrl('shopjob', postgresJobs),
@@ -153,6 +190,7 @@ async function loadOrCreateSecrets(): Promise<PreparedSecrets> {
     }),
     'shop/local/kms/master': randomBytes(32).toString('base64url'),
   });
+<<<<<<< HEAD
   const secretStoreBearerToken = selectBearer(persisted.secretStoreBearerToken, undefined,
     'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
   const kmsBearerToken = selectBearer(persisted.kmsBearerToken, undefined, 'LOCAL_KMS_BEARER_TOKEN_INVALID');
@@ -163,6 +201,13 @@ async function loadOrCreateSecrets(): Promise<PreparedSecrets> {
 
 function infrastructureEnvironment(prepared: PreparedSecrets): string {
   const values = prepared.catalog;
+=======
+  await writePrivate(secretsFile, `${JSON.stringify(values, null, 2)}\n`);
+  return values;
+}
+
+function infrastructureEnvironment(values: Readonly<Record<string, string>>): string {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return lines({
     [LOCAL_ENVIRONMENT_KEYS.tlsKeyFile]: privateKey,
     [LOCAL_ENVIRONMENT_KEYS.tlsCertificateFile]: certificate,
@@ -170,8 +215,11 @@ function infrastructureEnvironment(prepared: PreparedSecrets): string {
     [LOCAL_ENVIRONMENT_KEYS.secretsPort]: '8443',
     [LOCAL_ENVIRONMENT_KEYS.kmsPort]: '8444',
     [LOCAL_ENVIRONMENT_KEYS.kmsMasterKey]: required(values, 'shop/local/kms/master'),
+<<<<<<< HEAD
     [LOCAL_ENVIRONMENT_KEYS.kmsBearerToken]: prepared.kmsBearerToken,
     [LOCAL_ENVIRONMENT_KEYS.secretStoreBearerToken]: prepared.secretStoreBearerToken,
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     [LOCAL_ENVIRONMENT_KEYS.objectsPort]: '8445',
     [LOCAL_ENVIRONMENT_KEYS.objectsDirectory]: join(local, 'data', 'objects'),
     [LOCAL_ENVIRONMENT_KEYS.objectsToken]: required(values, 'shop/local/objects/api'),
@@ -186,6 +234,7 @@ function infrastructureEnvironment(prepared: PreparedSecrets): string {
   });
 }
 
+<<<<<<< HEAD
 function commerceEnvironment(prepared: PreparedSecrets): string {
   const values = prepared.catalog;
   return lines({
@@ -196,6 +245,16 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
     API_PORT: '3001',
     API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175',
     AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://127.0.0.1:4173', storefront: 'http://127.0.0.1:3000', store: 'http://127.0.0.1:5174', supplier: 'http://127.0.0.1:5175' }),
+=======
+function commerceEnvironment(): string {
+  return lines({
+    APP_ENV: 'development',
+    SERVICE_VERSION: 'local',
+    AUTH_MODE: 'membership',
+    API_PORT: '3001',
+    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175,http://localhost:5176,http://127.0.0.1:5176',
+    AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://localhost:5173', storefront: 'http://localhost:3000', store: 'http://localhost:5174', supplier: 'http://localhost:5175' }),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     DATABASE_API_CONNECTION_REF: 'shop/local/database/api',
     DATABASE_JOB_CONNECTION_REF: 'shop/local/database/jobs',
     REDIS_CONNECTION_REF: 'shop/local/redis/query',
@@ -204,7 +263,10 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
     QUOTE_KEY_REF: 'shop/local/checkout/quote',
     PII_KEY_REF: 'shop/local/pii',
     KMS_ENDPOINT: 'https://127.0.0.1:8444',
+<<<<<<< HEAD
     KMS_BEARER_TOKEN: prepared.kmsBearerToken,
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     WECHAT_APPLICATION_CONFIG_REF: 'shop/local/wechat/applications',
     WECHAT_PAYMENT_CONFIG_REF: 'shop/local/payment/wechat',
     WECHAT_IDENTITY_CONFIG_REF: 'shop/local/identity/wechat',
@@ -215,7 +277,10 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
     OBJECT_STORE_TOKEN_REF: 'shop/local/objects/api',
     EXTENSION_MANIFEST_KEY_REF: 'shop/local/extensions/manifest',
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443',
+<<<<<<< HEAD
     SECRET_STORE_BEARER_TOKEN: prepared.secretStoreBearerToken,
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     PUBLIC_MEDIA_BASE_URL: 'https://127.0.0.1:8445',
     PUBLIC_MALL_SLUG: 'local',
     JOB_WORKER_ID: 'local-worker-1',
@@ -234,7 +299,11 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
 }
 
 function viteEnvironment(port: number): string {
+<<<<<<< HEAD
   return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
+=======
+  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:5176', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function miniappEnvironment(): string {
@@ -246,6 +315,7 @@ function postgresUrl(user: string, password: string): string {
 }
 
 function secret(bytes = 32): string { return randomBytes(bytes).toString('base64url'); }
+<<<<<<< HEAD
 function selectBearer(primary: string | undefined, legacy: string | undefined, code: string): string {
   return bearerToken(primary ?? legacy ?? secret(), code);
 }
@@ -286,6 +356,8 @@ async function readEnvironment(path: string): Promise<Readonly<Record<string, st
   }
   return Object.freeze(result);
 }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function required(values: Readonly<Record<string, string>>, name: string): string {
   const value = values[name];
   if (!value) throw new Error(`LOCAL_SECRET_MISSING:${name}`);

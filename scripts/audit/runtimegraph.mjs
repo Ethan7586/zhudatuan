@@ -16,9 +16,13 @@ const violations = [
 const required = new Map([
   ['services/commerce/src/bootstrap/RuntimeCompatibility.ts', ['CONTRACT_CHECKSUM', 'runtime.schemaversion', 'runtime.operation', 'capability.operation', 'runtime.event', 'JOB_CATALOG', 'healthAll()']],
   ['services/commerce/src/entry/ApiMain.ts', ['assertRuntimeCompatibility', 'listen(']],
+<<<<<<< HEAD
   ['services/commerce/src/entry/JobsMain.ts', ['jobsEnvironment', 'runJobs']],
   ['services/commerce/src/entry/FullJobsMain.ts', ['JOB_RUNTIME_CATALOG_DRIFT', 'assertRuntimeCompatibility', 'registry.all()']],
   ['services/commerce/src/bootstrap/IdentityNotificationJobsRuntime.ts', ['identitynotification', 'assertIdentityNotificationRuntimeCompatibility']],
+=======
+  ['services/commerce/src/entry/JobsMain.ts', ['JOB_RUNTIME_CATALOG_DRIFT', 'assertRuntimeCompatibility', 'registry.all()']],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ['packages/sdk/src/ApiClient.ts', ["'x-contract-version': CONTRACT_VERSION"]],
   ['apps/miniapp/miniprogram/api/client.js', ["'x-contract-version': contract.version"]],
   ['services/commerce/src/foundation/interface/HttpApp.ts', ['CONTRACT_VERSION_UNSUPPORTED', '426']],

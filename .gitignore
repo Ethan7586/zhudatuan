@@ -34,7 +34,10 @@ gitpointer.broken.txt
 
 # Payment certificates and private keys belong in Secret Manager, never the workspace.
 config/payment/
+<<<<<<< HEAD
 
 # Local deployment rehearsals and an accidental package-manager placeholder.
 .finance-deploy.*/
 pnpm-workspace.yaml
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

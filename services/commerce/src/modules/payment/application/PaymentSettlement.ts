@@ -6,7 +6,10 @@ import { inventoryPort } from '../../inventory/InventoryModule';
 import { marketingPort } from '../../marketing/MarketingModule';
 import { fulfillmentPort } from '../../fulfillment/FulfillmentModule';
 import { orderPort } from '../../order/OrderModule';
+<<<<<<< HEAD
 import { providerOccurredAt as requireProviderOccurredAt } from './port/PaymentGateway';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const benefit = new BenefitPort();
 const voucher = new VoucherPort();
@@ -24,10 +27,14 @@ export interface SettlementTarget {
 interface PlanRow { readonly sequence: number; readonly kind: 'wechat' | 'benefit' | 'voucher'; readonly reference_id: string | null; readonly amount_minor: number; readonly state: string }
 
 export class PaymentSettlement {
+<<<<<<< HEAD
   async capture(database: OperationDatabase, target: SettlementTarget, source: 'wechat' | 'internal' | 'mixed', providerCompletion?: string): Promise<string> {
     const accountingOccurredAt = source === 'internal' ? null
       : requireProviderOccurredAt(providerCompletion, 'PAYMENT_CAPTURE_PROVIDER_OCCURRED_AT_REQUIRED');
     if (source === 'internal' && providerCompletion !== undefined) throw new Error('PAYMENT_INTERNAL_CAPTURE_PROVIDER_OCCURRED_AT_FORBIDDEN');
+=======
+  async capture(database: OperationDatabase, target: SettlementTarget, source: 'wechat' | 'internal' | 'mixed'): Promise<string> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const locked = await database.query<{ state: string }>(`select state from payment.intent where id=$1 and order_id=$2 for update`,
     [target.intent, target.order]);
     const intentState = locked.rows[0]?.state;
@@ -61,7 +68,11 @@ export class PaymentSettlement {
     await orderPort.markPaid(database, target.order);
     const fulfillments = await fulfillmentPort.create(database, { order: target.order, payment });
     for (const fulfillment of fulfillments) await enqueue(database, target.scope, fulfillment);
+<<<<<<< HEAD
     await events(database, target, payment, accountingOccurredAt);
+=======
+    await events(database, target, payment);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     return payment;
   }
 }
@@ -91,6 +102,7 @@ async function enqueue(database: OperationDatabase, scope: string, fulfillment: 
   [`job:${randomUUID()}`, scope, fulfillment]);
 }
 
+<<<<<<< HEAD
 async function events(database: OperationDatabase, target: SettlementTarget, payment: string, providerOccurredAt: string | null): Promise<void> {
   const snapshot = (await database.query<{ payload: unknown }>(`select payload from runtime.outbox where event_type='order.placed'
     and aggregate_id=$1 order by occurred_at desc,id desc limit 1`, [target.order])).rows[0]?.payload ?? null;
@@ -100,4 +112,15 @@ async function events(database: OperationDatabase, target: SettlementTarget, pay
   ] as const) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
     occurred_at,available_at) values($1,$2,1,$3,$4,$5,$6::jsonb,$1,coalesce($7::timestamptz,clock_timestamp()),clock_timestamp())`,
   [`event:${randomUUID()}`, type, type.split('.')[0], aggregate, target.scope, JSON.stringify(payload), occurredAt]);
+=======
+async function events(database: OperationDatabase, target: SettlementTarget, payment: string): Promise<void> {
+  const snapshot = (await database.query<{ payload: unknown }>(`select payload from runtime.outbox where event_type='order.placed'
+    and aggregate_id=$1 order by occurred_at desc,id desc limit 1`, [target.order])).rows[0]?.payload ?? null;
+  for (const [type, aggregate, payload] of [
+    ['payment.succeeded', payment, { payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency, member: target.member, snapshot }],
+    ['order.paid', target.order, { payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency, member: target.member, snapshot }],
+  ] as const) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
+    occurred_at,available_at) values($1,$2,1,$3,$4,$5,$6::jsonb,$1,clock_timestamp(),clock_timestamp())`,
+  [`event:${randomUUID()}`, type, type.split('.')[0], aggregate, target.scope, JSON.stringify(payload)]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

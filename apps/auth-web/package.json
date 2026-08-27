@@ -12,14 +12,21 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@shop/contract": "1.0.0",
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^6.0.2",
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+<<<<<<< HEAD
     "vite": "^8.1.5",
     "zod": "4.4.3"
+=======
+    "vite": "^8.1.5"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

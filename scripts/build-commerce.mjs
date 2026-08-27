@@ -3,6 +3,7 @@ import { build } from 'esbuild';
 await build({
   banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
   bundle: true,
+<<<<<<< HEAD
   entryPoints: {
     ApiMain: 'services/commerce/src/entry/ApiMain.ts',
     IdentityRegistrationApiMain: 'services/commerce/src/entry/IdentityRegistrationApiMain.ts',
@@ -28,6 +29,15 @@ await build({
     BootstrapStagingOwner: 'tools/seed/src/BootstrapStagingOwner.ts',
     StagingReadinessMain: 'infrastructure/zhudatuan/aliyun/staging/verify-readiness.mjs',
   },
+=======
+  entryPoints: [
+    'services/commerce/src/entry/ApiMain.ts',
+    'services/commerce/src/entry/JobsMain.ts',
+    'services/commerce/src/entry/MigrationMain.ts',
+    'services/commerce/src/entry/SmokeMain.ts',
+  ],
+  external: ['pg', 'redis'],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   format: 'esm',
   outdir: 'services/commerce/dist',
   platform: 'node',

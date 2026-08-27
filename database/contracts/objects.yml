@@ -1,5 +1,6 @@
 version: 1
 objects:
+<<<<<<< HEAD
   - id: identity.challenge.session_hash
     kind: column
     owner: identity
@@ -65,12 +66,15 @@ objects:
     owner: access
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
     operationalOwner: access
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membership_version
     kind: function
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+<<<<<<< HEAD
   - id: access.protect_owner_transfer_snapshot
     kind: function
     owner: access
@@ -185,12 +189,22 @@ objects:
     kind: function
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+=======
+  - id: access.resolve_membership
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resolve_scope
     kind: function
     owner: access
+<<<<<<< HEAD
     source: database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql
+=======
+    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resource_scope
@@ -208,6 +222,7 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: access
+<<<<<<< HEAD
   - id: access.web_audit_scope_allowed
     kind: function
     owner: access
@@ -263,6 +278,8 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
     operationalOwner: access
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.reject_mutation
     kind: function
     owner: audit
@@ -273,6 +290,7 @@ objects:
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+<<<<<<< HEAD
   - id: benefit.purchase_available
     kind: function
     owner: benefit
@@ -298,6 +316,8 @@ objects:
     owner: benefit
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
     operationalOwner: benefit
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.membership_operations
     kind: function
     owner: capability
@@ -390,6 +410,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.account_role
     kind: function
     owner: finance
@@ -445,6 +466,8 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
     operationalOwner: finance
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.enforce_balanced_journal
     kind: function
     owner: finance
@@ -455,6 +478,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.freeze_settlement_facts
     kind: function
     owner: finance
@@ -505,11 +529,14 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
     operationalOwner: finance
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.post
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.preview_configurable_policy
     kind: function
     owner: finance
@@ -545,11 +572,14 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     operationalOwner: finance
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reject_ledger_mutation
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.reject_policy_revision_mutation
     kind: function
     owner: finance
@@ -570,11 +600,14 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
     operationalOwner: finance
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.resource_scope
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.reverse
     kind: function
     owner: finance
@@ -610,11 +643,14 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
     operationalOwner: identity
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.notification_recipient
     kind: function
     owner: identity
     source: database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: identity
+<<<<<<< HEAD
   - id: identity.protect_root_owner_credential
     kind: function
     owner: identity
@@ -761,22 +797,34 @@ objects:
     owner: member
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
     operationalOwner: identity
+=======
+  - id: identity.resolve_session
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    callers:
+      - services/commerce/src/foundation/security/PgAccessResolvers.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.resource_scope
     kind: function
     owner: notification
     source: database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: notification
+<<<<<<< HEAD
   - id: payment.reject_provider_effect_mutation
     kind: function
     owner: payment
     source: database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql
     operationalOwner: payment
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.webhook_scope
     kind: function
     owner: payment
     source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
     callers:
       - services/commerce/src/modules/payment/PaymentWebhook.ts
+<<<<<<< HEAD
   - id: pricing.purchase_quote_immutable
     kind: function
     owner: pricing
@@ -837,6 +885,8 @@ objects:
     owner: referral
     source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
     operationalOwner: referral
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.cockpit
     kind: function
     owner: reporting
@@ -874,18 +924,22 @@ objects:
     owner: runtime
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: runtime
+<<<<<<< HEAD
   - id: runtime.claim_identity_notification_job
     kind: function
     owner: runtime
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
     callers:
       - services/commerce/src/foundation/application/JobRunner.ts
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.claim_job
     kind: function
     owner: runtime
     source: database/supabase/migrations/20260821012000_create_runtime_control.sql
     callers:
       - services/commerce/src/foundation/application/JobRunner.ts
+<<<<<<< HEAD
   - id: runtime.reject_financial_inbox_fact_mutation
     kind: function
     owner: runtime
@@ -896,6 +950,8 @@ objects:
     owner: runtime
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
     operationalOwner: runtime
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.release_lease
     kind: function
     owner: runtime
@@ -911,6 +967,7 @@ objects:
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+<<<<<<< HEAD
   - id: shopapp:function:access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text):execute
     kind: grant
     owner: access
@@ -967,6 +1024,8 @@ objects:
     objectType: function
     target: access.issue_action_proof(text,text,text,text,text,text,text,text,bigint,text)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:access.membership_version(text):execute
     kind: grant
     owner: access
@@ -978,11 +1037,16 @@ objects:
   - id: shopapp:function:access.resolve_membership(text):execute
     kind: grant
     owner: access
+<<<<<<< HEAD
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+=======
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     role: shopapp
     objectType: function
     target: access.resolve_membership(text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:access.resolve_scope(text,text,text,text):execute
     kind: grant
     owner: access
@@ -995,6 +1059,12 @@ objects:
     kind: grant
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+=======
+  - id: shopapp:function:access.resolve_scope(text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     role: shopapp
     objectType: function
     target: access.resolve_scope(text,text,text)
@@ -1023,6 +1093,7 @@ objects:
     objectType: function
     target: access.scope_object(text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:access.zhudatuan_owner_context():execute
     kind: grant
     owner: access
@@ -1038,6 +1109,8 @@ objects:
     role: shopapp
     objectType: function
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:audit.scope_allowed(text):execute
     kind: grant
     owner: audit
@@ -1174,6 +1247,7 @@ objects:
     objectType: function
     target: finance.account_id(text,text,text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:finance.account_role(text,text):execute
     kind: grant
     owner: finance
@@ -1206,6 +1280,8 @@ objects:
     objectType: function
     target: finance.decide_reconciliation_repair(text,text,text,text,bigint,text,text,jsonb,text)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:finance.ensure_account(text,text,text,text):execute
     kind: grant
     owner: finance
@@ -1214,6 +1290,7 @@ objects:
     objectType: function
     target: finance.ensure_account(text,text,text,text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:finance.ledger_id(text,text):execute
     kind: grant
     owner: finance
@@ -1246,6 +1323,8 @@ objects:
     objectType: function
     target: finance.period_control(text,text,text,timestampwithtimezone)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone):execute
     kind: grant
     owner: finance
@@ -1254,6 +1333,7 @@ objects:
     objectType: function
     target: finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:finance.preview_configurable_policy(text,text,text,text,bigint,text,text,jsonb,text,date,date):execute
     kind: grant
     owner: finance
@@ -1286,6 +1366,8 @@ objects:
     objectType: function
     target: finance.refresh_trial_balance(text,text,text,boolean)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:finance.resource_scope(text):execute
     kind: grant
     owner: finance
@@ -1294,6 +1376,7 @@ objects:
     objectType: function
     target: finance.resource_scope(text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:finance.reverse_reconciliation_repair(text,text,text,text,bigint,text,text):execute
     kind: grant
     owner: finance
@@ -1334,6 +1417,8 @@ objects:
     objectType: function
     target: finance.trial_balance_hash(text,text,text)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:identity.notification_recipient(text):execute
     kind: grant
     owner: identity
@@ -1345,11 +1430,16 @@ objects:
   - id: shopapp:function:identity.resolve_session(text):execute
     kind: grant
     owner: identity
+<<<<<<< HEAD
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+=======
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     role: shopapp
     objectType: function
     target: identity.resolve_session(text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:identity.rotate_zhudatuan_owner_password(text,text,text,text,text):execute
     kind: grant
     owner: identity
@@ -1390,6 +1480,8 @@ objects:
     objectType: function
     target: invoice.decide_request(text,text,text,jsonb,bigint)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:payment.webhook_scope(text,text):execute
     kind: grant
     owner: payment
@@ -1398,6 +1490,7 @@ objects:
     objectType: function
     target: payment.webhook_scope(text,text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopapp:function:referral.attach_withdrawal_claims(text,text,text[]):execute
     kind: grant
     owner: referral
@@ -1422,6 +1515,8 @@ objects:
     objectType: function
     target: referral.has_pending_reversal(text,text)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:reporting.cockpit(text):execute
     kind: grant
     owner: reporting
@@ -1638,6 +1733,7 @@ objects:
     objectType: schema
     target: qualification
     privilege: usage
+<<<<<<< HEAD
   - id: shopapp:schema:referral:usage
     kind: grant
     owner: referral
@@ -1646,6 +1742,8 @@ objects:
     objectType: schema
     target: referral
     privilege: usage
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:schema:reporting:usage
     kind: grant
     owner: reporting
@@ -1822,6 +1920,7 @@ objects:
     objectType: table
     target: access.membershiprole
     privilege: update
+<<<<<<< HEAD
   - id: shopapp:table:access.owneractionproof:insert
     kind: grant
     owner: access
@@ -1838,6 +1937,8 @@ objects:
     objectType: table
     target: access.ownertransfer
     privilege: select
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:access.permission:delete
     kind: grant
     owner: access
@@ -1870,6 +1971,7 @@ objects:
     objectType: table
     target: access.permission
     privilege: update
+<<<<<<< HEAD
   - id: shopapp:table:access.platformowner:select
     kind: grant
     owner: access
@@ -1878,6 +1980,8 @@ objects:
     objectType: table
     target: access.platformowner
     privilege: select
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:access.role:delete
     kind: grant
     owner: access
@@ -3854,6 +3958,25 @@ objects:
     objectType: table
     target: extension.manifest
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.account:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.account
+    privilege: delete
+  - id: shopapp:table:finance.account:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.account
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.account:select
     kind: grant
     owner: finance
@@ -3862,6 +3985,7 @@ objects:
     objectType: table
     target: finance.account
     privilege: select
+<<<<<<< HEAD
   - id: shopapp:table:finance.accountingeventrule:select
     kind: grant
     owner: finance
@@ -3870,6 +3994,24 @@ objects:
     objectType: table
     target: finance.accountingeventrule
     privilege: select
+=======
+  - id: shopapp:table:finance.account:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.account
+    privilege: update
+  - id: shopapp:table:finance.backfill:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.backfill
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.backfill:insert
     kind: grant
     owner: finance
@@ -3894,6 +4036,25 @@ objects:
     objectType: table
     target: finance.backfill
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.entry:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.entry
+    privilege: delete
+  - id: shopapp:table:finance.entry:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.entry
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.entry:select
     kind: grant
     owner: finance
@@ -3902,6 +4063,25 @@ objects:
     objectType: table
     target: finance.entry
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.entry:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.entry
+    privilege: update
+  - id: shopapp:table:finance.hold:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.hold
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.hold:insert
     kind: grant
     owner: finance
@@ -3926,6 +4106,25 @@ objects:
     objectType: table
     target: finance.hold
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.journal:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.journal
+    privilege: delete
+  - id: shopapp:table:finance.journal:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.journal
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.journal:select
     kind: grant
     owner: finance
@@ -3934,6 +4133,7 @@ objects:
     objectType: table
     target: finance.journal
     privilege: select
+<<<<<<< HEAD
   - id: shopapp:table:finance.ledger:select
     kind: grant
     owner: finance
@@ -3942,6 +4142,32 @@ objects:
     objectType: table
     target: finance.ledger
     privilege: select
+=======
+  - id: shopapp:table:finance.journal:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.journal
+    privilege: update
+  - id: shopapp:table:finance.period:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.period
+    privilege: delete
+  - id: shopapp:table:finance.period:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.period
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.period:select
     kind: grant
     owner: finance
@@ -3950,6 +4176,25 @@ objects:
     objectType: table
     target: finance.period
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.period:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.period
+    privilege: update
+  - id: shopapp:table:finance.periodclose:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.periodclose
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.periodclose:insert
     kind: grant
     owner: finance
@@ -3974,6 +4219,25 @@ objects:
     objectType: table
     target: finance.periodclose
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.policy:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.policy
+    privilege: delete
+  - id: shopapp:table:finance.policy:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.policy
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.policy:select
     kind: grant
     owner: finance
@@ -3982,6 +4246,7 @@ objects:
     objectType: table
     target: finance.policy
     privilege: select
+<<<<<<< HEAD
   - id: shopapp:table:finance.policyrevision:select
     kind: grant
     owner: finance
@@ -3990,6 +4255,24 @@ objects:
     objectType: table
     target: finance.policyrevision
     privilege: select
+=======
+  - id: shopapp:table:finance.policy:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.policy
+    privilege: update
+  - id: shopapp:table:finance.reconciliation:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.reconciliation
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.reconciliation:insert
     kind: grant
     owner: finance
@@ -4014,6 +4297,17 @@ objects:
     objectType: table
     target: finance.reconciliation
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.reconciliationitem:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.reconciliationitem
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.reconciliationitem:insert
     kind: grant
     owner: finance
@@ -4038,6 +4332,17 @@ objects:
     objectType: table
     target: finance.reconciliationitem
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.settlement:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.settlement
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlement:insert
     kind: grant
     owner: finance
@@ -4062,6 +4367,17 @@ objects:
     objectType: table
     target: finance.settlement
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.settlementadjustment:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.settlementadjustment
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlementadjustment:insert
     kind: grant
     owner: finance
@@ -4086,6 +4402,25 @@ objects:
     objectType: table
     target: finance.settlementadjustment
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.settlementline:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.settlementline
+    privilege: delete
+  - id: shopapp:table:finance.settlementline:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.settlementline
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlementline:select
     kind: grant
     owner: finance
@@ -4094,6 +4429,33 @@ objects:
     objectType: table
     target: finance.settlementline
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.settlementline:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.settlementline
+    privilege: update
+  - id: shopapp:table:finance.split:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.split
+    privilege: delete
+  - id: shopapp:table:finance.split:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.split
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.split:select
     kind: grant
     owner: finance
@@ -4102,6 +4464,33 @@ objects:
     objectType: table
     target: finance.split
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.split:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.split
+    privilege: update
+  - id: shopapp:table:finance.statement:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.statement
+    privilege: delete
+  - id: shopapp:table:finance.statement:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.statement
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.statement:select
     kind: grant
     owner: finance
@@ -4110,6 +4499,7 @@ objects:
     objectType: table
     target: finance.statement
     privilege: select
+<<<<<<< HEAD
   - id: shopapp:table:finance.statementaccount:select
     kind: grant
     owner: finance
@@ -4118,6 +4508,24 @@ objects:
     objectType: table
     target: finance.statementaccount
     privilege: select
+=======
+  - id: shopapp:table:finance.statement:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: finance.statement
+    privilege: update
+  - id: shopapp:table:finance.statementline:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.statementline
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.statementline:insert
     kind: grant
     owner: finance
@@ -4142,6 +4550,7 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: update
+<<<<<<< HEAD
   - id: shopapp:table:finance.subledger:select
     kind: grant
     owner: finance
@@ -4158,6 +4567,16 @@ objects:
     objectType: table
     target: finance.subledgerentry
     privilege: select
+=======
+  - id: shopapp:table:finance.withdrawal:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.withdrawal
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.withdrawal:insert
     kind: grant
     owner: finance
@@ -5014,6 +5433,25 @@ objects:
     objectType: table
     target: inventory.syncstate
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.document:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.document
+    privilege: delete
+  - id: shopapp:table:invoice.document:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.document
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.document:select
     kind: grant
     owner: invoice
@@ -5022,6 +5460,33 @@ objects:
     objectType: table
     target: invoice.document
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.document:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.document
+    privilege: update
+  - id: shopapp:table:invoice.line:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.line
+    privilege: delete
+  - id: shopapp:table:invoice.line:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.line
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.line:select
     kind: grant
     owner: invoice
@@ -5030,6 +5495,25 @@ objects:
     objectType: table
     target: invoice.line
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.line:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.line
+    privilege: update
+  - id: shopapp:table:invoice.profile:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.profile
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.profile:insert
     kind: grant
     owner: invoice
@@ -5054,6 +5538,25 @@ objects:
     objectType: table
     target: invoice.profile
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.request:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.request
+    privilege: delete
+  - id: shopapp:table:invoice.request:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.request
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.request:select
     kind: grant
     owner: invoice
@@ -5062,6 +5565,33 @@ objects:
     objectType: table
     target: invoice.request
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.request:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.request
+    privilege: update
+  - id: shopapp:table:invoice.requestline:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: invoice.requestline
+    privilege: delete
+  - id: shopapp:table:invoice.requestline:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: invoice.requestline
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.requestline:select
     kind: grant
     owner: invoice
@@ -5070,6 +5600,33 @@ objects:
     objectType: table
     target: invoice.requestline
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.requestline:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: invoice.requestline
+    privilege: update
+  - id: shopapp:table:invoice.requestprofile:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: invoice.requestprofile
+    privilege: delete
+  - id: shopapp:table:invoice.requestprofile:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: invoice.requestprofile
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.requestprofile:select
     kind: grant
     owner: invoice
@@ -5078,6 +5635,33 @@ objects:
     objectType: table
     target: invoice.requestprofile
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.requestprofile:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: invoice.requestprofile
+    privilege: update
+  - id: shopapp:table:invoice.statusevent:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.statusevent
+    privilege: delete
+  - id: shopapp:table:invoice.statusevent:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.statusevent
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.statusevent:select
     kind: grant
     owner: invoice
@@ -5086,6 +5670,17 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopapp:table:invoice.statusevent:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: invoice.statusevent
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:marketing.campaign:delete
     kind: grant
     owner: marketing
@@ -7070,6 +7665,7 @@ objects:
     objectType: table
     target: qualification.tag
     privilege: update
+<<<<<<< HEAD
   - id: shopapp:table:referral.binding:insert
     kind: grant
     owner: referral
@@ -7206,6 +7802,8 @@ objects:
     objectType: table
     target: referral.withdrawalclaim
     privilege: select
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:reporting.export:delete
     kind: grant
     owner: reporting
@@ -9102,6 +9700,7 @@ objects:
     objectType: view
     target: benefit.balance
     privilege: select
+<<<<<<< HEAD
   - id: shopjob:function:access.ensure_imported_membership(text,text,text,text,text):execute
     kind: grant
     owner: access
@@ -9116,6 +9715,8 @@ objects:
     role: shopjob
     objectType: function
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:channel.build_private_statement(text,jsonb):execute
     kind: grant
     owner: channel
@@ -9220,6 +9821,7 @@ objects:
     objectType: function
     target: finance.account_id(text,text,text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopjob:function:finance.account_role(text,text):execute
     kind: grant
     owner: finance
@@ -9228,6 +9830,8 @@ objects:
     objectType: function
     target: finance.account_role(text,text)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:finance.ensure_account(text,text,text,text):execute
     kind: grant
     owner: finance
@@ -9236,6 +9840,7 @@ objects:
     objectType: function
     target: finance.ensure_account(text,text,text,text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopjob:function:finance.freeze_settlement_facts(text):execute
     kind: grant
     owner: finance
@@ -9268,6 +9873,8 @@ objects:
     objectType: function
     target: finance.period_control(text,text,text,timestampwithtimezone)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone):execute
     kind: grant
     owner: finance
@@ -9276,6 +9883,7 @@ objects:
     objectType: function
     target: finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone)
     privilege: execute
+<<<<<<< HEAD
   - id: shopjob:function:finance.refresh_trial_balance(text,text,text,boolean):execute
     kind: grant
     owner: finance
@@ -9284,6 +9892,8 @@ objects:
     objectType: function
     target: finance.refresh_trial_balance(text,text,text,boolean)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:finance.resource_scope(text):execute
     kind: grant
     owner: finance
@@ -9292,6 +9902,7 @@ objects:
     objectType: function
     target: finance.resource_scope(text)
     privilege: execute
+<<<<<<< HEAD
   - id: shopjob:function:finance.reverse(text,text,text,text,text,timestampwithtimezone):execute
     kind: grant
     owner: finance
@@ -9393,6 +10004,8 @@ objects:
     objectType: function
     target: referral.has_pending_reversal(text,text)
     privilege: execute
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:reporting.cockpit(text):execute
     kind: grant
     owner: reporting
@@ -9633,6 +10246,7 @@ objects:
     objectType: schema
     target: qualification
     privilege: usage
+<<<<<<< HEAD
   - id: shopjob:schema:referral:usage
     kind: grant
     owner: referral
@@ -9641,6 +10255,8 @@ objects:
     objectType: schema
     target: referral
     privilege: usage
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:schema:reporting:usage
     kind: grant
     owner: reporting
@@ -9721,6 +10337,105 @@ objects:
     objectType: table
     target: access.decisionaudit
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:access.membership:delete
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membership
+    privilege: delete
+  - id: shopjob:table:access.membership:insert
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membership
+    privilege: insert
+  - id: shopjob:table:access.membership:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membership
+    privilege: select
+  - id: shopjob:table:access.membership:update
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membership
+    privilege: update
+  - id: shopjob:table:access.membershipoverride:delete
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershipoverride
+    privilege: delete
+  - id: shopjob:table:access.membershipoverride:insert
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershipoverride
+    privilege: insert
+  - id: shopjob:table:access.membershipoverride:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershipoverride
+    privilege: select
+  - id: shopjob:table:access.membershipoverride:update
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershipoverride
+    privilege: update
+  - id: shopjob:table:access.membershiprole:delete
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershiprole
+    privilege: delete
+  - id: shopjob:table:access.membershiprole:insert
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershiprole
+    privilege: insert
+  - id: shopjob:table:access.membershiprole:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershiprole
+    privilege: select
+  - id: shopjob:table:access.membershiprole:update
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.membershiprole
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:access.permission:delete
     kind: grant
     owner: access
@@ -9817,6 +10532,41 @@ objects:
     objectType: table
     target: access.rolepermission
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:access.scopegrant:delete
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.scopegrant
+    privilege: delete
+  - id: shopjob:table:access.scopegrant:insert
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.scopegrant
+    privilege: insert
+  - id: shopjob:table:access.scopegrant:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.scopegrant
+    privilege: select
+  - id: shopjob:table:access.scopegrant:update
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: access.scopegrant
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:audit.accessrecord:delete
     kind: grant
     owner: audit
@@ -11753,6 +12503,25 @@ objects:
     objectType: table
     target: extension.manifest
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.account:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.account
+    privilege: delete
+  - id: shopjob:table:finance.account:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.account
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.account:select
     kind: grant
     owner: finance
@@ -11761,6 +12530,7 @@ objects:
     objectType: table
     target: finance.account
     privilege: select
+<<<<<<< HEAD
   - id: shopjob:table:finance.accountingeventrule:select
     kind: grant
     owner: finance
@@ -11769,6 +12539,24 @@ objects:
     objectType: table
     target: finance.accountingeventrule
     privilege: select
+=======
+  - id: shopjob:table:finance.account:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.account
+    privilege: update
+  - id: shopjob:table:finance.backfill:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.backfill
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.backfill:insert
     kind: grant
     owner: finance
@@ -11793,6 +12581,25 @@ objects:
     objectType: table
     target: finance.backfill
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.entry:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.entry
+    privilege: delete
+  - id: shopjob:table:finance.entry:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.entry
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.entry:select
     kind: grant
     owner: finance
@@ -11801,6 +12608,25 @@ objects:
     objectType: table
     target: finance.entry
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.entry:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.entry
+    privilege: update
+  - id: shopjob:table:finance.hold:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.hold
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.hold:insert
     kind: grant
     owner: finance
@@ -11825,6 +12651,25 @@ objects:
     objectType: table
     target: finance.hold
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.journal:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.journal
+    privilege: delete
+  - id: shopjob:table:finance.journal:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.journal
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.journal:select
     kind: grant
     owner: finance
@@ -11833,6 +12678,7 @@ objects:
     objectType: table
     target: finance.journal
     privilege: select
+<<<<<<< HEAD
   - id: shopjob:table:finance.ledger:select
     kind: grant
     owner: finance
@@ -11841,6 +12687,32 @@ objects:
     objectType: table
     target: finance.ledger
     privilege: select
+=======
+  - id: shopjob:table:finance.journal:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.journal
+    privilege: update
+  - id: shopjob:table:finance.period:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.period
+    privilege: delete
+  - id: shopjob:table:finance.period:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.period
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.period:select
     kind: grant
     owner: finance
@@ -11849,6 +12721,25 @@ objects:
     objectType: table
     target: finance.period
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.period:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.period
+    privilege: update
+  - id: shopjob:table:finance.periodclose:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.periodclose
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.periodclose:insert
     kind: grant
     owner: finance
@@ -11873,6 +12764,25 @@ objects:
     objectType: table
     target: finance.periodclose
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.policy:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.policy
+    privilege: delete
+  - id: shopjob:table:finance.policy:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.policy
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.policy:select
     kind: grant
     owner: finance
@@ -11881,6 +12791,25 @@ objects:
     objectType: table
     target: finance.policy
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.policy:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.policy
+    privilege: update
+  - id: shopjob:table:finance.reconciliation:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.reconciliation
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.reconciliation:insert
     kind: grant
     owner: finance
@@ -11905,6 +12834,17 @@ objects:
     objectType: table
     target: finance.reconciliation
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.reconciliationitem:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.reconciliationitem
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.reconciliationitem:insert
     kind: grant
     owner: finance
@@ -11929,6 +12869,17 @@ objects:
     objectType: table
     target: finance.reconciliationitem
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.settlement:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.settlement
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlement:insert
     kind: grant
     owner: finance
@@ -11953,6 +12904,17 @@ objects:
     objectType: table
     target: finance.settlement
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.settlementadjustment:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.settlementadjustment
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlementadjustment:insert
     kind: grant
     owner: finance
@@ -11977,6 +12939,25 @@ objects:
     objectType: table
     target: finance.settlementadjustment
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.settlementline:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.settlementline
+    privilege: delete
+  - id: shopjob:table:finance.settlementline:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.settlementline
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlementline:select
     kind: grant
     owner: finance
@@ -11985,6 +12966,33 @@ objects:
     objectType: table
     target: finance.settlementline
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.settlementline:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.settlementline
+    privilege: update
+  - id: shopjob:table:finance.split:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.split
+    privilege: delete
+  - id: shopjob:table:finance.split:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.split
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.split:select
     kind: grant
     owner: finance
@@ -11993,6 +13001,33 @@ objects:
     objectType: table
     target: finance.split
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.split:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.split
+    privilege: update
+  - id: shopjob:table:finance.statement:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.statement
+    privilege: delete
+  - id: shopjob:table:finance.statement:insert
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.statement
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.statement:select
     kind: grant
     owner: finance
@@ -12001,6 +13036,7 @@ objects:
     objectType: table
     target: finance.statement
     privilege: select
+<<<<<<< HEAD
   - id: shopjob:table:finance.statementaccount:select
     kind: grant
     owner: finance
@@ -12009,6 +13045,24 @@ objects:
     objectType: table
     target: finance.statementaccount
     privilege: select
+=======
+  - id: shopjob:table:finance.statement:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: finance.statement
+    privilege: update
+  - id: shopjob:table:finance.statementline:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.statementline
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.statementline:insert
     kind: grant
     owner: finance
@@ -12033,6 +13087,7 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: update
+<<<<<<< HEAD
   - id: shopjob:table:finance.subledger:select
     kind: grant
     owner: finance
@@ -12049,6 +13104,16 @@ objects:
     objectType: table
     target: finance.subledgerentry
     privilege: select
+=======
+  - id: shopjob:table:finance.withdrawal:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.withdrawal
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.withdrawal:insert
     kind: grant
     owner: finance
@@ -12201,6 +13266,41 @@ objects:
     objectType: table
     target: fulfillment.returnrecord
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:identity.assurance:delete
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.assurance
+    privilege: delete
+  - id: shopjob:table:identity.assurance:insert
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.assurance
+    privilege: insert
+  - id: shopjob:table:identity.assurance:select
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.assurance
+    privilege: select
+  - id: shopjob:table:identity.assurance:update
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.assurance
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.authticket:delete
     kind: grant
     owner: identity
@@ -12233,6 +13333,25 @@ objects:
     objectType: table
     target: identity.authticket
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:identity.challenge:delete
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.challenge
+    privilege: delete
+  - id: shopjob:table:identity.challenge:insert
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.challenge
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challenge:select
     kind: grant
     owner: identity
@@ -12241,6 +13360,17 @@ objects:
     objectType: table
     target: identity.challenge
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:identity.challenge:update
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.challenge
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challengedelivery:delete
     kind: grant
     owner: identity
@@ -12273,6 +13403,25 @@ objects:
     objectType: table
     target: identity.challengedelivery
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:identity.challengesecret:delete
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.challengesecret
+    privilege: delete
+  - id: shopjob:table:identity.challengesecret:insert
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.challengesecret
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challengesecret:select
     kind: grant
     owner: identity
@@ -12281,6 +13430,49 @@ objects:
     objectType: table
     target: identity.challengesecret
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:identity.challengesecret:update
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.challengesecret
+    privilege: update
+  - id: shopjob:table:identity.credential:delete
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.credential
+    privilege: delete
+  - id: shopjob:table:identity.credential:insert
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.credential
+    privilege: insert
+  - id: shopjob:table:identity.credential:select
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.credential
+    privilege: select
+  - id: shopjob:table:identity.credential:update
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.credential
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.federatedidentity:delete
     kind: grant
     owner: identity
@@ -12345,6 +13537,41 @@ objects:
     objectType: table
     target: identity.loginattempt
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:identity.principal:delete
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.principal
+    privilege: delete
+  - id: shopjob:table:identity.principal:insert
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.principal
+    privilege: insert
+  - id: shopjob:table:identity.principal:select
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.principal
+    privilege: select
+  - id: shopjob:table:identity.principal:update
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.principal
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.registrationpolicy:delete
     kind: grant
     owner: identity
@@ -12377,6 +13604,41 @@ objects:
     objectType: table
     target: identity.registrationpolicy
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:identity.session:delete
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.session
+    privilege: delete
+  - id: shopjob:table:identity.session:insert
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.session
+    privilege: insert
+  - id: shopjob:table:identity.session:select
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.session
+    privilege: select
+  - id: shopjob:table:identity.session:update
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: identity.session
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.wechatgrant:delete
     kind: grant
     owner: identity
@@ -12761,6 +14023,25 @@ objects:
     objectType: table
     target: inventory.syncstate
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.document:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.document
+    privilege: delete
+  - id: shopjob:table:invoice.document:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.document
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.document:select
     kind: grant
     owner: invoice
@@ -12769,6 +14050,33 @@ objects:
     objectType: table
     target: invoice.document
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.document:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.document
+    privilege: update
+  - id: shopjob:table:invoice.line:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.line
+    privilege: delete
+  - id: shopjob:table:invoice.line:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.line
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.line:select
     kind: grant
     owner: invoice
@@ -12777,6 +14085,25 @@ objects:
     objectType: table
     target: invoice.line
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.line:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.line
+    privilege: update
+  - id: shopjob:table:invoice.profile:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.profile
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.profile:insert
     kind: grant
     owner: invoice
@@ -12801,6 +14128,25 @@ objects:
     objectType: table
     target: invoice.profile
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.request:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.request
+    privilege: delete
+  - id: shopjob:table:invoice.request:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.request
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.request:select
     kind: grant
     owner: invoice
@@ -12809,6 +14155,33 @@ objects:
     objectType: table
     target: invoice.request
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.request:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.request
+    privilege: update
+  - id: shopjob:table:invoice.requestline:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: invoice.requestline
+    privilege: delete
+  - id: shopjob:table:invoice.requestline:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: invoice.requestline
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.requestline:select
     kind: grant
     owner: invoice
@@ -12817,6 +14190,33 @@ objects:
     objectType: table
     target: invoice.requestline
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.requestline:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: invoice.requestline
+    privilege: update
+  - id: shopjob:table:invoice.requestprofile:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: invoice.requestprofile
+    privilege: delete
+  - id: shopjob:table:invoice.requestprofile:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: invoice.requestprofile
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.requestprofile:select
     kind: grant
     owner: invoice
@@ -12825,6 +14225,33 @@ objects:
     objectType: table
     target: invoice.requestprofile
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.requestprofile:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: invoice.requestprofile
+    privilege: update
+  - id: shopjob:table:invoice.statusevent:delete
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.statusevent
+    privilege: delete
+  - id: shopjob:table:invoice.statusevent:insert
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.statusevent
+    privilege: insert
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.statusevent:select
     kind: grant
     owner: invoice
@@ -12833,6 +14260,17 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: select
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:invoice.statusevent:update
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: invoice.statusevent
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:marketing.campaign:delete
     kind: grant
     owner: marketing
@@ -13025,6 +14463,41 @@ objects:
     objectType: table
     target: member.invite
     privilege: update
+<<<<<<< HEAD
+=======
+  - id: shopjob:table:member.profile:delete
+    kind: grant
+    owner: member
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.profile
+    privilege: delete
+  - id: shopjob:table:member.profile:insert
+    kind: grant
+    owner: member
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.profile
+    privilege: insert
+  - id: shopjob:table:member.profile:select
+    kind: grant
+    owner: member
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.profile
+    privilege: select
+  - id: shopjob:table:member.profile:update
+    kind: grant
+    owner: member
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.profile
+    privilege: update
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:notification.announcement:delete
     kind: grant
     owner: notification
@@ -14817,6 +16290,7 @@ objects:
     objectType: table
     target: qualification.tag
     privilege: update
+<<<<<<< HEAD
   - id: shopjob:table:referral.binding:insert
     kind: grant
     owner: referral
@@ -14977,6 +16451,8 @@ objects:
     objectType: table
     target: referral.withdrawalclaim
     privilege: select
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:reporting.export:delete
     kind: grant
     owner: reporting
@@ -16933,14 +18409,18 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821070000_repair_decision_audit_scope.sql
+<<<<<<< HEAD
   - id: access.decisionaudit.consoledecision
     kind: policy
     owner: access
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.decisionaudit.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.decisionaudit.zhudatuanidentityapi
     kind: policy
     owner: access
@@ -16961,10 +18441,13 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membership.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.membership.consoleself
     kind: policy
     owner: access
@@ -16981,18 +18464,32 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+=======
+  - id: access.membership.jobscope
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membershipoverride.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.membershipoverride.zhudatuanidentityapi
     kind: policy
     owner: access
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+  - id: access.membershipoverride.jobscope
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membershiprole.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.membershiprole.zhudatuanbootstrap
     kind: policy
     owner: access
@@ -17013,6 +18510,12 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+=======
+  - id: access.membershiprole.jobscope
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.permission.appscope
     kind: policy
     owner: access
@@ -17021,6 +18524,7 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.permission.zhudatuanbootstrap
     kind: policy
     owner: access
@@ -17037,6 +18541,8 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.role.appscope
     kind: policy
     owner: access
@@ -17045,6 +18551,7 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.role.zhudatuanbootstrap
     kind: policy
     owner: access
@@ -17053,6 +18560,8 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.rolepermission.appscope
     kind: policy
     owner: access
@@ -17061,6 +18570,7 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.rolepermission.zhudatuanbootstrap
     kind: policy
     owner: access
@@ -17069,10 +18579,13 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.scopegrant.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: access.scopegrant.zhudatuanidentityapi
     kind: policy
     owner: access
@@ -17081,6 +18594,12 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+=======
+  - id: access.scopegrant.jobscope
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.accessrecord.appinsert
     kind: policy
     owner: audit
@@ -17089,6 +18608,7 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
   - id: audit.accessrecord.consoleauditaccessinsert
     kind: policy
     owner: audit
@@ -17097,10 +18617,13 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.accessrecord.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: audit.accessrecord.zhudatuanbootstrap
     kind: policy
     owner: audit
@@ -17129,18 +18652,24 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.archiveref.appselect
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
   - id: audit.archiveref.consoleauditarchiveselect
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.archiveref.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: audit.archiveref.zhudatuanbootstrap
     kind: policy
     owner: audit
@@ -17161,6 +18690,8 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.record.appinsert
     kind: policy
     owner: audit
@@ -17169,6 +18700,7 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
   - id: audit.record.consoleauditrecordinsert
     kind: policy
     owner: audit
@@ -17177,10 +18709,13 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.record.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: audit.record.zhudatuanbootstrap
     kind: policy
     owner: audit
@@ -17221,6 +18756,8 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.recorddefault.appinsert
     kind: policy
     owner: audit
@@ -17229,6 +18766,7 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
   - id: audit.recorddefault.consoleauditdefaultinsert
     kind: policy
     owner: audit
@@ -17237,6 +18775,8 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.recorddefault.jobscope
     kind: policy
     owner: audit
@@ -17257,10 +18797,13 @@ objects:
     kind: policy
     owner: benefit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: benefit.account.zhudatuanwebapi
     kind: policy
     owner: benefit
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.action.appscope
     kind: policy
     owner: benefit
@@ -17309,10 +18852,13 @@ objects:
     kind: policy
     owner: benefit
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
+<<<<<<< HEAD
   - id: benefit.lot.zhudatuanwebapi
     kind: policy
     owner: benefit
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.lotmovement.appscope
     kind: policy
     owner: benefit
@@ -17361,10 +18907,13 @@ objects:
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: capability.capability.zhudatuanidentityapi
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.dependency.appscope
     kind: policy
     owner: capability
@@ -17381,10 +18930,13 @@ objects:
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: capability.entitlement.zhudatuanidentityapi
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.operation.appscope
     kind: policy
     owner: capability
@@ -17393,10 +18945,13 @@ objects:
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: capability.operation.zhudatuanidentityapi
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: cart.cart.appscope
     kind: policy
     owner: cart
@@ -17405,6 +18960,7 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: cart.cart.zhudatuanpurchaseapiselect
     kind: policy
     owner: cart
@@ -17417,6 +18973,8 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: cart.item.appscope
     kind: policy
     owner: cart
@@ -17425,6 +18983,7 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: cart.item.zhudatuanpurchaseapi
     kind: policy
     owner: cart
@@ -17433,6 +18992,8 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.availabilitycity.appscope
     kind: policy
     owner: catalog
@@ -17465,6 +19026,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.category.zhudatuansandboxbootstrap
     kind: policy
     owner: catalog
@@ -17473,6 +19035,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.classificationrule.appscope
     kind: policy
     owner: catalog
@@ -17509,6 +19073,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.listing.zhudatuanpurchaseapi
     kind: policy
     owner: catalog
@@ -17525,6 +19090,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.pool.appscope
     kind: policy
     owner: catalog
@@ -17533,6 +19100,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.pool.zhudatuansandboxbootstrap
     kind: policy
     owner: catalog
@@ -17541,6 +19109,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.poolbinding.appscope
     kind: policy
     owner: catalog
@@ -17549,6 +19119,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.poolbinding.zhudatuansandboxbootstrap
     kind: policy
     owner: catalog
@@ -17557,6 +19128,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.poolitem.appscope
     kind: policy
     owner: catalog
@@ -17565,6 +19138,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.poolitem.zhudatuansandboxbootstrap
     kind: policy
     owner: catalog
@@ -17573,6 +19147,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.product.appscope
     kind: policy
     owner: catalog
@@ -17581,6 +19157,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.product.zhudatuanpurchaseapi
     kind: policy
     owner: catalog
@@ -17597,6 +19174,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.review.appscope
     kind: policy
     owner: catalog
@@ -17613,6 +19192,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.sku.zhudatuanpurchaseapi
     kind: policy
     owner: catalog
@@ -17629,6 +19209,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.sourcelisting.appscope
     kind: policy
     owner: catalog
@@ -17637,6 +19219,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: catalog.sourcelisting.zhudatuanpurchaseapi
     kind: policy
     owner: catalog
@@ -17645,6 +19228,8 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.suppliercategory.appscope
     kind: policy
     owner: catalog
@@ -17733,6 +19318,7 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: checkout.address.zhudatuanpurchaseapi
     kind: policy
     owner: checkout
@@ -17741,6 +19327,8 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: checkout.evidence.appscope
     kind: policy
     owner: checkout
@@ -17749,6 +19337,7 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: checkout.evidence.zhudatuanpurchaseapiinsert
     kind: policy
     owner: checkout
@@ -17757,6 +19346,8 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: checkout.session.appscope
     kind: policy
     owner: checkout
@@ -17765,6 +19356,7 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: checkout.session.zhudatuanpurchaseapiinsert
     kind: policy
     owner: checkout
@@ -17777,6 +19369,8 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.application.appscope
     kind: policy
     owner: experience
@@ -17785,6 +19379,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: experience.application.zhudatuansandboxbootstrap
     kind: policy
     owner: experience
@@ -17797,6 +19392,8 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.binding.appscope
     kind: policy
     owner: experience
@@ -17805,6 +19402,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: experience.binding.zhudatuansandboxbootstrap
     kind: policy
     owner: experience
@@ -17813,6 +19411,8 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.publication.appscope
     kind: policy
     owner: experience
@@ -17821,6 +19421,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821033000_complete_experience_publication.sql
+<<<<<<< HEAD
   - id: experience.publication.zhudatuanpurchaseapi
     kind: policy
     owner: experience
@@ -17833,6 +19434,8 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.release.appscope
     kind: policy
     owner: experience
@@ -17841,6 +19444,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: experience.release.zhudatuansandboxbootstrap
     kind: policy
     owner: experience
@@ -17849,6 +19453,8 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.version.appscope
     kind: policy
     owner: experience
@@ -17857,6 +19463,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: experience.version.zhudatuansandboxbootstrap
     kind: policy
     owner: experience
@@ -17865,6 +19472,8 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: extension.activationhistory.appinsert
     kind: policy
     owner: extension
@@ -17921,14 +19530,22 @@ objects:
     kind: policy
     owner: extension
     source: database/supabase/migrations/20260821051000_extension_lifecycle.sql
+<<<<<<< HEAD
   - id: finance.account.appread
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+=======
+  - id: finance.account.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.account.jobscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: finance.accountingeventrule.appread
     kind: policy
     owner: finance
@@ -17937,6 +19554,8 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.backfill.appscope
     kind: policy
     owner: finance
@@ -17945,10 +19564,17 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+<<<<<<< HEAD
   - id: finance.entry.appread
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+=======
+  - id: finance.entry.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.entry.jobscope
     kind: policy
     owner: finance
@@ -17961,14 +19587,22 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+<<<<<<< HEAD
   - id: finance.journal.appread
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+=======
+  - id: finance.journal.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.journal.jobscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: finance.ledger.appscope
     kind: policy
     owner: finance
@@ -17977,6 +19611,8 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.period.appscope
     kind: policy
     owner: finance
@@ -18001,10 +19637,13 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: finance.policyrevision.appscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reconciliation.appscope
     kind: policy
     owner: finance
@@ -18061,6 +19700,7 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: finance.statementaccount.appscope
     kind: policy
     owner: finance
@@ -18069,6 +19709,8 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.statementline.appscope
     kind: policy
     owner: finance
@@ -18077,6 +19719,7 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+<<<<<<< HEAD
   - id: finance.subledger.appscope
     kind: policy
     owner: finance
@@ -18093,6 +19736,8 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawal.appscope
     kind: policy
     owner: finance
@@ -18109,6 +19754,7 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: fulfillment.fulfillmentorder.zhudatuanpurchaseapiinsert
     kind: policy
     owner: fulfillment
@@ -18121,6 +19767,8 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.line.appscope
     kind: policy
     owner: fulfillment
@@ -18129,6 +19777,7 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: fulfillment.line.zhudatuanpurchaseapiinsert
     kind: policy
     owner: fulfillment
@@ -18137,6 +19786,8 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.milestone.appscope
     kind: policy
     owner: fulfillment
@@ -18157,10 +19808,17 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.assurance.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+  - id: identity.assurance.jobscope
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.authticket.appscope
     kind: policy
     owner: identity
@@ -18169,10 +19827,13 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821035000_add_auth_ticket_exchange.sql
+<<<<<<< HEAD
   - id: identity.authticket.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.challenge.appscope
     kind: policy
     owner: identity
@@ -18181,6 +19842,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.challenge.zhudatuanidentityapi
     kind: policy
     owner: identity
@@ -18189,6 +19851,8 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.challengedelivery.appscope
     kind: policy
     owner: identity
@@ -18197,6 +19861,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.challengedelivery.zhudatuanidentityjob
     kind: policy
     owner: identity
@@ -18209,6 +19874,8 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.challengesecret.appscope
     kind: policy
     owner: identity
@@ -18217,6 +19884,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.challengesecret.zhudatuanidentityapi
     kind: policy
     owner: identity
@@ -18225,14 +19893,23 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.credential.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.credential.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+  - id: identity.credential.jobscope
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.federatedidentity.appscope
     kind: policy
     owner: identity
@@ -18241,10 +19918,13 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.federatedidentity.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.loginattempt.appscope
     kind: policy
     owner: identity
@@ -18253,14 +19933,18 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.loginattempt.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.principal.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.principal.zhudatuanbootstrapowner
     kind: policy
     owner: identity
@@ -18269,6 +19953,12 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+  - id: identity.principal.jobscope
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.registrationpolicy.appscope
     kind: policy
     owner: identity
@@ -18277,6 +19967,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.registrationpolicy.zhudatuanbootstrap
     kind: policy
     owner: identity
@@ -18285,14 +19976,23 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.session.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.session.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+  - id: identity.session.jobscope
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.wechatgrant.appscope
     kind: policy
     owner: identity
@@ -18301,10 +20001,13 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: identity.wechatgrant.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.command.appscope
     kind: policy
     owner: inventory
@@ -18349,10 +20052,13 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: inventory.movement.zhudatuanpurchaseapi
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.observation.appscope
     kind: policy
     owner: inventory
@@ -18369,6 +20075,7 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: inventory.reservation.zhudatuanpurchaseapiinsert
     kind: policy
     owner: inventory
@@ -18385,6 +20092,8 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.snapshot.appscope
     kind: policy
     owner: inventory
@@ -18401,6 +20110,7 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: inventory.stockitem.zhudatuanpurchaseapiselect
     kind: policy
     owner: inventory
@@ -18421,6 +20131,8 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.syncstate.appscope
     kind: policy
     owner: inventory
@@ -18429,10 +20141,17 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: invoice.document.appread
     kind: policy
     owner: invoice
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+=======
+  - id: invoice.document.appscope
+    kind: policy
+    owner: invoice
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.document.jobscope
     kind: policy
     owner: invoice
@@ -18453,10 +20172,13 @@ objects:
     kind: policy
     owner: invoice
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: invoice.profile.zhudatuanpurchaseapi
     kind: policy
     owner: invoice
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.request.appscope
     kind: policy
     owner: invoice
@@ -18497,6 +20219,7 @@ objects:
     kind: policy
     owner: marketing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: marketing.campaign.zhudatuanpurchaseapiselect
     kind: policy
     owner: marketing
@@ -18505,6 +20228,8 @@ objects:
     kind: policy
     owner: marketing
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: marketing.redemption.appscope
     kind: policy
     owner: marketing
@@ -18513,6 +20238,7 @@ objects:
     kind: policy
     owner: marketing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: marketing.redemption.zhudatuanpurchaseapiinsert
     kind: policy
     owner: marketing
@@ -18525,6 +20251,8 @@ objects:
     kind: policy
     owner: marketing
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.importerror.appscope
     kind: policy
     owner: member
@@ -18553,6 +20281,7 @@ objects:
     kind: policy
     owner: member
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: member.invite.zhudatuanbootstrap
     kind: policy
     owner: member
@@ -18573,10 +20302,13 @@ objects:
     kind: policy
     owner: member
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.profile.appscope
     kind: policy
     owner: member
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: member.profile.shopjob_member_status
     kind: policy
     owner: member
@@ -18585,6 +20317,12 @@ objects:
     kind: policy
     owner: member
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+  - id: member.profile.jobscope
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.announcement.appscope
     kind: policy
     owner: notification
@@ -18649,10 +20387,13 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: ordering.aftersale.zhudatuanwebapi
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: ordering.line.appscope
     kind: policy
     owner: ordering
@@ -18661,6 +20402,7 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: ordering.line.zhudatuanpurchaseapiinsert
     kind: policy
     owner: ordering
@@ -18673,6 +20415,8 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: ordering.orderrecord.appscope
     kind: policy
     owner: ordering
@@ -18681,6 +20425,7 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: ordering.orderrecord.zhudatuanpurchaseapiinsert
     kind: policy
     owner: ordering
@@ -18697,6 +20442,8 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: ordering.reminder.appscope
     kind: policy
     owner: ordering
@@ -18729,6 +20476,7 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: ordering.suborder.zhudatuanpurchaseapiinsert
     kind: policy
     owner: ordering
@@ -18737,6 +20485,8 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.assignment.appscope
     kind: policy
     owner: organization
@@ -18761,6 +20511,7 @@ objects:
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: organization.organization.zhudatuanbootstrap
     kind: policy
     owner: organization
@@ -18781,6 +20532,8 @@ objects:
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.sourcebinding.appscope
     kind: policy
     owner: organization
@@ -18793,14 +20546,18 @@ objects:
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: organization.unitclosure.consoleclosure
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.unitclosure.jobscope
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: organization.unitclosure.zhudatuanbootstrap
     kind: policy
     owner: organization
@@ -18817,6 +20574,8 @@ objects:
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: partner.agreement.appscope
     kind: policy
     owner: partner
@@ -18881,6 +20640,7 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: payment.allocation.zhudatuanpurchaseapiinsert
     kind: policy
     owner: payment
@@ -18889,6 +20649,8 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.attempt.appscope
     kind: policy
     owner: payment
@@ -18905,6 +20667,7 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: payment.capture.zhudatuanpurchaseapiinsert
     kind: policy
     owner: payment
@@ -18913,6 +20676,8 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.deadletterreview.appscope
     kind: policy
     owner: payment
@@ -18937,6 +20702,7 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: payment.intent.zhudatuanpurchaseapiinsert
     kind: policy
     owner: payment
@@ -18949,6 +20715,8 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.intenttender.appscope
     kind: policy
     owner: payment
@@ -18957,6 +20725,7 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821039000_checkout_atomic_order.sql
+<<<<<<< HEAD
   - id: payment.intenttender.zhudatuanpurchaseapiinsert
     kind: policy
     owner: payment
@@ -18969,6 +20738,8 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.observation.appscope
     kind: policy
     owner: payment
@@ -18985,6 +20756,7 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: payment.payment.zhudatuanpurchaseapiinsert
     kind: policy
     owner: payment
@@ -18993,6 +20765,8 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.prepay.appscope
     kind: policy
     owner: payment
@@ -19065,6 +20839,7 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: pricing.price.zhudatuanpurchaseapi
     kind: policy
     owner: pricing
@@ -19081,6 +20856,8 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.pricebook.appscope
     kind: policy
     owner: pricing
@@ -19089,6 +20866,7 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: pricing.pricebook.zhudatuanpurchaseapi
     kind: policy
     owner: pricing
@@ -19105,6 +20883,8 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.quote.appscope
     kind: policy
     owner: pricing
@@ -19113,6 +20893,7 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: pricing.quote.zhudatuanpurchaseapiinsert
     kind: policy
     owner: pricing
@@ -19125,6 +20906,8 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.rule.appscope
     kind: policy
     owner: pricing
@@ -19133,10 +20916,13 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: pricing.rule.zhudatuanpurchaseapi
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.changerequest.appscope
     kind: policy
     owner: qualification
@@ -19161,10 +20947,13 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: qualification.policy.zhudatuanpurchaseapi
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.policyversion.appscope
     kind: policy
     owner: qualification
@@ -19173,10 +20962,13 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: qualification.policyversion.zhudatuanpurchaseapi
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.profile.appscope
     kind: policy
     owner: qualification
@@ -19185,10 +20977,13 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: qualification.profile.zhudatuanpurchaseapi
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.purchaselimit.appscope
     kind: policy
     owner: qualification
@@ -19197,10 +20992,13 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: qualification.purchaselimit.zhudatuanpurchaseapi
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.resource.appscope
     kind: policy
     owner: qualification
@@ -19209,10 +21007,13 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: qualification.resource.zhudatuanpurchaseapi
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.subject.appscope
     kind: policy
     owner: qualification
@@ -19221,10 +21022,13 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: qualification.subject.zhudatuanpurchaseapi
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.tag.appscope
     kind: policy
     owner: qualification
@@ -19233,6 +21037,7 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: qualification.tag.zhudatuanpurchaseapi
     kind: policy
     owner: qualification
@@ -19301,6 +21106,8 @@ objects:
     kind: policy
     owner: referral
     source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.export.appscope
     kind: policy
     owner: reporting
@@ -19321,10 +21128,13 @@ objects:
     kind: policy
     owner: reporting
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: reporting.fact.zhudatuanwebapi
     kind: policy
     owner: reporting
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.financeprojection.appscope
     kind: policy
     owner: reporting
@@ -19345,10 +21155,13 @@ objects:
     kind: policy
     owner: reporting
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: reporting.metric.zhudatuanwebapi
     kind: policy
     owner: reporting
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.orderprojection.appscope
     kind: policy
     owner: reporting
@@ -19377,10 +21190,13 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+<<<<<<< HEAD
   - id: risk.case.consoleriskcasinsert
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.case.jobscope
     kind: policy
     owner: risk
@@ -19393,6 +21209,7 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+<<<<<<< HEAD
   - id: risk.decision.consoleriskdecisioninsert
     kind: policy
     owner: risk
@@ -19401,14 +21218,19 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.decision.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: risk.decision.zhudatuanidentityapi
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.listentry.appinsert
     kind: policy
     owner: risk
@@ -19421,14 +21243,18 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+<<<<<<< HEAD
   - id: risk.listentry.consolerisklistselect
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.listentry.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: risk.listentry.zhudatuanidentityapi
     kind: policy
     owner: risk
@@ -19441,6 +21267,8 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policy.appinsert
     kind: policy
     owner: risk
@@ -19453,14 +21281,18 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+<<<<<<< HEAD
   - id: risk.policy.consoleriskpolicyselect
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policy.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: risk.policy.zhudatuanidentityapi
     kind: policy
     owner: risk
@@ -19473,6 +21305,8 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policyversion.appinsert
     kind: policy
     owner: risk
@@ -19485,14 +21319,18 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+<<<<<<< HEAD
   - id: risk.policyversion.consoleriskversionselect
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policyversion.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: risk.policyversion.zhudatuanidentityapi
     kind: policy
     owner: risk
@@ -19505,6 +21343,8 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.replay.appinsert
     kind: policy
     owner: risk
@@ -19529,14 +21369,18 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+<<<<<<< HEAD
   - id: risk.signal.consolerisksignalselect
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.signal.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: risk.signal.zhudatuanidentityapi
     kind: policy
     owner: risk
@@ -19549,6 +21393,8 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.deadletter.appscope
     kind: policy
     owner: runtime
@@ -19557,10 +21403,13 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.deadletter.zhudatuanidentityjob
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.event.appscope
     kind: policy
     owner: runtime
@@ -19573,14 +21422,18 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.idempotency.consoleidempotency
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.idempotency.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.idempotency.zhudatuanidentityapi
     kind: policy
     owner: runtime
@@ -19609,6 +21462,8 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.inbox.appscope
     kind: policy
     owner: runtime
@@ -19625,6 +21480,7 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.job.zhudatuanidentityapi
     kind: policy
     owner: runtime
@@ -19641,6 +21497,8 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.lease.appscope
     kind: policy
     owner: runtime
@@ -19653,10 +21511,13 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.operation.consoleoperationselect
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.operation.jobscope
     kind: policy
     owner: runtime
@@ -19665,14 +21526,18 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.outbox.consoleoutboxinsert
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.outbox.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.outbox.zhudatuanidentityapi
     kind: policy
     owner: runtime
@@ -19685,6 +21550,8 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.projectionoffset.appscope
     kind: policy
     owner: runtime
@@ -19721,14 +21588,18 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.schemaversion.consoleschemaversionselect
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.schemaversion.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: runtime.schemaversion.zhudatuanbootstrap
     kind: policy
     owner: runtime
@@ -19753,6 +21624,8 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.account.appscope
     kind: policy
     owner: support
@@ -19789,6 +21662,7 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+<<<<<<< HEAD
   - id: support.conversation.consolesupportconversationselect
     kind: policy
     owner: support
@@ -19797,6 +21671,8 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.conversation.jobscope
     kind: policy
     owner: support
@@ -19813,10 +21689,13 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+<<<<<<< HEAD
   - id: support.evidence.consolesupportevidenceselect
     kind: policy
     owner: support
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.evidence.jobscope
     kind: policy
     owner: support
@@ -19825,10 +21704,13 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+<<<<<<< HEAD
   - id: support.history.consolesupporthistoryinsert
     kind: policy
     owner: support
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.history.jobscope
     kind: policy
     owner: support
@@ -19837,6 +21719,7 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+<<<<<<< HEAD
   - id: support.message.consolesupportmessageinsert
     kind: policy
     owner: support
@@ -19845,6 +21728,8 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.message.jobscope
     kind: policy
     owner: support
@@ -19861,6 +21746,7 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
   - id: support.ticket.consolesupportticketselect
     kind: policy
     owner: support
@@ -19869,6 +21755,8 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.ticket.jobscope
     kind: policy
     owner: support
@@ -20157,10 +22045,13 @@ objects:
     kind: schema
     owner: qualification
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
+<<<<<<< HEAD
   - id: referral
     kind: schema
     owner: referral
     source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting
     kind: schema
     owner: reporting
@@ -20185,11 +22076,14 @@ objects:
     kind: schema
     owner: voucher
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
+<<<<<<< HEAD
   - id: access.actionproof
     kind: table
     owner: access
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.decisionaudit
     kind: table
     owner: access
@@ -20210,6 +22104,7 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821013000_create_identity_access.sql
     rls: true
+<<<<<<< HEAD
   - id: access.owneractionproof
     kind: table
     owner: access
@@ -20220,11 +22115,14 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.permission
     kind: table
     owner: access
     source: database/supabase/migrations/20260821013000_create_identity_access.sql
     rls: true
+<<<<<<< HEAD
   - id: access.platformowner
     kind: table
     owner: access
@@ -20240,6 +22138,8 @@ objects:
     owner: access
     source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.role
     kind: table
     owner: access
@@ -20570,11 +22470,14 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+<<<<<<< HEAD
   - id: finance.accountingeventrule
     kind: table
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.backfill
     kind: table
     owner: finance
@@ -20595,11 +22498,14 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+<<<<<<< HEAD
   - id: finance.ledger
     kind: table
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.period
     kind: table
     owner: finance
@@ -20615,6 +22521,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+<<<<<<< HEAD
   - id: finance.policypreview
     kind: table
     owner: finance
@@ -20625,6 +22532,8 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reconciliation
     kind: table
     owner: finance
@@ -20635,6 +22544,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     rls: true
+<<<<<<< HEAD
   - id: finance.reconciliationrepair
     kind: table
     owner: finance
@@ -20655,6 +22565,8 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.settlement
     kind: table
     owner: finance
@@ -20680,16 +22592,20 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+<<<<<<< HEAD
   - id: finance.statementaccount
     kind: table
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.statementline
     kind: table
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     rls: true
+<<<<<<< HEAD
   - id: finance.subledger
     kind: table
     owner: finance
@@ -20700,6 +22616,8 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawal
     kind: table
     owner: finance
@@ -20845,11 +22763,14 @@ objects:
     owner: invoice
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+<<<<<<< HEAD
   - id: invoice.issueartifact
     kind: table
     owner: invoice
     source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.line
     kind: table
     owner: invoice
@@ -21195,6 +23116,7 @@ objects:
     owner: qualification
     source: database/supabase/migrations/20260821016000_create_qualification.sql
     rls: true
+<<<<<<< HEAD
   - id: referral.binding
     kind: table
     owner: referral
@@ -21235,6 +23157,8 @@ objects:
     owner: referral
     source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
     rls: true
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.export
     kind: table
     owner: reporting
@@ -21535,6 +23459,7 @@ objects:
     owner: voucher
     source: database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql
     rls: true
+<<<<<<< HEAD
   - id: access.membership.platform_owner_singleton_membership
     kind: trigger
     owner: access
@@ -21649,6 +23574,8 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: access
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.accessrecord.immutable
     kind: trigger
     owner: audit
@@ -21669,6 +23596,7 @@ objects:
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+<<<<<<< HEAD
   - id: capability.capability.platform_owner_operator_coverage_capability
     kind: trigger
     owner: capability
@@ -21688,16 +23616,21 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     operationalOwner: finance
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.entry.finance_entry_immutable
     kind: trigger
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.entry.finance_entry_posted_balance
     kind: trigger
     owner: finance
     source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     operationalOwner: finance
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.journal.finance_journal_balance
     kind: trigger
     owner: finance
@@ -21708,6 +23641,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.journal.finance_journal_posted_balance
     kind: trigger
     owner: finance
@@ -21748,11 +23682,14 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
     operationalOwner: finance
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.settlementline.finance_settlementline_immutable
     kind: trigger
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
   - id: finance.statement.finance_statement_immutable
     kind: trigger
     owner: finance
@@ -21828,11 +23765,14 @@ objects:
     owner: invoice
     source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
     operationalOwner: invoice
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requestline.invoice_requestline_immutable
     kind: trigger
     owner: invoice
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: invoice
+<<<<<<< HEAD
   - id: invoice.requestline.invoice_requestline_snapshot_guard
     kind: trigger
     owner: invoice
@@ -21843,11 +23783,14 @@ objects:
     owner: invoice
     source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
     operationalOwner: invoice
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requestprofile.invoice_requestprofile_immutable
     kind: trigger
     owner: invoice
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: invoice
+<<<<<<< HEAD
   - id: invoice.requestprofile.invoice_requestprofile_snapshot_guard
     kind: trigger
     owner: invoice
@@ -21937,6 +23880,8 @@ objects:
     owner: runtime
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
     operationalOwner: runtime
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.history.support_history_immutable
     kind: trigger
     owner: support

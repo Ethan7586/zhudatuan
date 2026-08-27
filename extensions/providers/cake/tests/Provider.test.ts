@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { REQUIRED_PROVIDER_IDS } from '@shop/contract';
 import { CakeProvider } from '../Provider';
+<<<<<<< HEAD
 import { definition, manifest } from '../manifest';
+=======
+import { manifest } from '../manifest';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 describe('cake provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('cake');
     expect(CakeProvider.definition.id).toBe('cake');
+<<<<<<< HEAD
     expect(CakeProvider.definition.version).toBe('1.1.0');
     expect(CakeProvider.definition.contractVersion).toBe('cake.v2');
     expect(CakeProvider.definition.capabilities).toEqual(['Catalog', 'Price', 'Inventory']);
@@ -46,4 +51,9 @@ describe('cake provider contract', () => {
     } as const;
     expect(() => CakeProvider.create({ manifest: manifest('signed'), connection })).toThrow('CAKE_ROOT_CATEGORY_CONFIGURATION_INVALID');
   });
+=======
+    expect(manifest('signed').signature).toBe('signed');
+    expect(() => manifest('')).toThrow('CAKE_MANIFEST_SIGNATURE_MISSING');
+  });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

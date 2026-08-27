@@ -1,9 +1,14 @@
 import { randomUUID } from 'node:crypto';
+<<<<<<< HEAD
+=======
+import { FinancePort } from '../../../finance/FinanceModule';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface VoucherDatabase {
   query<R extends object = Record<string, unknown>>(text: string, values?: readonly unknown[]): Promise<Readonly<{ rows: readonly R[] }>>;
 }
 
+<<<<<<< HEAD
 interface FinancialPosting {
   post(database: VoucherDatabase, intent: Readonly<{
     scope: string;
@@ -18,6 +23,8 @@ interface FinancialPosting {
   }>): Promise<string>;
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export interface VoucherChoice { readonly id: string; readonly remaining_minor: number; readonly version: number; readonly program: string }
 export interface VoucherTender { readonly reference: string; readonly amountMinor: number }
 export interface VoucherRefund {
@@ -26,7 +33,11 @@ export interface VoucherRefund {
 
 /** Public voucher boundary. It owns eligibility, locks, state events, redemption, reversal, and accounting facts. */
 export class VoucherPort {
+<<<<<<< HEAD
   constructor(private readonly finance?: FinancialPosting) {}
+=======
+  constructor(private readonly finance = new FinancePort()) {}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   async preview(database: VoucherDatabase, vouchers: readonly string[], member: string, scope: string): Promise<readonly VoucherChoice[]> {
     if (vouchers.length === 0) return [];
@@ -83,7 +94,11 @@ export class VoucherPort {
     [`redemption:${randomUUID()}`, voucherid, `order:${order}:${voucherid}`, order, amountMinor]);
     if (!redemption.rows[0]) throw new Error('VOUCHER_REDEMPTION_DUPLICATE');
     await status(database, voucherid, 'reserved', selected.state, 'orderpayment');
+<<<<<<< HEAD
     await this.financial().post(database, { scope: selected.scope_id, referenceType: 'voucher.redeem', referenceId: `${order}:${voucherid}`,
+=======
+    await this.finance.post(database, { scope: selected.scope_id, referenceType: 'voucher.redeem', referenceId: `${order}:${voucherid}`,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       currency: 'CNY', description: 'Voucher redemption', debit: { code: `voucher.program.${selected.program_id}`, kind: 'liability' },
       credit: { code: 'commerce.clearing', kind: 'income' }, amountMinor });
   }
@@ -107,7 +122,11 @@ export class VoucherPort {
     await status(database, input.voucher, redemption.state, restored.rows[0]!.state, 'paymentrefund');
     await database.query(`update voucher.redemption set reversed_at=case when (select coalesce(sum(amount_minor),0) from voucher.reversal
       where redemption_id=$1 and state='reversed')>=amount_minor then clock_timestamp() else null end,version=version+1 where id=$1`, [redemption.id]);
+<<<<<<< HEAD
     await this.financial().post(database, { scope: redemption.scope_id, referenceType: 'voucher.refund', referenceId: `${input.refund}:${input.voucher}`,
+=======
+    await this.finance.post(database, { scope: redemption.scope_id, referenceType: 'voucher.refund', referenceId: `${input.refund}:${input.voucher}`,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       currency: 'CNY', description: 'Voucher redemption refund', debit: { code: 'commerce.refund', kind: 'expense' },
       credit: { code: `voucher.program.${redemption.program_id}`, kind: 'liability' }, amountMinor: input.amountMinor });
   }
@@ -141,11 +160,14 @@ export class VoucherPort {
       from voucher.statusevent where voucher_id=$1`, [input.voucher, accepted.previous_state, input.actor]);
     return { id, amountMinor: accepted.amount_minor };
   }
+<<<<<<< HEAD
 
   private financial(): FinancialPosting {
     if (!this.finance) throw new Error('VOUCHER_FINANCE_DEPENDENCY_REQUIRED');
     return this.finance;
   }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 async function status(database: VoucherDatabase, voucher: string, previous: string, next: string, reason: string): Promise<void> {

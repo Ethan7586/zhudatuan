@@ -3,7 +3,10 @@ import type { Cache, CacheState } from './Cache';
 
 export class RedisCache implements Cache {
   private client: RedisClientType | undefined;
+<<<<<<< HEAD
   private readonly unavailableListeners = new Set<(state: CacheState) => void>();
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   private status: CacheState = Object.freeze({ available: false, reason: 'CACHE_NOT_STARTED' });
 
   constructor(private readonly connection: () => Promise<string>) {}
@@ -35,11 +38,14 @@ export class RedisCache implements Cache {
     }
   }
 
+<<<<<<< HEAD
   onUnavailable(listener: (state: CacheState) => void): () => void {
     this.unavailableListeners.add(listener);
     return () => this.unavailableListeners.delete(listener);
   }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   async put<T>(key: string, value: T, seconds: number): Promise<boolean> {
     if (!Number.isSafeInteger(seconds) || seconds < 1) throw new Error('CACHE_TTL_INVALID');
     if (!this.ready()) return false;
@@ -78,9 +84,14 @@ export class RedisCache implements Cache {
   }
 
   private degrade(cause: unknown): void {
+<<<<<<< HEAD
     const transitioned = this.status.available;
     const code = cause instanceof Error ? cause.message.split(':', 1)[0]!.slice(0, 120) : 'CACHE_UNAVAILABLE';
     this.status = Object.freeze({ available: false, reason: code });
     if (transitioned) for (const listener of this.unavailableListeners) listener(this.status);
+=======
+    const code = cause instanceof Error ? cause.message.split(':', 1)[0]!.slice(0, 120) : 'CACHE_UNAVAILABLE';
+    this.status = Object.freeze({ available: false, reason: code });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }

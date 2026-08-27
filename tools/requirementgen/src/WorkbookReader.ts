@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { strFromU8, unzipSync } from 'fflate';
 
 export interface WorkbookCell {
@@ -81,6 +82,8 @@ export class Workbook {
   }
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function sharedStrings(source: string): readonly string[] {
   return [...source.matchAll(/<si>([\s\S]*?)<\/si>/g)]
     .map((match) => [...match[1]!.matchAll(/<t(?: [^>]*)?>([\s\S]*?)<\/t>/g)]
@@ -107,6 +110,7 @@ function decodeXml(value: string): string {
     .replace(/&apos;/g, "'").replace(/&#x([0-9a-f]+);/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)))
     .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code))).replace(/&amp;/g, '&');
 }
+<<<<<<< HEAD
 
 function columnNumber(value: string): number {
   return [...value].reduce((result, character) => result * 26 + character.charCodeAt(0) - 64, 0);
@@ -122,3 +126,5 @@ function columnName(value: number): string {
   }
   return result;
 }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

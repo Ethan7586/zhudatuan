@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 *,
 *::before,
 *::after {
+=======
+*, *::before, *::after {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   box-sizing: border-box;
 }
 
@@ -20,19 +24,27 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+<<<<<<< HEAD
 button,
 input,
 select,
 textarea {
+=======
+button, input, select, textarea {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   color: inherit;
   font: inherit;
 }
 
+<<<<<<< HEAD
 button,
 a,
 input,
 select,
 textarea {
+=======
+button, a, input, select, textarea {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -43,12 +55,21 @@ button {
 
 button:disabled {
   cursor: not-allowed;
+<<<<<<< HEAD
   opacity: var(--sw-opacity-disabled);
 }
 
 :focus-visible {
   outline: var(--sw-focus-width) solid var(--sw-brand);
   outline-offset: var(--sw-focus-offset);
+=======
+  opacity: 0.58;
+}
+
+:focus-visible {
+  outline: 0.1875rem solid var(--sw-brand);
+  outline-offset: 0.125rem;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 ::selection {
@@ -56,10 +77,14 @@ button:disabled {
   color: var(--sw-brand-ink);
 }
 
+<<<<<<< HEAD
 h1,
 h2,
 h3,
 p {
+=======
+h1, h2, h3, p {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   margin-top: 0;
 }
 
@@ -137,8 +162,12 @@ a {
   width: min(32rem, 100%);
 }
 
+<<<<<<< HEAD
 section[role='alert'],
 section[role='status'] {
+=======
+section[role='alert'], section[role='status'] {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   border: 0.0625rem solid var(--sw-border);
   border-radius: var(--sw-radius-md);
   background: var(--sw-surface);
@@ -159,6 +188,7 @@ section[role='alert'] > button {
   padding: var(--sw-space-1) var(--sw-space-2);
 }
 
+<<<<<<< HEAD
 .swaccessdenied {
   box-sizing: border-box;
   display: grid;
@@ -322,6 +352,8 @@ section[role='alert'] > button {
   }
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .sr-only {
   position: absolute;
   width: 0.0625rem;
@@ -335,6 +367,7 @@ section[role='alert'] > button {
 }
 
 @media (prefers-reduced-motion: no-preference) {
+<<<<<<< HEAD
   button,
   a,
   input,
@@ -345,5 +378,9 @@ section[role='alert'] > button {
       background-color var(--sw-duration-fast) var(--sw-ease-standard),
       color var(--sw-duration-fast) var(--sw-ease-standard),
       box-shadow var(--sw-duration-fast) var(--sw-ease-standard);
+=======
+  button, a, input, select, textarea {
+    transition: border-color var(--sw-duration-fast) var(--sw-ease-standard), background-color var(--sw-duration-fast) var(--sw-ease-standard), color var(--sw-duration-fast) var(--sw-ease-standard), box-shadow var(--sw-duration-fast) var(--sw-ease-standard);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }

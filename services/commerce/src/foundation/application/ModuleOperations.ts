@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { createHash, randomUUID } from 'node:crypto';
+=======
+import { createHash } from 'node:crypto';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { permissionDefinition } from '@shop/authz';
 import { OperationCatalog, type OperationId } from '@shop/contract';
 import { Redactor } from '@shop/telemetry';
@@ -24,6 +28,7 @@ export interface OperationLifecycle<T = unknown> {
 type OperationEntry = OperationAction | OperationLifecycle;
 export type OperationActions = Readonly<Partial<Record<OperationId, OperationEntry>>>;
 
+<<<<<<< HEAD
 const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
   'identity.sessions.create': Object.freeze(['provider', 'target', 'membership']),
   'identity.tickets.exchange': Object.freeze([]),
@@ -52,6 +57,8 @@ const IDENTITY_AUDIT_OUTPUT_FIELDS: Readonly<Partial<Record<OperationId, readonl
   'identity.tickets.exchange': Object.freeze(['proof']),
 });
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function operationLifecycle<T>(definition: OperationLifecycle<T>): OperationLifecycle {
   return definition as OperationLifecycle;
 }
@@ -128,7 +135,11 @@ export class ModuleOperations implements OperationUsecase {
     if (!key) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
     return this.command.run(transactionContext(request, this.module, 'command'), async (client) => {
       const hash = operationRequestHash(request);
+<<<<<<< HEAD
       const actor = request.access?.actor.id ?? `public:${request.type}`;
+=======
+      const actor = request.access?.actor.id ?? `public:${hash.slice(0, 24)}`;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const scope = request.access?.scope.id ?? `public:${this.module}`;
       await client.query(`insert into runtime.idempotency(scope,actor_id,key,request_hash,state,expires_at)
         values($1,$2,$3,$4,'started',clock_timestamp()+interval '24 hours') on conflict do nothing`, [scope, actor, key, hash]);
@@ -148,9 +159,14 @@ export class ModuleOperations implements OperationUsecase {
         result = cause.result;
       }
       await appendOperationAudit(this.audit, client, request, this.module, result, actor, scope, hash);
+<<<<<<< HEAD
       const replay = idempotencyReplayResponse(request, result);
       await client.query(`update runtime.idempotency set state='completed',response=$4::jsonb
         where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(replay)]);
+=======
+      await client.query(`update runtime.idempotency set state='completed',response=$4::jsonb
+        where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(result)]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return result;
     });
   }
@@ -160,6 +176,7 @@ export async function appendOperationAudit(audit: AuditSink, client: OperationDa
   result: OperationResult, actor: string, scope: string, requestHashValue: string): Promise<void> {
   const body = request.input.body && typeof request.input.body === 'object' && !Array.isArray(request.input.body)
     ? request.input.body as Record<string, unknown> : {};
+<<<<<<< HEAD
   const resource = Object.values(request.input.path)[0] ?? null;
   const operation = OperationCatalog.get(request.type);
   const redactor = new Redactor();
@@ -203,6 +220,20 @@ function redactAuditFields(value: unknown, fields: readonly string[] | undefined
     key,
     names.has(key) ? '[REDACTED]' : redactAuditFields(item, fields),
   ]));
+=======
+  const reason = typeof body.reason === 'string' ? body.reason.slice(0, 500) : null;
+  const resource = Object.values(request.input.path)[0] ?? null;
+  const operation = OperationCatalog.get(request.type);
+  const auditBody = operation.module === 'observability' ? { redacted: true } : request.input.body;
+  const redactor = new Redactor();
+  const auditResult = operation.id === 'identity.invitations.create' && result.body !== null && typeof result.body === 'object' && !Array.isArray(result.body)
+    ? { ...result.body, code: '[REDACTED]' } : result.body;
+  await audit.record(client, { scope, actor, actorType:request.access?.actor.target ?? 'public', action:request.type, resourceType:module,
+    resource, before:redactor.redact({ path:request.input.path, query:request.input.query, body:auditBody, expectedVersion:request.input.expectedVersion ?? null }),
+    after:redactor.redact(auditResult ?? null), evidence:{ status:result.status, idempotency:request.input.idempotency, requestHash:requestHashValue, reason,
+      permission:operation.permission ?? null, capabilities:request.access?.capabilities ?? [] },
+    trace:request.access?.trace ?? requestHashValue });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export function rowResult<T extends QueryResultRow>(result: QueryResult<T>, status = 200): OperationResult {
@@ -232,6 +263,7 @@ export function operationRequestHash(request: OperationRequest): string {
     type: request.type,
     path: request.input.path,
     query: request.input.query,
+<<<<<<< HEAD
     body: idempotencyBody(request),
     expectedVersion: request.input.expectedVersion ?? null,
   }));
@@ -271,6 +303,14 @@ function containsActionProof(body: unknown): boolean {
     && typeof Reflect.get(actionProof, 'proof') === 'string';
 }
 
+=======
+    body: request.input.body,
+  }));
+}
+
+function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function projection(value: unknown): readonly string[] {
   if (!value || typeof value!=='object') return [];
   if (Array.isArray(value)) return value.length===0 ? [] : projection(value[0]);

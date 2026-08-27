@@ -7,10 +7,15 @@
     "build": "npm run typecheck",
     "generate": "node --import tsx src/ContractGenerator.ts",
     "generate:client": "node --import tsx src/ContractGenerator.ts --scope=contract-sdk",
+<<<<<<< HEAD
     "generate:database": "node --import tsx src/ContractGenerator.ts --scope=database",
     "check": "node --import tsx src/ContractGenerator.ts --check",
     "check:client": "node --import tsx src/ContractGenerator.ts --scope=contract-sdk --check",
     "check:database": "node --import tsx src/ContractGenerator.ts --scope=database --check",
+=======
+    "check": "node --import tsx src/ContractGenerator.ts --check",
+    "check:client": "node --import tsx src/ContractGenerator.ts --scope=contract-sdk --check",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "lint": "npm run typecheck",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"

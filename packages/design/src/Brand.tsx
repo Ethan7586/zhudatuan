@@ -12,6 +12,7 @@ export interface BrandProps {
 }
 
 export function Brand({ variant = 'lockup', product, inverse = false }: BrandProps): ReactElement<{ readonly className: string }> {
+<<<<<<< HEAD
   const accessibleName = product === undefined ? (variant === 'lockup' ? '智慧翼 Smart Wing 企业福利商城' : '智慧翼 Smart Wing') : '';
   return (
     <span className={`swbrand swbrand-${variant}${inverse ? ' swbrand-inverse' : ''}`}>
@@ -24,4 +25,10 @@ export function Brand({ variant = 'lockup', product, inverse = false }: BrandPro
       )}
     </span>
   );
+=======
+  return <span className={`swbrand swbrand-${variant}${inverse ? ' swbrand-inverse' : ''}`}>
+    <img src={assets[variant]} alt={variant === 'lockup' ? '智慧翼 Smart Wing 企业福利商城' : '智慧翼 Smart Wing'} />
+    {product === undefined ? null : <span className="swbrandcopy"><strong>智慧翼</strong><small>{product}</small></span>}
+  </span>;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

@@ -6,12 +6,16 @@ export const COMMERCE_EVENTS = Object.freeze([
   eventContract({"type":"identity.session.revoked","version":1,"module":"identity"}),
   eventContract({"type":"identity.challenge.started","version":1,"module":"identity"}),
   eventContract({"type":"identity.member.registered","version":1,"module":"identity"}),
+<<<<<<< HEAD
   eventContract({"type":"identity.member.reset","version":1,"module":"identity"}),
   eventContract({"type":"access.version.changed","version":1,"module":"access"}),
   eventContract({"type":"access.owner.transfer.initiated","version":1,"module":"access"}),
   eventContract({"type":"access.owner.bootstrapped","version":1,"module":"access"}),
   eventContract({"type":"access.owner.transferred","version":1,"module":"access"}),
   eventContract({"type":"access.owner.transfer.cancelled","version":1,"module":"access"}),
+=======
+  eventContract({"type":"access.version.changed","version":1,"module":"access"}),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   eventContract({"type":"catalog.listing.published","version":1,"module":"catalog"}),
   eventContract({"type":"inventory.stock.changed","version":1,"module":"inventory"}),
   eventContract({"type":"inventory.stock.reserved","version":1,"module":"inventory"}),
@@ -20,7 +24,10 @@ export const COMMERCE_EVENTS = Object.freeze([
   eventContract({"type":"checkout.quote.confirmed","version":1,"module":"checkout"}),
   eventContract({"type":"order.placed","version":1,"module":"order"}),
   eventContract({"type":"order.paid","version":1,"module":"order"}),
+<<<<<<< HEAD
   eventContract({"type":"order.received","version":1,"module":"order"}),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   eventContract({"type":"order.cancelled","version":1,"module":"order"}),
   eventContract({"type":"payment.succeeded","version":1,"module":"payment"}),
   eventContract({"type":"payment.refunded","version":1,"module":"payment"}),

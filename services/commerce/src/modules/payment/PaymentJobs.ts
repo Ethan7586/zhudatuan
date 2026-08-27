@@ -1,8 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import type { ClaimedJob, JobProcessor } from '../../foundation/application/JobRunner';
+<<<<<<< HEAD
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import { providerOccurredAt, type PaymentGateway, type ProviderRefundObservation } from './application/port/PaymentGateway';
+=======
+import type { DatabasePool } from '../../foundation/persistence/Pool';
+import type { PaymentGateway } from './application/port/PaymentGateway';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { PaymentReference } from './domain/model/PaymentReference';
 import { PaymentSettlement, releaseOrderHolds } from './application/PaymentSettlement';
 import { RefundPlanner } from './application/RefundPlanner';
@@ -81,11 +86,18 @@ export class PaymentJobProcessor implements JobProcessor {
 
   private settleObserved(selected: IntentTarget, observed: ProviderObservation): Promise<void> {
     if (!observed.transaction) throw new Error('PAYMENT_PROVIDER_TRANSACTION_MISSING');
+<<<<<<< HEAD
     const occurredAt = providerOccurredAt(observed.occurredAt, 'PAYMENT_PROVIDER_OCCURRED_AT_REQUIRED');
     return this.settleSuccess(selected, observed.transaction, occurredAt, paymentEffect(selected, observed.transaction, occurredAt));
   }
 
   private async settleSuccess(selected: IntentTarget, transaction: string, occurredAt: string, effect: ProviderEffect): Promise<void> {
+=======
+    return this.settleSuccess(selected, observed.transaction);
+  }
+
+  private async settleSuccess(selected: IntentTarget, transaction: string): Promise<void> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const client = await this.pool.connect();
     try {
       await client.query('begin');
@@ -94,6 +106,7 @@ export class PaymentJobProcessor implements JobProcessor {
         from payment.intent intent join ordering.orderrecord orders on orders.id=intent.order_id join payment.attempt attempt on attempt.intent_id=intent.id
         where intent.id=$1 and attempt.id=$2 for update of intent,orders,attempt`, [selected.intent, selected.attempt])).rows[0];
       if (!current) { await client.query('commit'); return; }
+<<<<<<< HEAD
       const sealed = await client.query(`update payment.attempt set state='succeeded',external_transaction=$2,completed_at=$3::timestamptz,
         provider_occurred_at=$3::timestamptz,provider_effect=$4::jsonb,
         provider_effect_hash=encode(public.digest($4::jsonb::text,'sha256'),'hex')
@@ -106,41 +119,67 @@ export class PaymentJobProcessor implements JobProcessor {
         await client.query('commit');
         return;
       }
+=======
+      await client.query(`update payment.attempt set state='succeeded',external_transaction=$2,completed_at=clock_timestamp()
+        where id=$1 and (external_transaction is null or external_transaction=$2)`, [selected.attempt, transaction]);
+      if (current.payment) { await client.query('commit'); return; }
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const payable = ['created','authorizing','authorized'].includes(current.intent_state)
         && ['unpaid','authorizing'].includes(current.payment_state) && current.lifecycle_state !== 'cancelled';
       if (payable) {
         await this.settlement.capture(client, { intent: selected.intent, order: selected.order_id, scope: selected.scope_id, mall: selected.mall_id,
+<<<<<<< HEAD
           member: selected.member_id, amountMinor: selected.amount_minor, currency: selected.currency },
         selected.amount_minor === selected.provider_minor ? 'wechat' : 'mixed', occurredAt);
         await sealCapture(client, selected, occurredAt, effect, selected.amount_minor);
       } else {
         await this.captureLatePayment(client, selected, transaction, occurredAt, effect);
+=======
+          member: selected.member_id, amountMinor: selected.amount_minor, currency: selected.currency }, selected.amount_minor === selected.provider_minor ? 'wechat' : 'mixed');
+      } else {
+        await this.captureLatePayment(client, selected, transaction);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       }
       await client.query('commit');
     } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
   }
 
+<<<<<<< HEAD
   private async captureLatePayment(database: OperationDatabase, selected: IntentTarget,
     transaction: string, occurredAt: string, effect: ProviderEffect): Promise<void> {
+=======
+  private async captureLatePayment(database: import('../../foundation/application/ModuleOperations').OperationDatabase, selected: IntentTarget,
+    transaction: string): Promise<void> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     await releaseOrderHolds(database, selected.order_id);
     await database.query(`update payment.intenttender set state=case when kind='wechat' then 'captured' else 'released' end where intent_id=$1`, [selected.intent]);
     await database.query(`update payment.intent set state='captured',version=version+1 where id=$1`, [selected.intent]);
     const payment = `payment:${selected.intent}`;
     await database.query(`insert into payment.payment(id,intent_id,amount_minor,currency,captured_minor,refunded_minor,state,version)
       values($1,$2,$3,$4,$3,0,'captured',0)`, [payment, selected.intent, selected.provider_minor, selected.currency]);
+<<<<<<< HEAD
     await database.query(`insert into payment.capture(id,scope_id,mall_id,member_id,order_id,source,currency,amount_minor,state,idempotency_key,
       completed_at,created_at,provider_occurred_at,provider_effect,provider_effect_hash)
       values($1,$2,$3,$4,$5,'latewechat',$6,$7,'succeeded',$8,$9::timestamptz,clock_timestamp(),$9::timestamptz,$10::jsonb,
         encode(public.digest($10::jsonb::text,'sha256'),'hex'))`,
     [`capture:${selected.intent}`, selected.scope_id, selected.mall_id, selected.member_id, selected.order_id, selected.currency,
       selected.provider_minor, `late:${selected.intent}`, occurredAt, JSON.stringify(effect)]);
+=======
+    await database.query(`insert into payment.capture(id,scope_id,mall_id,member_id,order_id,source,currency,amount_minor,state,idempotency_key,completed_at,created_at)
+      values($1,$2,$3,$4,$5,'latewechat',$6,$7,'succeeded',$8,clock_timestamp(),clock_timestamp())`,
+    [`capture:${selected.intent}`, selected.scope_id, selected.mall_id, selected.member_id, selected.order_id, selected.currency, selected.provider_minor, `late:${selected.intent}`]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     await database.query(`insert into payment.allocation(payment_id,target_type,target_id,amount_minor,currency)
       values($1,'order',$2,$3,$4)`, [payment, selected.order_id, selected.provider_minor, selected.currency]);
     await orderPort.markLatePaid(database, selected.order_id);
     const refund = await this.refunds.create(database, { id: `refund:late:${selected.intent}`, payment, amountMinor: selected.provider_minor,
       idempotency: `late:${selected.intent}`, reason: 'latepayment', scope: selected.scope_id });
     const evidence = { intent: selected.intent, order: selected.order_id, payment, refund: refund.id, transaction,
+<<<<<<< HEAD
       providerMinor: selected.provider_minor, providerOccurredAt: occurredAt, detectedAt: new Date().toISOString() };
+=======
+      providerMinor: selected.provider_minor, detectedAt: new Date().toISOString() };
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     await database.query(`insert into payment.recoverycase(id,scope_id,order_id,resource_type,resource_id,severity,state,error_code,evidence,
       occurrence_count,opened_at) values($1,$2,$3,'intent',$4,'critical','open','PAYMENT_LATE_SUCCESS',$5::jsonb,1,clock_timestamp())
       on conflict(resource_type,resource_id) do update set occurrence_count=payment.recoverycase.occurrence_count+1,evidence=excluded.evidence`,
@@ -149,12 +188,21 @@ export class PaymentJobProcessor implements JobProcessor {
       values($1,'paymentrefund','payment',$2,jsonb_build_object('refund',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())
       on conflict(id) do update set state='queued',available_at=clock_timestamp(),updated_at=clock_timestamp()`,
     [`job:late:${selected.intent}`, selected.scope_id, refund.id]);
+<<<<<<< HEAD
     for (const [type, aggregate, payload, eventOccurredAt] of [
       ['payment.late.detected', payment, evidence, occurredAt],
       ['payment.autorefund.requested', refund.id, { ...evidence, refund: refund.id }, null],
     ] as const) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
       occurred_at,available_at) values($1,$2,1,'payment',$3,$4,$5::jsonb,$1,coalesce($6::timestamptz,clock_timestamp()),clock_timestamp())`,
     [`event:${randomUUID()}`, type, aggregate, selected.scope_id, JSON.stringify(payload), eventOccurredAt]);
+=======
+    for (const [type, aggregate, payload] of [
+      ['payment.late.detected', payment, evidence],
+      ['payment.autorefund.requested', refund.id, { ...evidence, refund: refund.id }],
+    ] as const) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
+      occurred_at,available_at) values($1,$2,1,'payment',$3,$4,$5::jsonb,$1,clock_timestamp(),clock_timestamp())`,
+    [`event:${randomUUID()}`, type, aggregate, selected.scope_id, JSON.stringify(payload)]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 
   private async expire(selected: IntentTarget, providerState: string): Promise<void> {
@@ -242,8 +290,11 @@ export class PaymentJobProcessor implements JobProcessor {
     if (selected.currency !== 'CNY') throw new Error('PAYMENT_CURRENCY_UNSUPPORTED');
     if (selected.external_minor === 0) return this.completeRefund(refundid, null);
     if (!selected.transaction || selected.external_total <= 0) throw new Error('PAYMENT_TRANSACTION_REFERENCE_MISSING');
+<<<<<<< HEAD
     const sealed = await sealedRefundEffect(this.pool, refundid);
     if (sealed) return this.completeRefund(refundid, sealed.reference);
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const sequence = await this.pool.query<{ sequence: number }>(`select coalesce(max(sequence),0)+1 sequence from payment.providerattempt where refund_id=$1`, [refundid]);
     const attempt = `providerattempt:${randomUUID()}`;
     await this.pool.query(`insert into payment.providerattempt(id,refund_id,sequence,operation,worker_id,outcome,started_at)
@@ -251,12 +302,17 @@ export class PaymentJobProcessor implements JobProcessor {
     await channelOperationPort.record(this.pool, { id: `provideroperation:refund:${refundid}`, provider: 'wechat', scope: selected.scope_id,
       kind: 'refund', idempotency: refundid, reference: refundid, external: null, state: 'processing',
       requestHash: digest(`${refundid}:${selected.external_minor}:${selected.external_total}:${selected.currency}`), response: {} });
+<<<<<<< HEAD
     let result: Readonly<ProviderRefundObservation>;
+=======
+    let result: Readonly<{ state: 'processing' | 'succeeded' | 'failed'; reference: string }>;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     try {
       result = selected.state === 'requested'
         ? await this.gateway.refund({ refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction,
           refundMinor: selected.external_minor, totalMinor: selected.external_total, reason: selected.reason })
         : await this.gateway.queryRefund(PaymentReference.refund(refundid).text);
+<<<<<<< HEAD
       const occurredAt = result.state === 'succeeded'
         ? providerOccurredAt(result.occurredAt, 'PAYMENT_REFUND_PROVIDER_OCCURRED_AT_REQUIRED') : null;
       const authority = await persistRefundObservation(this.pool, { attempt, refund: refundid, reference: result.reference,
@@ -267,6 +323,16 @@ export class PaymentJobProcessor implements JobProcessor {
       await this.pool.query(`update payment.providerattempt set outcome='unknown',error_code=$2,completed_at=clock_timestamp() where id=$1`, [attempt, error(cause)]);
       if (!(await sealedRefundEffect(this.pool, refundid))) await channelOperationPort.update(this.pool, { provider: 'wechat', kind: 'refund',
         idempotency: refundid, state: 'unknown', response: { error: error(cause) } });
+=======
+      await this.pool.query(`update payment.providerattempt set outcome=$2,provider_state=$3,provider_reference=$4,completed_at=clock_timestamp() where id=$1`,
+      [attempt, 'succeeded', result.state, result.reference]);
+      await channelOperationPort.update(this.pool, { provider: 'wechat', kind: 'refund', idempotency: refundid, external: result.reference,
+        state: result.state === 'failed' ? 'failed' : result.state === 'succeeded' ? 'succeeded' : 'processing', response: result });
+    } catch (cause) {
+      await this.pool.query(`update payment.providerattempt set outcome='unknown',error_code=$2,completed_at=clock_timestamp() where id=$1`, [attempt, error(cause)]);
+      await channelOperationPort.update(this.pool, { provider: 'wechat', kind: 'refund', idempotency: refundid,
+        state: 'unknown', response: { error: error(cause) } });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       throw cause;
     }
     if (result.state === 'failed') {
@@ -306,6 +372,7 @@ export class PaymentJobProcessor implements JobProcessor {
         where consumer='provider.wechatpayment' and event_id=$1 and processed_at is null for update`, [eventid]);
       const payload = event.rows[0]?.payload;
       if (!payload) { await client.query('commit'); return; }
+<<<<<<< HEAD
       if (typeof payload.tradeState === 'string') {
         const occurredAt = providerOccurredAt(payload.successTime, 'PAYMENT_PROVIDER_EVENT_OCCURRED_AT_REQUIRED');
         const effect = JSON.stringify({ version: 1, provider: 'wechat', kind: 'payment.signed-notification', occurredAt,
@@ -330,12 +397,19 @@ export class PaymentJobProcessor implements JobProcessor {
           and attempt.provider_occurred_at=$3::timestamptz limit 1`, [payload.outRefundNo, payload.refundId, occurredAt]);
         if (!accepted.rows[0]) throw new Error('PAYMENT_REFUND_PROVIDER_EVENT_EFFECT_MISMATCH');
       }
+=======
+      if (typeof payload.tradeState === 'string') await client.query(`insert into payment.observation(id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at)
+        select $1,attempt.id,$2,$3,$4,'CNY',$5,clock_timestamp() from payment.intent intent join payment.attempt attempt on attempt.intent_id=intent.id
+        where intent.provider_reference=$6 order by attempt.requested_at desc limit 1 on conflict(provider_event_id) do nothing`,
+      [`observation:${digest(eventid)}`, eventid, payload.tradeState, payload.totalCents, digest(JSON.stringify(payload)), payload.outTradeNo]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       await client.query(`update runtime.inbox set processed_at=clock_timestamp(),attempts=attempts+1
         where consumer='provider.wechatpayment' and event_id=$1`, [eventid]);
       await client.query('commit');
     } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
   }
 }
+<<<<<<< HEAD
 
 type ProviderEffect = Readonly<Record<string, unknown>>;
 
@@ -412,3 +486,5 @@ async function persistRefundObservation(pool: DatabasePool, input: Readonly<{ at
     throw cause;
   } finally { client.release(); }
 }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { CAKEUNCLE_MEAL_BRANDS, type CakeuncleMealBrand } from '@shop/vendorcakeuncle';
 import type { VendorConnection } from '@shop/vendorcore';
 
@@ -33,3 +34,14 @@ export function mealCatalogScopes(connection: VendorConnection): readonly MealCa
   if (unique.size !== scopes.length) throw new Error('MEAL_CATALOG_SCOPE_DUPLICATE');
   return Object.freeze(scopes);
 }
+=======
+export const MEAL_BRANDS = Object.freeze([
+  'KFC',
+  'MCDONALDS',
+  'LUCKIN',
+  'STARBUCKS',
+  'COTTI',
+] as const);
+
+export type MealBrand = (typeof MEAL_BRANDS)[number];
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

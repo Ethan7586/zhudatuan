@@ -31,7 +31,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -75,6 +78,7 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+<<<<<<< HEAD
       - voucher.credentialpools.create
       - voucher.credentials.generate
       - voucher.credentials.import
@@ -85,6 +89,8 @@ requirements:
       - voucher.credentials.get
       - voucher.credentialexports.create
       - voucher.jobs.get
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     modules:
       - audit
       - benefit
@@ -162,7 +168,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -181,6 +190,7 @@ requirements:
       - pricing.offers.read
       - inventory.availability.read
       - marketing.campaigns.read
+<<<<<<< HEAD
       - referral.settings.read
       - referral.settings.manage
       - referral.products.read
@@ -196,6 +206,8 @@ requirements:
       - referral.links.read
       - referral.withdrawals.read
       - referral.withdrawals.create
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - cart.current.read
       - cart.items.put
       - cart.items.batch
@@ -243,7 +255,10 @@ requirements:
       - order
       - payment
       - pricing
+<<<<<<< HEAD
       - referral
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - runtime
       - verification
       - voucher
@@ -268,7 +283,10 @@ requirements:
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
+<<<<<<< HEAD
       - services/commerce/src/modules/referral
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -310,7 +328,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -423,7 +444,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -549,7 +573,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -676,7 +703,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -804,7 +834,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -862,6 +895,7 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+<<<<<<< HEAD
       - partner.customers.create
       - partner.customers.update
       - partner.customers.enable
@@ -938,6 +972,9 @@ requirements:
       - voucher.exports.get
     modules:
       - approval
+=======
+    modules:
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - audit
       - benefit
       - cart
@@ -949,7 +986,10 @@ requirements:
       - member
       - notification
       - order
+<<<<<<< HEAD
       - partner
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - payment
       - pricing
       - runtime
@@ -961,7 +1001,10 @@ requirements:
       - voucher.voucher
       - voucher.redemption
     moduleSources:
+<<<<<<< HEAD
       - services/commerce/src/modules/approval
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -973,7 +1016,10 @@ requirements:
       - services/commerce/src/modules/member
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+<<<<<<< HEAD
       - services/commerce/src/modules/partner
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -1019,7 +1065,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1060,11 +1109,14 @@ requirements:
       - finance.statements.export
       - finance.reconciliations.manage
       - finance.reconciliations.read
+<<<<<<< HEAD
       - finance.reconciliationrepairs.read
       - finance.reconciliationrepairs.preview
       - finance.reconciliationrepairs.submit
       - finance.reconciliationrepairs.decide
       - finance.reconciliationrepairs.reverse
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -1078,12 +1130,17 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+<<<<<<< HEAD
       - finance.policies.preview
       - finance.policies.read
       - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
       - invoice.operatorprofiles.read
+=======
+      - invoice.profiles.manage
+      - invoice.profiles.read
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -1170,7 +1227,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1294,7 +1354,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1435,17 +1498,24 @@ requirements:
       - identity.invitations.revoke
       - identity.members.create
       - identity.members.manage
+<<<<<<< HEAD
       - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
       - identity.mobile.challenge
+=======
+      - identity.password.change
+      - identity.password.verify
+      - identity.password.reset
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+<<<<<<< HEAD
       - access.ownership.read
       - access.ownership.transfers.preview
       - access.ownership.transfers.create
@@ -1453,6 +1523,8 @@ requirements:
       - access.ownership.transfers.accept
       - access.ownership.transfers.cancel
       - access.ownership.transfers.cancel.preview
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -1593,7 +1665,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1706,7 +1781,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1832,7 +1910,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1958,7 +2039,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2089,7 +2173,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2147,6 +2234,7 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+<<<<<<< HEAD
       - partner.customers.create
       - partner.customers.update
       - partner.customers.enable
@@ -2223,6 +2311,9 @@ requirements:
       - voucher.exports.get
     modules:
       - approval
+=======
+    modules:
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - audit
       - benefit
       - cart
@@ -2234,7 +2325,10 @@ requirements:
       - member
       - notification
       - order
+<<<<<<< HEAD
       - partner
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - payment
       - pricing
       - runtime
@@ -2245,7 +2339,10 @@ requirements:
       - voucher.redemption
       - voucher.reversal
     moduleSources:
+<<<<<<< HEAD
       - services/commerce/src/modules/approval
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -2257,7 +2354,10 @@ requirements:
       - services/commerce/src/modules/member
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+<<<<<<< HEAD
       - services/commerce/src/modules/partner
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -2303,7 +2403,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2344,11 +2447,14 @@ requirements:
       - finance.statements.export
       - finance.reconciliations.manage
       - finance.reconciliations.read
+<<<<<<< HEAD
       - finance.reconciliationrepairs.read
       - finance.reconciliationrepairs.preview
       - finance.reconciliationrepairs.submit
       - finance.reconciliationrepairs.decide
       - finance.reconciliationrepairs.reverse
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -2362,12 +2468,17 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+<<<<<<< HEAD
       - finance.policies.preview
       - finance.policies.read
       - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
       - invoice.operatorprofiles.read
+=======
+      - invoice.profiles.manage
+      - invoice.profiles.read
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -2453,7 +2564,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2579,7 +2693,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2721,17 +2838,24 @@ requirements:
       - identity.invitations.revoke
       - identity.members.create
       - identity.members.manage
+<<<<<<< HEAD
       - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
       - identity.mobile.challenge
+=======
+      - identity.password.change
+      - identity.password.verify
+      - identity.password.reset
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+<<<<<<< HEAD
       - access.ownership.read
       - access.ownership.transfers.preview
       - access.ownership.transfers.create
@@ -2739,6 +2863,8 @@ requirements:
       - access.ownership.transfers.accept
       - access.ownership.transfers.cancel
       - access.ownership.transfers.cancel.preview
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -2881,7 +3007,10 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+<<<<<<< HEAD
       - identity.mobile.challenge
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete

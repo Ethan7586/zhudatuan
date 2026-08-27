@@ -21,7 +21,10 @@ insert into access.rolepermission(role_id,permission_id,effect)
 select 'role:self',permission.id,'allow' from access.permission permission where permission.code in(
   'identity.session.read','identity.session.manage','identity.credential.manage','identity.mobile.manage','identity.assurance.manage',
   'cart.read','cart.manage','checkout.create','order.create','order.read','order.aftersale.read','order.aftersale.apply',
+<<<<<<< HEAD
   'referral.self.read','referral.self.manage','referral.withdrawals.create',
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'payment.create','verification.issue','benefit.read','invoice.profile.manage','invoice.profile.read','invoice.request.create','invoice.request.read','invoice.request.cancel',
   'support.case.create','support.case.read','support.message.send','support.message.read','notification.read','notification.preference.manage','notification.endpoint.manage')
   or permission.code='observability.clienterror.create'
@@ -37,9 +40,13 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
 
 insert into capability.entitlement(id,scope_id,capability_id,state,quota,effective_at,expires_at,version)
 select 'platform:'||capability.id,'organization-platform-root',capability.id,'enabled',null,'1970-01-01T00:00:00Z',null,0
+<<<<<<< HEAD
 from capability.capability capability
 join capability.operation operation on operation.capability_id=capability.id and operation.audience<>'public'
 where capability.kind='operation';
+=======
+from capability.capability capability where capability.kind='operation';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 create or replace function identity.resolve_session(p_token_hash text)
 returns table(actor_id text,session_id text,membership_id text,credential_version bigint,access_version bigint,target text,assurance_level smallint,assurance_verified_at timestamptz)
@@ -89,6 +96,7 @@ $function$;
 
 create or replace function access.resolve_membership(p_membership_id text)
 returns table(id text,active boolean,access_version bigint,denies text[],grants jsonb)
+<<<<<<< HEAD
 language sql stable security definer
 set search_path=access,member,organization,pg_temp as $function$
   select membership.id,membership.status='active',membership.access_version,
@@ -197,6 +205,23 @@ set search_path=access,member,organization,pg_temp as $function$
             and ownerscope.access_version<=membership.access_version
             and ownerscope.effective_at<=clock_timestamp()
             and (ownerscope.expires_at is null or ownerscope.expires_at>clock_timestamp()))), '[]'::jsonb)
+=======
+language sql stable security definer set search_path=access,member,organization,pg_temp as $function$
+  select membership.id,membership.status='active',membership.access_version,
+    coalesce((select array_agg(distinct permission.code order by permission.code)
+      from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='deny'
+      join access.permission permission on permission.id=mapping.permission_id
+      where assignment.membership_id=membership.id and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())),array[]::text[]),
+    coalesce((select jsonb_agg(jsonb_build_object(
+      'scope',access.scope_object(scopegrant.scope_id),
+      'permissions',coalesce((select jsonb_agg(distinct permission.code order by permission.code)
+        from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='allow'
+        join access.permission permission on permission.id=mapping.permission_id
+        where assignment.membership_id=membership.id and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())), '[]'::jsonb),
+      'effective',scopegrant.effective_at,'expires',scopegrant.expires_at) order by scopegrant.scope_path)
+      from access.scopegrant scopegrant where scopegrant.membership_id=membership.id and scopegrant.effect='allow'
+        and scopegrant.effective_at<=clock_timestamp() and (scopegrant.expires_at is null or scopegrant.expires_at>clock_timestamp())), '[]'::jsonb)
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   from access.membership membership where membership.id=p_membership_id
 $function$;
 
@@ -219,6 +244,7 @@ begin
     select organization_id into resolved from member.invite where id=p_resource;
   elsif p_operation like 'identity.%' then
     select 'self:'||profile.principal_id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
+<<<<<<< HEAD
   elsif p_operation='invoice.profiles.manage' then
     select owner_id into resolved from invoice.profile where id=p_resource;
     if resolved is null then
@@ -227,6 +253,12 @@ begin
   elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='member')
       or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
       'order.orders.create','order.aftersales.apply','payment.intents.create','benefit.accounts.read',
+=======
+  elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='member')
+      or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
+      'order.orders.create','order.aftersales.apply','payment.intents.create','benefit.accounts.read','invoice.profiles.manage',
+      'invoice.requests.create','invoice.requests.read','invoice.requests.cancel',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       'notification.notifications.read','notification.preferences.manage','notification.endpoints.manage') then
     select profile.id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
   elsif p_operation in('order.orders.read','order.aftersales.read','support.cases.read','support.messages.read')
@@ -278,6 +310,7 @@ begin
 end $function$;
 
 create or replace function access.resolve_scope(p_membership_id text,p_operation text,p_resource text)
+<<<<<<< HEAD
 returns table(scope jsonb) language sql stable security definer
 set search_path=access,member,pg_temp as $function$
   select case when p_operation like 'access.ownership.%' then
@@ -323,6 +356,12 @@ revoke all on function access.resolve_scope(text,text,text,text) from public;
 grant execute on function access.resolve_scope(text,text,text,text)
   to shopapp,zhudatuanidentityapi,zhudatuanwebapi,zhudatuanpurchaseapi;
 
+=======
+returns table(scope jsonb) language sql stable security definer set search_path=access,pg_temp as $function$
+  select access.scope_object(access.resource_scope(p_operation,p_resource,p_membership_id))
+$function$;
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 create or replace function capability.membership_operations(p_membership_id text)
 returns table(operation_id text) language sql stable security definer
 set search_path=capability,access,member,organization,runtime,pg_temp as $function$

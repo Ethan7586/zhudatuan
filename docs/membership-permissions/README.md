@@ -43,7 +43,10 @@
 
 ## 相关设计与实施文档
 
+<<<<<<< HEAD
 - [分级多租户权限、Root Owner 与管理员邀请码代码规范](./06-TIERED-MULTITENANT-OWNER-INVITATION-SPEC.md)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 - [四类边界模型](./00-BOUNDARY-MODELS.md)
 - [商业资源关系模型](./02-COMMERCIAL-RESOURCE-RELATIONSHIPS.md)
 - [员工端可见与可买资格模型](./03-STOREFRONT-ENTITLEMENT.md)

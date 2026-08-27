@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { describe, expect, it, vi } from 'vitest';
 import { REQUIRED_PROVIDER_IDS, type JsonObject, type ProviderCallContext } from '@shop/contract';
 import { STANDARD_PROVIDER_LIMITS } from '@shop/providercore';
@@ -63,4 +64,18 @@ describe('foodvoucher provider contract', () => {
     const malformed = createFoodvoucherPorts({ invoke: async () => ({ ...response, data: [{ ...item, price: 18.5 }] }) });
     await expect(malformed.catalog.pullCatalog(context)).rejects.toThrow('FOODVOUCHER_PRICE_INVALID');
   });
+=======
+import { describe, expect, it } from 'vitest';
+import { REQUIRED_PROVIDER_IDS } from '@shop/contract';
+import { FoodvoucherProvider } from '../Provider';
+import { manifest } from '../manifest';
+
+describe('foodvoucher provider contract', () => {
+  it('is an explicit P1 provider with a release-injected signature', () => {
+    expect(REQUIRED_PROVIDER_IDS).toContain('foodvoucher');
+    expect(FoodvoucherProvider.definition.id).toBe('foodvoucher');
+    expect(manifest('signed').signature).toBe('signed');
+    expect(() => manifest('')).toThrow('FOODVOUCHER_MANIFEST_SIGNATURE_MISSING');
+  });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

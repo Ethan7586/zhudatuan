@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
+<<<<<<< HEAD
 import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
+=======
+import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const operations = [
   operation('identity.session.read', 'GET', '/api/v1/identity/session', 'member'),
@@ -25,6 +29,7 @@ describe('SDK client artifacts', () => {
       expect(source).not.toContain('call<T');
     }
   });
+<<<<<<< HEAD
 
   it('publishes an explicitly required optimistic version in every contract artifact', () => {
     const reset = { ...operation('identity.members.reset', 'PUT', '/api/v1/identity/members/{membershipid}/registration', 'operator'), expectedVersion: 'required' as const };
@@ -43,6 +48,8 @@ describe('SDK client artifacts', () => {
     expect(source).toContain('OMS-001');
     expect(source.match(/\["identity\.session\.read",/g)).toHaveLength(1);
   });
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 
 function operation(

@@ -1,5 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
+<<<<<<< HEAD
 import { providerOccurredAt, type PaymentGateway } from './application/port/PaymentGateway';
+=======
+import type { PaymentGateway } from './application/port/PaymentGateway';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import type { PaymentApplication } from './application/port/PaymentGateway';
 
@@ -45,6 +49,7 @@ export function assertProviderAmount(selected: IntentTarget, observed: ProviderO
 }
 
 export async function recordProviderObservation(pool: DatabasePool, selected: IntentTarget, observed: ProviderObservation, source: 'query' | 'close'): Promise<void> {
+<<<<<<< HEAD
   const occurredAt = observed.occurredAt === undefined ? null : providerOccurredAt(observed.occurredAt);
   const identity = JSON.stringify({ source, state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor, occurredAt });
   const evidence = JSON.stringify({ version: 1, provider: 'wechat', kind: 'payment.observation', occurredAt, source,
@@ -58,4 +63,11 @@ export async function recordProviderObservation(pool: DatabasePool, selected: In
     on conflict(provider_event_id) do nothing`,
   [`observation:${paymentDigest(event)}`, selected.attempt, event, observed.state, observed.amountMinor, selected.currency,
     paymentDigest(evidence), occurredAt, occurredAt === null ? null : evidence]);
+=======
+  const evidence = JSON.stringify({ source, state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor });
+  const event = `${source}:${paymentDigest(`${selected.intent}:${evidence}`)}`;
+  await pool.query(`insert into payment.observation(id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at)
+    values($1,$2,$3,$4,$5,$6,$7,clock_timestamp()) on conflict(provider_event_id) do nothing`,
+  [`observation:${paymentDigest(event)}`, selected.attempt, event, observed.state, observed.amountMinor, selected.currency, paymentDigest(evidence)]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

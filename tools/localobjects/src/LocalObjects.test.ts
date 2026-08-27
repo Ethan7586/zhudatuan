@@ -18,6 +18,7 @@ test('persists an integrity-checked multipart object', async () => {
   assert.deepEqual((await objects.read(metadata.reference)).bytes, bytes);
 });
 
+<<<<<<< HEAD
 test('deletes a completed object and invalidates its path and signed URL', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'shop-objects-'));
   const objects = new LocalObjects(directory, randomBytes(32).toString('base64url'), 'https://127.0.0.1:8445');
@@ -58,6 +59,8 @@ test('keeps identical bytes at different paths independently addressable and del
   assert.equal((await objects.find(secondMetadata.path))?.reference, secondMetadata.reference);
 });
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 test('rejects reordered upload parts', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'shop-objects-'));
   const objects = new LocalObjects(directory, randomBytes(32).toString('base64url'), 'https://127.0.0.1:8445');

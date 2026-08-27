@@ -10,7 +10,10 @@ import { useToasts } from './useToasts';
 import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
+<<<<<<< HEAD
 import { storefrontAuthHref } from '../config/storefrontAuth';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 
@@ -128,10 +131,26 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     setOrders([]);
   };
 
+<<<<<<< HEAD
   const login = async (_credentials: LoginCredentials): Promise<boolean> => {
     setSessionError(null);
     window.location.assign(storefrontAuthHref());
     return false;
+=======
+  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+    setSessionError(null);
+    try {
+      await productionApi.login(credentials);
+      await refreshProductionData();
+      showToast('安全登录成功，已同步福利账户与订单', 'success');
+      return true;
+    } catch (error) {
+      const message = error instanceof ProductionApiError ? error.message : '登录服务暂时不可用';
+      setSessionStatus('guest');
+      setSessionError(message);
+      return false;
+    }
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   };
   const logout = async () => {
     const revokeRequest = productionApi.logout();
@@ -195,8 +214,12 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     if (sessionStatus === 'authenticated' && product.skuId) {
       try {
+<<<<<<< HEAD
         const existing = cart.find((item) => item.product.id === product.id);
         await productionApi.upsertCartItem({ listingId: product.id, quantity: (existing?.quantity ?? 0) + quantity });
+=======
+        await productionApi.upsertCartItem({ skuId: product.skuId, quantity, selected: true });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         await refreshServerCart();
         showToast(`已将“${product.title.slice(0, 16)}...”加入购物车`, 'success');
       } catch {
@@ -219,7 +242,11 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const handleUpdateCartQuantity = (cartItemId: string, quantity: number) => {
     if (sessionStatus === 'authenticated') {
       const item = cart.find((candidate) => candidate.id === cartItemId);
+<<<<<<< HEAD
       if (!item?.product.id) return;
+=======
+      if (!item?.product.skuId) return;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       if (quantity <= 0) {
         void productionApi
           .deleteCartItem(cartItemId)
@@ -227,7 +254,11 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
           .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
       } else {
         void productionApi
+<<<<<<< HEAD
           .upsertCartItem({ listingId: item.product.id, quantity })
+=======
+          .upsertCartItem({ skuId: item.product.skuId, quantity, selected: item.selected })
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           .then(refreshServerCart)
           .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
       }
@@ -238,9 +269,18 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleToggleCartItemSelected = (cartItemId: string) => {
     if (sessionStatus === 'authenticated') {
+<<<<<<< HEAD
       // Canonical cart does not persist a selected flag. Selection is a UI
       // concern; checkout fails closed unless every server item is selected.
       setCart((items) => items.map((item) => (item.id === cartItemId ? { ...item, selected: !item.selected } : item)));
+=======
+      const item = cart.find((candidate) => candidate.id === cartItemId);
+      if (!item?.product.skuId) return;
+      void productionApi
+        .upsertCartItem({ skuId: item.product.skuId, quantity: item.quantity, selected: !item.selected })
+        .then(refreshServerCart)
+        .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleCartItemSelected(cartItemId));
@@ -248,7 +288,14 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleToggleSelectAllCart = (selected: boolean) => {
     if (sessionStatus === 'authenticated') {
+<<<<<<< HEAD
       setCart((items) => items.map((item) => ({ ...item, selected })));
+=======
+      const updates = cart.filter((item) => item.product.skuId).map((item) => productionApi.upsertCartItem({ skuId: item.product.skuId!, quantity: item.quantity, selected }));
+      void Promise.all(updates)
+        .then(refreshServerCart)
+        .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleSelectAllCart(selected));
@@ -276,17 +323,25 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     setIsSubmittingOrder(true);
     try {
+<<<<<<< HEAD
       await checkoutSelectedCartRequest(cart, addresses, user);
+=======
+      const { selectedItems } = await checkoutSelectedCartRequest(cart, addresses, user);
+      await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       await refreshServerCart();
       await refreshProductionData();
       showToast('订单已安全写入数据库并完成福利账户支付', 'success');
       return true;
     } catch (error) {
       const message = error instanceof ProductionApiError ? error.message : '订单服务暂时不可用';
+<<<<<<< HEAD
       // Quote/order/payment are separate authoritative operations. A late
       // payment error can occur after the order has already consumed the cart,
       // so reconcile both views before the user attempts another checkout.
       void Promise.allSettled([refreshServerCart(), refreshProductionData()]);
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       showToast(`订单提交失败：${message}`, 'error');
       return false;
     } finally {

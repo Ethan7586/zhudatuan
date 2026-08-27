@@ -1,28 +1,42 @@
 import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
+<<<<<<< HEAD
 import { ModuleOperations, operationLifecycle, operationRequestHash, requireAccess, rowResult, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
 import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foundation/interface/Validation';
+=======
+import { ModuleOperations, operationLifecycle, requireAccess, rowResult, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { financeLifecycleOperations } from '../../FinanceLifecycleOperations';
 import { resolveDifferenceOperations } from '../../application/command/ResolveDifference';
+<<<<<<< HEAD
 import { reconciliationRepairOperations } from '../../application/command/ReconciliationRepair';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { requestInvoiceOperations } from '../../application/command/RequestInvoice';
 import { closeSettlementOperations } from '../../application/command/CloseSettlement';
 import { requestWithdrawalOperations } from '../../application/command/RequestWithdrawal';
 import { getFinanceOverviewOperations } from '../../application/query/GetFinanceOverview';
 import { getBillsOperations } from '../../application/query/GetBills';
 import { getInvoicesOperations } from '../../application/query/GetInvoices';
+<<<<<<< HEAD
 import { getReconciliationRepairOperations } from '../../application/query/GetReconciliationRepair';
 import { ConfigFieldPolicy } from '../../domain/policy/ConfigFieldPolicy';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
 import { PgFinanceRepository } from '../../infrastructure/persistence/PgFinanceRepository';
 
 const settlementPolicy = new SettlementPolicy();
+<<<<<<< HEAD
 const configurablePolicy = new ConfigFieldPolicy();
 const previewPolicyFields = Object.freeze(new Set(['action', 'kind', 'rule', 'desiredState']));
 const managePolicyFields = Object.freeze(new Set(['action', 'previewHash', 'reason', 'evidence']));
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function financeRoutes(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
@@ -30,13 +44,17 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
   return new ModuleOperations('finance', pool, context.container.get(AUDIT_SINK), {
     ...financeLifecycleOperations(),
     ...resolveDifferenceOperations(),
+<<<<<<< HEAD
     ...reconciliationRepairOperations(),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     ...requestInvoiceOperations((database) => new PgFinanceRepository(database)),
     ...closeSettlementOperations((database) => new PgFinanceRepository(database)),
     ...requestWithdrawalOperations((database) => new PgFinanceRepository(database)),
     ...getFinanceOverviewOperations(),
     ...getBillsOperations(),
     ...getInvoicesOperations(),
+<<<<<<< HEAD
     ...getReconciliationRepairOperations(),
     'finance.policies.read': async (request, database) => {
       const access = requireAccess(request);
@@ -125,6 +143,22 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
         operationRequestHash(request),
       ]);
       return policyReceipt(result, 'policy');
+=======
+    'finance.policies.manage': async (request, database) => {
+      const access = requireAccess(request);
+      const body = bodyRecord(request);
+      const rule = body.rule;
+      if (!rule || typeof rule !== 'object' || Array.isArray(rule)) throw new Error('VALIDATION_FAILED:rule');
+      const kind = textField(body, 'kind');
+      if (kind === 'settlement') settlementPolicy.split(10_000, rule);
+      await validateMallPolicy(database, access.scope.id, access.scope.kind, kind, rule as Readonly<Record<string, unknown>>);
+      const result = await database.query(`insert into finance.policy(id,scope_id,kind,rule,state,version) values($1,$2,$3,$4::jsonb,'active',0)
+        on conflict(id) do update set kind=excluded.kind,rule=excluded.rule,state='active',version=finance.policy.version+1
+        where finance.policy.scope_id=$2 and ($5::bigint is null or finance.policy.version=$5) returning *`,
+      [request.input.path.policyid!, access.scope.id, kind, JSON.stringify(rule), request.input.expectedVersion ?? null]);
+      if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
+      return rowResult(result);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     },
     'invoice.profiles.manage': operationLifecycle({
       prepare: async (request) => {
@@ -138,6 +172,7 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
         return { access, body, title, taxid, address };
       },
       execute: async (request, database, { access, body, title, taxid, address }) => {
+<<<<<<< HEAD
         const result = await database.query(
           `insert into invoice.profile(id,owner_id,title_ciphertext,title_key_version,taxid_ciphertext,taxid_token,taxid_key_version,address_ciphertext,address_key_version,status,version)
         select $1,$2,$3,$4,$5,$6,$7,$8,$9,'active',0 where $10::bigint=0
@@ -148,12 +183,23 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
           [request.input.path.profileid!, access.scope.id, title.ciphertext, title.keyVersion, taxid.ciphertext, taxid.fingerprint, taxid.keyVersion, address?.ciphertext ?? null, address?.keyVersion ?? null, request.input.expectedVersion!]
         );
         if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
+=======
+      const result = await database.query(`insert into invoice.profile(id,owner_id,title_ciphertext,title_key_version,taxid_ciphertext,taxid_token,taxid_key_version,address_ciphertext,address_key_version,status,version)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,'active',0) on conflict(id) do update set title_ciphertext=excluded.title_ciphertext,title_key_version=excluded.title_key_version,
+        taxid_ciphertext=excluded.taxid_ciphertext,taxid_token=excluded.taxid_token,taxid_key_version=excluded.taxid_key_version,address_ciphertext=excluded.address_ciphertext,
+        address_key_version=excluded.address_key_version,version=invoice.profile.version+1 where invoice.profile.owner_id=$2
+        and ($10::bigint is null or invoice.profile.version=$10) returning id,owner_id,status,version`,
+      [request.input.path.profileid!, access.scope.id, title.ciphertext, title.keyVersion, taxid.ciphertext, taxid.fingerprint, taxid.keyVersion,
+        address?.ciphertext ?? null, address?.keyVersion ?? null, request.input.expectedVersion ?? null]);
+      if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         return rowResult(result);
       },
     }),
   });
 }
 
+<<<<<<< HEAD
 async function validateMallPolicy(database: OperationDatabase, scope: string, scopeKind: string, kind: string, rule: Readonly<Record<string, unknown>>): Promise<void> {
   if (scopeKind !== 'mall') return;
   if (!['invoice', 'reconciliation', 'threshold', 'tax', 'field-definition'].includes(kind)) throw new Error('MALL_FINANCE_POLICY_KIND_FORBIDDEN');
@@ -230,3 +276,20 @@ function policyReceipt(result: Readonly<{ rows: readonly { receipt: unknown }[] 
   }
   return { status, body: receipt, headers: { etag: `"${String(version)}"` } };
 }
+=======
+async function validateMallPolicy(database: OperationDatabase, scope: string, scopeKind: string, kind: string,
+  rule: Readonly<Record<string, unknown>>): Promise<void> {
+  if (scopeKind !== 'mall') return;
+  if (!['invoice', 'reconciliation', 'threshold'].includes(kind)) throw new Error('MALL_FINANCE_POLICY_KIND_FORBIDDEN');
+  const parent = await database.query<{ rule: Readonly<Record<string, unknown>> }>(`select policy.rule from organization.unitclosure closure
+    join organization.organization organization on organization.id=closure.ancestor_id
+    join finance.policy policy on policy.scope_id=organization.id and policy.kind='mallfinance' and policy.state='active'
+    where closure.descendant_id=$1 and closure.depth>0 order by closure.depth limit 1`, [scope]);
+  const guard = parent.rows[0]?.rule;
+  if (!guard || !Array.isArray(guard.allowedKinds) || !guard.allowedKinds.includes(kind)) throw new Error('MALL_FINANCE_POLICY_NOT_DELEGATED');
+  if (kind === 'threshold' && typeof rule.amountMinor === 'number') {
+    if (!Number.isSafeInteger(rule.amountMinor) || rule.amountMinor < 0 || !Number.isSafeInteger(guard.maximumThresholdMinor)
+      || rule.amountMinor > (guard.maximumThresholdMinor as number)) throw new Error('MALL_FINANCE_THRESHOLD_OUT_OF_RANGE');
+  }
+}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

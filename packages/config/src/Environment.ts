@@ -27,6 +27,7 @@ export function requiredValue(value: string | undefined, code: string): string {
   return value.trim();
 }
 
+<<<<<<< HEAD
 export function bearerToken(value: string | undefined, code: string): string {
   const normalized = requiredValue(value, code);
   if (normalized.length < 43 || normalized.length > 512 || normalized.length % 4 === 1
@@ -38,6 +39,8 @@ export function distinctValues(left: string, right: string, code: string): void 
   if (left === right) throw new Error(code);
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function integerValue(value: string | undefined, fallback: number, minimum: number, maximum: number, code: string): number {
   const parsed = value === undefined ? fallback : Number(value);
   if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) throw new Error(code);

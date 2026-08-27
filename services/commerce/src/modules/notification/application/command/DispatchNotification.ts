@@ -61,6 +61,7 @@ export class DispatchNotification {
 
   async challenge(id: string): Promise<void> {
     const selected = (await this.repository.challenge(id)).rows[0]; if (!selected) return;
+<<<<<<< HEAD
     const attempt = (await this.repository.beginChallengeAttempt(id, 'sms')).rows[0];
     if (!attempt || !attempt.dispatch) return;
     let code: string;
@@ -83,6 +84,18 @@ export class DispatchNotification {
       const code = deliveryError(cause);
       if (definitiveProviderRejection(code)) await this.repository.failChallengeAttempt(id, attempt.sequence, code);
       else await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, code);
+=======
+    const [code, recipient] = await Promise.all([
+      this.kms.decrypt('identity/challenge', selected.code_ciphertext, { challenge: id, purpose: selected.purpose }),
+      this.kms.decrypt('identity/destination', selected.destination_ciphertext, { challenge: id, purpose: selected.purpose }),
+    ]);
+    try {
+      const receipt = await this.deliveries.require('sms').send({ recipient, providerTemplate: null, variables: { code }, subject: null,
+        body: 'verification', idempotency: id });
+      await this.repository.challengeAttempt(id, receipt.provider, 'sent', receipt.externalId, null);
+    } catch (cause) {
+      await this.repository.challengeAttempt(id, 'sms', 'failed', null, deliveryError(cause)); throw cause;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     }
   }
 
@@ -110,6 +123,9 @@ function deliveryError(value: unknown): string {
   const message = value instanceof Error ? value.message : 'NOTIFICATION_DELIVERY_FAILED';
   return message.replace(/[^A-Z0-9_.:-]/gi, '').slice(0, 200) || 'NOTIFICATION_DELIVERY_FAILED';
 }
+<<<<<<< HEAD
 function definitiveProviderRejection(code: string): boolean {
   return code === 'ALIYUN_SMS_REJECTED' || code.startsWith('ALIYUN_SMS_ISV.');
 }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -1,5 +1,16 @@
+<<<<<<< HEAD
 import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
 import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
+=======
+import type {
+  ContractJsonValue,
+  OperationId,
+  OperationInputFor,
+  OperationOutputFor,
+  OperationQuery,
+  Schema,
+} from '@shop/contract';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Deadline } from '@shop/kernel/deadline';
@@ -20,16 +31,29 @@ export class ApiClient implements OperationExecutor {
   constructor(
     private readonly baseUrl: string,
     private readonly transport: Transport,
+<<<<<<< HEAD
     private readonly retry = new RetryPolicy()
+=======
+    private readonly retry = new RetryPolicy(),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ) {
     if (!/^https?:\/\//.test(baseUrl)) throw new Error('SDK_BASE_URL_INVALID');
   }
 
+<<<<<<< HEAD
   async execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>> {
+=======
+  async execute<TKey extends OperationId>(
+    operation: OperationDescriptor<TKey>,
+    input: OperationInputFor<TKey>,
+    context: RequestContext,
+  ): Promise<OperationOutputFor<TKey>> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
     if (operation.method !== 'GET' && operation.audience !== 'provider' && context.idempotencyKey === undefined) {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
+<<<<<<< HEAD
     if (requiresFinancialExpectedVersion(operation.id) && context.expectedVersion === undefined) {
       throw new Error('SDK_EXPECTED_VERSION_REQUIRED');
     }
@@ -43,6 +67,21 @@ export class ApiClient implements OperationExecutor {
   }
 
   private async send<TOutput>(path: string, method: string, input: WireInput, context: RequestContext, idempotent: boolean, output: Schema<TOutput>): Promise<TOutput> {
+=======
+    const parsed = operation.input.parse(input);
+    const value = await this.send(operation.path, operation.method, parsed, context, operation.idempotent, operation.output);
+    return value;
+  }
+
+  private async send<TOutput>(
+    path: string,
+    method: string,
+    input: WireInput,
+    context: RequestContext,
+    idempotent: boolean,
+    output: Schema<TOutput>,
+  ): Promise<TOutput> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const deadline = Deadline.after(RUNTIME_LIMITS.http.totalDeadlineMilliseconds, context.signal);
     const request = this.request(path, method, input, context, deadline.signal);
     const canRetry = idempotent || context.idempotencyKey !== undefined;
@@ -108,6 +147,7 @@ export class ApiClient implements OperationExecutor {
       signal,
     };
   }
+<<<<<<< HEAD
 }
 
 async function bindStepupActionRequestHash(input: WireInput): Promise<WireInput> {
@@ -157,6 +197,13 @@ async function sha256(value: string): Promise<string> {
 
 function decode(body: string): unknown {
   return body.length === 0 ? undefined : (JSON.parse(body) as unknown);
+=======
+
+}
+
+function decode(body: string): unknown {
+  return body.length === 0 ? undefined : JSON.parse(body) as unknown;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 async function delay(milliseconds: number, signal?: AbortSignal): Promise<void> {

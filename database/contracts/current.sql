@@ -19,11 +19,17 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('identity.invitations.revoke','identity','DELETE','/api/v1/identity/invitations/{invitationid}','1.0.0'),
   ('identity.members.create','identity','POST','/api/v1/identity/members','1.0.0'),
   ('identity.members.manage','identity','PUT','/api/v1/identity/members/{membershipid}','1.0.0'),
+<<<<<<< HEAD
   ('identity.members.reset','identity','PUT','/api/v1/identity/members/{membershipid}/registration','1.0.0'),
   ('identity.password.change','identity','PUT','/api/v1/identity/password','1.0.0'),
   ('identity.password.verify','identity','POST','/api/v1/identity/password/verify','1.0.0'),
   ('identity.password.reset','identity','POST','/api/v1/identity/password/reset','1.0.0'),
   ('identity.mobile.challenge','identity','POST','/api/v1/identity/mobile/challenges','1.0.0'),
+=======
+  ('identity.password.change','identity','PUT','/api/v1/identity/password','1.0.0'),
+  ('identity.password.verify','identity','POST','/api/v1/identity/password/verify','1.0.0'),
+  ('identity.password.reset','identity','POST','/api/v1/identity/password/reset','1.0.0'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('identity.mobile.manage','identity','PUT','/api/v1/identity/mobile','1.0.0'),
   ('identity.stepup.start','identity','POST','/api/v1/identity/stepup/challenges','1.0.0'),
   ('identity.stepup.complete','identity','POST','/api/v1/identity/stepup/verifications','1.0.0'),
@@ -33,6 +39,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('access.center.read','access','GET','/api/v1/access/center','1.0.0'),
   ('access.roles.manage','access','PUT','/api/v1/access/roles/{roleid}','1.0.0'),
   ('access.scopes.manage','access','PUT','/api/v1/access/memberships/{membershipid}/scopes','1.0.0'),
+<<<<<<< HEAD
   ('access.ownership.read','access','GET','/api/v1/access/ownership','1.0.0'),
   ('access.ownership.transfers.preview','access','POST','/api/v1/access/ownership/transfers/preview','1.0.0'),
   ('access.ownership.transfers.create','access','POST','/api/v1/access/ownership/transfers','1.0.0'),
@@ -40,6 +47,8 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('access.ownership.transfers.accept','access','POST','/api/v1/access/ownership/transfers/{transferid}/accept','1.0.0'),
   ('access.ownership.transfers.cancel','access','POST','/api/v1/access/ownership/transfers/{transferid}/cancel','1.0.0'),
   ('access.ownership.transfers.cancel.preview','access','POST','/api/v1/access/ownership/transfers/{transferid}/cancel/preview','1.0.0'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('capability.assignments.read','capability','GET','/api/v1/capabilities/assignments','1.0.0'),
   ('capability.assignments.manage','capability','PUT','/api/v1/capabilities/assignments/{assignmentid}','1.0.0'),
   ('partner.partners.read','partner','GET','/api/v1/partners','1.0.0'),
@@ -81,6 +90,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('inventory.imports.create','inventory','POST','/api/v1/inventory/imports','1.0.0'),
   ('inventory.imports.read','inventory','GET','/api/v1/inventory/imports','1.0.0'),
   ('marketing.campaigns.read','marketing','GET','/api/v1/marketing/campaigns','1.0.0'),
+<<<<<<< HEAD
   ('referral.settings.read','referral','GET','/api/v1/referral/settings','1.0.0'),
   ('referral.settings.manage','referral','PUT','/api/v1/referral/settings','1.0.0'),
   ('referral.products.read','referral','GET','/api/v1/referral/products','1.0.0'),
@@ -96,6 +106,8 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('referral.links.read','referral','GET','/api/v1/referral/links','1.0.0'),
   ('referral.withdrawals.read','referral','GET','/api/v1/referral/withdrawals','1.0.0'),
   ('referral.withdrawals.create','referral','POST','/api/v1/referral/withdrawals','1.0.0'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('reporting.dashboard.read','reporting','GET','/api/v1/reports/dashboard','1.0.0'),
   ('reporting.sales.read','reporting','GET','/api/v1/reports/sales','1.0.0'),
   ('reporting.products.read','reporting','GET','/api/v1/reports/products','1.0.0'),
@@ -179,11 +191,14 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('finance.statements.export','finance','POST','/api/v1/finance/statements/exports','1.0.0'),
   ('finance.reconciliations.manage','finance','PUT','/api/v1/finance/reconciliations/{reconciliationid}','1.0.0'),
   ('finance.reconciliations.read','finance','GET','/api/v1/finance/reconciliations','1.0.0'),
+<<<<<<< HEAD
   ('finance.reconciliationrepairs.read','finance','GET','/api/v1/finance/reconciliation-repairs/{repairid}','1.0.0'),
   ('finance.reconciliationrepairs.preview','finance','POST','/api/v1/finance/reconciliations/{reconciliationid}/items/{itemid}/repairs/preview','1.0.0'),
   ('finance.reconciliationrepairs.submit','finance','POST','/api/v1/finance/reconciliation-repairs/{repairid}/submit','1.0.0'),
   ('finance.reconciliationrepairs.decide','finance','POST','/api/v1/finance/reconciliation-repairs/{repairid}/decide','1.0.0'),
   ('finance.reconciliationrepairs.reverse','finance','POST','/api/v1/finance/reconciliation-repairs/{repairid}/reverse','1.0.0'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('finance.settlements.read','finance','GET','/api/v1/finance/settlements','1.0.0'),
   ('finance.settlements.decide','finance','POST','/api/v1/finance/settlements/{settlementid}/decide','1.0.0'),
   ('finance.settlements.adjust','finance','POST','/api/v1/finance/settlements/{settlementid}/adjust','1.0.0'),
@@ -197,12 +212,17 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('finance.backfills.read','finance','GET','/api/v1/finance/backfills','1.0.0'),
   ('finance.backfills.decide','finance','POST','/api/v1/finance/backfills/{backfillid}/decide','1.0.0'),
   ('finance.policies.manage','finance','PUT','/api/v1/finance/policies/{policyid}','1.0.0'),
+<<<<<<< HEAD
   ('finance.policies.preview','finance','POST','/api/v1/finance/policies/{policyid}/preview','1.0.0'),
   ('finance.policies.read','finance','GET','/api/v1/finance/policies','1.0.0'),
   ('finance.audit.read','finance','GET','/api/v1/finance/audits','1.0.0'),
   ('invoice.profiles.manage','finance','PUT','/api/v1/invoices/profiles/{profileid}','1.0.0'),
   ('invoice.profiles.read','finance','GET','/api/v1/invoices/profiles','1.0.0'),
   ('invoice.operatorprofiles.read','finance','GET','/api/v1/invoices/operator-profiles','1.0.0'),
+=======
+  ('invoice.profiles.manage','finance','PUT','/api/v1/invoices/profiles/{profileid}','1.0.0'),
+  ('invoice.profiles.read','finance','GET','/api/v1/invoices/profiles','1.0.0'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('invoice.requests.create','finance','POST','/api/v1/invoices/requests','1.0.0'),
   ('invoice.requests.read','finance','GET','/api/v1/invoices/requests','1.0.0'),
   ('invoice.requests.cancel','finance','DELETE','/api/v1/invoices/requests/{requestid}','1.0.0'),
@@ -259,12 +279,16 @@ insert into runtime.event(type,version,owner,schema_ref) values
   ('identity.session.revoked',1,'identity','contract://events/identity.session.revoked/v1'),
   ('identity.challenge.started',1,'identity','contract://events/identity.challenge.started/v1'),
   ('identity.member.registered',1,'identity','contract://events/identity.member.registered/v1'),
+<<<<<<< HEAD
   ('identity.member.reset',1,'identity','contract://events/identity.member.reset/v1'),
   ('access.version.changed',1,'access','contract://events/access.version.changed/v1'),
   ('access.owner.transfer.initiated',1,'access','contract://events/access.owner.transfer.initiated/v1'),
   ('access.owner.bootstrapped',1,'access','contract://events/access.owner.bootstrapped/v1'),
   ('access.owner.transferred',1,'access','contract://events/access.owner.transferred/v1'),
   ('access.owner.transfer.cancelled',1,'access','contract://events/access.owner.transfer.cancelled/v1'),
+=======
+  ('access.version.changed',1,'access','contract://events/access.version.changed/v1'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('catalog.listing.published',1,'catalog','contract://events/catalog.listing.published/v1'),
   ('inventory.stock.changed',1,'inventory','contract://events/inventory.stock.changed/v1'),
   ('inventory.stock.reserved',1,'inventory','contract://events/inventory.stock.reserved/v1'),
@@ -273,7 +297,10 @@ insert into runtime.event(type,version,owner,schema_ref) values
   ('checkout.quote.confirmed',1,'checkout','contract://events/checkout.quote.confirmed/v1'),
   ('order.placed',1,'order','contract://events/order.placed/v1'),
   ('order.paid',1,'order','contract://events/order.paid/v1'),
+<<<<<<< HEAD
   ('order.received',1,'order','contract://events/order.received/v1'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('order.cancelled',1,'order','contract://events/order.cancelled/v1'),
   ('payment.succeeded',1,'payment','contract://events/payment.succeeded/v1'),
   ('payment.refunded',1,'payment','contract://events/payment.refunded/v1'),
@@ -325,9 +352,12 @@ alter table runtime.inbox add constraint inbox_event_contract_fk foreign key(eve
 
 insert into access.permission(id,code,risk,status) values
   ('permission:5b62920179a5478093e65e47','access.center.read','high','active'),
+<<<<<<< HEAD
   ('permission:6782fe00965fc57d412cc213','access.ownership.accept','critical','active'),
   ('permission:99b287597f4661a544801453','access.ownership.read','high','active'),
   ('permission:23df845f30364ef2f6886148','access.ownership.transfer','critical','active'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('permission:6f6dc9ca428f02f579130d4e','access.role.manage','critical','active'),
   ('permission:16ae8d2fb8fd98cbb1b0bd09','access.scope.manage','critical','active'),
   ('permission:182b3dab81460f5c76f72f18','audit.read','high','active'),
@@ -378,7 +408,10 @@ insert into access.permission(id,code,risk,status) values
   ('permission:8c8cf681934bac0ed29ae341','finance.period.manage','critical','active'),
   ('permission:ef09eeff00fc66ea9a66698b','finance.period.read','elevated','active'),
   ('permission:d083aeb0b85f6ec0f705ac70','finance.policy.manage','critical','active'),
+<<<<<<< HEAD
   ('permission:566c6f084f4cb25060200f9a','finance.policy.read','elevated','active'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('permission:19fb4bcf5ff4611de3a8c6eb','finance.reconciliation.manage','critical','active'),
   ('permission:b551fe3dae175e93488fd8ac','finance.reconciliation.read','elevated','active'),
   ('permission:c600e60d9ee25f3fa18c01fe','finance.settlement.adjust','critical','active'),
@@ -397,7 +430,10 @@ insert into access.permission(id,code,risk,status) values
   ('permission:2b1d3743f52df46720788010','identity.credential.manage','critical','active'),
   ('permission:ffe9127797a46a5498977e75','identity.invitation.manage','high','active'),
   ('permission:ab2bb34cd1256118404c5142','identity.mobile.manage','high','active'),
+<<<<<<< HEAD
   ('permission:62a354df9138535ba0651fd6','identity.registration.reset','high','active'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('permission:a061c751526602d3562ce3b4','identity.session.manage','elevated','active'),
   ('permission:4551e0fea695439811ce62fd','identity.session.read','low','active'),
   ('permission:799efec930989e90c70be9f5','inventory.import.manage','high','active'),
@@ -446,6 +482,7 @@ insert into access.permission(id,code,risk,status) values
   ('permission:cd012a4076bd016605ac1e61','qualification.manage','critical','active'),
   ('permission:53d52a182dbca532fea8fae9','qualification.preview','high','active'),
   ('permission:8ee17a8141ae1118452eeeb3','qualification.read','low','active'),
+<<<<<<< HEAD
   ('permission:63dc91d6342a500f88854673','referral.bindings.read','elevated','active'),
   ('permission:5f712366b22c67d0689763ee','referral.commissions.read','high','active'),
   ('permission:2f1cbce85c90a001b7af9731','referral.members.approve','high','active'),
@@ -458,6 +495,8 @@ insert into access.permission(id,code,risk,status) values
   ('permission:fbb6e034ce1f802429d83b1d','referral.settings.manage','critical','active'),
   ('permission:838739d41001918adb66dce4','referral.settings.read','elevated','active'),
   ('permission:bdc40874b67d1ed0750ec3cd','referral.withdrawals.create','critical','active'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('permission:e4dc4f27015f928e5f8a6d45','reporting.category.read','low','active'),
   ('permission:5a9254b5c120a7f66928bd20','reporting.channel.read','low','active'),
   ('permission:01dd4eb9f7e7be210fea65a1','reporting.dashboard.read','low','active'),
@@ -512,7 +551,10 @@ insert into access.rolepermission(role_id,permission_id,effect)
 select 'role:self',permission.id,'allow' from access.permission permission where permission.code in(
   'identity.session.read','identity.session.manage','identity.credential.manage','identity.mobile.manage','identity.assurance.manage',
   'cart.read','cart.manage','checkout.create','order.create','order.read','order.aftersale.read','order.aftersale.apply',
+<<<<<<< HEAD
   'referral.self.read','referral.self.manage','referral.withdrawals.create',
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'payment.create','verification.issue','benefit.read','invoice.profile.manage','invoice.profile.read','invoice.request.create','invoice.request.read','invoice.request.cancel',
   'support.case.create','support.case.read','support.message.send','support.message.read','notification.read','notification.preference.manage','notification.endpoint.manage')
   or permission.code='observability.clienterror.create'
@@ -537,11 +579,17 @@ insert into capability.capability(id,kind,name,version,status) values
   ('identity.invitations.revoke','operation','identity.invitations.revoke',1,'active'),
   ('identity.members.create','operation','identity.members.create',1,'active'),
   ('identity.members.manage','operation','identity.members.manage',1,'active'),
+<<<<<<< HEAD
   ('identity.members.reset','operation','identity.members.reset',1,'active'),
   ('identity.password.change','operation','identity.password.change',1,'active'),
   ('identity.password.verify','operation','identity.password.verify',1,'active'),
   ('identity.password.reset','operation','identity.password.reset',1,'active'),
   ('identity.mobile.challenge','operation','identity.mobile.challenge',1,'active'),
+=======
+  ('identity.password.change','operation','identity.password.change',1,'active'),
+  ('identity.password.verify','operation','identity.password.verify',1,'active'),
+  ('identity.password.reset','operation','identity.password.reset',1,'active'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('identity.mobile.manage','operation','identity.mobile.manage',1,'active'),
   ('identity.stepup.start','operation','identity.stepup.start',1,'active'),
   ('identity.stepup.complete','operation','identity.stepup.complete',1,'active'),
@@ -551,6 +599,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('access.center.read','operation','access.center.read',1,'active'),
   ('access.roles.manage','operation','access.roles.manage',1,'active'),
   ('access.scopes.manage','operation','access.scopes.manage',1,'active'),
+<<<<<<< HEAD
   ('access.ownership.read','operation','access.ownership.read',1,'active'),
   ('access.ownership.transfers.preview','operation','access.ownership.transfers.preview',1,'active'),
   ('access.ownership.transfers.create','operation','access.ownership.transfers.create',1,'active'),
@@ -558,6 +607,8 @@ insert into capability.capability(id,kind,name,version,status) values
   ('access.ownership.transfers.accept','operation','access.ownership.transfers.accept',1,'active'),
   ('access.ownership.transfers.cancel','operation','access.ownership.transfers.cancel',1,'active'),
   ('access.ownership.transfers.cancel.preview','operation','access.ownership.transfers.cancel.preview',1,'active'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('capability.assignments.read','operation','capability.assignments.read',1,'active'),
   ('capability.assignments.manage','operation','capability.assignments.manage',1,'active'),
   ('partner.partners.read','operation','partner.partners.read',1,'active'),
@@ -599,6 +650,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('inventory.imports.create','operation','inventory.imports.create',1,'active'),
   ('inventory.imports.read','operation','inventory.imports.read',1,'active'),
   ('marketing.campaigns.read','operation','marketing.campaigns.read',1,'active'),
+<<<<<<< HEAD
   ('referral.settings.read','operation','referral.settings.read',1,'active'),
   ('referral.settings.manage','operation','referral.settings.manage',1,'active'),
   ('referral.products.read','operation','referral.products.read',1,'active'),
@@ -614,6 +666,8 @@ insert into capability.capability(id,kind,name,version,status) values
   ('referral.links.read','operation','referral.links.read',1,'active'),
   ('referral.withdrawals.read','operation','referral.withdrawals.read',1,'active'),
   ('referral.withdrawals.create','operation','referral.withdrawals.create',1,'active'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('reporting.dashboard.read','operation','reporting.dashboard.read',1,'active'),
   ('reporting.sales.read','operation','reporting.sales.read',1,'active'),
   ('reporting.products.read','operation','reporting.products.read',1,'active'),
@@ -697,11 +751,14 @@ insert into capability.capability(id,kind,name,version,status) values
   ('finance.statements.export','operation','finance.statements.export',1,'active'),
   ('finance.reconciliations.manage','operation','finance.reconciliations.manage',1,'active'),
   ('finance.reconciliations.read','operation','finance.reconciliations.read',1,'active'),
+<<<<<<< HEAD
   ('finance.reconciliationrepairs.read','operation','finance.reconciliationrepairs.read',1,'active'),
   ('finance.reconciliationrepairs.preview','operation','finance.reconciliationrepairs.preview',1,'active'),
   ('finance.reconciliationrepairs.submit','operation','finance.reconciliationrepairs.submit',1,'active'),
   ('finance.reconciliationrepairs.decide','operation','finance.reconciliationrepairs.decide',1,'active'),
   ('finance.reconciliationrepairs.reverse','operation','finance.reconciliationrepairs.reverse',1,'active'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('finance.settlements.read','operation','finance.settlements.read',1,'active'),
   ('finance.settlements.decide','operation','finance.settlements.decide',1,'active'),
   ('finance.settlements.adjust','operation','finance.settlements.adjust',1,'active'),
@@ -715,12 +772,17 @@ insert into capability.capability(id,kind,name,version,status) values
   ('finance.backfills.read','operation','finance.backfills.read',1,'active'),
   ('finance.backfills.decide','operation','finance.backfills.decide',1,'active'),
   ('finance.policies.manage','operation','finance.policies.manage',1,'active'),
+<<<<<<< HEAD
   ('finance.policies.preview','operation','finance.policies.preview',1,'active'),
   ('finance.policies.read','operation','finance.policies.read',1,'active'),
   ('finance.audit.read','operation','finance.audit.read',1,'active'),
   ('invoice.profiles.manage','operation','invoice.profiles.manage',1,'active'),
   ('invoice.profiles.read','operation','invoice.profiles.read',1,'active'),
   ('invoice.operatorprofiles.read','operation','invoice.operatorprofiles.read',1,'active'),
+=======
+  ('invoice.profiles.manage','operation','invoice.profiles.manage',1,'active'),
+  ('invoice.profiles.read','operation','invoice.profiles.read',1,'active'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('invoice.requests.create','operation','invoice.requests.create',1,'active'),
   ('invoice.requests.read','operation','invoice.requests.read',1,'active'),
   ('invoice.requests.cancel','operation','invoice.requests.cancel',1,'active'),
@@ -789,11 +851,17 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.invitations.revoke','identity.invitations.revoke','identity.invitation.manage','operator'),
   ('identity.members.create','identity.members.create',null,'public'),
   ('identity.members.manage','identity.members.manage','member.manage','operator'),
+<<<<<<< HEAD
   ('identity.members.reset','identity.members.reset','identity.registration.reset','operator'),
   ('identity.password.change','identity.password.change','identity.credential.manage','member'),
   ('identity.password.verify','identity.password.verify','identity.assurance.manage','member'),
   ('identity.password.reset','identity.password.reset',null,'public'),
   ('identity.mobile.challenge','identity.mobile.challenge','identity.mobile.manage','member'),
+=======
+  ('identity.password.change','identity.password.change','identity.credential.manage','member'),
+  ('identity.password.verify','identity.password.verify','identity.assurance.manage','member'),
+  ('identity.password.reset','identity.password.reset',null,'public'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('identity.mobile.manage','identity.mobile.manage','identity.mobile.manage','member'),
   ('identity.stepup.start','identity.stepup.start','identity.assurance.manage','member'),
   ('identity.stepup.complete','identity.stepup.complete','identity.assurance.manage','member'),
@@ -803,6 +871,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('access.center.read','access.center.read','access.center.read','operator'),
   ('access.roles.manage','access.roles.manage','access.role.manage','operator'),
   ('access.scopes.manage','access.scopes.manage','access.scope.manage','operator'),
+<<<<<<< HEAD
   ('access.ownership.read','access.ownership.read','access.ownership.read','operator'),
   ('access.ownership.transfers.preview','access.ownership.transfers.preview','access.ownership.transfer','operator'),
   ('access.ownership.transfers.create','access.ownership.transfers.create','access.ownership.transfer','operator'),
@@ -810,6 +879,8 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('access.ownership.transfers.accept','access.ownership.transfers.accept','access.ownership.accept','operator'),
   ('access.ownership.transfers.cancel','access.ownership.transfers.cancel','access.ownership.transfer','operator'),
   ('access.ownership.transfers.cancel.preview','access.ownership.transfers.cancel.preview','access.ownership.transfer','operator'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('capability.assignments.read','capability.assignments.read','capability.assignment.read','operator'),
   ('capability.assignments.manage','capability.assignments.manage','capability.assignment.manage','operator'),
   ('partner.partners.read','partner.partners.read','partner.read','operator'),
@@ -851,6 +922,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('inventory.imports.create','inventory.imports.create','inventory.import.manage','operator'),
   ('inventory.imports.read','inventory.imports.read','inventory.import.read','operator'),
   ('marketing.campaigns.read','marketing.campaigns.read','marketing.read','operator'),
+<<<<<<< HEAD
   ('referral.settings.read','referral.settings.read','referral.settings.read','operator'),
   ('referral.settings.manage','referral.settings.manage','referral.settings.manage','operator'),
   ('referral.products.read','referral.products.read','referral.products.read','operator'),
@@ -866,6 +938,8 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('referral.links.read','referral.links.read','referral.self.read','member'),
   ('referral.withdrawals.read','referral.withdrawals.read','referral.self.read','member'),
   ('referral.withdrawals.create','referral.withdrawals.create','referral.withdrawals.create','member'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('reporting.dashboard.read','reporting.dashboard.read','reporting.dashboard.read','operator'),
   ('reporting.sales.read','reporting.sales.read','reporting.sales.read','operator'),
   ('reporting.products.read','reporting.products.read','reporting.product.read','operator'),
@@ -949,11 +1023,14 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('finance.statements.export','finance.statements.export','finance.statement.export','operator'),
   ('finance.reconciliations.manage','finance.reconciliations.manage','finance.reconciliation.manage','operator'),
   ('finance.reconciliations.read','finance.reconciliations.read','finance.reconciliation.read','operator'),
+<<<<<<< HEAD
   ('finance.reconciliationrepairs.read','finance.reconciliationrepairs.read','finance.reconciliation.read','operator'),
   ('finance.reconciliationrepairs.preview','finance.reconciliationrepairs.preview','finance.reconciliation.manage','operator'),
   ('finance.reconciliationrepairs.submit','finance.reconciliationrepairs.submit','finance.reconciliation.manage','operator'),
   ('finance.reconciliationrepairs.decide','finance.reconciliationrepairs.decide','finance.reconciliation.manage','operator'),
   ('finance.reconciliationrepairs.reverse','finance.reconciliationrepairs.reverse','finance.reconciliation.manage','operator'),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('finance.settlements.read','finance.settlements.read','finance.settlement.read','operator'),
   ('finance.settlements.decide','finance.settlements.decide','finance.settlement.decide','operator'),
   ('finance.settlements.adjust','finance.settlements.adjust','finance.settlement.adjust','operator'),
@@ -967,6 +1044,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('finance.backfills.read','finance.backfills.read','finance.backfill.read','operator'),
   ('finance.backfills.decide','finance.backfills.decide','finance.backfill.decide','operator'),
   ('finance.policies.manage','finance.policies.manage','finance.policy.manage','operator'),
+<<<<<<< HEAD
   ('finance.policies.preview','finance.policies.preview','finance.policy.manage','operator'),
   ('finance.policies.read','finance.policies.read','finance.policy.read','operator'),
   ('finance.audit.read','finance.audit.read','audit.read','operator'),
@@ -974,6 +1052,11 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('invoice.profiles.read','invoice.profiles.read','invoice.profile.read','member'),
   ('invoice.operatorprofiles.read','invoice.operatorprofiles.read','invoice.profile.read','operator'),
   ('invoice.requests.create','invoice.requests.create','invoice.request.create','operator'),
+=======
+  ('invoice.profiles.manage','invoice.profiles.manage','invoice.profile.manage','operator'),
+  ('invoice.profiles.read','invoice.profiles.read','invoice.profile.read','member'),
+  ('invoice.requests.create','invoice.requests.create','invoice.request.create','member'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ('invoice.requests.read','invoice.requests.read','invoice.request.read','operator'),
   ('invoice.requests.cancel','invoice.requests.cancel','invoice.request.cancel','operator'),
   ('invoice.requests.decide','invoice.requests.decide','invoice.request.decide','operator'),
@@ -1026,9 +1109,13 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
 
 insert into capability.entitlement(id,scope_id,capability_id,state,quota,effective_at,expires_at,version)
 select 'platform:'||capability.id,'organization-platform-root',capability.id,'enabled',null,'1970-01-01T00:00:00Z',null,0
+<<<<<<< HEAD
 from capability.capability capability
 join capability.operation operation on operation.capability_id=capability.id and operation.audience<>'public'
 where capability.kind='operation';
+=======
+from capability.capability capability where capability.kind='operation';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 create or replace function identity.resolve_session(p_token_hash text)
 returns table(actor_id text,session_id text,membership_id text,credential_version bigint,access_version bigint,target text,assurance_level smallint,assurance_verified_at timestamptz)
@@ -1078,6 +1165,7 @@ $function$;
 
 create or replace function access.resolve_membership(p_membership_id text)
 returns table(id text,active boolean,access_version bigint,denies text[],grants jsonb)
+<<<<<<< HEAD
 language sql stable security definer
 set search_path=access,member,organization,pg_temp as $function$
   select membership.id,membership.status='active',membership.access_version,
@@ -1186,6 +1274,23 @@ set search_path=access,member,organization,pg_temp as $function$
             and ownerscope.access_version<=membership.access_version
             and ownerscope.effective_at<=clock_timestamp()
             and (ownerscope.expires_at is null or ownerscope.expires_at>clock_timestamp()))), '[]'::jsonb)
+=======
+language sql stable security definer set search_path=access,member,organization,pg_temp as $function$
+  select membership.id,membership.status='active',membership.access_version,
+    coalesce((select array_agg(distinct permission.code order by permission.code)
+      from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='deny'
+      join access.permission permission on permission.id=mapping.permission_id
+      where assignment.membership_id=membership.id and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())),array[]::text[]),
+    coalesce((select jsonb_agg(jsonb_build_object(
+      'scope',access.scope_object(scopegrant.scope_id),
+      'permissions',coalesce((select jsonb_agg(distinct permission.code order by permission.code)
+        from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='allow'
+        join access.permission permission on permission.id=mapping.permission_id
+        where assignment.membership_id=membership.id and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())), '[]'::jsonb),
+      'effective',scopegrant.effective_at,'expires',scopegrant.expires_at) order by scopegrant.scope_path)
+      from access.scopegrant scopegrant where scopegrant.membership_id=membership.id and scopegrant.effect='allow'
+        and scopegrant.effective_at<=clock_timestamp() and (scopegrant.expires_at is null or scopegrant.expires_at>clock_timestamp())), '[]'::jsonb)
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   from access.membership membership where membership.id=p_membership_id
 $function$;
 
@@ -1208,6 +1313,7 @@ begin
     select organization_id into resolved from member.invite where id=p_resource;
   elsif p_operation like 'identity.%' then
     select 'self:'||profile.principal_id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
+<<<<<<< HEAD
   elsif p_operation='invoice.profiles.manage' then
     select owner_id into resolved from invoice.profile where id=p_resource;
     if resolved is null then
@@ -1216,6 +1322,12 @@ begin
   elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='member')
       or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
       'order.orders.create','order.aftersales.apply','payment.intents.create','benefit.accounts.read',
+=======
+  elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='member')
+      or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
+      'order.orders.create','order.aftersales.apply','payment.intents.create','benefit.accounts.read','invoice.profiles.manage',
+      'invoice.requests.create','invoice.requests.read','invoice.requests.cancel',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       'notification.notifications.read','notification.preferences.manage','notification.endpoints.manage') then
     select profile.id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
   elsif p_operation in('order.orders.read','order.aftersales.read','support.cases.read','support.messages.read')
@@ -1267,6 +1379,7 @@ begin
 end $function$;
 
 create or replace function access.resolve_scope(p_membership_id text,p_operation text,p_resource text)
+<<<<<<< HEAD
 returns table(scope jsonb) language sql stable security definer
 set search_path=access,member,pg_temp as $function$
   select case when p_operation like 'access.ownership.%' then
@@ -1312,6 +1425,12 @@ revoke all on function access.resolve_scope(text,text,text,text) from public;
 grant execute on function access.resolve_scope(text,text,text,text)
   to shopapp,zhudatuanidentityapi,zhudatuanwebapi,zhudatuanpurchaseapi;
 
+=======
+returns table(scope jsonb) language sql stable security definer set search_path=access,pg_temp as $function$
+  select access.scope_object(access.resource_scope(p_operation,p_resource,p_membership_id))
+$function$;
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 create or replace function capability.membership_operations(p_membership_id text)
 returns table(operation_id text) language sql stable security definer
 set search_path=capability,access,member,organization,runtime,pg_temp as $function$
@@ -1452,6 +1571,10 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
+<<<<<<< HEAD
 insert into runtime.schemaversion(version,checksum) values('20260821032000','d7e499c9530d8c7ab46cfb4bc30b4ad17cd39a9c16b9d444ac4a1927f25eae79');
+=======
+insert into runtime.schemaversion(version,checksum) values('20260821032000','83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 commit;

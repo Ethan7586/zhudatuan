@@ -8,6 +8,7 @@ export const ACCESS_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "access.center.read",
   "access.roles.manage",
   "access.scopes.manage",
+<<<<<<< HEAD
   "access.ownership.read",
   "access.ownership.transfers.preview",
   "access.ownership.transfers.create",
@@ -15,12 +16,15 @@ export const ACCESS_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "access.ownership.transfers.accept",
   "access.ownership.transfers.cancel",
   "access.ownership.transfers.cancel.preview",
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 ] as const satisfies readonly OperationId[]);
 
 export interface AccessOperations {
   readonly centerRead: OperationMethod<"access.center.read">;
   readonly rolesManage: OperationMethod<"access.roles.manage">;
   readonly scopesManage: OperationMethod<"access.scopes.manage">;
+<<<<<<< HEAD
   readonly ownershipRead: OperationMethod<"access.ownership.read">;
   readonly ownershipTransfersPreview: OperationMethod<"access.ownership.transfers.preview">;
   readonly ownershipTransfersCreate: OperationMethod<"access.ownership.transfers.create">;
@@ -28,6 +32,8 @@ export interface AccessOperations {
   readonly ownershipTransfersAccept: OperationMethod<"access.ownership.transfers.accept">;
   readonly ownershipTransfersCancel: OperationMethod<"access.ownership.transfers.cancel">;
   readonly ownershipTransfersCancelPreview: OperationMethod<"access.ownership.transfers.cancel.preview">;
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export function createFetchAccess(baseUrl: string): AccessOperations {
@@ -39,6 +45,7 @@ export function createAccessOperations(client: OperationExecutor): AccessOperati
     centerRead: bindCenterRead(client),
     rolesManage: bindRolesManage(client),
     scopesManage: bindScopesManage(client),
+<<<<<<< HEAD
     ownershipRead: bindOwnershipRead(client),
     ownershipTransfersPreview: bindOwnershipTransfersPreview(client),
     ownershipTransfersCreate: bindOwnershipTransfersCreate(client),
@@ -46,6 +53,8 @@ export function createAccessOperations(client: OperationExecutor): AccessOperati
     ownershipTransfersAccept: bindOwnershipTransfersAccept(client),
     ownershipTransfersCancel: bindOwnershipTransfersCancel(client),
     ownershipTransfersCancelPreview: bindOwnershipTransfersCancelPreview(client),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 }
 
@@ -72,6 +81,7 @@ export function createFetchAccessScopesManage(baseUrl: string): OperationMethod<
 function bindScopesManage(client: OperationExecutor): OperationMethod<"access.scopes.manage"> {
   return bindOperation(client, defineStructuralOperation({"id":"access.scopes.manage","method":"PUT","path":"/api/v1/access/memberships/{membershipid}/scopes","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
 }
+<<<<<<< HEAD
 
 export function createFetchAccessOwnershipRead(baseUrl: string): OperationMethod<"access.ownership.read"> {
   return bindOwnershipRead(new ApiClient(baseUrl, new FetchTransport()));
@@ -128,3 +138,5 @@ export function createFetchAccessOwnershipTransfersCancelPreview(baseUrl: string
 function bindOwnershipTransfersCancelPreview(client: OperationExecutor): OperationMethod<"access.ownership.transfers.cancel.preview"> {
   return bindOperation(client, defineStructuralOperation({"id":"access.ownership.transfers.cancel.preview","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/cancel/preview","audience":"operator","idempotent":true,"pathKeys":["transferid"]}));
 }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

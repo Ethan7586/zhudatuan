@@ -1,5 +1,9 @@
 import { createHash } from 'node:crypto';
+<<<<<<< HEAD
 import { readFile, stat, writeFile } from 'node:fs/promises';
+=======
+import { readFile, writeFile } from 'node:fs/promises';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { resolve } from 'node:path';
 import { parse } from 'yaml';
 import { PERMISSION_CATALOG } from '../../../packages/authz/src/PermissionCatalog';
@@ -13,11 +17,21 @@ interface EventDefinition {
   readonly handlers: readonly string[];
 }
 
+<<<<<<< HEAD
+=======
+interface CapabilityDefinition {
+  readonly code: string;
+  readonly kind: string;
+  readonly audience?: OperationDefinition['audience'];
+}
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 interface ErrorDefinition {
   readonly code: string;
   readonly status: number;
 }
 
+<<<<<<< HEAD
 type RawOperationDefinition = Omit<OperationDefinition, 'availability' | 'execution' | 'expectedVersion' | 'idempotency' | 'summary'> & Partial<Pick<OperationDefinition, 'availability' | 'execution' | 'expectedVersion' | 'idempotency' | 'summary'>> & Readonly<{
   controller?: unknown;
   handler?: unknown;
@@ -38,11 +52,27 @@ validateErrors(errors);
 const check = process.argv.includes('--check');
 const contractSdkOnly = process.argv.includes('--scope=contract-sdk');
 const databaseOnly = process.argv.includes('--scope=database');
+=======
+const root = resolve(import.meta.dirname, '../../..');
+const definitions = resolve(root, 'packages/contract/definitions');
+const operations = await catalog<OperationDefinition>('operations.yml', 'operations');
+const events = await catalog<EventDefinition>('events.yml', 'events');
+const capabilities = await catalog<CapabilityDefinition>('capabilities.yml', 'capabilities');
+const errors = await catalog<ErrorDefinition>('errors.yml', 'errors');
+validateOperations(operations);
+validateEvents(events);
+validatePermissions(operations);
+validateCapabilityAudiences(operations, capabilities);
+validateErrors(errors);
+const check = process.argv.includes('--check');
+const contractSdkOnly = process.argv.includes('--scope=contract-sdk');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const permissionMetadata = new Map(PERMISSION_CATALOG.map(({ code, risk, stepup, scopes }) => [code, { risk, stepup, scopes }]));
 const openapi = buildOpenapi(operations, permissionMetadata);
 const eventArtifact = stable({ version: 1, events: events.map((item) => ({ type: item.id, version: item.version, module: item.owner })) });
 const permissionArtifact = PERMISSION_CATALOG.map(({ code, category, risk, stepup, scopes }) => ({ code, category, risk, stepup, scopes }));
 const errorArtifact = errors.map(({ code, status }) => ({ code, status }));
+<<<<<<< HEAD
 // OMS links are design provenance; without a path/schema/permission change they do not rotate the published runtime identity.
 const contractChecksum = hash(JSON.stringify({ openapi: contractIdentityOpenapi(openapi), events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
@@ -63,6 +93,23 @@ if (databaseOnly) {
   }
   if (!contractSdkOnly) await emitRuntimeArtifacts(contractChecksum, runtimeOperations);
 }
+=======
+const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
+
+await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
+await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
+await emit(resolve(root, 'packages/contract/src/operations/CommerceOperations.ts'), operationSource(operations, permissionMetadata));
+await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
+await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
+await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
+await emit(resolve(root, 'packages/contract/src/ContractIdentity.generated.ts'), contractIdentitySource(contractChecksum));
+await emit(resolve(root, 'packages/contract/src/ErrorContract.generated.ts'), errorSource(errors));
+await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.generated.ts'), sdkSource(operations));
+for (const [domain, source] of sdkDomainSources(operations)) {
+  await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
+}
+if (!contractSdkOnly) await emitLegacyArtifacts(contractChecksum);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 async function catalog<T>(name: string, key: string): Promise<readonly T[]> {
   const payload = parse(await readFile(resolve(definitions, name), 'utf8')) as Record<string, unknown>;
@@ -71,6 +118,7 @@ async function catalog<T>(name: string, key: string): Promise<readonly T[]> {
   return values as readonly T[];
 }
 
+<<<<<<< HEAD
 function normalizeOperations(values: readonly RawOperationDefinition[]): readonly OperationDefinition[] {
   return values.map((item) => Object.freeze({
     id: item.id,
@@ -124,6 +172,19 @@ function validateOperations(values: readonly OperationDefinition[], sources: rea
     if (item.execution === 'async' && (item.method === 'GET' || item.idempotency !== 'required')) throw new Error(`OPERATION_ASYNC_POLICY_INVALID:${item.id}`);
     if (item.idempotency === 'required' && item.method === 'GET') throw new Error(`OPERATION_IDEMPOTENCY_METHOD_INVALID:${item.id}`);
     if (item.expectedVersion === 'required' && item.method === 'GET') throw new Error(`OPERATION_VERSION_METHOD_INVALID:${item.id}`);
+=======
+function validateOperations(values: readonly OperationDefinition[]): void {
+  const ids = new Set<string>();
+  const routes = new Set<string>();
+  for (const item of values) {
+    if (!/^[a-z]+(?:\.[a-z]+)+$/.test(item.id) || ids.has(item.id)) throw new Error(`OPERATION_ID_INVALID:${item.id}`);
+    const pathAllowed = item.path.startsWith('/api/v1/') || item.id.startsWith('runtime.health.') && item.path.startsWith('/health/');
+    if (!pathAllowed || routes.has(`${item.method} ${item.path}`)) throw new Error(`OPERATION_ROUTE_INVALID:${item.id}`);
+    if (item.schema !== 'exact' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
+    if (item.requirements.length === 0 || item.requirements.some((id) => !/^MVP(?:0[3-9]|1\d|2[0-3])$/.test(id))) throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
+    const domain = item.id.split('.')[0]!;
+    if (item.sdk !== `packages/sdk/src/operations/${domain}.ts`) throw new Error(`OPERATION_SDK_TARGET_INVALID:${item.id}`);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     ids.add(item.id);
     routes.add(`${item.method} ${item.path}`);
   }
@@ -146,6 +207,20 @@ function validatePermissions(values: readonly OperationDefinition[]): void {
   }
 }
 
+<<<<<<< HEAD
+=======
+function validateCapabilityAudiences(values: readonly OperationDefinition[], capabilities: readonly CapabilityDefinition[]): void {
+  const operations = new Map(values.map((operation) => [operation.id, operation]));
+  for (const capability of capabilities) {
+    if (capability.kind !== 'operation') continue;
+    const operation = operations.get(capability.code);
+    if (operation !== undefined && capability.audience !== operation.audience) {
+      throw new Error(`OPERATION_AUDIENCE_DRIFT:${operation.id}:${operation.audience}:${capability.audience ?? 'missing'}`);
+    }
+  }
+}
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function validateErrors(values: readonly ErrorDefinition[]): void {
   const codes = new Set<string>();
   let previous = '';
@@ -167,6 +242,7 @@ async function emit(path: string, content: string): Promise<void> {
   if (current !== content) throw new Error(`GENERATED_CONTRACT_DRIFT:${path}`);
 }
 
+<<<<<<< HEAD
 async function emitRuntimeArtifacts(contractChecksum: string, values: readonly OperationDefinition[]): Promise<void> {
   const miniappApi = resolve(root, 'apps/miniapp/miniprogram/api');
   const miniappPresent = await stat(miniappApi)
@@ -194,6 +270,24 @@ async function emitDatabaseArtifact(contractChecksum: string, values: readonly O
     .sort((left, right) => left.code.localeCompare(right.code))
     .map(({ code, risk }) => sqlRow([`permission:${hash(code).slice(0, 24)}`, code, risk, 'active']))
     .join(',\n');
+=======
+async function emitLegacyArtifacts(contractChecksum: string): Promise<void> {
+  await emit(resolve(root, 'apps/miniapp/miniprogram/api/identity.js'), miniappIdentitySource(contractChecksum));
+  await emit(resolve(root, 'apps/miniapp/miniprogram/api/operations.js'), miniappSource(operations, permissionMetadata));
+  await emit(resolve(root, 'services/commerce/src/foundation/application/OperationHandler.ts'), hardenedHandlerSource(operations));
+  await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), hardenedControllerSource(operations));
+  await emit(resolve(root, 'services/commerce/src/app/events.ts'), eventRegistrySource(events));
+
+  const template = await readFile(resolve(root, 'database/contracts/publish.template.sql'), 'utf8');
+  const operationRows = operations.map((item) => sqlRow([item.id, item.owner, item.method, item.path, '1.0.0'])).join(',\n');
+  const eventRows = events.map((item) => sqlRow([item.id, item.version, item.owner, item.schema])).join(',\n');
+  const capabilityRows = operations.map((item) => sqlRow([item.id, 'operation', item.id, 1, 'active'])).join(',\n');
+  const bindings = operations.map((item) => sqlRow([item.id, item.id, item.permission ?? null, item.audience])).join(',\n');
+  const usedPermissions = new Set(operations.flatMap((item) => item.permission ? [item.permission] : []));
+  const permissions = PERMISSION_CATALOG.filter(({ code }) => usedPermissions.has(code))
+    .sort((left, right) => left.code.localeCompare(right.code))
+    .map(({ code, risk }) => sqlRow([`permission:${hash(code).slice(0, 24)}`, code, risk, 'active'])).join(',\n');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const migration = template
     .replace('{{OPERATIONS}}', operationRows)
     .replace('{{EVENTS}}', eventRows)
@@ -220,11 +314,28 @@ function eventSerializerSource(values: readonly EventDefinition[]): string {
 }
 
 function contractIdentitySource(checksum: string): string {
+<<<<<<< HEAD
   return ['// Generated from the canonical operation and event definitions. Do not edit.', "export const CONTRACT_VERSION = '1.0.0' as const;", "export const CONTRACT_CHECKSUM = '" + checksum + "' as const;", ''].join('\n');
 }
 
 function miniappIdentitySource(checksum: string): string {
   return ['// Generated from the canonical operation and event definitions. Do not edit.', "module.exports = Object.freeze({ version: '1.0.0', checksum: '" + checksum + "' });", ''].join('\n');
+=======
+  return [
+    '// Generated from the canonical operation and event definitions. Do not edit.',
+    "export const CONTRACT_VERSION = '1.0.0' as const;",
+    "export const CONTRACT_CHECKSUM = '" + checksum + "' as const;",
+    '',
+  ].join('\n');
+}
+
+function miniappIdentitySource(checksum: string): string {
+  return [
+    '// Generated from the canonical operation and event definitions. Do not edit.',
+    "module.exports = Object.freeze({ version: '1.0.0', checksum: '" + checksum + "' });",
+    '',
+  ].join('\n');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function eventRegistrySource(values: readonly EventDefinition[]): string {
@@ -233,6 +344,7 @@ function eventRegistrySource(values: readonly EventDefinition[]): string {
   return `// Generated from packages/contract/definitions/events.yml. Do not edit.\nimport { COMMERCE_EVENTS } from '@shop/contract';\n\nexport const EVENT_SCHEMA_TYPES = Object.freeze([\n${ids}\n] as const);\n\nexport const EVENT_HANDLERS = new Map<string, readonly string[]>([\n${handlers}\n]);\n\nconst versions = new Map<string, number>(COMMERCE_EVENTS.map((event) => [event.type, event.version]));\n\nexport function eventVersion(type: string): number {\n  const version = versions.get(type);\n  if (version === undefined) throw new Error('EVENT_SCHEMA_UNKNOWN');\n  return version;\n}\n`;
 }
 
+<<<<<<< HEAD
 function miniappSource(values: readonly OperationDefinition[], permissions: ReadonlyMap<string, Readonly<{ risk: string; stepup: boolean; scopes: readonly string[] }>>): string {
   const definitions = Object.fromEntries(
     values.map((item) => {
@@ -254,6 +366,27 @@ function miniappSource(values: readonly OperationDefinition[], permissions: Read
       ];
     })
   );
+=======
+function miniappSource(
+  values: readonly OperationDefinition[],
+  permissions: ReadonlyMap<string, Readonly<{ risk: string; stepup: boolean; scopes: readonly string[] }>>,
+): string {
+  const definitions = Object.fromEntries(values.map((item) => {
+    const permission = item.permission === undefined ? undefined : permissions.get(item.permission);
+    return [item.id, {
+      method: item.method,
+      path: item.path,
+      audience: item.audience,
+      idempotent: item.idempotent,
+      idempotency: item.method === 'GET' || item.audience === 'provider' ? 'none' : 'required',
+      expectedVersion: item.method === 'GET' ? 'none' : 'optional',
+      risk: permission?.risk ?? 'low',
+      stepup: permission?.stepup ?? false,
+      scopeKinds: permission?.scopes ?? [],
+      schema: item.schema,
+    }];
+  }));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const groups = new Map<string, OperationDefinition[]>();
   for (const operation of values) {
     const domain = operation.id.split('.')[0]!;
@@ -261,18 +394,29 @@ function miniappSource(values: readonly OperationDefinition[], permissions: Read
     current.push(operation);
     groups.set(domain, current);
   }
+<<<<<<< HEAD
   const clients = [...groups]
     .map(([domain, operations]) => {
       const methods = operations.map((operation) => `    ${miniappMethodName(operation.id)}: bind(execute, ${JSON.stringify(operation.id)}),`).join('\n');
       return `  ${domain}: Object.freeze({\n${methods}\n  }),`;
     })
     .join('\n');
+=======
+  const clients = [...groups].map(([domain, operations]) => {
+    const methods = operations.map((operation) => `    ${miniappMethodName(operation.id)}: bind(execute, ${JSON.stringify(operation.id)}),`).join('\n');
+    return `  ${domain}: Object.freeze({\n${methods}\n  }),`;
+  }).join('\n');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return `// Generated from definitions/operations.yml. Do not edit.\nconst definitions = Object.freeze(${JSON.stringify(definitions, null, 2)});\n\n/** @param {(id: string, input?: any, context?: any) => Promise<any>} execute */\nfunction createOperations(execute) {\n  if (typeof execute !== 'function') throw new Error('MINIAPP_OPERATION_EXECUTOR_REQUIRED');\n  return Object.freeze({\n${clients}\n  });\n}\n\n/** @param {(id: string, input?: any, context?: any) => Promise<any>} execute @param {string} id */\nfunction bind(execute, id) { return (input = {}, context = {}) => execute(id, input, context); }\n\nmodule.exports = Object.freeze({ createOperations, definitions });\n`;
 }
 
 function miniappMethodName(id: string): string {
   const [, ...segments] = id.split('.');
+<<<<<<< HEAD
   return segments.map((segment, index) => (index === 0 ? segment : `${segment[0]!.toUpperCase()}${segment.slice(1)}`)).join('');
+=======
+  return segments.map((segment, index) => index === 0 ? segment : `${segment[0]!.toUpperCase()}${segment.slice(1)}`).join('');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function handlerSource(values: readonly OperationDefinition[]): string {
@@ -286,14 +430,21 @@ function controllerSource(values: readonly OperationDefinition[]): string {
 }
 
 function hardenedHandlerSource(values: readonly OperationDefinition[]): string {
+<<<<<<< HEAD
   return handlerSource(values).replace(
     '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly body: unknown;',
     '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly headers: Readonly<Record<string, string>>;\n  readonly body: unknown;\n  readonly rawBody: string;\n  readonly deadline: number;\n  readonly signal: AbortSignal;\n  /** Server-derived target used for authorization and action-proof binding. */\n  readonly resource?: string;'
   );
+=======
+  return handlerSource(values)
+    .replace('  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly body: unknown;',
+      '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly headers: Readonly<Record<string, string>>;\n  readonly body: unknown;\n  readonly rawBody: string;\n  readonly deadline: number;\n  readonly signal: AbortSignal;');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function hardenedControllerSource(values: readonly OperationDefinition[]): string {
   return controllerSource(values)
+<<<<<<< HEAD
     .replace(
       'export function registerOperationRoutes(module: string, context: ModuleContext): void {',
       `export function registerOperationRoutes(module: string, context: ModuleContext): void {
@@ -333,10 +484,20 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
       '\nfunction queryObject(parameters: URLSearchParams)',
       "\nfunction operationResource(operation: string, request: HttpRequest): string | undefined {\n  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.\n  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  const pathResource = Object.values(request.parameters)[0];\n  if (pathResource !== undefined) return pathResource;\n  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;\n  const settlement = Reflect.get(request.body, 'settlement');\n  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;\n}\n\nfunction queryObject(parameters: URLSearchParams)"
     );
+=======
+    .replace("operation.audience === 'public' ? null", "operation.audience === 'public' || operation.audience === 'provider' ? null")
+    .replace('operationInput(operation.method, request)', 'operationInput(operation.method, operation.audience, request)')
+    .replace('function operationInput(method: string, request: HttpRequest): OperationInput {', 'function operationInput(method: string, audience: string, request: HttpRequest): OperationInput {')
+    .replace("if (method !== 'GET' && idempotency === undefined)", "if (method !== 'GET' && audience !== 'provider' && idempotency === undefined)")
+    .replace("const normalized = header?.replace(/^W\\/\"|\"$/g, '');", "const normalized = header?.replace(/^W\\//, '').replace(/^\"|\"$/g, '');")
+    .replace('return { path: request.parameters, query: queryObject(request.query), body: request.body,',
+      'return { path: request.parameters, query: queryObject(request.query), headers: request.headers, body: request.body, rawBody: request.rawBody, deadline: request.deadline, signal: request.signal,');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
+<<<<<<< HEAD
   if (value !== null && typeof value === 'object')
     return Object.fromEntries(
       Object.entries(value)
@@ -356,11 +517,18 @@ function contractIdentityOpenapi(value: unknown): unknown {
         : contractIdentityOpenapi(child),
     ]));
   }
+=======
+  if (value !== null && typeof value === 'object') return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, stable(child)]));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return value;
 }
 
 function sqlRow(values: readonly (string | number | null)[]): string {
+<<<<<<< HEAD
   return `  (${values.map((value) => (value === null ? 'null' : typeof value === 'number' ? String(value) : `'${value.replaceAll("'", "''")}'`)).join(',')})`;
+=======
+  return `  (${values.map((value) => value === null ? 'null' : typeof value === 'number' ? String(value) : `'${value.replaceAll("'", "''")}'`).join(',')})`;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function hash(value: string): string {

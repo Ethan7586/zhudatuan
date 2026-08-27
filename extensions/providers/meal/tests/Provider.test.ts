@@ -10,8 +10,12 @@ describe('meal provider contract', () => {
     expect(MealProvider.definition.id).toBe('meal');
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('MEAL_MANIFEST_SIGNATURE_MISSING');
+<<<<<<< HEAD
     expect(MEAL_BRANDS).toEqual(['sbk', 'kfc', 'mcd', 'lk', 'cot', 'pzh', 'molly']);
     expect(MealProvider.definition.capabilities).toEqual(['Catalog', 'Price']);
     expect(MealProvider.definition.secretRefs).toEqual(['channelNo', 'channelKey']);
+=======
+    expect(MEAL_BRANDS).toEqual(['KFC', 'MCDONALDS', 'LUCKIN', 'STARBUCKS', 'COTTI']);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 });

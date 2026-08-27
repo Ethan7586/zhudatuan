@@ -6,12 +6,15 @@ export interface IdentityChallenge {
   readonly destination_ciphertext: string;
 }
 
+<<<<<<< HEAD
 export interface IdentityChallengeAttempt {
   readonly sequence: number;
   readonly state: 'sending' | 'sent' | 'ambiguous';
   readonly dispatch: boolean;
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export class IdentityNotificationPort {
   challenge(database: OperationDatabase, id: string) {
     return database.query<IdentityChallenge>(`select challenge.purpose,secret.code_ciphertext,secret.destination_ciphertext
@@ -19,6 +22,7 @@ export class IdentityNotificationPort {
       where challenge.id=$1 and challenge.consumed_at is null and challenge.expires_at>clock_timestamp()`, [id]);
   }
 
+<<<<<<< HEAD
   beginAttempt(database: OperationDatabase, id: string, provider: string) {
     return database.query<IdentityChallengeAttempt>(`with uncertain as(
       update identity.challengedelivery set state='ambiguous',error_code=coalesce(error_code,'PREVIOUS_SEND_OUTCOME_UNKNOWN')
@@ -48,6 +52,12 @@ export class IdentityNotificationPort {
   ambiguousAttempt(database: OperationDatabase, id: string, sequence: number, code: string) {
     return database.query(`update identity.challengedelivery set state='ambiguous',error_code=$3
       where challenge_id=$1 and sequence=$2 and state='sending' returning challenge_id,sequence,state`, [id, sequence, code]);
+=======
+  attempt(database: OperationDatabase, id: string, provider: string, state: 'sent' | 'failed', external: string | null, code: string | null) {
+    return database.query(`insert into identity.challengedelivery(challenge_id,sequence,provider,external_id,state,error_code,attempted_at)
+      select $1,coalesce(max(sequence),0)+1,$2,$3,$4,$5,clock_timestamp() from identity.challengedelivery where challenge_id=$1`,
+    [id, provider, external, state, code]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }
 

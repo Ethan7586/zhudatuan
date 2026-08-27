@@ -54,6 +54,7 @@ export class OrderPort {
       where id=$1 and state in('approved','processing')`, [input.aftersale]);
   }
 
+<<<<<<< HEAD
   async completeFulfillment(database: OperationDatabase, order: string): Promise<boolean> {
     const changed = await database.query(`update ordering.orderrecord set fulfillment_state='delivered',lifecycle_state='completed',
       version=version+1,updated_at=clock_timestamp() where id=$1 and fulfillment_state<>'delivered'
@@ -62,6 +63,12 @@ export class OrderPort {
     const existing = await database.query(`select 1 from ordering.orderrecord where id=$1`, [order]);
     if (!existing.rows[0]) throw new Error('ORDER_NOT_FOUND');
     return false;
+=======
+  async completeFulfillment(database: OperationDatabase, order: string): Promise<void> {
+    const changed = await database.query(`update ordering.orderrecord set fulfillment_state='delivered',lifecycle_state='completed',
+      version=version+1,updated_at=clock_timestamp() where id=$1 returning id`, [order]);
+    if (!changed.rows[0]) throw new Error('ORDER_NOT_FOUND');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }
 

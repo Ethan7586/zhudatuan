@@ -22,12 +22,15 @@ export const SessionSchema = z.object({
     level: z.number().int().nonnegative(),
     verified: z.string().min(1).optional(),
   }),
+<<<<<<< HEAD
   security: z.object({
     hasLocalCredential: z.boolean(),
     phoneMasked: z.string().min(1).nullable(),
     passwordChangedAt: z.string().min(1).nullable(),
   }).optional(),
   csrf: z.string().min(16).optional(),
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   target: z.string().min(1),
   syncedAt: z.string().min(1),
 });

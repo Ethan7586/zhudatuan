@@ -1,4 +1,5 @@
 import { OrderIcon } from './OrderIcon';
+<<<<<<< HEAD
 
 export function OrderPageHeader({
   isFetching,
@@ -11,6 +12,19 @@ export function OrderPageHeader({
   exportReady: boolean;
   onImport: () => void;
   onExport: () => void;
+=======
+import { OrderPreviewAction } from './OrderPreviewAction';
+
+export function OrderPageHeader({
+  previewEnabled,
+  isFetching,
+  pageCount,
+  onRefresh,
+}: Readonly<{
+  previewEnabled: boolean;
+  isFetching: boolean;
+  pageCount: number;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   onRefresh: () => void;
 }>) {
   return (
@@ -21,6 +35,7 @@ export function OrderPageHeader({
         <span>统一处理订单、支付、履约、退款与售后</span>
       </div>
       <div className="orderpageactions">
+<<<<<<< HEAD
         <button type="button" title="选择本地 CSV 文件，本期不会上传" aria-describedby="orderwriteboundary" onClick={onImport}>
           <OrderIcon name="package" />
           导入
@@ -35,6 +50,23 @@ export function OrderPageHeader({
           <OrderIcon name="download" />
           导出当前页
         </button>
+=======
+        <OrderPreviewAction
+          ariaLabel="导出订单"
+          title="导出订单预览"
+          disabled={!previewEnabled}
+          describedBy="orderwriteboundary"
+          triggerTitle={previewEnabled ? '查看导出前安全预览' : '等待服务端导出合同'}
+          trigger={
+            <>
+              <OrderIcon name="download" />
+              导出订单
+            </>
+          }
+        >
+          {() => <p className="orderpreviewdetail">当前页已验证 {pageCount} 条；正式导出仍需服务端 Filter Snapshot、权限重读与 Operation 回执。</p>}
+        </OrderPreviewAction>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <button type="button" onClick={onRefresh} disabled={isFetching}>
           <OrderIcon name="refresh" />
           {isFetching ? '刷新中' : '刷新数据'}

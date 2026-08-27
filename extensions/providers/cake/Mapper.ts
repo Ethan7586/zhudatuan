@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createHash } from 'node:crypto';
 import type { CatalogBatch, JsonObject, JsonValue, PriceBatch, StockBatch } from '@shop/contract';
 import { cakeuncleMinor, cakeuncleNonnegativeInteger } from '@shop/vendorcakeuncle';
@@ -268,3 +269,6 @@ function sortedUnique(values: readonly string[]): readonly string[] {
 function compareCategory(left: CakeCategory, right: CakeCategory): number { return compareText(left.id, right.id); }
 function compareText(left: string, right: string): number { return left < right ? -1 : left > right ? 1 : 0; }
 function isString(value: string | undefined): value is string { return value !== undefined; }
+=======
+export { CanonicalSourceMapper as CakeMapper } from '@shop/providercore';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

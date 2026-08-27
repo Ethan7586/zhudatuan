@@ -20,10 +20,17 @@
   text-align: left;
   white-space: nowrap;
 }
+<<<<<<< HEAD
 .financeworkspace .financetable th {
   height: 38px;
   background: var(--sw-surface-subtle);
   color: var(--sw-text-secondary);
+=======
+.financetable th {
+  height: 38px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-muted);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   font-weight: 700;
 }
 .financetable th:last-child,
@@ -179,7 +186,10 @@
   padding: 30px;
   font-size: 12px;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .financequerystate.iserror {
   color: var(--sw-danger-strong);
 }

@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "build": "npm run typecheck",
+<<<<<<< HEAD
     "test": "node --import tsx --test src/LocalRegistrationOtp.test.ts",
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

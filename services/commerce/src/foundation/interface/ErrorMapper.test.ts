@@ -17,6 +17,7 @@ describe('ErrorMapper', () => {
     }
   });
 
+<<<<<<< HEAD
   it('maps bounded invitation scope failures to safe client errors', () => {
     const mapper = new ErrorMapper();
     for (const code of ['INVITATION_SCOPE_INVALID', 'INVITATION_STOREFRONT_SCOPE_REQUIRED', 'STOREFRONT_SCOPE_REQUIRED']) {
@@ -26,6 +27,8 @@ describe('ErrorMapper', () => {
     }
   });
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('does not infer a status from an unregistered error name', () => {
     const response = new ErrorMapper().map(new Error(['UNREGISTERED', 'INVALID'].join('_')), 'request:unknown');
     expect(response.status).toBe(500);

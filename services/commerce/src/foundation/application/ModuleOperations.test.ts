@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
+<<<<<<< HEAD
 import { appendOperationAudit, ModuleOperations, operationLifecycle, operationRequestHash } from './ModuleOperations';
+=======
+import { appendOperationAudit, ModuleOperations, operationLifecycle } from './ModuleOperations';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { OperationRequest } from './OperationHandler';
 import type { DatabasePool } from '../persistence/Pool';
 import type { AuditSink } from './AuditSink';
 
 describe('ModuleOperations lifecycle', () => {
+<<<<<<< HEAD
   it('does not persist an enumerable phone fingerprint for invitation idempotency', () => {
     const request = (destination: string, label = '普通管理员邀请'): OperationRequest => ({
       type:'identity.invitations.create', access:null,
@@ -17,6 +22,8 @@ describe('ModuleOperations lifecycle', () => {
       .not.toBe(operationRequestHash(request('+8613800138000')));
   });
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('keeps client error payloads in telemetry and out of audit facts', async () => {
     let before: unknown;
     const audit: AuditSink = { record: async (_database, input) => { before = input.before; }, access: async () => undefined };
@@ -36,6 +43,7 @@ describe('ModuleOperations lifecycle', () => {
       signal:new AbortController().signal, idempotency:'invitation' } } satisfies OperationRequest;
     await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
       'identity', { status:201, body:{ id:'invitation:1', code:'one-time-code' } }, 'actor', 'scope', 'hash');
+<<<<<<< HEAD
     expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
     expect(fact?.after).toEqual({ id:'invitation:1', code:'[REDACTED]' });
   });
@@ -128,6 +136,12 @@ describe('ModuleOperations lifecycle', () => {
       'member-management-audit']) expect(serialized).not.toContain(secret);
   });
 
+=======
+    expect(fact?.before).toEqual({ path:{}, query:{}, body:{ address:'[REDACTED]', password:'[REDACTED]' }, expectedVersion:null });
+    expect(fact?.after).toEqual({ id:'invitation:1', code:'[REDACTED]' });
+  });
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('prepares before acquiring a connection and finalizes after commit and release', async () => {
     const order: string[] = [];
     const client = {
@@ -224,6 +238,7 @@ describe('ModuleOperations lifecycle', () => {
     await expect(operations.invoke(second)).resolves.toEqual({ status: 201, body: { version: 1 } });
     expect(executions).toBe(1);
   });
+<<<<<<< HEAD
 
   it('uses a stable public actor so the same idempotency key cannot be reused with a different body', async () => {
     let stored: Readonly<{ request_hash: string; state: string; response: unknown }> | undefined;
@@ -307,4 +322,6 @@ describe('ModuleOperations lifecycle', () => {
     await expect(operations.invoke(request(2))).rejects.toThrow('IDEMPOTENCY_KEY_REUSED');
     expect(executions).toBe(1);
   });
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type { ReactNode } from 'react';
 import { Button as AriaButton, Tooltip, TooltipTrigger, type ButtonProps as AriaButtonProps } from 'react-aria-components';
 
@@ -31,4 +32,18 @@ export function IconButton({ children, label, ...props }: IconButtonProps) {
       <Tooltip className="swtooltip">{label}</Tooltip>
     </TooltipTrigger>
   );
+=======
+import { Button as AriaButton, type ButtonProps as AriaButtonProps } from 'react-aria-components';
+
+export type ButtonTone = 'default' | 'primary' | 'danger';
+
+export interface ButtonProps extends Omit<AriaButtonProps, 'className'> {
+  readonly className?: string;
+  readonly tone?: ButtonTone;
+}
+
+export function Button({ className, tone = 'default', ...props }: ButtonProps) {
+  const classes = ['shopbutton', `shopbutton${tone}`, className].filter(Boolean).join(' ');
+  return <AriaButton {...props} className={classes} />;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

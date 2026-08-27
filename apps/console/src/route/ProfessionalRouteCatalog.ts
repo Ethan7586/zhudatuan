@@ -23,6 +23,7 @@ export const professionalRoutes: readonly ProfessionalRoute[] = Object.freeze([
     'reporting.sales.read', ['reporting.sales.read', 'reporting.products.read', 'reporting.malls.read', 'reporting.categories.read',
       'reporting.channels.read', 'reporting.powderclass.read', 'reporting.voucherconsumption.read']),
   route('support', 'support', /^support(?:\/[^/]+)?$/, '客服中心', '工单、对话、分派和 SLA 状态', '业务运营', 'support',
+<<<<<<< HEAD
     'support.cases.read', ['support.cases.read', 'support.messages.read', 'support.messages.send']),
   route('referralhome', 'referral', /^referral$/, '分销返佣系统', '分销招募、关系、商品、佣金与提现', '业务运营', 'channel',
     'referral.settings.read'),
@@ -38,6 +39,9 @@ export const professionalRoutes: readonly ProfessionalRoute[] = Object.freeze([
     'referral.commissions.read'),
   route('referralpromotion', 'referral/promotion', /^referral\/promotion$/, '推广详情', '订单行返佣、奖励与冲正终态', '业务运营', 'channel',
     'referral.commissions.read'),
+=======
+    'support.cases.read', ['support.cases.read', 'support.messages.read']),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   route('channels', 'channels', /^channels$/, '渠道管理', '连接、同步批次和外部操作回执', '业务运营', 'channel',
     'channel.connections.read', ['channel.connections.read', 'channel.syncruns.read', 'channel.operations.read']),
   route('imports', 'imports/member/:jobId', /^imports\/(?:member|catalog|voucher)\/[^/]+$/, '导入结果',

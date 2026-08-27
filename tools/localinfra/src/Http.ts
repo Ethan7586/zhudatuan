@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { createHash, timingSafeEqual } from 'node:crypto';
+=======
+import { timingSafeEqual } from 'node:crypto';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { readFile } from 'node:fs/promises';
 import { createServer, type Server as HttpsServer } from 'node:https';
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
@@ -17,7 +21,10 @@ export interface LocalResponse {
 }
 
 export type LocalHandler = (request: LocalRequest) => Promise<LocalResponse>;
+<<<<<<< HEAD
 export type LocalPreflight = (request: Omit<LocalRequest, 'body'>) => void;
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export interface LocalTls {
   readonly certificateFile: string;
@@ -31,6 +38,7 @@ export class LocalHttpError extends Error {
   }
 }
 
+<<<<<<< HEAD
 export async function startLocalHttps(
   name: string,
   port: number,
@@ -39,11 +47,18 @@ export async function startLocalHttps(
   maximumBodyBytes = 9 * 1024 * 1024,
   preflight?: LocalPreflight,
 ): Promise<HttpsServer> {
+=======
+export async function startLocalHttps(name: string, port: number, handler: LocalHandler, tls: LocalTls, maximumBodyBytes = 9 * 1024 * 1024): Promise<HttpsServer> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (!/^[a-z][a-z0-9]{2,31}$/.test(name) || !Number.isSafeInteger(port) || port < 1024 || port > 65_535) {
     throw new Error('LOCAL_HTTPS_CONFIGURATION_INVALID');
   }
   const server = createServer({ key: await readFile(tls.keyFile), cert: await readFile(tls.certificateFile) }, (request, response) => {
+<<<<<<< HEAD
     void dispatch(request, response, handler, maximumBodyBytes, preflight);
+=======
+    void dispatch(request, response, handler, maximumBodyBytes);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
@@ -80,6 +95,7 @@ export function jsonBody(request: LocalRequest): Readonly<Record<string, unknown
 }
 
 export function equalSecret(actual: string | undefined, expected: string): boolean {
+<<<<<<< HEAD
   const left = createHash('sha256').update(actual ?? '').digest();
   const right = createHash('sha256').update(expected).digest();
   return timingSafeEqual(left, right) && actual !== undefined;
@@ -95,6 +111,12 @@ export function workloadBearerPreflight(expected: string): LocalPreflight {
   return request => {
     if (request.url.pathname !== '/health/ready') requireBearerAuthorization(request.headers, expected);
   };
+=======
+  if (actual === undefined) return false;
+  const left = Buffer.from(actual);
+  const right = Buffer.from(expected);
+  return left.length === right.length && timingSafeEqual(left, right);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export function canonicalRecord(value: unknown): string {
@@ -106,6 +128,7 @@ export function canonicalRecord(value: unknown): string {
   return JSON.stringify(Object.fromEntries(entries));
 }
 
+<<<<<<< HEAD
 async function dispatch(
   request: IncomingMessage,
   response: ServerResponse,
@@ -124,6 +147,16 @@ async function dispatch(
     const result = await handler({
       body,
       ...metadata,
+=======
+async function dispatch(request: IncomingMessage, response: ServerResponse, handler: LocalHandler, maximumBodyBytes: number): Promise<void> {
+  try {
+    const body = await readBody(request, maximumBodyBytes);
+    const result = await handler({
+      body,
+      headers: normalizeHeaders(request.headers),
+      method: request.method ?? 'GET',
+      url: new URL(request.url ?? '/', 'https://127.0.0.1'),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     });
     response.writeHead(result.status, {
       'cache-control': 'no-store',

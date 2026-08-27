@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { AccessDeniedActionsProvider, ContextualAccessDenied } from '@shop/design';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useNavigate, useNavigation } from 'react-router';
@@ -8,7 +11,10 @@ import { applicationScopePresentation } from '../feature/application/Application
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { professionalRouteFromPath, professionalRoutes, scopeSuffix } from '../route/ProfessionalRouteCatalog';
+<<<<<<< HEAD
 import { canAccessNavigationTarget } from '../route/NavigationAccess';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
 import { appConfig } from '../shared/config/AppConfig';
 import { scopePath } from '../shared/url/ScopePath';
@@ -18,7 +24,10 @@ const scopeLabels = Object.freeze({ platform: '平台', distributor: '分销', t
 const financeProfessionalFeatures = new Set(['entries', 'statements', 'reconciliations', 'settlements', 'withdrawals', 'invoices']);
 const accessProfessionalFeatures = new Set(['access', 'members']);
 const governanceProfessionalFeatures = new Set(['qualification', 'notification']);
+<<<<<<< HEAD
 const referralProfessionalFeatures = new Set(['referralsettings', 'referralproducts', 'referralreview', 'referralbindings', 'referralwithdrawals', 'referralpromotion']);
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
@@ -40,6 +49,7 @@ export function ScopeShell() {
       : professional !== undefined && financeProfessionalFeatures.has(professional.featureKey) ? 'finance'
         : professional !== undefined && accessProfessionalFeatures.has(professional.featureKey) ? 'access'
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
+<<<<<<< HEAD
             : professional !== undefined && referralProfessionalFeatures.has(professional.featureKey) ? 'referral'
               : professional?.featureKey ?? workstation?.key;
   const routeAccessKey = professional?.featureKey === 'productdetail' ? 'products'
@@ -55,6 +65,11 @@ export function ScopeShell() {
       accessVersion: context.session.accessVersion,
       ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
     })),
+=======
+            : professional?.featureKey ?? workstation?.key;
+  const logout = useMutation({
+    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, { accessVersion: context.session.accessVersion })),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     onSuccess: () => {
       queryClient.clear();
       window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
@@ -64,6 +79,7 @@ export function ScopeShell() {
   useEffect(() => {
     document.title = `${routeTitle} · 智慧翼`;
     setMobileOpen(false);
+<<<<<<< HEAD
     let observer: MutationObserver | undefined;
     const focusRouteHeading = () => {
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
@@ -85,6 +101,14 @@ export function ScopeShell() {
       cancelAnimationFrame(frame);
       observer?.disconnect();
     };
+=======
+    const frame = requestAnimationFrame(() => {
+      const heading = document.querySelector<HTMLElement>('.workspacebody h1');
+      heading?.setAttribute('tabindex', '-1');
+      heading?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }, [location.pathname, routeTitle]);
 
   const navigateAfterCancel = (target: string) => {
@@ -93,10 +117,14 @@ export function ScopeShell() {
   };
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
+<<<<<<< HEAD
     const targetScope = suffix.startsWith('referral/') && context.scope.kind !== 'mall'
       ? context.scopes.find((scope) => scope.kind === 'mall') ?? context.scope
       : context.scope;
     navigateAfterCancel(scopePath(targetScope, suffix));
+=======
+    navigateAfterCancel(scopePath(context.scope, suffix));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   };
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
@@ -110,6 +138,7 @@ export function ScopeShell() {
     navigateAfterCancel(`${location.pathname}?${search.toString()}${location.hash}`);
   };
   const controlContext = workstation?.key === 'control';
+<<<<<<< HEAD
   const showScopePicker = () => {
     const picker = document.querySelector<HTMLSelectElement>('#consolescope');
     picker?.focus();
@@ -124,12 +153,20 @@ export function ScopeShell() {
   return (
     <AccessDeniedActionsProvider actions={accessDeniedActions}>
       <ConsoleContextProvider value={context}>
+=======
+
+  return (
+    <ConsoleContextProvider value={context}>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       <div className="consolelayout" data-visual-theme="admin-web-v1" data-route={activeRoute}
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
         <Sidebar active={activeRoute} collapsed={collapsed} professionalRoutes={professionalRoutes}
           displayName={context.profile.display_name} roleLabel={scopeLabel}
           scopeKind={context.scope.kind}
+<<<<<<< HEAD
           permissions={context.session.permissions} capabilities={context.session.capabilities}
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           workstations={workstations} onNavigate={openRoute}
           onToggle={() => setCollapsed((value) => !value)} />
         <button className="mobilebackdrop" type="button" onClick={() => setMobileOpen(false)} aria-label="关闭主导航" />
@@ -163,7 +200,11 @@ export function ScopeShell() {
             </div>
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
+<<<<<<< HEAD
             {routeAvailable ? <Outlet /> : <ContextualAccessDenied resourceLabel={routeTitle} />}
+=======
+            <Outlet />
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           </main>
           <footer className="consolefooter">
             <span>© 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
@@ -172,8 +213,12 @@ export function ScopeShell() {
           </footer>
         </div>
       </div>
+<<<<<<< HEAD
       </ConsoleContextProvider>
     </AccessDeniedActionsProvider>
+=======
+    </ConsoleContextProvider>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   );
 }
 

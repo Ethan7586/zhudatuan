@@ -109,7 +109,11 @@
   height: 15px;
   color: var(--sw-warning-strong);
 }
+<<<<<<< HEAD
 .financedrawer .financedrawerheader .financeimmutablealert p {
+=======
+.financeimmutablealert p {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   margin: 0;
   color: var(--sw-warning-strong);
   font-size: 9px;

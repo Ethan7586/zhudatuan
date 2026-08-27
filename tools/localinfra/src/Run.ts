@@ -1,5 +1,6 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
+<<<<<<< HEAD
 const profile = process.env.LOCAL_RUNTIME_PROFILE;
 if (profile !== undefined && profile !== 'registration-only' && profile !== 'full-staging') {
   throw new Error('LOCAL_RUNTIME_PROFILE_INVALID');
@@ -17,6 +18,13 @@ const children = (profile === 'registration-only' ? [
   'tools/localkms/src/Main.ts',
   'tools/localobjects/src/Main.ts',
 ]).map((entry) => start(entry, bundled));
+=======
+const children = [
+  'tools/localsecrets/src/Main.ts',
+  'tools/localkms/src/Main.ts',
+  'tools/localobjects/src/Main.ts',
+].map(start);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 let stopping = false;
 for (const child of children) child.once('exit', (code, signal) => {
@@ -31,6 +39,11 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => 
   for (const child of children) child.kill(signal);
 });
 
+<<<<<<< HEAD
 function start(entry: string, bundled: boolean): ChildProcess {
   return spawn(process.execPath, bundled ? [entry] : ['--import', 'tsx', entry], { cwd: process.cwd(), env: process.env, stdio: 'inherit' });
+=======
+function start(entry: string): ChildProcess {
+  return spawn(process.execPath, ['--import', 'tsx', entry], { cwd: process.cwd(), env: process.env, stdio: 'inherit' });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

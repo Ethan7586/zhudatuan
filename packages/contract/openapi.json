@@ -359,6 +359,7 @@
         "x-stepup": true
       }
     },
+<<<<<<< HEAD
     "/api/v1/access/ownership": {
       "get": {
         "operationId": "access.ownership.read",
@@ -1327,6 +1328,8 @@
         "x-stepup": true
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/access/roles/{roleid}": {
       "put": {
         "operationId": "access.roles.manage",
@@ -10246,6 +10249,7 @@
         "x-stepup": false
       }
     },
+<<<<<<< HEAD
     "/api/v1/finance/audits": {
       "get": {
         "operationId": "finance.audit.read",
@@ -10378,6 +10382,8 @@
         "x-stepup": false
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/finance/backfills": {
       "get": {
         "operationId": "finance.backfills.read",
@@ -11321,6 +11327,7 @@
         "x-stepup": true
       }
     },
+<<<<<<< HEAD
     "/api/v1/finance/policies": {
       "get": {
         "operationId": "finance.policies.read",
@@ -11450,6 +11457,8 @@
         "x-stepup": false
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/finance/policies/{policyid}": {
       "put": {
         "operationId": "finance.policies.manage",
@@ -11599,6 +11608,7 @@
         "x-stepup": true
       }
     },
+<<<<<<< HEAD
     "/api/v1/finance/policies/{policyid}/preview": {
       "post": {
         "operationId": "finance.policies.preview",
@@ -12334,6 +12344,8 @@
         "x-stepup": true
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/finance/reconciliations": {
       "get": {
         "operationId": "finance.reconciliations.read",
@@ -12448,8 +12460,12 @@
         "x-permission": "finance.reconciliation.read",
         "x-requirements": [
           "MVP10",
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
+=======
+          "MVP19"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -12598,6 +12614,7 @@
         "x-permission": "finance.reconciliation.manage",
         "x-requirements": [
           "MVP10",
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
         ],
@@ -12757,6 +12774,8 @@
         "x-permission": "finance.reconciliation.manage",
         "x-requirements": [
           "MVP10",
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           "MVP19"
         ],
         "x-risk": "critical",
@@ -12886,8 +12905,12 @@
         "x-permission": "finance.settlement.read",
         "x-requirements": [
           "MVP10",
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
+=======
+          "MVP19"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -15528,6 +15551,7 @@
         "x-stepup": false
       }
     },
+<<<<<<< HEAD
     "/api/v1/identity/members/{membershipid}/registration": {
       "put": {
         "operationId": "identity.members.reset",
@@ -15680,6 +15704,8 @@
         "x-stepup": false
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/identity/mobile": {
       "put": {
         "operationId": "identity.mobile.manage",
@@ -15833,6 +15859,7 @@
         "x-stepup": false
       }
     },
+<<<<<<< HEAD
     "/api/v1/identity/mobile/challenges": {
       "post": {
         "operationId": "identity.mobile.challenge",
@@ -15986,6 +16013,8 @@
         "x-stepup": false
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/identity/password": {
       "put": {
         "operationId": "identity.password.change",
@@ -18263,6 +18292,7 @@
         "x-stepup": false
       }
     },
+<<<<<<< HEAD
     "/api/v1/invoices/operator-profiles": {
       "get": {
         "operationId": "invoice.operatorprofiles.read",
@@ -18397,6 +18427,8 @@
         "x-stepup": false
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/invoices/profiles": {
       "get": {
         "operationId": "invoice.profiles.read",
@@ -18925,7 +18957,11 @@
         "tags": [
           "finance"
         ],
+<<<<<<< HEAD
         "x-audience": "operator",
+=======
+        "x-audience": "member",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         "x-expected-version": "optional",
         "x-idempotency": "required",
         "x-idempotent": false,
@@ -21706,10 +21742,14 @@
         "x-permission": "order.read",
         "x-requirements": [
           "MVP08",
+<<<<<<< HEAD
           "MVP17",
           "OMS-001",
           "OMS-004",
           "OMS-005"
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -22014,8 +22054,12 @@
         "x-permission": "order.aftersale.apply",
         "x-requirements": [
           "MVP08",
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -22302,8 +22346,12 @@
         "x-permission": "order.aftersale.read",
         "x-requirements": [
           "MVP08",
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -22457,8 +22505,12 @@
         "x-permission": "order.aftersale.decide",
         "x-requirements": [
           "MVP08",
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -22608,8 +22660,12 @@
         "x-permission": "order.aftersale.decide",
         "x-requirements": [
           "MVP08",
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -22751,8 +22807,12 @@
         "x-permission": "order.export",
         "x-requirements": [
           "MVP08",
+<<<<<<< HEAD
           "MVP17",
           "OMS-007"
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -22880,8 +22940,12 @@
         "x-idempotent": true,
         "x-permission": "organization.layer.read",
         "x-requirements": [
+<<<<<<< HEAD
           "MVP03",
           "OMS-004"
+=======
+          "MVP03"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -24918,6 +24982,7 @@
         "x-stepup": true
       }
     },
+<<<<<<< HEAD
     "/api/v1/referral/bindings": {
       "get": {
         "operationId": "referral.bindings.read",
@@ -26825,6 +26890,8 @@
         "x-stepup": true
       }
     },
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/reports/categories": {
       "get": {
         "operationId": "reporting.categories.read",
@@ -27197,8 +27264,12 @@
         "x-permission": "reporting.dashboard.read",
         "x-requirements": [
           "MVP05",
+<<<<<<< HEAD
           "MVP14",
           "OMS-012"
+=======
+          "MVP14"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -27992,8 +28063,12 @@
         "x-permission": "reporting.sales.read",
         "x-requirements": [
           "MVP11",
+<<<<<<< HEAD
           "MVP20",
           "OMS-012"
+=======
+          "MVP20"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -29392,8 +29467,12 @@
         "x-permission": "support.case.read",
         "x-requirements": [
           "MVP12",
+<<<<<<< HEAD
           "MVP21",
           "OMS-013"
+=======
+          "MVP21"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -30278,8 +30357,12 @@
         "x-permission": "support.history.read",
         "x-requirements": [
           "MVP12",
+<<<<<<< HEAD
           "MVP21",
           "OMS-013"
+=======
+          "MVP21"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "high",
         "x-schema-fidelity": "structural",

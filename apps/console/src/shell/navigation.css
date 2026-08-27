@@ -134,6 +134,7 @@
   color: #fff;
 }
 
+<<<<<<< HEAD
 .sidebarnavigation button:disabled,
 .sidebarnavigation button:disabled:hover,
 .sidebarsupport button:disabled,
@@ -165,6 +166,9 @@
 
 .sidebarnavigation button[aria-current='page'],
 .sidebarsupport button[aria-current='page'] {
+=======
+.sidebarnavigation button[aria-current='page'] {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   border-color: rgb(60 119 231 / 20%);
   background: linear-gradient(90deg, rgb(20 62 126 / 96%), rgb(20 65 130 / 82%));
   color: #fff;
@@ -184,8 +188,12 @@
 
 .consolesidebar.iscollapsed .sidebarbrand { justify-content: center; padding-inline: 8px; }
 .consolesidebar.iscollapsed .sidebarbrandcopy,
+<<<<<<< HEAD
 .consolesidebar.iscollapsed .sidebarlabel,
 .consolesidebar.iscollapsed .sidebarnavavailability { display: none; }
+=======
+.consolesidebar.iscollapsed .sidebarlabel { display: none; }
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .consolesidebar.iscollapsed .sidebartoggle { top: 70px; right: 17px; opacity: 1; transform: none; }
 .consolesidebar.iscollapsed .sidebarnavigation { padding-top: 22px; }
 .consolesidebar.iscollapsed .sidebarnavigation button { justify-content: center; padding-inline: 0; }

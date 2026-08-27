@@ -7,7 +7,11 @@ export default defineConfig(() => {
     plugins: [react(), tailwindcss()],
     build: { manifest: true },
     server: {
+<<<<<<< HEAD
       port: 4173,
+=======
+      port: 5173,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       /**
        * In production Caddy reverse-proxies smart.hbbtzn.com/api/* to the commerce
        * runtime. The dev server must do the same or every authenticated request

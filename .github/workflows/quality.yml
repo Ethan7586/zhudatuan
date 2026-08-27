@@ -33,6 +33,7 @@ jobs:
       PGPORT: 5432
       PGDATABASE: shop
       PGUSER: postgres
+<<<<<<< HEAD
       PGPASSWORD: shop-ci-${{ github.run_id }}-${{ github.run_attempt }}
       SHOP_TEST_REDIS_URL: redis://127.0.0.1:6379
       VITE_API_BASE_URL: http://127.0.0.1:3001
@@ -40,6 +41,9 @@ jobs:
       VITE_CLIENT_VERSION: 0.0.0
       VITE_ADMIN_ORIGIN: http://127.0.0.1:4173
       VITE_STOREFRONT_ORIGIN: http://127.0.0.1:3000
+=======
+      PGPASSWORD: ${{ env.SHOP_CI_DATABASE_PASSWORD }}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     services:
       postgres:
         image: postgres:17-alpine
@@ -74,10 +78,14 @@ jobs:
         run: |
           npm ci
           npm run check:cleaninstall
+<<<<<<< HEAD
           npm run check:artifacts
           npm run check:approved-ui
           npm run check:registration-deployment
           npm run check:purchase-deployment
+=======
+          npm run check:migration-inventory
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
       - name: ci/02_secretlicense
         run: |

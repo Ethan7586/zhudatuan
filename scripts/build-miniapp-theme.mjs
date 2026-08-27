@@ -52,7 +52,10 @@ if (process.argv.includes('--check')) {
   if (readFileSync(wingCodeTarget, 'utf8') !== readFileSync(wingCodeSource, 'utf8')) throw new Error('MINIAPP_WING_CODE_GENERATED_DRIFT');
   console.log('miniapp theme: current');
 } else {
+<<<<<<< HEAD
   mkdirSync(dirname(target), { recursive: true });
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   writeFileSync(target, output);
   mkdirSync(join(root, 'apps/miniapp/miniprogram/assets'), { recursive: true });
   writeFileSync(brandTarget, readFileSync(brandSource));

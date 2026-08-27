@@ -8,7 +8,11 @@
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck",
     "build": "npm run typecheck",
+<<<<<<< HEAD
     "test": "vitest run src/index.test.ts src/WebBusinessApiEnvironment.test.ts src/PurchaseApiEnvironment.test.ts"
+=======
+    "test": "vitest run src/index.test.ts"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   },
   "exports": {
     "./client": "./src/ClientEnvironment.ts",

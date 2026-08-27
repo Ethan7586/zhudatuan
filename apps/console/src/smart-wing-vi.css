@@ -20,7 +20,11 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   --vi-brand-soft: #eaf1ff;
   --vi-ink: #07182f;
   --vi-text: #172033;
+<<<<<<< HEAD
   --vi-muted: #475569;
+=======
+  --vi-muted: #64748b;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   --vi-line: #e2e8f0;
   --vi-line-strong: #cbd5e1;
   --vi-canvas: #f5f7fa;
@@ -127,6 +131,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   background: linear-gradient(90deg, rgb(255 255 255 / 7%), rgb(255 255 255 / 3%));
 }
 
+<<<<<<< HEAD
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled,
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled:hover {
   border-color: rgb(255 255 255 / 3%);
@@ -145,6 +150,8 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   filter: none;
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[aria-current='page'] {
   border-color: rgb(84 145 255 / 28%);
   background: linear-gradient(90deg, rgb(31 94 255 / 27%), rgb(31 94 255 / 15%));
@@ -193,7 +200,11 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .consoleheadersummary {
+<<<<<<< HEAD
   color: var(--vi-muted);
+=======
+  color: #7789a0;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger {
@@ -209,10 +220,13 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   box-shadow: var(--vi-shadow-focus);
 }
 
+<<<<<<< HEAD
 .consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger kbd {
   color: var(--vi-muted);
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .consolelayout[data-visual-theme='admin-web-v1'] .taskbutton {
   border-color: rgb(232 134 9 / 24%);
   background: #fff8eb;
@@ -244,10 +258,13 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   line-height: 14px;
 }
 
+<<<<<<< HEAD
 .consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy small {
   color: var(--vi-muted);
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .consolelayout[data-visual-theme='admin-web-v1'] .scopebar {
   border-bottom-color: #e5ebf3;
   background: rgb(255 255 255 / 88%);
@@ -274,6 +291,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooter {
   border-top-color: #e3eaf2;
   background: rgb(255 255 255 / 92%);
+<<<<<<< HEAD
   color: var(--vi-muted);
   backdrop-filter: blur(12px);
 }
@@ -282,6 +300,11 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   color: var(--vi-muted);
 }
 
+=======
+  backdrop-filter: blur(12px);
+}
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus i {
   box-shadow: 0 0 0 3px rgb(7 150 105 / 10%);
 }
@@ -333,6 +356,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   box-shadow: 0 6px 15px rgb(31 94 255 / 20%);
 }
 
+<<<<<<< HEAD
 .consolelayout[data-visual-theme='admin-web-v1'] .shopbuttonprimary:hover:not(:disabled) {
   border-color: #174ecf;
   background: linear-gradient(135deg, #2a69ff 0%, #173f9b 100%);
@@ -340,6 +364,8 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   box-shadow: 0 8px 18px rgb(31 94 255 / 26%);
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .consolelayout[data-visual-theme='admin-web-v1'] .shopbuttondanger {
   border-color: #f2b5bf;
   background: #fff7f8;
@@ -596,7 +622,11 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   z-index: 1;
   height: 39px;
   background: #f5f8fb;
+<<<<<<< HEAD
   color: var(--vi-muted);
+=======
+  color: #64768e;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .015em;
@@ -784,6 +814,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   letter-spacing: -.025em;
 }
 
+<<<<<<< HEAD
 .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband span {
   color: var(--vi-muted);
 }
@@ -792,6 +823,8 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   color: #047857 !important;
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .consolelayout[data-visual-theme='admin-web-v1'] :where(.cockpitcard, .controlcard) {
   border-radius: var(--vi-radius-card);
 }
@@ -1051,7 +1084,11 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   .financetable th
 ) {
   background: #f4f7fb;
+<<<<<<< HEAD
   color: var(--vi-muted);
+=======
+  color: #65778f;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   font-weight: 700;
   letter-spacing: .012em;
 }
@@ -1254,10 +1291,13 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
   box-shadow: inset 3px 0 0 rgb(232 134 9 / 70%);
 }
 
+<<<<<<< HEAD
 body:has(.consolelayout[data-visual-theme='admin-web-v1']) .financeimmutablealert p {
   color: #7c2d12;
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 body:has(.consolelayout[data-visual-theme='admin-web-v1']) .dialogpanel {
   overflow: hidden;
   border-radius: 16px;

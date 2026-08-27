@@ -6,12 +6,16 @@ export const SERIALIZED_EVENT_TYPES = Object.freeze([
   'identity.session.revoked',
   'identity.challenge.started',
   'identity.member.registered',
+<<<<<<< HEAD
   'identity.member.reset',
   'access.version.changed',
   'access.owner.transfer.initiated',
   'access.owner.bootstrapped',
   'access.owner.transferred',
   'access.owner.transfer.cancelled',
+=======
+  'access.version.changed',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'catalog.listing.published',
   'inventory.stock.changed',
   'inventory.stock.reserved',
@@ -20,7 +24,10 @@ export const SERIALIZED_EVENT_TYPES = Object.freeze([
   'checkout.quote.confirmed',
   'order.placed',
   'order.paid',
+<<<<<<< HEAD
   'order.received',
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'order.cancelled',
   'payment.succeeded',
   'payment.refunded',

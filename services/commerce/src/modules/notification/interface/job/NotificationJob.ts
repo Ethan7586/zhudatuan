@@ -15,6 +15,7 @@ export class NotificationJobProcessor implements JobProcessor {
   }
 }
 
+<<<<<<< HEAD
 export interface IdentityChallengeDispatcher {
   challenge(id: string): Promise<void>;
 }
@@ -35,6 +36,8 @@ export class IdentityNotificationJobProcessor implements JobProcessor {
   }
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function object(value: unknown): Readonly<Record<string, unknown>> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID'); return value as Record<string, unknown>;
 }

@@ -48,6 +48,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => { cleanup(); server.resetHandlers(); });
 afterAll(() => server.close());
 
+<<<<<<< HEAD
 function renderCockpit() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
   return render(<MemoryRouter initialEntries={['/?period=30days']}><QueryClientProvider client={client}>
@@ -58,6 +59,14 @@ function renderCockpit() {
 describe('Cockpit route', () => {
   it('renders the scoped Operation response without cross-domain browser aggregation', async () => {
     renderCockpit();
+=======
+describe('Cockpit route', () => {
+  it('renders the scoped Operation response without cross-domain browser aggregation', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+    render(<MemoryRouter initialEntries={['/?period=30days']}><QueryClientProvider client={client}>
+      <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
+    </QueryClientProvider></MemoryRouter>);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(await screen.findByRole('heading', { level: 1, name: '经营驾驶舱' })).toBeTruthy();
     expect(screen.getByText('¥315.00')).toBeTruthy();
     expect(screen.getByText('环比 +12.8%')).toBeTruthy();
@@ -65,6 +74,7 @@ describe('Cockpit route', () => {
     expect(screen.getByRole('heading', { name: '商城经营对比' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '查看售后订单 →' })).toBeTruthy();
   });
+<<<<<<< HEAD
 
   it('renders the complete cockpit with zero values when the authoritative read model is empty', async () => {
     server.use(http.get('*/api/v1/reports/dashboard', () => HttpResponse.json({
@@ -89,4 +99,6 @@ describe('Cockpit route', () => {
     expect(screen.getByText('需要关注 0 项')).toBeTruthy();
     expect(screen.queryByText('暂无数据')).toBeNull();
   });
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

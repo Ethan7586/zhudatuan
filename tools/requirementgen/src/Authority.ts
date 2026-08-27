@@ -7,6 +7,7 @@ export interface RequirementAuthority {
   readonly logicalSource: string;
   readonly repositoryRelativePath: string;
   readonly sha256: string;
+<<<<<<< HEAD
   readonly profile?: string;
   readonly sheets: Readonly<Record<string, number>>;
 }
@@ -23,6 +24,30 @@ export async function loadRequirementAuthority(root: string, authorityName = 're
   const authorities = await loadRequirementAuthorities(repositoryRoot);
   const authority = authorities.get(authorityName);
   if (!authority) throw new Error('REQUIREMENT_AUTHORITY_MISSING:' + authorityName);
+=======
+  readonly sheets: Readonly<{
+    requirements: number;
+    mvp: number;
+    providers: number;
+  }>;
+}
+
+interface AuthorityDocument {
+  readonly requirements?: RequirementAuthority;
+}
+
+export async function loadRequirementAuthority(root: string): Promise<Readonly<{
+  authority: RequirementAuthority;
+  bytes: Uint8Array;
+  path: string;
+}>> {
+  const repositoryRoot = await realpath(root);
+  const configPath = await realpath(resolve(repositoryRoot, 'config/authorities.yml'));
+  assertInsideRepository(repositoryRoot, configPath);
+  const document = parse(await readFile(configPath, 'utf8')) as AuthorityDocument;
+  const authority = document.requirements;
+  if (!authority) throw new Error('REQUIREMENT_AUTHORITY_MISSING:' + configPath);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   assertRepositoryRelativePath(authority.repositoryRelativePath);
 
   const candidatePath = resolve(repositoryRoot, authority.repositoryRelativePath);
@@ -31,6 +56,7 @@ export async function loadRequirementAuthority(root: string, authorityName = 're
   assertInsideRepository(repositoryRoot, path);
   const bytes = new Uint8Array(await readFile(path));
   const actualHash = createHash('sha256').update(bytes).digest('hex');
+<<<<<<< HEAD
   if (actualHash !== authority.sha256) throw new Error('REQUIREMENT_AUTHORITY_HASH_INVALID:' + authorityName + ':' + actualHash);
   return Object.freeze({ authorityName, authority, bytes, path });
 }
@@ -47,6 +73,12 @@ export async function loadRequirementAuthorities(root: string): Promise<Readonly
   }
   if (!authorities.has('requirements')) throw new Error('REQUIREMENT_AUTHORITY_MISSING:requirements');
   return authorities;
+=======
+  if (actualHash !== authority.sha256) {
+    throw new Error('REQUIREMENT_AUTHORITY_HASH_INVALID:' + actualHash);
+  }
+  return Object.freeze({ authority: Object.freeze(authority), bytes, path });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function assertRepositoryRelativePath(path: unknown): asserts path is string {
@@ -61,6 +93,7 @@ function assertInsideRepository(root: string, path: string): void {
     throw new Error('REQUIREMENT_AUTHORITY_OUTSIDE_REPOSITORY:' + path);
   }
 }
+<<<<<<< HEAD
 
 function authorityValue(value: unknown, name: string): RequirementAuthority {
   const authority = objectValue(value, name);
@@ -88,3 +121,5 @@ function stringValue(value: unknown, location: string): string {
   if (typeof value !== 'string' || value.length === 0) throw new Error('REQUIREMENT_AUTHORITY_CONFIG_INVALID:' + location);
   return value;
 }
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

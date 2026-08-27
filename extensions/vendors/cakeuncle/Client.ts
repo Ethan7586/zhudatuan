@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { randomUUID } from 'node:crypto';
 import type { JsonObject, JsonValue, ProviderCallContext } from '@shop/contract';
 import { CircuitPolicy, ConcurrencyPolicy, RatePolicy, asVendorFailure, validateConnection, VendorFailure,
@@ -226,4 +227,11 @@ function isJsonObject(value: unknown): value is JsonObject {
 function isJsonValue(value: unknown): value is JsonValue {
   return value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ||
     (Array.isArray(value) && value.every(isJsonValue)) || isJsonObject(value);
+=======
+import { VendorClient, type VendorConnection } from '@shop/vendorcore';
+import { createCakeuncleAuth } from './Auth';
+
+export function createCakeuncleClient(connection: VendorConnection, fetcher?: typeof fetch): VendorClient {
+  return new VendorClient(connection, createCakeuncleAuth(connection.secret), fetcher);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

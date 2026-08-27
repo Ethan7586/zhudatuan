@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { randomUUID } from 'node:crypto';
 import type { CatalogSource, JsonObject, JsonValue, PriceSource, ProviderCallContext, ProviderPorts } from '@shop/contract';
 import { Provider, assertInstallation, requireConnection, type ProviderFactory, type ProviderInstallation } from '@shop/providercore';
@@ -10,6 +11,14 @@ import { MealMapper, parseMealExternalId } from './Mapper';
 export interface MealTransport {
   invoke: CakeuncleClient['invoke'];
 }
+=======
+import { createPorts, Provider, assertInstallation, requireConnection, type ProviderFactory, type ProviderInstallation } from '@shop/providercore';
+import { createCakeuncleClient } from '@shop/vendorcakeuncle';
+import { definition } from './manifest';
+import { MealMapper } from './Mapper';
+
+const operations = Object.freeze({ catalog: 'meal.menu.pull', price: 'meal.price.pull', stock: 'meal.inventory.pull', order: 'meal.order.submit', cancel: 'meal.order.cancel', tracking: 'meal.pickup.query', refund: 'meal.refund.submit', statement: 'meal.statement.pull', verification: 'meal.pickup.verify' });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export const MealProvider: ProviderFactory = Object.freeze({
   id: definition.id,
@@ -17,6 +26,7 @@ export const MealProvider: ProviderFactory = Object.freeze({
   definition,
   create(installation: ProviderInstallation) {
     assertInstallation(MealProvider, installation);
+<<<<<<< HEAD
     const connection = requireConnection(installation);
     const scopes = mealCatalogScopes(connection);
     if (connection.endpoints[connection.healthOperation] !== CAKEUNCLE_MEAL_BRANDS[scopes[0]!.brand].menu) {
@@ -102,3 +112,9 @@ function text(value: JsonValue | undefined, code: string): string {
   if (typeof value !== 'string' || !value.trim()) throw new Error(code);
   return value.trim();
 }
+=======
+    const client = createCakeuncleClient(requireConnection(installation));
+    return new Provider(installation.manifest, client, createPorts(client, operations, new MealMapper(), requireConnection(installation).secret));
+  },
+});
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

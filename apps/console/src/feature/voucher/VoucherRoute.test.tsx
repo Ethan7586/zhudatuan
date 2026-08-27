@@ -74,6 +74,7 @@ describe('Voucher governance workspace', () => {
     expect(within(creator).getByText(/当前不会创建方案/)).toBeTruthy();
     expect(writes).toHaveLength(0);
   });
+<<<<<<< HEAD
 
   it('hides cached voucher data and an open drawer when access is revoked', async () => {
     const user = userEvent.setup();
@@ -99,6 +100,8 @@ describe('Voucher governance workspace', () => {
     expect(screen.queryByRole('button', { name: '刷新数据' })).toBeNull();
     expect(screen.queryByRole('button', { name: '新建卡券' })).toBeNull();
   });
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 
 let currentSearch = '';
@@ -110,7 +113,11 @@ function LocationProbe() {
 
 function renderRoute(entry: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+<<<<<<< HEAD
   const rendered = render(
+=======
+  return render(
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
         <ConsoleContextProvider value={context}>
@@ -120,7 +127,10 @@ function renderRoute(entry: string) {
       </QueryClientProvider>
     </MemoryRouter>,
   );
+<<<<<<< HEAD
   return { ...rendered, client };
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 const context: ConsoleContext = {

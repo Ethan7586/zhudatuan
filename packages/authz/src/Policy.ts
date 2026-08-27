@@ -1,11 +1,14 @@
 import type { Decision, DecisionEvidence, DenialReason } from './Decision';
 import { permissionDefinition } from './PermissionCatalog';
 import type { Scope, ScopeGrant } from './Scope';
+<<<<<<< HEAD
 import type { ScopeKind } from './ScopeKind';
 
 // Platform and distributor scopes sit above the tenant boundary. Every other
 // scope must carry the same tenant on both sides; missing tenant data fails closed.
 const TENANT_SPANNING_KINDS: readonly ScopeKind[] = Object.freeze(['platform', 'distributor']);
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export interface MembershipAccess {
   readonly id: string;
@@ -62,10 +65,18 @@ function isEffective(grant: ScopeGrant, now: Date): boolean {
 }
 
 function contains(grant: Scope, resource: Scope): boolean {
+<<<<<<< HEAD
   if (grant.kind === 'self') return resource.kind === 'self' && grant.id === resource.id;
   if (grant.kind === 'owner') return resource.kind === 'owner' && grant.id === resource.id;
   if (!TENANT_SPANNING_KINDS.includes(grant.kind) && (grant.tenant === undefined || resource.tenant === undefined || resource.tenant !== grant.tenant)) return false;
   return (grant.kind === resource.kind && grant.id === resource.id) || resource.path.some((ancestor) => ancestor.kind === grant.kind && ancestor.id === grant.id);
+=======
+  if (grant.kind === 'platform') return true;
+  if (grant.kind === 'self') return resource.kind === 'self' && grant.id === resource.id;
+  if (grant.kind === 'owner') return resource.kind === 'owner' && grant.id === resource.id;
+  if (grant.tenant !== undefined && resource.tenant !== grant.tenant) return false;
+  return grant.id === resource.id || resource.path.some((ancestor) => ancestor.kind === grant.kind && ancestor.id === grant.id);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function freshStepup(context: Pick<DecisionContext, 'now' | 'stepupAt' | 'stepupSeconds'>): boolean {

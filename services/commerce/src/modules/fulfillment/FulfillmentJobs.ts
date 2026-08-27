@@ -82,6 +82,7 @@ export class FulfillmentJobProcessor implements JobProcessor {
       if (shipped) await client.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
         values($1,'fulfillment.shipped',1,'fulfillment',$2,$3,jsonb_build_object('fulfillment',$2,'order',$4,'member',$5,'state',$6),$7,clock_timestamp(),clock_timestamp())
         on conflict(id) do nothing`, [`event:fulfillment:shipped:${digest(id)}`, id, loaded.scope_id, loaded.order_id, loaded.member_id, completed ? 'delivered' : 'shipped', job.id]);
+<<<<<<< HEAD
       if (completed) {
         if (await orderPort.completeFulfillment(client, loaded.order_id)) {
           await client.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
@@ -89,6 +90,10 @@ export class FulfillmentJobProcessor implements JobProcessor {
             on conflict(id) do nothing`, [`event:order:received:${digest(loaded.order_id)}`, loaded.order_id, loaded.scope_id, loaded.member_id, job.id]);
         }
       } else await enqueue(client, 'tracking', loaded.scope_id, { fulfillment: id }, 300);
+=======
+      if (completed) await orderPort.completeFulfillment(client, loaded.order_id);
+      else await enqueue(client, 'tracking', loaded.scope_id, { fulfillment: id }, 300);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       await client.query('commit');
     } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
   }

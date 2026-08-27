@@ -19,6 +19,7 @@ const values: readonly [import('@shop/providercore').ProviderFactory, ManifestFa
   [JdfreshProvider, jdfresh, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
   [TmallmarketProvider, tmallmarket, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
   [PrivateProvider, privateManifest, ['catalog', 'stock', 'order', 'tracking', 'refund', 'statement']],
+<<<<<<< HEAD
   [CakeProvider, cake, ['catalog', 'price', 'stock']],
   [FlowerProvider, flower, ['catalog', 'price', 'stock']],
   [BookProvider, book, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
@@ -26,6 +27,15 @@ const values: readonly [import('@shop/providercore').ProviderFactory, ManifestFa
   [FoodvoucherProvider, foodvoucher, ['catalog', 'price']],
   [MovieProvider, movie, ['catalog', 'stock', 'order', 'cancel', 'refund', 'statement', 'verification']],
   [MealProvider, meal, ['catalog', 'price']],
+=======
+  [CakeProvider, cake, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
+  [FlowerProvider, flower, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
+  [BookProvider, book, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
+  [DirectchargeProvider, directcharge, ['catalog', 'order', 'tracking', 'refund', 'statement', 'verification']],
+  [FoodvoucherProvider, foodvoucher, ['catalog', 'order', 'cancel', 'refund', 'statement', 'verification']],
+  [MovieProvider, movie, ['catalog', 'stock', 'order', 'cancel', 'refund', 'statement', 'verification']],
+  [MealProvider, meal, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement', 'verification']],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 ];
 
 test('all and only workbook priority-one providers have executable contracts', async () => {

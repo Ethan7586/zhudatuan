@@ -34,7 +34,36 @@ export interface PreAuthContext {
   memberships: Membership[];
 }
 
+<<<<<<< HEAD
 export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
+=======
+export interface StepUpChallenge {
+  challengeId: string;
+  preAuthToken: string;
+  membershipId: string;
+  method: 'totp';
+  targetDomain: string;
+  requiresStepUp: boolean;
+  message: string;
+}
+
+export interface StepUpVerifyResult {
+  ticket: string;
+  redirectUrl: string;
+  targetDomain: string;
+  expiresInSeconds: number;
+}
+
+export interface LockoutState {
+  isLocked: boolean;
+  remainingSeconds: number;
+  failedAttempts: number;
+}
+
+export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com' | 'hbbtzn.com' | 'smart.hbbtzn.com';
+
+export type ScreenType = 'login' | 'storefront_home' | 'admin_dashboard' | 'auth_callback' | 'force_password_reset';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export interface MallContextType {
   currentDomain: DomainType;

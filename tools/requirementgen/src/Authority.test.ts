@@ -4,7 +4,11 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+<<<<<<< HEAD
 import { loadRequirementAuthorities, loadRequirementAuthority } from './Authority';
+=======
+import { loadRequirementAuthority } from './Authority';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 describe('requirement authority', () => {
   it('binds the repository 260821 workbook by content hash', async () => {
@@ -18,6 +22,7 @@ describe('requirement authority', () => {
     expect(result.bytes.length).toBeGreaterThan(0);
   });
 
+<<<<<<< HEAD
   it('binds the independent Smart Wing OMS authority without replacing the commerce authority', async () => {
     const root = resolve(import.meta.dirname, '../../..');
     const authorities = await loadRequirementAuthorities(root);
@@ -42,6 +47,8 @@ describe('requirement authority', () => {
     }
   });
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('rejects parent traversal before reading the authority', async () => {
     const fixture = await createFixture('../outside.xlsx');
     try {
@@ -51,6 +58,7 @@ describe('requirement authority', () => {
     }
   });
 
+<<<<<<< HEAD
   it('rejects an absolute authority path before reading the authority', async () => {
     const fixture = await createFixture(resolve(tmpdir(), 'absolute-authority.xlsx'));
     try {
@@ -60,6 +68,8 @@ describe('requirement authority', () => {
     }
   });
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('rejects a repository symlink that resolves outside the repository', async () => {
     const fixture = await createFixture('docs/authority.xlsx');
     try {
@@ -72,7 +82,11 @@ describe('requirement authority', () => {
   });
 });
 
+<<<<<<< HEAD
 async function createFixture(repositoryRelativePath: string, declaredHash?: string) {
+=======
+async function createFixture(repositoryRelativePath: string) {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const directory = await mkdtemp(join(tmpdir(), 'smart-wing-authority-'));
   const root = join(directory, 'repository');
   const outside = join(directory, 'outside.xlsx');
@@ -84,7 +98,11 @@ async function createFixture(repositoryRelativePath: string, declaredHash?: stri
     'requirements:',
     '  logicalSource: fixture',
     `  repositoryRelativePath: ${repositoryRelativePath}`,
+<<<<<<< HEAD
     `  sha256: ${declaredHash ?? createHash('sha256').update(bytes).digest('hex')}`,
+=======
+    `  sha256: ${createHash('sha256').update(bytes).digest('hex')}`,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     '  sheets:',
     '    requirements: 0',
     '    mvp: 0',

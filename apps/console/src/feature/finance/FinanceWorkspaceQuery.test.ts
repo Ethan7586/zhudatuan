@@ -48,7 +48,11 @@ describe('Finance reconciliation workspace query', () => {
     });
   });
 
+<<<<<<< HEAD
   it('sends authoritative filters in every scope and always carries scope, access version, cursor, kind, and limit', async () => {
+=======
+  it('sends preview filters only for platform:preview and always carries scope, access version, cursor, and limit', async () => {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const selected = filter({ cursor: 'cursor:2' });
     await readFinanceReconciliations(context('platform', 'platform:preview', 11), selected, new AbortController().signal);
     await readFinanceReconciliations(context('enterprise', 'enterprise:1', 12), selected, new AbortController().signal);
@@ -61,11 +65,17 @@ describe('Finance reconciliation workspace query', () => {
     expect(preview?.url.searchParams.get('cursor')).toBe('cursor:2');
     expect(production?.url.searchParams.get('limit')).toBe('50');
     expect(production?.url.searchParams.get('cursor')).toBe('cursor:2');
+<<<<<<< HEAD
     expect(preview?.url.searchParams.get('kind')).toBe('payment');
     expect(production?.url.searchParams.get('kind')).toBe('payment');
     for (const [key, value] of Object.entries(previewFilters)) {
       expect(preview?.url.searchParams.get(key), key).toBe(value);
       expect(production?.url.searchParams.get(key), key).toBe(value);
+=======
+    for (const [key, value] of Object.entries(previewFilters)) {
+      expect(preview?.url.searchParams.get(key), key).toBe(value);
+      expect(production?.url.searchParams.has(key), key).toBe(false);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     }
   });
 
@@ -114,7 +124,11 @@ const previewFilters = Object.freeze({
 });
 
 function filter(overrides: Partial<FinanceReconciliationQuery> = {}): FinanceReconciliationQuery {
+<<<<<<< HEAD
   return { ...previewFilters, kind: 'payment', limit: 50, ...overrides };
+=======
+  return { ...previewFilters, limit: 50, ...overrides };
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function context(kind: ScopeKind, id: string, accessVersion: number): ConsoleContext {
@@ -184,7 +198,10 @@ function reconciliationPage() {
         items: [
           {
             id: 'difference:1',
+<<<<<<< HEAD
             version: '7',
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
             externalMinor: '31500',
             internalMinor: '43400',
             differenceMinor: '-11900',

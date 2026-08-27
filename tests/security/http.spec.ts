@@ -21,6 +21,7 @@ test('browser writes require an allowlisted origin and matching CSRF double subm
   assert.equal(accepted.status, 200);
 });
 
+<<<<<<< HEAD
 test('allowlisted login and one-time ticket exchange use Origin instead of a readable cross-subdomain CSRF cookie', async () => {
   const app = application();
   const login = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
@@ -37,6 +38,10 @@ test('allowlisted login and one-time ticket exchange use Origin instead of a rea
   }));
   assert.equal(loginWithoutOrigin.status, 403);
 
+=======
+test('one-time auth ticket exchange is the only browser write that does not require a CSRF token', async () => {
+  const app = application();
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const exchange = await app.handle(new Request('https://api.example/api/v1/identity/tickets/exchange', {
     method: 'POST',
     headers: { origin: 'https://store.example', cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
@@ -51,6 +56,7 @@ test('allowlisted login and one-time ticket exchange use Origin instead of a rea
   }));
   assert.equal(deniedOrigin.status, 403);
 
+<<<<<<< HEAD
   const missingOrigin = await app.handle(new Request('https://api.example/api/v1/identity/tickets/exchange', {
     method: 'POST',
     headers: { cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
@@ -58,6 +64,8 @@ test('allowlisted login and one-time ticket exchange use Origin instead of a rea
   }));
   assert.equal(missingOrigin.status, 403);
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const normalWrite = await app.handle(new Request('https://api.example/api/v1/identity/challenges', {
     method: 'POST',
     headers: { origin: 'https://store.example', cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
@@ -76,8 +84,14 @@ test('responses always include hard security headers and request correlation', a
 
 test('invalid media and oversized bodies fail before a handler executes', async () => {
   const app = application();
+<<<<<<< HEAD
   const media = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'text/plain', 'x-contract-version': CONTRACT_VERSION }, body: 'value' }));
   assert.equal(media.status, 415);
   const large = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'application/json', 'content-length': String(2 * 1024 * 1024 + 1), 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
+=======
+  const media = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { 'content-type': 'text/plain', 'x-contract-version': CONTRACT_VERSION }, body: 'value' }));
+  assert.equal(media.status, 415);
+  const large = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { 'content-type': 'application/json', 'content-length': String(2 * 1024 * 1024 + 1), 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   assert.equal(large.status, 413);
 });

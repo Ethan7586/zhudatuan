@@ -29,16 +29,28 @@ function inverseTone(value: number | undefined): 'positive' | 'negative' | 'neut
 }
 
 function ratio(value: number | undefined): string {
+<<<<<<< HEAD
   return value === undefined ? '环比 0.0%' : `环比 ${signedPercent(value)}`;
 }
 
 function points(value: number | undefined): string {
   if (value === undefined) return '变化 0.0 个百分点';
+=======
+  return value === undefined ? '环比待返回' : `环比 ${signedPercent(value)}`;
+}
+
+function points(value: number | undefined): string {
+  if (value === undefined) return '变化待返回';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return `${value >= 0 ? '上升' : '下降'} ${Math.abs(value * 100).toFixed(1)} 个百分点`;
 }
 
 function percent(value: number | undefined): string {
+<<<<<<< HEAD
   return value === undefined ? '0.0%' : `${(value * 100).toFixed(1)}%`;
+=======
+  return value === undefined ? '—' : `${(value * 100).toFixed(1)}%`;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function signedPercent(value: number): string {

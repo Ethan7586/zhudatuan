@@ -4,6 +4,7 @@
 
 ## 正式選用來源
 
+<<<<<<< HEAD
 | 目標                                                     | 來源                                                           | 選用原因                                                                                  |
 | -------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `apps/storefront-web`                                    | `../archives/smart-wing/apps/storefront-web`                   | 使用者確認的消費 Web、Laptop 與 Desktop 1920 VI／UI／UE                                   |
@@ -31,6 +32,18 @@
 - `infrastructure/aliyun/delivery.yml`、`infrastructure/storefront-compatibility/aliyun/` 與 `scripts/release/candidate.mjs` 不得用於築大團候選制品；其路由或入口仍屬舊項目。
 
 築大團部署只能讀取 `infrastructure/zhudatuan/aliyun/`。Console 的 `/design-references/*` 與 `/demo/*` 在正式後臺域返回 404，只能由 `labs.zhudatuan.com` 讀取；這保留 Owner 指定的三套原始設計參考，同時不把它們當正式後臺頁面。
+=======
+| 目標 | 來源 | 選用原因 |
+| --- | --- | --- |
+| `apps/storefront-web` | `/Users/Ethan/Desktop/Projects/zhudatuan/archives/smart-wing/apps/storefront-web` | 使用者確認的消費 Web、Laptop 與 Desktop 1920 VI／UI／UE |
+| `apps/auth-web` | `/Users/Ethan/Desktop/Projects/zhudatuan/archives/smart-wing/apps/auth-web` | 消費端登入抽屜的必要依賴，保留已確認的帳密、微信／企微流程 |
+| `apps/console` | `/Users/Ethan/Desktop/Projects/zhudatuan/archives/smart-wing-20260826/Shop/smart-wing/apps/console` | 使用者確認的 4173 新版後臺 |
+| `services/commerce`、`packages/@shop`、核心 DB | `/Users/Ethan/Desktop/Projects/zhudatuan/archives/smart-wing-20260826/Shop/smart-wing` | 與指定 Console 的 217-operation 合同、SDK、權限及後續 Migration 相容 |
+| `services/commerce-api`、`packages/@smart-wing`、相容 DB | `/Users/Ethan/Desktop/Projects/zhudatuan/archives/smart-wing` | 指定 Storefront 目前直接依賴的 REST／RPC API 閉包 |
+| `docs/decisions/zhudatuan.md`、`每日問答.md` | 築大團根目錄同名決策文件 | 保存本輪產品邊界、MVP 問答與後續交接記憶 |
+
+所有來源均按 2026-08-27 當時的工作樹實體檔案複製，包含已確認但尚未提交的 UI 改動；沒有從 Git HEAD 重新還原。
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 ## 為何沒有直接使用 21 號 API 覆蓋新版 Console
 

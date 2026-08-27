@@ -1,13 +1,23 @@
 import { isValidElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Empty } from './Empty';
+<<<<<<< HEAD
 import { ContextualAccessDenied } from './AccessDenied';
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { ErrorView } from './Error';
 import { ResourceState, resourceCondition, resourceConditions, type ResourceCondition } from './ResourceState';
 
 describe('resource state contract', () => {
   it('exposes the complete asynchronous state union', () => {
+<<<<<<< HEAD
     expect(resourceConditions).toEqual(['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry']);
+=======
+    expect(resourceConditions).toEqual([
+      'loading', 'empty', 'ready', 'refreshing', 'stale', 'denied',
+      'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry',
+    ]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 
   it.each([
@@ -21,6 +31,7 @@ describe('resource state contract', () => {
     expect(resourceCondition(data, rows, error)).toBe(expected);
   });
 
+<<<<<<< HEAD
   it.each(['notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)('renders %s as an explicit error boundary', (condition: ResourceCondition) => {
     const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
     expect(isValidElement(result)).toBe(true);
@@ -41,6 +52,18 @@ describe('resource state contract', () => {
     expect(result.props.resourceLabel).toBe('分销系统');
     expect(result.props.detail).toBeUndefined();
   });
+=======
+  it.each(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)(
+    'renders %s as an explicit error boundary',
+    (condition: ResourceCondition) => {
+      const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
+      expect(isValidElement(result)).toBe(true);
+      if (!isValidElement<{ message: string }>(result)) throw new Error('RESOURCE_STATE_ELEMENT_REQUIRED');
+      expect(result.type).toBe(ErrorView);
+      expect(result.props.message).toBe('FAILURE_CODE');
+    },
+  );
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   it('announces loading, renders empty and preserves ready children', () => {
     const loading = ResourceState({ condition: 'loading', children: 'ready' });
