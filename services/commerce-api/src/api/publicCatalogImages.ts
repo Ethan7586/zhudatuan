@@ -4,7 +4,7 @@ import type { WorkerEnv } from './types';
 const IMAGE_PATH = /^\/api\/v1\/catalog\/public\/products\/([^/]+)\/image$/;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_SOURCE_HOSTS = new Set(['m.media-amazon.com']);
-const HTTPS_PUBLIC_HOSTS = new Set(['zhudatuan.com', 'www.zhudatuan.com']);
+const HTTPS_PUBLIC_HOSTS = new Set(['zhudatuan.com', 'www.zhudatuan.com', 'hbbtzn.com', 'www.hbbtzn.com']);
 const keyCache = new Map<string, Promise<CryptoKey>>();
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -52,7 +52,6 @@ function publicMediaBase(env: WorkerEnv): URL | null {
   try {
     const url = new URL(value);
     if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) return null;
-    if (url.hostname !== 'media.zhudatuan.com') return null;
     return url;
   } catch {
     return null;
@@ -75,21 +74,13 @@ function publicOrigin(request: Request): string {
   return requestUrl.origin;
 }
 
-function isSameOriginUrl(value: string, origin: string): boolean {
-  try {
-    return new URL(value).origin === origin;
-  } catch {
-    return false;
-  }
-}
-
 export async function publicCatalogCoverUrl(request: Request, env: WorkerEnv, productId: string, coverUrl: string | null): Promise<string | null> {
   if (!coverUrl) return null;
   const mediaBase = publicMediaBase(env);
   if (mediaBase && isCanonicalMediaUrl(coverUrl, mediaBase)) return coverUrl;
   const source = safeSource(coverUrl);
   const origin = publicOrigin(request);
-  if (!source) return isSameOriginUrl(coverUrl, origin) ? coverUrl : null;
+  if (!source) return coverUrl.startsWith(origin) ? coverUrl : null;
   const secret = signingSecret(env);
   if (!secret) return coverUrl;
   const signature = await crypto.subtle.sign('HMAC', await signingKey(secret), new TextEncoder().encode(signatureInput(productId, source.href)));

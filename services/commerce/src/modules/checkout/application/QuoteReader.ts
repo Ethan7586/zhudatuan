@@ -2,34 +2,8 @@ import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { CheckoutQuote, CheckoutSelection, QuoteLine } from '../domain/model/CheckoutQuote';
 import { CheckoutPolicy, type CampaignRule } from '../domain/policy/CheckoutPolicy';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-import type { BenefitChoice, BenefitGateway } from '../../benefit/application/port/BenefitPort';
-
-export interface QuoteVoucherChoice {
-  readonly id: string;
-  readonly remaining_minor: number;
-  readonly version: number;
-  readonly program: string;
-}
-
-export interface QuoteVoucherGateway {
-  preview(database: OperationDatabase, vouchers: readonly string[], member: string, scope: string): Promise<readonly QuoteVoucherChoice[]>;
-}
-<<<<<<< HEAD
-=======
 import { BenefitPort, type BenefitChoice } from '../../benefit/BenefitModule';
 import { VoucherPort, type VoucherChoice } from '../../voucher/VoucherModule';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-import { BenefitPort, type BenefitChoice } from '../../benefit/BenefitModule';
-import { VoucherPort, type VoucherChoice } from '../../voucher/VoucherModule';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface CartRow {
   readonly id: string; readonly member_id: string; readonly mall_id: string; readonly application_id: string; readonly version: number;
@@ -56,25 +30,7 @@ interface CampaignRow { readonly id: string; readonly version: number; readonly 
 interface PriceRuleRow { readonly id: string; readonly version: number; readonly priority: number; readonly kind: string; readonly condition: unknown; readonly effect: unknown }
 
 export class QuoteReader {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  constructor(
-    private readonly benefit: BenefitGateway,
-    private readonly voucher: QuoteVoucherGateway,
-    private readonly policy = new CheckoutPolicy(),
-  ) {}
-<<<<<<< HEAD
-=======
   constructor(private readonly policy = new CheckoutPolicy(), private readonly benefit = new BenefitPort(), private readonly voucher = new VoucherPort()) {}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  constructor(private readonly policy = new CheckoutPolicy(), private readonly benefit = new BenefitPort(), private readonly voucher = new VoucherPort()) {}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   async read(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CheckoutQuote> {
     const cart = await this.cart(database, membership, selection);
@@ -214,19 +170,7 @@ export class QuoteReader {
       and (effective_at is null or effective_at<=clock_timestamp()) order by priority,id`, [scope])).rows;
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly QuoteVoucherChoice[]> {
-=======
   private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly VoucherChoice[]> {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly QuoteVoucherChoice[]> {
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly VoucherChoice[]> {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (selection.vouchers.length === 0) return [];
     const rows = await this.voucher.preview(database, selection.vouchers, cart.member_id, cart.mall_id);
     if (rows.length !== selection.vouchers.length) throw new Error('VOUCHER_NOT_USABLE');

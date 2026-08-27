@@ -6,23 +6,7 @@ import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { fullCheckoutPort } from '../checkout/FullCheckoutPort';
-import { BenefitPort } from '../benefit/BenefitPort';
-import { VoucherPort } from '../voucher/application/port/VoucherPort';
-=======
 import { CheckoutPort } from '../checkout/CheckoutModule';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { fullCheckoutPort } from '../checkout/FullCheckoutPort';
-import { BenefitPort } from '../benefit/BenefitPort';
-import { VoucherPort } from '../voucher/application/port/VoucherPort';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-import { CheckoutPort } from '../checkout/CheckoutModule';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from './domain/model/Order';
 import { PlaceOrder } from './application/PlaceOrder';
 import { createReportingExport } from '../reporting/ReportingModule';
@@ -31,25 +15,7 @@ interface OrderRow { readonly id: string; readonly lifecycle_state: CommerceStat
 
 export function orderOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  const place = new PlaceOrder(
-    fullCheckoutPort(context.container.get(SECURITY_KEYS).quote),
-    new BenefitPort(),
-    new VoucherPort(),
-  );
-<<<<<<< HEAD
-=======
   const place = new PlaceOrder(new CheckoutPort(context.container.get(SECURITY_KEYS).quote));
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  const place = new PlaceOrder(new CheckoutPort(context.container.get(SECURITY_KEYS).quote));
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return new ModuleOperations('order', pool, context.container.get(AUDIT_SINK), {
     'order.orders.create': (request, database) => place.execute(request, database),
     'order.orders.read': async (request, database) => {

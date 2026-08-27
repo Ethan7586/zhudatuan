@@ -1,59 +1,12 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { fileURLToPath } from 'node:url';
-import { defineConfig, loadEnv } from 'vite';
-import { validateAuthBuildEnvironment } from './src/buildEnvironment';
-
-const authRoot = fileURLToPath(new URL('.', import.meta.url));
-
-export default defineConfig(({ command, mode }) => {
-  if (command === 'build') validateAuthBuildEnvironment({ ...loadEnv(mode, authRoot, ''), ...process.env });
-  return {
-    envDir: authRoot,
-    // Relative assets let the exact same reviewed dist run at
-    // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
-    base: command === 'build' ? './' : '/',
-=======
-import { defineConfig } from 'vite';
-=======
-import { fileURLToPath } from 'node:url';
-import { defineConfig, loadEnv } from 'vite';
-import { validateAuthBuildEnvironment } from './src/buildEnvironment';
->>>>>>> bc283dd3 (fix(auth): fail builds with missing runtime values)
-
-const authRoot = fileURLToPath(new URL('.', import.meta.url));
-
-export default defineConfig(({ command, mode }) => {
-  if (command === 'build') validateAuthBuildEnvironment({ ...loadEnv(mode, authRoot, ''), ...process.env });
-  return {
-<<<<<<< HEAD
-    // 生产环境由消费者站点同域 /login 提供，确保 HttpOnly 会话保持同源。
-    base: command === 'build' ? '/login/' : '/',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    envDir: authRoot,
-    // Relative assets let the exact same reviewed dist run at
-    // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
-    base: command === 'build' ? './' : '/',
->>>>>>> bc283dd3 (fix(auth): fail builds with missing runtime values)
-=======
 import { defineConfig } from 'vite';
 
 export default defineConfig(({ command }) => {
   return {
-<<<<<<< HEAD
     // 生产环境由消费者站点同域 /login 提供，确保 HttpOnly 会话保持同源。
     base: command === 'build' ? '/login/' : '/',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    // Relative assets let the exact same reviewed dist run at
-    // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
-    base: command === 'build' ? './' : '/',
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -62,21 +15,13 @@ export default defineConfig(({ command }) => {
     },
     server: {
       port: 3002,
-      proxy: {
-        '/api': {
-          // Auth endpoints live on the storefront compatibility BFF, not the
-          // canonical Commerce API (:3001).
-          target: process.env.AUTH_COMPAT_API_ORIGIN ?? 'http://127.0.0.1:3000',
-          changeOrigin: false,
-        },
-      },
       // Keep the development server stable when a CI-like environment disables HMR.
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
     // Keep the explicit host allowlist; do not turn on allowHosts: true.
     preview: {
-      allowedHosts: ['zhudatuan.com', 'www.zhudatuan.com', 'accounts.zhudatuan.com', 'console.zhudatuan.com'],
+      allowedHosts: ['zhudatuan.com', 'www.zhudatuan.com', 'console.zhudatuan.com', 'hbbtzn.com', 'www.hbbtzn.com', 'smart.hbbtzn.com'],
     },
   };
 });

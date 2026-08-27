@@ -30,7 +30,7 @@ describe('authenticated storefront member projection', () => {
 
     const profile = mergeAuthenticatedMemberProfile(MOCK_USER, bootstrap);
 
-    expect(profile).toMatchObject({ name: 'ethan', employeeId: 'REG-ETHAN', department: '未分配部门', phone: '未绑定', avatar: '', jobTitle: 'L6 消费者', couponCount: 0, welfareBalance: MOCK_USER.welfareBalance });
+    expect(profile).toMatchObject({ name: 'ethan', employeeId: 'REG-ETHAN', department: '未分配部门', phone: '未绑定', avatar: '', jobTitle: '员工会员', couponCount: 0, welfareBalance: MOCK_USER.welfareBalance });
     expect(profile.name).not.toBe('张建国');
   });
 });

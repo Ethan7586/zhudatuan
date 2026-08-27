@@ -23,19 +23,7 @@ await Promise.all([
   expectReady('http://127.0.0.1:3001/health/ready'),
 ]);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-const kms = new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
-=======
 const kms = new KmsClient(environment.kmsEndpoint);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-const kms = new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-const kms = new KmsClient(environment.kmsEndpoint);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const context = { verification: randomUUID() };
 const envelope = await kms.encrypt('local/verification', 'p0-verification', context);
 if (await kms.decrypt('local/verification', envelope.ciphertext, context) !== 'p0-verification') throw new Error('LOCAL_KMS_ROUNDTRIP_FAILED');
@@ -56,17 +44,6 @@ const challenge = await localFetch('http://127.0.0.1:3001/api/v1/identity/challe
   headers: {
     'content-type': 'application/json',
     'idempotency-key': randomUUID(),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    origin: 'http://127.0.0.1:3000',
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    origin: 'http://127.0.0.1:3000',
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'x-client-version': '0.0.0',
     'x-contract-version': CONTRACT_VERSION,
     'x-device-id': `local-${randomUUID()}`,
@@ -135,17 +112,6 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     headers: {
       'content-type': 'application/json',
       'idempotency-key': randomUUID(),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      origin: 'http://127.0.0.1:3000',
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      origin: 'http://127.0.0.1:3000',
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       'x-client-version': '0.0.0',
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': `local-${randomUUID()}`,
@@ -165,19 +131,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
       && (item as Readonly<Record<string, unknown>>).client === 'storefront');
     operatorMembership = memberships.find((item): item is Readonly<{ id: string; client: string }> => item !== null && typeof item === 'object'
       && !Array.isArray(item) && typeof (item as Readonly<Record<string, unknown>>).id === 'string'
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      && (item as Readonly<Record<string, unknown>>).client === 'console')?.id;
-=======
       && (item as Readonly<Record<string, unknown>>).client === 'operator')?.id;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      && (item as Readonly<Record<string, unknown>>).client === 'console')?.id;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      && (item as Readonly<Record<string, unknown>>).client === 'operator')?.id;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (!storefront) throw new Error('LOCAL_EMPLOYEE_STOREFRONT_MEMBERSHIP_MISSING');
     login = await authenticate(storefront.id);
   }
@@ -246,60 +200,18 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const invitation = await localFetch('http://127.0.0.1:3001/api/v1/identity/invitations', { method:'POST', headers:{
     authorization:`Bearer ${operatorBearer}`, 'content-type':'application/json', 'idempotency-key':randomUUID(),
     'x-client-version':'0.0.0', 'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID(),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    'x-scope-hint':'tenant-smart-wing',
-  }, body:JSON.stringify({ label:'本地邀请验证', maxUses:2, expiresAt:new Date(Date.now()+24*60*60_000).toISOString() }) });
-  if (invitation.status !== 201) throw new Error(`LOCAL_INVITATION_CREATE_HTTP_${invitation.status}`);
-=======
   }, body:JSON.stringify({ label:'本地邀请验证', maxUses:2, expiresAt:new Date(Date.now()+24*60*60_000).toISOString() }) });
   if (invitation.status !== 201) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    'x-scope-hint':'tenant-smart-wing',
-  }, body:JSON.stringify({ label:'本地邀请验证', maxUses:2, expiresAt:new Date(Date.now()+24*60*60_000).toISOString() }) });
-  if (invitation.status !== 201) throw new Error(`LOCAL_INVITATION_CREATE_HTTP_${invitation.status}`);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  }, body:JSON.stringify({ label:'本地邀请验证', maxUses:2, expiresAt:new Date(Date.now()+24*60*60_000).toISOString() }) });
-  if (invitation.status !== 201) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const invitationEtag = invitation.headers.get('etag');
   const created: unknown = await invitation.json();
   if (created === null || typeof created !== 'object' || Array.isArray(created)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const invitationId = (created as Readonly<Record<string, unknown>>).id;
   const invitationCode = (created as Readonly<Record<string, unknown>>).code;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const invitationTarget = (created as Readonly<Record<string, unknown>>).target;
-  const invitationVersion = (created as Readonly<Record<string, unknown>>).version;
-  if (typeof invitationId !== 'string' || typeof invitationCode !== 'string' || invitationTarget !== 'console' || invitationEtag === null
-    || !['number','string'].includes(typeof invitationVersion)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
-  const resolveInvitation = () => localFetch('http://127.0.0.1:3001/api/v1/identity/invitations/resolve', { method:'POST', headers:{
-    'content-type':'application/json', 'idempotency-key':randomUUID(), origin:'http://127.0.0.1:3000', 'x-client-version':'0.0.0',
-=======
-=======
-  const invitationTarget = (created as Readonly<Record<string, unknown>>).target;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  const invitationVersion = (created as Readonly<Record<string, unknown>>).version;
-  if (typeof invitationId !== 'string' || typeof invitationCode !== 'string' || invitationTarget !== 'console' || invitationEtag === null
-    || !['number','string'].includes(typeof invitationVersion)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
-  const resolveInvitation = () => localFetch('http://127.0.0.1:3001/api/v1/identity/invitations/resolve', { method:'POST', headers:{
-<<<<<<< HEAD
-    'content-type':'application/json', 'idempotency-key':randomUUID(), 'x-client-version':'0.0.0',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    'content-type':'application/json', 'idempotency-key':randomUUID(), origin:'http://127.0.0.1:3000', 'x-client-version':'0.0.0',
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
   const invitationVersion = (created as Readonly<Record<string, unknown>>).version;
   if (typeof invitationId !== 'string' || typeof invitationCode !== 'string' || invitationEtag === null
     || !['number','string'].includes(typeof invitationVersion)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const resolveInvitation = () => localFetch('http://127.0.0.1:3001/api/v1/identity/invitations/resolve', { method:'POST', headers:{
     'content-type':'application/json', 'idempotency-key':randomUUID(), 'x-client-version':'0.0.0',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID(),
   }, body:JSON.stringify({ invite:invitationCode }) });
   if ((await resolveInvitation()).status !== 200) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');

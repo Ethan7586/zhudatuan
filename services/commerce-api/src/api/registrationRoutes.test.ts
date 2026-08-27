@@ -25,17 +25,6 @@ describe('member registration routes', () => {
     const payload = (await response.json()) as Record<string, unknown>;
     expect(payload.challengeId).toEqual(expect.any(String));
     expect(payload.debugCode).toMatch(/^\d{6}$/);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    expect(payload.resendAfterSeconds).toBe(30);
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    expect(payload.resendAfterSeconds).toBe(30);
->>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(database.mock.calls.map(([input]) => String(input))).toEqual([expect.stringContaining('/rpc/api_create_registration_challenge'), expect.stringContaining('/rpc/api_record_phone_challenge_delivery')]);
 
     const production = await handleRegistrationOtp(post('/otp', { mobile: '13800138000' }), { ...env, APP_ENV: 'production', SMS_PROVIDER: 'debug' }, 'prod-request');
@@ -188,7 +177,7 @@ describe('member registration routes', () => {
 });
 
 function post(path: string, body: unknown): Request {
-  return new Request(`https://zhudatuan.com/api/v1/auth/registration${path}`, {
+  return new Request(`https://hbbtzn.com/api/v1/auth/registration${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-real-ip': '203.0.113.9' },
     body: JSON.stringify(body),

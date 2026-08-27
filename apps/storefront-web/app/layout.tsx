@@ -3,15 +3,9 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://zhudatuan.com'),
-<<<<<<< HEAD
   title: '智慧翼企业福利商城｜企业员工福利平台',
   description: '面向企业员工的福利商品、卡券、生活服务和订单管理平台，由雍彻科技提供技术服务。',
   applicationName: '智慧翼企业福利商城',
-=======
-  title: '主打团商城｜消费者购物平台',
-  description: '面向消费者的商品、卡券、生活服务和订单管理平台，由雍彻科技提供技术服务。',
-  applicationName: '主打团商城',
->>>>>>> 08941c83 (fix(storefront): label L6 consumer experience)
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
@@ -21,7 +15,6 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'zh_CN',
     url: '/',
-<<<<<<< HEAD
     siteName: '智慧翼 Smart Wing',
     title: '智慧翼企业福利商城｜企业员工福利平台',
     description: '面向企业员工的福利商品、卡券、生活服务和订单管理平台。',
@@ -31,17 +24,6 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '智慧翼企业福利商城｜企业员工福利平台',
     description: '面向企业员工的福利商品、卡券、生活服务和订单管理平台。',
-=======
-    siteName: '主打团 ZHUDATUAN',
-    title: '主打团商城｜消费者购物平台',
-    description: '面向消费者的商品、卡券、生活服务和订单管理平台。',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: '主打团商城' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: '主打团商城｜消费者购物平台',
-    description: '面向消费者的商品、卡券、生活服务和订单管理平台。',
->>>>>>> 08941c83 (fix(storefront): label L6 consumer experience)
     images: ['/opengraph-image.png'],
   },
   formatDetection: { email: false, address: false, telephone: false },

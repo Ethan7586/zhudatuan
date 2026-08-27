@@ -50,7 +50,7 @@ describe('dynamic member-code contract', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = await handleMemberCodeChallenge(new Request('https://zhudatuan.com/api/v1/member-code/challenge', { method: 'POST' }), env, authorization, 'issue-code');
+    const response = await handleMemberCodeChallenge(new Request('https://hbbtzn.com/api/v1/member-code/challenge', { method: 'POST' }), env, authorization, 'issue-code');
     const body = await response.json<Record<string, unknown>>();
     expect(response.status).toBe(201);
     expect(body).not.toHaveProperty('credential');
@@ -88,7 +88,7 @@ describe('dynamic member-code contract', () => {
 });
 
 function jsonRequest(path: string, body: unknown): Request {
-  return new Request(`https://zhudatuan.com${path}`, {
+  return new Request(`https://hbbtzn.com${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),

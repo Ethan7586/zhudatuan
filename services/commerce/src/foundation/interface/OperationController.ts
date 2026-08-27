@@ -24,29 +24,9 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'identity.invitations.revoke',
   'identity.members.create',
   'identity.members.manage',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  'identity.members.reset',
   'identity.password.change',
   'identity.password.verify',
   'identity.password.reset',
-  'identity.mobile.challenge',
-<<<<<<< HEAD
-=======
-  'identity.password.change',
-  'identity.password.verify',
-  'identity.password.reset',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  'identity.password.change',
-  'identity.password.verify',
-  'identity.password.reset',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
@@ -56,25 +36,6 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'access.center.read',
   'access.roles.manage',
   'access.scopes.manage',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  'access.ownership.read',
-  'access.ownership.transfers.preview',
-  'access.ownership.transfers.create',
-  'access.ownership.transfers.accept.preview',
-  'access.ownership.transfers.accept',
-  'access.ownership.transfers.cancel',
-  'access.ownership.transfers.cancel.preview',
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'capability.assignments.read',
   'capability.assignments.manage',
   'partner.partners.read',
@@ -116,33 +77,6 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'inventory.imports.create',
   'inventory.imports.read',
   'marketing.campaigns.read',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  'referral.settings.read',
-  'referral.settings.manage',
-  'referral.products.read',
-  'referral.products.manage',
-  'referral.members.read',
-  'referral.members.apply',
-  'referral.members.approve',
-  'referral.members.disqualify',
-  'referral.bindings.read',
-  'referral.bindings.create',
-  'referral.commissions.read',
-  'referral.earnings.read',
-  'referral.links.read',
-  'referral.withdrawals.read',
-  'referral.withdrawals.create',
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'reporting.dashboard.read',
   'reporting.sales.read',
   'reporting.products.read',
@@ -226,23 +160,6 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'finance.statements.export',
   'finance.reconciliations.manage',
   'finance.reconciliations.read',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  'finance.reconciliationrepairs.read',
-  'finance.reconciliationrepairs.preview',
-  'finance.reconciliationrepairs.submit',
-  'finance.reconciliationrepairs.decide',
-  'finance.reconciliationrepairs.reverse',
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'finance.settlements.read',
   'finance.settlements.decide',
   'finance.settlements.adjust',
@@ -256,28 +173,8 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'finance.backfills.read',
   'finance.backfills.decide',
   'finance.policies.manage',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  'finance.policies.preview',
-  'finance.policies.read',
-  'finance.audit.read',
   'invoice.profiles.manage',
   'invoice.profiles.read',
-  'invoice.operatorprofiles.read',
-<<<<<<< HEAD
-=======
-  'invoice.profiles.manage',
-  'invoice.profiles.read',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  'invoice.profiles.manage',
-  'invoice.profiles.read',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'invoice.requests.create',
   'invoice.requests.read',
   'invoice.requests.cancel',
@@ -338,48 +235,6 @@ export const OPERATION_HANDLERS = token<Map<OperationId, OperationHandler>>('ope
 export const OPERATION_AUTHORIZER = token<OperationAuthorizer>('operation.authorizer');
 
 export function registerOperationRoutes(module: string, context: ModuleContext): void {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  registerRoutes(OperationCatalog.all().filter((candidate) => candidate.module === module), context);
-}
-
-export function registerSelectedOperationRoutes(operationIds: readonly OperationId[], context: ModuleContext): void {
-  registerRoutes(operationIds.map((operationId) => OperationCatalog.get(operationId)), context);
-}
-
-function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, context: ModuleContext): void {
-<<<<<<< HEAD
-  const handlers = context.container.get(OPERATION_HANDLERS);
-  const authorizer = context.container.get(OPERATION_AUTHORIZER);
-  for (const operation of operations) {
-    const handler = handlers.get(operation.id);
-    if (!handler) throw new Error(`OPERATION_HANDLER_MISSING:${operation.id}`);
-    context.routes.register({ operation: operation.id, handler: async (request) => {
-      const resource = operationResource(operation.id, request);
-      const access = operation.audience === 'public' || operation.audience === 'provider' ? null : await authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
-      const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.id, operation.method, operation.audience, request, resource), access });
-=======
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  const handlers = context.container.get(OPERATION_HANDLERS);
-  const authorizer = context.container.get(OPERATION_AUTHORIZER);
-  for (const operation of operations) {
-    const handler = handlers.get(operation.id);
-    if (!handler) throw new Error(`OPERATION_HANDLER_MISSING:${operation.id}`);
-    context.routes.register({ operation: operation.id, handler: async (request) => {
-<<<<<<< HEAD
-      const access = operation.audience === 'public' || operation.audience === 'provider' ? null : await authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, Object.values(request.parameters)[0]);
-      const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.method, operation.audience, request), access });
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      const resource = operationResource(operation.id, request);
-      const access = operation.audience === 'public' || operation.audience === 'provider' ? null : await authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
-      const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.id, operation.method, operation.audience, request, resource), access });
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
   const handlers = context.container.get(OPERATION_HANDLERS);
   const authorizer = context.container.get(OPERATION_AUTHORIZER);
   for (const operation of OperationCatalog.all().filter((candidate) => candidate.module === module)) {
@@ -388,70 +243,20 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     context.routes.register({ operation: operation.id, handler: async (request) => {
       const access = operation.audience === 'public' || operation.audience === 'provider' ? null : await authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, Object.values(request.parameters)[0]);
       const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.method, operation.audience, request), access });
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return json(result.status, result.body, result.headers);
     } });
   }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-function operationInput(operation: string, method: string, audience: string, request: HttpRequest, resource: string | undefined): OperationInput {
-=======
 function operationInput(method: string, audience: string, request: HttpRequest): OperationInput {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-function operationInput(operation: string, method: string, audience: string, request: HttpRequest, resource: string | undefined): OperationInput {
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-function operationInput(method: string, audience: string, request: HttpRequest): OperationInput {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const idempotency = request.headers['idempotency-key'];
   if (method !== 'GET' && audience !== 'provider' && idempotency === undefined) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
   const header = request.headers['if-match'];
   const normalized = header?.replace(/^W\//, '').replace(/^"|"$/g, '');
   const expectedVersion = normalized === undefined ? undefined : Number(normalized);
   if (normalized !== undefined && (!Number.isSafeInteger(expectedVersion) || expectedVersion! < 0)) throw new Error('EXPECTED_VERSION_INVALID');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  if (OperationCatalog.get(operation as OperationId).expectedVersion === 'required' && expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
-  return { path: request.parameters, query: queryObject(request.query), headers: request.headers, body: request.body, rawBody: request.rawBody, deadline: request.deadline, signal: request.signal,
-    ...(resource === undefined ? {} : { resource }), ...(idempotency === undefined ? {} : { idempotency }), ...(expectedVersion === undefined ? {} : { expectedVersion }) };
-}
-
-function operationResource(operation: string, request: HttpRequest): string | undefined {
-  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
-  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
-  const pathResource = Object.values(request.parameters)[0];
-  if (pathResource !== undefined) return pathResource;
-  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;
-  const settlement = Reflect.get(request.body, 'settlement');
-  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;
-=======
   return { path: request.parameters, query: queryObject(request.query), headers: request.headers, body: request.body, rawBody: request.rawBody, deadline: request.deadline, signal: request.signal,
     ...(idempotency === undefined ? {} : { idempotency }), ...(expectedVersion === undefined ? {} : { expectedVersion }) };
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  if (OperationCatalog.get(operation as OperationId).expectedVersion === 'required' && expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
-  return { path: request.parameters, query: queryObject(request.query), headers: request.headers, body: request.body, rawBody: request.rawBody, deadline: request.deadline, signal: request.signal,
-    ...(resource === undefined ? {} : { resource }), ...(idempotency === undefined ? {} : { idempotency }), ...(expectedVersion === undefined ? {} : { expectedVersion }) };
-}
-
-function operationResource(operation: string, request: HttpRequest): string | undefined {
-  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
-  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
-  const pathResource = Object.values(request.parameters)[0];
-  if (pathResource !== undefined) return pathResource;
-  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;
-  const settlement = Reflect.get(request.body, 'settlement');
-  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  return { path: request.parameters, query: queryObject(request.query), headers: request.headers, body: request.body, rawBody: request.rawBody, deadline: request.deadline, signal: request.signal,
-    ...(idempotency === undefined ? {} : { idempotency }), ...(expectedVersion === undefined ? {} : { expectedVersion }) };
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function queryObject(parameters: URLSearchParams): Readonly<Record<string, string | readonly string[]>> {

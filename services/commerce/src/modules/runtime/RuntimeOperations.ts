@@ -31,19 +31,7 @@ class RuntimeOperations implements OperationUsecase {
         "select count(*) filter(where state='queued')::integer queued,"
         + "count(*) filter(where state='running')::integer running,"
         + "(select count(*)::integer from runtime.deadletter where reviewed_at is null) deadletters,"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        + "coalesce(extract(epoch from clock_timestamp()-(min(created_at) filter(where state='queued'))),0)::integer oldest_seconds from runtime.job",
-=======
         + "coalesce(extract(epoch from clock_timestamp()-min(created_at)) filter(where state='queued'),0)::integer oldest_seconds from runtime.job",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-        + "coalesce(extract(epoch from clock_timestamp()-(min(created_at) filter(where state='queued'))),0)::integer oldest_seconds from runtime.job",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-        + "coalesce(extract(epoch from clock_timestamp()-min(created_at)) filter(where state='queued'),0)::integer oldest_seconds from runtime.job",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       ),
       runtimeCompatibility(this.pool, this.context.extensions, 'api'),
     ]);

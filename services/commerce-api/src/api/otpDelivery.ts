@@ -2,19 +2,6 @@ import { sendVerificationSms, SmsDeliveryError, smsProviderAvailable, type Verif
 import { callRpc } from './supabase';
 import type { WorkerEnv } from './types';
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-export const OTP_RESEND_AFTER_SECONDS = 30 as const;
-
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-export const OTP_RESEND_AFTER_SECONDS = 30 as const;
-
->>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export interface OtpDelivery {
   debugCode?: string;
   provider: 'debug' | 'aliyun';

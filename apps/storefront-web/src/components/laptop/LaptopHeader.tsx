@@ -1,25 +1,6 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { useMall } from '../../context/MallContext';
-import type { LaptopPage } from '../../context/MallContext.types';
-import { Search, ShoppingCart, Building2, ChevronDown, User, CreditCard, Headphones, FileText, MapPin, Ticket, Zap, Gift, Menu, ShieldCheck } from 'lucide-react';
-import { storefrontAuthHref } from '../../config/storefrontAuth';
-=======
 import { useMall, LaptopPage } from '../../context/MallContext';
 import { Search, ShoppingCart, Building2, ChevronDown, User, CreditCard, Headphones, FileText, MapPin, Ticket, Zap, Gift, Menu, ShieldCheck } from 'lucide-react';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { useMall, LaptopPage } from '../../context/MallContext';
-import { Search, ShoppingCart, Building2, ChevronDown, User, CreditCard, Headphones, FileText, MapPin, Ticket, Zap, Gift, Menu, ShieldCheck } from 'lucide-react';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { useMall } from '../../context/MallContext';
-import type { LaptopPage } from '../../context/MallContext.types';
-import { Search, ShoppingCart, Building2, ChevronDown, User, CreditCard, Headphones, FileText, MapPin, Ticket, Zap, Gift, Menu, ShieldCheck } from 'lucide-react';
-import { storefrontAuthHref } from '../../config/storefrontAuth';
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 import { defaultStorefrontWebPage, STOREFRONT_WEB_SURFACE_COPY, type StorefrontWebSurface } from './StorefrontWebStandard';
 
 interface LaptopHeaderProps {
@@ -32,17 +13,6 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
   const { currentMall, user, cartCount, setLaptopPage, malls, switchMall, triggerPendingFeature } = useMall();
   const surfaceCopy = STOREFRONT_WEB_SURFACE_COPY[surface];
   const homePage = defaultStorefrontWebPage(surface);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const isGuest = user.id === 'guest';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  const isGuest = user.id === 'guest';
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
   const [searchKw, setSearchKw] = useState('');
   const [showMallMenu, setShowMallMenu] = useState(false);
@@ -111,42 +81,12 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
               <span>客服中心</span>
             </button>
             <span className="text-blue-400/60">|</span>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            {isGuest ? (
-              <a href={storefrontAuthHref()} className="flex items-center gap-1 text-yellow-300 font-medium hover:text-yellow-200 transition-colors" aria-label="登录或注册主打团账户">
-=======
-            {isGuest ? (
-              <a href={storefrontAuthHref()} className="flex items-center gap-1 text-yellow-300 font-medium hover:text-yellow-200 transition-colors" aria-label="登录或注册智慧翼账户">
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
-                <User className="w-3 h-3" />
-                <span>登录 / 注册</span>
-              </a>
-            ) : (
-              <div className="flex items-center gap-1 text-yellow-300 font-medium">
-                <User className="w-3 h-3" />
-                <span>
-                  {user.name} ({user.department})
-                </span>
-              </div>
-            )}
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
             <div className="flex items-center gap-1 text-yellow-300 font-medium">
               <User className="w-3 h-3" />
               <span>
                 {user.name} ({user.department})
               </span>
             </div>
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
           </div>
         </div>
       </div>
@@ -159,26 +99,10 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
             <img src="/icon.svg" alt="" className="h-8 w-8 rounded-lg shadow-xs" />
             <div>
               <div className="font-extrabold text-sm tracking-tight text-[var(--sw-brand-dark)] leading-none flex items-center gap-1">
-<<<<<<< HEAD
-<<<<<<< HEAD
-                <span>主打团企业福利商城</span>
-                <span className="text-[9px] bg-red-100 text-[#E5484D] font-bold px-1 py-0.2 rounded">{surfaceCopy.headerBadge}</span>
-              </div>
-              <div className="text-[9px] text-gray-600 font-medium tracking-tight mt-0.5">ZHUDATUAN ENTERPRISE BENEFITS</div>
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                 <span>智慧翼企业福利商城</span>
                 <span className="text-[9px] bg-red-100 text-[#E5484D] font-bold px-1 py-0.2 rounded">{surfaceCopy.headerBadge}</span>
               </div>
               <div className="text-[9px] text-gray-400 font-medium tracking-tight mt-0.5">SMART WING ENTERPRISE BENEFITS</div>
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
             </div>
           </div>
 
@@ -247,24 +171,10 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
 
             {/* 主导航条 */}
             <nav className="flex items-center gap-1 ml-2">
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-              <button onClick={() => handleNavClick(homePage)} className={`px-3 py-1.5 rounded font-bold transition-colors cursor-pointer text-xs ${activeTab === homePage ? 'bg-white/20 text-yellow-300' : 'hover:bg-white/10 text-white'}`}>
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
               <button
                 onClick={() => handleNavClick(homePage)}
                 className={`px-3 py-1.5 rounded font-bold transition-colors cursor-pointer text-xs ${activeTab === homePage ? 'bg-white/20 text-yellow-300' : 'hover:bg-white/10 text-white'}`}
               >
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-              <button onClick={() => handleNavClick(homePage)} className={`px-3 py-1.5 rounded font-bold transition-colors cursor-pointer text-xs ${activeTab === homePage ? 'bg-white/20 text-yellow-300' : 'hover:bg-white/10 text-white'}`}>
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                 首页
               </button>
 

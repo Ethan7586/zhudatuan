@@ -1,11 +1,5 @@
 import type { AuthTarget } from '@shop/config/server';
 import { reject, type OperationDatabase } from '../../foundation/application/ModuleOperations';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { OperationUsecase } from '../../foundation/application/OperationHandler';
 import type { RiskGate } from '../../foundation/security/RiskGate';
 
@@ -20,12 +14,6 @@ export async function assertPublicRisk(risk: RiskGate, request: Parameters<Opera
   if (outcome !== 'allow') reject(outcome === 'review' ? 423 : 403,
     outcome === 'challenge' ? 'STEPUP_REQUIRED' : outcome === 'review' ? 'RISK_REVIEW_REQUIRED' : 'RISK_DENIED');
 }
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function sessionCookies(token: string, csrf: string, maxAge: number): Readonly<Record<string, string>> {
   const expiry = maxAge === 0 ? '; Expires=Thu, 01 Jan 1970 00:00:00 GMT' : '';
@@ -49,25 +37,6 @@ export function authTarget(value: string): AuthTarget {
   return target as AuthTarget;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,
-  digest: (id: string, code: string) => string, principal?: string,
-  expected: Readonly<{ purpose?: string; destinationHash?: string; sessionHash?: string }> = {}): Promise<{ principal_id: string | null }> {
-  const result = await database.query<{ principal_id: string | null }>(`update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
-    where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp()
-      and ($3::text is null or principal_id=$3)
-      and ($4::text is null or purpose=$4)
-      and ($5::text is null or destination_hash=$5)
-      and ($6::text is null or session_hash=$6)
-    returning principal_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null,
-    expected.destinationHash ?? null, expected.sessionHash ?? null]);
-  if (!result.rows[0]) {
-    await database.query('update identity.challenge set attempts=attempts+1 where id=$1 and consumed_at is null', [challenge]);
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export async function assertLoginAllowed(database: OperationDatabase, keys: readonly (readonly [string, string])[]): Promise<void> {
   for (const [subject, client] of keys) {
     const result = await database.query<{ locked: boolean }>(`select locked_until>clock_timestamp() locked from identity.loginattempt
@@ -96,28 +65,6 @@ export async function consumeChallengeRate(database: OperationDatabase, keys: re
   }
 }
 
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,
-  digest: (id: string, code: string) => string, principal?: string,
-  expected: Readonly<{ purpose?: string; destinationHash?: string; sessionHash?: string }> = {}): Promise<{ principal_id: string | null }> {
-  const result = await database.query<{ principal_id: string | null }>(`update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
-    where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp()
-      and ($3::text is null or principal_id=$3)
-      and ($4::text is null or purpose=$4)
-      and ($5::text is null or destination_hash=$5)
-      and ($6::text is null or session_hash=$6)
-    returning principal_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null,
-    expected.destinationHash ?? null, expected.sessionHash ?? null]);
-  if (!result.rows[0]) {
-<<<<<<< HEAD
-    await database.query('update identity.challenge set attempts=least(10,attempts+1) where id=$1 and consumed_at is null', [challenge]);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    await database.query('update identity.challenge set attempts=attempts+1 where id=$1 and consumed_at is null', [challenge]);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
 export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,
   digest: (id: string, code: string) => string, principal?: string): Promise<{ principal_id: string | null }> {
   const result = await database.query<{ principal_id: string | null }>(`update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
@@ -125,7 +72,6 @@ export async function consumeChallenge(database: OperationDatabase, challenge: s
       and ($3::text is null or principal_id=$3) returning principal_id`, [challenge, digest(challenge, code), principal ?? null]);
   if (!result.rows[0]) {
     await database.query('update identity.challenge set attempts=least(10,attempts+1) where id=$1 and consumed_at is null', [challenge]);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     reject(400, 'CHALLENGE_INVALID');
   }
   return result.rows[0]!;

@@ -56,21 +56,7 @@ export async function readFinanceProfessional(
     }
     case 'withdrawals': {
       const page = WithdrawalPageSchema.parse(await withdrawalsRead(input, request));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      return mapPage(page, (row) => ({ id: row.id, label: row.id,
-        reference: row.settlement_id ?? `${row.source_kind}:${row.beneficiary_member_id ?? row.source_id}`, amountMinor: row.amount_minor,
-=======
       return mapPage(page, (row) => ({ id: row.id, label: row.id, reference: row.settlement_id, amountMinor: row.amount_minor,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      return mapPage(page, (row) => ({ id: row.id, label: row.id,
-        reference: row.settlement_id ?? `${row.source_kind}:${row.beneficiary_member_id ?? row.source_id}`, amountMinor: row.amount_minor,
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      return mapPage(page, (row) => ({ id: row.id, label: row.id, reference: row.settlement_id, amountMinor: row.amount_minor,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         currency: row.currency, state: row.state, occurredAt: row.created_at, version: row.version }));
     }
     case 'invoices': {

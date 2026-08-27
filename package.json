@@ -23,26 +23,7 @@
     "local:verify-services": "node --env-file=infrastructure/local/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/localinfra/src/Verify.ts",
     "local:migrate": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Migrate.ts",
     "local:seed": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Seed.ts",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-    "bootstrap:registration:test": "node --import tsx tools/seed/src/BootstrapRegistration.ts",
-    "bootstrap:registration:production": "node services/commerce/dist/BootstrapRegistration.js",
-    "bootstrap:owner:production": "node services/commerce/dist/BootstrapOwner.js",
-    "bootstrap:owner:staging": "node services/commerce/dist/BootstrapStagingOwner.js",
     "local:verify": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Verify.ts",
-    "local:otp": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/CopyRegistrationOtp.ts",
-<<<<<<< HEAD
-=======
-    "local:verify": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Verify.ts",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    "local:verify": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Verify.ts",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "dev:api": "npm run build:commerce && node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs services/commerce/dist/ApiMain.js",
     "dev:jobs": "npm run build:commerce && node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs services/commerce/dist/JobsMain.js",
     "dev:console": "npm run dev --workspace @shop/console",
@@ -56,9 +37,9 @@
     "generate:clients": "node --import tsx scripts/build-miniapp-environment.mjs && node --import tsx scripts/build-miniapp-contract.mjs",
     "generate:frontendmanifest": "node scripts/evidence/frontendmanifest.mjs",
     "build:commerce": "node scripts/build-commerce.mjs",
-    "build:compat-admin-reference": "esbuild services/commerce-api/src/adminServer.ts --bundle --platform=node --format=cjs --external:@google/genai --external:dotenv --external:express --sourcemap --outfile=services/commerce-api/dist/admin-server.cjs",
+    "build:commerce-api": "esbuild services/commerce-api/src/adminServer.ts --bundle --platform=node --format=cjs --external:@google/genai --external:dotenv --external:express --sourcemap --outfile=services/commerce-api/dist/admin-server.cjs",
     "build:workspace": "npm run build --workspaces --if-present",
-    "build": "npm run build:workspace && npm run build:commerce",
+    "build": "npm run build:workspace && npm run build:commerce && npm run build:commerce-api",
     "typecheck": "npm run typecheck --workspaces --if-present && tsc -p tests/browser/tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "npm run test:unit",
@@ -76,8 +57,6 @@
     "format": "prettier --write --ignore-unknown .",
     "check:format": "prettier --check --ignore-unknown .",
     "check:cleaninstall": "node scripts/check/lock.mjs",
-    "check:artifacts": "node scripts/check/artifacts.mjs",
-    "check:approved-ui": "node scripts/check/owner-approved-ui.mjs",
     "check:generated": "node scripts/audit/generated.mjs",
     "check:errors": "node scripts/check/errors.mjs",
     "check:requirements": "npm run check --workspace @shop/requirementgen",
@@ -93,21 +72,6 @@
     "check:tests": "node scripts/check/tests.mjs",
     "check:lines": "node scripts/check-line-budget.mjs",
     "check:deployment": "node scripts/check/deployment.mjs",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "check:registration-deployment": "node scripts/check/registration-deployment.mjs",
-    "check:web-business-deployment": "node scripts/check/web-business-deployment.mjs",
-    "check:purchase-deployment": "node scripts/check/purchase-deployment.mjs",
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "check:registration-deployment": "node scripts/check/registration-deployment.mjs",
-    "check:web-business-deployment": "node scripts/check/web-business-deployment.mjs",
-    "check:purchase-deployment": "node scripts/check/purchase-deployment.mjs",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "check:supplychain": "node scripts/check/supplychain.mjs",
     "check:bundles": "node scripts/audit/bundles.mjs",
     "check:extensions": "node scripts/audit/extensions.mjs",
@@ -125,36 +89,14 @@
     "check:delivery": "node scripts/check-platform-delivery.mjs",
     "check:p0": "node scripts/verify-p0.mjs",
     "check:regression": "node scripts/audit/regression.mjs",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "audit:architecture": "npm run check:naming && npm run check:boundaries && npm run check:ownership && npm run check:duplicates && npm run check:calls && npm run check:pagination && npm run check:transactions && npm run check:frontend && npm run check:frontendmanifest && npm run check:tests && npm run check:operations && npm run check:events && npm run check:providers && npm run check:extensions && npm run check:jobs && npm run check:navigation && npm run check:dependencies && npm run check:requirementgraph && npm run check:runtimegraph && npm run check:environment && npm run check:delivery && npm run check:registration-deployment && npm run check:web-business-deployment && npm run check:purchase-deployment && npm run check:p0 && npm run check:regression",
-    "check:migration-inventory": "node scripts/audit/database-contracts.mjs --check-inventory",
-    "replay:schema-fresh": "node scripts/audit/database-contracts.mjs --schema-fresh",
-    "replay:registration-fresh": "node scripts/audit/database-contracts.mjs --registration-fresh",
-=======
     "audit:architecture": "npm run check:naming && npm run check:boundaries && npm run check:ownership && npm run check:duplicates && npm run check:calls && npm run check:pagination && npm run check:transactions && npm run check:frontend && npm run check:frontendmanifest && npm run check:tests && npm run check:operations && npm run check:events && npm run check:providers && npm run check:extensions && npm run check:jobs && npm run check:navigation && npm run check:dependencies && npm run check:requirementgraph && npm run check:runtimegraph && npm run check:environment && npm run check:delivery && npm run check:p0 && npm run check:regression",
     "check:migration-inventory": "node scripts/audit/database-contracts.mjs --check-inventory",
     "replay:schema-fresh": "node scripts/audit/database-contracts.mjs --schema-fresh",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "audit:architecture": "npm run check:naming && npm run check:boundaries && npm run check:ownership && npm run check:duplicates && npm run check:calls && npm run check:pagination && npm run check:transactions && npm run check:frontend && npm run check:frontendmanifest && npm run check:tests && npm run check:operations && npm run check:events && npm run check:providers && npm run check:extensions && npm run check:jobs && npm run check:navigation && npm run check:dependencies && npm run check:requirementgraph && npm run check:runtimegraph && npm run check:environment && npm run check:delivery && npm run check:registration-deployment && npm run check:web-business-deployment && npm run check:purchase-deployment && npm run check:p0 && npm run check:regression",
-    "check:migration-inventory": "node scripts/audit/database-contracts.mjs --check-inventory",
-    "replay:schema-fresh": "node scripts/audit/database-contracts.mjs --schema-fresh",
-    "replay:registration-fresh": "node scripts/audit/database-contracts.mjs --registration-fresh",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    "audit:architecture": "npm run check:naming && npm run check:boundaries && npm run check:ownership && npm run check:duplicates && npm run check:calls && npm run check:pagination && npm run check:transactions && npm run check:frontend && npm run check:frontendmanifest && npm run check:tests && npm run check:operations && npm run check:events && npm run check:providers && npm run check:extensions && npm run check:jobs && npm run check:navigation && npm run check:dependencies && npm run check:requirementgraph && npm run check:runtimegraph && npm run check:environment && npm run check:delivery && npm run check:p0 && npm run check:regression",
-    "check:migration-inventory": "node scripts/audit/database-contracts.mjs --check-inventory",
-    "replay:schema-fresh": "node scripts/audit/database-contracts.mjs --schema-fresh",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "replay:postgres": "node scripts/audit/database-contracts.mjs --postgres-fresh",
     "test:inventory-cutover-unsafe": "node scripts/audit/database-contracts.mjs --inventory-cutover-unsafe",
     "test:environment-bootstrap": "node scripts/audit/database-contracts.mjs --environment-bootstrap",
     "replay:fresh": "npm run replay:schema-fresh && npm run test:inventory-cutover-unsafe && npm run test:environment-bootstrap",
-    "quality": "npm run quality:baseline",
-    "quality:baseline": "npm run check:cleaninstall && npm run check:artifacts && npm run check:approved-ui && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run typecheck && npm run test:unit && npm run test:contract && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run audit:prod",
-    "quality:canonical-hard-cut": "npm run check:cleaninstall && npm run check:supplychain && npm run check:generated && npm run check:errors && npm run check:requirements && npm run audit:architecture && npm run check:lines && npm run check:deployment && npm run check:approved-ui && npm run typecheck && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run test:unit && npm run test:contract && npm run test:integration && npm run test:adapters && npm run test:component && npm run test:e2e && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run check:bundles && npm run audit:prod",
+    "quality": "npm run check:cleaninstall && npm run check:supplychain && npm run check:generated && npm run check:errors && npm run check:requirements && npm run audit:architecture && npm run check:lines && npm run check:deployment && npm run typecheck && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run test:unit && npm run test:contract && npm run test:integration && npm run test:adapters && npm run test:component && npm run test:e2e && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run check:bundles && npm run audit:prod",
     "audit:prod": "npm audit --omit=dev"
   },
   "devDependencies": {
@@ -172,15 +114,6 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.68.0",
     "yaml": "2.9.0"
-  },
-  "optionalDependencies": {
-    "@esbuild/linux-x64": "0.28.1",
-    "@rolldown/binding-linux-x64-gnu": "1.1.5",
-    "@rolldown/binding-linux-x64-musl": "1.1.5",
-    "@tailwindcss/oxide-linux-x64-gnu": "4.3.3",
-    "@tailwindcss/oxide-linux-x64-musl": "4.3.3",
-    "lightningcss-linux-x64-gnu": "1.32.0",
-    "lightningcss-linux-x64-musl": "1.32.0"
   },
   "overrides": {
     "eslint-plugin-jsx-a11y": {

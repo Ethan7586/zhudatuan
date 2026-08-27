@@ -5,7 +5,6 @@ import type { AuthorizationContext, WorkerEnv } from './types';
 const env = {
   SUPABASE_URL: 'https://db.example',
   SUPABASE_SERVICE_ROLE_KEY: 'service-role',
-  PUBLIC_MEDIA_BASE_URL: 'https://media.zhudatuan.com',
 } satisfies WorkerEnv;
 
 const authorization = {
@@ -48,7 +47,7 @@ describe('cart snapshot', () => {
                 skuId: 'sku-one',
                 productId: 'product-one',
                 name: '真实商品',
-                coverUrl: 'https://media.zhudatuan.com/catalog/products/product-one/0123456789abcdef/cover-800.webp',
+                coverUrl: 'https://hbbtzn.com/media/product-one.webp',
                 priceCents: 1250,
                 availableStock: 8,
                 quantity: 2,
@@ -61,11 +60,11 @@ describe('cart snapshot', () => {
       )
     );
 
-    const response = await handleCart(new Request('https://zhudatuan.com/api/v1/cart'), env, authorization, 'cart-request');
+    const response = await handleCart(new Request('https://hbbtzn.com/api/v1/cart'), env, authorization, 'cart-request');
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
-      items: [{ id: 'cart-item-one', name: '真实商品', priceCents: 1250, coverUrl: 'https://media.zhudatuan.com/catalog/products/product-one/0123456789abcdef/cover-800.webp' }],
+      items: [{ id: 'cart-item-one', name: '真实商品', priceCents: 1250, coverUrl: 'https://hbbtzn.com/media/product-one.webp' }],
       requestId: 'cart-request',
     });
   });

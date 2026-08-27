@@ -7,30 +7,12 @@ import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { memberImportOperations } from './application/MemberImportOperations';
 import { accessPort } from '../access/AccessModule';
 import { addressPort } from '../checkout/CheckoutModule';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { memberOperatorReadActions } from './MemberReadOperations';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { memberOperatorReadActions } from './MemberReadOperations';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function memberOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
   const kms = context.container.get(KMS_CLIENT);
   return new ModuleOperations('member', pool, context.container.get(AUDIT_SINK), {
     ...memberImportOperations(context),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    ...memberOperatorReadActions(),
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'member.members.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request);
@@ -40,13 +22,6 @@ export function memberOperations(context: ModuleContext): ModuleOperations {
         where membership.organization_id=$1 and ($2::text is null or profile.id>$2) order by profile.id limit $3`, [access.scope.id, page.id, page.fetch]);
       return keysetResult(result, page, 'id');
     },
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    ...memberOperatorReadActions(),
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'member.profile.read': async (request, database) => {
       const access = requireAccess(request);
       return rowResult(await database.query(`select profile.id,profile.display_name,profile.status,profile.mobile_token is not null mobile_bound,

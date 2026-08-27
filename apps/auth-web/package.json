@@ -12,37 +12,12 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "@shop/contract": "1.0.0",
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "@shop/contract": "1.0.0",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^6.0.2",
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "vite": "^8.1.5",
-    "zod": "4.4.3"
-=======
     "vite": "^8.1.5"
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "vite": "^8.1.5",
-    "zod": "4.4.3"
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    "vite": "^8.1.5"
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
@@ -52,8 +27,5 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vitest": "^4.1.10"
-  },
-  "optionalDependencies": {
-    "@esbuild/linux-x64": "0.25.12"
   }
 }

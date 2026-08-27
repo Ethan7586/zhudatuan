@@ -5,39 +5,6 @@ export const definition = Object.freeze({
   id: 'meal',
   kind: 'channel',
   priority: 1,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  version: '1.1.0',
-  apiVersion: PROVIDER_API_VERSION,
-  contractVersion: 'meal.v2',
-  healthOperation: 'health',
-  capabilities: ['Catalog', 'Price'],
-  permissions: ['channel.meal.operate'],
-  configSchema: 'provider.meal.v2',
-  eventSubscriptions: [],
-  secretRefs: ['channelNo', 'channelKey'],
-=======
-  version: '1.0.0',
-=======
-  version: '1.1.0',
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  apiVersion: PROVIDER_API_VERSION,
-  contractVersion: 'meal.v2',
-  healthOperation: 'health',
-  capabilities: ['Catalog', 'Price'],
-  permissions: ['channel.meal.operate'],
-<<<<<<< HEAD
-  configSchema: 'provider.meal.v1',
-  eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  configSchema: 'provider.meal.v2',
-  eventSubscriptions: [],
-  secretRefs: ['channelNo', 'channelKey'],
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
   version: '1.0.0',
   apiVersion: PROVIDER_API_VERSION,
   contractVersion: 'meal.v1',
@@ -47,7 +14,6 @@ export const definition = Object.freeze({
   configSchema: 'provider.meal.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
   secretRefs: ['credential'],
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 

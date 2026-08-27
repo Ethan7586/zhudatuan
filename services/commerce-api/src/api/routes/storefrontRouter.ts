@@ -2,16 +2,18 @@ import { handleAccountLedgers, handleAccounts, handleBootstrap } from '../accoun
 import { handleAddresses, handleDeleteAddress } from '../addressRoutes';
 import { handleCart, handleDeleteCartItem } from '../cartRoutes';
 import { handleHomeSnapshot } from '../homeRoutes';
+import { json } from '../http';
 import { handleMemberCodeChallenge, handleRevokeMemberCodeChallenge } from '../memberCodeRoutes';
 import { handleAfterSales, handleCreateAfterSale, handleCreateOrder, handleInternalPayment, handleOrders } from '../orderRoutes';
 import { handleProducts } from '../publicRoutes';
+import { handleChangePassword, handleChangePhone, handleRevokeOtherSessions, handleRevokeSession, handleSecurityCenter } from '../securityCenterRoutes';
+import { handleStepUp } from '../stepUpRoutes';
 import type { AuthorizationContext, WorkerEnv } from '../types';
 import { handleOrderByNumber, handleWechatPaymentStatus, handleWechatPrepay } from '../wechatPaymentRoutes';
 
 const API_PREFIX = '/api/v1';
 
 export async function routeStorefrontRequest(request: Request, env: WorkerEnv, authorization: AuthorizationContext, requestId: string): Promise<Response | null> {
-  if (authorization.membership.target !== 'storefront') return null;
   const pathname = new URL(request.url).pathname;
   switch (pathname) {
     case `${API_PREFIX}/products`:
@@ -24,6 +26,18 @@ export async function routeStorefrontRequest(request: Request, env: WorkerEnv, a
       return handleMemberCodeChallenge(request, env, authorization, requestId);
     case `${API_PREFIX}/member-code/challenge/revoke`:
       return handleRevokeMemberCodeChallenge(request, env, authorization, requestId);
+    case `${API_PREFIX}/auth/session`:
+      return json({ authenticated: true, authorization: publicAuthorization(authorization), requestId });
+    case `${API_PREFIX}/auth/step-up`:
+      return handleStepUp(request, env, authorization, requestId);
+    case `${API_PREFIX}/auth/security-center`:
+      return handleSecurityCenter(request, env, authorization, requestId);
+    case `${API_PREFIX}/auth/password/change`:
+      return handleChangePassword(request, env, authorization, requestId);
+    case `${API_PREFIX}/auth/phone/change`:
+      return handleChangePhone(request, env, authorization, requestId);
+    case `${API_PREFIX}/auth/sessions/revoke-others`:
+      return handleRevokeOtherSessions(request, env, authorization, requestId);
     case `${API_PREFIX}/accounts`:
       return handleAccounts(request, env, authorization, requestId);
     case `${API_PREFIX}/cart`:
@@ -38,6 +52,8 @@ export async function routeStorefrontRequest(request: Request, env: WorkerEnv, a
       return request.method === 'POST' ? handleCreateOrder(request, env, authorization, requestId) : handleOrders(request, env, authorization, requestId);
   }
 
+  const session = pathname.match(/^\/api\/v1\/auth\/sessions\/([0-9a-f-]{36})$/i);
+  if (session) return handleRevokeSession(request, env, authorization, session[1], requestId);
   const address = pathname.match(/^\/api\/v1\/addresses\/([^/]+)$/);
   if (address) return handleDeleteAddress(request, env, authorization, decodeURIComponent(address[1]), requestId);
   const cartItem = pathname.match(/^\/api\/v1\/cart\/([^/]+)$/);
@@ -51,4 +67,14 @@ export async function routeStorefrontRequest(request: Request, env: WorkerEnv, a
   const internalPayment = pathname.match(/^\/api\/v1\/orders\/([^/]+)\/payments\/internal$/);
   if (internalPayment) return handleInternalPayment(request, env, authorization, decodeURIComponent(internalPayment[1]), requestId);
   return null;
+}
+
+function publicAuthorization(context: AuthorizationContext) {
+  return {
+    memberId: context.membership.memberId,
+    membershipId: context.membership.id,
+    target: context.membership.target,
+    roles: context.roles,
+    permissions: context.permissions,
+  };
 }

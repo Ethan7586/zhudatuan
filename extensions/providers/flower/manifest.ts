@@ -5,39 +5,6 @@ export const definition = Object.freeze({
   id: 'flower',
   kind: 'channel',
   priority: 1,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  version: '1.1.0',
-  apiVersion: PROVIDER_API_VERSION,
-  contractVersion: 'flower.v2',
-  healthOperation: 'flower.categories',
-  capabilities: ['Catalog', 'Price', 'Inventory'],
-  permissions: ['channel.flower.operate'],
-  configSchema: 'provider.flower.v2',
-  eventSubscriptions: [],
-  secretRefs: ['channelNo', 'channelKey'],
-=======
-  version: '1.0.0',
-=======
-  version: '1.1.0',
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  apiVersion: PROVIDER_API_VERSION,
-  contractVersion: 'flower.v2',
-  healthOperation: 'flower.categories',
-  capabilities: ['Catalog', 'Price', 'Inventory'],
-  permissions: ['channel.flower.operate'],
-<<<<<<< HEAD
-  configSchema: 'provider.flower.v1',
-  eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  configSchema: 'provider.flower.v2',
-  eventSubscriptions: [],
-  secretRefs: ['channelNo', 'channelKey'],
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
   version: '1.0.0',
   apiVersion: PROVIDER_API_VERSION,
   contractVersion: 'flower.v1',
@@ -47,7 +14,6 @@ export const definition = Object.freeze({
   configSchema: 'provider.flower.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
   secretRefs: ['credential'],
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 

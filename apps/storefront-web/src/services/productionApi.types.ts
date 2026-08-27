@@ -49,19 +49,7 @@ export interface ApiAccount {
   type: 'welfare' | 'meal';
   balanceCents: number;
   status: string;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  updatedAt?: string;
-=======
   updatedAt: string;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  updatedAt?: string;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  updatedAt: string;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 export interface ApiAccountLedger {
   id: string;
@@ -94,17 +82,6 @@ export interface ApiDeliveryAddress {
   detail: string;
   tag?: string;
   isDefault: boolean;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  version?: number;
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  version?: number;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 export interface ApiAfterSale {
   id: string;

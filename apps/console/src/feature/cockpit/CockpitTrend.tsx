@@ -3,37 +3,12 @@ import type { BusinessEvent, CockpitSales, Trend } from './CockpitSchema';
 
 type Grain = 'day' | 'week';
 type Measure = 'sales' | 'orders';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-const ZERO_TREND: readonly Trend[] = Object.freeze([{ date: '当前', salesCents: 0, orderCount: 0 }]);
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-const ZERO_TREND: readonly Trend[] = Object.freeze([{ date: '当前', salesCents: 0, orderCount: 0 }]);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function CockpitTrend({ sales }: Readonly<{ sales: CockpitSales }>) {
   const [grain, setGrain] = useState<Grain>('day');
   const [measure, setMeasure] = useState<Measure>('sales');
   const chartId = useId().replace(/:/g, '');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const selectedRows = grain === 'week' && sales.weeklyTrend !== undefined ? sales.weeklyTrend : sales.trend;
-  const rows = selectedRows.length === 0 ? ZERO_TREND : selectedRows;
-=======
   const rows = grain === 'week' && sales.weeklyTrend !== undefined ? sales.weeklyTrend : sales.trend;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  const selectedRows = grain === 'week' && sales.weeklyTrend !== undefined ? sales.weeklyTrend : sales.trend;
-  const rows = selectedRows.length === 0 ? ZERO_TREND : selectedRows;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  const rows = grain === 'week' && sales.weeklyTrend !== undefined ? sales.weeklyTrend : sales.trend;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const geometry = useMemo(() => chartGeometry(rows), [rows]);
   return (
     <section className="cockpitcard cockpittrend" aria-labelledby={`${chartId}title`}>
@@ -50,19 +25,7 @@ export function CockpitTrend({ sales }: Readonly<{ sales: CockpitSales }>) {
           <button type="button" aria-pressed={grain === 'week'} disabled={sales.weeklyTrend === undefined} onClick={() => setGrain('week')}>按周</button>
         </div>
       </header>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <TrendGraphic rows={rows} events={sales.events ?? []} geometry={geometry} measure={measure} />
-=======
       {rows.length === 0 ? <p className="cockpitempty">暂无权威趋势数据</p> : <TrendGraphic rows={rows} events={sales.events ?? []} geometry={geometry} measure={measure} />}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      <TrendGraphic rows={rows} events={sales.events ?? []} geometry={geometry} measure={measure} />
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      {rows.length === 0 ? <p className="cockpitempty">暂无权威趋势数据</p> : <TrendGraphic rows={rows} events={sales.events ?? []} geometry={geometry} measure={measure} />}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     </section>
   );
 }

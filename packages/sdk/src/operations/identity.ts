@@ -17,29 +17,9 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.invitations.revoke",
   "identity.members.create",
   "identity.members.manage",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  "identity.members.reset",
   "identity.password.change",
   "identity.password.verify",
   "identity.password.reset",
-  "identity.mobile.challenge",
-<<<<<<< HEAD
-=======
-  "identity.password.change",
-  "identity.password.verify",
-  "identity.password.reset",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  "identity.password.change",
-  "identity.password.verify",
-  "identity.password.reset",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
@@ -60,29 +40,9 @@ export interface IdentityOperations {
   readonly invitationsRevoke: OperationMethod<"identity.invitations.revoke">;
   readonly membersCreate: OperationMethod<"identity.members.create">;
   readonly membersManage: OperationMethod<"identity.members.manage">;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  readonly membersReset: OperationMethod<"identity.members.reset">;
   readonly passwordChange: OperationMethod<"identity.password.change">;
   readonly passwordVerify: OperationMethod<"identity.password.verify">;
   readonly passwordReset: OperationMethod<"identity.password.reset">;
-  readonly mobileChallenge: OperationMethod<"identity.mobile.challenge">;
-<<<<<<< HEAD
-=======
-  readonly passwordChange: OperationMethod<"identity.password.change">;
-  readonly passwordVerify: OperationMethod<"identity.password.verify">;
-  readonly passwordReset: OperationMethod<"identity.password.reset">;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  readonly passwordChange: OperationMethod<"identity.password.change">;
-  readonly passwordVerify: OperationMethod<"identity.password.verify">;
-  readonly passwordReset: OperationMethod<"identity.password.reset">;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly mobileManage: OperationMethod<"identity.mobile.manage">;
   readonly stepupStart: OperationMethod<"identity.stepup.start">;
   readonly stepupComplete: OperationMethod<"identity.stepup.complete">;
@@ -108,29 +68,9 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     invitationsRevoke: bindInvitationsRevoke(client),
     membersCreate: bindMembersCreate(client),
     membersManage: bindMembersManage(client),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-    membersReset: bindMembersReset(client),
     passwordChange: bindPasswordChange(client),
     passwordVerify: bindPasswordVerify(client),
     passwordReset: bindPasswordReset(client),
-    mobileChallenge: bindMobileChallenge(client),
-<<<<<<< HEAD
-=======
-    passwordChange: bindPasswordChange(client),
-    passwordVerify: bindPasswordVerify(client),
-    passwordReset: bindPasswordReset(client),
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    passwordChange: bindPasswordChange(client),
-    passwordVerify: bindPasswordVerify(client),
-    passwordReset: bindPasswordReset(client),
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     mobileManage: bindMobileManage(client),
     stepupStart: bindStepupStart(client),
     stepupComplete: bindStepupComplete(client),
@@ -235,26 +175,6 @@ function bindMembersManage(client: OperationExecutor): OperationMethod<"identity
   return bindOperation(client, defineStructuralOperation({"id":"identity.members.manage","method":"PUT","path":"/api/v1/identity/members/{membershipid}","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-export function createFetchIdentityMembersReset(baseUrl: string): OperationMethod<"identity.members.reset"> {
-  return bindMembersReset(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindMembersReset(client: OperationExecutor): OperationMethod<"identity.members.reset"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.members.reset","method":"PUT","path":"/api/v1/identity/members/{membershipid}/registration","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
-}
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function createFetchIdentityPasswordChange(baseUrl: string): OperationMethod<"identity.password.change"> {
   return bindPasswordChange(new ApiClient(baseUrl, new FetchTransport()));
 }
@@ -279,26 +199,6 @@ function bindPasswordReset(client: OperationExecutor): OperationMethod<"identity
   return bindOperation(client, defineStructuralOperation({"id":"identity.password.reset","method":"POST","path":"/api/v1/identity/password/reset","audience":"public","idempotent":false,"pathKeys":[]}));
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-export function createFetchIdentityMobileChallenge(baseUrl: string): OperationMethod<"identity.mobile.challenge"> {
-  return bindMobileChallenge(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindMobileChallenge(client: OperationExecutor): OperationMethod<"identity.mobile.challenge"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.mobile.challenge","method":"POST","path":"/api/v1/identity/mobile/challenges","audience":"member","idempotent":false,"pathKeys":[]}));
-}
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function createFetchIdentityMobileManage(baseUrl: string): OperationMethod<"identity.mobile.manage"> {
   return bindMobileManage(new ApiClient(baseUrl, new FetchTransport()));
 }

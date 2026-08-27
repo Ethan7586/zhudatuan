@@ -68,7 +68,7 @@ describe('account security center routes', () => {
       })
     );
     const response = await handleChangePassword(
-      new Request('https://zhudatuan.com/api/v1/auth/password/change', {
+      new Request('https://hbbtzn.com/api/v1/auth/password/change', {
         method: 'POST',
         headers: { 'content-type': 'application/json', cookie: await sessionCookie() },
         body: JSON.stringify({ currentPassword: 'CurrentPassword2026', newPassword: 'NextPassword2026' }),
@@ -90,7 +90,7 @@ describe('account security center routes', () => {
       vi.fn(async () => new Response(JSON.stringify({ passwordHash: currentHash }), { status: 200, headers: { 'content-type': 'application/json' } }))
     );
     const response = await handleChangePassword(
-      new Request('https://zhudatuan.com/api/v1/auth/password/change', {
+      new Request('https://hbbtzn.com/api/v1/auth/password/change', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ currentPassword: 'WrongPassword2026', newPassword: 'NextPassword2026' }),
@@ -106,7 +106,7 @@ describe('account security center routes', () => {
   it('keeps production OTP fail-closed until a real SMS provider is configured', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const response = await handleSecurityOtp(new Request('https://zhudatuan.com/api/v1/auth/security/otp', { method: 'POST' }), env, 'otp-production');
+    const response = await handleSecurityOtp(new Request('https://hbbtzn.com/api/v1/auth/security/otp', { method: 'POST' }), env, 'otp-production');
     expect(response.status).toBe(503);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -115,7 +115,7 @@ describe('account security center routes', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     const response = await handleSecurityOtp(
-      new Request('https://zhudatuan.com/api/v1/auth/security/otp', {
+      new Request('https://hbbtzn.com/api/v1/auth/security/otp', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ mobile: '13800138000', purpose: 'phone_change' }),
@@ -133,7 +133,7 @@ describe('account security center routes', () => {
       vi.fn(async () => new Response('2', { status: 200, headers: { 'content-type': 'application/json' } }))
     );
     const response = await handleRevokeOtherSessions(
-      new Request('https://zhudatuan.com/api/v1/auth/sessions/revoke-others', {
+      new Request('https://hbbtzn.com/api/v1/auth/sessions/revoke-others', {
         method: 'POST',
         headers: { cookie: await sessionCookie() },
       }),

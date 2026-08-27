@@ -6,26 +6,7 @@ export const EVENT_SCHEMA_TYPES = Object.freeze([
   'identity.session.revoked',
   'identity.challenge.started',
   'identity.member.registered',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  'identity.member.reset',
   'access.version.changed',
-  'access.owner.transfer.initiated',
-  'access.owner.bootstrapped',
-  'access.owner.transferred',
-  'access.owner.transfer.cancelled',
-<<<<<<< HEAD
-=======
-  'access.version.changed',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  'access.version.changed',
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'catalog.listing.published',
   'inventory.stock.changed',
   'inventory.stock.reserved',
@@ -34,17 +15,6 @@ export const EVENT_SCHEMA_TYPES = Object.freeze([
   'checkout.quote.confirmed',
   'order.placed',
   'order.paid',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  'order.received',
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  'order.received',
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'order.cancelled',
   'payment.succeeded',
   'payment.refunded',
@@ -97,60 +67,18 @@ export const EVENT_HANDLERS = new Map<string, readonly string[]>([
   ["identity.session.revoked", Object.freeze(["projection"])],
   ["identity.challenge.started", Object.freeze([])],
   ["identity.member.registered", Object.freeze(["projection"])],
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  ["identity.member.reset", Object.freeze(["projection"])],
   ["access.version.changed", Object.freeze(["projection"])],
-  ["access.owner.transfer.initiated", Object.freeze([])],
-  ["access.owner.bootstrapped", Object.freeze([])],
-  ["access.owner.transferred", Object.freeze([])],
-  ["access.owner.transfer.cancelled", Object.freeze([])],
-<<<<<<< HEAD
-=======
-  ["access.version.changed", Object.freeze(["projection"])],
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  ["access.version.changed", Object.freeze(["projection"])],
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["catalog.listing.published", Object.freeze(["projection"])],
   ["inventory.stock.changed", Object.freeze(["projection"])],
   ["inventory.stock.reserved", Object.freeze(["projection"])],
   ["experience.published", Object.freeze(["experiencepublish","projection"])],
   ["checkout.quote.created", Object.freeze([])],
   ["checkout.quote.confirmed", Object.freeze(["projection"])],
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  ["order.placed", Object.freeze(["projection","reconciliation","referral"])],
-  ["order.paid", Object.freeze(["projection","referral"])],
-  ["order.received", Object.freeze(["referral"])],
-  ["order.cancelled", Object.freeze(["projection","reconciliation","referral"])],
-<<<<<<< HEAD
-  ["payment.succeeded", Object.freeze(["notification","reconciliation"])],
-  ["payment.refunded", Object.freeze(["projection","notification","reconciliation","referral"])],
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["order.placed", Object.freeze(["projection"])],
   ["order.paid", Object.freeze(["projection"])],
   ["order.cancelled", Object.freeze(["projection"])],
   ["payment.succeeded", Object.freeze(["notification","reconciliation"])],
   ["payment.refunded", Object.freeze(["projection","notification","reconciliation"])],
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  ["payment.succeeded", Object.freeze(["notification","reconciliation"])],
-  ["payment.refunded", Object.freeze(["projection","notification","reconciliation","referral"])],
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["payment.late.detected", Object.freeze(["notification","reconciliation"])],
   ["payment.attempt.failed", Object.freeze([])],
   ["payment.provider.observed", Object.freeze([])],

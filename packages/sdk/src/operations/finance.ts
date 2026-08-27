@@ -11,23 +11,6 @@ export const FINANCE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.statements.export",
   "finance.reconciliations.manage",
   "finance.reconciliations.read",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  "finance.reconciliationrepairs.read",
-  "finance.reconciliationrepairs.preview",
-  "finance.reconciliationrepairs.submit",
-  "finance.reconciliationrepairs.decide",
-  "finance.reconciliationrepairs.reverse",
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "finance.settlements.read",
   "finance.settlements.decide",
   "finance.settlements.adjust",
@@ -41,21 +24,6 @@ export const FINANCE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.backfills.read",
   "finance.backfills.decide",
   "finance.policies.manage",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  "finance.policies.preview",
-  "finance.policies.read",
-  "finance.audit.read",
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  "finance.policies.preview",
-  "finance.policies.read",
-  "finance.audit.read",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 ] as const satisfies readonly OperationId[]);
 
 export interface FinanceOperations {
@@ -65,23 +33,6 @@ export interface FinanceOperations {
   readonly statementsExport: OperationMethod<"finance.statements.export">;
   readonly reconciliationsManage: OperationMethod<"finance.reconciliations.manage">;
   readonly reconciliationsRead: OperationMethod<"finance.reconciliations.read">;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  readonly reconciliationrepairsRead: OperationMethod<"finance.reconciliationrepairs.read">;
-  readonly reconciliationrepairsPreview: OperationMethod<"finance.reconciliationrepairs.preview">;
-  readonly reconciliationrepairsSubmit: OperationMethod<"finance.reconciliationrepairs.submit">;
-  readonly reconciliationrepairsDecide: OperationMethod<"finance.reconciliationrepairs.decide">;
-  readonly reconciliationrepairsReverse: OperationMethod<"finance.reconciliationrepairs.reverse">;
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly settlementsRead: OperationMethod<"finance.settlements.read">;
   readonly settlementsDecide: OperationMethod<"finance.settlements.decide">;
   readonly settlementsAdjust: OperationMethod<"finance.settlements.adjust">;
@@ -95,21 +46,6 @@ export interface FinanceOperations {
   readonly backfillsRead: OperationMethod<"finance.backfills.read">;
   readonly backfillsDecide: OperationMethod<"finance.backfills.decide">;
   readonly policiesManage: OperationMethod<"finance.policies.manage">;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  readonly policiesPreview: OperationMethod<"finance.policies.preview">;
-  readonly policiesRead: OperationMethod<"finance.policies.read">;
-  readonly auditRead: OperationMethod<"finance.audit.read">;
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  readonly policiesPreview: OperationMethod<"finance.policies.preview">;
-  readonly policiesRead: OperationMethod<"finance.policies.read">;
-  readonly auditRead: OperationMethod<"finance.audit.read">;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export function createFetchFinance(baseUrl: string): FinanceOperations {
@@ -124,23 +60,6 @@ export function createFinanceOperations(client: OperationExecutor): FinanceOpera
     statementsExport: bindStatementsExport(client),
     reconciliationsManage: bindReconciliationsManage(client),
     reconciliationsRead: bindReconciliationsRead(client),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-    reconciliationrepairsRead: bindReconciliationrepairsRead(client),
-    reconciliationrepairsPreview: bindReconciliationrepairsPreview(client),
-    reconciliationrepairsSubmit: bindReconciliationrepairsSubmit(client),
-    reconciliationrepairsDecide: bindReconciliationrepairsDecide(client),
-    reconciliationrepairsReverse: bindReconciliationrepairsReverse(client),
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     settlementsRead: bindSettlementsRead(client),
     settlementsDecide: bindSettlementsDecide(client),
     settlementsAdjust: bindSettlementsAdjust(client),
@@ -154,21 +73,6 @@ export function createFinanceOperations(client: OperationExecutor): FinanceOpera
     backfillsRead: bindBackfillsRead(client),
     backfillsDecide: bindBackfillsDecide(client),
     policiesManage: bindPoliciesManage(client),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    policiesPreview: bindPoliciesPreview(client),
-    policiesRead: bindPoliciesRead(client),
-    auditRead: bindAuditRead(client),
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    policiesPreview: bindPoliciesPreview(client),
-    policiesRead: bindPoliciesRead(client),
-    auditRead: bindAuditRead(client),
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 }
 
@@ -220,58 +124,6 @@ function bindReconciliationsRead(client: OperationExecutor): OperationMethod<"fi
   return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliations.read","method":"GET","path":"/api/v1/finance/reconciliations","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-export function createFetchFinanceReconciliationrepairsRead(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.read"> {
-  return bindReconciliationrepairsRead(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindReconciliationrepairsRead(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.read","method":"GET","path":"/api/v1/finance/reconciliation-repairs/{repairid}","audience":"operator","idempotent":true,"pathKeys":["repairid"]}));
-}
-
-export function createFetchFinanceReconciliationrepairsPreview(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.preview"> {
-  return bindReconciliationrepairsPreview(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindReconciliationrepairsPreview(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.preview","method":"POST","path":"/api/v1/finance/reconciliations/{reconciliationid}/items/{itemid}/repairs/preview","audience":"operator","idempotent":false,"pathKeys":["reconciliationid","itemid"]}));
-}
-
-export function createFetchFinanceReconciliationrepairsSubmit(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.submit"> {
-  return bindReconciliationrepairsSubmit(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindReconciliationrepairsSubmit(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.submit"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.submit","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/submit","audience":"operator","idempotent":false,"pathKeys":["repairid"]}));
-}
-
-export function createFetchFinanceReconciliationrepairsDecide(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.decide"> {
-  return bindReconciliationrepairsDecide(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindReconciliationrepairsDecide(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.decide","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/decide","audience":"operator","idempotent":false,"pathKeys":["repairid"]}));
-}
-
-export function createFetchFinanceReconciliationrepairsReverse(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.reverse"> {
-  return bindReconciliationrepairsReverse(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindReconciliationrepairsReverse(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.reverse"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.reverse","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/reverse","audience":"operator","idempotent":false,"pathKeys":["repairid"]}));
-}
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function createFetchFinanceSettlementsRead(baseUrl: string): OperationMethod<"finance.settlements.read"> {
   return bindSettlementsRead(new ApiClient(baseUrl, new FetchTransport()));
 }
@@ -375,39 +227,3 @@ export function createFetchFinancePoliciesManage(baseUrl: string): OperationMeth
 function bindPoliciesManage(client: OperationExecutor): OperationMethod<"finance.policies.manage"> {
   return bindOperation(client, defineStructuralOperation({"id":"finance.policies.manage","method":"PUT","path":"/api/v1/finance/policies/{policyid}","audience":"operator","idempotent":true,"pathKeys":["policyid"]}));
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-
-export function createFetchFinancePoliciesPreview(baseUrl: string): OperationMethod<"finance.policies.preview"> {
-  return bindPoliciesPreview(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindPoliciesPreview(client: OperationExecutor): OperationMethod<"finance.policies.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.policies.preview","method":"POST","path":"/api/v1/finance/policies/{policyid}/preview","audience":"operator","idempotent":true,"pathKeys":["policyid"]}));
-}
-
-export function createFetchFinancePoliciesRead(baseUrl: string): OperationMethod<"finance.policies.read"> {
-  return bindPoliciesRead(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindPoliciesRead(client: OperationExecutor): OperationMethod<"finance.policies.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.policies.read","method":"GET","path":"/api/v1/finance/policies","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
-
-export function createFetchFinanceAuditRead(baseUrl: string): OperationMethod<"finance.audit.read"> {
-  return bindAuditRead(new ApiClient(baseUrl, new FetchTransport()));
-}
-
-function bindAuditRead(client: OperationExecutor): OperationMethod<"finance.audit.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.audit.read","method":"GET","path":"/api/v1/finance/audits","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

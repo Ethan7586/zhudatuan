@@ -13,26 +13,6 @@ const FinancePreviewFacetSchema = z.object({
   count: z.number().int().nonnegative(),
 });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-const FinanceFacetsSchema = z.object({
-  periods: z.array(FinancePreviewFacetSchema),
-  channels: z.array(FinancePreviewFacetSchema),
-  malls: z.array(FinancePreviewFacetSchema),
-  statuses: z.array(FinancePreviewFacetSchema),
-  differenceTypes: z.array(FinancePreviewFacetSchema),
-});
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const FinanceRepairPreviewSchema = z.object({
   source: z.literal('local-preview'),
   status: z.enum(['service-preview', 'pending-review']),
@@ -83,32 +63,9 @@ const FinanceRepairPreviewSchema = z.object({
 export const FinanceReconciliationItemSchema = z
   .object({
     id: z.string().min(1),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-    version: DatabaseIntegerSchema,
     externalMinor: SignedDatabaseIntegerSchema,
     internalMinor: SignedDatabaseIntegerSchema,
     differenceMinor: SignedDatabaseIntegerSchema,
-    kind: z.enum(['payment', 'refund']).optional(),
-    internalType: OptionalText,
-    internalId: OptionalText,
-    statementLineId: OptionalText,
-<<<<<<< HEAD
-=======
-    externalMinor: SignedDatabaseIntegerSchema,
-    internalMinor: SignedDatabaseIntegerSchema,
-    differenceMinor: SignedDatabaseIntegerSchema,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    externalMinor: SignedDatabaseIntegerSchema,
-    internalMinor: SignedDatabaseIntegerSchema,
-    differenceMinor: SignedDatabaseIntegerSchema,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     state: z.string().min(1),
     reasonCode: OptionalText,
     evidence: z.record(z.string(), z.unknown()).optional().default({}),
@@ -168,13 +125,6 @@ const FinanceReconciliationPagePreviewSchema = z.object({
   lastReconciledAt: z.string().min(1),
   pendingDifferenceCount: z.number().int().nonnegative(),
   pendingReviewCount: z.number().int().nonnegative(),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  facets: FinanceFacetsSchema,
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   facets: z.object({
     periods: z.array(FinancePreviewFacetSchema),
     channels: z.array(FinancePreviewFacetSchema),
@@ -182,13 +132,6 @@ const FinanceReconciliationPagePreviewSchema = z.object({
     statuses: z.array(FinancePreviewFacetSchema),
     differenceTypes: z.array(FinancePreviewFacetSchema),
   }),
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  facets: FinanceFacetsSchema,
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 
 export const FinanceReconciliationPageSchema = z
@@ -196,17 +139,6 @@ export const FinanceReconciliationPageSchema = z
     items: z.array(FinanceReconciliationSchema).max(100),
     count: z.number().int().nonnegative(),
     nextCursor: z.string().min(1).optional(),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    facets: FinanceFacetsSchema.optional(),
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    facets: FinanceFacetsSchema.optional(),
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     preview: FinanceReconciliationPagePreviewSchema.optional(),
   })
   .superRefine((page, context) => {

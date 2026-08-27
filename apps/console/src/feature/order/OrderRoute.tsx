@@ -1,35 +1,8 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { ResourceState } from '@shop/design';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { ResourceState } from '@shop/design';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
-import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
-import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
-=======
 import { safeQueryError } from '../../shared/api/QueryState';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
-import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
-import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-import { safeQueryError } from '../../shared/api/QueryState';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { formatOrderTime } from './OrderPresentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey } from './OrderDetailQuery';
@@ -39,19 +12,7 @@ import { OrderIcon } from './OrderIcon';
 import { OrderPageHeader } from './OrderPageHeader';
 import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderRecord, type OrderView } from './OrderSchema';
-=======
 import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderRecord, type OrderView } from './OrderSchema';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { OrderStatusTabs } from './OrderStatusTabs';
 import './order-layout.css';
 import './order-controls.css';
@@ -62,50 +23,11 @@ import './order-preview-actions.css';
 
 const previewOnlySearchKeys = ['placed', 'lifecycle', 'payment', 'fulfillment', 'mall', 'view'] as const;
 const emptyChecked: ReadonlySet<string> = new Set();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-const orderCsvColumns: readonly CsvColumn<OrderRecord>[] = Object.freeze([
-  { header: '内部订单ID', value: (row) => row.id },
-  { header: '订单号', value: (row) => row.order_number },
-  { header: '范围ID', value: (row) => row.scope_id },
-  { header: '会员ID', value: (row) => row.member_id },
-  { header: '商城ID', value: (row) => row.mall_id },
-  { header: '总金额（最小单位）', value: (row) => row.total_minor },
-  { header: '币种', value: (row) => row.currency },
-  { header: '支付状态', value: (row) => row.payment_state },
-  { header: '履约状态', value: (row) => row.fulfillment_state },
-  { header: '售后状态', value: (row) => row.aftersale_state },
-  { header: '生命周期', value: (row) => row.lifecycle_state },
-  { header: '创建时间', value: (row) => row.created_at },
-  { header: '更新时间', value: (row) => row.updated_at },
-  { header: '版本', value: (row) => row.version },
-]);
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function Component() {
   const context = useConsoleContext();
   const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const [importOpen, setImportOpen] = useState(false);
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  const [importOpen, setImportOpen] = useState(false);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const previewEnabled = isOrderPreviewContext(context);
   const filter = readFilter(search, previewEnabled);
   const view = readView(search, previewEnabled);
@@ -128,26 +50,6 @@ export function Component() {
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<OrderColumnKey>>(() => new Set(defaultOrderColumns));
   const previewPage = previewEnabled && page?.preview?.source === 'local-preview' ? page.preview : undefined;
   const error = safeQueryError(query.error);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  const listCondition = queryCondition({
-    pending: query.isPending,
-    fetching: query.isFetching,
-    error: query.error,
-    hasData: page !== undefined,
-    empty: page?.items.length === 0,
-    stale: query.isStale,
-  });
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   useEffect(() => {
     if (previewEnabled || !previewOnlySearchKeys.some((key) => search.has(key))) return;
@@ -232,68 +134,12 @@ export function Component() {
       return { boundary: selectionBoundary, ids: next };
     });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  if (listCondition === 'unauthenticated' || listCondition === 'denied') {
-    return (
-      <section className="orderworkspace" aria-label="订单管理系统">
-        <ResourceState condition={listCondition} resourceLabel="订单管理系统" {...(error === undefined ? {} : { error })}>
-          <span />
-        </ResourceState>
-      </section>
-    );
-  }
-
-<<<<<<< HEAD
-  return (
-    <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
-      <OrderPageHeader
-        isFetching={query.isFetching}
-        exportReady={page !== undefined}
-        onImport={() => setImportOpen(true)}
-        onExport={() => {
-          if (page === undefined) return;
-          downloadCurrentPageCsv({ rows: page.items, columns: orderCsvColumns, filename: timestampedCsvFilename('orders-current-page') });
-        }}
-        onRefresh={refresh}
-      />
-
-      <p id="orderwriteboundary" className="ordercontractnote" role="note">
-        当前页导出只使用已经加载的服务端读模型；发货、退款、售后及其他写操作仍保持关闭。
-=======
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  return (
-    <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
-      <OrderPageHeader
-        isFetching={query.isFetching}
-        exportReady={page !== undefined}
-        onImport={() => setImportOpen(true)}
-        onExport={() => {
-          if (page === undefined) return;
-          downloadCurrentPageCsv({ rows: page.items, columns: orderCsvColumns, filename: timestampedCsvFilename('orders-current-page') });
-        }}
-        onRefresh={refresh}
-      />
-
-      <p id="orderwriteboundary" className="ordercontractnote" role="note">
-<<<<<<< HEAD
-        {previewEnabled ? '本地预览范围：可点击查看安全预览，但不会执行导出、发货、退款或售后写入。' : '当前生产读合同仅保证 member audience 范围、内部订单 ID 精确筛选与游标分页；组织级完整性和最终动作合同尚不可用。'}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-        当前页导出只使用已经加载的服务端读模型；发货、退款、售后及其他写操作仍保持关闭。
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
   return (
     <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
       <OrderPageHeader previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
 
       <p id="orderwriteboundary" className="ordercontractnote" role="note">
         {previewEnabled ? '本地预览范围：可点击查看安全预览，但不会执行导出、发货、退款或售后写入。' : '当前生产读合同仅保证 member audience 范围、内部订单 ID 精确筛选与游标分页；组织级完整性和最终动作合同尚不可用。'}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       </p>
 
       <OrderStatusTabs active={view} previewEnabled={previewEnabled} page={page} onChange={selectView} />
@@ -353,17 +199,6 @@ export function Component() {
 
       {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
       {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} onTab={selectTab} onClose={closeOrder} />}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <LocalImportDialog open={importOpen} title="导入订单" resourceLabel="订单" onClose={() => setImportOpen(false)} />
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      <LocalImportDialog open={importOpen} title="导入订单" resourceLabel="订单" onClose={() => setImportOpen(false)} />
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     </section>
   );
 }

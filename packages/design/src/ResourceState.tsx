@@ -1,15 +1,5 @@
 import type { ReactNode } from 'react';
 import { Empty } from './Empty';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { ContextualAccessDenied } from './AccessDenied';
-import { ErrorView } from './Error';
-
-export const resourceConditions = ['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry'] as const;
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { ErrorView } from './Error';
 
 export const resourceConditions = [
@@ -26,16 +16,6 @@ export const resourceConditions = [
   'failure',
   'retry',
 ] as const;
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { ContextualAccessDenied } from './AccessDenied';
-import { ErrorView } from './Error';
-
-export const resourceConditions = ['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry'] as const;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export type ResourceCondition = (typeof resourceConditions)[number];
 
@@ -43,17 +23,6 @@ export interface ResourceStateProps {
   readonly condition: ResourceCondition;
   readonly error?: string;
   readonly retry?: () => void;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  readonly resourceLabel?: string;
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  readonly resourceLabel?: string;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly children: ReactNode;
 }
 
@@ -63,73 +32,17 @@ export function resourceCondition(data: unknown, rowCount: number, error?: strin
   return rowCount === 0 ? 'empty' : 'ready';
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-export function ResourceState({ condition, error, retry, resourceLabel, children }: ResourceStateProps) {
-  if (condition === 'ready') return children;
-  if (condition === 'loading')
-    return (
-      <p role="status" aria-live="polite">
-        正在加载…
-      </p>
-    );
-=======
 export function ResourceState({ condition, error, retry, children }: ResourceStateProps) {
   if (condition === 'ready') return children;
   if (condition === 'loading') return <p role="status" aria-live="polite">正在加载…</p>;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-export function ResourceState({ condition, error, retry, resourceLabel, children }: ResourceStateProps) {
-  if (condition === 'ready') return children;
-  if (condition === 'loading')
-    return (
-      <p role="status" aria-live="polite">
-        正在加载…
-      </p>
-    );
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-export function ResourceState({ condition, error, retry, children }: ResourceStateProps) {
-  if (condition === 'ready') return children;
-  if (condition === 'loading') return <p role="status" aria-live="polite">正在加载…</p>;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (condition === 'empty') return <Empty title="暂无数据" description="当前范围内没有符合条件的记录。" />;
   if (condition === 'refreshing') return <BusyState label="正在刷新最新数据…">{children}</BusyState>;
   if (condition === 'retry') return <BusyState label="正在重试…">{children}</BusyState>;
   if (condition === 'stale') {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-    return (
-      <StateWithContent title="数据可能已过期" message={error ?? '当前展示的是最近一次成功读取的数据。'} {...(retry === undefined ? {} : { retry })}>
-        {children}
-      </StateWithContent>
-    );
-<<<<<<< HEAD
-  }
-  const message = error ?? 'UNKNOWN_RESOURCE_ERROR';
-  if (condition === 'unauthenticated') return <ContextualAccessDenied kind="unauthenticated" {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
-  if (condition === 'denied') return <ContextualAccessDenied {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     return <StateWithContent title="数据可能已过期" message={error ?? '当前展示的是最近一次成功读取的数据。'} {...(retry === undefined ? {} : { retry })}>{children}</StateWithContent>;
   }
   const message = error ?? 'UNKNOWN_RESOURCE_ERROR';
   if (condition === 'denied') return <ErrorView title="无权访问" message={message} />;
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  }
-  const message = error ?? 'UNKNOWN_RESOURCE_ERROR';
-  if (condition === 'unauthenticated') return <ContextualAccessDenied kind="unauthenticated" {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
-  if (condition === 'denied') return <ContextualAccessDenied {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (condition === 'notfound') return <ErrorView title="资源不存在" message={message} />;
   if (condition === 'conflict') return <ErrorView title="数据已被其他操作更新" message={message} {...(retry === undefined ? {} : { retry })} />;
   if (condition === 'ratelimited') return <ErrorView title="请求过于频繁" message={message} {...(retry === undefined ? {} : { retry })} />;
@@ -138,49 +51,10 @@ export function ResourceState({ condition, error, retry, children }: ResourceSta
 }
 
 function BusyState({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  return (
-    <div className="resourcestatebusy" aria-busy="true">
-      <p className="sr-only" role="status" aria-live="polite">
-        {label}
-      </p>
-      {children}
-    </div>
-  );
-<<<<<<< HEAD
-}
-
-function StateWithContent({
-  title,
-  message,
-  retry,
-  children,
-}: Readonly<{
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return <div className="resourcestatebusy" aria-busy="true"><p className="sr-only" role="status" aria-live="polite">{label}</p>{children}</div>;
 }
 
 function StateWithContent({ title, message, retry, children }: Readonly<{
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-}
-
-function StateWithContent({
-  title,
-  message,
-  retry,
-  children,
-}: Readonly<{
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   title: string;
   message: string;
   retry?: () => void;
@@ -191,25 +65,7 @@ function StateWithContent({
       <section role="status">
         <h2>{title}</h2>
         <p>{message}</p>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-        {retry === undefined ? null : (
-          <button className="shopbutton shopbuttondefault" type="button" onClick={retry}>
-            刷新
-          </button>
-        )}
-<<<<<<< HEAD
-=======
         {retry === undefined ? null : <button className="shopbutton shopbuttondefault" type="button" onClick={retry}>刷新</button>}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-        {retry === undefined ? null : <button className="shopbutton shopbuttondefault" type="button" onClick={retry}>刷新</button>}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       </section>
       {children}
     </div>

@@ -1,17 +1,5 @@
 import { describe, expect, it } from 'vitest';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
-=======
 import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const operations = [
   operation('identity.session.read', 'GET', '/api/v1/identity/session', 'member'),
@@ -37,48 +25,6 @@ describe('SDK client artifacts', () => {
       expect(source).not.toContain('call<T');
     }
   });
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-
-  it('publishes an explicitly required optimistic version in every contract artifact', () => {
-    const reset = { ...operation('identity.members.reset', 'PUT', '/api/v1/identity/members/{membershipid}/registration', 'operator'), expectedVersion: 'required' as const };
-    const openapi = JSON.stringify(buildOpenapi([reset], new Map()));
-
-    expect(openapi).toContain('"x-expected-version":"required"');
-    expect(operationSource([reset], new Map())).toContain('"required","required"');
-  });
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
-
-  it('preserves OMS trace links in contract metadata without creating another operation', () => {
-    const traced = { ...operations[0], requirements: ['MVP03', 'OMS-001'] } as const;
-    const openapi = JSON.stringify(buildOpenapi([traced], new Map()));
-    const source = operationSource([traced], new Map());
-
-    expect(openapi).toContain('OMS-001');
-    expect(source).toContain('OMS-001');
-<<<<<<< HEAD
-<<<<<<< HEAD
-    expect(source.match(/\["identity\.session\.read",/g)).toHaveLength(1);
-  });
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    expect(source.match(/identity\.session\.read/g)).toHaveLength(1);
-=======
-    expect(source.match(/\["identity\.session\.read",/g)).toHaveLength(1);
->>>>>>> c71368a3 (fix(release): align production generated artifacts)
-  });
->>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 
 function operation(

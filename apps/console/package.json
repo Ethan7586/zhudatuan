@@ -7,19 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run --config vitest.config.ts",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "test:component": "vitest run --config vitest.config.ts src/route/Routes.test.ts src/route/OwnerConsoleRouteCoverage.test.ts src/feature/cockpit/CockpitRoute.test.tsx",
-=======
     "test:component": "vitest run --config vitest.config.ts src/route/Routes.test.ts src/feature/cockpit/CockpitRoute.test.tsx",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "test:component": "vitest run --config vitest.config.ts src/route/Routes.test.ts src/route/OwnerConsoleRouteCoverage.test.ts src/feature/cockpit/CockpitRoute.test.tsx",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    "test:component": "vitest run --config vitest.config.ts src/route/Routes.test.ts src/feature/cockpit/CockpitRoute.test.tsx",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck"
   },
@@ -27,19 +15,7 @@
     "@shop/authz": "1.0.0",
     "@shop/config": "1.0.0",
     "@shop/contract": "1.0.0",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "@shop/design": "1.1.0",
-=======
     "@shop/design": "1.0.0",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "@shop/design": "1.1.0",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    "@shop/design": "1.0.0",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "@shop/sdk": "1.0.0",
     "@hookform/resolvers": "5.9.1",
     "@tanstack/react-query": "5.102.4",

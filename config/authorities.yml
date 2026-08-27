@@ -7,23 +7,3 @@ requirements:
     requirements: 296
     mvp: 21
     providers: 20
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
-orderRequirements:
-  logicalSource: RepositoryAuthority docs/订单需求20260430.xlsx
-  repositoryRelativePath: docs/订单需求20260430.xlsx
-  sha256: 2d26811cd4fe3fca65f126432a71f176628d12ff262cd0844498abc3fec9e79e
-  profile: Smart Wing OMS 2.0 / WCHS-MCBS Order Profile 1.0
-  sheets:
-    20260430需求汇总: 274
-    20250416需求汇总: 16
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

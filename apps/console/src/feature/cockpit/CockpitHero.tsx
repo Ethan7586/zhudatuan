@@ -11,23 +11,8 @@ export function CockpitHero({ sales }: CockpitHeroProps) {
       <div>
         <p className="cockpiteyebrow">BUSINESS PERFORMANCE</p>
         <h1 id="cockpittitle">经营驾驶舱</h1>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        <p className="cockpitconclusion">{sales.conclusion ?? '当前周期暂无经营数据，所有指标按 0 展示。'}</p>
-        <p className="cockpitperiod">{period === undefined ? '当前统计周期' : `${period.from}—${period.to}`}</p>
-=======
         <p className="cockpitconclusion">{sales.conclusion ?? '经营结论等待服务端权威读模型。'}</p>
         <p className="cockpitperiod">{period === undefined ? '统计周期未返回' : `${period.from}—${period.to}`}</p>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-        <p className="cockpitconclusion">{sales.conclusion ?? '当前周期暂无经营数据，所有指标按 0 展示。'}</p>
-        <p className="cockpitperiod">{period === undefined ? '当前统计周期' : `${period.from}—${period.to}`}</p>
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-        <p className="cockpitconclusion">{sales.conclusion ?? '经营结论等待服务端权威读模型。'}</p>
-        <p className="cockpitperiod">{period === undefined ? '统计周期未返回' : `${period.from}—${period.to}`}</p>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       </div>
       <svg className="cockpitheroicon" viewBox="0 0 92 72" role="img" aria-label="经营趋势">
         <path d="M10 57 31 36l14 12 29-31" />

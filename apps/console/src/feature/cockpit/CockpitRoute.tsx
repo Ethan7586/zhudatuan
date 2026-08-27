@@ -28,19 +28,7 @@ export function Component() {
     fetching: query.isFetching,
     error: query.error,
     hasData: query.data !== undefined,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    empty: false,
-=======
     empty: query.data?.summary.orderCount === 0 && query.data.summary.catalogCount === 0,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    empty: false,
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    empty: query.data?.summary.orderCount === 0 && query.data.summary.catalogCount === 0,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     stale: query.isStale,
   });
   const openInsight = (insight: BusinessInsight) => {
@@ -48,19 +36,7 @@ export function Component() {
   };
   return (
     <section className="cockpitpage" aria-label="经营驾驶舱">
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <ResourceState condition={condition} resourceLabel="经营驾驶舱" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
-=======
       <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      <ResourceState condition={condition} resourceLabel="经营驾驶舱" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         {query.data === undefined ? <span /> : <CockpitContent sales={query.data.summary.sales} onOpenInsight={openInsight} />}
       </ResourceState>
     </section>

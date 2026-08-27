@@ -35,7 +35,7 @@ function requireAdminPermission(permission: Permission) {
 
     try {
       const session = await readSession(
-        new Request(`https://console.zhudatuan.com${request.originalUrl}`, {
+        new Request(`https://smart.hbbtzn.com${request.originalUrl}`, {
           headers: { cookie: request.headers.cookie ?? '' },
         }),
         process.env as WorkerEnv
@@ -45,7 +45,7 @@ function requireAdminPermission(permission: Permission) {
         return;
       }
       const runtime = await resolveMembershipRuntime(
-        new Request(`https://console.zhudatuan.com${request.originalUrl}`, {
+        new Request(`https://smart.hbbtzn.com${request.originalUrl}`, {
           headers: { cookie: request.headers.cookie ?? '' },
         }),
         process.env as WorkerEnv

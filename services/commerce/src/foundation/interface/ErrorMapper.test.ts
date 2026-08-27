@@ -17,27 +17,6 @@ describe('ErrorMapper', () => {
     }
   });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  it('maps bounded invitation scope failures to safe client errors', () => {
-    const mapper = new ErrorMapper();
-    for (const code of ['INVITATION_SCOPE_INVALID', 'INVITATION_STOREFRONT_SCOPE_REQUIRED', 'STOREFRONT_SCOPE_REQUIRED']) {
-      const response = mapper.map(new Error(code), 'request:invitation');
-      expect(response.status).toBe(400);
-      expect(response.body).toMatchObject({ code, requestId: 'request:invitation' });
-    }
-  });
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('does not infer a status from an unregistered error name', () => {
     const response = new ErrorMapper().map(new Error(['UNREGISTERED', 'INVALID'].join('_')), 'request:unknown');
     expect(response.status).toBe(500);

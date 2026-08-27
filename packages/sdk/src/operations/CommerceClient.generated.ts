@@ -14,17 +14,6 @@ import { createCatalogOperations, type CatalogOperations } from './catalog';
 import { createPricingOperations, type PricingOperations } from './pricing';
 import { createInventoryOperations, type InventoryOperations } from './inventory';
 import { createMarketingOperations, type MarketingOperations } from './marketing';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { createReferralOperations, type ReferralOperations } from './referral';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { createReferralOperations, type ReferralOperations } from './referral';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { createReportingOperations, type ReportingOperations } from './reporting';
 import { createExperienceOperations, type ExperienceOperations } from './experience';
 import { createCartOperations, type CartOperations } from './cart';
@@ -57,17 +46,6 @@ export type { CatalogOperations } from './catalog';
 export type { PricingOperations } from './pricing';
 export type { InventoryOperations } from './inventory';
 export type { MarketingOperations } from './marketing';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-export type { ReferralOperations } from './referral';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-export type { ReferralOperations } from './referral';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export type { ReportingOperations } from './reporting';
 export type { ExperienceOperations } from './experience';
 export type { CartOperations } from './cart';
@@ -105,29 +83,9 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.invitations.revoke",
   "identity.members.create",
   "identity.members.manage",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  "identity.members.reset",
   "identity.password.change",
   "identity.password.verify",
   "identity.password.reset",
-  "identity.mobile.challenge",
-<<<<<<< HEAD
-=======
-  "identity.password.change",
-  "identity.password.verify",
-  "identity.password.reset",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  "identity.password.change",
-  "identity.password.verify",
-  "identity.password.reset",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
@@ -137,25 +95,6 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "access.center.read",
   "access.roles.manage",
   "access.scopes.manage",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  "access.ownership.read",
-  "access.ownership.transfers.preview",
-  "access.ownership.transfers.create",
-  "access.ownership.transfers.accept.preview",
-  "access.ownership.transfers.accept",
-  "access.ownership.transfers.cancel",
-  "access.ownership.transfers.cancel.preview",
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "capability.assignments.read",
   "capability.assignments.manage",
   "partner.partners.read",
@@ -197,33 +136,6 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "inventory.imports.create",
   "inventory.imports.read",
   "marketing.campaigns.read",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  "referral.settings.read",
-  "referral.settings.manage",
-  "referral.products.read",
-  "referral.products.manage",
-  "referral.members.read",
-  "referral.members.apply",
-  "referral.members.approve",
-  "referral.members.disqualify",
-  "referral.bindings.read",
-  "referral.bindings.create",
-  "referral.commissions.read",
-  "referral.earnings.read",
-  "referral.links.read",
-  "referral.withdrawals.read",
-  "referral.withdrawals.create",
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "reporting.dashboard.read",
   "reporting.sales.read",
   "reporting.products.read",
@@ -307,23 +219,6 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.statements.export",
   "finance.reconciliations.manage",
   "finance.reconciliations.read",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  "finance.reconciliationrepairs.read",
-  "finance.reconciliationrepairs.preview",
-  "finance.reconciliationrepairs.submit",
-  "finance.reconciliationrepairs.decide",
-  "finance.reconciliationrepairs.reverse",
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "finance.settlements.read",
   "finance.settlements.decide",
   "finance.settlements.adjust",
@@ -337,28 +232,8 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.backfills.read",
   "finance.backfills.decide",
   "finance.policies.manage",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  "finance.policies.preview",
-  "finance.policies.read",
-  "finance.audit.read",
   "invoice.profiles.manage",
   "invoice.profiles.read",
-  "invoice.operatorprofiles.read",
-<<<<<<< HEAD
-=======
-  "invoice.profiles.manage",
-  "invoice.profiles.read",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  "invoice.profiles.manage",
-  "invoice.profiles.read",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "invoice.requests.create",
   "invoice.requests.read",
   "invoice.requests.cancel",
@@ -425,17 +300,6 @@ export interface CommerceClient {
   readonly pricing: PricingOperations;
   readonly inventory: InventoryOperations;
   readonly marketing: MarketingOperations;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  readonly referral: ReferralOperations;
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  readonly referral: ReferralOperations;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly reporting: ReportingOperations;
   readonly experience: ExperienceOperations;
   readonly cart: CartOperations;
@@ -471,17 +335,6 @@ export function createCommerceClient(client: OperationExecutor): CommerceClient 
     pricing: createPricingOperations(client),
     inventory: createInventoryOperations(client),
     marketing: createMarketingOperations(client),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    referral: createReferralOperations(client),
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    referral: createReferralOperations(client),
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     reporting: createReportingOperations(client),
     experience: createExperienceOperations(client),
     cart: createCartOperations(client),

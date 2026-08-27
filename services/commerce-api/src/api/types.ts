@@ -43,7 +43,7 @@ export interface WorkerEnv {
   SESSION_SIGNING_KEY?: string;
   /** Stable pepper for phone lookup and one-time verification hashes. */
   IDENTITY_LOOKUP_KEY?: string;
-  /** Separate signing key for console.zhudatuan.com sessions. */
+  /** Separate signing key for smart.hbbtzn.com sessions. */
   ADMIN_SESSION_SIGNING_KEY?: string;
   /** Public identifier of the production WeChat mini program. */
   WECHAT_MINIAPP_APP_ID?: string;

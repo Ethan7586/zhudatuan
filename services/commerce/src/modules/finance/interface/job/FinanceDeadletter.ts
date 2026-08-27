@@ -1,22 +1,6 @@
 import type { ClaimedJob, JobDeadletter } from '../../../../foundation/application/JobRunner';
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-interface Database {
-  query(text: string, values?: readonly unknown[]): Promise<unknown>;
-}
-=======
 interface Database { query(text: string, values?: readonly unknown[]): Promise<unknown> }
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-interface Database {
-  query(text: string, values?: readonly unknown[]): Promise<unknown>;
-}
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-interface Database { query(text: string, values?: readonly unknown[]): Promise<unknown> }
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export class FinanceDeadletter implements JobDeadletter {
   async record(database: Database, job: ClaimedJob, error: string): Promise<void> {
@@ -25,67 +9,6 @@ export class FinanceDeadletter implements JobDeadletter {
     const reconciliation = string(payload.reconciliation);
     const invoice = string(payload.request);
     if (withdrawal !== null) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-      await database.query(
-        `update finance.withdrawal set state='uncertain',evidence=evidence||$2::jsonb,updated_at=clock_timestamp(),version=version+1
-        where id=$1 and state='processing'`,
-        [withdrawal, JSON.stringify({ deadletter: `job:${job.id}`, error })]
-      );
-      await database.query(
-        `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-<<<<<<< HEAD
-        select $1,'finance.withdrawal.uncertain',1,'withdrawal',withdrawal.id,withdrawal.scope_id,
-          jsonb_build_object('withdrawal',withdrawal.id,'settlement',withdrawal.settlement_id,'error',$2,'deadletter',$3),$1,
-          clock_timestamp(),clock_timestamp() from finance.withdrawal withdrawal where withdrawal.id=$4 on conflict(id) do nothing`,
-        [`event:finance:withdrawal:uncertain:${withdrawal}`, error, `job:${job.id}`, withdrawal]
-      );
-    }
-    if (reconciliation !== null)
-      await database.query(
-        `update finance.reconciliation set state='difference',evidence=evidence||$2::jsonb,
-      updated_at=clock_timestamp(),version=version+1 where id=$1 and state in('matching','approved')`,
-        [reconciliation, JSON.stringify({ deadletter: `job:${job.id}`, error })]
-      );
-    if (invoice !== null) {
-      if (job.scope_id === null) throw new Error('INVOICE_JOB_SCOPE_REQUIRED');
-      await database.query("select set_config('app.scope_id',$1,true),set_config('app.workload','jobs',true)", [job.scope_id]);
-      await database.query(`select invoice.fail_issue($1,$2,$3)`, [invoice, `job:${job.id}`, error]);
-    }
-=======
-      await database.query(`update finance.withdrawal set state='uncertain',evidence=evidence||$2::jsonb,updated_at=clock_timestamp(),version=version+1
-        where id=$1 and state='processing'`, [withdrawal, JSON.stringify({ deadletter: `job:${job.id}`, error })]);
-      await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-        select $1,'finance.withdrawal.uncertain',1,'withdrawal',withdrawal.id,withdrawal.scope_id,
-          jsonb_build_object('withdrawal',withdrawal.id,'settlement',withdrawal.settlement_id,'error',$2,'deadletter',$3),$1,
-          clock_timestamp(),clock_timestamp() from finance.withdrawal withdrawal where withdrawal.id=$4 on conflict(id) do nothing`,
-        [`event:finance:withdrawal:uncertain:${withdrawal}`, error, `job:${job.id}`, withdrawal]
-      );
-    }
-    if (reconciliation !== null)
-      await database.query(
-        `update finance.reconciliation set state='difference',evidence=evidence||$2::jsonb,
-      updated_at=clock_timestamp(),version=version+1 where id=$1 and state in('matching','approved')`,
-<<<<<<< HEAD
-    [reconciliation, JSON.stringify({ deadletter: `job:${job.id}`, error })]);
-    if (invoice !== null) await database.query(`update invoice.request set state='failed',evidence=evidence||$2::jsonb,version=version+1
-      where id=$1 and state='issuing'`, [invoice, JSON.stringify({ deadletter: `job:${job.id}`, error })]);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-        [reconciliation, JSON.stringify({ deadletter: `job:${job.id}`, error })]
-      );
-    if (invoice !== null) {
-      if (job.scope_id === null) throw new Error('INVOICE_JOB_SCOPE_REQUIRED');
-      await database.query("select set_config('app.scope_id',$1,true),set_config('app.workload','jobs',true)", [job.scope_id]);
-      await database.query(`select invoice.fail_issue($1,$2,$3)`, [invoice, `job:${job.id}`, error]);
-    }
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
       await database.query(`update finance.withdrawal set state='uncertain',evidence=evidence||$2::jsonb,updated_at=clock_timestamp(),version=version+1
         where id=$1 and state='processing'`, [withdrawal, JSON.stringify({ deadletter: `job:${job.id}`, error })]);
       await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
@@ -99,32 +22,10 @@ export class FinanceDeadletter implements JobDeadletter {
     [reconciliation, JSON.stringify({ deadletter: `job:${job.id}`, error })]);
     if (invoice !== null) await database.query(`update invoice.request set state='failed',evidence=evidence||$2::jsonb,version=version+1
       where id=$1 and state='issuing'`, [invoice, JSON.stringify({ deadletter: `job:${job.id}`, error })]);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }
 
 function object(value: unknown): Readonly<Record<string, unknown>> {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>) : {};
-}
-function string(value: unknown): string | null {
-  return typeof value === 'string' && value ? value : null;
-<<<<<<< HEAD
-}
-=======
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {};
 }
 function string(value: unknown): string | null { return typeof value === 'string' && value ? value : null; }
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-}
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {};
-}
-function string(value: unknown): string | null { return typeof value === 'string' && value ? value : null; }
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

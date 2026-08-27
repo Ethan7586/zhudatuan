@@ -32,17 +32,6 @@ export interface JobRunnerConfig {
   readonly deadline: number;
   readonly retryMinimum: number;
   readonly retryMaximum: number;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  readonly claim?: 'identity-notification';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  readonly claim?: 'identity-notification';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export class JobRunner {
@@ -55,34 +44,10 @@ export class JobRunner {
 
   async run(kind: string, processor: JobProcessor, signal: AbortSignal): Promise<void> {
     while (!signal.aborted) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-      const result = this.config.claim === 'identity-notification'
-        ? await this.pool.query<ClaimedJob>(
-          'select id,kind,scope_id,payload,attempts from runtime.claim_identity_notification_job($1,$2,$3)',
-          [this.config.worker, this.config.batch, this.config.lease],
-        )
-        : await this.pool.query<ClaimedJob>(
-          'select id,kind,scope_id,payload,attempts from runtime.claim_job($1,$2,$3,$4)',
-          [kind, this.config.worker, this.config.batch, this.config.lease],
-        );
-<<<<<<< HEAD
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await this.pool.query<ClaimedJob>(
         'select id,kind,scope_id,payload,attempts from runtime.claim_job($1,$2,$3,$4)',
         [kind, this.config.worker, this.config.batch, this.config.lease],
       );
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       if (result.rows.length === 0) {
         await delay(this.config.poll, signal);
         continue;

@@ -1,59 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
 import { consoleSession } from './Fixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { CONSOLE_ORIGIN } from './Origins';
-import { productPreviewPage } from './ProductPreviewFixtures';
-
-const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' });
-const productSession = Object.freeze({
-  ...consoleSession,
-  permissions: Object.freeze([...consoleSession.permissions, 'catalog.listing.read']),
-  capabilities: Object.freeze([...consoleSession.capabilities, 'catalog.listings.read']),
-});
-const previewSession = Object.freeze({ ...productSession, scope: previewScope, scopes: [previewScope] });
-=======
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { productPreviewPage } from './ProductPreviewFixtures';
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' });
 const previewSession = Object.freeze({ ...consoleSession, scope: previewScope, scopes: [previewScope] });
-<<<<<<< HEAD
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { CONSOLE_ORIGIN } from './Origins';
-import { productPreviewPage } from './ProductPreviewFixtures';
-
-const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' });
-const productSession = Object.freeze({
-  ...consoleSession,
-  permissions: Object.freeze([...consoleSession.permissions, 'catalog.listing.read']),
-  capabilities: Object.freeze([...consoleSession.capabilities, 'catalog.listings.read']),
-});
-const previewSession = Object.freeze({ ...productSession, scope: previewScope, scopes: [previewScope] });
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 test('Console 商品工作台只在平台预览 Scope 展示演示详情并保持写操作关闭', async ({ page }) => {
   const api = consoleProductApi(page, previewSession, (call: OperationCall) => productPreviewPage(new URLSearchParams(call.query)));
   await api.install();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/products`);
-=======
   await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Apreview/products');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/products`);
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
-=======
-  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Apreview/products');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   await expect(page.getByRole('heading', { level: 1, name: '商品管理' })).toBeFocused();
   await expect(page.getByText('当前范围内共 5,008 件核心商品', { exact: true })).toBeVisible();
@@ -61,29 +17,8 @@ test('Console 商品工作台只在平台预览 Scope 展示演示详情并保�
   const table = page.getByRole('table', { name: '商品列表' });
   await expect(table.locator('tbody tr')).toHaveCount(50);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const importButton = page.getByRole('button', { name: '导入', exact: true });
-  await expect(importButton).toBeEnabled();
-  await importButton.click();
-  const importDialog = page.getByRole('dialog', { name: '导入商品' });
-  await expect(importDialog.getByText('选择本地 CSV 文件预览商品导入交互；本期不会上传文件。', { exact: true })).toBeVisible();
-  await importDialog.getByRole('button', { name: '取消', exact: true }).click();
-  await expect(importDialog).toBeHidden();
-
-  const [download] = await Promise.all([
-    page.waitForEvent('download'),
-    page.getByRole('button', { name: '导出当前页', exact: true }).click(),
-  ]);
-  expect(download.suggestedFilename()).toMatch(/^products-current-page-.*\.csv$/);
-=======
   await expect(page.getByRole('button', { name: '导入', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: '导出', exact: true })).toBeDisabled();
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  await expect(page.getByRole('button', { name: '导入', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '导出', exact: true })).toBeDisabled();
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await expect(page.getByRole('button', { name: '新建商品', exact: true })).toBeDisabled();
 
   const jiuyangRow = table.getByRole('row', { name: /九阳5\.5L大容量可视空气炸锅/ });
@@ -125,19 +60,7 @@ test('Console 商品工作台只在平台预览 Scope 展示演示详情并保�
 });
 
 test('Console 生产列表快照不得泄漏本地预览价格库存与供应商', async ({ page }) => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const api = consoleProductApi(page, productSession, {
-=======
   const api = consoleProductApi(page, consoleSession, {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  const api = consoleProductApi(page, productSession, {
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
-=======
-  const api = consoleProductApi(page, consoleSession, {
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     items: [
       {
         id: 'listing:production:1',
@@ -153,19 +76,7 @@ test('Console 生产列表快照不得泄漏本地预览价格库存与供应商
     count: 1,
   });
   await api.install();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/products`);
-=======
   await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/products');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/products`);
->>>>>>> 05ea98a5 (fix(release): restore selected app verification)
-=======
-  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/products');
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   const table = page.getByRole('table', { name: '商品列表' });
   await expect(table.locator('tbody tr')).toHaveCount(1);

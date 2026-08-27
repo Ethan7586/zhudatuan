@@ -149,9 +149,7 @@ export async function handlePublicCatalog(request: Request, env: WorkerEnv, requ
   const startedAt = Date.now();
   if (request.method !== 'GET') return methodNotAllowed(['GET'], requestId);
   const url = new URL(request.url);
-  const configuredMallSlug = env.PUBLIC_MALL_SLUG?.trim();
-  if (env.APP_ENV === 'production' && !configuredMallSlug) return apiError(503, 'PUBLIC_CATALOG_NOT_CONFIGURED', '公开商城目录尚未正确配置', requestId);
-  const mallSlug = configuredMallSlug || DEFAULT_PUBLIC_MALL_SLUG;
+  const mallSlug = env.PUBLIC_MALL_SLUG?.trim() || DEFAULT_PUBLIC_MALL_SLUG;
   if (!MALL_SLUG_PATTERN.test(mallSlug)) return apiError(503, 'PUBLIC_CATALOG_NOT_CONFIGURED', '公开商城目录尚未正确配置', requestId);
   const category = url.searchParams.get('category')?.slice(0, 80) ?? null;
   const limit = Math.min(Math.max(Number.parseInt(url.searchParams.get('limit') ?? String(DEFAULT_PUBLIC_BATCH_SIZE), 10) || DEFAULT_PUBLIC_BATCH_SIZE, 1), 200);

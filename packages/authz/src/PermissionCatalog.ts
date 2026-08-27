@@ -16,37 +16,11 @@ export const PERMISSION_CATALOG = Object.freeze([
   definition('identity.mobile.manage', 'identity', 'high', ['self']),
   definition('identity.assurance.manage', 'identity', 'elevated', ['self']),
   definition('identity.invitation.manage', 'identity', 'high', operator),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  definition('identity.registration.reset', 'identity', 'high', operator),
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  definition('identity.registration.reset', 'identity', 'high', operator),
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   definition('organization.layer.read', 'organization'),
   definition('organization.layer.manage', 'organization', 'critical', ['platform']),
   definition('access.center.read', 'access', 'high', operator),
   definition('access.role.manage', 'access', 'critical', operator),
   definition('access.scope.manage', 'access', 'critical', operator),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  definition('access.ownership.read', 'access', 'high', ['self']),
-  definition('access.ownership.transfer', 'access', 'critical', ['self']),
-  definition('access.ownership.accept', 'access', 'critical', ['self']),
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  definition('access.ownership.read', 'access', 'high', ['self']),
-  definition('access.ownership.transfer', 'access', 'critical', ['self']),
-  definition('access.ownership.accept', 'access', 'critical', ['self']),
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   definition('capability.assignment.read', 'capability', 'high', operator),
   definition('capability.assignment.manage', 'capability', 'critical', operator),
   definition('partner.read', 'partner', 'low', operator),
@@ -84,30 +58,6 @@ export const PERMISSION_CATALOG = Object.freeze([
   definition('inventory.import.manage', 'inventory', 'high', operator),
   definition('inventory.import.read', 'inventory', 'low', operator),
   definition('marketing.read', 'marketing', 'low', all),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  definition('referral.settings.read', 'referral', 'elevated', ['mall']),
-  definition('referral.settings.manage', 'referral', 'critical', ['mall']),
-  definition('referral.products.read', 'referral', 'low', ['mall']),
-  definition('referral.products.manage', 'referral', 'critical', ['mall']),
-  definition('referral.members.read', 'referral', 'elevated', ['mall']),
-  definition('referral.members.approve', 'referral', 'high', ['mall']),
-  definition('referral.members.disqualify', 'referral', 'high', ['mall']),
-  definition('referral.bindings.read', 'referral', 'elevated', ['mall']),
-  definition('referral.commissions.read', 'referral', 'high', ['mall']),
-  definition('referral.self.read', 'referral', 'low', ['owner']),
-  definition('referral.self.manage', 'referral', 'high', ['owner']),
-  definition('referral.withdrawals.create', 'referral', 'critical', ['owner']),
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   definition('reporting.dashboard.read', 'reporting'),
   definition('reporting.sales.read', 'reporting'),
   definition('reporting.product.read', 'reporting'),
@@ -186,17 +136,6 @@ export const PERMISSION_CATALOG = Object.freeze([
   definition('finance.period.manage', 'finance', 'critical'),
   definition('finance.backfill.read', 'finance', 'high'),
   definition('finance.backfill.decide', 'finance', 'critical'),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  definition('finance.policy.read', 'finance', 'elevated'),
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  definition('finance.policy.read', 'finance', 'elevated'),
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   definition('finance.policy.manage', 'finance', 'critical'),
   definition('invoice.profile.manage', 'invoice', 'high'),
   definition('invoice.profile.read', 'invoice', 'elevated', all),

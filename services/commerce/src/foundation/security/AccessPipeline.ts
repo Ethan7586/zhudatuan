@@ -1,19 +1,4 @@
 import { checkAssurance, checkScope, permissionDefinition, precheck, type MembershipAccess } from '@shop/authz';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { OperationCatalog, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { OperationCatalog, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { OperationCatalog } from '@shop/contract';
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 import type { Clock } from '@shop/kernel';
 import { DomainError } from '../domain/DomainError';
 import type { AccessContext } from './AccessContext';
@@ -22,39 +7,9 @@ import type { SessionResolver } from './SessionResolver';
 import { StepupPolicy } from './StepupPolicy';
 import type { DecisionSink } from './DecisionSink';
 import { assertRiskAllowed, type RiskGate } from './RiskGate';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import type { ActionProofVerifier } from './ActionProof';
-
-export interface MembershipResolver {
-  resolve(actor: string): Promise<MembershipAccess | MembershipSnapshot>;
-}
-
-export interface MembershipSnapshot {
-  readonly access: MembershipAccess;
-  readonly evaluatedAt: Date;
-=======
 
 export interface MembershipResolver {
   resolve(actor: string): Promise<MembershipAccess>;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import type { ActionProofVerifier } from './ActionProof';
-
-export interface MembershipResolver {
-  resolve(actor: string): Promise<MembershipAccess | MembershipSnapshot>;
-}
-
-export interface MembershipSnapshot {
-  readonly access: MembershipAccess;
-  readonly evaluatedAt: Date;
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-
-export interface MembershipResolver {
-  resolve(actor: string): Promise<MembershipAccess>;
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export interface AccessVersionResolver {
@@ -75,22 +30,7 @@ export class AccessPipeline {
     private readonly clock: Clock,
     private readonly risk: RiskGate,
     private readonly decisions: DecisionSink,
-<<<<<<< HEAD
     private readonly stepup = new StepupPolicy(),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    private readonly actionProof?: ActionProofVerifier
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    private readonly actionProof?: ActionProofVerifier
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    private readonly stepup = new StepupPolicy()
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
   ) {}
 
   async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string): Promise<AccessContext> {
@@ -98,52 +38,15 @@ export class AccessPipeline {
     const trace = headers['x-trace-id'] ?? actor.session;
     let scope: AccessContext['scope'] | undefined;
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      assertAudienceTarget(operation, actor.target);
-      const resolvedMembership = await this.memberships.resolve(actor.membership);
-      const membership = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.access : resolvedMembership;
-<<<<<<< HEAD
-      const accessVersion = await this.versions.resolve(membership.id);
-      const now = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.evaluatedAt : this.clock.now();
-      if (!Number.isFinite(now.getTime())) throw new DomainError('PERMISSION_DENIED', { reason: 'AUTHORIZATION_TIME_INVALID' });
-=======
-=======
-      assertAudienceTarget(operation, actor.target);
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
       const membership = await this.memberships.resolve(actor.membership);
       const accessVersion = await this.versions.resolve(membership.id);
       const now = this.clock.now();
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      const accessVersion = await this.versions.resolve(membership.id);
-      const now = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.evaluatedAt : this.clock.now();
-      if (!Number.isFinite(now.getTime())) throw new DomainError('PERMISSION_DENIED', { reason: 'AUTHORIZATION_TIME_INVALID' });
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      const membership = await this.memberships.resolve(actor.membership);
-      const accessVersion = await this.versions.resolve(membership.id);
-      const now = this.clock.now();
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const permissionFailure = precheck(membership, permission, { expectedAccessVersion: actor.accessVersion, now });
       if (permissionFailure !== null) throw new DomainError(mapReason(permissionFailure));
       if (accessVersion !== actor.accessVersion) throw new DomainError('MEMBERSHIP_INACTIVE', { reason: 'ACCESS_VERSION_STALE' });
       const scopeHint = headers['x-scope-hint'];
       if (scopeHint !== undefined && (!scopeHint || scopeHint.length > 255)) throw new DomainError('SCOPE_DENIED');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      scope = await this.scopes.resolve(actor, operation, resource, scopeHint);
-=======
       scope = await this.scopes.resolve(actor, operation, resource ?? scopeHint);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      scope = await this.scopes.resolve(actor, operation, resource, scopeHint);
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      scope = await this.scopes.resolve(actor, operation, resource ?? scopeHint);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const scopeDecision = checkScope(membership, permission, scope, now);
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
       const capabilities = await this.capabilities.resolve(membership.id);
@@ -152,78 +55,17 @@ export class AccessPipeline {
       if (assuranceFailure !== null || !this.stepup.accepts(permissionDefinition(permission).stepup, actor.assurance, now)) throw new DomainError('STEPUP_REQUIRED');
       const risk = await this.risk.evaluate({ actor, operation, scope, trace, ...(resource === undefined ? {} : { resource }) });
       assertRiskAllowed(risk.outcome);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-      if (requiresFinancialActionProof(operation)) {
-        const proof = headers['x-action-proof'];
-        const idempotency = headers['idempotency-key'];
-        const expectedVersion = expectedVersionHeader(headers['if-match']);
-        if (!proof || !idempotency || idempotency.length > 255 || (requiresFinancialExpectedVersion(operation) && expectedVersion === null) || !this.actionProof?.validate(proof)) {
-          throw new DomainError('ACTION_PROOF_REQUIRED');
-        }
-      }
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       await this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, ...(resource === undefined ? {} : { resource }) });
       return { actor, membership, scope, accessVersion, capabilities, assurance: actor.assurance, trace };
     } catch (cause) {
       const reason = cause instanceof DomainError ? cause.code : cause instanceof Error ? cause.message : 'AUTHORIZATION_FAILED';
-      await this.decisions.append({
-        actor,
-        operation,
-        outcome: reason === 'STEPUP_REQUIRED' ? 'challenge' : reason === 'RISK_REVIEW_REQUIRED' ? 'review' : 'deny',
-        reason,
-        trace,
-        ...(scope === undefined ? {} : { scope }),
-        ...(resource === undefined ? {} : { resource }),
-      });
+      await this.decisions.append({ actor, operation, outcome: reason === 'STEPUP_REQUIRED' ? 'challenge' : reason === 'RISK_REVIEW_REQUIRED' ? 'review' : 'deny', reason, trace,
+        ...(scope === undefined ? {} : { scope }), ...(resource === undefined ? {} : { resource }) });
       throw cause;
     }
   }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-function isMembershipSnapshot(value: MembershipAccess | MembershipSnapshot): value is MembershipSnapshot {
-  return 'access' in value && 'evaluatedAt' in value;
-}
-
-function expectedVersionHeader(header: string | undefined): number | null {
-  if (header === undefined) return null;
-  const normalized = header.replace(/^W\//, '').replace(/^"|"$/g, '');
-  const value = Number(normalized);
-  if (!Number.isSafeInteger(value) || value < 0) throw new DomainError('EXPECTED_VERSION_INVALID');
-  return value;
-}
-
-=======
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
-function assertAudienceTarget(operation: string, target: AccessContext['actor']['target']): void {
-  const audience = OperationCatalog.get(operation).audience;
-  if (audience === 'operator' && target !== 'console') {
-    throw new DomainError('PERMISSION_DENIED', { reason: 'AUDIENCE_TARGET_MISMATCH', audience, target });
-  }
-}
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 function mapReason(reason: string): string {
   if (reason === 'STEPUP_REQUIRED') return 'STEPUP_REQUIRED';
   if (reason === 'MEMBERSHIP_INACTIVE' || reason === 'ACCESS_VERSION_STALE') return 'MEMBERSHIP_INACTIVE';

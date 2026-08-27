@@ -1,16 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { Button, ResourcePanel, ResourceState } from '@shop/design';
-=======
 import { Button, ResourcePanel } from '@shop/design';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { Button, ResourcePanel, ResourceState } from '@shop/design';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-import { Button, ResourcePanel } from '@shop/design';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -85,27 +73,6 @@ export function Component() {
   const closeRecord = useCallback(() => updateSearch((next) => next.delete('selected')), [updateSearch]);
   const scopeName = context.scope.name ?? context.scope.id;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-  if (condition === 'unauthenticated' || condition === 'denied') {
-    return <div className="voucherworkspace" data-view={view}>
-      <ResourceState condition={condition} resourceLabel="卡券治理台"
-        {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
-        <span />
-      </ResourceState>
-    </div>;
-  }
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return (
     <div className="voucherworkspace" data-view={view}>
       <ResourcePanel

@@ -1,19 +1,7 @@
 {
   "name": "@shop/design",
   "private": true,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  "version": "1.1.0",
-=======
   "version": "1.0.0",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  "version": "1.1.0",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  "version": "1.0.0",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -24,35 +12,12 @@
     "storybook": "storybook dev --config-dir .storybook --port 6006",
     "storybook:build": "storybook build --config-dir .storybook",
     "test": "vitest run --exclude src/ResourceState.component.test.tsx --exclude src/Dialog.component.test.tsx --exclude src/RouteFallback.component.test.tsx --passWithNoTests",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "test:component": "vitest run src/ResourceState.component.test.tsx src/Dialog.component.test.tsx src/RouteFallback.component.test.tsx src/Primitives.component.test.tsx",
-=======
     "test:component": "vitest run src/ResourceState.component.test.tsx src/Dialog.component.test.tsx src/RouteFallback.component.test.tsx",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "test:component": "vitest run src/ResourceState.component.test.tsx src/Dialog.component.test.tsx src/RouteFallback.component.test.tsx src/Primitives.component.test.tsx",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    "test:component": "vitest run src/ResourceState.component.test.tsx src/Dialog.component.test.tsx src/RouteFallback.component.test.tsx",
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "typecheck": "tsc --noEmit"
   },
   "exports": {
     ".": "./src/index.ts",
     "./base.css": "./src/base.css",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "./components.css": "./src/components.css",
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "./components.css": "./src/components.css",
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "./tokens.css": "./src/tokens.css",
     "./workspace.css": "./src/workspace.css",
     "./shell.css": "./src/shell.css",
@@ -74,11 +39,5 @@
     "typescript": "5.9.3",
     "vite": "8.1.5",
     "vitest": "4.1.10"
-  },
-  "optionalDependencies": {
-    "@oxc-parser/binding-linux-x64-gnu": "0.127.0",
-    "@oxc-parser/binding-linux-x64-musl": "0.127.0",
-    "@oxc-resolver/binding-linux-x64-gnu": "11.21.2",
-    "@oxc-resolver/binding-linux-x64-musl": "11.21.2"
   }
 }

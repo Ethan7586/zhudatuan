@@ -1,46 +1,10 @@
 import { randomUUID } from 'node:crypto';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 import { FinancePort } from '../../../finance/FinanceModule';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-import { FinancePort } from '../../../finance/FinanceModule';
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface VoucherDatabase {
   query<R extends object = Record<string, unknown>>(text: string, values?: readonly unknown[]): Promise<Readonly<{ rows: readonly R[] }>>;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-interface FinancialPosting {
-  post(database: VoucherDatabase, intent: Readonly<{
-    scope: string;
-    referenceType: string;
-    referenceId: string;
-    currency: string;
-    description: string;
-    debit: Readonly<{ code: string; kind: 'asset' | 'liability' | 'income' | 'expense' }>;
-    credit: Readonly<{ code: string; kind: 'asset' | 'liability' | 'income' | 'expense' }>;
-    amountMinor: number;
-    occurredAt?: string;
-  }>): Promise<string>;
-}
-
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export interface VoucherChoice { readonly id: string; readonly remaining_minor: number; readonly version: number; readonly program: string }
 export interface VoucherTender { readonly reference: string; readonly amountMinor: number }
 export interface VoucherRefund {
@@ -49,19 +13,7 @@ export interface VoucherRefund {
 
 /** Public voucher boundary. It owns eligibility, locks, state events, redemption, reversal, and accounting facts. */
 export class VoucherPort {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  constructor(private readonly finance?: FinancialPosting) {}
-=======
   constructor(private readonly finance = new FinancePort()) {}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-  constructor(private readonly finance?: FinancialPosting) {}
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-  constructor(private readonly finance = new FinancePort()) {}
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   async preview(database: VoucherDatabase, vouchers: readonly string[], member: string, scope: string): Promise<readonly VoucherChoice[]> {
     if (vouchers.length === 0) return [];
@@ -118,19 +70,7 @@ export class VoucherPort {
     [`redemption:${randomUUID()}`, voucherid, `order:${order}:${voucherid}`, order, amountMinor]);
     if (!redemption.rows[0]) throw new Error('VOUCHER_REDEMPTION_DUPLICATE');
     await status(database, voucherid, 'reserved', selected.state, 'orderpayment');
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    await this.financial().post(database, { scope: selected.scope_id, referenceType: 'voucher.redeem', referenceId: `${order}:${voucherid}`,
-=======
     await this.finance.post(database, { scope: selected.scope_id, referenceType: 'voucher.redeem', referenceId: `${order}:${voucherid}`,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    await this.financial().post(database, { scope: selected.scope_id, referenceType: 'voucher.redeem', referenceId: `${order}:${voucherid}`,
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    await this.finance.post(database, { scope: selected.scope_id, referenceType: 'voucher.redeem', referenceId: `${order}:${voucherid}`,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       currency: 'CNY', description: 'Voucher redemption', debit: { code: `voucher.program.${selected.program_id}`, kind: 'liability' },
       credit: { code: 'commerce.clearing', kind: 'income' }, amountMinor });
   }
@@ -154,19 +94,7 @@ export class VoucherPort {
     await status(database, input.voucher, redemption.state, restored.rows[0]!.state, 'paymentrefund');
     await database.query(`update voucher.redemption set reversed_at=case when (select coalesce(sum(amount_minor),0) from voucher.reversal
       where redemption_id=$1 and state='reversed')>=amount_minor then clock_timestamp() else null end,version=version+1 where id=$1`, [redemption.id]);
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    await this.financial().post(database, { scope: redemption.scope_id, referenceType: 'voucher.refund', referenceId: `${input.refund}:${input.voucher}`,
-=======
     await this.finance.post(database, { scope: redemption.scope_id, referenceType: 'voucher.refund', referenceId: `${input.refund}:${input.voucher}`,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    await this.financial().post(database, { scope: redemption.scope_id, referenceType: 'voucher.refund', referenceId: `${input.refund}:${input.voucher}`,
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    await this.finance.post(database, { scope: redemption.scope_id, referenceType: 'voucher.refund', referenceId: `${input.refund}:${input.voucher}`,
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       currency: 'CNY', description: 'Voucher redemption refund', debit: { code: 'commerce.refund', kind: 'expense' },
       credit: { code: `voucher.program.${redemption.program_id}`, kind: 'liability' }, amountMinor: input.amountMinor });
   }
@@ -200,23 +128,6 @@ export class VoucherPort {
       from voucher.statusevent where voucher_id=$1`, [input.voucher, accepted.previous_state, input.actor]);
     return { id, amountMinor: accepted.amount_minor };
   }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-
-  private financial(): FinancialPosting {
-    if (!this.finance) throw new Error('VOUCHER_FINANCE_DEPENDENCY_REQUIRED');
-    return this.finance;
-  }
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 async function status(database: VoucherDatabase, voucher: string, previous: string, next: string, reason: string): Promise<void> {

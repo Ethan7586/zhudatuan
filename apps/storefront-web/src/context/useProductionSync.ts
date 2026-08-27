@@ -7,17 +7,6 @@ import type { CatalogSyncStatus, SessionStatus } from './MallContext.types';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 import { mergeAuthenticatedMemberProfile } from './storefrontMemberProfile';
 import { createCatalogPublisher } from './catalogSync';
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { captureBrowserReferralAttribution } from '../services/referralAttribution';
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-import { captureBrowserReferralAttribution } from '../services/referralAttribution';
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface ProductionSyncSetters {
   setProducts: Dispatch<SetStateAction<Product[]>>;
@@ -116,25 +105,6 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       return;
     }
     const { bootstrap, accounts, orders: orderResult, accountLedgers: ledgerResult } = snapshot;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-    // The URL contributes only the validated referral candidate. Mall and
-    // member identity come from this authenticated server snapshot, while the
-    // server remains authoritative for first-touch conflicts.
-    void captureBrowserReferralAttribution({
-      mallId: bootstrap.scope.mallId,
-      memberId: bootstrap.actor.userId,
-    });
-<<<<<<< HEAD
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const welfare = accounts.items.find((account) => account.type === 'welfare');
     const meal = accounts.items.find((account) => account.type === 'meal');
     setters.setUser((previous) => ({

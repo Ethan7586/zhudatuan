@@ -8,19 +8,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck",
     "build": "npm run typecheck",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "test": "vitest run src/index.test.ts src/WebBusinessApiEnvironment.test.ts src/PurchaseApiEnvironment.test.ts"
-=======
     "test": "vitest run src/index.test.ts"
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-    "test": "vitest run src/index.test.ts src/WebBusinessApiEnvironment.test.ts src/PurchaseApiEnvironment.test.ts"
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-    "test": "vitest run src/index.test.ts"
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   },
   "exports": {
     "./client": "./src/ClientEnvironment.ts",

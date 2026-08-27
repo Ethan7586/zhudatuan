@@ -9,9 +9,9 @@ await build({
     'services/commerce/src/entry/MigrationMain.ts',
     'services/commerce/src/entry/SmokeMain.ts',
   ],
+  external: ['pg', 'redis'],
   format: 'esm',
   outdir: 'services/commerce/dist',
-  packages: 'bundle',
   platform: 'node',
   sourcemap: true,
 });

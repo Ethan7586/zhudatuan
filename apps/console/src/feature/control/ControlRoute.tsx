@@ -24,19 +24,7 @@ export function Component() {
     hasData: query.data !== undefined, empty: false, stale: query.isStale });
   return (
     <section className="controlpage" aria-label="智慧翼中控台">
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <ResourceState condition={condition} resourceLabel="智慧翼中控台" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
-=======
       <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-=======
-      <ResourceState condition={condition} resourceLabel="智慧翼中控台" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
->>>>>>> 018b2a71 (chore(release): capture current production source)
-=======
-      <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         {query.data === undefined ? <span /> : <ControlContent data={query.data} refreshing={query.isFetching} onRefresh={() => { void query.refetch(); }} />}
       </ResourceState>
     </section>
