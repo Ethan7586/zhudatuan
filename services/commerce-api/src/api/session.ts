@@ -7,8 +7,8 @@ export type SessionTarget = 'storefront' | 'admin';
 
 const SESSION_SECONDS = 8 * 60 * 60;
 const COOKIE_NAMES: Record<SessionTarget, string> = {
-  storefront: '__Host-hbbtzn_store_session',
-  admin: '__Host-hbbtzn_admin_session',
+  storefront: '__Host-zhudatuan_store_session',
+  admin: '__Host-zhudatuan_admin_session',
 };
 
 export interface SessionPayload {
@@ -47,7 +47,7 @@ function fromBase64Url(value: string): Uint8Array {
 }
 
 export function targetForRequest(request: Request): SessionTarget {
-  return ['console.zhudatuan.com', 'smart.hbbtzn.com'].includes(new URL(request.url).hostname) ? 'admin' : 'storefront';
+  return new URL(request.url).hostname === 'console.zhudatuan.com' ? 'admin' : 'storefront';
 }
 
 function signingSecret(env: WorkerEnv, target: SessionTarget): string | undefined {

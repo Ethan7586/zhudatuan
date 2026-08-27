@@ -23,10 +23,10 @@ describe('login rate-limit test bypass', () => {
   });
 
   it('reads only the proxy-overwritten origin header', () => {
-    const trusted = new Request('https://hbbtzn.com', {
+    const trusted = new Request('https://zhudatuan.com', {
       headers: { 'x-real-ip': '203.0.113.10', 'cf-connecting-ip': '198.51.100.2' },
     });
-    const untrusted = new Request('https://hbbtzn.com', {
+    const untrusted = new Request('https://zhudatuan.com', {
       headers: { 'cf-connecting-ip': '203.0.113.10' },
     });
 
@@ -59,7 +59,7 @@ describe('login rate-limit test bypass', () => {
     const fetchRpc = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('bypass must not access limiter storage'));
     try {
       const response = await handleLogin(
-        new Request('https://smart.hbbtzn.com/api/v1/auth/login', {
+        new Request('https://console.zhudatuan.com/api/v1/auth/login', {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-real-ip': '203.0.113.10' },
           body: JSON.stringify({ username: '福宝', password: 'wrong-password' }),
@@ -88,7 +88,7 @@ describe('login rate-limit test bypass', () => {
     const fetchRpc = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('false', { status: 200, headers: { 'content-type': 'application/json' } }));
     try {
       const response = await handleLogin(
-        new Request('https://smart.hbbtzn.com/api/v1/auth/login', {
+        new Request('https://console.zhudatuan.com/api/v1/auth/login', {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-real-ip': '203.0.113.11' },
           body: JSON.stringify({ username: '福宝', password: '123456' }),

@@ -1,5 +1,6 @@
 import React from 'react';
-import { useMall, LaptopPage } from '../../context/MallContext';
+import { useMall } from '../../context/MallContext';
+import type { LaptopPage } from '../../context/MallContext.types';
 import { LaptopTopSwitcher } from './LaptopTopSwitcher';
 import { LaptopHeader } from './LaptopHeader';
 import { LaptopHomePage1366 } from './LaptopHomePage1366';
@@ -11,13 +12,14 @@ import { LaptopOrdersPage } from './LaptopOrdersPage';
 import { QuickViewModal } from '../common/QuickViewModal';
 import { ToastContainer } from '../common/ToastContainer';
 import { Footer } from '../common/Footer';
-import { STOREFRONT_WEB_STANDARD_ID, type StorefrontWebSurface } from './StorefrontWebStandard';
+import { STOREFRONT_WEB_STANDARD_ID, type StorefrontWebNavigationBoundary, type StorefrontWebSurface } from './StorefrontWebStandard';
 
 type StorefrontWebFrameProps = {
   surface?: StorefrontWebSurface;
+  navigationBoundary?: StorefrontWebNavigationBoundary;
 };
 
-export const StorefrontWebFrame: React.FC<StorefrontWebFrameProps> = ({ surface = 'laptop' }) => {
+export const StorefrontWebFrame: React.FC<StorefrontWebFrameProps> = ({ surface = 'laptop', navigationBoundary = 'showcase' }) => {
   const { laptopPage, setLaptopPage } = useMall();
 
   const handleSelectTab = (tab: LaptopPage) => {
@@ -51,7 +53,7 @@ export const StorefrontWebFrame: React.FC<StorefrontWebFrameProps> = ({ surface 
       data-storefront-web-surface={surface}
     >
       {/* 1. 多端多视口顶栏切换器 */}
-      <LaptopTopSwitcher surface={surface} />
+      <LaptopTopSwitcher surface={surface} navigationBoundary={navigationBoundary} />
 
       {/* 2. 消费者 Web 标准页头；桌面仅改变密度，不改变组件与交互。 */}
       <LaptopHeader activeTab={laptopPage} onSelectTab={handleSelectTab} surface={surface} />

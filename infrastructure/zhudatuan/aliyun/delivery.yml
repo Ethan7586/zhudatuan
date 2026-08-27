@@ -1,0 +1,51 @@
+version: 1
+owner: zhudatuan
+sourceOfTruth: config/owner-approved-ui.json
+runtime:
+  releaseRoot: /opt/zhudatuan/current
+  sharedRoot: /opt/zhudatuan/shared
+  processConfig: infrastructure/zhudatuan/aliyun/ecosystem.config.cjs
+  proxyConfig: infrastructure/zhudatuan/aliyun/Caddyfile
+routes:
+  storefront:
+    host: zhudatuan.com
+    workspace: apps/storefront-web
+    artifact: apps/storefront-web/dist
+    process: zhudatuan-storefront
+  accounts:
+    host: accounts.zhudatuan.com
+    workspace: apps/auth-web
+    artifact: apps/auth-web/dist
+    server: caddy-static
+  console:
+    host: console.zhudatuan.com
+    workspace: apps/console
+    artifact: apps/console/dist
+    server: caddy-static
+  api:
+    host: api.zhudatuan.com
+    workspace: services/commerce
+    artifact: services/commerce/dist
+    process: zhudatuan-api
+  media:
+    host: media.zhudatuan.com
+    root: /opt/zhudatuan/media
+  labs:
+    host: labs.zhudatuan.com
+    transactionApi: disabled
+  chat:
+    host: chat.zhudatuan.com
+    status: pending
+forbiddenInputs:
+  - ../archives
+  - infrastructure/aliyun/delivery.yml
+  - infrastructure/storefront-compatibility/aliyun
+  - apps/auth
+  - apps/storefront
+  - services/commerce-api/dist/admin-server.cjs
+release:
+  buildFromCleanCheckout: true
+  ownerManifestMustPass: true
+  compatibilityMigrationBeforeRuntime: 20260828060000_auth_membership_selection_boundary.sql
+  mediaMigrationBeforeWriteback: 20260828061000_catalog_media_domain_boundary.sql
+  caddyValidateBeforeReload: true

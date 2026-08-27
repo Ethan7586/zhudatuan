@@ -55,6 +55,21 @@ describe('WeChat Pay configuration', () => {
       })
     ).toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_NOT_PUBLIC' }));
   });
+
+  it('rejects a public but unapproved notification host', () => {
+    expect(() =>
+      loadWechatPayConfig({
+        WECHAT_MINIAPP_APP_ID: keys.config.appId,
+        WECHAT_PAY_MCH_ID: keys.config.mchId,
+        WECHAT_PAY_MERCHANT_SERIAL_NO: keys.config.merchantSerialNo,
+        WECHAT_PAY_MERCHANT_PRIVATE_KEY: keys.config.merchantPrivateKeyPem,
+        WECHAT_PAY_API_V3_KEY: keys.config.apiV3Key,
+        WECHAT_PAY_PLATFORM_PUBLIC_KEY: keys.config.platformPublicKeyPem,
+        WECHAT_PAY_PLATFORM_KEY_ID: keys.config.platformKeyId,
+        WECHAT_PAY_NOTIFY_URL: 'https://payments.example/api/v1/payments/wechat/notify',
+      })
+    ).toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_NOT_APPROVED' }));
+  });
 });
 
 describe('WeChat Pay RSA signing', () => {

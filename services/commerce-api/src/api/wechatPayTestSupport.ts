@@ -18,7 +18,7 @@ export async function createWechatPayTestKeys(): Promise<WechatPayTestKeys> {
       apiV3Key: '0123456789abcdef0123456789abcdef',
       platformPublicKeyPem: platform.publicKeyPem,
       platformKeyId: 'PUB_KEY_ID_TEST_PLATFORM_2026',
-      notifyUrl: 'https://hbbtzn.com/api/v1/payments/wechat/notify',
+      notifyUrl: 'https://zhudatuan.com/api/v1/payments/wechat/notify',
     },
     merchantPublicKeyPem: merchant.publicKeyPem,
     platformPrivateKeyPem: platform.privateKeyPem,
