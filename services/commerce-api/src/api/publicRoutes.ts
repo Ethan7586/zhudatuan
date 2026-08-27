@@ -58,6 +58,9 @@ export async function handleHealth(request: Request, env: WorkerEnv, requestId: 
 
 export async function handleLogin(request: Request, env: WorkerEnv, requestId: string): Promise<Response> {
   if (request.method !== 'POST') return methodNotAllowed(['POST'], requestId);
+  if (!loginOriginAllowed(request, env)) {
+    return apiError(403, 'LOGIN_ORIGIN_NOT_ALLOWED', '登录请求来源不在允许清单', requestId);
+  }
   const registeredAuthEnabled = isSupabaseConfigured(env);
   if (!registeredAuthEnabled && !isDemoAuthEnabled(env)) {
     return apiError(503, 'AUTH_PROVIDER_NOT_CONFIGURED', '生产环境仅接受已配置的企业身份提供方登录', requestId);
@@ -93,6 +96,9 @@ export async function handleLogin(request: Request, env: WorkerEnv, requestId: s
   }
   const target = targetForRequest(request);
   const localLogin = registeredAuthEnabled ? await authenticateLocalMember(username, password, target, env) : { runtime: null, credentialFound: false, mustResetPassword: false, passwordHash: null };
+  if (localLogin.selectionRequired) {
+    return apiError(409, 'MEMBERSHIP_SELECTION_REQUIRED', '该账号存在多个可用身份；服务端身份选择接通前不会建立会话', requestId);
+  }
   const registeredRuntime = localLogin.runtime;
   const account = registeredRuntime || localLogin.credentialFound ? null : getDemoAccounts(env).find((candidate) => candidate.username.trim().toLowerCase() === username.trim().toLowerCase());
   const demoRuntime = account && (await verifyDemoPassword(password, account.password)) ? await resolveDemoMembership(env, account, target) : null;
@@ -116,10 +122,11 @@ export async function handleLogin(request: Request, env: WorkerEnv, requestId: s
     authzVersion: runtime.membership.authzVersion,
   });
   const redirect = safeLoginRedirect(request);
-  if (redirect && target === 'admin') {
-    // Public test flow: a top-level form POST lets smart.hbbtzn.com set its own
-    // host-only cookie, then lands directly in the admin app. No password or
-    // ticket is placed in the URL.
+  if (redirect) {
+    // A top-level form POST lets the destination host set its own host-only
+    // cookie, then returns the browser to a site-local path. This is required
+    // for both the standalone accounts site -> storefront flow and admin
+    // login. No password or ticket is placed in the URL.
     return new Response(null, {
       status: 303,
       headers: { 'set-cookie': cookie, location: redirect },
@@ -130,6 +137,9 @@ export async function handleLogin(request: Request, env: WorkerEnv, requestId: s
 
 export async function handleRegisteredCredentialDiscovery(request: Request, env: WorkerEnv, requestId: string): Promise<Response> {
   if (request.method !== 'POST') return methodNotAllowed(['POST'], requestId);
+  if (!loginOriginAllowed(request, env)) {
+    return apiError(403, 'LOGIN_ORIGIN_NOT_ALLOWED', '登录请求来源不在允许清单', requestId);
+  }
   if (!isSupabaseConfigured(env)) {
     return apiError(503, 'AUTH_PROVIDER_NOT_CONFIGURED', '会员账号服务尚未配置', requestId);
   }
@@ -147,6 +157,9 @@ export async function handleRegisteredCredentialDiscovery(request: Request, env:
   }
 
   const localLogin = await authenticateLocalMember(username, password, undefined, env);
+  if (localLogin.selectionRequired) {
+    return apiError(409, 'MEMBERSHIP_SELECTION_REQUIRED', '该账号存在多个可用身份；服务端身份选择接通前不会建立会话', requestId);
+  }
   const demoAccount = localLogin.credentialFound ? null : getDemoAccounts(env).find((candidate) => candidate.username.trim().toLowerCase() === username.trim().toLowerCase());
   const demoTarget = demoAccount?.adminMembershipId ? 'admin' : 'storefront';
   const demoRuntime = demoAccount && (await verifyDemoPassword(password, demoAccount.password)) ? await resolveDemoMembership(env, demoAccount, demoTarget) : null;
@@ -161,6 +174,9 @@ export async function handleRegisteredCredentialDiscovery(request: Request, env:
 
 export async function handleInitialPasswordChange(request: Request, env: WorkerEnv, requestId: string): Promise<Response> {
   if (request.method !== 'POST') return methodNotAllowed(['POST'], requestId);
+  if (!loginOriginAllowed(request, env)) {
+    return apiError(403, 'LOGIN_ORIGIN_NOT_ALLOWED', '登录请求来源不在允许清单', requestId);
+  }
   const input = await readLoginInput(request);
   const username = typeof input?.username === 'string' ? input.username : '';
   const currentPassword = typeof input?.password === 'string' ? input.password : '';
@@ -186,8 +202,21 @@ export async function handleInitialPasswordChange(request: Request, env: WorkerE
   return json({ changed: true, loginRequired: true, requestId });
 }
 
-type RegisteredCandidate = { memberId?: string; membershipId?: string; target?: 'storefront' | 'admin'; passwordHash?: string; mustResetPassword?: boolean };
-type LocalLogin = { runtime: MembershipRuntime | null; credentialFound: boolean; mustResetPassword: boolean; passwordHash: string | null };
+type RegisteredCandidate = {
+  memberId?: string;
+  membershipId?: string;
+  target?: 'storefront' | 'admin';
+  passwordHash?: string;
+  mustResetPassword?: boolean;
+  entrances?: unknown[];
+};
+type LocalLogin = {
+  runtime: MembershipRuntime | null;
+  credentialFound: boolean;
+  mustResetPassword: boolean;
+  passwordHash: string | null;
+  selectionRequired?: boolean;
+};
 const DUMMY_PASSWORD_HASH = `pbkdf2-sha256$310000$AAAAAAAAAAAAAAAAAAAAAA==$${'A'.repeat(43)}=`;
 
 export async function authenticateLocalMember(identifier: string, password: string, target: 'storefront' | 'admin' | undefined, env: WorkerEnv): Promise<LocalLogin> {
@@ -208,6 +237,16 @@ export async function authenticateLocalMember(identifier: string, password: stri
     return { runtime: null, credentialFound: false, mustResetPassword: false, passwordHash: null };
   }
   if (!(await verifyPassword(password, candidate.passwordHash))) return { runtime: null, credentialFound: true, mustResetPassword: false, passwordHash: null };
+  const selectionRequired = env.AUTH_MODE === 'membership' && (!Array.isArray(candidate.entrances) || candidate.entrances.length !== 1);
+  if (selectionRequired) {
+    return {
+      runtime: null,
+      credentialFound: true,
+      mustResetPassword: candidate.mustResetPassword === true,
+      passwordHash: candidate.passwordHash,
+      selectionRequired: true,
+    };
+  }
   const resolvedTarget = candidate.target ?? target;
   if (!resolvedTarget) return { runtime: null, credentialFound: true, mustResetPassword: false, passwordHash: null };
   return {
@@ -215,6 +254,7 @@ export async function authenticateLocalMember(identifier: string, password: stri
     credentialFound: true,
     mustResetPassword: candidate.mustResetPassword === true,
     passwordHash: candidate.passwordHash,
+    selectionRequired: false,
   };
 }
 
@@ -231,10 +271,47 @@ async function readLoginInput(request: Request): Promise<Record<string, unknown>
 }
 
 function safeLoginRedirect(request: Request): string | null {
-  const requested = new URL(request.url).searchParams.get('redirect');
-  // Only a site-local absolute path may be used. This prevents an auth endpoint
-  // from becoming an open redirector.
-  return requested && requested.startsWith('/') && !requested.startsWith('//') ? requested : null;
+  const requestUrl = new URL(request.url);
+  const requested = requestUrl.searchParams.get('redirect');
+  if (!requested) return null;
+  let decoded = requested;
+  try {
+    // Decode twice so encoded path separators or controls cannot become an
+    // unsafe second-stage Location after an intermediary normalization.
+    decoded = decodeURIComponent(decoded);
+    decoded = decodeURIComponent(decoded);
+  } catch {
+    return null;
+  }
+  if (!decoded.startsWith('/') || decoded.startsWith('//') || decoded.includes('\\') || /[\u0000-\u001f\u007f]/.test(decoded)) return null;
+  try {
+    const destination = new URL(requested, requestUrl);
+    const location = `${destination.pathname}${destination.search}${destination.hash}`;
+    if (destination.origin !== requestUrl.origin || !location.startsWith('/') || location.startsWith('//') || location.includes('\\') || /[\u0000-\u001f\u007f]/.test(location)) return null;
+    return location;
+  } catch {
+    return null;
+  }
+}
+
+function loginOriginAllowed(request: Request, env: WorkerEnv): boolean {
+  const requestOrigin = new URL(request.url).origin;
+  const suppliedOrigin = request.headers.get('origin');
+  const fetchSite = request.headers.get('sec-fetch-site');
+  const isExplicitDevelopment = env.APP_ENV === 'development' || env.APP_ENV === 'test';
+
+  // Only an explicitly configured development/test runtime may accept a
+  // same-site request without Origin. Missing production configuration must
+  // fail closed instead of silently enabling the local compatibility path.
+  if (!suppliedOrigin) return isExplicitDevelopment && fetchSite !== 'cross-site';
+
+  const allowed = new Set(['https://zhudatuan.com', 'https://accounts.zhudatuan.com', 'https://console.zhudatuan.com']);
+  if (isExplicitDevelopment) {
+    allowed.add(requestOrigin);
+    allowed.add('http://127.0.0.1:3002');
+    allowed.add('http://localhost:3002');
+  }
+  return allowed.has(suppliedOrigin);
 }
 
 function publicAuthorization(context: import('./types').AuthorizationContext) {
@@ -249,6 +326,9 @@ function publicAuthorization(context: import('./types').AuthorizationContext) {
 
 export async function handleLogout(request: Request, env: WorkerEnv, requestId: string): Promise<Response> {
   if (request.method !== 'POST') return methodNotAllowed(['POST'], requestId);
+  if (!loginOriginAllowed(request, env)) {
+    return apiError(403, 'LOGIN_ORIGIN_NOT_ALLOWED', '退出请求来源不在允许清单', requestId);
+  }
   const session = await readSession(request, env);
   if (session) await callRpc<boolean>(env, 'api_revoke_auth_session', { p_actor_member_id: session.memberId, p_session_id: session.sessionId, p_reason: 'logout' });
   return json({ authenticated: false, requestId }, { headers: { 'set-cookie': clearSessionCookie(request) } });

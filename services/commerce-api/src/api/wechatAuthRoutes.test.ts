@@ -140,7 +140,7 @@ describe('WeChat mini-program registration', () => {
       MINIAPP_SESSION_SIGNING_KEY: 'miniapp-session-key-longer-than-thirty-two-bytes',
       USERNAME_REGISTRATION_ENABLED: 'true',
     };
-    const request = new Request('https://hbbtzn.com/api/v1/auth/wechat/register', {
+    const request = new Request('https://zhudatuan.com/api/v1/auth/wechat/register', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-real-ip': '203.0.113.9', 'user-agent': 'WeChat Mini Program' },
       body: JSON.stringify({
@@ -168,7 +168,7 @@ function response(value: unknown): Response {
 }
 
 function sessionRequest(): Request {
-  return new Request('https://hbbtzn.com/api/v1/auth/wechat/session', {
+  return new Request('https://zhudatuan.com/api/v1/auth/wechat/session', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-real-ip': '203.0.113.9', 'user-agent': 'WeChat Mini Program' },
     body: JSON.stringify({ code: 'one-time-code' }),

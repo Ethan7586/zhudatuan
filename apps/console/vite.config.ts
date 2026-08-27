@@ -9,7 +9,7 @@ export default defineConfig(() => {
     server: {
       port: 5173,
       /**
-       * In production Caddy reverse-proxies smart.hbbtzn.com/api/* to the commerce
+       * In production Caddy reverse-proxies console.zhudatuan.com/api/* to the commerce
        * runtime. The dev server must do the same or every authenticated request
        * would hit the Vite server itself and fail.
        */

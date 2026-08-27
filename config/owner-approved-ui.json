@@ -1,0 +1,123 @@
+{
+  "schema": "zhudatuan.owner-approved-ui.v1",
+  "approvedAt": "2026-08-28T05:39:24+08:00",
+  "owner": "Ethan",
+  "policy": {
+    "sourceRoot": ".",
+    "archivesAreDeployable": false,
+    "deploymentMustUseListedEntrypoints": true,
+    "visualReachabilityIsNotBackendAcceptance": true,
+    "ownerApprovalRequiredForChanges": true
+  },
+  "deployment": {
+    "proxyConfig": "infrastructure/zhudatuan/aliyun/Caddyfile",
+    "deliveryConfig": "infrastructure/zhudatuan/aliyun/delivery.yml",
+    "processConfig": "infrastructure/zhudatuan/aliyun/ecosystem.config.cjs",
+    "forbiddenInputs": ["infrastructure/storefront-compatibility/aliyun/Caddyfile", "../archives"],
+    "requiredHosts": ["zhudatuan.com", "accounts.zhudatuan.com", "console.zhudatuan.com", "api.zhudatuan.com", "media.zhudatuan.com", "labs.zhudatuan.com", "chat.zhudatuan.com"],
+    "forbiddenRuntimeTokens": ["hbbtzn.com", "/opt/smart-wing", "apps/auth/dist", "apps/storefront/dist", "admin-server.cjs"],
+    "requiredRuntimeEnvironment": [
+      "APP_ENV=production",
+      "AUTH_MODE=membership",
+      "PUBLIC_MALL_SLUG=<owner-approved-mall>",
+      "PUBLIC_MEDIA_BASE_URL=https://media.zhudatuan.com",
+      "WECHAT_PAY_NOTIFY_URL=https://zhudatuan.com/api/v1/payments/wechat/notify",
+      "API_ALLOWED_ORIGINS=https://console.zhudatuan.com"
+    ],
+    "requiredAppliedMigrations": [
+      "database/storefront-compatibility/supabase/migrations/20260828060000_auth_membership_selection_boundary.sql",
+      "database/storefront-compatibility/supabase/migrations/20260828061000_catalog_media_domain_boundary.sql"
+    ],
+    "requiredValidation": ["caddy validate --adapter caddyfile", "multi-membership discovery returns 409 without Set-Cookie"],
+    "lockedFiles": {
+      "infrastructure/zhudatuan/aliyun/Caddyfile": "26d1cb3fb76ba6aa665e2573b3e4260aa585aaba30521f76996bace517aed8ee",
+      "infrastructure/zhudatuan/aliyun/delivery.yml": "1ac5a2173224afc1d769ef1dbd2187d57f4253e45829cb9d75d8c503354d95f4",
+      "infrastructure/zhudatuan/aliyun/ecosystem.config.cjs": "d8a8584d01dd6f69229c6d9e41672543267af7f91f5d3e82db806c2a1fb3fa52"
+    }
+  },
+  "surfaces": {
+    "storefront": {
+      "domain": "zhudatuan.com",
+      "workspace": "apps/storefront-web",
+      "route": "/",
+      "entrypoint": "apps/storefront-web/app/page.tsx",
+      "rootComponent": "apps/storefront-web/src/StorefrontRoot.tsx",
+      "standardComponent": "apps/storefront-web/src/components/laptop/LaptopFrame.tsx",
+      "standardMarker": "smart-wing-storefront-web-v1",
+      "approvedReferenceRoute": "/laptop-web",
+      "buildCommand": "npm run build:storefront",
+      "output": "apps/storefront-web/dist",
+      "requiredBuildEnvironment": ["APP_ENV=production", "AUTH_MODE=membership", "PUBLIC_MALL_SLUG=<owner-approved-mall>", "PUBLIC_MEDIA_BASE_URL=https://media.zhudatuan.com"],
+      "acceptance": "visual-approved-functional-partial",
+      "rejectedEntrypoint": "apps/storefront-web/src/App.tsx",
+      "lockedFiles": {
+        "apps/storefront-web/app/page.tsx": "653e8b2c6ee802a52b84d5140fcbbc08f5f4d074540a12a0eaf1ddc3c46b34ac",
+        "apps/storefront-web/src/StorefrontRoot.tsx": "695f28a3bb2dca06f8a9e3fc4429f172e09440f4684d46ce08f79a4539f6f876",
+        "apps/storefront-web/src/components/laptop/LaptopFrame.tsx": "9d94047019ff1a30ab5d132f217b92242ab8218b150bedc0b6cc800458b78a93",
+        "apps/storefront-web/src/components/laptop/LaptopHeader.tsx": "b55dba66fe695bad84741984cb7be7acf5207408288c36113946308e232c54a3",
+        "apps/storefront-web/src/components/laptop/LaptopTopSwitcher.tsx": "9a77a5b1a71c33de70a2ee5f3f97b270f15e895845c9e4b686347f3ea35dccc0",
+        "apps/storefront-web/src/components/laptop/StorefrontWebStandard.ts": "a2e5b058b431a505d486f292250457f82a91041f7e23be52386ae00e906b3699",
+        "apps/storefront-web/src/config/storefrontAuth.ts": "24e56a5439a6ac280d16db197ed1e33a5e8250174daba198a79133eab15dd450",
+        "apps/storefront-web/src/config/showcaseAccess.ts": "fad0ce5a6a8467310fa5e764c5cdb90b3f7909805ec04d97cbdbd514d6085000",
+        "apps/storefront-web/src/config/productionDemoAuth.ts": "747e568a05c39a4eac24e3e46c272f874181875a69ffd9171bb603218593782e",
+        "apps/storefront-web/worker/index.ts": "5457479e43e47fdec080207b1eeed6611995306715c2c0e7be6679a25e42c006",
+        "apps/storefront-web/vite.config.ts": "db8dfa7f68a0bff39cb81ef98835e7d251e5573188ae200d8bfc87825e7bf516"
+      }
+    },
+    "accounts": {
+      "domain": "accounts.zhudatuan.com",
+      "workspace": "apps/auth-web",
+      "route": "/",
+      "entrypoint": "apps/auth-web/src/App.tsx",
+      "approvedComponent": "apps/auth-web/src/screens/LoginPage.tsx",
+      "approvedReference": "../archives/smart-wing-20260826/Shop1/apps/auth-web/src/screens/LoginPage.tsx",
+      "buildCommand": "npm run build:auth",
+      "output": "apps/auth-web/dist",
+      "acceptance": "visual-approved-password-session-compatible",
+      "sessionEndpoint": "https://zhudatuan.com/api/v1/auth/login",
+      "disabledUntilBackendExists": ["otp", "work-weixin-qr", "wechat-qr", "enterprise-sso", "multi-membership-selection", "step-up"],
+      "lockedFiles": {
+        "apps/auth-web/src/App.tsx": "5f158b34867a6eea9f06906413c590c024cff2949900946c5bf0cc59a00fe58a",
+        "apps/auth-web/src/screens/LoginPage.tsx": "ee3eb22c88e40856e156859afc358732c3948aa41ab71e6539c0e599f47bc95c",
+        "apps/auth-web/src/context/MallContext.tsx": "f7413e2e5e39a9a888ba1aab4ac742c6adbc52b6d37749cc130c1f256e639559",
+        "apps/auth-web/src/services/auth.ts": "613239172484080f4043772799b3b2cba4d75fc8b5c690151e9c02164e2485aa",
+        "apps/auth-web/vite.config.ts": "20a25f1ea0d990d5d06a2f7ccbbf92ed43d538bb4182253eb522485cbc57ab0c",
+        "apps/auth-web/index.html": "c5f4a203529a02bc4261770fed2db1ccbe7dc9010ff8a42423f7e2e1129c3eb8",
+        "apps/auth-web/public/brand/site.webmanifest": "fba52460dae3b828f55fdd5b8c86aa4ea1eb079fe729de901a090ee63b4d3d79",
+        "services/commerce-api/src/api/publicRoutes.ts": "54230700a6a66c8363cb53e66282106c565cee49d193450bdea913fd445344a2",
+        "services/commerce-api/src/api/session.ts": "d5ea335ab11f0cb750066f634c4dd2efac33eacc6cdfb9bc37db1a2d8b6cd5f0",
+        "services/commerce-api/src/api/publicCatalogImages.ts": "d66c08186adf0d52f897baea10128f62605046010345be73795c518377fd995c",
+        "services/commerce-api/src/api/publicCatalogRoutes.ts": "94e3d6230e3b41d36f6daa2e9740ac703dd2ac3e20f07f237efc3f79755c03ec",
+        "services/commerce-api/src/api/wechatPayConfig.ts": "e88a2a23d33ab7743bb709e361e3bf1e8d01870c4461200d10a4c0c78deb09b6",
+        "services/commerce-api/.env.example": "114cb3b1039be9186ac7785d9b8281b3c7653ead2ad4694191d5bd8a64ea01b3",
+        "database/storefront-compatibility/supabase/migrations/20260828060000_auth_membership_selection_boundary.sql": "61c0a6538009d4e54e49a7b1e292261232badf9629f5be205407c71e5563a472",
+        "database/storefront-compatibility/supabase/migrations/20260828061000_catalog_media_domain_boundary.sql": "828bb0916bc5bf2b74e3bdd6b4d8a3b658cad93151ca73752239e7ddf13b903e"
+      }
+    },
+    "console": {
+      "domain": "console.zhudatuan.com",
+      "workspace": "apps/console",
+      "route": "/scopes/platform/platform%3Apreview/cockpit",
+      "entrypoint": "apps/console/src/main.tsx",
+      "router": "apps/console/src/route/ConsoleRouter.tsx",
+      "standardMarker": "admin-web-v1",
+      "approvedReference": "../archives/smart-wing-20260826/Shop/smart-wing/apps/console",
+      "buildCommand": "npm run build:console",
+      "output": "apps/console/dist",
+      "acceptance": "visual-approved-preview-fixture",
+      "financeBoundary": "finance-upgrade-is-separate-and-not-yet-owner-frozen",
+      "requiredBuildEnvironment": ["VITE_API_BASE_URL=https://api.zhudatuan.com", "VITE_AUTH_BASE_URL=https://accounts.zhudatuan.com", "VITE_CLIENT_VERSION=<release-version>", "VITE_ZHUDIAN_SOLUTION_ORIGIN=<approved-origin>"],
+      "lockedFiles": {
+        "apps/console/src/main.tsx": "9e59f3b4abf5f8b359b42cd3c6e9c09dcda7decdaf36b1e0f19c5b427d27eac9",
+        "apps/console/index.html": "354111187c3d27e8d775d1f2263fedb8ac8709ad98a9a9e4ca5957e614139686",
+        "apps/console/vite.config.ts": "0a370c90434c7c2d772117e503de229db67dce41f940c8e07209eb76cfeeb195",
+        "apps/console/src/route/ConsoleRouter.tsx": "8d90b7af76563d5a49ee527288b45ad2a27f2c61edcc720aa0ac8abf0f708f33",
+        "apps/console/src/shell/ScopeShell.tsx": "237ab129916cb805a0252b62bbdc943459d6f17505ba74440684660ee070938c",
+        "apps/console/src/components/Sidebar.tsx": "5052da5087da512e5c4ecf14869f94bedb87c1e7cc100d523402c1ccb1d2fe96",
+        "apps/console/src/feature/cockpit/CockpitRoute.tsx": "9a0699f178f45ebd21c6130bb3d9dffd872a907cde2f01c75cea13770b6147e6",
+        "apps/console/src/smart-wing-vi.css": "847cdcf3dbbedd6b7a7cf7f7bbe1a8cc1ae08682ab4963fd8989f9da26a8495e",
+        "apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084"
+      }
+    }
+  }
+}
