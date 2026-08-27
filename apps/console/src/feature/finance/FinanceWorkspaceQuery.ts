@@ -7,7 +7,6 @@ import { FinanceReconciliationPageSchema, type FinanceFilter } from './FinanceWo
 const reconciliationsRead = createFetchFinanceReconciliationsRead(appConfig.apiBaseUrl);
 
 export interface FinanceReconciliationQuery extends FinanceFilter {
-  readonly kind: 'payment' | 'refund';
   readonly cursor?: string;
   readonly limit: number;
 }
@@ -29,24 +28,23 @@ export const financeReconciliationKey = (context: ConsoleContext, filter: Financ
     filter.mall,
     filter.status,
     filter.difference,
-    filter.kind,
     filter.cursor ?? null,
     filter.limit,
   ] as const);
 
 export async function readFinanceReconciliations(context: ConsoleContext, filter: FinanceReconciliationQuery, signal: AbortSignal) {
+  const preview = isFinancePreviewContext(context);
   const value = await reconciliationsRead(
     {
       query: {
         limit: filter.limit,
-        kind: filter.kind,
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
-        ...(filter.q !== '' ? { q: filter.q } : {}),
-        ...(filter.period !== '' ? { period: filter.period } : {}),
-        ...(filter.channel !== '' ? { channel: filter.channel } : {}),
-        ...(filter.mall !== '' ? { mall: filter.mall } : {}),
-        ...(filter.status !== '' ? { status: filter.status } : {}),
-        ...(filter.difference !== '' ? { difference: filter.difference } : {}),
+        ...(preview && filter.q !== '' ? { q: filter.q } : {}),
+        ...(preview && filter.period !== '' ? { period: filter.period } : {}),
+        ...(preview && filter.channel !== '' ? { channel: filter.channel } : {}),
+        ...(preview && filter.mall !== '' ? { mall: filter.mall } : {}),
+        ...(preview && filter.status !== '' ? { status: filter.status } : {}),
+        ...(preview && filter.difference !== '' ? { difference: filter.difference } : {}),
       },
     },
     consoleRequest(context.scope, signal, context.session.accessVersion)

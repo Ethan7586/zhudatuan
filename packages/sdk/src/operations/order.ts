@@ -48,7 +48,7 @@ export function createFetchOrderOrdersCreate(baseUrl: string): OperationMethod<"
 }
 
 function bindOrdersCreate(client: OperationExecutor): OperationMethod<"order.orders.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.orders.create","method":"POST","path":"/api/v1/orders","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.orders.create","method":"POST","path":"/api/v1/orders","audience":"member","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchOrderOrdersRead(baseUrl: string): OperationMethod<"order.orders.read"> {
@@ -56,7 +56,7 @@ export function createFetchOrderOrdersRead(baseUrl: string): OperationMethod<"or
 }
 
 function bindOrdersRead(client: OperationExecutor): OperationMethod<"order.orders.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.orders.read","method":"GET","path":"/api/v1/orders","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.orders.read","method":"GET","path":"/api/v1/orders","audience":"member","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchOrderRemindersCreate(baseUrl: string): OperationMethod<"order.reminders.create"> {
@@ -64,7 +64,7 @@ export function createFetchOrderRemindersCreate(baseUrl: string): OperationMetho
 }
 
 function bindRemindersCreate(client: OperationExecutor): OperationMethod<"order.reminders.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.reminders.create","method":"POST","path":"/api/v1/orders/{orderid}/reminders","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["orderid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.reminders.create","method":"POST","path":"/api/v1/orders/{orderid}/reminders","audience":"member","idempotent":false,"pathKeys":["orderid"]}));
 }
 
 export function createFetchOrderOrdersExport(baseUrl: string): OperationMethod<"order.orders.export"> {
@@ -72,7 +72,7 @@ export function createFetchOrderOrdersExport(baseUrl: string): OperationMethod<"
 }
 
 function bindOrdersExport(client: OperationExecutor): OperationMethod<"order.orders.export"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.orders.export","method":"POST","path":"/api/v1/orders/exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.orders.export","method":"POST","path":"/api/v1/orders/exports","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchOrderAftersalesRead(baseUrl: string): OperationMethod<"order.aftersales.read"> {
@@ -80,7 +80,7 @@ export function createFetchOrderAftersalesRead(baseUrl: string): OperationMethod
 }
 
 function bindAftersalesRead(client: OperationExecutor): OperationMethod<"order.aftersales.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.read","method":"GET","path":"/api/v1/orders/aftersales","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.read","method":"GET","path":"/api/v1/orders/aftersales","audience":"member","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchOrderAftersalesApply(baseUrl: string): OperationMethod<"order.aftersales.apply"> {
@@ -88,7 +88,7 @@ export function createFetchOrderAftersalesApply(baseUrl: string): OperationMetho
 }
 
 function bindAftersalesApply(client: OperationExecutor): OperationMethod<"order.aftersales.apply"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.apply","method":"POST","path":"/api/v1/orders/{orderid}/aftersales","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["orderid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.apply","method":"POST","path":"/api/v1/orders/{orderid}/aftersales","audience":"member","idempotent":false,"pathKeys":["orderid"]}));
 }
 
 export function createFetchOrderAftersalesApprove(baseUrl: string): OperationMethod<"order.aftersales.approve"> {
@@ -96,7 +96,7 @@ export function createFetchOrderAftersalesApprove(baseUrl: string): OperationMet
 }
 
 function bindAftersalesApprove(client: OperationExecutor): OperationMethod<"order.aftersales.approve"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.approve","method":"PUT","path":"/api/v1/orders/aftersales/{aftersaleid}/approval","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["aftersaleid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.approve","method":"PUT","path":"/api/v1/orders/aftersales/{aftersaleid}/approval","audience":"operator","idempotent":true,"pathKeys":["aftersaleid"]}));
 }
 
 export function createFetchOrderAftersalesReject(baseUrl: string): OperationMethod<"order.aftersales.reject"> {
@@ -104,5 +104,5 @@ export function createFetchOrderAftersalesReject(baseUrl: string): OperationMeth
 }
 
 function bindAftersalesReject(client: OperationExecutor): OperationMethod<"order.aftersales.reject"> {
-  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.reject","method":"DELETE","path":"/api/v1/orders/aftersales/{aftersaleid}/approval","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["aftersaleid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"order.aftersales.reject","method":"DELETE","path":"/api/v1/orders/aftersales/{aftersaleid}/approval","audience":"operator","idempotent":true,"pathKeys":["aftersaleid"]}));
 }

@@ -30,7 +30,7 @@ export function createFetchCapabilityAssignmentsRead(baseUrl: string): Operation
 }
 
 function bindAssignmentsRead(client: OperationExecutor): OperationMethod<"capability.assignments.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"capability.assignments.read","method":"GET","path":"/api/v1/capabilities/assignments","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"capability.assignments.read","method":"GET","path":"/api/v1/capabilities/assignments","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchCapabilityAssignmentsManage(baseUrl: string): OperationMethod<"capability.assignments.manage"> {
@@ -38,5 +38,5 @@ export function createFetchCapabilityAssignmentsManage(baseUrl: string): Operati
 }
 
 function bindAssignmentsManage(client: OperationExecutor): OperationMethod<"capability.assignments.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"capability.assignments.manage","method":"PUT","path":"/api/v1/capabilities/assignments/{assignmentid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["assignmentid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"capability.assignments.manage","method":"PUT","path":"/api/v1/capabilities/assignments/{assignmentid}","audience":"operator","idempotent":true,"pathKeys":["assignmentid"]}));
 }

@@ -1,8 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { ClaimedJob, JobProcessor } from '../../foundation/application/JobRunner';
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
-import { providerOccurredAt, type PaymentGateway, type ProviderRefundObservation } from './application/port/PaymentGateway';
+import type { PaymentGateway } from './application/port/PaymentGateway';
 import { PaymentReference } from './domain/model/PaymentReference';
 import { PaymentSettlement, releaseOrderHolds } from './application/PaymentSettlement';
 import { RefundPlanner } from './application/RefundPlanner';
@@ -81,11 +80,10 @@ export class PaymentJobProcessor implements JobProcessor {
 
   private settleObserved(selected: IntentTarget, observed: ProviderObservation): Promise<void> {
     if (!observed.transaction) throw new Error('PAYMENT_PROVIDER_TRANSACTION_MISSING');
-    const occurredAt = providerOccurredAt(observed.occurredAt, 'PAYMENT_PROVIDER_OCCURRED_AT_REQUIRED');
-    return this.settleSuccess(selected, observed.transaction, occurredAt, paymentEffect(selected, observed.transaction, occurredAt));
+    return this.settleSuccess(selected, observed.transaction);
   }
 
-  private async settleSuccess(selected: IntentTarget, transaction: string, occurredAt: string, effect: ProviderEffect): Promise<void> {
+  private async settleSuccess(selected: IntentTarget, transaction: string): Promise<void> {
     const client = await this.pool.connect();
     try {
       await client.query('begin');
@@ -94,53 +92,39 @@ export class PaymentJobProcessor implements JobProcessor {
         from payment.intent intent join ordering.orderrecord orders on orders.id=intent.order_id join payment.attempt attempt on attempt.intent_id=intent.id
         where intent.id=$1 and attempt.id=$2 for update of intent,orders,attempt`, [selected.intent, selected.attempt])).rows[0];
       if (!current) { await client.query('commit'); return; }
-      const sealed = await client.query(`update payment.attempt set state='succeeded',external_transaction=$2,completed_at=$3::timestamptz,
-        provider_occurred_at=$3::timestamptz,provider_effect=$4::jsonb,
-        provider_effect_hash=encode(public.digest($4::jsonb::text,'sha256'),'hex')
-        where id=$1 and (external_transaction is null or external_transaction=$2)
-          and (provider_effect_hash is null or provider_effect_hash=encode(public.digest($4::jsonb::text,'sha256'),'hex')) returning id`,
-      [selected.attempt, transaction, occurredAt, JSON.stringify(effect)]);
-      if (!sealed.rows[0]) throw new Error('PAYMENT_PROVIDER_EFFECT_MISMATCH');
-      if (current.payment) {
-        await sealCapture(client, selected, occurredAt, effect, selected.amount_minor);
-        await client.query('commit');
-        return;
-      }
+      await client.query(`update payment.attempt set state='succeeded',external_transaction=$2,completed_at=clock_timestamp()
+        where id=$1 and (external_transaction is null or external_transaction=$2)`, [selected.attempt, transaction]);
+      if (current.payment) { await client.query('commit'); return; }
       const payable = ['created','authorizing','authorized'].includes(current.intent_state)
         && ['unpaid','authorizing'].includes(current.payment_state) && current.lifecycle_state !== 'cancelled';
       if (payable) {
         await this.settlement.capture(client, { intent: selected.intent, order: selected.order_id, scope: selected.scope_id, mall: selected.mall_id,
-          member: selected.member_id, amountMinor: selected.amount_minor, currency: selected.currency },
-        selected.amount_minor === selected.provider_minor ? 'wechat' : 'mixed', occurredAt);
-        await sealCapture(client, selected, occurredAt, effect, selected.amount_minor);
+          member: selected.member_id, amountMinor: selected.amount_minor, currency: selected.currency }, selected.amount_minor === selected.provider_minor ? 'wechat' : 'mixed');
       } else {
-        await this.captureLatePayment(client, selected, transaction, occurredAt, effect);
+        await this.captureLatePayment(client, selected, transaction);
       }
       await client.query('commit');
     } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
   }
 
-  private async captureLatePayment(database: OperationDatabase, selected: IntentTarget,
-    transaction: string, occurredAt: string, effect: ProviderEffect): Promise<void> {
+  private async captureLatePayment(database: import('../../foundation/application/ModuleOperations').OperationDatabase, selected: IntentTarget,
+    transaction: string): Promise<void> {
     await releaseOrderHolds(database, selected.order_id);
     await database.query(`update payment.intenttender set state=case when kind='wechat' then 'captured' else 'released' end where intent_id=$1`, [selected.intent]);
     await database.query(`update payment.intent set state='captured',version=version+1 where id=$1`, [selected.intent]);
     const payment = `payment:${selected.intent}`;
     await database.query(`insert into payment.payment(id,intent_id,amount_minor,currency,captured_minor,refunded_minor,state,version)
       values($1,$2,$3,$4,$3,0,'captured',0)`, [payment, selected.intent, selected.provider_minor, selected.currency]);
-    await database.query(`insert into payment.capture(id,scope_id,mall_id,member_id,order_id,source,currency,amount_minor,state,idempotency_key,
-      completed_at,created_at,provider_occurred_at,provider_effect,provider_effect_hash)
-      values($1,$2,$3,$4,$5,'latewechat',$6,$7,'succeeded',$8,$9::timestamptz,clock_timestamp(),$9::timestamptz,$10::jsonb,
-        encode(public.digest($10::jsonb::text,'sha256'),'hex'))`,
-    [`capture:${selected.intent}`, selected.scope_id, selected.mall_id, selected.member_id, selected.order_id, selected.currency,
-      selected.provider_minor, `late:${selected.intent}`, occurredAt, JSON.stringify(effect)]);
+    await database.query(`insert into payment.capture(id,scope_id,mall_id,member_id,order_id,source,currency,amount_minor,state,idempotency_key,completed_at,created_at)
+      values($1,$2,$3,$4,$5,'latewechat',$6,$7,'succeeded',$8,clock_timestamp(),clock_timestamp())`,
+    [`capture:${selected.intent}`, selected.scope_id, selected.mall_id, selected.member_id, selected.order_id, selected.currency, selected.provider_minor, `late:${selected.intent}`]);
     await database.query(`insert into payment.allocation(payment_id,target_type,target_id,amount_minor,currency)
       values($1,'order',$2,$3,$4)`, [payment, selected.order_id, selected.provider_minor, selected.currency]);
     await orderPort.markLatePaid(database, selected.order_id);
     const refund = await this.refunds.create(database, { id: `refund:late:${selected.intent}`, payment, amountMinor: selected.provider_minor,
       idempotency: `late:${selected.intent}`, reason: 'latepayment', scope: selected.scope_id });
     const evidence = { intent: selected.intent, order: selected.order_id, payment, refund: refund.id, transaction,
-      providerMinor: selected.provider_minor, providerOccurredAt: occurredAt, detectedAt: new Date().toISOString() };
+      providerMinor: selected.provider_minor, detectedAt: new Date().toISOString() };
     await database.query(`insert into payment.recoverycase(id,scope_id,order_id,resource_type,resource_id,severity,state,error_code,evidence,
       occurrence_count,opened_at) values($1,$2,$3,'intent',$4,'critical','open','PAYMENT_LATE_SUCCESS',$5::jsonb,1,clock_timestamp())
       on conflict(resource_type,resource_id) do update set occurrence_count=payment.recoverycase.occurrence_count+1,evidence=excluded.evidence`,
@@ -149,12 +133,12 @@ export class PaymentJobProcessor implements JobProcessor {
       values($1,'paymentrefund','payment',$2,jsonb_build_object('refund',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())
       on conflict(id) do update set state='queued',available_at=clock_timestamp(),updated_at=clock_timestamp()`,
     [`job:late:${selected.intent}`, selected.scope_id, refund.id]);
-    for (const [type, aggregate, payload, eventOccurredAt] of [
-      ['payment.late.detected', payment, evidence, occurredAt],
-      ['payment.autorefund.requested', refund.id, { ...evidence, refund: refund.id }, null],
+    for (const [type, aggregate, payload] of [
+      ['payment.late.detected', payment, evidence],
+      ['payment.autorefund.requested', refund.id, { ...evidence, refund: refund.id }],
     ] as const) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) values($1,$2,1,'payment',$3,$4,$5::jsonb,$1,coalesce($6::timestamptz,clock_timestamp()),clock_timestamp())`,
-    [`event:${randomUUID()}`, type, aggregate, selected.scope_id, JSON.stringify(payload), eventOccurredAt]);
+      occurred_at,available_at) values($1,$2,1,'payment',$3,$4,$5::jsonb,$1,clock_timestamp(),clock_timestamp())`,
+    [`event:${randomUUID()}`, type, aggregate, selected.scope_id, JSON.stringify(payload)]);
   }
 
   private async expire(selected: IntentTarget, providerState: string): Promise<void> {
@@ -242,8 +226,6 @@ export class PaymentJobProcessor implements JobProcessor {
     if (selected.currency !== 'CNY') throw new Error('PAYMENT_CURRENCY_UNSUPPORTED');
     if (selected.external_minor === 0) return this.completeRefund(refundid, null);
     if (!selected.transaction || selected.external_total <= 0) throw new Error('PAYMENT_TRANSACTION_REFERENCE_MISSING');
-    const sealed = await sealedRefundEffect(this.pool, refundid);
-    if (sealed) return this.completeRefund(refundid, sealed.reference);
     const sequence = await this.pool.query<{ sequence: number }>(`select coalesce(max(sequence),0)+1 sequence from payment.providerattempt where refund_id=$1`, [refundid]);
     const attempt = `providerattempt:${randomUUID()}`;
     await this.pool.query(`insert into payment.providerattempt(id,refund_id,sequence,operation,worker_id,outcome,started_at)
@@ -251,22 +233,20 @@ export class PaymentJobProcessor implements JobProcessor {
     await channelOperationPort.record(this.pool, { id: `provideroperation:refund:${refundid}`, provider: 'wechat', scope: selected.scope_id,
       kind: 'refund', idempotency: refundid, reference: refundid, external: null, state: 'processing',
       requestHash: digest(`${refundid}:${selected.external_minor}:${selected.external_total}:${selected.currency}`), response: {} });
-    let result: Readonly<ProviderRefundObservation>;
+    let result: Readonly<{ state: 'processing' | 'succeeded' | 'failed'; reference: string }>;
     try {
       result = selected.state === 'requested'
         ? await this.gateway.refund({ refundNumber: PaymentReference.refund(refundid).text, transaction: selected.transaction,
           refundMinor: selected.external_minor, totalMinor: selected.external_total, reason: selected.reason })
         : await this.gateway.queryRefund(PaymentReference.refund(refundid).text);
-      const occurredAt = result.state === 'succeeded'
-        ? providerOccurredAt(result.occurredAt, 'PAYMENT_REFUND_PROVIDER_OCCURRED_AT_REQUIRED') : null;
-      const authority = await persistRefundObservation(this.pool, { attempt, refund: refundid, reference: result.reference,
-        state: result.state, occurredAt, effect: occurredAt === null ? null : refundEffect(refundid, result.reference, selected, occurredAt),
-        response: result });
-      if (authority && result.state !== 'succeeded') return this.completeRefund(refundid, authority.reference);
+      await this.pool.query(`update payment.providerattempt set outcome=$2,provider_state=$3,provider_reference=$4,completed_at=clock_timestamp() where id=$1`,
+      [attempt, 'succeeded', result.state, result.reference]);
+      await channelOperationPort.update(this.pool, { provider: 'wechat', kind: 'refund', idempotency: refundid, external: result.reference,
+        state: result.state === 'failed' ? 'failed' : result.state === 'succeeded' ? 'succeeded' : 'processing', response: result });
     } catch (cause) {
       await this.pool.query(`update payment.providerattempt set outcome='unknown',error_code=$2,completed_at=clock_timestamp() where id=$1`, [attempt, error(cause)]);
-      if (!(await sealedRefundEffect(this.pool, refundid))) await channelOperationPort.update(this.pool, { provider: 'wechat', kind: 'refund',
-        idempotency: refundid, state: 'unknown', response: { error: error(cause) } });
+      await channelOperationPort.update(this.pool, { provider: 'wechat', kind: 'refund', idempotency: refundid,
+        state: 'unknown', response: { error: error(cause) } });
       throw cause;
     }
     if (result.state === 'failed') {
@@ -306,109 +286,13 @@ export class PaymentJobProcessor implements JobProcessor {
         where consumer='provider.wechatpayment' and event_id=$1 and processed_at is null for update`, [eventid]);
       const payload = event.rows[0]?.payload;
       if (!payload) { await client.query('commit'); return; }
-      if (typeof payload.tradeState === 'string') {
-        const occurredAt = providerOccurredAt(payload.successTime, 'PAYMENT_PROVIDER_EVENT_OCCURRED_AT_REQUIRED');
-        const effect = JSON.stringify({ version: 1, provider: 'wechat', kind: 'payment.signed-notification', occurredAt,
-          transaction: payload.transactionId, amountMinor: payload.totalCents, currency: 'CNY', receipt: payload });
-        const accepted = await client.query(`insert into payment.observation(id,attempt_id,provider_event_id,state,amount_minor,currency,
-          payload_hash,observed_at,provider_occurred_at,provider_effect,provider_effect_hash)
-          select $1,attempt.id,$2,$3,$4,'CNY',$5,clock_timestamp(),$6::timestamptz,$7::jsonb,
-            encode(public.digest($7::jsonb::text,'sha256'),'hex')
-          from payment.intent intent join payment.attempt attempt on attempt.intent_id=intent.id
-          join payment.payment payment on payment.intent_id=intent.id join payment.capture capture on capture.order_id=intent.order_id
-          where intent.provider_reference=$8 and attempt.state='succeeded' and attempt.external_transaction=$9
-            and attempt.provider_occurred_at=$6::timestamptz and capture.provider_occurred_at=$6::timestamptz
-          order by attempt.requested_at desc limit 1 on conflict(provider_event_id) do nothing returning id`,
-        [`observation:${digest(eventid)}`, eventid, payload.tradeState, payload.totalCents, digest(JSON.stringify(payload)),
-          occurredAt, effect, payload.outTradeNo, payload.transactionId]);
-        if (!accepted.rows[0]) throw new Error('PAYMENT_PROVIDER_EVENT_EFFECT_MISMATCH');
-      } else if (typeof payload.refundStatus === 'string' && payload.refundStatus === 'SUCCESS') {
-        const occurredAt = providerOccurredAt(payload.successTime, 'PAYMENT_REFUND_PROVIDER_EVENT_OCCURRED_AT_REQUIRED');
-        const accepted = await client.query(`select 1 from payment.refund refund join payment.providerattempt attempt
-          on attempt.refund_id=refund.id where refund.provider_reference=$1 and attempt.outcome='succeeded'
-          and attempt.provider_state='succeeded' and attempt.provider_reference=$2
-          and attempt.provider_occurred_at=$3::timestamptz limit 1`, [payload.outRefundNo, payload.refundId, occurredAt]);
-        if (!accepted.rows[0]) throw new Error('PAYMENT_REFUND_PROVIDER_EVENT_EFFECT_MISMATCH');
-      }
+      if (typeof payload.tradeState === 'string') await client.query(`insert into payment.observation(id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at)
+        select $1,attempt.id,$2,$3,$4,'CNY',$5,clock_timestamp() from payment.intent intent join payment.attempt attempt on attempt.intent_id=intent.id
+        where intent.provider_reference=$6 order by attempt.requested_at desc limit 1 on conflict(provider_event_id) do nothing`,
+      [`observation:${digest(eventid)}`, eventid, payload.tradeState, payload.totalCents, digest(JSON.stringify(payload)), payload.outTradeNo]);
       await client.query(`update runtime.inbox set processed_at=clock_timestamp(),attempts=attempts+1
         where consumer='provider.wechatpayment' and event_id=$1`, [eventid]);
       await client.query('commit');
     } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
   }
-}
-
-type ProviderEffect = Readonly<Record<string, unknown>>;
-
-function paymentEffect(selected: IntentTarget, transaction: string, occurredAt: string): ProviderEffect {
-  return Object.freeze({ version: 1, provider: 'wechat', kind: 'payment.capture', intent: selected.intent, order: selected.order_id,
-    transaction, providerAmountMinor: selected.provider_minor, aggregateAmountMinor: selected.amount_minor,
-    currency: selected.currency, occurredAt });
-}
-
-function refundEffect(refund: string, reference: string,
-  selected: Readonly<{ payment_id: string; external_minor: number; external_total: number; currency: string }>,
-  occurredAt: string): ProviderEffect {
-  return Object.freeze({ version: 1, provider: 'wechat', kind: 'payment.refund', refund, payment: selected.payment_id, reference,
-    amountMinor: selected.external_minor, totalMinor: selected.external_total, currency: selected.currency, occurredAt });
-}
-
-async function sealCapture(database: OperationDatabase, selected: IntentTarget, occurredAt: string, effect: ProviderEffect,
-  aggregateAmount: number): Promise<void> {
-  const serialized = JSON.stringify(effect);
-  const result = await database.query(`update payment.capture set completed_at=$2::timestamptz,provider_occurred_at=$2::timestamptz,
-      provider_effect=$3::jsonb,provider_effect_hash=encode(public.digest($3::jsonb::text,'sha256'),'hex')
-    where id=$1 and scope_id=$4 and order_id=$5 and amount_minor=$6 and currency=$7 and state='succeeded'
-      and (provider_effect_hash is null or provider_effect_hash=encode(public.digest($3::jsonb::text,'sha256'),'hex')) returning id`,
-  [`capture:${selected.intent}`, occurredAt, serialized, selected.scope_id, selected.order_id, aggregateAmount, selected.currency]);
-  if (!result.rows[0]) throw new Error('PAYMENT_CAPTURE_PROVIDER_EFFECT_MISMATCH');
-}
-
-async function sealedRefundEffect(database: DatabasePool, refund: string): Promise<Readonly<{ reference: string }> | null> {
-  const result = await database.query<{ reference: string | null }>(`select provider_effect->>'reference' reference from payment.providerattempt
-    where refund_id=$1 and outcome='succeeded' and provider_state='succeeded'
-      and provider_occurred_at is not null and provider_effect_hash is not null
-    order by provider_occurred_at,id limit 1`, [refund]);
-  const reference = result.rows[0]?.reference;
-  if (reference === undefined) return null;
-  if (!reference) throw new Error('PAYMENT_REFUND_PROVIDER_EFFECT_MISMATCH');
-  return Object.freeze({ reference });
-}
-
-async function persistRefundObservation(pool: DatabasePool, input: Readonly<{ attempt: string; refund: string; reference: string;
-  state: 'processing' | 'succeeded' | 'failed'; occurredAt: string | null; effect: ProviderEffect | null;
-  response: ProviderRefundObservation }>): Promise<Readonly<{ reference: string }> | null> {
-  const client = await pool.connect();
-  try {
-    await client.query('begin');
-    const locked = await client.query(`select id from payment.refund where id=$1 for update`, [input.refund]);
-    if (!locked.rows[0]) throw new Error('PAYMENT_REFUND_NOT_FOUND');
-    const serialized = input.effect === null ? null : JSON.stringify(input.effect);
-    const prior = await client.query<{ reference: string | null; matches: boolean }>(`select provider_effect->>'reference' reference,
-        case when $2::jsonb is null then false else provider_effect_hash=encode(public.digest($2::jsonb::text,'sha256'),'hex') end matches
-      from payment.providerattempt where refund_id=$1 and outcome='succeeded' and provider_state='succeeded'
-        and provider_occurred_at is not null and provider_effect_hash is not null
-      order by provider_occurred_at,id limit 1`, [input.refund, serialized]);
-    const authoritative = prior.rows[0];
-    if (authoritative && input.state === 'succeeded' && !authoritative.matches) throw new Error('PAYMENT_REFUND_PROVIDER_EFFECT_MISMATCH');
-    const changed = input.state === 'succeeded'
-      ? await client.query(`update payment.providerattempt set outcome='succeeded',provider_state='succeeded',provider_reference=$2,
-          completed_at=$3::timestamptz,provider_occurred_at=$3::timestamptz,provider_effect=$4::jsonb,
-          provider_effect_hash=encode(public.digest($4::jsonb::text,'sha256'),'hex') where id=$1
-          and (provider_effect_hash is null or provider_effect_hash=encode(public.digest($4::jsonb::text,'sha256'),'hex')) returning id`,
-        [input.attempt, input.reference, input.occurredAt, serialized])
-      : await client.query(`update payment.providerattempt set outcome='succeeded',provider_state=$2,provider_reference=$3,
-          completed_at=clock_timestamp() where id=$1 and provider_effect_hash is null returning id`,
-        [input.attempt, input.state, input.reference]);
-    if (!changed.rows[0]) throw new Error('PAYMENT_REFUND_PROVIDER_EFFECT_MISMATCH');
-    if (!authoritative || input.state === 'succeeded') await channelOperationPort.update(client, { provider: 'wechat', kind: 'refund',
-      idempotency: input.refund, external: input.reference,
-      state: input.state === 'failed' ? 'failed' : input.state === 'succeeded' ? 'succeeded' : 'processing', response: input.response });
-    await client.query('commit');
-    if (!authoritative) return null;
-    if (!authoritative.reference) throw new Error('PAYMENT_REFUND_PROVIDER_EFFECT_MISMATCH');
-    return Object.freeze({ reference: authoritative.reference });
-  } catch (cause) {
-    await client.query('rollback');
-    throw cause;
-  } finally { client.release(); }
 }

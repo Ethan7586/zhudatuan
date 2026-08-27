@@ -60,7 +60,7 @@ export function createFetchBenefitAccountsRead(baseUrl: string): OperationMethod
 }
 
 function bindAccountsRead(client: OperationExecutor): OperationMethod<"benefit.accounts.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.accounts.read","method":"GET","path":"/api/v1/benefits/accounts","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.accounts.read","method":"GET","path":"/api/v1/benefits/accounts","audience":"member","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchBenefitLedgersRead(baseUrl: string): OperationMethod<"benefit.ledgers.read"> {
@@ -68,7 +68,7 @@ export function createFetchBenefitLedgersRead(baseUrl: string): OperationMethod<
 }
 
 function bindLedgersRead(client: OperationExecutor): OperationMethod<"benefit.ledgers.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.ledgers.read","method":"GET","path":"/api/v1/benefits/ledgers","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.ledgers.read","method":"GET","path":"/api/v1/benefits/ledgers","audience":"member","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchBenefitPlansRead(baseUrl: string): OperationMethod<"benefit.plans.read"> {
@@ -76,7 +76,7 @@ export function createFetchBenefitPlansRead(baseUrl: string): OperationMethod<"b
 }
 
 function bindPlansRead(client: OperationExecutor): OperationMethod<"benefit.plans.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.plans.read","method":"GET","path":"/api/v1/benefits/plans","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.plans.read","method":"GET","path":"/api/v1/benefits/plans","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchBenefitPlansManage(baseUrl: string): OperationMethod<"benefit.plans.manage"> {
@@ -84,7 +84,7 @@ export function createFetchBenefitPlansManage(baseUrl: string): OperationMethod<
 }
 
 function bindPlansManage(client: OperationExecutor): OperationMethod<"benefit.plans.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.plans.manage","method":"PUT","path":"/api/v1/benefits/plans/{planid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["planid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.plans.manage","method":"PUT","path":"/api/v1/benefits/plans/{planid}","audience":"operator","idempotent":true,"pathKeys":["planid"]}));
 }
 
 export function createFetchBenefitBudgetsRead(baseUrl: string): OperationMethod<"benefit.budgets.read"> {
@@ -92,7 +92,7 @@ export function createFetchBenefitBudgetsRead(baseUrl: string): OperationMethod<
 }
 
 function bindBudgetsRead(client: OperationExecutor): OperationMethod<"benefit.budgets.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.budgets.read","method":"GET","path":"/api/v1/benefits/budgets","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.budgets.read","method":"GET","path":"/api/v1/benefits/budgets","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchBenefitBudgetsManage(baseUrl: string): OperationMethod<"benefit.budgets.manage"> {
@@ -100,7 +100,7 @@ export function createFetchBenefitBudgetsManage(baseUrl: string): OperationMetho
 }
 
 function bindBudgetsManage(client: OperationExecutor): OperationMethod<"benefit.budgets.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.budgets.manage","method":"PUT","path":"/api/v1/benefits/budgets/{budgetid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["budgetid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.budgets.manage","method":"PUT","path":"/api/v1/benefits/budgets/{budgetid}","audience":"operator","idempotent":true,"pathKeys":["budgetid"]}));
 }
 
 export function createFetchBenefitGrantsCreate(baseUrl: string): OperationMethod<"benefit.grants.create"> {
@@ -108,7 +108,7 @@ export function createFetchBenefitGrantsCreate(baseUrl: string): OperationMethod
 }
 
 function bindGrantsCreate(client: OperationExecutor): OperationMethod<"benefit.grants.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.create","method":"POST","path":"/api/v1/benefits/grants","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.create","method":"POST","path":"/api/v1/benefits/grants","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchBenefitGrantsDecide(baseUrl: string): OperationMethod<"benefit.grants.decide"> {
@@ -116,7 +116,7 @@ export function createFetchBenefitGrantsDecide(baseUrl: string): OperationMethod
 }
 
 function bindGrantsDecide(client: OperationExecutor): OperationMethod<"benefit.grants.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.decide","method":"PUT","path":"/api/v1/benefits/grants/{batchid}/decision","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["batchid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.decide","method":"PUT","path":"/api/v1/benefits/grants/{batchid}/decision","audience":"operator","idempotent":true,"pathKeys":["batchid"]}));
 }
 
 export function createFetchBenefitGrantsRead(baseUrl: string): OperationMethod<"benefit.grants.read"> {
@@ -124,7 +124,7 @@ export function createFetchBenefitGrantsRead(baseUrl: string): OperationMethod<"
 }
 
 function bindGrantsRead(client: OperationExecutor): OperationMethod<"benefit.grants.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.read","method":"GET","path":"/api/v1/benefits/grants","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.read","method":"GET","path":"/api/v1/benefits/grants","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchBenefitGrantsControl(baseUrl: string): OperationMethod<"benefit.grants.control"> {
@@ -132,7 +132,7 @@ export function createFetchBenefitGrantsControl(baseUrl: string): OperationMetho
 }
 
 function bindGrantsControl(client: OperationExecutor): OperationMethod<"benefit.grants.control"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.control","method":"POST","path":"/api/v1/benefits/grants/{batchid}/control","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["batchid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.control","method":"POST","path":"/api/v1/benefits/grants/{batchid}/control","audience":"operator","idempotent":false,"pathKeys":["batchid"]}));
 }
 
 export function createFetchBenefitGrantsRevoke(baseUrl: string): OperationMethod<"benefit.grants.revoke"> {
@@ -140,7 +140,7 @@ export function createFetchBenefitGrantsRevoke(baseUrl: string): OperationMethod
 }
 
 function bindGrantsRevoke(client: OperationExecutor): OperationMethod<"benefit.grants.revoke"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.revoke","method":"POST","path":"/api/v1/benefits/grants/{batchid}/revoke","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["batchid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.grants.revoke","method":"POST","path":"/api/v1/benefits/grants/{batchid}/revoke","audience":"operator","idempotent":false,"pathKeys":["batchid"]}));
 }
 
 export function createFetchBenefitLotsRead(baseUrl: string): OperationMethod<"benefit.lots.read"> {
@@ -148,5 +148,5 @@ export function createFetchBenefitLotsRead(baseUrl: string): OperationMethod<"be
 }
 
 function bindLotsRead(client: OperationExecutor): OperationMethod<"benefit.lots.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"benefit.lots.read","method":"GET","path":"/api/v1/benefits/lots","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"benefit.lots.read","method":"GET","path":"/api/v1/benefits/lots","audience":"operator","idempotent":true,"pathKeys":[]}));
 }

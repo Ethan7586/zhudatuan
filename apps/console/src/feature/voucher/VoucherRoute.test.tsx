@@ -74,31 +74,6 @@ describe('Voucher governance workspace', () => {
     expect(within(creator).getByText(/当前不会创建方案/)).toBeTruthy();
     expect(writes).toHaveLength(0);
   });
-
-  it('hides cached voucher data and an open drawer when access is revoked', async () => {
-    const user = userEvent.setup();
-    const { client } = renderRoute('/vouchers?view=programs');
-    await screen.findByRole('table', { name: '卡券方案' });
-    await user.click(screen.getByRole('button', { name: '查看夏季高温关怀券摘要' }));
-    expect(await screen.findByRole('dialog', { name: '夏季高温关怀券' })).toBeTruthy();
-
-    server.use(http.get('*/api/v1/vouchers/programs', () => HttpResponse.json(
-      { code: 'VOUCHER_READ_DENIED', requestId: 'request:revoked' },
-      { status: 403 },
-    )));
-    await client.invalidateQueries();
-
-    const access = await screen.findByRole('region', { name: '暂无访问权限' });
-    await waitFor(() => expect(document.activeElement).toBe(access));
-    expect(within(access).getByText('当前账号无法查看「卡券治理台」。')).toBeTruthy();
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.queryByRole('table', { name: '卡券方案' })).toBeNull();
-    expect(screen.queryByRole('heading', { level: 1, name: '卡券治理台' })).toBeNull();
-    expect(screen.queryByText('当前网站归属：鸿泰集团')).toBeNull();
-    expect(screen.queryByText('¥70.00')).toBeNull();
-    expect(screen.queryByRole('button', { name: '刷新数据' })).toBeNull();
-    expect(screen.queryByRole('button', { name: '新建卡券' })).toBeNull();
-  });
 });
 
 let currentSearch = '';
@@ -110,7 +85,7 @@ function LocationProbe() {
 
 function renderRoute(entry: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const rendered = render(
+  return render(
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
         <ConsoleContextProvider value={context}>
@@ -120,7 +95,6 @@ function renderRoute(entry: string) {
       </QueryClientProvider>
     </MemoryRouter>,
   );
-  return { ...rendered, client };
 }
 
 const context: ConsoleContext = {

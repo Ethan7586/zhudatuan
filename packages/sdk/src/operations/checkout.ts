@@ -27,5 +27,5 @@ export function createFetchCheckoutQuoteCreate(baseUrl: string): OperationMethod
 }
 
 function bindQuoteCreate(client: OperationExecutor): OperationMethod<"checkout.quote.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"checkout.quote.create","method":"POST","path":"/api/v1/checkouts/quotes","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"checkout.quote.create","method":"POST","path":"/api/v1/checkouts/quotes","audience":"member","idempotent":false,"pathKeys":[]}));
 }

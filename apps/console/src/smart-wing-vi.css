@@ -1,5 +1,5 @@
 /*
- * ZHUDATUAN Console VI refinement.
+ * Smart Wing Console VI refinement.
  *
  * This layer is deliberately presentation-only. It builds on the recovered
  * admin-web visual language while preserving the current permission model,
@@ -20,7 +20,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   --vi-brand-soft: #eaf1ff;
   --vi-ink: #07182f;
   --vi-text: #172033;
-  --vi-muted: #475569;
+  --vi-muted: #64748b;
   --vi-line: #e2e8f0;
   --vi-line-strong: #cbd5e1;
   --vi-canvas: #f5f7fa;
@@ -127,24 +127,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   background: linear-gradient(90deg, rgb(255 255 255 / 7%), rgb(255 255 255 / 3%));
 }
 
-.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled,
-.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled:hover {
-  border-color: rgb(255 255 255 / 3%);
-  background: #071b32;
-  color: #65778d;
-  cursor: not-allowed;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%);
-}
-
-.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled::after {
-  opacity: 0;
-}
-
-.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled > svg {
-  color: #53667d;
-  filter: none;
-}
-
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[aria-current='page'] {
   border-color: rgb(84 145 255 / 28%);
   background: linear-gradient(90deg, rgb(31 94 255 / 27%), rgb(31 94 255 / 15%));
@@ -193,7 +175,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .consoleheadersummary {
-  color: var(--vi-muted);
+  color: #7789a0;
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger {
@@ -207,10 +189,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   border-color: #bfcde0;
   background: #fff;
   box-shadow: var(--vi-shadow-focus);
-}
-
-.consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger kbd {
-  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .taskbutton {
@@ -244,10 +222,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   line-height: 14px;
 }
 
-.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy small {
-  color: var(--vi-muted);
-}
-
 .consolelayout[data-visual-theme='admin-web-v1'] .scopebar {
   border-bottom-color: #e5ebf3;
   background: rgb(255 255 255 / 88%);
@@ -274,12 +248,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooter {
   border-top-color: #e3eaf2;
   background: rgb(255 255 255 / 92%);
-  color: var(--vi-muted);
   backdrop-filter: blur(12px);
-}
-
-.consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus {
-  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus i {
@@ -331,13 +300,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   background: linear-gradient(135deg, #1f5eff 0%, #143a8f 100%);
   color: #fff;
   box-shadow: 0 6px 15px rgb(31 94 255 / 20%);
-}
-
-.consolelayout[data-visual-theme='admin-web-v1'] .shopbuttonprimary:hover:not(:disabled) {
-  border-color: #174ecf;
-  background: linear-gradient(135deg, #2a69ff 0%, #173f9b 100%);
-  color: #fff;
-  box-shadow: 0 8px 18px rgb(31 94 255 / 26%);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .shopbuttondanger {
@@ -596,7 +558,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   z-index: 1;
   height: 39px;
   background: #f5f8fb;
-  color: var(--vi-muted);
+  color: #64768e;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .015em;
@@ -782,14 +744,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 
 .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband strong {
   letter-spacing: -.025em;
-}
-
-.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband span {
-  color: var(--vi-muted);
-}
-
-.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband .ispositive {
-  color: #047857 !important;
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] :where(.cockpitcard, .controlcard) {
@@ -1051,7 +1005,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   .financetable th
 ) {
   background: #f4f7fb;
-  color: var(--vi-muted);
+  color: #65778f;
   font-weight: 700;
   letter-spacing: .012em;
 }
@@ -1252,10 +1206,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
 ) {
   border-radius: 9px;
   box-shadow: inset 3px 0 0 rgb(232 134 9 / 70%);
-}
-
-body:has(.consolelayout[data-visual-theme='admin-web-v1']) .financeimmutablealert p {
-  color: #7c2d12;
 }
 
 body:has(.consolelayout[data-visual-theme='admin-web-v1']) .dialogpanel {

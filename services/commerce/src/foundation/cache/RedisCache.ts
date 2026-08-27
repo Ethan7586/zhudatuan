@@ -3,7 +3,6 @@ import type { Cache, CacheState } from './Cache';
 
 export class RedisCache implements Cache {
   private client: RedisClientType | undefined;
-  private readonly unavailableListeners = new Set<(state: CacheState) => void>();
   private status: CacheState = Object.freeze({ available: false, reason: 'CACHE_NOT_STARTED' });
 
   constructor(private readonly connection: () => Promise<string>) {}
@@ -33,11 +32,6 @@ export class RedisCache implements Cache {
       this.degrade(cause);
       return null;
     }
-  }
-
-  onUnavailable(listener: (state: CacheState) => void): () => void {
-    this.unavailableListeners.add(listener);
-    return () => this.unavailableListeners.delete(listener);
   }
 
   async put<T>(key: string, value: T, seconds: number): Promise<boolean> {
@@ -78,9 +72,7 @@ export class RedisCache implements Cache {
   }
 
   private degrade(cause: unknown): void {
-    const transitioned = this.status.available;
     const code = cause instanceof Error ? cause.message.split(':', 1)[0]!.slice(0, 120) : 'CACHE_UNAVAILABLE';
     this.status = Object.freeze({ available: false, reason: code });
-    if (transitioned) for (const listener of this.unavailableListeners) listener(this.status);
   }
 }

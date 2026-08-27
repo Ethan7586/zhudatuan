@@ -78,7 +78,7 @@ export function createFetchSupportCasesCreate(baseUrl: string): OperationMethod<
 }
 
 function bindCasesCreate(client: OperationExecutor): OperationMethod<"support.cases.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.cases.create","method":"POST","path":"/api/v1/support/cases","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.cases.create","method":"POST","path":"/api/v1/support/cases","audience":"member","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchSupportCasesRead(baseUrl: string): OperationMethod<"support.cases.read"> {
@@ -86,7 +86,7 @@ export function createFetchSupportCasesRead(baseUrl: string): OperationMethod<"s
 }
 
 function bindCasesRead(client: OperationExecutor): OperationMethod<"support.cases.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.cases.read","method":"GET","path":"/api/v1/support/cases","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.cases.read","method":"GET","path":"/api/v1/support/cases","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchSupportCasesUpdate(baseUrl: string): OperationMethod<"support.cases.update"> {
@@ -94,7 +94,7 @@ export function createFetchSupportCasesUpdate(baseUrl: string): OperationMethod<
 }
 
 function bindCasesUpdate(client: OperationExecutor): OperationMethod<"support.cases.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.cases.update","method":"PATCH","path":"/api/v1/support/cases/{caseid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.cases.update","method":"PATCH","path":"/api/v1/support/cases/{caseid}","audience":"operator","idempotent":false,"pathKeys":["caseid"]}));
 }
 
 export function createFetchSupportCasesClose(baseUrl: string): OperationMethod<"support.cases.close"> {
@@ -102,7 +102,7 @@ export function createFetchSupportCasesClose(baseUrl: string): OperationMethod<"
 }
 
 function bindCasesClose(client: OperationExecutor): OperationMethod<"support.cases.close"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.cases.close","method":"PUT","path":"/api/v1/support/cases/{caseid}/closure","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.cases.close","method":"PUT","path":"/api/v1/support/cases/{caseid}/closure","audience":"operator","idempotent":true,"pathKeys":["caseid"]}));
 }
 
 export function createFetchSupportCasesReopen(baseUrl: string): OperationMethod<"support.cases.reopen"> {
@@ -110,7 +110,7 @@ export function createFetchSupportCasesReopen(baseUrl: string): OperationMethod<
 }
 
 function bindCasesReopen(client: OperationExecutor): OperationMethod<"support.cases.reopen"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.cases.reopen","method":"DELETE","path":"/api/v1/support/cases/{caseid}/closure","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.cases.reopen","method":"DELETE","path":"/api/v1/support/cases/{caseid}/closure","audience":"operator","idempotent":true,"pathKeys":["caseid"]}));
 }
 
 export function createFetchSupportMessagesSend(baseUrl: string): OperationMethod<"support.messages.send"> {
@@ -118,7 +118,7 @@ export function createFetchSupportMessagesSend(baseUrl: string): OperationMethod
 }
 
 function bindMessagesSend(client: OperationExecutor): OperationMethod<"support.messages.send"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.messages.send","method":"POST","path":"/api/v1/support/cases/{caseid}/messages","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.messages.send","method":"POST","path":"/api/v1/support/cases/{caseid}/messages","audience":"operator","idempotent":false,"pathKeys":["caseid"]}));
 }
 
 export function createFetchSupportMessagesRead(baseUrl: string): OperationMethod<"support.messages.read"> {
@@ -126,7 +126,7 @@ export function createFetchSupportMessagesRead(baseUrl: string): OperationMethod
 }
 
 function bindMessagesRead(client: OperationExecutor): OperationMethod<"support.messages.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.messages.read","method":"GET","path":"/api/v1/support/cases/{caseid}/messages","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.messages.read","method":"GET","path":"/api/v1/support/cases/{caseid}/messages","audience":"operator","idempotent":true,"pathKeys":["caseid"]}));
 }
 
 export function createFetchSupportAttachmentsCreate(baseUrl: string): OperationMethod<"support.attachments.create"> {
@@ -134,7 +134,7 @@ export function createFetchSupportAttachmentsCreate(baseUrl: string): OperationM
 }
 
 function bindAttachmentsCreate(client: OperationExecutor): OperationMethod<"support.attachments.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.attachments.create","method":"POST","path":"/api/v1/support/cases/{caseid}/attachments","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.attachments.create","method":"POST","path":"/api/v1/support/cases/{caseid}/attachments","audience":"operator","idempotent":false,"pathKeys":["caseid"]}));
 }
 
 export function createFetchSupportAssignmentsManage(baseUrl: string): OperationMethod<"support.assignments.manage"> {
@@ -142,7 +142,7 @@ export function createFetchSupportAssignmentsManage(baseUrl: string): OperationM
 }
 
 function bindAssignmentsManage(client: OperationExecutor): OperationMethod<"support.assignments.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.assignments.manage","method":"PUT","path":"/api/v1/support/assignments/{assignmentid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["assignmentid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.assignments.manage","method":"PUT","path":"/api/v1/support/assignments/{assignmentid}","audience":"operator","idempotent":true,"pathKeys":["assignmentid"]}));
 }
 
 export function createFetchSupportAgentsManage(baseUrl: string): OperationMethod<"support.agents.manage"> {
@@ -150,7 +150,7 @@ export function createFetchSupportAgentsManage(baseUrl: string): OperationMethod
 }
 
 function bindAgentsManage(client: OperationExecutor): OperationMethod<"support.agents.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.agents.manage","method":"PUT","path":"/api/v1/support/agents/{agentid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["agentid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.agents.manage","method":"PUT","path":"/api/v1/support/agents/{agentid}","audience":"operator","idempotent":true,"pathKeys":["agentid"]}));
 }
 
 export function createFetchSupportAgentsRead(baseUrl: string): OperationMethod<"support.agents.read"> {
@@ -158,7 +158,7 @@ export function createFetchSupportAgentsRead(baseUrl: string): OperationMethod<"
 }
 
 function bindAgentsRead(client: OperationExecutor): OperationMethod<"support.agents.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.agents.read","method":"GET","path":"/api/v1/support/agents","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.agents.read","method":"GET","path":"/api/v1/support/agents","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchSupportAccountsManage(baseUrl: string): OperationMethod<"support.accounts.manage"> {
@@ -166,7 +166,7 @@ export function createFetchSupportAccountsManage(baseUrl: string): OperationMeth
 }
 
 function bindAccountsManage(client: OperationExecutor): OperationMethod<"support.accounts.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.accounts.manage","method":"PUT","path":"/api/v1/support/accounts/{accountid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["accountid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.accounts.manage","method":"PUT","path":"/api/v1/support/accounts/{accountid}","audience":"operator","idempotent":true,"pathKeys":["accountid"]}));
 }
 
 export function createFetchSupportAccountsRead(baseUrl: string): OperationMethod<"support.accounts.read"> {
@@ -174,7 +174,7 @@ export function createFetchSupportAccountsRead(baseUrl: string): OperationMethod
 }
 
 function bindAccountsRead(client: OperationExecutor): OperationMethod<"support.accounts.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.accounts.read","method":"GET","path":"/api/v1/support/accounts","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.accounts.read","method":"GET","path":"/api/v1/support/accounts","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchSupportRulesRead(baseUrl: string): OperationMethod<"support.rules.read"> {
@@ -182,7 +182,7 @@ export function createFetchSupportRulesRead(baseUrl: string): OperationMethod<"s
 }
 
 function bindRulesRead(client: OperationExecutor): OperationMethod<"support.rules.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.rules.read","method":"GET","path":"/api/v1/support/rules","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.rules.read","method":"GET","path":"/api/v1/support/rules","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchSupportRulesManage(baseUrl: string): OperationMethod<"support.rules.manage"> {
@@ -190,7 +190,7 @@ export function createFetchSupportRulesManage(baseUrl: string): OperationMethod<
 }
 
 function bindRulesManage(client: OperationExecutor): OperationMethod<"support.rules.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.rules.manage","method":"PUT","path":"/api/v1/support/rules/{ruleid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["ruleid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.rules.manage","method":"PUT","path":"/api/v1/support/rules/{ruleid}","audience":"operator","idempotent":true,"pathKeys":["ruleid"]}));
 }
 
 export function createFetchSupportSlasRead(baseUrl: string): OperationMethod<"support.slas.read"> {
@@ -198,7 +198,7 @@ export function createFetchSupportSlasRead(baseUrl: string): OperationMethod<"su
 }
 
 function bindSlasRead(client: OperationExecutor): OperationMethod<"support.slas.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.slas.read","method":"GET","path":"/api/v1/support/slas","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.slas.read","method":"GET","path":"/api/v1/support/slas","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchSupportSlasManage(baseUrl: string): OperationMethod<"support.slas.manage"> {
@@ -206,7 +206,7 @@ export function createFetchSupportSlasManage(baseUrl: string): OperationMethod<"
 }
 
 function bindSlasManage(client: OperationExecutor): OperationMethod<"support.slas.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.slas.manage","method":"PUT","path":"/api/v1/support/slas/{slaid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["slaid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.slas.manage","method":"PUT","path":"/api/v1/support/slas/{slaid}","audience":"operator","idempotent":true,"pathKeys":["slaid"]}));
 }
 
 export function createFetchSupportHistoryRead(baseUrl: string): OperationMethod<"support.history.read"> {
@@ -214,5 +214,5 @@ export function createFetchSupportHistoryRead(baseUrl: string): OperationMethod<
 }
 
 function bindHistoryRead(client: OperationExecutor): OperationMethod<"support.history.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"support.history.read","method":"GET","path":"/api/v1/support/cases/{caseid}/history","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"support.history.read","method":"GET","path":"/api/v1/support/cases/{caseid}/history","audience":"operator","idempotent":true,"pathKeys":["caseid"]}));
 }

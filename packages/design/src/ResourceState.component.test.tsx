@@ -1,13 +1,15 @@
 import { isValidElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Empty } from './Empty';
-import { ContextualAccessDenied } from './AccessDenied';
 import { ErrorView } from './Error';
 import { ResourceState, resourceCondition, resourceConditions, type ResourceCondition } from './ResourceState';
 
 describe('resource state contract', () => {
   it('exposes the complete asynchronous state union', () => {
-    expect(resourceConditions).toEqual(['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry']);
+    expect(resourceConditions).toEqual([
+      'loading', 'empty', 'ready', 'refreshing', 'stale', 'denied',
+      'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry',
+    ]);
   });
 
   it.each([
@@ -21,26 +23,16 @@ describe('resource state contract', () => {
     expect(resourceCondition(data, rows, error)).toBe(expected);
   });
 
-  it.each(['notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)('renders %s as an explicit error boundary', (condition: ResourceCondition) => {
-    const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
-    expect(isValidElement(result)).toBe(true);
-    if (!isValidElement<{ message: string }>(result)) throw new Error('RESOURCE_STATE_ELEMENT_REQUIRED');
-    expect(result.type).toBe(ErrorView);
-    expect(result.props.message).toBe('FAILURE_CODE');
-  });
-
-  it.each([
-    ['unauthenticated', 'unauthenticated'],
-    ['denied', undefined],
-  ] as const)('renders %s with the calm access boundary instead of a load failure', (condition, kind) => {
-    const result = ResourceState({ condition, resourceLabel: '分销系统', error: 'PERMISSION_DETAIL', children: 'ready' });
-    expect(isValidElement(result)).toBe(true);
-    if (!isValidElement<{ kind?: string; resourceLabel: string; detail: string }>(result)) throw new Error('ACCESS_DENIED_ELEMENT_REQUIRED');
-    expect(result.type).toBe(ContextualAccessDenied);
-    expect(result.props.kind).toBe(kind);
-    expect(result.props.resourceLabel).toBe('分销系统');
-    expect(result.props.detail).toBe('PERMISSION_DETAIL');
-  });
+  it.each(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)(
+    'renders %s as an explicit error boundary',
+    (condition: ResourceCondition) => {
+      const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
+      expect(isValidElement(result)).toBe(true);
+      if (!isValidElement<{ message: string }>(result)) throw new Error('RESOURCE_STATE_ELEMENT_REQUIRED');
+      expect(result.type).toBe(ErrorView);
+      expect(result.props.message).toBe('FAILURE_CODE');
+    },
+  );
 
   it('announces loading, renders empty and preserves ready children', () => {
     const loading = ResourceState({ condition: 'loading', children: 'ready' });

@@ -42,7 +42,7 @@ export function createFetchVerificationChallengesIssue(baseUrl: string): Operati
 }
 
 function bindChallengesIssue(client: OperationExecutor): OperationMethod<"verification.challenges.issue"> {
-  return bindOperation(client, defineStructuralOperation({"id":"verification.challenges.issue","method":"POST","path":"/api/v1/verifications/challenges","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"verification.challenges.issue","method":"POST","path":"/api/v1/verifications/challenges","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchVerificationSessionsRead(baseUrl: string): OperationMethod<"verification.sessions.read"> {
@@ -50,7 +50,7 @@ export function createFetchVerificationSessionsRead(baseUrl: string): OperationM
 }
 
 function bindSessionsRead(client: OperationExecutor): OperationMethod<"verification.sessions.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"verification.sessions.read","method":"GET","path":"/api/v1/verifications/sessions","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"verification.sessions.read","method":"GET","path":"/api/v1/verifications/sessions","audience":"member","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchVerificationChallengesVerify(baseUrl: string): OperationMethod<"verification.challenges.verify"> {
@@ -58,7 +58,7 @@ export function createFetchVerificationChallengesVerify(baseUrl: string): Operat
 }
 
 function bindChallengesVerify(client: OperationExecutor): OperationMethod<"verification.challenges.verify"> {
-  return bindOperation(client, defineStructuralOperation({"id":"verification.challenges.verify","method":"POST","path":"/api/v1/verifications/challenges/{challengeid}/verification","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["challengeid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"verification.challenges.verify","method":"POST","path":"/api/v1/verifications/challenges/{challengeid}/verification","audience":"operator","idempotent":false,"pathKeys":["challengeid"]}));
 }
 
 export function createFetchVerificationHistoryRead(baseUrl: string): OperationMethod<"verification.history.read"> {
@@ -66,7 +66,7 @@ export function createFetchVerificationHistoryRead(baseUrl: string): OperationMe
 }
 
 function bindHistoryRead(client: OperationExecutor): OperationMethod<"verification.history.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"verification.history.read","method":"GET","path":"/api/v1/verifications/history","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"verification.history.read","method":"GET","path":"/api/v1/verifications/history","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchVerificationDevicesRead(baseUrl: string): OperationMethod<"verification.devices.read"> {
@@ -74,7 +74,7 @@ export function createFetchVerificationDevicesRead(baseUrl: string): OperationMe
 }
 
 function bindDevicesRead(client: OperationExecutor): OperationMethod<"verification.devices.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"verification.devices.read","method":"GET","path":"/api/v1/verifications/devices","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"verification.devices.read","method":"GET","path":"/api/v1/verifications/devices","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchVerificationDevicesManage(baseUrl: string): OperationMethod<"verification.devices.manage"> {
@@ -82,5 +82,5 @@ export function createFetchVerificationDevicesManage(baseUrl: string): Operation
 }
 
 function bindDevicesManage(client: OperationExecutor): OperationMethod<"verification.devices.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"verification.devices.manage","method":"PUT","path":"/api/v1/verifications/devices/{deviceid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["deviceid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"verification.devices.manage","method":"PUT","path":"/api/v1/verifications/devices/{deviceid}","audience":"operator","idempotent":true,"pathKeys":["deviceid"]}));
 }

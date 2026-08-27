@@ -2,7 +2,6 @@ import { resolveAuthorizationContext } from './auth';
 import { knownApiError } from './errorResponse';
 import { apiError } from './http';
 import { routeAdminRequest } from './routes/adminRouter';
-import { routeAuthenticatedRequest } from './routes/authenticatedRouter';
 import { routePublicRequest } from './routes/publicRouter';
 import { routeSimulationRequest } from './routes/simulationRouter';
 import { routeStorefrontRequest } from './routes/storefrontRouter';
@@ -25,15 +24,10 @@ export async function routeApi(request: Request, env: WorkerEnv): Promise<Respon
       return apiError(401, 'AUTHENTICATION_REQUIRED', '生产身份认证尚未配置，服务端已拒绝匿名业务操作', requestId);
     }
 
-    const authenticatedResponse = await routeAuthenticatedRequest(request, env, authorization, requestId);
-    if (authenticatedResponse) return authenticatedResponse;
-
-    const targetRoute = authorization.membership.target === 'storefront' ? routeStorefrontRequest : routeAdminRequest;
-    const targetResponse = await targetRoute(request, env, authorization, requestId);
-    if (targetResponse) return targetResponse;
-
-    const simulationResponse = await routeSimulationRequest(request, env, authorization, requestId);
-    if (simulationResponse) return simulationResponse;
+    for (const route of [routeStorefrontRequest, routeAdminRequest, routeSimulationRequest]) {
+      const response = await route(request, env, authorization, requestId);
+      if (response) return response;
+    }
     return apiError(404, 'API_NOT_FOUND', '接口不存在', requestId);
   } catch (error) {
     console.error(

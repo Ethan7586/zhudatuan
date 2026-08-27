@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
+import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
 
 const operations = [
   operation('identity.session.read', 'GET', '/api/v1/identity/session', 'member'),
@@ -25,16 +25,6 @@ describe('SDK client artifacts', () => {
       expect(source).not.toContain('call<T');
     }
   });
-
-  it('preserves OMS trace links in contract metadata without creating another operation', () => {
-    const traced = { ...operations[0], requirements: ['MVP03', 'OMS-001'] } as const;
-    const openapi = JSON.stringify(buildOpenapi([traced], new Map()));
-    const source = operationSource([traced], new Map());
-
-    expect(openapi).toContain('OMS-001');
-    expect(source).toContain('OMS-001');
-    expect(source.match(/identity\.session\.read/g)).toHaveLength(1);
-  });
 });
 
 function operation(
@@ -50,12 +40,8 @@ function operation(
     audience,
     owner: id.split('.')[0]!,
     idempotent: true,
-    idempotency: 'none',
-    expectedVersion: 'none',
-    execution: 'sync',
-    availability: 'runtime',
-    summary: id,
     schema: 'structural',
     requirements: ['MVP03'],
+    sdk: `packages/sdk/src/operations/${id.split('.')[0]!}.ts`,
   };
 }

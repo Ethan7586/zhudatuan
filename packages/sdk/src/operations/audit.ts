@@ -27,5 +27,5 @@ export function createFetchAuditRecordsRead(baseUrl: string): OperationMethod<"a
 }
 
 function bindRecordsRead(client: OperationExecutor): OperationMethod<"audit.records.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"audit.records.read","method":"GET","path":"/api/v1/audits","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"audit.records.read","method":"GET","path":"/api/v1/audits","audience":"operator","idempotent":true,"pathKeys":[]}));
 }

@@ -1,8 +1,6 @@
 node_modules/
 build/
 dist/
-!public/design-references/admin/kaidian/dist/
-!public/design-references/admin/kaidian/dist/**
 coverage/
 .DS_Store
 *.log

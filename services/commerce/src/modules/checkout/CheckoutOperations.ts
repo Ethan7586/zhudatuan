@@ -7,13 +7,12 @@ import { domainEvent } from '../../foundation/domain/DomainEvent';
 import { appendOutbox } from '../../foundation/infrastructure/OutboxStore';
 import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
-import type { CheckoutPort } from './CheckoutPort';
-import { fullCheckoutPort } from './FullCheckoutPort';
+import { CheckoutPort } from './CheckoutPort';
 import { pricingPort } from '../pricing/PricingModule';
 
 export function checkoutOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
-  const checkout = fullCheckoutPort(context.container.get(SECURITY_KEYS).quote);
+  const checkout = new CheckoutPort(context.container.get(SECURITY_KEYS).quote);
   return new ModuleOperations('checkout', pool, context.container.get(AUDIT_SINK), {
     'checkout.quote.create': async (request, database) => {
       const access = requireAccess(request);

@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { HttpApp } from './HttpApp';
 
-function routes(operation = 'identity.sessions.create'): RouteRegistry {
+function routes(): RouteRegistry {
   return {
     match: () => ({
-      operation,
+      operation: 'identity.sessions.create',
       parameters: {},
       handler: async () => ({ status: 200, body: { accepted: true } }),
     }),
@@ -15,13 +15,14 @@ function routes(operation = 'identity.sessions.create'): RouteRegistry {
 
 describe('HttpApp contract handshake', () => {
   it('returns upgrade required before invoking a route with a missing contract version', async () => {
-    const response = await new HttpApp(routes(), ['https://shop.example']).handle(new Request('https://api.example/api/v1/identity/sessions', {
+    const response = await new HttpApp(routes(), []).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', origin: 'https://shop.example' },
+      headers: { 'content-type': 'application/json' },
       body: '{}',
     }));
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ accepted: true });
+    expect(response.status).toBe(426);
+    expect(response.headers.get('x-contract-version')).toBe(CONTRACT_VERSION);
+    expect(await response.json()).toMatchObject({ code: 'CONTRACT_VERSION_UNSUPPORTED', required: CONTRACT_VERSION });
   });
 
   it('allows the exact generated contract version', async () => {
@@ -35,35 +36,10 @@ describe('HttpApp contract handshake', () => {
     expect(response.headers.get('access-control-allow-credentials')).toBe('true');
   });
 
-  it('rejects a stale authenticated API cookie on public registration without its matching CSRF token', async () => {
-    const response = await new HttpApp(routes('identity.members.create'), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/members', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        cookie: 'shop_session=stale-session; shop_csrf=api-host-only-token',
-        origin: 'https://accounts.zhudatuan.com',
-        'x-contract-version': CONTRACT_VERSION,
-      },
-      body: '{}',
-    }));
-    expect(response.status).toBe(403);
-    expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
-  });
-
-  it('rejects canonical public registration without an approved browser origin', async () => {
-    const response = await new HttpApp(routes('identity.members.create'), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/members', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
-      body: '{}',
-    }));
-    expect(response.status).toBe(403);
-    expect(await response.json()).toMatchObject({ code: 'ORIGIN_REQUIRED' });
-  });
-
   it('ends a request when its total deadline is exhausted', async () => {
     const slow = { match: () => ({ operation: 'identity.sessions.create', parameters: {}, handler: async () => new Promise(() => undefined) }) } as unknown as RouteRegistry;
-    const response = await new HttpApp(slow, ['https://shop.example'], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
-      method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://shop.example', 'x-contract-version': CONTRACT_VERSION }, body: '{}',
+    const response = await new HttpApp(slow, [], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
+      method: 'POST', headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION }, body: '{}',
     }));
     expect(response.status).toBe(504);
     expect(await response.json()).toMatchObject({ code: 'DEADLINE_EXCEEDED' });

@@ -56,8 +56,7 @@ export async function readFinanceProfessional(
     }
     case 'withdrawals': {
       const page = WithdrawalPageSchema.parse(await withdrawalsRead(input, request));
-      return mapPage(page, (row) => ({ id: row.id, label: row.id,
-        reference: row.settlement_id ?? `${row.source_kind}:${row.beneficiary_member_id ?? row.source_id}`, amountMinor: row.amount_minor,
+      return mapPage(page, (row) => ({ id: row.id, label: row.id, reference: row.settlement_id, amountMinor: row.amount_minor,
         currency: row.currency, state: row.state, occurredAt: row.created_at, version: row.version }));
     }
     case 'invoices': {

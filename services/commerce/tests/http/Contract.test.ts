@@ -25,7 +25,7 @@ describe('HTTP boundary contract', () => {
     const { app, handler } = application();
     const response = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',
-      headers: { origin: 'https://console.example', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
+      headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
       body: '{',
     }));
     expect(response.status).toBe(400);
@@ -36,7 +36,7 @@ describe('HTTP boundary contract', () => {
 
   it('requires a matching CSRF token for cookie-authenticated writes', async () => {
     const { app, handler } = application();
-    const response = await app.handle(new Request('https://api.example/api/v1/identity/challenges', {
+    const response = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',
       headers: { cookie: 'shop_session=session; shop_csrf=expected', origin: 'https://console.example',
         'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-csrf-token': 'wrong' },

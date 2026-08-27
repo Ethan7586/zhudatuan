@@ -51,7 +51,7 @@ export function createFetchExperienceApplicationsCreate(baseUrl: string): Operat
 }
 
 function bindApplicationsCreate(client: OperationExecutor): OperationMethod<"experience.applications.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.create","method":"POST","path":"/api/v1/experiences/applications","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.create","method":"POST","path":"/api/v1/experiences/applications","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchExperiencePublishedRead(baseUrl: string): OperationMethod<"experience.published.read"> {
@@ -59,7 +59,7 @@ export function createFetchExperiencePublishedRead(baseUrl: string): OperationMe
 }
 
 function bindPublishedRead(client: OperationExecutor): OperationMethod<"experience.published.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.published.read","method":"GET","path":"/api/v1/experiences/published","audience":"public","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.published.read","method":"GET","path":"/api/v1/experiences/published","audience":"public","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchExperienceApplicationsCopy(baseUrl: string): OperationMethod<"experience.applications.copy"> {
@@ -67,7 +67,7 @@ export function createFetchExperienceApplicationsCopy(baseUrl: string): Operatio
 }
 
 function bindApplicationsCopy(client: OperationExecutor): OperationMethod<"experience.applications.copy"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.copy","method":"POST","path":"/api/v1/experiences/applications/{applicationid}/copies","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["applicationid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.copy","method":"POST","path":"/api/v1/experiences/applications/{applicationid}/copies","audience":"operator","idempotent":false,"pathKeys":["applicationid"]}));
 }
 
 export function createFetchExperienceApplicationsRead(baseUrl: string): OperationMethod<"experience.applications.read"> {
@@ -75,7 +75,7 @@ export function createFetchExperienceApplicationsRead(baseUrl: string): Operatio
 }
 
 function bindApplicationsRead(client: OperationExecutor): OperationMethod<"experience.applications.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.read","method":"GET","path":"/api/v1/experiences/applications","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.read","method":"GET","path":"/api/v1/experiences/applications","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchExperienceApplicationsUpdate(baseUrl: string): OperationMethod<"experience.applications.update"> {
@@ -83,7 +83,7 @@ export function createFetchExperienceApplicationsUpdate(baseUrl: string): Operat
 }
 
 function bindApplicationsUpdate(client: OperationExecutor): OperationMethod<"experience.applications.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.update","method":"PATCH","path":"/api/v1/experiences/applications/{applicationid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["applicationid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.applications.update","method":"PATCH","path":"/api/v1/experiences/applications/{applicationid}","audience":"operator","idempotent":false,"pathKeys":["applicationid"]}));
 }
 
 export function createFetchExperienceVersionsSave(baseUrl: string): OperationMethod<"experience.versions.save"> {
@@ -91,7 +91,7 @@ export function createFetchExperienceVersionsSave(baseUrl: string): OperationMet
 }
 
 function bindVersionsSave(client: OperationExecutor): OperationMethod<"experience.versions.save"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.save","method":"POST","path":"/api/v1/experiences/applications/{applicationid}/versions","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["applicationid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.save","method":"POST","path":"/api/v1/experiences/applications/{applicationid}/versions","audience":"operator","idempotent":false,"pathKeys":["applicationid"]}));
 }
 
 export function createFetchExperienceVersionsValidate(baseUrl: string): OperationMethod<"experience.versions.validate"> {
@@ -99,7 +99,7 @@ export function createFetchExperienceVersionsValidate(baseUrl: string): Operatio
 }
 
 function bindVersionsValidate(client: OperationExecutor): OperationMethod<"experience.versions.validate"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.validate","method":"POST","path":"/api/v1/experiences/versions/{versionid}/validation","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["versionid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.validate","method":"POST","path":"/api/v1/experiences/versions/{versionid}/validation","audience":"operator","idempotent":false,"pathKeys":["versionid"]}));
 }
 
 export function createFetchExperienceVersionsPublish(baseUrl: string): OperationMethod<"experience.versions.publish"> {
@@ -107,7 +107,7 @@ export function createFetchExperienceVersionsPublish(baseUrl: string): Operation
 }
 
 function bindVersionsPublish(client: OperationExecutor): OperationMethod<"experience.versions.publish"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.publish","method":"PUT","path":"/api/v1/experiences/versions/{versionid}/publication","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["versionid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.publish","method":"PUT","path":"/api/v1/experiences/versions/{versionid}/publication","audience":"operator","idempotent":true,"pathKeys":["versionid"]}));
 }
 
 export function createFetchExperienceVersionsRestore(baseUrl: string): OperationMethod<"experience.versions.restore"> {
@@ -115,5 +115,5 @@ export function createFetchExperienceVersionsRestore(baseUrl: string): Operation
 }
 
 function bindVersionsRestore(client: OperationExecutor): OperationMethod<"experience.versions.restore"> {
-  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.restore","method":"POST","path":"/api/v1/experiences/versions/{versionid}/restorations","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["versionid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"experience.versions.restore","method":"POST","path":"/api/v1/experiences/versions/{versionid}/restorations","audience":"operator","idempotent":false,"pathKeys":["versionid"]}));
 }

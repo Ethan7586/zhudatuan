@@ -27,5 +27,5 @@ export function createFetchExtensionInstallationsRead(baseUrl: string): Operatio
 }
 
 function bindInstallationsRead(client: OperationExecutor): OperationMethod<"extension.installations.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"extension.installations.read","method":"GET","path":"/api/v1/extensions/installations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"extension.installations.read","method":"GET","path":"/api/v1/extensions/installations","audience":"operator","idempotent":true,"pathKeys":[]}));
 }

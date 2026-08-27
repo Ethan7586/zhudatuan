@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
 import { Trash2, ShoppingBag, CreditCard, ShieldCheck, ChevronRight, CheckSquare, Square } from 'lucide-react';
-import { PaymentPhoneVerificationModal } from '../../components/mobile/PaymentPhoneVerificationModal';
 
 export const MPCartPage: React.FC = () => {
-  const { cart, user, addresses, updateCartQuantity, toggleCartItemSelected, toggleSelectAllCart, removeCartItem, setMpPage, triggerPendingFeature,
-    checkoutSelectedCart, isSubmittingOrder, refreshProductionData, showToast } = useMall();
-  const [verifyPhone, setVerifyPhone] = useState(false);
-  const [resumeCheckout, setResumeCheckout] = useState(false);
+  const { cart, user, updateCartQuantity, toggleCartItemSelected, toggleSelectAllCart, removeCartItem, setMpPage, triggerPendingFeature, checkoutSelectedCart, isSubmittingOrder } = useMall();
 
   const selectedItems = cart.filter((i) => i.selected);
   const isAllSelected = cart.length > 0 && cart.every((i) => i.selected);
@@ -19,27 +15,10 @@ export const MPCartPage: React.FC = () => {
 
   const handleCheckout = async () => {
     if (selectedItems.length === 0) return;
-    if (addresses.length === 0) {
-      showToast('请先填写本次订单的收货地址', 'info');
-      setMpPage('address');
-      return;
-    }
-    if (!user.phoneVerified || !user.paymentEligible) {
-      setVerifyPhone(true);
-      return;
-    }
     if (await checkoutSelectedCart()) {
       setMpPage('profile');
     }
   };
-
-  useEffect(() => {
-    if (!resumeCheckout || !user.paymentEligible || isSubmittingOrder) return;
-    setResumeCheckout(false);
-    void checkoutSelectedCart().then((completed) => {
-      if (completed) setMpPage('profile');
-    });
-  }, [checkoutSelectedCart, isSubmittingOrder, resumeCheckout, setMpPage, user.paymentEligible]);
 
   return (
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800 pb-16">
@@ -126,11 +105,6 @@ export const MPCartPage: React.FC = () => {
           </div>
 
           {/* Coupon & Invoice Banner */}
-          <button onClick={() => setMpPage('address')} className="flex w-full items-center justify-between rounded-2xl border border-gray-100 bg-white p-3 text-left text-xs shadow-xs">
-            <span className="font-bold text-gray-700">收货地址</span>
-            <span className="max-w-[260px] truncate text-[10px] text-gray-500">{addresses[0] ? `${addresses[0].name} ${addresses[0].phone} ${addresses[0].detail}` : '请填写'} &gt;</span>
-          </button>
-
           <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 space-y-2 text-xs">
             <div onClick={() => triggerPendingFeature('微信小程序 企采优惠券与包邮卡', '选择或核销企业专项优惠券。')} className="flex items-center justify-between cursor-pointer">
               <span className="text-gray-600 font-medium">企业企采优惠券</span>
@@ -180,12 +154,6 @@ export const MPCartPage: React.FC = () => {
       )}
 
       <WeChatTabBar />
-      {verifyPhone && <PaymentPhoneVerificationModal phone={user.phone} onClose={() => setVerifyPhone(false)} onVerified={async () => {
-        await refreshProductionData();
-        setVerifyPhone(false);
-        setResumeCheckout(true);
-        showToast('手机验证成功，正在继续提交订单', 'success');
-      }} />}
     </div>
   );
 };

@@ -57,7 +57,7 @@ describe('commerce payment contract', () => {
         })
       )
     );
-    const response = await handleOrderByNumber(new Request('https://zhudatuan.com/api/v1/orders/by-number/SW202608140001'), env, authorization, 'SW202608140001', 'order-detail');
+    const response = await handleOrderByNumber(new Request('https://hbbtzn.com/api/v1/orders/by-number/SW202608140001'), env, authorization, 'SW202608140001', 'order-detail');
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ order: { id: 'order-one', paymentStatus: 'pending' } });
   });
@@ -76,7 +76,7 @@ describe('commerce payment contract', () => {
         })
       )
     );
-    const request = new Request('https://zhudatuan.com/api/v1/orders/order-one/payment-status');
+    const request = new Request('https://hbbtzn.com/api/v1/orders/order-one/payment-status');
     const response = await routeStorefrontRequest(request, env, authorization, 'payment-status');
     expect(response?.status).toBe(200);
     await expect(response?.json()).resolves.toMatchObject({ orderId: 'order-one', status: 'paid', providerSync: 'not_needed' });
@@ -95,7 +95,7 @@ describe('commerce payment contract', () => {
         })
       )
     );
-    const response = await handleWechatPaymentStatus(new Request('https://zhudatuan.com/api/v1/orders/order-two/payment-status'), env, authorization, 'order-two', 'payment-closed');
+    const response = await handleWechatPaymentStatus(new Request('https://hbbtzn.com/api/v1/orders/order-two/payment-status'), env, authorization, 'order-two', 'payment-closed');
     await expect(response.json()).resolves.toMatchObject({ status: 'closed' });
   });
 });

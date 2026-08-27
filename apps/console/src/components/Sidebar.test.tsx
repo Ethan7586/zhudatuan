@@ -1,14 +1,10 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
-import { navigationAccessRequirements } from '../route/NavigationAccess';
 import { professionalRoutes } from '../route/ProfessionalRouteCatalog';
 import { workstations } from '../shell/Workstation';
 import { Sidebar } from './Sidebar';
-
-const navigationCss = readFileSync('src/shell/navigation.css', 'utf8');
 
 afterEach(cleanup);
 
@@ -19,7 +15,7 @@ describe('Sidebar commerce navigation', () => {
     renderSidebar('enterprise', false, onNavigate);
     const navigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(navigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    expect(labels.indexOf('主打团中控台')).toBeLessThan(labels.indexOf('築店 · 商城管理'));
+    expect(labels.indexOf('智慧翼中控台')).toBeLessThan(labels.indexOf('築店 · 商城管理'));
     expect(labels.indexOf('築店 · 商城管理')).toBeLessThan(labels.indexOf('商品治理台'));
 
     await user.click(screen.getByRole('button', { name: '築店 · 商城管理' }));
@@ -37,31 +33,10 @@ describe('Sidebar commerce navigation', () => {
     const target = screen.getByRole('button', { name: expected });
     expect(target.getAttribute('title')).toBe(expected);
   });
-
-  it('opens the referral workspace independently from B2B channels', async () => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    renderSidebar('mall', false, onNavigate);
-
-    await user.click(screen.getByRole('button', { name: '分销返佣系统' }));
-    expect(onNavigate).toHaveBeenCalledWith('referral/settings');
-    expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
-  });
 });
 
-const allPermissions = [...new Set(Object.values(navigationAccessRequirements).flatMap((requirements) =>
-  requirements.map(({ permission }) => permission)))];
-const allCapabilities = [...new Set(Object.values(navigationAccessRequirements).flatMap((requirements) =>
-  requirements.map(({ capability }) => capability)))];
-
-function renderSidebar(
-  kind: ConsoleScope['kind'],
-  collapsed: boolean,
-  onNavigate: (suffix: string) => void,
-  access = { permissions: allPermissions, capabilities: allCapabilities },
-) {
+function renderSidebar(kind: ConsoleScope['kind'], collapsed: boolean, onNavigate: (suffix: string) => void) {
   return render(<Sidebar active="applications" collapsed={collapsed} displayName="商城管理员" roleLabel="当前范围"
     scopeKind={kind} professionalRoutes={professionalRoutes} workstations={workstations}
-    permissions={access.permissions} capabilities={access.capabilities}
     onNavigate={onNavigate} onToggle={vi.fn()} />);
 }

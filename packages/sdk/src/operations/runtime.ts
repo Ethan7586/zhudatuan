@@ -36,7 +36,7 @@ export function createFetchRuntimeHealthLive(baseUrl: string): OperationMethod<"
 }
 
 function bindHealthLive(client: OperationExecutor): OperationMethod<"runtime.health.live"> {
-  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.live","method":"GET","path":"/health/live","audience":"public","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.live","method":"GET","path":"/health/live","audience":"public","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchRuntimeHealthReady(baseUrl: string): OperationMethod<"runtime.health.ready"> {
@@ -44,7 +44,7 @@ export function createFetchRuntimeHealthReady(baseUrl: string): OperationMethod<
 }
 
 function bindHealthReady(client: OperationExecutor): OperationMethod<"runtime.health.ready"> {
-  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.ready","method":"GET","path":"/health/ready","audience":"public","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.ready","method":"GET","path":"/health/ready","audience":"public","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchRuntimeHealthStartup(baseUrl: string): OperationMethod<"runtime.health.startup"> {
@@ -52,7 +52,7 @@ export function createFetchRuntimeHealthStartup(baseUrl: string): OperationMetho
 }
 
 function bindHealthStartup(client: OperationExecutor): OperationMethod<"runtime.health.startup"> {
-  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.startup","method":"GET","path":"/health/startup","audience":"public","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.startup","method":"GET","path":"/health/startup","audience":"public","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchRuntimeHealthDependency(baseUrl: string): OperationMethod<"runtime.health.dependency"> {
@@ -60,5 +60,5 @@ export function createFetchRuntimeHealthDependency(baseUrl: string): OperationMe
 }
 
 function bindHealthDependency(client: OperationExecutor): OperationMethod<"runtime.health.dependency"> {
-  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.dependency","method":"GET","path":"/health/dependency","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"runtime.health.dependency","method":"GET","path":"/health/dependency","audience":"operator","idempotent":true,"pathKeys":[]}));
 }

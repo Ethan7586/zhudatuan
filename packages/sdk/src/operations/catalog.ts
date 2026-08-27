@@ -63,7 +63,7 @@ export function createFetchCatalogPoolsRead(baseUrl: string): OperationMethod<"c
 }
 
 function bindPoolsRead(client: OperationExecutor): OperationMethod<"catalog.pools.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.read","method":"GET","path":"/api/v1/catalog/pools","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.read","method":"GET","path":"/api/v1/catalog/pools","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchCatalogPoolsAttach(baseUrl: string): OperationMethod<"catalog.pools.attach"> {
@@ -71,7 +71,7 @@ export function createFetchCatalogPoolsAttach(baseUrl: string): OperationMethod<
 }
 
 function bindPoolsAttach(client: OperationExecutor): OperationMethod<"catalog.pools.attach"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.attach","method":"PUT","path":"/api/v1/catalog/pools/{poolid}/bindings/{scopeid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["poolid","scopeid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.attach","method":"PUT","path":"/api/v1/catalog/pools/{poolid}/bindings/{scopeid}","audience":"operator","idempotent":true,"pathKeys":["poolid","scopeid"]}));
 }
 
 export function createFetchCatalogPoolsDetach(baseUrl: string): OperationMethod<"catalog.pools.detach"> {
@@ -79,7 +79,7 @@ export function createFetchCatalogPoolsDetach(baseUrl: string): OperationMethod<
 }
 
 function bindPoolsDetach(client: OperationExecutor): OperationMethod<"catalog.pools.detach"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.detach","method":"DELETE","path":"/api/v1/catalog/pools/{poolid}/bindings/{scopeid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["poolid","scopeid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.detach","method":"DELETE","path":"/api/v1/catalog/pools/{poolid}/bindings/{scopeid}","audience":"operator","idempotent":true,"pathKeys":["poolid","scopeid"]}));
 }
 
 export function createFetchCatalogPoolsAllocate(baseUrl: string): OperationMethod<"catalog.pools.allocate"> {
@@ -87,7 +87,7 @@ export function createFetchCatalogPoolsAllocate(baseUrl: string): OperationMetho
 }
 
 function bindPoolsAllocate(client: OperationExecutor): OperationMethod<"catalog.pools.allocate"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.allocate","method":"POST","path":"/api/v1/catalog/pools/{poolid}/allocations","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["poolid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.pools.allocate","method":"POST","path":"/api/v1/catalog/pools/{poolid}/allocations","audience":"operator","idempotent":false,"pathKeys":["poolid"]}));
 }
 
 export function createFetchCatalogProductsCreate(baseUrl: string): OperationMethod<"catalog.products.create"> {
@@ -95,7 +95,7 @@ export function createFetchCatalogProductsCreate(baseUrl: string): OperationMeth
 }
 
 function bindProductsCreate(client: OperationExecutor): OperationMethod<"catalog.products.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.products.create","method":"POST","path":"/api/v1/catalog/products","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.products.create","method":"POST","path":"/api/v1/catalog/products","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchCatalogProductsUpdate(baseUrl: string): OperationMethod<"catalog.products.update"> {
@@ -103,7 +103,7 @@ export function createFetchCatalogProductsUpdate(baseUrl: string): OperationMeth
 }
 
 function bindProductsUpdate(client: OperationExecutor): OperationMethod<"catalog.products.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.products.update","method":"PATCH","path":"/api/v1/catalog/products/{productid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["productid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.products.update","method":"PATCH","path":"/api/v1/catalog/products/{productid}","audience":"operator","idempotent":false,"pathKeys":["productid"]}));
 }
 
 export function createFetchCatalogProductsArchive(baseUrl: string): OperationMethod<"catalog.products.archive"> {
@@ -111,7 +111,7 @@ export function createFetchCatalogProductsArchive(baseUrl: string): OperationMet
 }
 
 function bindProductsArchive(client: OperationExecutor): OperationMethod<"catalog.products.archive"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.products.archive","method":"DELETE","path":"/api/v1/catalog/products/{productid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["productid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.products.archive","method":"DELETE","path":"/api/v1/catalog/products/{productid}","audience":"operator","idempotent":true,"pathKeys":["productid"]}));
 }
 
 export function createFetchCatalogListingsRead(baseUrl: string): OperationMethod<"catalog.listings.read"> {
@@ -119,7 +119,7 @@ export function createFetchCatalogListingsRead(baseUrl: string): OperationMethod
 }
 
 function bindListingsRead(client: OperationExecutor): OperationMethod<"catalog.listings.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.read","method":"GET","path":"/api/v1/catalog/listings","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.read","method":"GET","path":"/api/v1/catalog/listings","audience":"member","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchCatalogListingsPublish(baseUrl: string): OperationMethod<"catalog.listings.publish"> {
@@ -127,7 +127,7 @@ export function createFetchCatalogListingsPublish(baseUrl: string): OperationMet
 }
 
 function bindListingsPublish(client: OperationExecutor): OperationMethod<"catalog.listings.publish"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.publish","method":"PUT","path":"/api/v1/catalog/listings/{listingid}/publication","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["listingid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.publish","method":"PUT","path":"/api/v1/catalog/listings/{listingid}/publication","audience":"operator","idempotent":true,"pathKeys":["listingid"]}));
 }
 
 export function createFetchCatalogListingsUnpublish(baseUrl: string): OperationMethod<"catalog.listings.unpublish"> {
@@ -135,7 +135,7 @@ export function createFetchCatalogListingsUnpublish(baseUrl: string): OperationM
 }
 
 function bindListingsUnpublish(client: OperationExecutor): OperationMethod<"catalog.listings.unpublish"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.unpublish","method":"DELETE","path":"/api/v1/catalog/listings/{listingid}/publication","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["listingid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.unpublish","method":"DELETE","path":"/api/v1/catalog/listings/{listingid}/publication","audience":"operator","idempotent":true,"pathKeys":["listingid"]}));
 }
 
 export function createFetchCatalogListingsBatch(baseUrl: string): OperationMethod<"catalog.listings.batch"> {
@@ -143,7 +143,7 @@ export function createFetchCatalogListingsBatch(baseUrl: string): OperationMetho
 }
 
 function bindListingsBatch(client: OperationExecutor): OperationMethod<"catalog.listings.batch"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.batch","method":"POST","path":"/api/v1/catalog/listings/batches","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.listings.batch","method":"POST","path":"/api/v1/catalog/listings/batches","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchCatalogImportsCreate(baseUrl: string): OperationMethod<"catalog.imports.create"> {
@@ -151,7 +151,7 @@ export function createFetchCatalogImportsCreate(baseUrl: string): OperationMetho
 }
 
 function bindImportsCreate(client: OperationExecutor): OperationMethod<"catalog.imports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.imports.create","method":"POST","path":"/api/v1/catalog/imports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.imports.create","method":"POST","path":"/api/v1/catalog/imports","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchCatalogImportsRead(baseUrl: string): OperationMethod<"catalog.imports.read"> {
@@ -159,5 +159,5 @@ export function createFetchCatalogImportsRead(baseUrl: string): OperationMethod<
 }
 
 function bindImportsRead(client: OperationExecutor): OperationMethod<"catalog.imports.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"catalog.imports.read","method":"GET","path":"/api/v1/catalog/imports/{importid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["importid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"catalog.imports.read","method":"GET","path":"/api/v1/catalog/imports/{importid}","audience":"operator","idempotent":true,"pathKeys":["importid"]}));
 }

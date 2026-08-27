@@ -23,7 +23,7 @@ await Promise.all([
   expectReady('http://127.0.0.1:3001/health/ready'),
 ]);
 
-const kms = new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
+const kms = new KmsClient(environment.kmsEndpoint);
 const context = { verification: randomUUID() };
 const envelope = await kms.encrypt('local/verification', 'p0-verification', context);
 if (await kms.decrypt('local/verification', envelope.ciphertext, context) !== 'p0-verification') throw new Error('LOCAL_KMS_ROUNDTRIP_FAILED');
@@ -44,7 +44,6 @@ const challenge = await localFetch('http://127.0.0.1:3001/api/v1/identity/challe
   headers: {
     'content-type': 'application/json',
     'idempotency-key': randomUUID(),
-    origin: 'http://127.0.0.1:3000',
     'x-client-version': '0.0.0',
     'x-contract-version': CONTRACT_VERSION,
     'x-device-id': `local-${randomUUID()}`,
@@ -113,7 +112,6 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     headers: {
       'content-type': 'application/json',
       'idempotency-key': randomUUID(),
-      origin: 'http://127.0.0.1:3000',
       'x-client-version': '0.0.0',
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': `local-${randomUUID()}`,
@@ -133,7 +131,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
       && (item as Readonly<Record<string, unknown>>).client === 'storefront');
     operatorMembership = memberships.find((item): item is Readonly<{ id: string; client: string }> => item !== null && typeof item === 'object'
       && !Array.isArray(item) && typeof (item as Readonly<Record<string, unknown>>).id === 'string'
-      && (item as Readonly<Record<string, unknown>>).client === 'console')?.id;
+      && (item as Readonly<Record<string, unknown>>).client === 'operator')?.id;
     if (!storefront) throw new Error('LOCAL_EMPLOYEE_STOREFRONT_MEMBERSHIP_MISSING');
     login = await authenticate(storefront.id);
   }
@@ -202,20 +200,18 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const invitation = await localFetch('http://127.0.0.1:3001/api/v1/identity/invitations', { method:'POST', headers:{
     authorization:`Bearer ${operatorBearer}`, 'content-type':'application/json', 'idempotency-key':randomUUID(),
     'x-client-version':'0.0.0', 'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID(),
-    'x-scope-hint':'tenant-smart-wing',
   }, body:JSON.stringify({ label:'本地邀请验证', maxUses:2, expiresAt:new Date(Date.now()+24*60*60_000).toISOString() }) });
-  if (invitation.status !== 201) throw new Error(`LOCAL_INVITATION_CREATE_HTTP_${invitation.status}`);
+  if (invitation.status !== 201) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const invitationEtag = invitation.headers.get('etag');
   const created: unknown = await invitation.json();
   if (created === null || typeof created !== 'object' || Array.isArray(created)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const invitationId = (created as Readonly<Record<string, unknown>>).id;
   const invitationCode = (created as Readonly<Record<string, unknown>>).code;
-  const invitationTarget = (created as Readonly<Record<string, unknown>>).target;
   const invitationVersion = (created as Readonly<Record<string, unknown>>).version;
-  if (typeof invitationId !== 'string' || typeof invitationCode !== 'string' || invitationTarget !== 'console' || invitationEtag === null
+  if (typeof invitationId !== 'string' || typeof invitationCode !== 'string' || invitationEtag === null
     || !['number','string'].includes(typeof invitationVersion)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const resolveInvitation = () => localFetch('http://127.0.0.1:3001/api/v1/identity/invitations/resolve', { method:'POST', headers:{
-    'content-type':'application/json', 'idempotency-key':randomUUID(), origin:'http://127.0.0.1:3000', 'x-client-version':'0.0.0',
+    'content-type':'application/json', 'idempotency-key':randomUUID(), 'x-client-version':'0.0.0',
     'x-contract-version':CONTRACT_VERSION, 'x-request-id':randomUUID(),
   }, body:JSON.stringify({ invite:invitationCode }) });
   if ((await resolveInvitation()).status !== 200) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');

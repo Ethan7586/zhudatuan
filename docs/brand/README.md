@@ -4,19 +4,8 @@
 
 1. [智慧翼 Smart Wing 统一 VI 1.0](./SMART-WING-UNIFIED-VI-1.0.md)
 2. [统一移动 VI 1.0 总板](./design-previews/smart-wing-unified-mobile-vi-1.0.png)
-3. 工程令牌：`packages/design/src/tokens.css` 与 `tokens.json`
-4. 三端映射：`packages/design/src/mobile-platforms.json`
-
-## 当前升级稿
-
-1. [主打團 Product Design System｜智慧翼 VI 1.1 升级稿](./ZHUDATUAN-DESIGN-SYSTEM-VI-1.1.md)
-2. [VI Changelog](./CHANGELOG.md)
-3. 状态：Upgrade Draft；制定时间 `2026-08-28 20:37 +08:00`
-4. Storybook：`VI 1.1 升級稿/完整設計板`
-5. [批准候選設計板](./design-previews/zhudatuan-design-system-vi-1.1.png)
-6. [桌面／手機與 A11y 驗證證據](../evidence/vi/2026-08-28/README.md)
-
-升级稿不会直接覆盖 Owner-approved Console。经 Owner 确认后，再把状态转为正式基线并逐端迁移。
+3. 工程令牌：`packages/design-system/src/tokens.css` 与 `tokens.json`
+4. 三端映射：`packages/design-system/src/mobile-platforms.json`
 
 以下原始说明保留用于资产生成和商标原稿替换流程。若与《统一 VI 1.0》冲突，以《统一 VI 1.0》为准。
 
@@ -24,7 +13,7 @@
 
 本目录定义三个产品端共用的品牌基线：员工商城、统一登录、运营管理后台。
 
-> 当前 W/翼形标志已冻结为项目 VI 1.0 工程母版。若未来收到具有更高法律效力的正式商标原稿，只替换 `packages/design/src/brand/` 中的母版并重新生成资产，各端不再逐页修改。
+> 当前 W/翼形标志已冻结为项目 VI 1.0 工程母版。若未来收到具有更高法律效力的正式商标原稿，只替换 `packages/design-system/src/brand/` 中的母版并重新生成资产，各端不再逐页修改。
 
 ## 统一写法
 
@@ -44,7 +33,7 @@
 | 雾面白   | `#F5F7FA` | 页面背景               |
 | 正文墨色 | `#172033` | 正文与标题             |
 
-颜色、圆角、字体和阴影的工程令牌位于 `packages/design/src/tokens.css`。三个应用应逐步收敛到该 Canonical 文件；新增界面优先使用 `var(--sw-*)`，不再新增近似品牌蓝。
+颜色、圆角、字体和阴影的工程令牌位于 `packages/design-system/src/tokens.css`。三个应用必须导入该文件；新增界面优先使用 `var(--sw-*)`，不再新增近似品牌蓝。
 
 ## 标志使用
 
@@ -59,7 +48,7 @@
 - 运营后台（Vite）：`public/brand/` + `index.html` 中的 favicon、manifest、Open Graph。
 - 统一登录（Vite `/login/`）：同样使用 `public/brand/`，所有本地资源通过 `%BASE_URL%` 保持子路径正确。
 
-歷史資產流程曾使用 `npm run brand:assets` 從唯一 SVG 母版生成各端資產；目前倉庫未保留此命令。正式替換品牌母版前，必須先恢復生成腳本，不可手動逐端覆寫。
+运行 `npm run brand:assets`，会从唯一 SVG 母版重新生成各端的 PNG、图标、横向组合和微信分享图。
 
 ## 微信 / 企业微信分享
 
@@ -68,7 +57,7 @@
 ## 正式 VI 到件后的替换验收
 
 1. 对照甲方品牌手册确认中文、英文、颜色与保护区。
-2. 恢復並驗證品牌資產生成腳本後，再替換 SVG 母版並生成各端資產。
+2. 替换 SVG 母版，运行 `npm run brand:assets`。
 3. 构建三个应用，检查标签页、桌面添加图标、登录页、商城头部和后台侧栏。
 4. 在微信与企业微信各发送一次生产链接，核对标题、描述、缩略图。
 5. 将甲方书面确认日期记录在本目录变更记录中。

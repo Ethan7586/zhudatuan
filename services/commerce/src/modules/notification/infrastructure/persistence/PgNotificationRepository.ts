@@ -4,7 +4,7 @@ import type { OperationDatabase } from '../../../../foundation/application/Modul
 import type { DeliveryReceipt } from '../../application/port/DeliveryChannel';
 import type { ChallengeRecord, DispatchRecord, EndpointRecord, MemberContext, NotificationRepository, QueuedDispatch, TemplateRecord } from '../../application/port/NotificationRepository';
 import type { DeliveryChannelId } from '../../domain/model/Template';
-import { identityNotificationPort } from '../../../identity/IdentityNotificationPort';
+import { identityNotificationPort } from '../../../identity/IdentityModule';
 
 export class PgNotificationRepository implements NotificationRepository {
   constructor(private readonly database: OperationDatabase) {}
@@ -165,14 +165,7 @@ export class PgNotificationRepository implements NotificationRepository {
     return identityNotificationPort.challenge(this.database, id);
   }
 
-  beginChallengeAttempt(id: string, provider: string) { return identityNotificationPort.beginAttempt(this.database, id, provider); }
-  completeChallengeAttempt(id: string, sequence: number, provider: string, external: string) {
-    return identityNotificationPort.completeAttempt(this.database, id, sequence, provider, external);
-  }
-  failChallengeAttempt(id: string, sequence: number, code: string) {
-    return identityNotificationPort.failAttempt(this.database, id, sequence, code);
-  }
-  ambiguousChallengeAttempt(id: string, sequence: number, code: string) {
-    return identityNotificationPort.ambiguousAttempt(this.database, id, sequence, code);
+  challengeAttempt(id: string, provider: string, state: 'sent' | 'failed', external: string | null, code: string | null) {
+    return identityNotificationPort.attempt(this.database, id, provider, state, external, code);
   }
 }

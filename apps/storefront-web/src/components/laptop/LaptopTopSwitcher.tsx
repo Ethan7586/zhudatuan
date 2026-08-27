@@ -1,23 +1,18 @@
 import React from 'react';
-import { useMall } from '../../context/MallContext';
-import type { AppMode, LaptopPage } from '../../context/MallContext.types';
+import { useMall, AppMode, LaptopPage } from '../../context/MallContext';
 import { Monitor, Laptop, Smartphone, AppWindow, Tablet, Layers } from 'lucide-react';
-import { defaultStorefrontWebPage, storefrontDeviceSwitchPolicy, STOREFRONT_WEB_SURFACE_COPY, type StorefrontWebNavigationBoundary, type StorefrontWebSurface } from './StorefrontWebStandard';
+import { defaultStorefrontWebPage, STOREFRONT_WEB_SURFACE_COPY, type StorefrontWebSurface } from './StorefrontWebStandard';
 
 type LaptopTopSwitcherProps = {
   surface?: StorefrontWebSurface;
-  navigationBoundary?: StorefrontWebNavigationBoundary;
 };
 
-export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 'laptop', navigationBoundary = 'showcase' }) => {
+export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 'laptop' }) => {
   const { appMode, setAppMode, laptopPage, setLaptopPage, setTabletOrientation } = useMall();
   const surfaceCopy = STOREFRONT_WEB_SURFACE_COPY[surface];
-  const previewControlsDisabled = navigationBoundary === 'production';
 
   const handleSwitchMode = (mode: AppMode, preservePath = false) => {
-    const policy = storefrontDeviceSwitchPolicy(navigationBoundary, mode);
-    if (policy.disabled) return;
-    setAppMode(mode, { preservePath: preservePath || policy.preservePath });
+    setAppMode(mode, { preservePath });
   };
 
   const laptopPages: { id: LaptopPage; name: string; desc: string }[] = [
@@ -37,11 +32,11 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
           <img src="/icon.svg" alt="" className="h-7 w-7 flex-shrink-0 rounded-md shadow-xs" />
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-black text-sm tracking-tight text-white">主打团企业福利商城</span>
+              <span className="font-black text-sm tracking-tight text-white">智慧翼企业福利商城</span>
               <span className="text-[10px] bg-blue-500/30 text-blue-200 border border-blue-400/40 font-bold px-1.5 py-0.2 rounded">{surfaceCopy.frameBadge}</span>
             </div>
             <div className="text-[10px] text-blue-200 flex items-center gap-1">
-              <span>ZHUDATUAN B2B2C</span>
+              <span>SMART WING B2B2C</span>
               <span>·</span>
               <span className="text-yellow-200">技术服务：雍彻科技（SGSYEN TECH）</span>
             </div>
@@ -65,7 +60,6 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
           </button>
 
           <button
-            type="button"
             onClick={() => {
               handleSwitchMode('laptop-web');
               setLaptopPage('home-1366');
@@ -79,7 +73,6 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
           </button>
 
           <button
-            type="button"
             onClick={() => {
               handleSwitchMode('laptop-web');
               setLaptopPage('home-1440');
@@ -93,54 +86,42 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
           </button>
 
           <button
-            type="button"
             onClick={() => handleSwitchMode('mini-program')}
-            disabled={previewControlsDisabled}
-            aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? '微信小程序仅在 labs.zhudatuan.com 设计预览站开放' : '微信小程序 (390×844)'}
+            title="微信小程序 (390×844)"
           >
             <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
             <span>微信小程序</span>
           </button>
 
           <button
-            type="button"
             onClick={() => handleSwitchMode('android-app')}
-            disabled={previewControlsDisabled}
-            aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? 'Android 预览仅在 labs.zhudatuan.com 设计预览站开放' : 'Android 手机 (412×915)'}
+            title="Android 手机 (412×915)"
           >
             <AppWindow className="w-3.5 h-3.5 text-amber-400" />
             <span>Android手机</span>
           </button>
 
           <button
-            type="button"
             onClick={() => {
               handleSwitchMode('tablet-app');
               setTabletOrientation('landscape');
             }}
-            disabled={previewControlsDisabled}
-            aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? 'Tablet 预览仅在 labs.zhudatuan.com 设计预览站开放' : 'Tablet 横屏 (1280×800)'}
+            title="Tablet 横屏 (1280×800)"
           >
             <Tablet className="w-3.5 h-3.5 text-purple-300" />
             <span>Tablet横屏</span>
           </button>
 
           <button
-            type="button"
             onClick={() => {
               handleSwitchMode('tablet-app');
               setTabletOrientation('portrait');
             }}
-            disabled={previewControlsDisabled}
-            aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? 'Tablet 预览仅在 labs.zhudatuan.com 设计预览站开放' : 'Tablet 竖屏 (800×1280)'}
+            title="Tablet 竖屏 (800×1280)"
           >
             <Tablet className="w-3.5 h-3.5 text-purple-300 rotate-90" />
             <span>Tablet竖屏</span>
@@ -155,7 +136,6 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
           </span>
           {laptopPages.map((p) => (
             <button
-              type="button"
               key={p.id}
               onClick={() => setLaptopPage(p.id)}
               className={`px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer flex-shrink-0 flex items-center gap-1 ${

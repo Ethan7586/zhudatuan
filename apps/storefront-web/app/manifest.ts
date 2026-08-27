@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: '主打团商城',
-    short_name: '主打团',
-    description: '面向消费者的商品、卡券、生活服务和订单管理平台。',
+    name: '智慧翼企业福利商城',
+    short_name: '智慧翼',
+    description: '面向企业员工的福利商品、卡券、生活服务和订单管理平台。',
     lang: 'zh-CN',
     start_url: '/',
     scope: '/',

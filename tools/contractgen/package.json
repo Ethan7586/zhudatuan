@@ -7,10 +7,8 @@
     "build": "npm run typecheck",
     "generate": "node --import tsx src/ContractGenerator.ts",
     "generate:client": "node --import tsx src/ContractGenerator.ts --scope=contract-sdk",
-    "generate:database": "node --import tsx src/ContractGenerator.ts --scope=database",
     "check": "node --import tsx src/ContractGenerator.ts --check",
     "check:client": "node --import tsx src/ContractGenerator.ts --scope=contract-sdk --check",
-    "check:database": "node --import tsx src/ContractGenerator.ts --scope=database --check",
     "lint": "npm run typecheck",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"

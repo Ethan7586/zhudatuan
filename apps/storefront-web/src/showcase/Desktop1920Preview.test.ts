@@ -38,7 +38,7 @@ describe('1920 desktop preview', () => {
   it('uses the complete 1920×1080 VI for the immersive 27-inch route', () => {
     const markup = renderToStaticMarkup(React.createElement(DesktopFullViPreview));
 
-    expect(markup).toContain('title="主打团商城 27英寸完整桌面 VI"');
+    expect(markup).toContain('title="智慧翼商城 27英寸完整桌面 VI"');
     expect(markup).toContain('width="1920"');
     expect(markup).toContain('height="1080"');
     expect(markup).toContain('href="/desktop-1920/inspect"');

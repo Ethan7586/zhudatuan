@@ -1,5 +1,5 @@
 /**
- * 主打团企业福利商城 - 类型定义
+ * 智慧翼企业福利商城 - 类型定义
  * 技术服务方：雍彻科技
  */
 
@@ -26,6 +26,7 @@ export interface Membership {
 }
 
 export interface PreAuthContext {
+  preAuthToken: string;
   phone?: string;
   identifier?: string;
   loginMethod: LoginMethod;
@@ -33,10 +34,45 @@ export interface PreAuthContext {
   memberships: Membership[];
 }
 
-export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
+export interface StepUpChallenge {
+  challengeId: string;
+  preAuthToken: string;
+  membershipId: string;
+  method: 'totp';
+  targetDomain: string;
+  requiresStepUp: boolean;
+  message: string;
+}
+
+export interface StepUpVerifyResult {
+  ticket: string;
+  redirectUrl: string;
+  targetDomain: string;
+  expiresInSeconds: number;
+}
+
+export interface LockoutState {
+  isLocked: boolean;
+  remainingSeconds: number;
+  failedAttempts: number;
+}
+
+export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com' | 'hbbtzn.com' | 'smart.hbbtzn.com';
+
+export type ScreenType = 'login' | 'storefront_home' | 'admin_dashboard' | 'auth_callback' | 'force_password_reset';
 
 export interface MallContextType {
   currentDomain: DomainType;
+  setDomain: (domain: DomainType) => void;
+  currentScreen: ScreenType;
+  screenParams: Record<string, any>;
+  navigateTo: (screen: ScreenType, params?: Record<string, any>) => void;
   acceptedTerms: boolean;
   setAcceptedTerms: (accepted: boolean) => void;
+  activeSession: {
+    membership?: Membership;
+    domain?: DomainType;
+    ticket?: string;
+  } | null;
+  setActiveSession: (session: any) => void;
 }

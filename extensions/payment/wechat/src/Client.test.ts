@@ -25,7 +25,7 @@ describe('WeChat Pay APIv3 client', () => {
       keys.config,
       {
         appId: keys.appId,
-        description: '主打团福利商城-有机纯牛奶',
+        description: '智慧翼福利商城-有机纯牛奶',
         outTradeNo: 'SW202608140001',
         totalCents: 2590,
         payerOpenid: 'openidMember123456',
@@ -70,7 +70,7 @@ describe('WeChat Pay APIv3 client', () => {
         keys.config,
         {
           appId: keys.appId,
-          description: '主打团福利商城-有机纯牛奶',
+          description: '智慧翼福利商城-有机纯牛奶',
           outTradeNo: 'SW202608140002',
           totalCents: 2590,
           payerOpenid: 'openidMember123456',
@@ -107,7 +107,7 @@ describe('WeChat Pay APIv3 client', () => {
       keys.config,
       {
         appId: keys.appId,
-        description: '主打团福利商城-办公笔记本',
+        description: '智慧翼福利商城-办公笔记本',
         outTradeNo: 'SW202608140004',
         totalCents: 100,
         payerOpenid: 'openidMember123456',

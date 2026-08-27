@@ -1,26 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { expectWcagAA } from './Accessibility';
-import { cockpit, consoleSession, controlHealth } from './Fixtures';
+import { cockpit, consoleSession, controlHealth, publication, storeSession, supplierSession } from './Fixtures';
 import { OperationMock } from './OperationMock';
-import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './Origins';
-
-test('Auth 普通登录与企业管理入口双向切换', async ({ page }) => {
-  await page.goto(`${AUTH_ORIGIN}/login?client=console`);
-
-  await expect(page.locator('[data-login-mode="consumer"]')).toBeVisible();
-  await expect(page.getByRole('tab', { name: '企微扫码' })).toHaveCount(0);
-  await expect(page.getByRole('tab', { name: '企业 SSO' })).toHaveCount(0);
-
-  await page.getByRole('button', { name: '企业管理' }).click();
-  await expect(page.locator('[data-login-mode="enterprise"]')).toBeVisible();
-  await expect(page.getByRole('tab', { name: '企微扫码' })).toBeVisible();
-  await expect(page.getByRole('tab', { name: '企业 SSO' })).toBeVisible();
-
-  await page.getByRole('button', { name: '福利商城' }).click();
-  await expect(page.locator('[data-login-mode="consumer"]')).toBeVisible();
-  await expect(page.getByRole('tab', { name: '企微扫码' })).toHaveCount(0);
-  await expect(page.getByRole('tab', { name: '企业 SSO' })).toHaveCount(0);
-});
 
 test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) => {
   const api = new OperationMock(page).post('/api/v1/identity/sessions', (call) => {
@@ -35,20 +16,20 @@ test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) 
   });
   await api.install();
 
-  await page.goto(`${AUTH_ORIGIN}/login?client=console`);
-  await expect(page.getByRole('heading', { level: 1, name: /企业福利\s*全新定义/ })).toBeVisible();
-  await expect(page.getByRole('heading', { level: 2, name: '统一账号认证' })).toBeVisible();
-  await expect(page).toHaveTitle('统一登录｜智慧翼企业福利商城');
+  await page.goto('http://127.0.0.1:4176/login?client=console');
+  const heading = page.getByRole('heading', { level: 1, name: '登录福利商城' });
+  await expect(heading).toBeFocused();
+  await expect(page).toHaveTitle('登录 · 智慧翼 Smart Wing');
+  await expect(page.getByRole('navigation', { name: '身份服务' })).toContainText('找回密码');
 
-  await page.getByLabel('登录账号或已绑定手机号').fill('e2e-user');
-  await page.getByRole('textbox', { name: '密码', exact: true }).fill('correct-horse');
-  await page.getByRole('checkbox').check();
-  await page.getByRole('button', { name: '登录', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 2, name: '选择你的工作台' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '进入运营后台：已授权企业，运营会员' })).toBeVisible();
+  await page.getByLabel('手机号或用户名').fill('e2e-user');
+  await page.getByLabel('密码').fill('correct-horse');
+  await page.getByRole('button', { name: '安全登录', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('请选择本次进入的会员身份。');
+  await expect(page.getByLabel('选择身份')).toHaveValue('');
   await expectWcagAA(page);
 
-  const status = await page.evaluate(async (origin) => (await fetch(`${origin}/api/v1/not-registered`)).status, API_ORIGIN);
+  const status = await page.evaluate(async () => (await fetch('http://127.0.0.1:4311/api/v1/not-registered')).status);
   expect(status).toBe(501);
   expect(api.unmatched).toHaveLength(1);
   expect(api.unmatched[0]?.path).toBe('/api/v1/not-registered');
@@ -58,7 +39,7 @@ test('Console 经营驾驶舱深链展示权威读模型并满足 WCAG A/AA', as
   const api = new OperationMock(page).get('/api/v1/identity/session', consoleSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' }).get('/api/v1/reports/dashboard', cockpit);
   await api.install();
 
-  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/cockpit?period=30days`);
+  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/cockpit?period=30days');
   const heading = page.getByRole('heading', { level: 1, name: '经营驾驶舱' });
   await expect(heading).toBeFocused();
   await expect(page).toHaveTitle('经营驾驶舱 · 智慧翼');
@@ -74,15 +55,15 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
   const controlSession = {
     ...consoleSession,
     permissions: [...consoleSession.permissions, 'runtime.health.read'],
-    capabilities: [...consoleSession.capabilities, 'runtime.health.dependency'],
+    capabilities: [...consoleSession.capabilities, 'runtime.health.read'],
     assurance: { level: 2, verified: 'step-up' },
   };
   const api = new OperationMock(page).get('/api/v1/identity/session', controlSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' });
   let healthReads = 0;
-  await page.route(`${API_ORIGIN}/health/dependency`, async (route) => {
+  await page.route('http://127.0.0.1:4311/health/dependency', async (route) => {
     const request = route.request();
     const corsHeaders = {
-      'access-control-allow-origin': CONSOLE_ORIGIN,
+      'access-control-allow-origin': 'http://127.0.0.1:4173',
       'access-control-allow-credentials': 'true',
     };
     if (request.method() === 'OPTIONS') {
@@ -104,7 +85,7 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
   });
   await api.install();
 
-  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/control`);
+  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/control');
   const heading = page.getByRole('heading', { level: 1, name: '智慧翼中控台' });
   await expect(heading).toBeVisible();
   await expect(page).toHaveTitle('中控台 · 智慧翼');
@@ -136,17 +117,47 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
   await expectWcagAA(page);
 });
 
-test('Storefront 未登录首页只读取会话并失败关闭且满足 WCAG A/AA', async ({ page }) => {
-  const api = new OperationMock(page);
+test('Store 品牌页深链失败关闭并满足 WCAG A/AA', async ({ page }) => {
+  const api = new OperationMock(page).get('/api/v1/identity/session', storeSession);
   await api.install();
 
-  await page.goto(STOREFRONT_ORIGIN);
-  await expect(page).toHaveTitle('智慧翼企业福利商城｜企业员工福利平台');
-  await expect(page.getByRole('link', { name: '登录或注册智慧翼账户' })).toBeVisible();
-  await expect(page.getByText('登录 / 注册', { exact: true })).toBeVisible();
-  await expect(page.getByText('登录后从生产数据库加载企业商品与权益。', { exact: true })).toBeVisible();
-  await expect.poll(() => api.calls.length).toBeGreaterThan(0);
+  await page.goto('http://127.0.0.1:4174/stores/store%3Ae2e/brand');
+  const heading = page.getByRole('heading', { level: 1, name: '品牌管理' });
+  await expect(heading).toBeFocused();
+  await expect(page).toHaveTitle('品牌管理 · 智慧翼');
+  await expect(page.getByRole('button', { name: /品牌管理/ })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByText(/OPERATION_GAP · STORE\.brand/)).toBeVisible();
+  expect(api.unmatched).toEqual([]);
   await expectWcagAA(page);
-  expect([...new Set(api.calls.map((call) => call.path))]).toEqual(['/api/v1/identity/session']);
-  expect([...new Set(api.unmatched.map((call) => call.path))]).toEqual(['/api/v1/identity/session']);
+});
+
+test('Supplier 品牌页深链失败关闭并满足 WCAG A/AA', async ({ page }) => {
+  const api = new OperationMock(page).get('/api/v1/identity/session', supplierSession);
+  await api.install();
+
+  await page.goto('http://127.0.0.1:4175/suppliers/supplier%3Ae2e/brand');
+  const heading = page.getByRole('heading', { level: 1, name: '品牌管理' });
+  await expect(heading).toBeFocused();
+  await expect(page).toHaveTitle('品牌管理 · 智慧翼');
+  await expect(page.getByRole('button', { name: /品牌管理/ })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByText(/OPERATION_GAP · SUPPLIER\.brand/)).toBeVisible();
+  expect(api.unmatched).toEqual([]);
+  await expectWcagAA(page);
+});
+
+test('Storefront 公开首页无需会话即可深链并满足 WCAG A/AA', async ({ page }) => {
+  const api = new OperationMock(page).get('/api/v1/experiences/published', publication);
+  await api.install();
+
+  await page.goto('http://127.0.0.1:4177/m/mall%3Ae2e');
+  await expect(page.getByRole('heading', { level: 1, name: '智慧翼福利首页测试' })).toBeFocused();
+  await expect(page).toHaveTitle('首页 · 智慧翼福利商城');
+  await expect(page.getByRole('navigation', { name: '商城主导航' })).toContainText('全部商品分类');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('navigation', { name: '移动端主导航' })).toContainText('首页分类翼码订单我的');
+  const operationPaths = api.calls.map((call) => call.path);
+  expect(operationPaths.length).toBeGreaterThan(0);
+  expect(new Set(operationPaths)).toEqual(new Set(['/api/v1/experiences/published']));
+  expect(api.unmatched).toEqual([]);
+  await expectWcagAA(page);
 });

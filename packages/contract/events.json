@@ -21,33 +21,8 @@
       "version": 1
     },
     {
-      "module": "identity",
-      "type": "identity.member.reset",
-      "version": 1
-    },
-    {
       "module": "access",
       "type": "access.version.changed",
-      "version": 1
-    },
-    {
-      "module": "access",
-      "type": "access.owner.transfer.initiated",
-      "version": 1
-    },
-    {
-      "module": "access",
-      "type": "access.owner.bootstrapped",
-      "version": 1
-    },
-    {
-      "module": "access",
-      "type": "access.owner.transferred",
-      "version": 1
-    },
-    {
-      "module": "access",
-      "type": "access.owner.transfer.cancelled",
       "version": 1
     },
     {
@@ -88,11 +63,6 @@
     {
       "module": "order",
       "type": "order.paid",
-      "version": 1
-    },
-    {
-      "module": "order",
-      "type": "order.received",
       "version": 1
     },
     {

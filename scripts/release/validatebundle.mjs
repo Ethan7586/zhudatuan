@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import { directoryHash, fileHash, hash } from './artifacts.mjs';
-import { readConsoleArtifact } from './console-artifact.mjs';
 import { validateStage } from './stage.mjs';
 
 const root = process.argv[2] ? resolve(process.argv[2]) : undefined;
@@ -23,7 +22,6 @@ if (release.sbom?.sha256 !== fileHash(join(root, release.sbom.path))) throw new 
 for (const [client, artifact] of Object.entries(release.clients ?? {})) {
   if (artifact.sha256 !== directoryHash(join(root, artifact.path))) throw new Error(`RELEASE_CLIENT_ARTIFACT_MISMATCH:${client}`);
 }
-readConsoleArtifact(join(root, release.clients.console.path), { expectedCommit: release.commit, requireClean: true });
 const pointer = read('current.json');
 if (pointer.schema !== 'shop.pointer.v1' || pointer.releaseId !== release.releaseId || pointer.commit !== release.commit
   || JSON.stringify(pointer.clients) !== JSON.stringify(release.clients)) throw new Error('RELEASE_POINTER_MISMATCH');

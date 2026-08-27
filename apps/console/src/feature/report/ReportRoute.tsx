@@ -32,7 +32,7 @@ export function Component() {
   const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
   const setFilter = (key: 'view' | 'period', value: string) => { const next = new URLSearchParams(search); next.set(key, value); next.delete('cursor'); setSearch(next); };
-  return <PagedResource title="数据报表" eyebrow="ZHUDATUAN REPORTING" description="指标、口径、范围、截至时间和投影版本全部由 reporting 读模型返回。"
+  return <PagedResource title="数据报表" eyebrow="SMART WING REPORTING" description="指标、口径、范围、截至时间和投影版本全部由 reporting 读模型返回。"
     condition={condition} {...(error === undefined ? {} : { error })} rows={data?.items ?? []} columns={columns} rowKey={(row) => `${row.code}:${row.version}:${JSON.stringify(row.dimensions)}`}
     count={data?.count ?? 0} {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
     actions={<><label className="inlinefield">报表<select value={view} onChange={(event) => setFilter('view', event.target.value)}>

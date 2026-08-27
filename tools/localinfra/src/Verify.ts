@@ -1,9 +1,4 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { localInfrastructureEnvironment } from '@shop/config/server';
-
-const environment = localInfrastructureEnvironment();
-const secretAuthorization = { authorization: `Bearer ${environment.secretStoreBearerToken}` };
-const kmsAuthorization = { authorization: `Bearer ${environment.kmsBearerToken}` };
 
 await Promise.all([8443, 8444, 8445].map(async port => {
   const response = await fetch(`https://127.0.0.1:${port}/health/ready`, { redirect: 'error' });
@@ -14,12 +9,12 @@ const objectToken = await secret('shop/local/objects/api');
 await secret('shop/local/database/api');
 const context = { verification: randomUUID() };
 const encrypted = await json('https://127.0.0.1:8444/v1/envelopes', {
-  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
+  method: 'POST', headers: { 'content-type': 'application/json' },
   body: JSON.stringify({ context, keyRef: 'local/verification', plaintext: 'verified' }),
 });
 if (typeof encrypted.ciphertext !== 'string' || typeof encrypted.fingerprint !== 'string') throw new Error('LOCAL_KMS_ENVELOPE_INVALID');
 const decrypted = await json('https://127.0.0.1:8444/v1/plaintexts', {
-  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
+  method: 'POST', headers: { 'content-type': 'application/json' },
   body: JSON.stringify({ context, keyRef: 'local/verification', ciphertext: encrypted.ciphertext }),
 });
 if (decrypted.plaintext !== 'verified') throw new Error('LOCAL_KMS_ROUNDTRIP_FAILED');
@@ -44,7 +39,7 @@ if (!Buffer.from(await read.arrayBuffer()).equals(Buffer.from(bytes))) throw new
 process.stdout.write('LOCAL_HTTPS_CONTRACTS_VERIFIED secretstore=ok kms=ok objects=ok\n');
 
 async function secret(reference: string): Promise<string> {
-  const value = await json(`https://127.0.0.1:8443/v1/secrets/${encodeURIComponent(reference)}`, { headers: secretAuthorization });
+  const value = await json(`https://127.0.0.1:8443/v1/secrets/${encodeURIComponent(reference)}`);
   if (typeof value.value !== 'string' || !value.value) throw new Error('LOCAL_SECRET_INVALID');
   return value.value;
 }

@@ -125,7 +125,7 @@ class PaymentOperations implements OperationUsecase {
       const payerHash = createHash('sha256').update(payer).digest('hex');
       await transaction(this.pool, request, (database) => database.query(`update payment.attempt set payer_hash=$2
         where id=$1 and state in('started','unknown','pending')`, [state.attempt!, payerHash]));
-      const parameters = await this.gateway.prepay({ description: `主打团福利商城-${state.order_number}`,
+      const parameters = await this.gateway.prepay({ description: `智慧翼福利商城-${state.order_number}`,
         orderNumber: PaymentReference.payment(state.order_number).text, amountMinor: state.amount_minor, payer,
         application, expiresAt: wechatTime(state.expires_at) });
       const response = { status: 201, body: { intent: state.intent, parameters } } satisfies OperationResult;

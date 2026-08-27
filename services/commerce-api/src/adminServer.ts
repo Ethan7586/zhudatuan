@@ -35,7 +35,7 @@ function requireAdminPermission(permission: Permission) {
 
     try {
       const session = await readSession(
-        new Request(`https://console.zhudatuan.com${request.originalUrl}`, {
+        new Request(`https://smart.hbbtzn.com${request.originalUrl}`, {
           headers: { cookie: request.headers.cookie ?? '' },
         }),
         process.env as WorkerEnv
@@ -45,7 +45,7 @@ function requireAdminPermission(permission: Permission) {
         return;
       }
       const runtime = await resolveMembershipRuntime(
-        new Request(`https://console.zhudatuan.com${request.originalUrl}`, {
+        new Request(`https://smart.hbbtzn.com${request.originalUrl}`, {
           headers: { cookie: request.headers.cookie ?? '' },
         }),
         process.env as WorkerEnv
@@ -255,7 +255,7 @@ async function startServer() {
 
   // 仅由本机 Caddy 反向代理暴露，避免绕过 TLS、WAF 与域名级会话隔离。
   app.listen(PORT, '127.0.0.1', () => {
-    console.log(`ZHUDATUAN Admin Console listening on 127.0.0.1:${PORT}`);
+    console.log(`Smart Wing Admin Console listening on 127.0.0.1:${PORT}`);
   });
 }
 

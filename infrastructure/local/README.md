@@ -12,6 +12,6 @@ npm run dev:api
 npm run local:verify
 ```
 
-`local:prepare` writes a private local CA, `.env.local` files, and `secrets.local.json`. These files are ignored by Git and secret values are never printed. It creates separate 256-bit base64url bearer tokens for the Secret Store and KMS, preserves valid existing tokens on repeated runs, and keeps those tokens in the private server/client env files rather than the Secret Store catalog that workloads can read. Trust is process-scoped through `NODE_EXTRA_CA_CERTS`; the certificate is not installed into the operating-system trust store.
+`local:prepare` writes a private local CA, `.env.local` files, and `secrets.local.json`. These files are ignored by Git and secret values are never printed. Trust is process-scoped through `NODE_EXTRA_CA_CERTS`; the certificate is not installed into the operating-system trust store.
 
-PostgreSQL and Redis bind only to `127.0.0.1`. The Secret Store, KMS, and object store are HTTPS-only and also bind only to `127.0.0.1`. Secret Store and KMS expose unauthenticated readiness only at `/health/ready`; every other request is bearer-authenticated before route, method, or request-body validation.
+PostgreSQL and Redis bind only to `127.0.0.1`. The Secret Store, KMS, and object store are HTTPS-only and also bind only to `127.0.0.1`.

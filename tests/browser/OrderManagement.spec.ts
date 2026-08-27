@@ -2,17 +2,14 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { consoleSession } from './Fixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
 import { orderPreviewPage } from './OrderPreviewFixtures';
-import { CONSOLE_ORIGIN } from './Origins';
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
 const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: Object.freeze([previewScope]),
-  permissions: Object.freeze([...consoleSession.permissions, 'order.read']),
-  capabilities: Object.freeze([...consoleSession.capabilities, 'order.orders.read']),
 });
-const ordersUrl = `${CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/orders`;
+const ordersUrl = 'http://127.0.0.1:4173/scopes/platform/platform%3Apreview/orders';
 
 test('Console 订单管理呈现参考结构并只用服务端筛选结果', async ({ page }) => {
   const api = consoleOrderApi(page, (call) => orderPreviewPage(new URLSearchParams(call.query)));

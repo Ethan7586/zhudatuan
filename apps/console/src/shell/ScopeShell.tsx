@@ -1,28 +1,25 @@
-import { AccessDeniedActionsProvider } from '@shop/design';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';
+import { Outlet, useLoaderData, useLocation, useNavigate, useNavigation } from 'react-router';
 import { Header } from '../components/Header';
 import { Sidebar } from '../components/Sidebar';
-import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
+import { applicationScopePresentation } from '../feature/application/ApplicationScope';
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { professionalRouteFromPath, professionalRoutes, scopeSuffix } from '../route/ProfessionalRouteCatalog';
-import { canAccessNavigationTarget } from '../route/NavigationAccess';
 import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
 import { appConfig } from '../shared/config/AppConfig';
 import { scopePath } from '../shared/url/ScopePath';
+import { workstationFromPath, workstations } from './Workstation';
 
 const scopeLabels = Object.freeze({ platform: '平台', distributor: '分销', tenant: '租户', enterprise: '集团', mall: '商城' });
 const financeProfessionalFeatures = new Set(['entries', 'statements', 'reconciliations', 'settlements', 'withdrawals', 'invoices']);
 const accessProfessionalFeatures = new Set(['access', 'members']);
 const governanceProfessionalFeatures = new Set(['qualification', 'notification']);
-const referralProfessionalFeatures = new Set(['referralsettings', 'referralproducts', 'referralreview', 'referralbindings', 'referralwithdrawals', 'referralpromotion']);
 
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
   const location = useLocation();
-  const matches = useMatches();
   const navigate = useNavigate();
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -40,13 +37,9 @@ export function ScopeShell() {
       : professional !== undefined && financeProfessionalFeatures.has(professional.featureKey) ? 'finance'
         : professional !== undefined && accessProfessionalFeatures.has(professional.featureKey) ? 'access'
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
-            : professional !== undefined && referralProfessionalFeatures.has(professional.featureKey) ? 'referral'
-              : professional?.featureKey ?? workstation?.key;
+            : professional?.featureKey ?? workstation?.key;
   const logout = useMutation({
-    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
-      accessVersion: context.session.accessVersion,
-      ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
-    })),
+    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, { accessVersion: context.session.accessVersion })),
     onSuccess: () => {
       queryClient.clear();
       window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
@@ -54,29 +47,14 @@ export function ScopeShell() {
   });
 
   useEffect(() => {
-    document.title = `${routeTitle} · 主打团`;
+    document.title = `${routeTitle} · 智慧翼`;
     setMobileOpen(false);
-    let observer: MutationObserver | undefined;
-    const focusRouteHeading = () => {
-      const heading = document.querySelector<HTMLElement>('.workspacebody h1');
-      if (heading === null) return false;
-      heading.setAttribute('tabindex', '-1');
-      heading.focus();
-      return true;
-    };
     const frame = requestAnimationFrame(() => {
-      if (focusRouteHeading()) return;
-      const workspace = document.querySelector<HTMLElement>('.workspacebody');
-      if (workspace === null) return;
-      observer = new MutationObserver(() => {
-        if (focusRouteHeading()) observer?.disconnect();
-      });
-      observer.observe(workspace, { childList: true, subtree: true });
+      const heading = document.querySelector<HTMLElement>('.workspacebody h1');
+      heading?.setAttribute('tabindex', '-1');
+      heading?.focus();
     });
-    return () => {
-      cancelAnimationFrame(frame);
-      observer?.disconnect();
-    };
+    return () => cancelAnimationFrame(frame);
   }, [location.pathname, routeTitle]);
 
   const navigateAfterCancel = (target: string) => {
@@ -85,11 +63,7 @@ export function ScopeShell() {
   };
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
-    const preferredScopeKind = selectConsoleModuleByEntryPath(suffix)?.navigation.preferredScopeKind;
-    const targetScope = preferredScopeKind !== undefined && context.scope.kind !== preferredScopeKind
-      ? context.scopes.find((scope) => scope.kind === preferredScopeKind) ?? context.scope
-      : context.scope;
-    navigateAfterCancel(scopePath(targetScope, suffix));
+    navigateAfterCancel(scopePath(context.scope, suffix));
   };
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
@@ -103,26 +77,14 @@ export function ScopeShell() {
     navigateAfterCancel(`${location.pathname}?${search.toString()}${location.hash}`);
   };
   const controlContext = workstation?.key === 'control';
-  const showScopePicker = () => {
-    const picker = document.querySelector<HTMLSelectElement>('#consolescope');
-    picker?.focus();
-    if (picker !== null && typeof picker.showPicker === 'function') picker.showPicker();
-  };
-  const accessDeniedActions = {
-    ...(context.scopes.length > 1 ? { onSwitchScope: showScopePicker } : {}),
-    onReturnToWorkspace: () => navigateAfterCancel(scopePath(context.scope, 'cockpit')),
-    onRelogin: () => window.location.assign(`${appConfig.authBaseUrl}/login?client=console`),
-  };
 
   return (
-    <AccessDeniedActionsProvider actions={accessDeniedActions}>
-      <ConsoleContextProvider value={context}>
+    <ConsoleContextProvider value={context}>
       <div className="consolelayout" data-visual-theme="admin-web-v1" data-route={activeRoute}
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
-        <Sidebar active={activeRoute} collapsed={collapsed} mainItems={mainNavigationItems} bottomItems={bottomNavigationItems}
+        <Sidebar active={activeRoute} collapsed={collapsed} professionalRoutes={professionalRoutes}
           displayName={context.profile.display_name} roleLabel={scopeLabel}
           scopeKind={context.scope.kind}
-          permissions={context.session.permissions} capabilities={context.session.capabilities}
           workstations={workstations} onNavigate={openRoute}
           onToggle={() => setCollapsed((value) => !value)} />
         <button className="mobilebackdrop" type="button" onClick={() => setMobileOpen(false)} aria-label="关闭主导航" />
@@ -156,17 +118,16 @@ export function ScopeShell() {
             </div>
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
-            {routeAvailable ? <Outlet /> : <ContextualAccessDenied resourceLabel={routeTitle} />}
+            <Outlet />
           </main>
           <footer className="consolefooter">
-            <span>© 2026 ZHUDATUAN 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
+            <span>© 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
             <span className="consolefooterstatus"><i aria-hidden="true" />服务运行正常</span>
             <code>AI 调用需服务端授权</code>
           </footer>
         </div>
       </div>
-      </ConsoleContextProvider>
-    </AccessDeniedActionsProvider>
+    </ConsoleContextProvider>
   );
 }
 

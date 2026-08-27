@@ -1,22 +1,8 @@
-import { createBrowserRouter, type RouteObject } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import { RouteFallback } from '@shop/design';
 import { RouteError } from './RouteError';
 import { ScopeShell } from '../shell/ScopeShell';
 import { landingLoader, scopeLoader } from './SessionLoader';
-import { consoleModules } from './ConsoleModuleRegistry';
-import { materializeConsoleIndexRoute, materializeConsoleModules } from './ConsoleModuleRoutes';
-
-export const consoleScopeChildren = [
-  materializeConsoleIndexRoute(consoleModules),
-  ...materializeConsoleModules(consoleModules),
-  { path: '*', lazy: () => import('./NotFoundRoute') },
-] satisfies RouteObject[];
-
-const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
-
-const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
-
-const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
 
 export const consoleRouter = createBrowserRouter([
   {
@@ -40,13 +26,6 @@ export const consoleRouter = createBrowserRouter([
       { path: 'products/:productId', lazy: () => import('../feature/product/ProductDetailRoute') },
       { path: 'orders', lazy: () => import('../feature/order/OrderRoute') },
       { path: 'orders/:orderId', lazy: () => import('../feature/order/OrderDetailRoute') },
-      { path: 'referral', element: <Navigate to="settings" replace /> },
-      { path: 'referral/settings', lazy: () => import('../feature/referral/ReferralRoute') },
-      { path: 'referral/products', lazy: () => import('../feature/referral/ReferralRoute') },
-      { path: 'referral/review', lazy: () => import('../feature/referral/ReferralRoute') },
-      { path: 'referral/bindings', lazy: () => import('../feature/referral/ReferralRoute') },
-      { path: 'referral/withdrawals', lazy: () => import('../feature/referral/ReferralRoute') },
-      { path: 'referral/promotion', lazy: () => import('../feature/referral/ReferralRoute') },
       { path: 'finance', lazy: () => import('../feature/finance/FinanceRoute') },
       { path: 'finance/entries', lazy: () => import('../feature/finance/EntryRoute') },
       { path: 'finance/statements', lazy: () => import('../feature/finance/StatementRoute') },
@@ -68,4 +47,4 @@ export const consoleRouter = createBrowserRouter([
     ],
   },
   { path: '*', lazy: () => import('./NotFoundRoute') },
-], previewBasename === undefined ? undefined : { basename: previewBasename });
+]);

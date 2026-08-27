@@ -4,18 +4,13 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import { bodyRecord } from '../../../foundation/interface/Validation';
 import { domainEvent } from '../../../foundation/domain/DomainEvent';
 import { appendOutbox } from '../../../foundation/infrastructure/OutboxStore';
-import { CheckoutPort, type CheckoutQuote } from '../../checkout/CheckoutPort';
-import { checkoutSessionPort } from '../../checkout/CheckoutSessionPort';
-import { InventoryPort } from '../../inventory/InventoryPort';
-import { PaymentPort } from '../../payment/PaymentPort';
-import type { BenefitGateway } from '../../benefit/application/port/BenefitPort';
-import { marketingPort } from '../../marketing/MarketingPort';
-import { cartPort } from '../../cart/CartPort';
-
-export interface OrderVoucherGateway {
-  reserve(database: OperationDatabase, order: string, member: string, scope: string,
-    tenders: readonly Readonly<{ reference: string; amountMinor: number }>[]): Promise<void>;
-}
+import { CheckoutPort, checkoutSessionPort, type CheckoutQuote } from '../../checkout/CheckoutModule';
+import { InventoryPort } from '../../inventory/InventoryModule';
+import { PaymentPort } from '../../payment/PaymentModule';
+import { BenefitPort } from '../../benefit/BenefitModule';
+import { VoucherPort } from '../../voucher/VoucherModule';
+import { marketingPort } from '../../marketing/MarketingModule';
+import { cartPort } from '../../cart/CartModule';
 
 interface StoredQuote {
   readonly checkout: string; readonly cart_id: string; readonly member_id: string; readonly mall_id: string; readonly application_id: string;
@@ -24,13 +19,8 @@ interface StoredQuote {
 }
 
 export class PlaceOrder {
-  constructor(
-    private readonly checkout: CheckoutPort,
-    private readonly benefit: BenefitGateway,
-    private readonly voucher: OrderVoucherGateway,
-    private readonly inventory = new InventoryPort(),
-    private readonly payment = new PaymentPort(),
-  ) {}
+  constructor(private readonly checkout: CheckoutPort, private readonly inventory = new InventoryPort(), private readonly payment = new PaymentPort(),
+    private readonly benefit = new BenefitPort(), private readonly voucher = new VoucherPort()) {}
 
   async execute(request: OperationRequest, database: OperationDatabase): Promise<OperationResult> {
     const access = request.access;
@@ -85,7 +75,7 @@ export class PlaceOrder {
       from checkout.session session join pricing.quote quote on quote.id=session.quote_id
       join access.membership membership on membership.member_id=session.member_id and membership.organization_id=session.mall_id
       where session.quote_id=$1 and membership.id=$2 and session.state='quoted' and session.expires_at>clock_timestamp()
-        and quote.expires_at>clock_timestamp() for update of session`, [quote, membership]);
+        and quote.expires_at>clock_timestamp() for update of session,quote`, [quote, membership]);
     const row = result.rows[0];
     if (!row) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
     return row;

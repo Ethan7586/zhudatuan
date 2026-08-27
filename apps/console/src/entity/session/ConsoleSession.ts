@@ -22,7 +22,6 @@ export const SessionSchema = z.object({
     level: z.number().int().nonnegative(),
     verified: z.string().min(1).optional(),
   }),
-  csrf: z.string().min(16).optional(),
   target: z.string().min(1),
   syncedAt: z.string().min(1),
 });

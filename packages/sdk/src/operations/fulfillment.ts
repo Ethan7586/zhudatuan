@@ -36,7 +36,7 @@ export function createFetchFulfillmentShipmentsCreate(baseUrl: string): Operatio
 }
 
 function bindShipmentsCreate(client: OperationExecutor): OperationMethod<"fulfillment.shipments.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.shipments.create","method":"POST","path":"/api/v1/fulfillments/{fulfillmentid}/shipments","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["fulfillmentid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.shipments.create","method":"POST","path":"/api/v1/fulfillments/{fulfillmentid}/shipments","audience":"operator","idempotent":false,"pathKeys":["fulfillmentid"]}));
 }
 
 export function createFetchFulfillmentTrackingRead(baseUrl: string): OperationMethod<"fulfillment.tracking.read"> {
@@ -44,7 +44,7 @@ export function createFetchFulfillmentTrackingRead(baseUrl: string): OperationMe
 }
 
 function bindTrackingRead(client: OperationExecutor): OperationMethod<"fulfillment.tracking.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.tracking.read","method":"GET","path":"/api/v1/fulfillments/tracking","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.tracking.read","method":"GET","path":"/api/v1/fulfillments/tracking","audience":"member","idempotent":true,"pathKeys":[]}));
 }
 
 export function createFetchFulfillmentReturnsReceive(baseUrl: string): OperationMethod<"fulfillment.returns.receive"> {
@@ -52,7 +52,7 @@ export function createFetchFulfillmentReturnsReceive(baseUrl: string): Operation
 }
 
 function bindReturnsReceive(client: OperationExecutor): OperationMethod<"fulfillment.returns.receive"> {
-  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.returns.receive","method":"PUT","path":"/api/v1/fulfillments/returns/{returnid}/receipt","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["returnid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.returns.receive","method":"PUT","path":"/api/v1/fulfillments/returns/{returnid}/receipt","audience":"operator","idempotent":true,"pathKeys":["returnid"]}));
 }
 
 export function createFetchFulfillmentReturnsInspect(baseUrl: string): OperationMethod<"fulfillment.returns.inspect"> {
@@ -60,5 +60,5 @@ export function createFetchFulfillmentReturnsInspect(baseUrl: string): Operation
 }
 
 function bindReturnsInspect(client: OperationExecutor): OperationMethod<"fulfillment.returns.inspect"> {
-  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.returns.inspect","method":"PUT","path":"/api/v1/fulfillments/returns/{returnid}/inspection","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["returnid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"fulfillment.returns.inspect","method":"PUT","path":"/api/v1/fulfillments/returns/{returnid}/inspection","audience":"operator","idempotent":true,"pathKeys":["returnid"]}));
 }

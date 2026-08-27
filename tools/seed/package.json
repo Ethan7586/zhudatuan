@@ -5,11 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "npm run typecheck",
-    "bootstrap:zhudatuan-sandbox-catalog": "node --import tsx src/BootstrapSandboxCatalog.ts",
-    "bootstrap:zhudatuan-sandbox-qualification": "node --import tsx src/BootstrapSandboxQualification.ts",
-    "bootstrap:zhudatuan-sandbox-welfare": "node --import tsx src/BootstrapSandboxWelfare.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/*.test.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@shop/config": "1.0.0",

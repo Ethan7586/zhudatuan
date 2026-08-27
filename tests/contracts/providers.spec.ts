@@ -19,13 +19,13 @@ const values: readonly [import('@shop/providercore').ProviderFactory, ManifestFa
   [JdfreshProvider, jdfresh, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
   [TmallmarketProvider, tmallmarket, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
   [PrivateProvider, privateManifest, ['catalog', 'stock', 'order', 'tracking', 'refund', 'statement']],
-  [CakeProvider, cake, ['catalog', 'price', 'stock']],
-  [FlowerProvider, flower, ['catalog', 'price', 'stock']],
+  [CakeProvider, cake, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
+  [FlowerProvider, flower, ['catalog', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
   [BookProvider, book, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement']],
   [DirectchargeProvider, directcharge, ['catalog', 'order', 'tracking', 'refund', 'statement', 'verification']],
-  [FoodvoucherProvider, foodvoucher, ['catalog', 'price']],
+  [FoodvoucherProvider, foodvoucher, ['catalog', 'order', 'cancel', 'refund', 'statement', 'verification']],
   [MovieProvider, movie, ['catalog', 'stock', 'order', 'cancel', 'refund', 'statement', 'verification']],
-  [MealProvider, meal, ['catalog', 'price']],
+  [MealProvider, meal, ['catalog', 'price', 'stock', 'order', 'cancel', 'tracking', 'refund', 'statement', 'verification']],
 ];
 
 test('all and only workbook priority-one providers have executable contracts', async () => {

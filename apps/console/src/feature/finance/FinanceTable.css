@@ -20,10 +20,10 @@
   text-align: left;
   white-space: nowrap;
 }
-.financeworkspace .financetable th {
+.financetable th {
   height: 38px;
   background: var(--sw-surface-subtle);
-  color: var(--sw-text-secondary);
+  color: var(--sw-muted);
   font-weight: 700;
 }
 .financetable th:last-child,
@@ -179,7 +179,6 @@
   padding: 30px;
   font-size: 12px;
 }
-
 .financequerystate.iserror {
   color: var(--sw-danger-strong);
 }

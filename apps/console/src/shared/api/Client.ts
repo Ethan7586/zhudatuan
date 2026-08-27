@@ -34,7 +34,6 @@ export function consoleCommand(
     accessVersion?: number;
     expectedVersion?: number;
     proof?: string;
-    csrfToken?: string;
   }> = {},
 ) {
   return createRequestContext(appConfig.clientVersion, {
@@ -44,6 +43,5 @@ export function consoleCommand(
     ...(options.accessVersion === undefined ? {} : { accessVersion: options.accessVersion }),
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
     ...(options.proof === undefined ? {} : { proof: options.proof }),
-    ...(options.csrfToken === undefined ? {} : { csrfToken: options.csrfToken }),
   });
 }

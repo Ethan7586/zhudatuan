@@ -13,14 +13,6 @@ const FinancePreviewFacetSchema = z.object({
   count: z.number().int().nonnegative(),
 });
 
-const FinanceFacetsSchema = z.object({
-  periods: z.array(FinancePreviewFacetSchema),
-  channels: z.array(FinancePreviewFacetSchema),
-  malls: z.array(FinancePreviewFacetSchema),
-  statuses: z.array(FinancePreviewFacetSchema),
-  differenceTypes: z.array(FinancePreviewFacetSchema),
-});
-
 const FinanceRepairPreviewSchema = z.object({
   source: z.literal('local-preview'),
   status: z.enum(['service-preview', 'pending-review']),
@@ -71,14 +63,9 @@ const FinanceRepairPreviewSchema = z.object({
 export const FinanceReconciliationItemSchema = z
   .object({
     id: z.string().min(1),
-    version: DatabaseIntegerSchema,
     externalMinor: SignedDatabaseIntegerSchema,
     internalMinor: SignedDatabaseIntegerSchema,
     differenceMinor: SignedDatabaseIntegerSchema,
-    kind: z.enum(['payment', 'refund']).optional(),
-    internalType: OptionalText,
-    internalId: OptionalText,
-    statementLineId: OptionalText,
     state: z.string().min(1),
     reasonCode: OptionalText,
     evidence: z.record(z.string(), z.unknown()).optional().default({}),
@@ -138,7 +125,13 @@ const FinanceReconciliationPagePreviewSchema = z.object({
   lastReconciledAt: z.string().min(1),
   pendingDifferenceCount: z.number().int().nonnegative(),
   pendingReviewCount: z.number().int().nonnegative(),
-  facets: FinanceFacetsSchema,
+  facets: z.object({
+    periods: z.array(FinancePreviewFacetSchema),
+    channels: z.array(FinancePreviewFacetSchema),
+    malls: z.array(FinancePreviewFacetSchema),
+    statuses: z.array(FinancePreviewFacetSchema),
+    differenceTypes: z.array(FinancePreviewFacetSchema),
+  }),
 });
 
 export const FinanceReconciliationPageSchema = z
@@ -146,7 +139,6 @@ export const FinanceReconciliationPageSchema = z
     items: z.array(FinanceReconciliationSchema).max(100),
     count: z.number().int().nonnegative(),
     nextCursor: z.string().min(1).optional(),
-    facets: FinanceFacetsSchema.optional(),
     preview: FinanceReconciliationPagePreviewSchema.optional(),
   })
   .superRefine((page, context) => {

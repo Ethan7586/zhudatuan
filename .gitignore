@@ -10,8 +10,6 @@ storybook-static/
 *.log
 .env*
 !.env.example
-!**/.env.example
-!services/commerce/.env.jobs.example
 secrets.local.json
 infrastructure/local/.tls/
 infrastructure/local/data/
@@ -33,16 +31,6 @@ gitpointer.broken.txt
 # Local worker runtime secrets. Never commit.
 .dev.vars
 **/.dev.vars
-.dev.vars.*
-**/.dev.vars.*
-
-# Local Codex previews and spreadsheet inspection output.
-.codex-preview-*.png
-.codex-xlsx/
 
 # Payment certificates and private keys belong in Secret Manager, never the workspace.
 config/payment/
-
-# Local deployment rehearsals and an accidental package-manager placeholder.
-.finance-deploy.*/
-pnpm-workspace.yaml

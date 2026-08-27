@@ -5,9 +5,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(({ command }) => {
   return {
-    // Relative assets let the exact same reviewed dist run at
-    // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
-    base: command === 'build' ? './' : '/',
+    // 生产环境由消费者站点同域 /login 提供，确保 HttpOnly 会话保持同源。
+    base: command === 'build' ? '/login/' : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -16,21 +15,13 @@ export default defineConfig(({ command }) => {
     },
     server: {
       port: 3002,
-      proxy: {
-        '/api': {
-          // Auth endpoints live on the storefront compatibility BFF, not the
-          // canonical Commerce API (:3001).
-          target: process.env.AUTH_COMPAT_API_ORIGIN ?? 'http://127.0.0.1:3000',
-          changeOrigin: false,
-        },
-      },
       // Keep the development server stable when a CI-like environment disables HMR.
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
     // Keep the explicit host allowlist; do not turn on allowHosts: true.
     preview: {
-      allowedHosts: ['zhudatuan.com', 'www.zhudatuan.com', 'accounts.zhudatuan.com', 'console.zhudatuan.com'],
+      allowedHosts: ['zhudatuan.com', 'www.zhudatuan.com', 'console.zhudatuan.com', 'hbbtzn.com', 'www.hbbtzn.com', 'smart.hbbtzn.com'],
     },
   };
 });

@@ -94,9 +94,6 @@ function validateNotifyUrl(value: string): string {
   if (url.hostname === 'localhost' || url.hostname.endsWith('.localhost') || isPrivateIpv4(url.hostname)) {
     fail('WECHAT_PAY_NOTIFY_URL_NOT_PUBLIC');
   }
-  if (url.origin !== 'https://zhudatuan.com' || url.pathname !== '/api/v1/payments/wechat/notify' || url.search) {
-    fail('WECHAT_PAY_NOTIFY_URL_NOT_APPROVED');
-  }
   return url.toString();
 }
 

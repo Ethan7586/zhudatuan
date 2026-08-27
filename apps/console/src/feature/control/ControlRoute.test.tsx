@@ -111,7 +111,7 @@ describe('Control route', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByRole('heading', { level: 1, name: '主打团中控台' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: '智慧翼中控台' })).toBeTruthy();
     expect(screen.getByText('平台整体稳定，但有 1 项需要立即处置。')).toBeTruthy();
     expect(screen.getByRole('heading', { name: '优先处置' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '平台能力链' })).toBeTruthy();

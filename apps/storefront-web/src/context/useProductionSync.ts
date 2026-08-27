@@ -6,6 +6,7 @@ import { mapApiOrder, mapApiProduct } from './mallMappers';
 import type { CatalogSyncStatus, SessionStatus } from './MallContext.types';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 import { mergeAuthenticatedMemberProfile } from './storefrontMemberProfile';
+import { createCatalogPublisher } from './catalogSync';
 
 interface ProductionSyncSetters {
   setProducts: Dispatch<SetStateAction<Product[]>>;
@@ -26,16 +27,16 @@ type CatalogPageLoader = typeof productionApi.listProducts;
 
 async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProduct[]> {
   const items = new Map<string, ApiProduct>();
-  let cursor: string | null = null;
+  let cursor: number | null = 0;
   let pageCount = 0;
 
-  while (pageCount < 60) {
+  while (cursor !== null && pageCount < 60) {
     const page = await loadPage({
-      ...(cursor ? { cursor } : {}),
+      cursor,
       limit: 100,
     });
     page.items.forEach((item) => items.set(item.id, item));
-    if (!page.pagination.nextCursor || page.pagination.nextCursor === cursor) break;
+    if (page.pagination.nextCursor === cursor) break;
     cursor = page.pagination.nextCursor;
     pageCount += 1;
   }
@@ -62,29 +63,13 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     setters.setCatalogSyncStatus('ready');
   };
 
-  const publishPublicStorefront = (storefront: { id: string; name: string }) => {
-    setters.setCurrentMall({
-      id: storefront.id,
-      enterpriseId: storefront.id,
-      enterpriseName: storefront.name,
-      mallName: storefront.name,
-      logoText: storefront.name,
-      badge: '公开商城',
-      welcomeBanner: `欢迎进入${storefront.name}，登录后可购物与查看订单。`,
-    });
-  };
-
   const refreshPublicCatalog = async () => {
-    ++syncVersionRef.current;
+    const syncVersion = ++syncVersionRef.current;
     setters.setProducts([]);
     setters.setCatalogSyncStatus('syncing');
     try {
-      const [items, storefront] = await Promise.all([
-        loadCompleteCatalog(productionApi.listProducts),
-        productionApi.getPublicStorefront().catch(() => null),
-      ]);
+      const items = await loadCompleteCatalog(productionApi.listProducts);
       if (syncVersion === syncVersionRef.current) publishCatalog(items);
-      if (syncVersion === syncVersionRef.current && storefront) publishPublicStorefront(storefront);
     } catch (error) {
       if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
       throw error;
@@ -94,8 +79,13 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
   const refreshProductionData = async () => {
     if (!enabled) return;
     const syncVersion = ++syncVersionRef.current;
+    // Public products are available to every visitor. Authentication only
+    // upgrades this snapshot with member pricing and purchase qualification.
     setters.setProducts([]);
     setters.setCatalogSyncStatus('syncing');
+    const publisher = createCatalogPublisher(() => syncVersion === syncVersionRef.current, publishCatalog);
+    const publicCatalogRequest = loadCompleteCatalog(productionApi.listProducts);
+    void publicCatalogRequest.then(publisher.commitPublic).catch(() => undefined);
     let snapshot: Awaited<ReturnType<typeof productionApi.getHomeSnapshot>>;
     try {
       snapshot = await productionApi.getHomeSnapshot();
@@ -104,26 +94,17 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       closeMemberData();
       setters.setSessionStatus('guest');
       try {
-        const [items, storefront] = await Promise.all([
-          publicCatalogRequest,
-          productionApi.getPublicStorefront().catch(() => null),
-        ]);
-        publisher.commitPublic(items);
-        if (storefront) publishPublicStorefront(storefront);
+        publisher.commitPublic(await publicCatalogRequest);
       } catch {
         if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
       }
       throw error;
     }
-    if (syncVersion !== syncVersionRef.current) return;
+    if (syncVersion !== syncVersionRef.current) {
+      void publicCatalogRequest.catch(() => undefined);
+      return;
+    }
     const { bootstrap, accounts, orders: orderResult, accountLedgers: ledgerResult } = snapshot;
-    // The URL contributes only the validated referral candidate. Mall and
-    // member identity come from this authenticated server snapshot, while the
-    // server remains authoritative for first-touch conflicts.
-    void captureBrowserReferralAttribution({
-      mallId: bootstrap.scope.mallId,
-      memberId: bootstrap.actor.userId,
-    });
     const welfare = accounts.items.find((account) => account.type === 'welfare');
     const meal = accounts.items.find((account) => account.type === 'meal');
     setters.setUser((previous) => ({
@@ -134,11 +115,11 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     const resolvedMall: EnterpriseMall = {
       id: bootstrap.scope.mallId,
       enterpriseId: bootstrap.scope.enterpriseId,
-      enterpriseName: canonicalizeProductBrand(bootstrap.scope.enterpriseName),
-      mallName: canonicalizeProductBrand(bootstrap.scope.mallName),
-      logoText: canonicalizeProductBrand(bootstrap.scope.brandName),
+      enterpriseName: bootstrap.scope.enterpriseName,
+      mallName: bootstrap.scope.mallName,
+      logoText: bootstrap.scope.brandName,
       badge: '企业福利专享',
-      welcomeBanner: `${canonicalizeProductBrand(bootstrap.scope.enterpriseName)}员工福利商城已开放，实际权益以企业发放为准。`,
+      welcomeBanner: `${bootstrap.scope.enterpriseName}员工福利商城已开放，实际权益以企业发放为准。`,
     };
     setters.setCurrentMall(resolvedMall);
     setters.setMalls([resolvedMall]);
@@ -162,11 +143,13 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     // background without hiding account actions such as logout.
     setters.setSessionStatus('authenticated');
     void loadCompleteCatalog(productionApi.listQualifiedProducts)
-      .then((items) => {
-        if (syncVersion === syncVersionRef.current) publishCatalog(items);
-      })
-      .catch(() => {
-        if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
+      .then(publisher.commitQualified)
+      .catch(async () => {
+        try {
+          await publicCatalogRequest;
+        } catch {
+          if (syncVersion === syncVersionRef.current && !publisher.hasPublicFallback()) setters.setCatalogSyncStatus('error');
+        }
       });
   };
 
@@ -178,8 +161,8 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
   useEffect(() => {
     if (!enabled) return;
     let active = true;
-    // The canonical session read is the authorization check; member, benefit
-    // and order projections are then loaded from their typed operations.
+    // /home is both the authorization check and the initial data snapshot.
+    // Avoid a separate /auth/session round trip before loading the page.
     void refreshProductionData().catch(() => {
       if (active) setters.setSessionStatus('guest');
     });

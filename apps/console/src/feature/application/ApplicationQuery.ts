@@ -6,11 +6,12 @@ import { ApplicationPageSchema } from './ApplicationSchema';
 
 const applicationsRead = createFetchExperienceApplicationsRead(appConfig.apiBaseUrl);
 
-export const applicationRootKey = (context: ConsoleContext) => Object.freeze(['console', context.scope.kind, context.scope.id, context.session.accessVersion, 'experience.applications.read'] as const);
-
-export const applicationKey = (context: ConsoleContext, cursor?: string) => Object.freeze([...applicationRootKey(context), cursor ?? null, 50] as const);
+export const applicationKey = (context: ConsoleContext, cursor?: string) => Object.freeze([
+  'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'experience.applications.read', cursor ?? null, 50,
+] as const);
 
 export async function readApplications(context: ConsoleContext, cursor: string | undefined, signal: AbortSignal) {
-  const value = await applicationsRead({ query: { limit: 50, ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion));
+  const value = await applicationsRead({ query: { limit: 50,
+    ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion));
   return ApplicationPageSchema.parse(value);
 }

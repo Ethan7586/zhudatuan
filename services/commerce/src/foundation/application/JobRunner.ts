@@ -32,7 +32,6 @@ export interface JobRunnerConfig {
   readonly deadline: number;
   readonly retryMinimum: number;
   readonly retryMaximum: number;
-  readonly claim?: 'identity-notification';
 }
 
 export class JobRunner {
@@ -45,15 +44,10 @@ export class JobRunner {
 
   async run(kind: string, processor: JobProcessor, signal: AbortSignal): Promise<void> {
     while (!signal.aborted) {
-      const result = this.config.claim === 'identity-notification'
-        ? await this.pool.query<ClaimedJob>(
-          'select id,kind,scope_id,payload,attempts from runtime.claim_identity_notification_job($1,$2,$3)',
-          [this.config.worker, this.config.batch, this.config.lease],
-        )
-        : await this.pool.query<ClaimedJob>(
-          'select id,kind,scope_id,payload,attempts from runtime.claim_job($1,$2,$3,$4)',
-          [kind, this.config.worker, this.config.batch, this.config.lease],
-        );
+      const result = await this.pool.query<ClaimedJob>(
+        'select id,kind,scope_id,payload,attempts from runtime.claim_job($1,$2,$3,$4)',
+        [kind, this.config.worker, this.config.batch, this.config.lease],
+      );
       if (result.rows.length === 0) {
         await delay(this.config.poll, signal);
         continue;

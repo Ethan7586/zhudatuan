@@ -1,134 +1,61 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
+import type { DataColumn } from '../../shared/ui/DataTable';
+import { formatDate } from '../../shared/ui/Format';
+import { PagedResource } from '../../shared/ui/PagedResource';
+import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
-import { SupportCaseRail } from './SupportCaseRail';
-import { canSendSupportMessage, sendSupportMessage } from './SupportCommand';
-import { SupportContextPanel } from './SupportContextPanel';
-import { SupportConversation } from './SupportConversation';
 import { readCases, readMessages, supportCaseKey, supportMessageKey } from './SupportQuery';
-import './support-layout.css';
-import './support-conversation.css';
-import './support-context.css';
-import './support-responsive.css';
+import type { SupportCase, SupportMessage } from './SupportSchema';
+
+const messageColumns: readonly DataColumn<SupportMessage>[] = [
+  { key: 'author', label: '发送方', render: (row) => `${row.authorType}${row.author === null ? '' : ` · ${row.author}`}` },
+  { key: 'body', label: '消息', render: (row) => row.body },
+  { key: 'time', label: '发送时间', render: (row) => formatDate(row.createdAt) },
+];
 
 export function Component() {
-  const context = useConsoleContext();
-  const queryClient = useQueryClient();
   const { caseId } = useParams();
-  const [search, setSearch] = useSearchParams();
-  const caseCursor = search.get('caseCursor') ?? undefined;
-  const casesQuery = useQuery({
-    queryKey: supportCaseKey(context, caseCursor),
-    queryFn: ({ signal }) => readCases(context, caseCursor, signal),
-    staleTime: 30_000,
-  });
-  const messagesQuery = useInfiniteQuery({
-    queryKey: supportMessageKey(context, caseId ?? 'unselected'),
-    queryFn: ({ signal, pageParam }) => readMessages(context, caseId ?? '', pageParam, signal),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (page) => page.nextCursor,
-    enabled: caseId !== undefined,
-    staleTime: 15_000,
-  });
-  const messagePages = messagesQuery.data?.pages;
-  const messages = useMemo(() => [...(messagePages ?? [])].reverse().flatMap((page) => page.items), [messagePages]);
-  const nextMessageCursor = messagesQuery.hasNextPage ? messagesQuery.data?.pages.at(-1)?.nextCursor : undefined;
-  const selectedCase = useMemo(() => casesQuery.data?.items.find((item) => item.id === caseId), [caseId, casesQuery.data]);
-  const mutation = useMutation({
-    mutationFn: (message: string) => {
-      if (caseId === undefined || selectedCase === undefined) throw new Error('SUPPORT_CASE_CONTEXT_MISSING');
-      return sendSupportMessage(context, {
-        caseId,
-        caseVersion: selectedCase.version,
-        caseState: selectedCase.state,
-        message,
-      });
-    },
-    onSuccess: async () => {
-      if (caseId === undefined) return;
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: supportCaseKey(context, caseCursor), exact: true }),
-        queryClient.invalidateQueries({ queryKey: supportMessageKey(context, caseId), exact: true }),
-      ]);
-    },
-  });
-  const caseCondition = queryCondition({
-    pending: casesQuery.isPending,
-    fetching: casesQuery.isFetching,
-    error: casesQuery.error,
-    hasData: casesQuery.data !== undefined,
-    empty: casesQuery.data?.items.length === 0,
-    stale: casesQuery.isStale,
-  });
-  const messageCondition = queryCondition({
-    pending: messagesQuery.isPending,
-    fetching: messagesQuery.isFetching,
-    error: messagesQuery.error,
-    hasData: messagesQuery.data !== undefined,
-    empty: messages.length === 0,
-    stale: messagesQuery.isStale,
-  });
-  const caseError = safeQueryError(casesQuery.error);
-  const messageError = safeQueryError(messagesQuery.error);
-  const canSend = selectedCase !== undefined && canSendSupportMessage(context, selectedCase.state);
-  const updateCaseCursor = (value: string) => {
-    const next = new URLSearchParams(search);
-    next.set('caseCursor', value);
-    setSearch(next);
-  };
-  const refresh = () => {
-    void casesQuery.refetch();
-    if (caseId !== undefined) void messagesQuery.refetch();
-  };
-
-  return (
-    <section className="supportworkspace">
-      <header className="supportworkspaceheader">
-        <div>
-          <p>ZHUDATUAN · CUSTOMER CARE</p>
-          <h1 tabIndex={-1}>客服系统</h1>
-          <span>统一处理福利平台咨询与售后工单，消息读取、发送和权限均走正式客服服务。</span>
-        </div>
-        <div className="supportworkspacestatus">
-          <span><i aria-hidden="true" />服务端安全会话</span>
-          <button type="button" onClick={refresh}>刷新工作区</button>
-        </div>
-      </header>
-      <div className="supportdesk" data-case-selected={caseId === undefined ? 'false' : 'true'}>
-        <SupportCaseRail cases={casesQuery.data?.items ?? []} count={casesQuery.data?.count ?? 0}
-          condition={caseCondition} supportPath={scopePath(context.scope, 'support')}
-          {...(caseId === undefined ? {} : { selectedCaseId: caseId })}
-          {...(caseError === undefined ? {} : { error: caseError })}
-          {...(casesQuery.data?.nextCursor === undefined ? {} : { nextCursor: casesQuery.data.nextCursor })}
-          onRetry={() => { void casesQuery.refetch(); }} onNext={updateCaseCursor} />
-        <SupportConversation {...(caseId === undefined ? {} : { caseId })}
-          {...(selectedCase === undefined ? {} : { selectedCase })}
-          messages={messages} condition={caseId === undefined ? 'empty' : messageCondition}
-          {...(messageError === undefined ? {} : { error: messageError })}
-          {...(nextMessageCursor === undefined ? {} : { nextCursor: nextMessageCursor })}
-          backPath={scopePath(context.scope, 'support')}
-          canSend={canSend} sending={mutation.isPending}
-          {...(mutation.error === null ? {} : { sendError: '发送失败，请刷新工单后重试。' })}
-          sendUnavailableReason={sendUnavailableReason(context, caseId, selectedCase?.state)}
-          onRetry={() => { void messagesQuery.refetch(); }} onNext={() => { void messagesQuery.fetchNextPage(); }}
-          onSend={async (message) => { await mutation.mutateAsync(message); }} />
-        <SupportContextPanel {...(caseId === undefined ? {} : { caseId })}
-          {...(selectedCase === undefined ? {} : { selectedCase })} />
-      </div>
-    </section>
-  );
+  return caseId === undefined ? <CaseList /> : <MessageList caseId={caseId} />;
 }
 
-function sendUnavailableReason(context: ReturnType<typeof useConsoleContext>, caseId?: string, state?: string): string {
-  if (caseId === undefined) return '请先选择一条工单';
-  if (state === undefined) return '当前页没有此工单详情，暂不能回复';
-  if (state.toLowerCase() === 'closed') return '工单已关闭，不能继续回复';
-  if (context.session.csrf === undefined) return '安全会话尚未就绪，暂不能发送';
-  if (!context.session.permissions.includes('support.message.send') || !context.session.capabilities.includes('support.messages.send')) {
-    return '当前账号没有客服消息发送权限';
-  }
-  return '';
+function CaseList() {
+  const context = useConsoleContext(); const [search, setSearch] = useSearchParams(); const cursor = search.get('cursor') ?? undefined;
+  const query = useQuery({ queryKey: supportCaseKey(context, cursor), queryFn: ({ signal }) => readCases(context, cursor, signal) });
+  const data = query.data; const error = safeQueryError(query.error);
+  const supportPath = scopePath(context.scope, 'support');
+  const columns: readonly DataColumn<SupportCase>[] = useMemo(() => [
+    { key: 'subject', label: '工单', render: (row) => <Link to={`${supportPath}/${encodeURIComponent(row.id)}`}>{row.subject}</Link> },
+    { key: 'priority', label: '优先级', render: (row) => row.priority },
+    { key: 'state', label: '状态', render: (row) => row.state },
+    { key: 'agent', label: '坐席', render: (row) => row.assigned_agent_id ?? '待分配' },
+    { key: 'response', label: '响应期限', render: (row) => formatDate(row.response_due_at) },
+    { key: 'updated', label: '更新时间', render: (row) => formatDate(row.updated_at) },
+  ], [supportPath]);
+  return <PagedResource title="客服中心" eyebrow="SMART WING SUPPORT" description="工单、分派和 SLA 均读取 support.cases.read，不在浏览器推导超时。"
+    condition={condition(query, data?.items.length)} {...(error === undefined ? {} : { error })} rows={data?.items ?? []}
+    columns={columns} rowKey={(row) => row.id} count={data?.count ?? 0}
+    {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
+    boundary={{ title: '客服写操作保持关闭', message: '回复、分派、关闭和重开未闭合 expectedVersion、Step-up 与回执时不执行。' }}
+    retry={() => { void query.refetch(); }} next={(next) => setSearch(pageCursor(search, next))} />;
+}
+
+function MessageList({ caseId }: Readonly<{ caseId: string }>) {
+  const context = useConsoleContext(); const [search, setSearch] = useSearchParams(); const cursor = search.get('cursor') ?? undefined;
+  const query = useQuery({ queryKey: supportMessageKey(context, caseId, cursor), queryFn: ({ signal }) => readMessages(context, caseId, cursor, signal) });
+  const data = query.data; const error = safeQueryError(query.error);
+  return <PagedResource title="客服会话" eyebrow="SMART WING SUPPORT CASE" description={`工单 ${caseId} 的解密消息由 support.messages.read 返回。`}
+    condition={condition(query, data?.items.length)} {...(error === undefined ? {} : { error })} rows={data?.items ?? []}
+    columns={messageColumns} rowKey={(row) => row.id} count={data?.count ?? 0}
+    {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
+    boundary={{ title: '发送消息保持关闭', message: '附件签名上传、内容加密、幂等发送与最终回读未完整接入。' }}
+    retry={() => { void query.refetch(); }} next={(next) => setSearch(pageCursor(search, next))} />;
+}
+
+function condition(query: Readonly<{ isPending: boolean; isFetching: boolean; error: Error | null; isStale: boolean; data?: unknown }>, length?: number) {
+  return queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
+    hasData: query.data !== undefined, empty: length === 0, stale: query.isStale });
 }

@@ -6,7 +6,6 @@ const handlerTargets = Object.freeze({
   notification: 'services/commerce/src/modules/notification/interface/job/NotificationJob.ts',
   projection: 'services/commerce/src/modules/reporting/interface/job/ProjectionJob.ts',
   reconciliation: 'services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts',
-  referral: 'services/commerce/src/modules/referral/interface/job/ReferralEventJob.ts',
 });
 const handlerRegistry = 'services/commerce/src/app/events.ts';
 

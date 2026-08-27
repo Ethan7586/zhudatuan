@@ -1,6 +1,5 @@
 import type { CartItem, Order, OrderStatus, Product, ProductItemType } from '../types';
 import { isStrictTaxonomyPath } from '../domain/catalog/taxonomy';
-import { canonicalizeProductBrand } from '../domain/brand/productBrand';
 import type { ApiCartItem, ApiOrder, ApiProduct } from '../services/productionApi';
 
 const CATEGORY_MAP: Record<string, { id: string; name: string }> = {
@@ -27,12 +26,11 @@ export function mapApiProduct(product: ApiProduct): Product {
     name: '企业福利专区',
   };
   const isVirtual = product.categoryCode === 'virtual-card';
-  const supplierName = canonicalizeProductBrand(product.supplierName);
   return {
     id: product.id,
     skuId: product.skuId,
-    title: canonicalizeProductBrand(product.nameZh ?? product.name),
-    subtitle: canonicalizeProductBrand(product.subtitleZh ?? product.subtitle ?? '主打团企业福利严选商品'),
+    title: product.nameZh ?? product.name,
+    subtitle: product.subtitleZh ?? product.subtitle ?? '智慧翼企业福利严选商品',
     images: [product.coverUrl ?? FALLBACK_IMAGE],
     priceMarket: (product.marketPriceCents ?? product.priceCents) / 100,
     priceMall: product.priceCents / 100,
@@ -40,11 +38,11 @@ export function mapApiProduct(product: ApiProduct): Product {
     categoryId: category.id,
     categoryName: category.name,
     taxonomy: product.taxonomy,
-    brand: supplierName,
+    brand: product.supplierName,
     tags: ['企业严选', '正品保障'],
     supplierId: `supplier-${product.supplierName}`,
-    supplierName,
-    supplierType: supplierName.includes('央企') ? 'group_owned' : 'third_party',
+    supplierName: product.supplierName,
+    supplierType: product.supplierName.includes('央企') ? 'group_owned' : 'third_party',
     itemType: isVirtual ? 'virtual_coupon' : 'physical',
     allowedAccounts: isVirtual ? ['welfare', 'wechat'] : ['welfare', 'meal', 'wechat'],
     stock: product.availableStock,
@@ -55,7 +53,7 @@ export function mapApiProduct(product: ApiProduct): Product {
     isEnterpriseExclusive: true,
     isTest: product.isTest,
     purchasable: product.purchasable,
-    qualificationReason: canonicalizeProductBrand(product.qualification.purchaseReason),
+    qualificationReason: product.qualification.purchaseReason,
     specs: [{ name: '标准规格', options: ['默认规格'] }],
     descriptionDetailText: ['商品信息来自生产型商品目录，最终履约规则以供应商确认结果为准。'],
   };
@@ -94,9 +92,9 @@ export function mapApiOrder(order: ApiOrder, scope: { enterpriseId: string; ente
     id: order.id,
     orderNo: order.orderNo,
     enterpriseId: scope.enterpriseId,
-    enterpriseName: canonicalizeProductBrand(scope.enterpriseName),
+    enterpriseName: scope.enterpriseName,
     mallId: scope.mallId,
-    mallName: canonicalizeProductBrand(scope.mallName),
+    mallName: scope.mallName,
     supplierId: 'multi-supplier',
     supplierName: '供应商拆单汇总',
     supplierType: 'third_party',
@@ -104,7 +102,7 @@ export function mapApiOrder(order: ApiOrder, scope: { enterpriseId: string; ente
     createTime: order.createdAt,
     items: (order.items ?? []).map((item) => ({
       productId: item.productId,
-      productTitle: canonicalizeProductBrand(item.productTitle),
+      productTitle: item.productTitle,
       productImage: item.productImage ?? FALLBACK_IMAGE,
       price: item.priceCents / 100,
       quantity: item.quantity,
