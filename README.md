@@ -17,6 +17,8 @@
 
 兩套合同不可共用同一組 Migration：新版使用 `@shop/*` Canonical Operation；消費端目前仍使用 `@smart-wing/*` REST/RPC 合同。正式合流需要新增 Adapter/BFF 並逐項驗證，不能直接覆蓋。
 
+8 月 21 日的 206 個 Canonical Operations 已核實為目前 217 個 Operations 的嚴格子集，無 API 原碼需要搬回。詳細矩陣、權限修復與未完成證據見 [`docs/operations/2026-08-27-api-recovery-log.md`](./docs/operations/2026-08-27-api-recovery-log.md)。正式制品集合由 [`config/artifacts.json`](./config/artifacts.json) 鎖定；在真資料庫與外部 Provider 驗收前，兩條軌道均保持 `releaseEligible=false`。
+
 ## 本地命令
 
 ```bash
@@ -34,8 +36,9 @@ npm run build:console
 npm run build:storefront
 npm run build:auth
 npm run build:commerce
-npm run build:commerce-api
 ```
+
+`services/commerce-api` 的完整 REST Router 目前由 `apps/storefront-web` Worker 同源嵌入，會隨 Storefront 一起構建；歷史 `adminServer.ts` 只包含 Health／AI 接口，不是完整相容 API 制品。
 
 ## 建議域名
 
@@ -61,8 +64,10 @@ npm run build:commerce-api
 - `npm ci`
 - 根工作區 typecheck
 - 根工作區 unit tests
-- Console、Storefront、Auth、核心 API、相容 API 的獨立 build
+- Console、Storefront、Auth 與核心 API 的獨立 build；相容 REST Router 隨 Storefront Worker 構建
 - 根目錄單命令 `npm run build`
+- 165 個 Migration Replay 與購物車／報價／訂單／支付／財務 MVP Kernel
+- Canonical 與 Compatibility 的 Audience／Target 身份隔離測試
 - production dependencies audit：0 個已知漏洞
 
 Vinext 的開發／構建依賴目前仍由 `image-size` 帶入 2 個 high severity DoS advisory；不進 production dependency 集，正式升級前需用完整回歸驗證取代，不能直接執行強制 major upgrade。

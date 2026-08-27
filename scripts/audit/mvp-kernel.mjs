@@ -306,8 +306,8 @@ async function seed(database) {
       values('${fixture.price}','${fixture.pricebook}','${fixture.sku}',2590,2990,'1970-01-01T00:00:00Z');
     insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
       values('${fixture.stock}','${fixture.mall}','${fixture.sku}','mvp:warehouse',100,5,1,'active',clock_timestamp());
-    insert into experience.application(id,scope_id,name,status,created_at,updated_at,version)
-      values('${fixture.application}','${fixture.mall}','MVP storefront','active',clock_timestamp(),clock_timestamp(),1);
+    insert into experience.application(id,scope_id,name,status,created_at,updated_at,version,code,public_slug)
+      values('${fixture.application}','${fixture.mall}','MVP storefront','active',clock_timestamp(),clock_timestamp(),1,'MVP_APPLICATION','mvp-application');
     insert into experience.version(id,application_id,sequence,schema_version,configuration,configuration_hash,validation_state,created_by,created_at)
       values('${fixture.version}','${fixture.application}',1,'2','{"version":2,"application":"${fixture.application}","pages":[{"id":"home","path":"/","blocks":[]}]}','${hash}','valid','mvp:kernel',clock_timestamp());
     update experience.application set head_version_id='${fixture.version}' where id='${fixture.application}';

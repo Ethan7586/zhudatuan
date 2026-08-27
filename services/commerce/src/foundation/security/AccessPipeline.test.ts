@@ -10,10 +10,6 @@ import { HttpApp } from '../interface/HttpApp';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS, registerOperationRoutes } from '../interface/OperationController';
 import { AccessPipeline } from './AccessPipeline';
 import type { Actor } from './AccessContext';
-<<<<<<< HEAD
-import type { ActionProofVerifier } from './ActionProof';
-=======
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 import { PipelineAuthorizer } from './PipelineAuthorizer';
 
 const NOW = new Date('2026-08-27T00:00:00.000Z');
@@ -85,62 +81,10 @@ describe('AccessPipeline audience boundary', () => {
     expect(fixture.membership).toHaveBeenCalledWith('membership:one');
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
   });
-<<<<<<< HEAD
-
-  it('validates but does not consume a Level 3 proof during authorization', async () => {
-    const validate = vi.fn(() => true);
-    const fixture = accessFixture('console', 'finance.settlements.decide', 'finance.settlement.decide', PLATFORM, {
-      assurance: { level: 3, verified: NOW },
-      actionProof: { validate },
-    });
-
-    await expect(
-      fixture.pipeline.authorize(
-        {
-          'x-action-proof': 'a'.repeat(64),
-          'idempotency-key': 'settlement-decision:one',
-          'if-match': 'W/"7"',
-        },
-        'finance.settlements.decide',
-        'finance.settlement.decide',
-        'settlement:one'
-      )
-    ).resolves.toMatchObject({ scope: PLATFORM });
-    expect(validate).toHaveBeenCalledWith('a'.repeat(64));
-  });
-
-  it('fails closed before transaction entry when a required binding is missing', async () => {
-    const validate = vi.fn(() => true);
-    const fixture = accessFixture('console', 'finance.settlements.decide', 'finance.settlement.decide', PLATFORM, {
-      assurance: { level: 3, verified: NOW },
-      actionProof: { validate },
-    });
-
-    await expect(
-      fixture.pipeline.authorize(
-        {
-          'x-action-proof': 'a'.repeat(64),
-          'idempotency-key': 'settlement-decision:one',
-        },
-        'finance.settlements.decide',
-        'finance.settlement.decide',
-        'settlement:one'
-      )
-    ).rejects.toMatchObject({
-      code: 'ACTION_PROOF_REQUIRED',
-    });
-    expect(validate).not.toHaveBeenCalled();
-  });
-});
-
-function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope, options: Readonly<{ assurance?: Actor['assurance']; actionProof?: ActionProofVerifier }> = {}) {
-  const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: options.assurance ?? { level: 1 } });
-=======
 });
 
 function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope) {
   const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
   const membershipAccess: MembershipAccess = Object.freeze({
     id: actor.membership,
     active: true,
@@ -159,13 +103,7 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
     { resolve: vi.fn(async () => [operation]) },
     { now: () => NOW },
     { evaluate: risk },
-<<<<<<< HEAD
-    { append: decisions },
-    undefined,
-    options.actionProof
-=======
     { append: decisions }
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
   );
   return { pipeline, membership, risk, decisions };
 }

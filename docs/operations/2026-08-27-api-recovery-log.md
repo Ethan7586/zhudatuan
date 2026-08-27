@@ -40,15 +40,7 @@ main 新增的 11 個 Operations 分佈為 Identity 6、Organization 2、Benefit
 - MVP Kernel：購物車 → 報價 → 訂單 → 支付 → 履約 → 財務分錄完整通過，Outbox、Audit、冪等與借貸平衡證據成立。
 - `npm audit --omit=dev`：0 個已知 production vulnerability。
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-已取得 GitHub Service Container 中 PostgreSQL 17、Redis 7.4、Repository 與 Adapter 的遠端證據。尚未取得的證據：雲端 Supabase／RDS 預發布環境、微信登入、短信、微信支付、11 個 Provider 沙箱與完整瀏覽器 E2E。這些未完成前只能稱「正式程式層與部署映像基線可用」，不能稱「外部業務完全接通」或「已可切正式流量」。
-=======
 尚未取得的證據：真 Supabase／PostgreSQL Repository E2E、微信登入、短信、微信支付、11 個 Provider 沙箱與完整瀏覽器 E2E。這些未完成前只能稱「程式層基線可用」，不能稱「完全接通」或「可直接生產部署」。
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
-=======
-已取得 GitHub Service Container 中 PostgreSQL 17、Redis 7.4、Repository 與 Adapter 的遠端證據。尚未取得的證據：雲端 Supabase／RDS 預發布環境、微信登入、短信、微信支付、11 個 Provider 沙箱與完整瀏覽器 E2E。這些未完成前只能稱「正式程式層與部署映像基線可用」，不能稱「外部業務完全接通」或「已可切正式流量」。
->>>>>>> 32ab967e (docs: record main API and CI acceptance)
 
 ## 本輪修復
 
@@ -61,26 +53,6 @@ main 新增的 11 個 Operations 分佈為 Identity 6、Organization 2、Benefit
 7. Canonical Access Pipeline 新增 Audience/Target 中央邊界：`operator` Operation 只允許 `target=console`，在 Handler 執行前拒絕錯誤 Client。
 8. Compatibility Router 按 `membership.target` 單一路由，Storefront 與 Admin 不再互相嘗試對方 Handler；共用身份安全接口獨立處理。
 9. 建立選定制品清單與 CI Baseline；不再用缺少六端 App 的舊 Hard-cut Release Workflow 假裝可發布。
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 32ab967e (docs: record main API and CI acceptance)
-10. 鎖定 GitHub Ubuntu 與 Alpine x64 所需的 Rolldown、Lightning CSS、Tailwind Oxide、esbuild、Workerd、OXC、Sharp 等 Native Binding，並讓 Lock 門禁自動檢查 Linux x64 閉包。
-11. 校正整合測試的模組總數：28 個業務域加 Runtime、Observability，共 30 個；Observability 的兩個正式 Contract Operations 保留不刪。
-12. 修復阿里雲 Dockerfile 的構建腳本輸入，Commerce Bundle 內建 `pg` 與 `redis`；最終 Runtime 不再依賴未被複製的 `node_modules`。
-13. 新增 `.dockerignore`，禁止 `.env`、本機依賴、舊 Dist、Cache 與 Git Metadata 進入映像構建上下文。
-
-## 2026-08-28 GitHub 遠端驗收
-
-- 受驗提交：`3a5f3a3496d7e69a409af108d36b5217fa453e51`。
-- 證據：[Main Baseline Run 33095749724](https://github.com/Ethan7586/zhudatuan/actions/runs/33095749724)，結論 `success`，耗時 9 分 10 秒。
-- 通過階段：乾淨 `npm ci`／制品鎖定、165 Migration／MVP Kernel、TypeScript 與 Unit／Contract／Component／Journey／Security／Performance、PostgreSQL／Redis Repository 與 Adapter、三 App／兩 Service 構建、Alpine Commerce Image、Production Audit 與 Source Drift。
-- 這一結果關閉了「main 能否在乾淨 Linux 與真 PostgreSQL／Redis 上重建」的問題；外部供應商、支付與正式雲環境仍按 `releaseEligible=false` 關閉發布。
-<<<<<<< HEAD
-=======
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
-=======
->>>>>>> 32ab967e (docs: record main API and CI acceptance)
 
 ## 後續權限工作
 

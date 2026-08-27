@@ -10,20 +10,6 @@
 
 ## 域名責任
 
-<<<<<<< HEAD
-| 域名                     | 制品／服務            | 責任／當前合同                           |
-| ------------------------ | --------------------- | ---------------------------------------- |
-| `zhudatuan.com`          | `apps/storefront-web` | 消費者購物 Web；同源提供消費端相容 API   |
-| `www.zhudatuan.com`      | 邊緣重定向            | 永久跳轉到 `zhudatuan.com`               |
-| `console.zhudatuan.com`  | `apps/console`        | 企業營運後臺；Canonical Operation SDK    |
-| `accounts.zhudatuan.com` | `apps/auth-web`       | 統一身份中心；Console 已接 Canonical Session |
-| `api.zhudatuan.com`      | `services/commerce`   | 平台 API；217 個 Canonical Operations    |
-| `media.zhudatuan.com`    | 對象儲存與 CDN        | 商品圖片、影片及其他媒體資產             |
-| `labs.zhudatuan.com`     | 設計與測試預覽        | 僅供非生產預覽，不承載正式交易           |
-| `chat.zhudatuan.com`     | 在線客服與工單系統    | 客服會話、問題受理；尚未納入本次代碼基線 |
-
-`chat.zhudatuan.com` 可以收集 Bug 回報並生成工單，但 Bug 的定位、修復、驗證和發布屬於內部研發流程，不是該域名的運行職責。
-=======
 | 域名                    | 制品／服務            | 當前合同                             |
 | ----------------------- | --------------------- | ------------------------------------ |
 | `www.zhudatuan.com`     | `apps/storefront-web` | 消費端 REST/RPC 相容層，同源提供 API |
@@ -31,17 +17,12 @@
 | `console.zhudatuan.com` | `apps/console`        | Canonical Operation SDK              |
 | `api.zhudatuan.com`     | `services/commerce`   | 217 個 Canonical Operations          |
 | `chat.zhudatuan.com`    | 客服系統              | 尚未納入本次代碼基線                 |
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 
 ## 部署軌道
 
 ### 核心營運軌道
 
-<<<<<<< HEAD
-`apps/auth-web`（Console 登錄）、`apps/console`、`services/commerce` 與 `database/supabase` 必須使用同一提交與合同 Hash。生產 `API_ALLOWED_ORIGINS` 必須精確包含 `accounts.zhudatuan.com`、`console.zhudatuan.com` 與 `zhudatuan.com`。阿里雲正式拓撲和不可變 Release Bundle 規範見 [`infrastructure/aliyun/DEPLOY-阿里云.md`](./infrastructure/aliyun/DEPLOY-%E9%98%BF%E9%87%8C%E4%BA%91.md)。在真資料庫 E2E、權限負例和 Provider 沙箱證據完成前，只允許部署到隔離測試環境。
-=======
 `apps/console`、`services/commerce` 與 `database/supabase` 必須使用同一提交與合同 Hash。阿里雲正式拓撲和不可變 Release Bundle 規範見 [`infrastructure/aliyun/DEPLOY-阿里云.md`](./infrastructure/aliyun/DEPLOY-%E9%98%BF%E9%87%8C%E4%BA%91.md)。在真資料庫 E2E、權限負例和 Provider 沙箱證據完成前，只允許部署到隔離測試環境。
->>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 
 ### 消費端相容軌道
 

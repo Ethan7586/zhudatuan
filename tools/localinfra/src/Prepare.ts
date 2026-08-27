@@ -24,14 +24,22 @@ await prepareCertificate();
 const values = await loadOrCreateSecrets();
 await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(values));
 await writePrivate(commerceEnvironmentFile, commerceEnvironment());
-await Promise.all([
-  writePrivate(join(root, 'apps', 'console', '.env.local'), viteEnvironment(5173)),
-  writePrivate(join(root, 'apps', 'store', '.env.local'), viteEnvironment(5174)),
-  writePrivate(join(root, 'apps', 'supplier', '.env.local'), viteEnvironment(5175)),
-  writePrivate(join(root, 'apps', 'auth', '.env.local'), viteEnvironment(5176)),
-  writePrivate(join(root, 'apps', 'storefront', '.env.local'), viteEnvironment(3000)),
-  writePrivate(join(root, 'apps', 'miniapp', '.env.local'), miniappEnvironment()),
-]);
+const clientEnvironments: ReadonlyArray<readonly [string, string]> = [
+  ['console', viteEnvironment(5173)],
+  ['store', viteEnvironment(5174)],
+  ['supplier', viteEnvironment(5175)],
+  ['auth', viteEnvironment(5176)],
+  ['storefront', viteEnvironment(3000)],
+  ['miniapp', miniappEnvironment()],
+];
+const clientEnvironmentWrites: Array<Promise<void>> = [];
+for (const [application, environment] of clientEnvironments) {
+  const applicationRoot = join(root, 'apps', application);
+  if (await exists(join(applicationRoot, 'package.json'))) {
+    clientEnvironmentWrites.push(writePrivate(join(applicationRoot, '.env.local'), environment));
+  }
+}
+await Promise.all(clientEnvironmentWrites);
 
 process.stdout.write('LOCAL_ENVIRONMENT_PREPARED\n');
 process.stdout.write(`LOCAL_CA_CERTIFICATE ${certificate}\n`);

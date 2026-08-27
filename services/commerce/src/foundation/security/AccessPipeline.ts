@@ -1,4 +1,5 @@
 import { checkAssurance, checkScope, permissionDefinition, precheck, type MembershipAccess } from '@shop/authz';
+import { OperationCatalog } from '@shop/contract';
 import type { Clock } from '@shop/kernel';
 import { DomainError } from '../domain/DomainError';
 import type { AccessContext } from './AccessContext';
@@ -30,7 +31,7 @@ export class AccessPipeline {
     private readonly clock: Clock,
     private readonly risk: RiskGate,
     private readonly decisions: DecisionSink,
-    private readonly stepup = new StepupPolicy(),
+    private readonly stepup = new StepupPolicy()
   ) {}
 
   async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string): Promise<AccessContext> {
@@ -38,6 +39,7 @@ export class AccessPipeline {
     const trace = headers['x-trace-id'] ?? actor.session;
     let scope: AccessContext['scope'] | undefined;
     try {
+      assertAudienceTarget(operation, actor.target);
       const membership = await this.memberships.resolve(actor.membership);
       const accessVersion = await this.versions.resolve(membership.id);
       const now = this.clock.now();
@@ -59,10 +61,24 @@ export class AccessPipeline {
       return { actor, membership, scope, accessVersion, capabilities, assurance: actor.assurance, trace };
     } catch (cause) {
       const reason = cause instanceof DomainError ? cause.code : cause instanceof Error ? cause.message : 'AUTHORIZATION_FAILED';
-      await this.decisions.append({ actor, operation, outcome: reason === 'STEPUP_REQUIRED' ? 'challenge' : reason === 'RISK_REVIEW_REQUIRED' ? 'review' : 'deny', reason, trace,
-        ...(scope === undefined ? {} : { scope }), ...(resource === undefined ? {} : { resource }) });
+      await this.decisions.append({
+        actor,
+        operation,
+        outcome: reason === 'STEPUP_REQUIRED' ? 'challenge' : reason === 'RISK_REVIEW_REQUIRED' ? 'review' : 'deny',
+        reason,
+        trace,
+        ...(scope === undefined ? {} : { scope }),
+        ...(resource === undefined ? {} : { resource }),
+      });
       throw cause;
     }
+  }
+}
+
+function assertAudienceTarget(operation: string, target: AccessContext['actor']['target']): void {
+  const audience = OperationCatalog.get(operation).audience;
+  if (audience === 'operator' && target !== 'console') {
+    throw new DomainError('PERMISSION_DENIED', { reason: 'AUDIENCE_TARGET_MISMATCH', audience, target });
   }
 }
 
