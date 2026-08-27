@@ -4,21 +4,12 @@ module.exports = {
       name: 'zhudatuan-storefront',
       cwd: '/opt/zhudatuan/current/apps/storefront-web',
       script: '/opt/zhudatuan/current/node_modules/vinext/dist/cli.js',
-<<<<<<< HEAD
-      args: 'start --hostname 127.0.0.1 --port 4310',
-      node_args: ['--env-file=/opt/zhudatuan/shared/storefront.env'],
-      interpreter: '/usr/bin/node',
-      env: {
-        NODE_ENV: 'production',
-        PORT: '4310',
-=======
       args: 'start',
       node_args: ['--env-file=/opt/zhudatuan/shared/.env.production'],
       interpreter: '/usr/bin/node',
       env: {
         NODE_ENV: 'production',
         PORT: '3000',
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
         APP_ENV: 'production',
         AUTH_MODE: 'membership',
       },
@@ -33,8 +24,6 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
     },
-<<<<<<< HEAD
-=======
     {
       name: 'zhudatuan-api',
       cwd: '/opt/zhudatuan/current',
@@ -56,6 +45,5 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
     },
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   ],
 };

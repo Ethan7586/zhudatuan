@@ -39,7 +39,7 @@ describe('phone assurance at order boundaries', () => {
   it('blocks order creation before inventory, PII, or order RPC work', async () => {
     const database = accountOnlyDatabase();
     vi.stubGlobal('fetch', database);
-    const response = await handleCreateOrder(new Request('https://hbbtzn.com/api/v1/orders', { method: 'POST' }), env, authorization, 'unverified-order');
+    const response = await handleCreateOrder(new Request('https://zhudatuan.com/api/v1/orders', { method: 'POST' }), env, authorization, 'unverified-order');
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({ error: { code: 'PHONE_VERIFICATION_REQUIRED' } });
     expect(database).toHaveBeenCalledTimes(1);
@@ -49,7 +49,7 @@ describe('phone assurance at order boundaries', () => {
   it('blocks internal payment before looking up the order or debiting an account', async () => {
     const database = accountOnlyDatabase();
     vi.stubGlobal('fetch', database);
-    const response = await handleInternalPayment(new Request('https://hbbtzn.com/api/v1/orders/order-one/pay-internal', { method: 'POST' }), env, authorization, 'unverified-payment', 'unverified-payment');
+    const response = await handleInternalPayment(new Request('https://zhudatuan.com/api/v1/orders/order-one/pay-internal', { method: 'POST' }), env, authorization, 'unverified-payment', 'unverified-payment');
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({ error: { code: 'PHONE_VERIFICATION_REQUIRED' } });
     expect(database).toHaveBeenCalledTimes(1);
@@ -73,7 +73,7 @@ describe('order cart closure', () => {
       return new Response('not found', { status: 404 });
     });
     vi.stubGlobal('fetch', database);
-    const request = new Request('https://hbbtzn.com/api/v1/orders', {
+    const request = new Request('https://zhudatuan.com/api/v1/orders', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'idempotency-key': 'checkout-order-one' },
       body: JSON.stringify({

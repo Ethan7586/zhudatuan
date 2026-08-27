@@ -1,5 +1,5 @@
-import App from '../src/App';
+import { StorefrontRoot } from '../src/StorefrontRoot';
 
 export default function Home() {
-  return <App />;
+  return <StorefrontRoot />;
 }

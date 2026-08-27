@@ -2,11 +2,7 @@ const SHOWCASE_PATH_PREFIXES = ['/desktop-1920', '/mini-program', '/android-app'
 const COMPATIBILITY_API_PATH_PREFIX = '/api/v1/';
 
 const LOCAL_SHOWCASE_HOSTS = new Set(['127.0.0.1', 'localhost']);
-<<<<<<< HEAD
-const PRODUCTION_RUNTIME_HOSTS = new Set(['zhudatuan.com', 'www.zhudatuan.com', 'h5.zhudatuan.com', 'accounts.zhudatuan.com', 'console.zhudatuan.com']);
-=======
 const PRODUCTION_RUNTIME_HOSTS = new Set(['zhudatuan.com', 'www.zhudatuan.com', 'accounts.zhudatuan.com', 'console.zhudatuan.com']);
->>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
 export function isShowcasePath(pathname: string): boolean {
   return SHOWCASE_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

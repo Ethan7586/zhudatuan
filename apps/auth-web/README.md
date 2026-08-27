@@ -1,13 +1,15 @@
 # Unified authentication UI
 
-This app owns the shared sign-in experience for `hbbtzn.com` and
-`smart.hbbtzn.com`: authentication, membership selection, management step-up,
-and the cross-domain callback screen.
+This app owns the approved three-stage sign-in experience at
+`accounts.zhudatuan.com`, with optional same-origin mounting at
+`zhudatuan.com/login/`.
 
-It is a UI prototype at this stage. Production authentication, membership,
-ticket exchange, rate limiting, and audit logging belong to
-`services/commerce-api` and `packages/authz`; browser code must not contain
-secrets or issue real sessions.
+The browser never issues sessions or cross-domain tickets. An independent
+accounts page uses an allowlisted top-level POST to the storefront or console
+host so that host can create its own HttpOnly cookie. A storefront-embedded
+login remains same-origin. Credentials stay in the POST body and never enter a
+URL. QR login, enterprise SSO, multi-membership selection and admin step-up
+remain visibly unavailable until their authoritative services exist.
 
 Run it from the repository root:
 
@@ -15,4 +17,6 @@ Run it from the repository root:
 npm run dev:auth
 ```
 
-It uses port `3002` locally.
+It uses port `3002` locally. `/api` is proxied to the storefront compatibility
+BFF configured by `AUTH_COMPAT_API_ORIGIN` (default `http://127.0.0.1:3000`),
+never to the canonical Commerce API on port `3001`.

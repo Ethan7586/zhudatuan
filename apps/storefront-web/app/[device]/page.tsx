@@ -3,8 +3,8 @@ import { DeviceShowcase } from '../../src/showcase/DeviceShowcase';
 /**
  * Multi-device entry route.
  *
- * These legacy visual simulators are intentionally isolated from the
- * production storefront entry and native WeChat mini program.
+ * These device previews use the same approved component family as the
+ * production storefront. Local demo data remains isolated to preview routes.
  */
 type DevicePageProps = {
   params: Promise<{ device: string }>;

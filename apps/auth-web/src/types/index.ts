@@ -26,29 +26,11 @@ export interface Membership {
 }
 
 export interface PreAuthContext {
-  preAuthToken: string;
   phone?: string;
   identifier?: string;
   loginMethod: LoginMethod;
   requiresPasswordReset?: boolean;
   memberships: Membership[];
-}
-
-export interface StepUpChallenge {
-  challengeId: string;
-  preAuthToken: string;
-  membershipId: string;
-  method: 'totp';
-  targetDomain: string;
-  requiresStepUp: boolean;
-  message: string;
-}
-
-export interface StepUpVerifyResult {
-  ticket: string;
-  redirectUrl: string;
-  targetDomain: string;
-  expiresInSeconds: number;
 }
 
 export interface LockoutState {
@@ -57,22 +39,10 @@ export interface LockoutState {
   failedAttempts: number;
 }
 
-export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com' | 'hbbtzn.com' | 'smart.hbbtzn.com';
-
-export type ScreenType = 'login' | 'storefront_home' | 'admin_dashboard' | 'auth_callback' | 'force_password_reset';
+export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
 
 export interface MallContextType {
   currentDomain: DomainType;
-  setDomain: (domain: DomainType) => void;
-  currentScreen: ScreenType;
-  screenParams: Record<string, any>;
-  navigateTo: (screen: ScreenType, params?: Record<string, any>) => void;
   acceptedTerms: boolean;
   setAcceptedTerms: (accepted: boolean) => void;
-  activeSession: {
-    membership?: Membership;
-    domain?: DomainType;
-    ticket?: string;
-  } | null;
-  setActiveSession: (session: any) => void;
 }

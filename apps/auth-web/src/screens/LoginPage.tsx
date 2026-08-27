@@ -5,37 +5,32 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import {
-  ShieldCheck,
-  Lock,
-  Building2,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ArrowLeft,
-  RefreshCw,
-  UserCheck,
-  ChevronRight,
-  ShieldAlert,
-  Info,
-  Clock,
-  Store,
-  CreditCard,
-  UserX,
-  FileText,
-  X,
-} from 'lucide-react';
+import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
 import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
-import { loginWithPassword, getLockoutState, acceptInvitation, changeInitialPassword, registerUsernameMember } from '../services/auth';
+import {
+  loginWithPassword,
+  getLockoutState,
+  changeInitialPassword,
+  registerUsernameMember,
+  buildCredentialLoginAction,
+  requiresAuthoritativeMembershipSelection,
+  resolveAdminLoginOrigin,
+  resolveStorefrontLoginOrigin,
+} from '../services/auth';
+
+type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
 
-  // 当前流程阶段: 1 = 账号认证, 2 = 选择会员身份
-  const [stage, setStage] = useState<1 | 2>(1);
+  // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
+  const [stage, setStage] = useState<1 | 2 | 3>(1);
+  const [activeTab, setActiveTab] = useState<AuthMethod>('password');
+  const [qrLoginChannel, setQrLoginChannel] = useState<'work_weixin' | 'wechat'>('work_weixin');
+  const [ssoDomain, setSsoDomain] = useState('');
+  const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
 
   // 表单受控字段
   const [identifier, setIdentifier] = useState<string>('');
@@ -92,6 +87,21 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const selectAuthMethod = (method: AuthMethod) => {
+    setActiveTab(method);
+    setFormError('');
+    setFieldErrors({});
+  };
+
+  const fillDevelopmentAccount = (account: string) => {
+    if (!import.meta.env.DEV) return;
+    setIdentifier(account);
+    setPassword('');
+    setActiveTab('password');
+    setFormError('');
+    setFieldErrors({});
+  };
+
   // 校验第一段表单
   const validateStage1 = (): boolean => {
     const errors: Record<string, string> = {};
@@ -144,8 +154,9 @@ export const LoginPage: React.FC = () => {
       const response = await fetch('/api/v1/auth/security/otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mobile: resetForm.mobile, purpose: 'password_reset' }) });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error?.message || '验证码发送失败');
-      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: payload.debugCode ?? current.code }));
-      setRegistrationNotice(payload.debugCode ? `开发环境验证码：${payload.debugCode}` : '验证码已发送');
+      const developmentCode = import.meta.env.DEV && typeof payload?.debugCode === 'string' ? payload.debugCode : '';
+      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: developmentCode || current.code }));
+      setRegistrationNotice(developmentCode ? `开发环境验证码：${developmentCode}` : '验证码已发送');
     } catch (error: any) {
       setFormError(error.message || '验证码发送失败');
     } finally {
@@ -215,10 +226,52 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const submitCredentialForm = (targetOrigin: string) => {
+    // A top-level form lets the destination host create its own __Host-
+    // HttpOnly cookie. Credentials remain in the POST body and never enter the
+    // URL, browser history or referrer.
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = buildCredentialLoginAction(targetOrigin);
+    form.target = '_top';
+    form.style.display = 'none';
+    for (const [name, value] of Object.entries({ username: identifier, password })) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    form.submit();
+  };
+
   // 处理 PreAuth 上下文并路由到第2段或自动跳转
   const completeStorefrontLogin = async (membershipId: string) => {
     // Credential discovery never creates a cookie. The final login is the only
     // place that establishes the tracked, revocable HttpOnly device session.
+    let storefrontOrigin: string;
+    try {
+      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+      storefrontOrigin = resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV);
+    } catch (error: any) {
+      setFormError(error.message || '商城登录目标配置无效');
+      return;
+    }
+
+    // When accounts.zhudatuan.com is the standalone shell, a relative fetch
+    // would set a host-only cookie on the wrong host and then loop back here.
+    // Transfer the browser to the storefront host before the final login.
+    if (isStorefrontEmbed && window.location.origin !== storefrontOrigin) {
+      setFormError('商城嵌入登录必须与商城同源，已停止提交账号凭证。');
+      return;
+    }
+
+    if (window.location.origin !== storefrontOrigin) {
+      submitCredentialForm(storefrontOrigin);
+      return;
+    }
+
     const response = await fetch('/api/v1/auth/login', {
       method: 'POST',
       credentials: 'same-origin',
@@ -237,7 +290,7 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    // 独立登录页必须离开认证壳，进入已经建立真实会话的商城首页。
+    // 商城同源登录页必须离开认证壳，进入已经建立真实会话的商城首页。
     window.location.replace('/');
   };
 
@@ -245,24 +298,16 @@ export const LoginPage: React.FC = () => {
     // The browser performs a top-level POST on the target host, allowing the
     // admin domain to create its own __Host- cookie before loading the app.
     // Credentials are deliberately submitted in the request body, never URL.
-    const form = document.createElement('form');
-    form.method = 'POST';
-    const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN?.trim();
-    const adminOrigin = configuredOrigin || (window.location.hostname === 'zhudatuan.com' || window.location.hostname.endsWith('.zhudatuan.com') ? 'https://console.zhudatuan.com' : 'https://smart.hbbtzn.com');
-    form.action = `${adminOrigin.replace(/\/$/, '')}/api/v1/auth/login?redirect=/`;
-    // When the login page is rendered in the storefront drawer, the form must
-    // escape that iframe; otherwise the whole admin app is rendered in-panel.
-    form.target = '_top';
-    form.style.display = 'none';
-    for (const [name, value] of Object.entries({ username: identifier, password })) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
+    let adminOrigin: string;
+    try {
+      const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
+      adminOrigin = resolveAdminLoginOrigin(configuredOrigin, import.meta.env.DEV);
+    } catch (error: any) {
+      setFormError(error.message || '后台登录目标配置无效');
+      return;
     }
-    document.body.appendChild(form);
-    form.submit();
+
+    submitCredentialForm(adminOrigin);
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
@@ -285,13 +330,19 @@ export const LoginPage: React.FC = () => {
         return;
       } else if (singleMem.target === 'admin') {
         if (singleMem.requiresStepUp) {
-          setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
-          setStage(1);
+          setSelectedMembership(singleMem);
+          setStage(3);
         } else {
           completeAdminLogin();
         }
         return;
       }
+    }
+
+    // 多条身份仍保留确认过的第2段 UI，但当前服务端尚未提供
+    // 绑定会话的选择 token，所以任何点击都必须安全失败。
+    if (requiresAuthoritativeMembershipSelection(activeMemberships)) {
+      setFormError('检测到多个可用身份。服务端身份选择尚未接通，已停止建立会话。');
     }
 
     // 多条身份或包含复杂状态，进入第2段选择会员关系
@@ -300,6 +351,11 @@ export const LoginPage: React.FC = () => {
 
   // 2. 选中并确认某条会员关系
   const handleSelectMembership = async (mem: Membership) => {
+    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
+      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
+      return;
+    }
+
     if (mem.status === 'invited') {
       setFormError(`【${mem.enterpriseName}】的邀请尚待接受，请先确认加入该企业福利计划`);
       return;
@@ -319,7 +375,8 @@ export const LoginPage: React.FC = () => {
 
     setFormError('');
     if (mem.target === 'admin' && mem.requiresStepUp) {
-      setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
+      setSelectedMembership(mem);
+      setStage(3);
     } else {
       // 嵌入员工商城时，认证页只负责完成身份选择；不在右侧抽屉渲染另一套商城。
       if (mem.target === 'storefront') {
@@ -335,27 +392,18 @@ export const LoginPage: React.FC = () => {
   };
 
   // 处理接受邀请按钮
-  const handleAcceptInvite = async (e: React.MouseEvent, mem: Membership) => {
+  const handleAcceptInvite = (e: React.MouseEvent, mem: Membership) => {
     e.stopPropagation();
-    setLoading(true);
-    try {
-      if (preAuthContext) {
-        await acceptInvitation(preAuthContext.preAuthToken, mem.id);
-        // 本地改写状态为 active
-        mem.status = 'active';
-        await handleSelectMembership(mem);
-      }
-    } catch (err: any) {
-      setFormError('接受邀请失败，请重试');
-    } finally {
-      setLoading(false);
-    }
+    setFormError(`【${mem.enterpriseName}】的邀请接受服务尚未接通，请联系企业管理员；系统不会在浏览器内模拟授权。`);
   };
 
   // 返回上一步
   const handleGoBack = () => {
     setFormError('');
-    if (stage === 2) {
+    if (stage === 3) {
+      setSelectedMembership(null);
+      setStage(2);
+    } else if (stage === 2) {
       setStage(1);
     }
   };
@@ -395,8 +443,7 @@ export const LoginPage: React.FC = () => {
     const storefrontItems = allMemberships.filter((m) => m.target === 'storefront');
     const adminItems = allMemberships.filter((m) => m.target === 'admin');
 
-    // 运营后台域优先显示管理身份；保留旧域名兼容。
-    const isSmartDomain = currentDomain === 'console.zhudatuan.com' || currentDomain === 'smart.hbbtzn.com';
+    const isSmartDomain = currentDomain === 'console.zhudatuan.com';
 
     const renderStorefrontSection = () => (
       <div className="space-y-3 mb-6">
@@ -564,10 +611,32 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : 'min-h-screen bg-slate-50 flex flex-col justify-between'} selection:bg-blue-100 selection:text-[var(--sw-brand)]`}>
+    <div className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : 'min-h-screen bg-slate-50 flex flex-col justify-between'} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}>
+      {import.meta.env.DEV && !isStorefrontEmbed && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-300">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded border border-blue-500/30 bg-blue-500/20 px-2 py-0.5 font-mono text-[11px] font-semibold text-blue-300">
+              <Globe className="h-3 w-3" />
+              本地预览域：{currentDomain}
+            </span>
+            <span className="hidden text-slate-400 sm:inline">仅供本地验证视觉与账号输入，不模拟认证成功</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-slate-400">填入测试用户名：</span>
+            {['buyer001', 'seller001', 'ops001', 'cs001', 'admin001'].map((account) => (
+              <button key={account} type="button" onClick={() => fillDevelopmentAccount(account)} className="rounded bg-slate-800 px-2 py-0.5 font-mono text-[11px] text-slate-200 transition-colors hover:bg-slate-700">
+                {account}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
-      <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center bg-transparent p-0' : 'flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12'}>
-        <div className={`relative w-full max-w-[520px] rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}>
+      <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
+        <div
+          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
+        >
           {isStorefrontEmbed && (
             <button
               type="button"
@@ -610,33 +679,44 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* 认证卡：桌面端由右向左叠压蓝色底板的 80% 区域 */}
-          <div className={isStorefrontEmbed ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[560px]' : 'lg:w-[460px]'}`}>
-            <div className="w-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl transition-all duration-300">
-              {/* 卡片顶部：正式两段式登录进度 */}
-              <div className="bg-slate-50/80 px-6 sm:px-8 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-2">
+          <div className={isStorefrontEmbed ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[620px]' : 'lg:w-[460px]'}`}>
+            <div className="w-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/15 transition-all duration-300">
+              {/* 卡片顶部：3003 三段式身份流程 */}
+              <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-white via-slate-50 to-blue-50/70 px-6 py-4 sm:px-8">
+                <div className="flex items-center gap-2.5">
                   {stage > 1 && (
-                    <button onClick={handleGoBack} className="p-1.5 mr-1 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 transition-colors" aria-label="返回上一阶段">
+                    <button onClick={handleGoBack} className="mr-0.5 rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-800" aria-label="返回上一阶段">
                       <ArrowLeft className="w-4 h-4" />
                     </button>
                   )}
                   {/* 步骤 1 */}
-                  <div className={`flex items-center justify-center w-6 h-6 rounded-full font-bold text-[10px] ${stage >= 1 ? 'bg-[var(--sw-brand)] text-white shadow-sm' : 'border-2 border-slate-200 text-slate-400'}`}>1</div>
-                  <div className={`w-6 sm:w-8 h-[2px] ${stage >= 2 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage > 1 ? 'bg-blue-100 text-[var(--sw-brand)]' : 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25'}`}>
+                    {stage > 1 ? <CheckCircle2 className="h-3.5 w-3.5" /> : '1'}
+                  </div>
+                  <div className={`h-[2px] w-5 sm:w-7 ${stage >= 2 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
 
                   {/* 步骤 2 */}
                   <div
-                    className={`flex items-center justify-center w-6 h-6 rounded-full font-bold text-[10px] ${stage === 2 ? 'border-2 border-[var(--sw-brand)] text-[var(--sw-brand)] bg-white font-black' : 'border-2 border-slate-200 text-slate-400'}`}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage > 2 ? 'bg-blue-100 text-[var(--sw-brand)]' : stage === 2 ? 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25' : 'border-2 border-slate-200 bg-white text-slate-400'}`}
                   >
-                    2
+                    {stage > 2 ? <CheckCircle2 className="h-3.5 w-3.5" /> : '2'}
+                  </div>
+                  <div className={`h-[2px] w-5 sm:w-7 ${stage >= 3 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
+
+                  {/* 步骤 3 */}
+                  <div
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage === 3 ? 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25' : 'border-2 border-slate-200 bg-white text-slate-400'}`}
+                  >
+                    3
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-5 w-5 rounded-md" />
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
                     {stage === 1 && '账号认证'}
-                    {stage === 2 && '选择访问身份'}
+                    {stage === 2 && '选择进入方式'}
+                    {stage === 3 && '二次验证'}
                   </span>
                 </div>
               </div>
@@ -645,13 +725,15 @@ export const LoginPage: React.FC = () => {
               <div className="p-6 sm:p-8">
                 {/* 阶段标题 */}
                 <div className="mb-6">
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                     {stage === 1 && '统一账号认证'}
-                    {stage === 2 && '选择关联会员关系'}
+                    {stage === 2 && '选择你的工作台'}
+                    {stage === 3 && '管理身份二次验证 (Step-Up)'}
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                    {stage === 1 && '使用登录账号或已绑定手机号进入商城'}
-                    {stage === 2 && '检测到您有多个关联账号，请选择需要进入的主体：'}
+                  <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+                    {stage === 1 && '请选择适合您的登录方式与身份核验'}
+                    {stage === 2 && '同一账号，可在福利消费与运营管理之间自由切换。'}
+                    {stage === 3 && '该高权限身份要求正式二次验证；当前服务尚未接通。'}
                   </p>
                 </div>
 
@@ -675,14 +757,44 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* 第一段：正式账号密码认证 */}
+                {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    <div className="rounded-xl bg-slate-100 p-1 text-xs font-medium" aria-label="登录方式">
-                      <div className="rounded-lg bg-white px-3 py-2 text-center font-bold text-[var(--sw-brand)] shadow-sm">账号密码登录</div>
+                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
+                      <button type="button" disabled className="cursor-not-allowed rounded-lg px-1 py-2 text-center text-slate-400 opacity-60" role="tab" aria-selected={false} aria-label="手机验证码登录尚未接通">
+                        验证码（待接入）
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('password')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'password' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'password'}
+                      >
+                        密码登录
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('work_weixin')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'work_weixin'}
+                      >
+                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('sso')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'sso'}
+                      >
+                        企业 SSO
+                      </button>
                     </div>
 
-                    <div id="login-method-panel" aria-live="polite">
+                    <div id="login-method-panel" role="tabpanel" aria-live="polite">
+                      {activeTab === 'password' && (
                         <form onSubmit={handleStage1Submit} className="space-y-4">
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-slate-700 flex items-center gap-1">
@@ -746,11 +858,13 @@ export const LoginPage: React.FC = () => {
                                 setRegistrationOpen(true);
                                 setFormError('');
                               }}
-                              className="font-semibold text-[var(--sw-brand)] hover:underline"
+                              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-950 bg-slate-950 px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:border-slate-800 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/25 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
                             >
+                              <UserCheck className="h-4 w-4" />
                               新用户注册
                             </button>
                           </div>
+                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建员工商城账号</p>
 
                           <button
                             type="submit"
@@ -770,7 +884,52 @@ export const LoginPage: React.FC = () => {
                             )}
                           </button>
                         </form>
+                      )}
 
+                      {activeTab === 'work_weixin' && (
+                        <div className="space-y-4 py-4 text-center">
+                          <div className="relative mx-auto inline-block min-h-[238px] rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <div className="mx-auto flex h-40 w-40 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-2">
+                              <QrCode className="h-32 w-32 text-slate-800" aria-hidden="true" />
+                            </div>
+                            <p className="mt-2 flex items-center justify-center gap-1 text-xs text-slate-500">
+                              使用
+                              <button
+                                type="button"
+                                onClick={() => setQrLoginChannel((channel) => (channel === 'work_weixin' ? 'wechat' : 'work_weixin'))}
+                                className={`font-semibold transition-colors ${qrLoginChannel === 'work_weixin' ? 'text-[var(--sw-brand)] hover:text-[var(--sw-brand-dark)]' : 'text-emerald-600 hover:text-emerald-700'}`}
+                                aria-label={qrLoginChannel === 'work_weixin' ? '切换为微信扫码视觉' : '切换为企业微信扫码视觉'}
+                              >
+                                {qrLoginChannel === 'work_weixin' ? '企业微信' : '微信'}
+                              </button>
+                              扫描二维码
+                            </p>
+                            <p className="mt-1 text-[10px] text-slate-400">扫码认证服务正在安全接入</p>
+                          </div>
+                          <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs leading-5 text-amber-800">当前仅展示已确认的扫码入口视觉，不生成会话、不模拟扫码成功。请先使用密码登录。</div>
+                        </div>
+                      )}
+
+                      {activeTab === 'sso' && (
+                        <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <label className="flex items-center gap-1 text-xs font-medium text-slate-700">
+                              <Globe className="h-3.5 w-3.5 text-slate-400" /> 企业专属域名或 SSO 邀请码
+                            </label>
+                            <input
+                              type="text"
+                              value={ssoDomain}
+                              onChange={(event) => setSsoDomain(event.target.value)}
+                              placeholder="请输入企业专属域名或邀请码"
+                              className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 font-mono text-sm transition-all focus:border-[var(--sw-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                            />
+                          </div>
+                          <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-xs leading-5 text-slate-600">企业 SSO 将支持 SAML 2.0 / OIDC。正式 IdP allowlist、state 与 nonce 校验尚未接通，因此当前不会发起跳转。</div>
+                          <button type="button" disabled className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-slate-300 px-4 py-3 text-sm font-medium text-white">
+                            <Globe className="h-4 w-4" /> 企业 SSO 正在接入
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* 底部合规与协议勾选 */}
@@ -808,16 +967,53 @@ export const LoginPage: React.FC = () => {
 
                 {/* 第二段：选择会员关系段 */}
                 {stage === 2 && (
-                  <div className="space-y-4">
-                    <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-xs text-slate-600 flex items-start gap-2">
-                      <Info className="w-4 h-4 text-[var(--sw-brand)] shrink-0 mt-0.5" />
-                      <p>该账号关联了多个企业的福利计划或管理身份。请选择您本次需要进入的商城专区或运营后台：</p>
+                  <div className="space-y-5">
+                    <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-cyan-50 px-4 py-3.5 text-xs text-slate-600">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--sw-brand)] shadow-sm ring-1 ring-blue-100">
+                        <Info className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 pt-0.5">
+                        <p className="font-bold text-slate-800">一次登录，按需进入</p>
+                        <p className="mt-0.5 leading-relaxed text-slate-500">商城用于福利消费与订单；后台用于运营管理，仅展示你已经获得授权的工作台。</p>
+                      </div>
                     </div>
 
                     {renderMembershipsList()}
                   </div>
                 )}
 
+                {/* 第三段保留 3003 视觉，但正式二次验证未接通时必须关闭 */}
+                {stage === 3 && selectedMembership && (
+                  <div className="space-y-5">
+                    <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900 p-4 text-white">
+                      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
+                        <ShieldAlert className="h-4 w-4" /> 即将进入高风险运营后台
+                      </div>
+                      <p className="text-sm font-semibold text-slate-100">{selectedMembership.enterpriseName}</p>
+                      <p className="text-xs text-slate-300">
+                        角色：{selectedMembership.roleName}（{selectedMembership.storeName}）
+                      </p>
+                      <div className="border-t border-slate-800 pt-2 text-[11px] text-slate-400">
+                        目标域名：<span className="font-mono text-blue-300">console.zhudatuan.com</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-900">
+                      <div className="mb-1 flex items-center gap-2 font-bold">
+                        <Lock className="h-4 w-4" /> 正式二次验证尚未接通
+                      </div>
+                      本页不会接受固定动态口令、不会签发浏览器假票据，也不会绕过后台权限。请返回选择普通商城身份，或等待管理员二次验证服务启用。
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleGoBack}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                    >
+                      <ArrowLeft className="h-4 w-4" /> 返回选择身份
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1037,11 +1233,11 @@ export const LoginPage: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto text-xs text-slate-600 space-y-3 pr-2 custom-scrollbar leading-relaxed">
               <p className="font-semibold text-slate-800">一、服务说明与主体定义</p>
-              <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；原智慧翼域名在迁移期保持兼容。</p>
+              <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
 
               <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
               <p>
-                1. 本系统使用短时效 Pre-Auth 上下文与一次性跨域票据 (Ticket) 进行会话传递。前端不落地存储任何永久 Token。
+                1. 本系统由服务端建立可撤销的 Host-only HttpOnly 会话。前端不落地存储密码、永久 Token 或跨域票据。
                 <br />
                 2. 涉及高风险管理权限（如资金退款、角色授权、审计查询）的操作，须在正式二次验证服务接通后方可使用。
                 <br />

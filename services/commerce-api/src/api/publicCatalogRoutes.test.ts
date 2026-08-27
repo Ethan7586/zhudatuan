@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clearPublicCatalogCache, handlePublicCatalog } from './publicCatalogRoutes';
+import { publicCatalogCoverUrl } from './publicCatalogImages';
 import { routeApi } from './router';
 import type { WorkerEnv } from './types';
 
@@ -37,11 +38,19 @@ const catalogRow = {
 };
 
 describe('public catalog', () => {
+  it('accepts exact same-origin media and rejects prefix-confusion origins', async () => {
+    const request = new Request('https://zhudatuan.com/api/v1/catalog/public/products');
+
+    await expect(publicCatalogCoverUrl(request, env, 'product-one', 'https://zhudatuan.com/media/product-one.webp')).resolves.toBe('https://zhudatuan.com/media/product-one.webp');
+    await expect(publicCatalogCoverUrl(request, env, 'product-one', 'https://zhudatuan.com.evil.example/product-one.webp')).resolves.toBeNull();
+    await expect(publicCatalogCoverUrl(request, env, 'product-one', 'https://zhudatuan.com@evil.example/product-one.webp')).resolves.toBeNull();
+  });
+
   it('returns the shared Shop catalog without creating a member session', async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify([catalogRow]), { status: 200, headers: { 'content-type': 'application/json' } }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = await routeApi(new Request('https://hbbtzn.com/api/v1/catalog/public/products?limit=24'), env);
+    const response = await routeApi(new Request('https://zhudatuan.com/api/v1/catalog/public/products?limit=24'), env);
 
     expect(response?.status).toBe(200);
     await expect(response?.json()).resolves.toMatchObject({
@@ -63,7 +72,17 @@ describe('public catalog', () => {
   it('rejects malformed server-side mall configuration before database access', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const response = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products'), { ...env, PUBLIC_MALL_SLUG: '../secret' }, 'bad-mall');
+    const response = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products'), { ...env, PUBLIC_MALL_SLUG: '../secret' }, 'bad-mall');
+
+    expect(response.status).toBe(503);
+    expect(fetchMock).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({ error: { code: 'PUBLIC_CATALOG_NOT_CONFIGURED' } });
+  });
+
+  it('requires an explicit mall slug in production before database access', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const response = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products'), { ...env, APP_ENV: 'production' }, 'missing-production-mall');
 
     expect(response.status).toBe(503);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -74,7 +93,7 @@ describe('public catalog', () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify([catalogRow]), { status: 200, headers: { 'content-type': 'application/json' } }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products'), env, 'small-default');
+    const response = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products'), env, 'small-default');
 
     expect(response.status).toBe(200);
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({ p_limit: 24, p_offset: 0 });
@@ -82,7 +101,7 @@ describe('public catalog', () => {
   });
 
   it('keeps writes disabled on the public catalog endpoint', async () => {
-    const response = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products', { method: 'POST' }), env, 'catalog-method');
+    const response = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products', { method: 'POST' }), env, 'catalog-method');
 
     expect(response.status).toBe(405);
     expect(response.headers.get('allow')).toBe('GET');
@@ -96,7 +115,7 @@ describe('public catalog', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(firstPage), { status: 200, headers: { 'content-type': 'application/json' } }))
       .mockResolvedValueOnce(new Response(JSON.stringify(secondPage), { status: 200, headers: { 'content-type': 'application/json' } }));
     vi.stubGlobal('fetch', fetchMock);
-    const request = new Request('https://hbbtzn.com/api/v1/catalog/public/products?limit=999');
+    const request = new Request('https://zhudatuan.com/api/v1/catalog/public/products?limit=999');
 
     const first = await handlePublicCatalog(request, env, 'cache-first');
     const second = await handlePublicCatalog(request, env, 'cache-second');
@@ -137,7 +156,7 @@ describe('public catalog', () => {
     vi.stubGlobal('fetch', fetchMock);
     const cacheEnv = { ...env, CORE_READ_CACHE_URL: 'http://127.0.0.1:3002', CORE_READ_CACHE_TOKEN: 'internal-cache-token' };
 
-    const response = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products?limit=20'), cacheEnv, 'shared-hit');
+    const response = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products?limit=20'), cacheEnv, 'shared-hit');
 
     expect(response.headers.get('x-sw-catalog-cache-tier')).toBe('shared');
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain('127.0.0.1:3002/v1/entries/');
@@ -147,14 +166,14 @@ describe('public catalog', () => {
   it('publishes a verifiable mirror contract and honors conditional requests', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify([catalogRow]), { status: 200, headers: { 'content-type': 'application/json' } }));
     vi.stubGlobal('fetch', fetchMock);
-    const first = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products?limit=24'), env, 'etag-first');
+    const first = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products?limit=24'), env, 'etag-first');
     const etag = first.headers.get('etag');
     const body = (await first.json()) as { mirror: Record<string, unknown> };
     expect(etag).toMatch(/^"catalog\.[a-f0-9]{24}"$/);
     expect(body.mirror).toMatchObject({ schemaVersion: 2, catalogVersion: etag?.slice(1, -1), sourceCursor: 'cursor:0:limit:24:items:1' });
     expect(body.mirror.contentHash).toMatch(/^sha256:[a-f0-9]{64}$/);
 
-    const second = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products?limit=24', { headers: { 'if-none-match': String(etag) } }), env, 'etag-second');
+    const second = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products?limit=24', { headers: { 'if-none-match': String(etag) } }), env, 'etag-second');
     expect(second.status).toBe(304);
     expect(second.headers.get('etag')).toBe(etag);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -164,7 +183,7 @@ describe('public catalog', () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify([catalogRow]), { status: 200, headers: { 'content-type': 'application/json' } }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products?category=food&limit=20'), env, 'food-category');
+    const response = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products?category=food&limit=20'), env, 'food-category');
 
     expect(response.status).toBe(200);
     expect(fetchMock.mock.calls[0]?.[0]).toBe('https://db.example/rest/v1/rpc/api_catalog');
@@ -184,9 +203,9 @@ describe('public catalog', () => {
       .mockResolvedValueOnce(new Response(imageBytes, { status: 200, headers: { 'content-length': String(imageBytes.byteLength), 'content-type': 'image/jpeg' } }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const catalogResponse = await routeApi(new Request('http://hbbtzn.com/api/v1/catalog/public/products?limit=1'), env);
+    const catalogResponse = await routeApi(new Request('http://zhudatuan.com/api/v1/catalog/public/products?limit=1'), env);
     const catalogBody = (await catalogResponse?.json()) as { items: Array<{ coverUrl: string }> };
-    expect(catalogBody.items[0].coverUrl).toContain('https://hbbtzn.com/api/v1/catalog/public/products/product-one/image?');
+    expect(catalogBody.items[0].coverUrl).toContain('https://zhudatuan.com/api/v1/catalog/public/products/product-one/image?');
 
     const imageResponse = await routeApi(new Request(catalogBody.items[0].coverUrl), env);
     expect(imageResponse?.status).toBe(200);
@@ -204,12 +223,12 @@ describe('public catalog', () => {
   it('returns the same configured CDN image URL to Web and mini-program clients', async () => {
     const cdnRow = {
       ...catalogRow,
-      cover_url: 'https://img.hbbtzn.com/catalog/products/product-one/cover-abc123.webp',
+      cover_url: 'https://media.zhudatuan.com/catalog/products/product-one/cover-abc123.webp',
     };
     const fetchMock = vi.fn(async () => new Response(JSON.stringify([cdnRow]), { status: 200, headers: { 'content-type': 'application/json' } }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const response = await handlePublicCatalog(new Request('https://hbbtzn.com/api/v1/catalog/public/products?limit=1'), { ...env, PUBLIC_MEDIA_BASE_URL: 'https://img.hbbtzn.com' }, 'shared-cdn');
+    const response = await handlePublicCatalog(new Request('https://zhudatuan.com/api/v1/catalog/public/products?limit=1'), { ...env, PUBLIC_MEDIA_BASE_URL: 'https://media.zhudatuan.com' }, 'shared-cdn');
     const body = (await response.json()) as { items: Array<{ coverUrl: string }> };
 
     expect(body.items[0].coverUrl).toBe(cdnRow.cover_url);
@@ -223,7 +242,7 @@ describe('public catalog', () => {
       .mockRejectedValueOnce(new TypeError('upstream unavailable'));
     vi.stubGlobal('fetch', fetchMock);
 
-    const catalogResponse = await routeApi(new Request('http://hbbtzn.com/api/v1/catalog/public/products?limit=1'), env);
+    const catalogResponse = await routeApi(new Request('http://zhudatuan.com/api/v1/catalog/public/products?limit=1'), env);
     const catalogBody = (await catalogResponse?.json()) as { items: Array<{ coverUrl: string }> };
     const imageResponse = await routeApi(new Request(catalogBody.items[0].coverUrl), env);
 
