@@ -2,6 +2,7 @@ import { checkAssurance, checkScope, permissionDefinition, precheck, type Member
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { OperationCatalog, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -10,6 +11,9 @@ import { OperationCatalog, requiresFinancialActionProof, requiresFinancialExpect
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { OperationCatalog } from '@shop/contract';
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 import type { Clock } from '@shop/kernel';
 import { DomainError } from '../domain/DomainError';
 import type { AccessContext } from './AccessContext';
@@ -71,6 +75,7 @@ export class AccessPipeline {
     private readonly clock: Clock,
     private readonly risk: RiskGate,
     private readonly decisions: DecisionSink,
+<<<<<<< HEAD
     private readonly stepup = new StepupPolicy(),
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -83,6 +88,9 @@ export class AccessPipeline {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    private readonly stepup = new StepupPolicy()
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
   ) {}
 
   async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string): Promise<AccessContext> {
@@ -90,6 +98,7 @@ export class AccessPipeline {
     const trace = headers['x-trace-id'] ?? actor.session;
     let scope: AccessContext['scope'] | undefined;
     try {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       assertAudienceTarget(operation, actor.target);
@@ -100,6 +109,9 @@ export class AccessPipeline {
       const now = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.evaluatedAt : this.clock.now();
       if (!Number.isFinite(now.getTime())) throw new DomainError('PERMISSION_DENIED', { reason: 'AUTHORIZATION_TIME_INVALID' });
 =======
+=======
+      assertAudienceTarget(operation, actor.target);
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
       const membership = await this.memberships.resolve(actor.membership);
       const accessVersion = await this.versions.resolve(membership.id);
       const now = this.clock.now();
@@ -164,13 +176,21 @@ export class AccessPipeline {
       return { actor, membership, scope, accessVersion, capabilities, assurance: actor.assurance, trace };
     } catch (cause) {
       const reason = cause instanceof DomainError ? cause.code : cause instanceof Error ? cause.message : 'AUTHORIZATION_FAILED';
-      await this.decisions.append({ actor, operation, outcome: reason === 'STEPUP_REQUIRED' ? 'challenge' : reason === 'RISK_REVIEW_REQUIRED' ? 'review' : 'deny', reason, trace,
-        ...(scope === undefined ? {} : { scope }), ...(resource === undefined ? {} : { resource }) });
+      await this.decisions.append({
+        actor,
+        operation,
+        outcome: reason === 'STEPUP_REQUIRED' ? 'challenge' : reason === 'RISK_REVIEW_REQUIRED' ? 'review' : 'deny',
+        reason,
+        trace,
+        ...(scope === undefined ? {} : { scope }),
+        ...(resource === undefined ? {} : { resource }),
+      });
       throw cause;
     }
   }
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -188,6 +208,8 @@ function expectedVersionHeader(header: string | undefined): number | null {
   return value;
 }
 
+=======
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 function assertAudienceTarget(operation: string, target: AccessContext['actor']['target']): void {
   const audience = OperationCatalog.get(operation).audience;
   if (audience === 'operator' && target !== 'console') {
@@ -195,10 +217,13 @@ function assertAudienceTarget(operation: string, target: AccessContext['actor'][
   }
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 function mapReason(reason: string): string {
   if (reason === 'STEPUP_REQUIRED') return 'STEPUP_REQUIRED';
   if (reason === 'MEMBERSHIP_INACTIVE' || reason === 'ACCESS_VERSION_STALE') return 'MEMBERSHIP_INACTIVE';

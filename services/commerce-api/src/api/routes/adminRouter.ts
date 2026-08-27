@@ -19,6 +19,7 @@ import type { AuthorizationContext, WorkerEnv } from '../types';
 const API_PREFIX = '/api/v1';
 
 export async function routeAdminRequest(request: Request, env: WorkerEnv, authorization: AuthorizationContext, requestId: string): Promise<Response | null> {
+  if (authorization.membership.target !== 'admin') return null;
   const pathname = new URL(request.url).pathname;
   switch (pathname) {
     case `${API_PREFIX}/admin/products`:

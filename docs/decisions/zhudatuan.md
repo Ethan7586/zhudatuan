@@ -76,16 +76,17 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 > 最後更新：2026-08-27
 
-## 2026-08-27：`archives/` 歷史提詞庫與代碼找回庫
+## 2026-08-27：正式工程與歷史提詞庫分離
 
-`/Users/Ethan/Desktop/Projects/zhudatuan` 是唯一核心工程；`archives/` 已移入核心工程目錄，作為築大團未來的歷史提詞庫與代碼找回庫。
+`/Users/Ethan/Desktop/Projects/zhudatuan/main` 是唯一正式工程、Git 倉庫、構建與部署來源；同層的 `../archives/` 是築大團未來的歷史提詞庫與代碼找回庫。
 
 - 需要舊版 VI／UI／UE、登入、會員權限、商品、訂單、支付、供應商、接口契約或部署經驗時，先在 `archives/` 搜尋。
 - 找回時必須記錄來源路徑、Git commit／branch 與工作樹狀態，再判斷是否適合目前契約。
-- 只提取本次需要的最小代碼與業務語義，重新接入 `zhudatuan` 並補測試；不得整包搬運。
+- 只提取本次需要的最小代碼與業務語義，重新接入 `main/` 並補測試；不得整包搬運。
 - `archives/` 不是正式開發目錄、運行時依賴、現行契約真值或部署來源。
-- 兩棵原始 Smart Wing 資料樹由根 `.gitignore` 排除；主倉只保留提詞庫說明與未來整理出的純文字索引。
+- 正式 `.git` 位於 `main/.git`；`archives/` 在該 Git 工作樹之外，因此不會被 GitHub、構建或部署誤收錄。
 
+<<<<<<< HEAD
 完整使用規則見 [`archives/README.md`](./archives/README.md)。
 <<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -93,6 +94,9 @@
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+完整使用規則見 [`archives/README.md`](../../../archives/README.md)。
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 
 ## 2026-08-27：會員與權限、渠道與分銷、系統治理台
 
@@ -148,6 +152,7 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 `../../../archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
 =======
 `archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
@@ -155,6 +160,9 @@
 =======
 `archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+`../../../archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 
 它已包含：
 

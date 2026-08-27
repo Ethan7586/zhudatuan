@@ -135,6 +135,7 @@ const REPAIR_FILES = [
   '20260821079000_resolve_experience_version_scope.sql',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   '20260821080000_restore_member_scope_authorization.sql',
   '20260828091000_finance_reconciliation_integrity.sql',
   '20260828092000_finance_security_boundaries.sql',
@@ -180,6 +181,9 @@ if (!['--check-inventory', '--schema-fresh', '--environment-bootstrap', '--inven
 =======
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  '20260821080000_restore_member_scope_authorization.sql',
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 ];
 
 const mode = process.argv[2];

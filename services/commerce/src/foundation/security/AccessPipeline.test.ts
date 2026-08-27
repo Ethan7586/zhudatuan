@@ -10,7 +10,10 @@ import { HttpApp } from '../interface/HttpApp';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS, registerOperationRoutes } from '../interface/OperationController';
 import { AccessPipeline } from './AccessPipeline';
 import type { Actor } from './AccessContext';
+<<<<<<< HEAD
 import type { ActionProofVerifier } from './ActionProof';
+=======
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
 import { PipelineAuthorizer } from './PipelineAuthorizer';
 
 const NOW = new Date('2026-08-27T00:00:00.000Z');
@@ -82,6 +85,7 @@ describe('AccessPipeline audience boundary', () => {
     expect(fixture.membership).toHaveBeenCalledWith('membership:one');
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
   });
+<<<<<<< HEAD
 
   it('validates but does not consume a Level 3 proof during authorization', async () => {
     const validate = vi.fn(() => true);
@@ -131,6 +135,12 @@ describe('AccessPipeline audience boundary', () => {
 
 function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope, options: Readonly<{ assurance?: Actor['assurance']; actionProof?: ActionProofVerifier }> = {}) {
   const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: options.assurance ?? { level: 1 } });
+=======
+});
+
+function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope) {
+  const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
   const membershipAccess: MembershipAccess = Object.freeze({
     id: actor.membership,
     active: true,
@@ -149,9 +159,13 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
     { resolve: vi.fn(async () => [operation]) },
     { now: () => NOW },
     { evaluate: risk },
+<<<<<<< HEAD
     { append: decisions },
     undefined,
     options.actionProof
+=======
+    { append: decisions }
+>>>>>>> 65499ddc (chore: finalize main baseline and restore API boundaries)
   );
   return { pipeline, membership, risk, decisions };
 }

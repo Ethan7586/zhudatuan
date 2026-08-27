@@ -13,12 +13,12 @@ export async function routeSimulationRequest(request: Request, env: WorkerEnv, a
   }
   switch (pathname) {
     case `${API_PREFIX}/simulation/wallet`:
-      return handleSimulationWallet(request, env, authorization, requestId);
+      return authorization.membership.target === 'storefront' ? handleSimulationWallet(request, env, authorization, requestId) : null;
     case `${API_PREFIX}/simulation/recharges`:
-      return handleSimulationRecharge(request, env, authorization, requestId);
+      return authorization.membership.target === 'storefront' ? handleSimulationRecharge(request, env, authorization, requestId) : null;
     case `${API_PREFIX}/simulation/benefits`:
-      return handleSimulationBenefitIssue(request, env, authorization, requestId);
+      return authorization.membership.target === 'admin' ? handleSimulationBenefitIssue(request, env, authorization, requestId) : null;
   }
   const payment = pathname.match(/^\/api\/v1\/orders\/([^/]+)\/payments\/simulated$/);
-  return payment ? handleSimulationMixedPayment(request, env, authorization, decodeURIComponent(payment[1]), requestId) : null;
+  return payment && authorization.membership.target === 'storefront' ? handleSimulationMixedPayment(request, env, authorization, decodeURIComponent(payment[1]), requestId) : null;
 }
