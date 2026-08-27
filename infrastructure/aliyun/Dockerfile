@@ -1,6 +1,8 @@
 FROM node:22.22.0-alpine AS build
 WORKDIR /workspace
 COPY package.json package-lock.json ./
+COPY tsconfig.json ./
+COPY scripts/build-commerce.mjs ./scripts/build-commerce.mjs
 COPY apps ./apps
 COPY services ./services
 COPY packages ./packages
