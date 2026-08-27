@@ -16,37 +16,15 @@ test('every contract operation has one executable route and path parameters roun
   assert.equal(routes.match('GET', '/api/v1/not-declared'), null);
 });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-test('all twenty-eight bounded contexts plus runtime have a deterministic dependency order', async () => {
+test('all twenty-eight bounded contexts plus runtime and observability have a deterministic dependency order', async () => {
   assert.equal(BUSINESS_MODULES.length, 28);
-  assert.equal(COMMERCE_MODULES.length, 29);
-=======
-test('all twenty-nine bounded contexts plus runtime and observability have a deterministic dependency order', async () => {
-  assert.equal(BUSINESS_MODULES.length, 29);
-  assert.equal(COMMERCE_MODULES.length, 31);
->>>>>>> b503a366 (fix(test): reconcile production integration fixtures)
-=======
-test('all twenty-eight bounded contexts plus runtime have a deterministic dependency order', async () => {
-  assert.equal(BUSINESS_MODULES.length, 28);
-  assert.equal(COMMERCE_MODULES.length, 29);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+  assert.equal(COMMERCE_MODULES.length, 30);
   const registry = new ModuleRegistry();
   const loaded: string[] = [];
   for (const module of COMMERCE_MODULES) registry.add({ id: module.id, dependencies: module.dependencies, register: () => { loaded.push(module.id); } });
   await registry.load({} as never);
-<<<<<<< HEAD
-<<<<<<< HEAD
-  assert.equal(loaded.length, 29);
-  assert.equal(new Set(loaded).size, 29);
-=======
-  assert.equal(loaded.length, 31);
-  assert.equal(new Set(loaded).size, 31);
->>>>>>> b503a366 (fix(test): reconcile production integration fixtures)
-=======
-  assert.equal(loaded.length, 29);
-  assert.equal(new Set(loaded).size, 29);
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+  assert.equal(loaded.length, 30);
+  assert.equal(new Set(loaded).size, 30);
   for (const module of COMMERCE_MODULES) for (const dependency of module.dependencies) assert.ok(loaded.indexOf(dependency) < loaded.indexOf(module.id));
 });
 
