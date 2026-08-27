@@ -119,8 +119,13 @@
     "yaml": "2.9.0"
   },
   "optionalDependencies": {
+    "@esbuild/linux-x64": "0.28.1",
     "@rolldown/binding-linux-x64-gnu": "1.1.5",
-    "@rolldown/binding-linux-x64-musl": "1.1.5"
+    "@rolldown/binding-linux-x64-musl": "1.1.5",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.3.3",
+    "@tailwindcss/oxide-linux-x64-musl": "4.3.3",
+    "lightningcss-linux-x64-gnu": "1.32.0",
+    "lightningcss-linux-x64-musl": "1.32.0"
   },
   "overrides": {
     "eslint-plugin-jsx-a11y": {
