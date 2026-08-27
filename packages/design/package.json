@@ -39,5 +39,11 @@
     "typescript": "5.9.3",
     "vite": "8.1.5",
     "vitest": "4.1.10"
+  },
+  "optionalDependencies": {
+    "@oxc-parser/binding-linux-x64-gnu": "0.127.0",
+    "@oxc-parser/binding-linux-x64-musl": "0.127.0",
+    "@oxc-resolver/binding-linux-x64-gnu": "11.21.2",
+    "@oxc-resolver/binding-linux-x64-musl": "11.21.2"
   }
 }

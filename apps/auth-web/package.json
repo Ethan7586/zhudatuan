@@ -27,5 +27,8 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vitest": "^4.1.10"
+  },
+  "optionalDependencies": {
+    "@esbuild/linux-x64": "0.25.12"
   }
 }
