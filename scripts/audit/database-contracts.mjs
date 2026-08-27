@@ -63,6 +63,7 @@ const REPAIR_FILES = [
   '20260821077000_add_reporting_cockpit.sql',
   '20260821078000_complete_experience_application.sql',
   '20260821079000_resolve_experience_version_scope.sql',
+  '20260821080000_restore_member_scope_authorization.sql',
 ];
 
 const mode = process.argv[2];
