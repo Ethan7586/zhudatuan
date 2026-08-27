@@ -5,12 +5,15 @@ import { parse } from 'yaml';
 import { loadRequirementAuthority } from '../../tools/requirementgen/src/Authority.ts';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { loadOrderRequirementProfile, ORDER_REQUIREMENT_IDS } from '../../tools/requirementgen/src/OrderRequirementProfile.ts';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { loadOrderRequirementProfile, ORDER_REQUIREMENT_IDS } from '../../tools/requirementgen/src/OrderRequirementProfile.ts';
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { report } from './report.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -22,12 +25,15 @@ const names = {
   frontend: 'docs/requirements/frontend.yml',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   order: 'docs/requirements/order.yml',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   order: 'docs/requirements/order.yml',
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   contract: 'packages/contract/src/RequirementCatalog.generated.ts',
 };
 const documents = Object.fromEntries(Object.entries(names)
@@ -40,6 +46,7 @@ const providerDocument = documents.providers;
 const frontendDocument = documents.frontend;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const orderDocument = documents.order;
 const { authority } = await loadRequirementAuthority(root);
 const orderProfile = await loadOrderRequirementProfile(root);
@@ -51,6 +58,9 @@ const orderDocument = documents.order;
 const { authority } = await loadRequirementAuthority(root);
 const orderProfile = await loadOrderRequirementProfile(root);
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+const { authority } = await loadRequirementAuthority(root);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const operations = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8')).operations;
 const operationById = new Map(operations.map((operation) => [operation.id, operation]));
 const contractType = readFileSync(join(root, names.contract), 'utf8');
@@ -60,6 +70,7 @@ const fail = (code, location, detail) => violations.push({ code, location, detai
 const statusRank = new Map(['Missing', 'Designed', 'Implemented', 'Integrated', 'Accepted', 'Released'].map((status, index) => [status, index]));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const traceStatuses = new Set(['Existing', 'Designed', 'Missing']);
 const placeholderPattern = new RegExp('\\b(?:TO' + 'DO|TB' + 'D)\\b', 'i');
 =======
@@ -68,6 +79,8 @@ const placeholderPattern = new RegExp('\\b(?:TO' + 'DO|TB' + 'D)\\b', 'i');
 const traceStatuses = new Set(['Existing', 'Designed', 'Missing']);
 const placeholderPattern = new RegExp('\\b(?:TO' + 'DO|TB' + 'D)\\b', 'i');
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const definitions = [
   ['PLAT', '1-平台层', 68, Array.from({ length: 68 }, (_, index) => index + 4)],
@@ -231,6 +244,7 @@ if (!contractType.includes(workbookHash)) fail('REQUIREMENT_CONTRACT_HASH_INVALI
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 const orderRequirements = orderDocument?.requirements ?? [];
@@ -319,11 +333,14 @@ if (placeholderPattern.test(JSON.stringify(orderDocument))) fail('ORDER_REQUIREM
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 report('requirements', violations);
 
 function checkHash(document, location) {
   if (document?.workbookSha256 !== workbookHash) fail('REQUIREMENT_WORKBOOK_HASH_INVALID', location, String(document?.workbookSha256));
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -349,3 +366,5 @@ function evidenceExists(evidence) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -20,6 +20,7 @@ test('persists an integrity-checked multipart object', async () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 test('deletes a completed object and invalidates its path and signed URL', async () => {
@@ -67,6 +68,8 @@ test('keeps identical bytes at different paths independently addressable and del
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 test('rejects reordered upload parts', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'shop-objects-'));
   const objects = new LocalObjects(directory, randomBytes(32).toString('base64url'), 'https://127.0.0.1:8445');

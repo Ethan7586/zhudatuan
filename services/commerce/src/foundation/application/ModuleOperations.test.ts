@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { appendOperationAudit, ModuleOperations, operationLifecycle, operationRequestHash } from './ModuleOperations';
 =======
 import { appendOperationAudit, ModuleOperations, operationLifecycle } from './ModuleOperations';
@@ -9,11 +10,15 @@ import { appendOperationAudit, ModuleOperations, operationLifecycle } from './Mo
 =======
 import { appendOperationAudit, ModuleOperations, operationLifecycle, operationRequestHash } from './ModuleOperations';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { appendOperationAudit, ModuleOperations, operationLifecycle } from './ModuleOperations';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { OperationRequest } from './OperationHandler';
 import type { DatabasePool } from '../persistence/Pool';
 import type { AuditSink } from './AuditSink';
 
 describe('ModuleOperations lifecycle', () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -34,6 +39,8 @@ describe('ModuleOperations lifecycle', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('keeps client error payloads in telemetry and out of audit facts', async () => {
     let before: unknown;
     const audit: AuditSink = { record: async (_database, input) => { before = input.before; }, access: async () => undefined };
@@ -55,6 +62,7 @@ describe('ModuleOperations lifecycle', () => {
       'identity', { status:201, body:{ id:'invitation:1', code:'one-time-code' } }, 'actor', 'scope', 'hash');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
     expect(fact?.after).toEqual({ id:'invitation:1', code:'[REDACTED]' });
   });
@@ -148,10 +156,13 @@ describe('ModuleOperations lifecycle', () => {
   });
 
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(fact?.before).toEqual({ path:{}, query:{}, body:{ address:'[REDACTED]', password:'[REDACTED]' }, expectedVersion:null });
     expect(fact?.after).toEqual({ id:'invitation:1', code:'[REDACTED]' });
   });
 
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
@@ -247,6 +258,8 @@ describe('ModuleOperations lifecycle', () => {
   });
 
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('prepares before acquiring a connection and finalizes after commit and release', async () => {
     const order: string[] = [];
     const client = {
@@ -345,6 +358,7 @@ describe('ModuleOperations lifecycle', () => {
   });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 
@@ -435,4 +449,6 @@ describe('ModuleOperations lifecycle', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

@@ -8,6 +8,7 @@ const directory = join(root, 'database', 'supabase', 'migrations');
 const files = (await readdir(directory))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   .filter((name) => name >= '20260821011000_create_domain_schemas.sql'
     && (name.startsWith('20260821') || name.startsWith('20260828') || name.startsWith('20260829') || name.startsWith('20260830')))
 =======
@@ -17,6 +18,9 @@ const files = (await readdir(directory))
   .filter((name) => name >= '20260821011000_create_domain_schemas.sql'
     && (name.startsWith('20260821') || name.startsWith('20260828') || name.startsWith('20260829') || name.startsWith('20260830')))
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  .filter((name) => name >= '20260821011000_create_domain_schemas.sql' && name.startsWith('20260821'))
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   .sort();
 const droppedTables = new Set([
   'runtime.distributorcontactstage',
@@ -33,12 +37,15 @@ const removedJobPolicies = new Set();
 const revokedTableGrants = new Set();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const revokedSchemaTableGrants = new Set();
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 const revokedSchemaTableGrants = new Set();
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 function add(id, kind, source, extra = {}) {
   const key = `${kind}:${id}`;
@@ -102,6 +109,7 @@ for (const file of files) {
   const sql = await readFile(join(directory, file), 'utf8');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   for (const match of sql.matchAll(/create schema(?: if not exists)?\s+([a-z][a-z0-9]*)/gi)) add(match[1], 'schema', file);
 =======
   for (const match of sql.matchAll(/create schema if not exists\s+([a-z][a-z0-9]*)/gi)) add(match[1], 'schema', file);
@@ -109,6 +117,9 @@ for (const file of files) {
 =======
   for (const match of sql.matchAll(/create schema(?: if not exists)?\s+([a-z][a-z0-9]*)/gi)) add(match[1], 'schema', file);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  for (const match of sql.matchAll(/create schema if not exists\s+([a-z][a-z0-9]*)/gi)) add(match[1], 'schema', file);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   for (const match of sql.matchAll(/create table\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)(?:\s*\(|\s+partition\s+of)/gi)) {
     const id = `${match[1]}.${match[2]}`;
     if (!droppedTables.has(id)) {
@@ -151,6 +162,7 @@ for (const file of files) {
   }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   for (const match of sql.matchAll(/alter function\s+([a-z][a-z0-9]*)\.[a-z][a-z0-9_]*\s*\([^;]*?\)\s+rename to\s+([a-z][a-z0-9_]*)/gi)) {
@@ -171,13 +183,18 @@ for (const file of files) {
     } else remove(id, 'trigger');
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   for (const match of sql.matchAll(/create(?: constraint)? trigger\s+([a-z][a-z0-9_]*)[\s\S]*?\son\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)) {
     add(`${match[2]}.${match[3]}.${match[1]}`, 'trigger', file, { operationalOwner: match[2] });
     for (const child of partitions.get(`${match[2]}.${match[3]}`) ?? []) add(`${child}.${match[1]}`, 'trigger', file,
       { operationalOwner: child.split('.')[0] });
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
   const policyStatements = [
     ...[...sql.matchAll(/create policy\s+([a-z][a-z0-9_]*)\s+on\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)]
@@ -191,6 +208,7 @@ for (const file of files) {
     if (statement.action==='drop' && statement.name.toLowerCase()==='appscope') removedDefaultPolicies.add(statement.table);
     if (statement.action==='drop' && statement.name.toLowerCase()==='jobscope') removedJobPolicies.add(statement.table);
   }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -237,6 +255,8 @@ for (const file of files) {
           && item.privilege===privilege && item.target.startsWith(`${schema}.`)) remove(item.id,'grant');
       }
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   for (const match of sql.matchAll(/grant\s+([a-z,\s]+?)\s+on\s+(schema|function)?\s*([\s\S]*?)\s+to\s+([a-z0-9_,\s]+);/gi)) {
     const privileges = match[1].split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
     const declaredType = (match[2] ?? 'table').toLowerCase();
@@ -246,6 +266,7 @@ for (const file of files) {
       const canonical = target.replace(/\s+/g, '').replaceAll('timestamptz','timestampwithtimezone');
       const type = declaredType === 'table' && seen.has(`view:${canonical}`) ? 'view' : declaredType;
       add(`${role}:${type}:${canonical}:${privilege}`, 'grant', file, { role, objectType: type, target: canonical, privilege });
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     }
@@ -272,6 +293,16 @@ for (const file of files) {
           && item.privilege===privilege && item.target.startsWith(`${schema}.`)) remove(item.id,'grant');
       }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    }
+  }
+  for (const match of sql.matchAll(/revoke\s+([a-z,\s]+?)\s+on\s+([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)(?:\s*,\s*[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*))*)\s+from\s+([a-z0-9_,\s]+);/gi)) {
+    const declared=match[1].split(',').map((value)=>value.trim().toLowerCase()).filter(Boolean);
+    const privileges=declared.includes('all') ? ['select','insert','update','delete'] : declared;
+    const targets=match[2].split(',').map((value)=>value.trim()); const roles=match[3].split(',').map((value)=>value.trim()).filter(Boolean);
+    for (const role of roles) for (const target of targets) for (const privilege of privileges) {
+      const id=`${role}:table:${target}:${privilege}`; revokedTableGrants.add(id); remove(id,'grant');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     }
   }
 }
@@ -292,6 +323,7 @@ for (const schema of objects.filter((item) => item.kind === 'schema')) {
 for (const table of objects.filter((item) => item.kind === 'table')) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   if (postDefaultTables.has(table.id)) continue;
   for (const role of accessRoles) for (const privilege of ['select', 'insert', 'update', 'delete']) {
     const id=`${role}:table:${table.id}:${privilege}`;
@@ -306,6 +338,10 @@ for (const table of objects.filter((item) => item.kind === 'table')) {
     const id=`${role}:table:${table.id}:${privilege}`;
     if (revokedTableGrants.has(id) || revokedSchemaTableGrants.has(`${role}:${table.id.split('.')[0]}:${privilege}`)) continue;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  for (const role of accessRoles) for (const privilege of ['select', 'insert', 'update', 'delete']) {
+    const id=`${role}:table:${table.id}:${privilege}`; if (revokedTableGrants.has(id)) continue;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     add(id, 'grant', '20260821030000_revoke_public_access.sql',
       { role, objectType: 'table', target: table.id, privilege });
   }
@@ -318,6 +354,7 @@ for (const table of objects.filter((item) => item.kind === 'table')) {
   if (!postDefaultTables.has(table.id) && !removedJobPolicies.has(table.id)) add(`${table.id}.jobscope`, 'policy', '20260821030000_revoke_public_access.sql');
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -345,5 +382,7 @@ for (const table of [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 objects.sort((left, right) => left.kind.localeCompare(right.kind) || left.id.localeCompare(right.id));
 await writeFile(join(root, 'database', 'contracts', 'objects.yml'), stringify({ version: 1, objects }, { lineWidth: 0 }), 'utf8');

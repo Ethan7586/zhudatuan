@@ -5,6 +5,7 @@
 ## 正式選用來源
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 | 目標                                                     | 來源                                                           | 選用原因                                                                                  |
 | -------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `apps/storefront-web`                                    | `../archives/smart-wing/apps/storefront-web`                   | 使用者確認的消費 Web、Laptop 與 Desktop 1920 VI／UI／UE                                   |
@@ -33,6 +34,8 @@
 
 築大團部署只能讀取 `infrastructure/zhudatuan/aliyun/`。Console 的 `/design-references/*` 與 `/demo/*` 在正式後臺域返回 404，只能由 `labs.zhudatuan.com` 讀取；這保留 Owner 指定的三套原始設計參考，同時不把它們當正式後臺頁面。
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 | 目標 | 來源 | 選用原因 |
 | --- | --- | --- |
 | `apps/storefront-web` | `/Users/Ethan/Desktop/Projects/zhudatuan/archives/smart-wing/apps/storefront-web` | 使用者確認的消費 Web、Laptop 與 Desktop 1920 VI／UI／UE |
@@ -43,6 +46,9 @@
 | `docs/decisions/zhudatuan.md`、`每日問答.md` | 築大團根目錄同名決策文件 | 保存本輪產品邊界、MVP 問答與後續交接記憶 |
 
 所有來源均按 2026-08-27 當時的工作樹實體檔案複製，包含已確認但尚未提交的 UI 改動；沒有從 Git HEAD 重新還原。
+<<<<<<< HEAD
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 ## 為何沒有直接使用 21 號 API 覆蓋新版 Console

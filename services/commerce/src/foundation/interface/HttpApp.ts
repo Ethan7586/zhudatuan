@@ -34,16 +34,22 @@ export class HttpApp {
       observedOperation = operation.id;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       assertCsrf(request, origin, operation.id);
       const version = request.headers.get('x-contract-version');
       if (!route.operation.startsWith('runtime.health.') && operation.audience !== 'provider' && version !== CONTRACT_VERSION) {
         return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: 'CONTRACT_VERSION_UNSUPPORTED', requestId,
           required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
       }
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const payload = await parseBody(request);
       deadline.throwIfExpired();
       const headers = Object.freeze(Object.fromEntries(request.headers.entries()));
@@ -106,10 +112,13 @@ function preflight(request: Request, requestId: string, origin: string | null): 
   return secure(204, undefined, requestId, origin, { 'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-contract-version,x-csrf-token,x-device-id,x-request-id,x-trace-id,x-client-version,x-scope-hint',
     'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
 }
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-contract-version,x-csrf-token,x-request-id,x-trace-id,x-client-version,x-scope-hint',
     'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
 }
@@ -128,9 +137,12 @@ function cookieValue(cookie: string, name: string): string | null {
   for (const item of cookie.split(';')) { const [key, ...rest] = item.trim().split('='); if (key === name) return decodeURIComponent(rest.join('=')); }
   return null;
 }
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-contract-version,x-csrf-token,x-device-id,x-request-id,x-trace-id,x-client-version,x-scope-hint',
     'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

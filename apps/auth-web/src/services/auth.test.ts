@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import {
   acceptInvitation,
   buildCredentialLoginAction,
@@ -12,6 +13,9 @@ import {
 =======
 import { loginWithPassword, TEST_ACCOUNT_MEMBERSHIPS, verifyStepUp } from './auth';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { loginWithPassword, TEST_ACCOUNT_MEMBERSHIPS, verifyStepUp } from './auth';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 afterEach(() => {
   vi.useRealTimers();
@@ -19,6 +23,7 @@ afterEach(() => {
 });
 
 describe('public test authentication fixtures', () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
   it('proxies local auth requests to the compatibility BFF rather than canonical API', () => {
     const viteConfig = readFileSync(new URL('../../vite.config.ts', import.meta.url), 'utf8');
@@ -76,6 +81,8 @@ describe('public test authentication fixtures', () => {
 
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('contains all 25 requested accounts with one active membership each', () => {
     const usernames = ['buyer', 'seller', 'ops', 'cs', 'admin'].flatMap((prefix) => Array.from({ length: 5 }, (_, index) => `${prefix}${String(index + 1).padStart(3, '0')}`));
 
@@ -87,6 +94,7 @@ describe('public test authentication fixtures', () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   it('fails closed for unfinished invitation and step-up services', async () => {
@@ -96,6 +104,8 @@ describe('public test authentication fixtures', () => {
 
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('accepts a roster account and rejects former universal passwords', async () => {
     const fetchMock = vi
       .fn()
@@ -120,7 +130,10 @@ describe('public test authentication fixtures', () => {
     await vi.runAllTimersAsync();
     await expect(accepted).resolves.toMatchObject({ targetDomain: 'smart.hbbtzn.com' });
   });
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

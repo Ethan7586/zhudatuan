@@ -3,6 +3,7 @@ import { applyWechatPayRefund, closeWechatPayTransaction, createJsapiPrepay, cre
   type WechatPayClientOptions, type WechatPayConfigSource } from '@shop/wechatpayment';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { providerOccurredAt, type PaymentGateway, type PrepayInput, type ProviderReceiptEvidence } from '../../application/port/PaymentGateway';
 =======
 import type { PaymentGateway, PrepayInput } from '../../application/port/PaymentGateway';
@@ -10,6 +11,9 @@ import type { PaymentGateway, PrepayInput } from '../../application/port/Payment
 =======
 import { providerOccurredAt, type PaymentGateway, type PrepayInput, type ProviderReceiptEvidence } from '../../application/port/PaymentGateway';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import type { PaymentGateway, PrepayInput } from '../../application/port/PaymentGateway';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { Executor } from '../../../../foundation/performance/Executor';
 import { createHash } from 'node:crypto';
 import { WechatApplicationCatalog, type WechatScene } from '@shop/config/server';
@@ -46,6 +50,7 @@ export class WechatGateway implements PaymentGateway {
     let transaction;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     let providerRequestId: string | null = null;
     try {
       ({ transaction, providerRequestId } = await this.execute((options) => queryWechatPayTransaction(this.configuration, application.appId, orderNumber, options), 'read'));
@@ -68,12 +73,20 @@ export class WechatGateway implements PaymentGateway {
         return Object.freeze({ state: 'absent' as const, amountMinor: 0,
           evidence: receipt('wechat.transaction.query', cause.providerRequestId, { outTradeNo: orderNumber, tradeState: 'NOT_EXIST' }) });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    try {
+      ({ transaction } = await this.execute((options) => queryWechatPayTransaction(this.configuration, application.appId, orderNumber, options), 'read'));
+    } catch (cause) {
+      if (cause instanceof WechatPayProtocolError && cause.code === 'WECHAT_PAY_PROVIDER_ORDER_NOT_EXIST') {
+        return Object.freeze({ state: 'absent' as const, amountMinor: 0 });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       }
       throw cause;
     }
     const state = transaction.tradeState === 'SUCCESS' ? 'succeeded' : transaction.tradeState === 'REFUND' ? 'refunded'
       : transaction.tradeState === 'CLOSED' || transaction.tradeState === 'REVOKED' ? 'closed'
         : transaction.tradeState === 'PAYERROR' ? 'failed' : 'pending';
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -90,6 +103,9 @@ export class WechatGateway implements PaymentGateway {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    return Object.freeze({ state, ...(transaction.transactionId ? { transaction: transaction.transactionId } : {}), amountMinor: transaction.amount.total });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 
   async close(orderNumber: string, context: Readonly<{ scene: WechatScene; applicationHash: string }>): Promise<void> {
@@ -99,6 +115,7 @@ export class WechatGateway implements PaymentGateway {
 
   async refund(input: Readonly<{ refundNumber: string; transaction: string; refundMinor: number; totalMinor: number; reason: string }>) {
     let refund;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     let providerRequestId: string | null = null;
@@ -142,6 +159,21 @@ export class WechatGateway implements PaymentGateway {
     const { refund, providerRequestId } = await this.execute((options) => queryWechatPayRefund(this.configuration, refundNumber, options), 'read');
     return refundObservation('wechat.refund.query', providerRequestId, refund);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    try {
+      ({ refund } = await this.execute((options) => applyWechatPayRefund(this.configuration, { outRefundNo: input.refundNumber,
+        transactionId: input.transaction, refundCents: input.refundMinor, totalCents: input.totalMinor, reason: input.reason }, options), 'none'));
+    } catch (cause) {
+      if (!(cause instanceof WechatPayProtocolError) || !cause.retryable) throw cause;
+      ({ refund } = await this.execute((options) => queryWechatPayRefund(this.configuration, input.refundNumber, options), 'read'));
+    }
+    return Object.freeze({ state: refund.status === 'SUCCESS' ? 'succeeded' : refund.status === 'PROCESSING' ? 'processing' : 'failed', reference: refund.refundId });
+  }
+
+  async queryRefund(refundNumber: string) {
+    const { refund } = await this.execute((options) => queryWechatPayRefund(this.configuration, refundNumber, options), 'read');
+    return Object.freeze({ state: refund.status === 'SUCCESS' ? 'succeeded' : refund.status === 'PROCESSING' ? 'processing' : 'failed', reference: refund.refundId });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 
   async verifyNotification(headers: Readonly<Record<string, string>>, body: string) {
@@ -155,6 +187,7 @@ export class WechatGateway implements PaymentGateway {
         payerHash: event.payerOpenidHash, application: Object.freeze({ scene: application.scene, applicationHash: digest(application.appId) }),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         occurredAt: providerOccurredAt(event.transaction.successTime), evidence: event.summary });
 =======
         occurredAt: event.transaction.successTime!, evidence: event.summary });
@@ -162,10 +195,14 @@ export class WechatGateway implements PaymentGateway {
 =======
         occurredAt: providerOccurredAt(event.transaction.successTime), evidence: event.summary });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        occurredAt: event.transaction.successTime!, evidence: event.summary });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     }
     const event = await verifyAndDecryptWechatRefundNotification(this.configuration, { headers: normalized, body });
     return Object.freeze({ kind: 'refund' as const, id: event.notificationId, providerReference: event.refund.outRefundNo,
       transaction: event.refund.transactionId, amountMinor: event.refund.amount.refund, totalMinor: event.refund.amount.total,
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       state: event.refund.status === 'SUCCESS' ? 'succeeded' as const : 'failed' as const,
@@ -177,6 +214,9 @@ export class WechatGateway implements PaymentGateway {
       state: event.refund.status === 'SUCCESS' ? 'succeeded' as const : 'failed' as const,
       occurredAt: providerOccurredAt(event.refund.successTime ?? event.createTime),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      state: event.refund.status === 'SUCCESS' ? 'succeeded' as const : 'failed' as const, occurredAt: event.refund.successTime ?? event.createTime,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       evidence: event.summary });
   }
 
@@ -194,6 +234,7 @@ export class WechatGateway implements PaymentGateway {
 }
 
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -220,3 +261,5 @@ function refundObservation(source: string, providerRequestId: string | null, ref
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

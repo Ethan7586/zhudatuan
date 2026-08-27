@@ -30,16 +30,20 @@ describe('contract truth', () => {
       'order.aftersales.read', 'order.aftersales.apply', 'benefit.accounts.read', 'voucher.bindings.read', 'voucher.redemptions.read',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       'support.cases.create', 'payment.intents.create', 'catalog.listings.read', 'pricing.offers.read',
       'inventory.availability.read',
     ] as const;
     expect(employeeOperations.map((id) => OperationCatalog.get(id).audience)).toEqual(employeeOperations.map(() => 'member'));
     expect(OperationCatalog.get('invoice.requests.create').audience).toBe('operator');
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       'invoice.requests.create', 'support.cases.create', 'payment.intents.create', 'catalog.listings.read', 'pricing.offers.read',
       'inventory.availability.read',
     ] as const;
     expect(employeeOperations.map((id) => OperationCatalog.get(id).audience)).toEqual(employeeOperations.map(() => 'member'));
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       'support.cases.create', 'payment.intents.create', 'catalog.listings.read', 'pricing.offers.read',
@@ -48,6 +52,8 @@ describe('contract truth', () => {
     expect(employeeOperations.map((id) => OperationCatalog.get(id).audience)).toEqual(employeeOperations.map(() => 'member'));
     expect(OperationCatalog.get('invoice.requests.create').audience).toBe('operator');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(OperationCatalog.all().filter((operation) => operation.audience === 'member').length).toBeGreaterThanOrEqual(35);
   });
 

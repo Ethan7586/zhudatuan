@@ -4,12 +4,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { navigationAccessRequirements } from '../route/NavigationAccess';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { navigationAccessRequirements } from '../route/NavigationAccess';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { professionalRoutes } from '../route/ProfessionalRouteCatalog';
 import { workstations } from '../shell/Workstation';
 import { Sidebar } from './Sidebar';
@@ -41,6 +44,7 @@ describe('Sidebar commerce navigation', () => {
     const target = screen.getByRole('button', { name: expected });
     expect(target.getAttribute('title')).toBe(expected);
   });
+<<<<<<< HEAD
 <<<<<<< HEAD
 
   it('opens the referral workspace independently from B2B channels', async () => {
@@ -162,11 +166,16 @@ function renderSidebar(
       onNavigate={onNavigate} onToggle={vi.fn()} />
   </div>);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 
 function renderSidebar(kind: ConsoleScope['kind'], collapsed: boolean, onNavigate: (suffix: string) => void) {
   return render(<Sidebar active="applications" collapsed={collapsed} displayName="商城管理员" roleLabel="当前范围"
     scopeKind={kind} professionalRoutes={professionalRoutes} workstations={workstations}
     onNavigate={onNavigate} onToggle={vi.fn()} />);
+<<<<<<< HEAD
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

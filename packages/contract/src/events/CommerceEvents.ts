@@ -8,6 +8,7 @@ export const COMMERCE_EVENTS = Object.freeze([
   eventContract({"type":"identity.member.registered","version":1,"module":"identity"}),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   eventContract({"type":"identity.member.reset","version":1,"module":"identity"}),
@@ -22,6 +23,9 @@ export const COMMERCE_EVENTS = Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  eventContract({"type":"access.version.changed","version":1,"module":"access"}),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   eventContract({"type":"catalog.listing.published","version":1,"module":"catalog"}),
   eventContract({"type":"inventory.stock.changed","version":1,"module":"inventory"}),
   eventContract({"type":"inventory.stock.reserved","version":1,"module":"inventory"}),
@@ -32,12 +36,15 @@ export const COMMERCE_EVENTS = Object.freeze([
   eventContract({"type":"order.paid","version":1,"module":"order"}),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   eventContract({"type":"order.received","version":1,"module":"order"}),
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   eventContract({"type":"order.received","version":1,"module":"order"}),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   eventContract({"type":"order.cancelled","version":1,"module":"order"}),
   eventContract({"type":"payment.succeeded","version":1,"module":"payment"}),
   eventContract({"type":"payment.refunded","version":1,"module":"payment"}),

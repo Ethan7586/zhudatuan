@@ -10,6 +10,7 @@ export const ACCESS_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "access.scopes.manage",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   "access.ownership.read",
@@ -24,12 +25,15 @@ export const ACCESS_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 ] as const satisfies readonly OperationId[]);
 
 export interface AccessOperations {
   readonly centerRead: OperationMethod<"access.center.read">;
   readonly rolesManage: OperationMethod<"access.roles.manage">;
   readonly scopesManage: OperationMethod<"access.scopes.manage">;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -46,6 +50,8 @@ export interface AccessOperations {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export function createFetchAccess(baseUrl: string): AccessOperations {
@@ -57,6 +63,7 @@ export function createAccessOperations(client: OperationExecutor): AccessOperati
     centerRead: bindCenterRead(client),
     rolesManage: bindRolesManage(client),
     scopesManage: bindScopesManage(client),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -73,6 +80,8 @@ export function createAccessOperations(client: OperationExecutor): AccessOperati
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 }
 
@@ -99,6 +108,7 @@ export function createFetchAccessScopesManage(baseUrl: string): OperationMethod<
 function bindScopesManage(client: OperationExecutor): OperationMethod<"access.scopes.manage"> {
   return bindOperation(client, defineStructuralOperation({"id":"access.scopes.manage","method":"PUT","path":"/api/v1/access/memberships/{membershipid}/scopes","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -164,3 +174,5 @@ function bindOwnershipTransfersCancelPreview(client: OperationExecutor): Operati
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -6,6 +6,7 @@ describe('cakeuncle authentication contract', () => {
     expect(() => createCakeuncleAuth({})).toThrow();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     expect(() => createCakeuncleAuth({ channelNo: 'channel' })).toThrow('CAKEUNCLE_CHANNEL_KEY_MISSING');
@@ -20,5 +21,7 @@ describe('cakeuncle authentication contract', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 });

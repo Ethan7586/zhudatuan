@@ -3,15 +3,19 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { HttpResponse, delay, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { HttpResponse, delay, http } from 'msw';
@@ -19,6 +23,8 @@ import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './FinanceRoute';
@@ -26,12 +32,15 @@ import { Component } from './FinanceRoute';
 const requests: URL[] = [];
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const authorityRequests: URL[] = [];
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 const authorityRequests: URL[] = [];
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const writes: string[] = [];
 const server = setupServer(
   http.get('*/api/v1/finance/overview', () => HttpResponse.json(previewOverview())),
@@ -39,6 +48,7 @@ const server = setupServer(
     requests.push(new URL(request.url));
     return HttpResponse.json(previewPage());
   }),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -56,6 +66,8 @@ const server = setupServer(
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   http.all('*/api/v1/finance/**', ({ request }) => {
     writes.push(request.method);
     return HttpResponse.json({ code: 'UNEXPECTED_FINANCE_WRITE' }, { status: 500 });
@@ -65,6 +77,7 @@ const server = setupServer(
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   cleanup();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -80,11 +93,16 @@ afterEach(() => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  server.resetHandlers();
+  requests.length = 0;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   writes.length = 0;
 });
 afterAll(() => server.close());
 
 describe('Finance reconciliation workspace', () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -125,6 +143,8 @@ describe('Finance reconciliation workspace', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('renders the server-backed control surface and never derives the reference totals in the browser', async () => {
     renderRoute('/finance', previewContext);
     expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
@@ -136,6 +156,7 @@ describe('Finance reconciliation workspace', () => {
     expect(requests[0]?.searchParams.get('limit')).toBe('50');
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -173,6 +194,8 @@ describe('Finance reconciliation workspace', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('keeps checkbox selection separate from the URL-backed review drawer and fails every final action closed', async () => {
     const user = userEvent.setup();
     renderRoute('/finance?campaign=keep', previewContext);
@@ -203,6 +226,7 @@ describe('Finance reconciliation workspace', () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   it('keeps matched-only reconciliations non-actionable even when the server returns nested items', async () => {
@@ -226,6 +250,8 @@ describe('Finance reconciliation workspace', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('restores selected difference from the URL and applies preview filters on the server', async () => {
     const user = userEvent.setup();
     renderRoute(`/finance?selected=${encodeURIComponent(row.id)}&cursor=old&campaign=keep`, previewContext);
@@ -239,6 +265,7 @@ describe('Finance reconciliation workspace', () => {
     await waitFor(() => expect(requests.some((url) => url.searchParams.get('channel') === 'wechat')).toBe(true));
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -314,10 +341,26 @@ describe('Finance reconciliation workspace', () => {
 =======
   it('routes payment and refund tabs through the authoritative reconciliation kind filter', async () => {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  it('removes preview-only filters and hides preview metadata in production scope', async () => {
+    renderRoute('/finance?q=demo&channel=wechat&reconPeriod=2026-08-24&campaign=keep', productionContext);
+    expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
+    await waitFor(() => expect(currentParams().has('channel')).toBe(false));
+    expect(currentParams().get('campaign')).toBe('keep');
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: '搜索对账记录' }).disabled).toBe(true);
+    expect(screen.getByText('reconciliation:preview:wechat:1')).toBeTruthy();
+    expect(screen.queryByText('RCN-20260824-WECHAT-001')).toBeNull();
+    expect(screen.getByText('本页 1 笔')).toBeTruthy();
+    expect(requests.every((url) => !url.searchParams.has('q') && !url.searchParams.has('channel'))).toBe(true);
+  });
+
+  it('routes supported tabs and labels unavailable read contracts honestly', async () => {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const user = userEvent.setup();
     renderRoute('/finance', previewContext);
     await screen.findByRole('table', { name: '支付对账批次' });
     await user.click(screen.getByRole('button', { name: '退款对账' }));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     expect(await screen.findByRole('table', { name: '退款对账批次' })).toBeTruthy();
@@ -333,11 +376,17 @@ describe('Finance reconciliation workspace', () => {
     expect(currentParams().get('tab')).toBe('refunds');
     await waitFor(() => expect(requests.some((url) => url.searchParams.get('kind') === 'refund')).toBe(true));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    expect(await screen.findByRole('heading', { name: '退款对账' })).toBeTruthy();
+    expect(screen.getByText(/不会用演示数据替代生产事实/)).toBeTruthy();
+    expect(currentParams().get('tab')).toBe('refunds');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
     await user.click(screen.getByRole('button', { name: '结算单' }));
     expect(currentLocation()).toContain('/finance/settlements');
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   it('renders authoritative rules and audit records as read-only typed pages', async () => {
@@ -502,10 +551,17 @@ describe('Finance reconciliation workspace', () => {
     renderRoute('/finance', previewContext);
     await screen.findByRole('table', { name: '支付对账批次' });
 <<<<<<< HEAD
+=======
+  it('shows only non-mutating safety dialogs for preview header actions', async () => {
+    const user = userEvent.setup();
+    renderRoute('/finance', previewContext);
+    await screen.findByRole('table', { name: '支付对账批次' });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     await user.click(screen.getByRole('button', { name: '导出对账单' }));
     const exportDialog = await screen.findByRole('dialog', { name: '导出对账单 · 安全预览' });
     expect(within(exportDialog).getByText(/当前不会生成或下载正式账单/)).toBeTruthy();
     await user.click(within(exportDialog).getByRole('button', { name: '我知道了' }));
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     const paymentRequestCount = requests.length;
@@ -532,6 +588,8 @@ describe('Finance reconciliation workspace', () => {
     expect(requests).toHaveLength(refundRequestCount);
 
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     await user.click(screen.getByRole('button', { name: '发起对账' }));
     const startDialog = await screen.findByRole('dialog', { name: '发起对账 · 安全预览' });
     expect(within(startDialog).getByText(/不会创建对账批次/)).toBeTruthy();
@@ -576,12 +634,15 @@ const row = {
       id: 'DIFF-20260824-0001',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       version: 7,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       version: 7,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       externalMinor: 11_900,
       internalMinor: 0,
       differenceMinor: 11_900,
@@ -598,15 +659,19 @@ const row = {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 function previewPage(items: readonly unknown[] = [row]) {
   return {
     items,
     count: items.length,
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function previewPage() {
   return {
     items: [row],
     count: 1,
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 function previewPage(items: readonly unknown[] = [row]) {
@@ -614,6 +679,8 @@ function previewPage(items: readonly unknown[] = [row]) {
     items,
     count: items.length,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     preview: {
       source: 'local-preview',
       total: 7,
@@ -634,6 +701,7 @@ function previewPage(items: readonly unknown[] = [row]) {
   };
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -679,6 +747,8 @@ const balancedRow = {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function previewOverview() {
   return {
     items: [
@@ -704,6 +774,7 @@ function previewOverview() {
   };
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -771,6 +842,8 @@ function auditPage() {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function repairPreview() {
   return {
     source: 'local-preview',
@@ -822,6 +895,7 @@ function renderRoute(entry: string, initialContext: ConsoleContext) {
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 
@@ -859,6 +933,8 @@ function csvRowCount(csv: string): number {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function LocationProbe() {
   const location = useLocation();
   return (

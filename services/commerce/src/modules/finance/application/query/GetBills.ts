@@ -19,6 +19,7 @@ export function getBillsOperations(): OperationActions {
       const access = requireAccess(request); const page = queryPage(request);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       const result = await database.query(`select statement.*,
@@ -43,6 +44,11 @@ export function getBillsOperations(): OperationActions {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      const result = await database.query(`select * from finance.statement where scope_id in(
+          select descendant_id from organization.unitclosure where ancestor_id=$1) and state in('draft','final')
+        and ($2::date is null or (period_end,id)<($2::date,$3)) order by period_end desc,id desc limit $4`,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       [access.scope.id, page.sort, page.id, page.fetch]);
       return keysetResult(result, page, 'period_end');
     },

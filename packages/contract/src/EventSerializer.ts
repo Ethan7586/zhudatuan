@@ -8,6 +8,7 @@ export const SERIALIZED_EVENT_TYPES = Object.freeze([
   'identity.member.registered',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   'identity.member.reset',
@@ -22,6 +23,9 @@ export const SERIALIZED_EVENT_TYPES = Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  'access.version.changed',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'catalog.listing.published',
   'inventory.stock.changed',
   'inventory.stock.reserved',
@@ -32,12 +36,15 @@ export const SERIALIZED_EVENT_TYPES = Object.freeze([
   'order.paid',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   'order.received',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   'order.received',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'order.cancelled',
   'payment.succeeded',
   'payment.refunded',

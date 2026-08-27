@@ -7,12 +7,15 @@
     "build": "npm run typecheck",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "test": "node --import tsx --test src/LocalRegistrationOtp.test.ts",
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     "test": "node --import tsx --test src/LocalRegistrationOtp.test.ts",
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

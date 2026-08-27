@@ -25,6 +25,7 @@
     "local:seed": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Seed.ts",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "bootstrap:registration:test": "node --import tsx tools/seed/src/BootstrapRegistration.ts",
@@ -39,6 +40,9 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    "local:verify": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Verify.ts",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "dev:api": "npm run build:commerce && node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs services/commerce/dist/ApiMain.js",
     "dev:jobs": "npm run build:commerce && node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs services/commerce/dist/JobsMain.js",
     "dev:console": "npm run dev --workspace @shop/console",
@@ -89,6 +93,7 @@
     "check:deployment": "node scripts/check/deployment.mjs",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "check:registration-deployment": "node scripts/check/registration-deployment.mjs",
     "check:web-business-deployment": "node scripts/check/web-business-deployment.mjs",
     "check:purchase-deployment": "node scripts/check/purchase-deployment.mjs",
@@ -99,6 +104,8 @@
     "check:web-business-deployment": "node scripts/check/web-business-deployment.mjs",
     "check:purchase-deployment": "node scripts/check/purchase-deployment.mjs",
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "check:supplychain": "node scripts/check/supplychain.mjs",
     "check:bundles": "node scripts/audit/bundles.mjs",
     "check:extensions": "node scripts/audit/extensions.mjs",
@@ -118,6 +125,7 @@
     "check:regression": "node scripts/audit/regression.mjs",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "audit:architecture": "npm run check:naming && npm run check:boundaries && npm run check:ownership && npm run check:duplicates && npm run check:calls && npm run check:pagination && npm run check:transactions && npm run check:frontend && npm run check:frontendmanifest && npm run check:tests && npm run check:operations && npm run check:events && npm run check:providers && npm run check:extensions && npm run check:jobs && npm run check:navigation && npm run check:dependencies && npm run check:requirementgraph && npm run check:runtimegraph && npm run check:environment && npm run check:delivery && npm run check:registration-deployment && npm run check:web-business-deployment && npm run check:purchase-deployment && npm run check:p0 && npm run check:regression",
     "check:migration-inventory": "node scripts/audit/database-contracts.mjs --check-inventory",
     "replay:schema-fresh": "node scripts/audit/database-contracts.mjs --schema-fresh",
@@ -133,6 +141,11 @@
     "replay:schema-fresh": "node scripts/audit/database-contracts.mjs --schema-fresh",
     "replay:registration-fresh": "node scripts/audit/database-contracts.mjs --registration-fresh",
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    "audit:architecture": "npm run check:naming && npm run check:boundaries && npm run check:ownership && npm run check:duplicates && npm run check:calls && npm run check:pagination && npm run check:transactions && npm run check:frontend && npm run check:frontendmanifest && npm run check:tests && npm run check:operations && npm run check:events && npm run check:providers && npm run check:extensions && npm run check:jobs && npm run check:navigation && npm run check:dependencies && npm run check:requirementgraph && npm run check:runtimegraph && npm run check:environment && npm run check:delivery && npm run check:p0 && npm run check:regression",
+    "check:migration-inventory": "node scripts/audit/database-contracts.mjs --check-inventory",
+    "replay:schema-fresh": "node scripts/audit/database-contracts.mjs --schema-fresh",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "replay:postgres": "node scripts/audit/database-contracts.mjs --postgres-fresh",
     "test:inventory-cutover-unsafe": "node scripts/audit/database-contracts.mjs --inventory-cutover-unsafe",
     "test:environment-bootstrap": "node scripts/audit/database-contracts.mjs --environment-bootstrap",

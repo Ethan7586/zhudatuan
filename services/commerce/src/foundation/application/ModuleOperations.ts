@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { createHash, randomUUID } from 'node:crypto';
 =======
 import { createHash } from 'node:crypto';
@@ -7,6 +8,9 @@ import { createHash } from 'node:crypto';
 =======
 import { createHash, randomUUID } from 'node:crypto';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { createHash } from 'node:crypto';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { permissionDefinition } from '@shop/authz';
 import { OperationCatalog, type OperationId } from '@shop/contract';
 import { Redactor } from '@shop/telemetry';
@@ -32,6 +36,7 @@ export interface OperationLifecycle<T = unknown> {
 type OperationEntry = OperationAction | OperationLifecycle;
 export type OperationActions = Readonly<Partial<Record<OperationId, OperationEntry>>>;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -69,6 +74,8 @@ const IDENTITY_AUDIT_OUTPUT_FIELDS: Readonly<Partial<Record<OperationId, readonl
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function operationLifecycle<T>(definition: OperationLifecycle<T>): OperationLifecycle {
   return definition as OperationLifecycle;
 }
@@ -147,6 +154,7 @@ export class ModuleOperations implements OperationUsecase {
       const hash = operationRequestHash(request);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       const actor = request.access?.actor.id ?? `public:${request.type}`;
 =======
       const actor = request.access?.actor.id ?? `public:${hash.slice(0, 24)}`;
@@ -154,6 +162,9 @@ export class ModuleOperations implements OperationUsecase {
 =======
       const actor = request.access?.actor.id ?? `public:${request.type}`;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      const actor = request.access?.actor.id ?? `public:${hash.slice(0, 24)}`;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const scope = request.access?.scope.id ?? `public:${this.module}`;
       await client.query(`insert into runtime.idempotency(scope,actor_id,key,request_hash,state,expires_at)
         values($1,$2,$3,$4,'started',clock_timestamp()+interval '24 hours') on conflict do nothing`, [scope, actor, key, hash]);
@@ -175,6 +186,7 @@ export class ModuleOperations implements OperationUsecase {
       await appendOperationAudit(this.audit, client, request, this.module, result, actor, scope, hash);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       const replay = idempotencyReplayResponse(request, result);
       await client.query(`update runtime.idempotency set state='completed',response=$4::jsonb
         where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(replay)]);
@@ -187,6 +199,10 @@ export class ModuleOperations implements OperationUsecase {
       await client.query(`update runtime.idempotency set state='completed',response=$4::jsonb
         where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(replay)]);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      await client.query(`update runtime.idempotency set state='completed',response=$4::jsonb
+        where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(result)]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return result;
     });
   }
@@ -196,6 +212,7 @@ export async function appendOperationAudit(audit: AuditSink, client: OperationDa
   result: OperationResult, actor: string, scope: string, requestHashValue: string): Promise<void> {
   const body = request.input.body && typeof request.input.body === 'object' && !Array.isArray(request.input.body)
     ? request.input.body as Record<string, unknown> : {};
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const resource = Object.values(request.input.path)[0] ?? null;
@@ -293,6 +310,20 @@ function redactAuditFields(value: unknown, fields: readonly string[] | undefined
     names.has(key) ? '[REDACTED]' : redactAuditFields(item, fields),
   ]));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const reason = typeof body.reason === 'string' ? body.reason.slice(0, 500) : null;
+  const resource = Object.values(request.input.path)[0] ?? null;
+  const operation = OperationCatalog.get(request.type);
+  const auditBody = operation.module === 'observability' ? { redacted: true } : request.input.body;
+  const redactor = new Redactor();
+  const auditResult = operation.id === 'identity.invitations.create' && result.body !== null && typeof result.body === 'object' && !Array.isArray(result.body)
+    ? { ...result.body, code: '[REDACTED]' } : result.body;
+  await audit.record(client, { scope, actor, actorType:request.access?.actor.target ?? 'public', action:request.type, resourceType:module,
+    resource, before:redactor.redact({ path:request.input.path, query:request.input.query, body:auditBody, expectedVersion:request.input.expectedVersion ?? null }),
+    after:redactor.redact(auditResult ?? null), evidence:{ status:result.status, idempotency:request.input.idempotency, requestHash:requestHashValue, reason,
+      permission:operation.permission ?? null, capabilities:request.access?.capabilities ?? [] },
+    trace:request.access?.trace ?? requestHashValue });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export function rowResult<T extends QueryResultRow>(result: QueryResult<T>, status = 200): OperationResult {
@@ -322,6 +353,7 @@ export function operationRequestHash(request: OperationRequest): string {
     type: request.type,
     path: request.input.path,
     query: request.input.query,
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     body: idempotencyBody(request),
@@ -410,6 +442,14 @@ function containsActionProof(body: unknown): boolean {
 }
 
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    body: request.input.body,
+  }));
+}
+
+function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function projection(value: unknown): readonly string[] {
   if (!value || typeof value!=='object') return [];
   if (Array.isArray(value)) return value.length===0 ? [] : projection(value[0]);

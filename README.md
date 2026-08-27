@@ -2,6 +2,7 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 築大團是面向企業福利消費的多層級商城平台。`main/` 是築大團唯一的正式開發、測試、構建與部署根目錄；`../archives/` 只作歷史提詞庫與代碼找回庫，不直接構建或部署。
 
 ## 項目層級
@@ -119,12 +120,22 @@ zhudatuan（主項目與唯一正式代碼平台）
 消費 Web／統一身份中心（消費註冊與找回）→ Compatibility REST BFF → Compatibility PostgreSQL
 ```
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+`main/` 是築大團唯一的正式開發與部署根目錄。`../archives/` 只作歷史提詞庫與代碼找回庫，不直接構建或部署。
+
+## 已鎖定的兩套前端
+
+- 消費 Web：`apps/storefront-web`，來自使用者確認的 27 吋／Laptop 標準版本。
+- 營運後臺：`apps/console`，來自使用者確認的 4173 新版後臺。
+- 統一登入：`apps/auth-web`，是消費 Web 的必要運行依賴。
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 ## API 邊界
 
 目前保留兩條彼此隔離的 API 鏈路，這是為了讓兩套已確認前端先保持可運行，而不是宣稱合同已經統一：
 
 1. 核心營運鏈路：`apps/console` → `services/commerce` → `database/supabase`。
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 2. Console 身份鏈路：`apps/auth-web` → `services/commerce` 的 Canonical Identity Operations；API Host-only Session Cookie、PKCE 與一次性 Ticket 不進 URL 或 Web Storage。
@@ -136,6 +147,9 @@ zhudatuan（主項目與唯一正式代碼平台）
 2. Console 身份鏈路：`apps/auth-web` → `services/commerce` 的 Canonical Identity Operations；API Host-only Session Cookie、PKCE 與一次性 Ticket 不進 URL 或 Web Storage。
 3. 消費端相容鏈路：`apps/storefront-web`／`apps/auth-web` 的註冊、找回與消費登入 → `services/commerce-api` → `database/storefront-compatibility/supabase`。
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+2. 消費端相容鏈路：`apps/storefront-web`／`apps/auth-web` → `services/commerce-api` → `database/storefront-compatibility/supabase`。
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 兩套合同不可共用同一組 Migration：新版使用 `@shop/*` Canonical Operation；消費端目前仍使用 `@smart-wing/*` REST/RPC 合同。正式合流需要新增 Adapter/BFF 並逐項驗證，不能直接覆蓋。
 
@@ -159,6 +173,7 @@ npm run build:commerce
 npm run build:commerce-api
 ```
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 `services/commerce-api` 的完整 REST Router 目前由 `apps/storefront-web` Worker 同源嵌入，會隨 Storefront 一起構建；歷史 `adminServer.ts` 只包含 Health／AI 接口，不是完整相容 API 制品。
 
@@ -216,6 +231,18 @@ npm run build:commerce-api
 - 修改部署配置不等於獲准上線；完成預檢、版本固定、資料庫／Secret／回滾確認後，仍須 Owner 針對目標環境和版本下達正式部署批准。
 
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+## 建議域名
+
+- `www.zhudatuan.com`：消費 Web
+- `auth.zhudatuan.com`：統一登入
+- `console.zhudatuan.com`：營運後臺
+- `api.zhudatuan.com`：核心營運 API
+- `chat.zhudatuan.com`：客服系統
+
+目前的消費端相容 API 應與消費 Web 同源部署，或使用獨立的內部相容域名；在合同統一前不要直接掛到核心 `/api/v1`。
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 ## 安全規則
 
 - 只提交 `.env.example`，正式密鑰由阿里雲／Cloudflare Secret 注入。

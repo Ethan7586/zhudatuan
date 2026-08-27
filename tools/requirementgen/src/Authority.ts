@@ -9,6 +9,7 @@ export interface RequirementAuthority {
   readonly sha256: string;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly profile?: string;
   readonly sheets: Readonly<Record<string, number>>;
 }
@@ -26,11 +27,14 @@ export async function loadRequirementAuthority(root: string, authorityName = 're
   const authority = authorities.get(authorityName);
   if (!authority) throw new Error('REQUIREMENT_AUTHORITY_MISSING:' + authorityName);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly sheets: Readonly<{
     requirements: number;
     mvp: number;
     providers: number;
   }>;
+<<<<<<< HEAD
 =======
   readonly profile?: string;
   readonly sheets: Readonly<Record<string, number>>;
@@ -47,17 +51,34 @@ export interface LoadedRequirementAuthority {
 export async function loadRequirementAuthority(root: string, authorityName = 'requirements'): Promise<Readonly<LoadedRequirementAuthority>> {
   const repositoryRoot = await realpath(root);
 <<<<<<< HEAD
+=======
+}
+
+interface AuthorityDocument {
+  readonly requirements?: RequirementAuthority;
+}
+
+export async function loadRequirementAuthority(root: string): Promise<Readonly<{
+  authority: RequirementAuthority;
+  bytes: Uint8Array;
+  path: string;
+}>> {
+  const repositoryRoot = await realpath(root);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const configPath = await realpath(resolve(repositoryRoot, 'config/authorities.yml'));
   assertInsideRepository(repositoryRoot, configPath);
   const document = parse(await readFile(configPath, 'utf8')) as AuthorityDocument;
   const authority = document.requirements;
   if (!authority) throw new Error('REQUIREMENT_AUTHORITY_MISSING:' + configPath);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   const authorities = await loadRequirementAuthorities(repositoryRoot);
   const authority = authorities.get(authorityName);
   if (!authority) throw new Error('REQUIREMENT_AUTHORITY_MISSING:' + authorityName);
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   assertRepositoryRelativePath(authority.repositoryRelativePath);
 
   const candidatePath = resolve(repositoryRoot, authority.repositoryRelativePath);
@@ -66,6 +87,7 @@ export async function loadRequirementAuthority(root: string, authorityName = 're
   assertInsideRepository(repositoryRoot, path);
   const bytes = new Uint8Array(await readFile(path));
   const actualHash = createHash('sha256').update(bytes).digest('hex');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -88,16 +110,21 @@ export async function loadRequirementAuthorities(root: string): Promise<Readonly
   if (!authorities.has('requirements')) throw new Error('REQUIREMENT_AUTHORITY_MISSING:requirements');
   return authorities;
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (actualHash !== authority.sha256) {
     throw new Error('REQUIREMENT_AUTHORITY_HASH_INVALID:' + actualHash);
   }
   return Object.freeze({ authority: Object.freeze(authority), bytes, path });
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   }
   if (!authorities.has('requirements')) throw new Error('REQUIREMENT_AUTHORITY_MISSING:requirements');
   return authorities;
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function assertRepositoryRelativePath(path: unknown): asserts path is string {
@@ -112,6 +139,7 @@ function assertInsideRepository(root: string, path: string): void {
     throw new Error('REQUIREMENT_AUTHORITY_OUTSIDE_REPOSITORY:' + path);
   }
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -148,3 +176,5 @@ function stringValue(value: unknown, location: string): string {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

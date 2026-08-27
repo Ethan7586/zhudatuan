@@ -76,6 +76,7 @@ describe('Voucher governance workspace', () => {
   });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 
@@ -108,6 +109,8 @@ describe('Voucher governance workspace', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 
 let currentSearch = '';
@@ -121,6 +124,7 @@ function renderRoute(entry: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const rendered = render(
 =======
   return render(
@@ -128,6 +132,9 @@ function renderRoute(entry: string) {
 =======
   const rendered = render(
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  return render(
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
         <ConsoleContextProvider value={context}>
@@ -139,12 +146,15 @@ function renderRoute(entry: string) {
   );
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   return { ...rendered, client };
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   return { ...rendered, client };
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 const context: ConsoleContext = {

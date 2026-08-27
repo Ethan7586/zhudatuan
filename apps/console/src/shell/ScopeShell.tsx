@@ -1,11 +1,14 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { AccessDeniedActionsProvider, ContextualAccessDenied } from '@shop/design';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { AccessDeniedActionsProvider, ContextualAccessDenied } from '@shop/design';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useNavigate, useNavigation } from 'react-router';
@@ -17,12 +20,15 @@ import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { professionalRouteFromPath, professionalRoutes, scopeSuffix } from '../route/ProfessionalRouteCatalog';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { canAccessNavigationTarget } from '../route/NavigationAccess';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { canAccessNavigationTarget } from '../route/NavigationAccess';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
 import { appConfig } from '../shared/config/AppConfig';
 import { scopePath } from '../shared/url/ScopePath';
@@ -34,12 +40,15 @@ const accessProfessionalFeatures = new Set(['access', 'members']);
 const governanceProfessionalFeatures = new Set(['qualification', 'notification']);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const referralProfessionalFeatures = new Set(['referralsettings', 'referralproducts', 'referralreview', 'referralbindings', 'referralwithdrawals', 'referralpromotion']);
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 const referralProfessionalFeatures = new Set(['referralsettings', 'referralproducts', 'referralreview', 'referralbindings', 'referralwithdrawals', 'referralpromotion']);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
@@ -61,6 +70,7 @@ export function ScopeShell() {
       : professional !== undefined && financeProfessionalFeatures.has(professional.featureKey) ? 'finance'
         : professional !== undefined && accessProfessionalFeatures.has(professional.featureKey) ? 'access'
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -93,6 +103,11 @@ export function ScopeShell() {
       ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
     })),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+            : professional?.featureKey ?? workstation?.key;
+  const logout = useMutation({
+    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, { accessVersion: context.session.accessVersion })),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     onSuccess: () => {
       queryClient.clear();
       window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
@@ -102,6 +117,7 @@ export function ScopeShell() {
   useEffect(() => {
     document.title = `${routeTitle} · 智慧翼`;
     setMobileOpen(false);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     let observer: MutationObserver | undefined;
@@ -155,6 +171,14 @@ export function ScopeShell() {
       observer?.disconnect();
     };
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+    const frame = requestAnimationFrame(() => {
+      const heading = document.querySelector<HTMLElement>('.workspacebody h1');
+      heading?.setAttribute('tabindex', '-1');
+      heading?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }, [location.pathname, routeTitle]);
 
   const navigateAfterCancel = (target: string) => {
@@ -163,6 +187,7 @@ export function ScopeShell() {
   };
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -177,6 +202,9 @@ export function ScopeShell() {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    navigateAfterCancel(scopePath(context.scope, suffix));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   };
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
@@ -190,6 +218,7 @@ export function ScopeShell() {
     navigateAfterCancel(`${location.pathname}?${search.toString()}${location.hash}`);
   };
   const controlContext = workstation?.key === 'control';
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -220,11 +249,17 @@ export function ScopeShell() {
     <AccessDeniedActionsProvider actions={accessDeniedActions}>
       <ConsoleContextProvider value={context}>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+
+  return (
+    <ConsoleContextProvider value={context}>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       <div className="consolelayout" data-visual-theme="admin-web-v1" data-route={activeRoute}
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
         <Sidebar active={activeRoute} collapsed={collapsed} professionalRoutes={professionalRoutes}
           displayName={context.profile.display_name} roleLabel={scopeLabel}
           scopeKind={context.scope.kind}
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           permissions={context.session.permissions} capabilities={context.session.capabilities}
@@ -233,6 +268,8 @@ export function ScopeShell() {
 =======
           permissions={context.session.permissions} capabilities={context.session.capabilities}
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           workstations={workstations} onNavigate={openRoute}
           onToggle={() => setCollapsed((value) => !value)} />
         <button className="mobilebackdrop" type="button" onClick={() => setMobileOpen(false)} aria-label="关闭主导航" />
@@ -268,6 +305,7 @@ export function ScopeShell() {
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             {routeAvailable ? <Outlet /> : <ContextualAccessDenied resourceLabel={routeTitle} />}
 =======
             <Outlet />
@@ -275,6 +313,9 @@ export function ScopeShell() {
 =======
             {routeAvailable ? <Outlet /> : <ContextualAccessDenied resourceLabel={routeTitle} />}
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+            <Outlet />
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           </main>
           <footer className="consolefooter">
             <span>© 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
@@ -283,6 +324,7 @@ export function ScopeShell() {
           </footer>
         </div>
       </div>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       </ConsoleContextProvider>
@@ -294,6 +336,9 @@ export function ScopeShell() {
       </ConsoleContextProvider>
     </AccessDeniedActionsProvider>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    </ConsoleContextProvider>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   );
 }
 

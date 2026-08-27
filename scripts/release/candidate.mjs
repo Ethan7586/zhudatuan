@@ -19,6 +19,7 @@ if (!ociSource || !existsSync(ociSource) || !sbomSource || !existsSync(sbomSourc
 const sources = Object.freeze({
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   auth: 'apps/auth-web/dist',
   console: 'apps/console/dist',
   miniapp: 'apps/miniapp/miniprogram',
@@ -27,12 +28,15 @@ const sources = Object.freeze({
   storefront: 'apps/storefront-web/dist',
   supplier: 'apps/console/dist',
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   auth: 'apps/auth/dist',
   console: 'apps/console/dist',
   miniapp: 'apps/miniapp/miniprogram',
   store: 'apps/store/dist',
   storefront: 'apps/storefront/dist',
   supplier: 'apps/supplier/dist',
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   auth: 'apps/auth-web/dist',
@@ -43,6 +47,8 @@ const sources = Object.freeze({
   storefront: 'apps/storefront-web/dist',
   supplier: 'apps/console/dist',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 mkdirSync(join(output, 'clients'), { recursive: true });
 cpSync(ociSource, join(output, 'commerce.oci.tar'), { errorOnExist: true });
@@ -58,16 +64,22 @@ for (const [client, source] of Object.entries(sources)) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const contractHash = hash(Buffer.concat([readFileSync(join(root, 'packages/contract/openapi.json')), readFileSync(join(root, 'packages/contract/events.json'))]));
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const contractHash = hash(Buffer.concat([
   readFileSync(join(root, 'packages/contract/openapi.json')),
   readFileSync(join(root, 'packages/contract/events.json')),
 ]));
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 const contractHash = hash(Buffer.concat([readFileSync(join(root, 'packages/contract/openapi.json')), readFileSync(join(root, 'packages/contract/events.json'))]));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const candidate = Object.freeze({
   schema: 'shop.candidate.v1',
   commit,

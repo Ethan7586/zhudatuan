@@ -6,6 +6,7 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { Membership } from '../types';
@@ -50,6 +51,8 @@ export function requiresAuthoritativeMembershipSelection(memberships: Membership
   return memberships.filter((membership) => membership.status === 'active' || membership.status === 'invited').length > 1;
 }
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { Membership, PreAuthContext, StepUpVerifyResult, LockoutState } from '../types';
 
 // 内存中维护的登录失败记录（模拟服务端 Redis / DB 锁定策略）
@@ -65,6 +68,9 @@ const stepUpFailureMap: Record<string, FailureRecord> = {};
 const auditLogs: Array<{ timestamp: string; identifier: string; reason: string }> = [];
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 // 模拟不同场景的预设会员关系数据集
 const MOCK_MEMBERSHIPS_MAP: Record<string, Membership[]> = {
   // 13800138000: 综合多身份账号（混合员工与管理身份）
@@ -198,10 +204,14 @@ const MOCK_MEMBERSHIPS_MAP: Record<string, Membership[]> = {
   // 13500135000: 无任何有效企业福利计划
   '13500135000': [],
 };
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 /** Public-test fixtures mirror the real Membership IDs seeded in Supabase. */
 export const TEST_ACCOUNT_MEMBERSHIPS: Record<string, Membership[]> = {
   业主测试员: [
@@ -319,7 +329,10 @@ if (import.meta.env.DEV) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 /**
  * 获取账号当前锁定状态
  */
@@ -460,9 +473,12 @@ export async function loginWithPassword(identifier: string, password: string): P
   };
 }
 
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export async function changeInitialPassword(username: string, password: string, newPassword: string): Promise<void> {
   const response = await fetch('/api/v1/auth/password/initial-change', {
     method: 'POST',

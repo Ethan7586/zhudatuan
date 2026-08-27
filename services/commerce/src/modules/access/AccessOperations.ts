@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { createHash, randomUUID } from 'node:crypto';
 import { checkScope, SCOPE_KINDS, type Scope } from '@shop/authz';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
@@ -40,6 +41,18 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
   const proofs = new OwnerActionProof(context.container.get(IDENTITY_SECURITY_KEYS).session);
   return new ModuleOperations('access', pool, context.container.get(AUDIT_SINK), {
 <<<<<<< HEAD
+=======
+import { randomUUID } from 'node:crypto';
+import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../foundation/application/AuditSink';
+import { ModuleOperations, requireAccess, rowResult } from '../../foundation/application/ModuleOperations';
+import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation/interface/Validation';
+import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+
+export function accessOperations(context: ModuleContext): ModuleOperations {
+  const pool = context.container.get(DATABASE_POOL);
+  return new ModuleOperations('access', pool, context.container.get(AUDIT_SINK), {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'access.center.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request, 500);
@@ -52,10 +65,13 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
         group by membership.id order by membership.id limit $3`, [access.scope.id, page.id, page.fetch]);
       return keysetResult(result, page, 'id');
     },
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     ...accessOperatorReadActions(),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'access.roles.manage': async (request, database) => {
       const access = requireAccess(request);
       const body = bodyRecord(request);
@@ -66,6 +82,7 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
           insert into access.role(id,scope_id,name,status,version) values($1,$2,$3,'active',0)
           on conflict(id) do update set name=excluded.name,status='active',version=access.role.version+1
           where access.role.scope_id=$2 and ($5::bigint is null or access.role.version=$5) returning *
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -88,6 +105,11 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
           select ready.id,permission.id,'allow' from ready cross join access.permission permission
           where permission.code=any($4::text[]) returning role_id
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        ), removed as (delete from access.rolepermission where role_id=$1), added as (
+          insert into access.rolepermission(role_id,permission_id,effect)
+          select $1,permission.id,'allow' from access.permission permission where permission.code=any($4::text[]) returning role_id
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ) select * from target`, [role, access.scope.id, textField(body, 'name'), permissions, request.input.expectedVersion ?? null]);
       if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
       return rowResult(result);
@@ -98,6 +120,7 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const membership = request.input.path.membershipid!;
       const kind = textField(body, 'kind');
       const scope = textField(body, 'scope');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -119,19 +142,25 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
         || !scopesAreRelated(targetScope, targetMembershipScope)) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const effect = body.effect === 'deny' ? 'deny' : 'allow';
       const contained = await database.query(`select 1 from access.scopegrant grant where grant.membership_id=$1 and grant.effect='allow'
         and grant.scope_id=$2 and grant.scope_kind=$3 and grant.effective_at<=clock_timestamp()
         and (grant.expires_at is null or grant.expires_at>clock_timestamp())`, [access.membership.id, scope, kind]);
       if (!contained.rows[0]) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await database.query(`with changed as (
           insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,expires_at,access_version)
           values($1,$2,$3,$4,$5,$6,clock_timestamp(),$7,(select access_version+1 from access.membership where id=$2))
           on conflict(membership_id,scope_kind,scope_id,effect,effective_at) do nothing returning *
         ), raised as (update access.membership set access_version=access_version+1 where id=$2 returning access_version)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         select changed.*,raised.access_version from changed cross join raised`, [`scope:${randomUUID()}`, membership, targetScope.kind,
@@ -450,3 +479,10 @@ async function publishOwnerEvent(database: OperationDatabase, type: string, aggr
   [`event:${randomUUID()}`, type, aggregate, JSON.stringify(payload), trace]);
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        select changed.*,raised.access_version from changed cross join raised`, [`scope:${randomUUID()}`, membership, kind, scope, `${access.scope.id}/${scope}`, effect, body.expiresAt ?? null]);
+      return rowResult(result, 200);
+    },
+  });
+}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

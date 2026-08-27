@@ -17,6 +17,7 @@ export class PgAuthTicket {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   async consume(
@@ -55,6 +56,13 @@ export class PgAuthTicket {
         from identity.authticket ticket join identity.session session on session.id=ticket.session_id
         where ticket.token_hash=$1 and ticket.state_hash=$2 and ticket.nonce_hash=$3 and ticket.pkce_challenge=$4
 <<<<<<< HEAD
+=======
+  async consume(database: OperationDatabase, value: unknown, sessionToken: string): Promise<SignedReturnTarget> {
+    const exchange = AuthTransaction.complete(value);
+    const result = await database.query<{ target: AuthTarget }>(`with accepted as (
+        select ticket.id,ticket.target from identity.authticket ticket join identity.session session on session.id=ticket.session_id
+        where ticket.token_hash=$1 and ticket.state_hash=$2 and ticket.nonce_hash=$3 and ticket.pkce_challenge=$4
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           and session.token_hash=$5 and ticket.consumed_at is null and ticket.expires_at>clock_timestamp()
           and session.revoked_at is null and session.expires_at>clock_timestamp() for update of ticket
       ) update identity.authticket ticket set consumed_at=clock_timestamp() from accepted where ticket.id=accepted.id returning accepted.target`,
@@ -62,6 +70,7 @@ export class PgAuthTicket {
     const target = result.rows[0]?.target;
     if (!target) throw new Error('AUTH_TICKET_EXCHANGE_REJECTED');
     return this.signer.issue(target);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
           and session.token_hash=$5
@@ -79,6 +88,8 @@ export class PgAuthTicket {
     if (!accepted) throw new Error('AUTH_TICKET_EXCHANGE_REJECTED');
     return Object.freeze({ returnTarget: this.signer.issue(accepted.target), sessionExpiresAt: accepted.expires_at });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }
 

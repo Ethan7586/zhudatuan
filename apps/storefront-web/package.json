@@ -16,6 +16,7 @@
   "dependencies": {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "@shop/sdk": "1.0.0",
@@ -29,6 +30,10 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    "@smart-wing/api-contract": "1.0.0",
+    "@smart-wing/design-system": "1.0.0",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "next": "16.3.1",

@@ -18,6 +18,7 @@ const server = setupServer(
     return HttpResponse.json({ code: 'UNEXPECTED_APPLICATION_WRITE' }, { status: 500 });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   })
 );
 
@@ -29,11 +30,14 @@ afterEach(() => {
   currentSearch = '';
 });
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => { cleanup(); server.resetHandlers(); writes.length = 0; currentSearch = ''; });
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   })
@@ -47,6 +51,8 @@ afterEach(() => {
   currentSearch = '';
 });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 afterAll(() => server.close());
 
 describe('Commerce application workspace', () => {
@@ -63,6 +69,7 @@ describe('Commerce application workspace', () => {
     expect(writes).toHaveLength(0);
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -93,6 +100,8 @@ describe('Commerce application workspace', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('shows the enterprise six-step bootstrap as a safe non-mutating preview', async () => {
     const user = userEvent.setup();
     renderRoute('/applications', scope('enterprise', 'enterprise:hongtai', '鸿泰集团'));
@@ -107,6 +116,7 @@ describe('Commerce application workspace', () => {
     expect(writes).toHaveLength(0);
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -320,6 +330,8 @@ describe('Commerce application workspace', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('keeps the three official solutions stable and maps the old preview aliases', () => {
     expect(commerceSolutions.map(({ id, name, path }) => ({ id, name, path }))).toEqual([
       { id: 'jingxu', name: '築店 · 静序', path: '/design-references/admin/first-design/index.html?screen=editor' },
@@ -419,6 +431,7 @@ describe('Commerce application workspace', () => {
 let currentSearch = '';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 let currentLocationKey = '';
 
 function LocationProbe() {
@@ -438,12 +451,18 @@ function LocationProbe() {
   currentSearch = location.search;
   currentLocationKey = location.key;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+
+function LocationProbe() {
+  currentSearch = useLocation().search;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return null;
 }
 
 function renderRoute(entry: string, activeScope: ConsoleScope) {
   const context = contextFor(activeScope);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -467,6 +486,11 @@ function renderRoute(entry: string, activeScope: ConsoleScope) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  return render(<MemoryRouter initialEntries={[entry]}><QueryClientProvider client={client}>
+    <ConsoleContextProvider value={context}><LocationProbe /><Component /></ConsoleContextProvider>
+  </QueryClientProvider></MemoryRouter>);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function scope(kind: ConsoleScope['kind'], id: string, name: string): ConsoleScope {
@@ -476,6 +500,7 @@ function scope(kind: ConsoleScope['kind'], id: string, name: string): ConsoleSco
 function contextFor(activeScope: ConsoleScope): ConsoleContext {
   return {
     session: {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -499,6 +524,11 @@ function contextFor(activeScope: ConsoleScope): ConsoleContext {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      actor: 'actor:commerce', membership: 'membership:commerce', accessVersion: 11,
+      permissions: ['experience.application.read'], capabilities: ['experience.applications.read'], target: 'console',
+      scope: activeScope, scopes: [activeScope], assurance: { level: 2 }, syncedAt: '2026-08-27T05:00:00.000Z',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     },
     profile: { display_name: '商城运营', employee_no: null },
     scope: activeScope,
@@ -508,6 +538,7 @@ function contextFor(activeScope: ConsoleScope): ConsoleContext {
 
 const applications = {
   items: [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -579,6 +610,8 @@ const copiedApplication = {
   updated_at: '2026-08-31T08:10:00.000Z',
 };
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     { id: 'application:benefits', code: 'BENEFITS', public_slug: 'benefits', name: '鸿泰惠民通', status: 'active', version: 12,
       head_sequence: 8, head_validation_state: 'valid', published_sequence: 8, domain: 'benefits.example.cn',
       mall_id: 'mall:benefits', pool_id: 'pool:benefits', updated_at: '2026-08-27T04:00:00.000Z' },
@@ -588,6 +621,7 @@ const copiedApplication = {
   ],
   count: 2,
 };
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ],
@@ -626,3 +660,5 @@ const copiedApplication = {
   updated_at: '2026-08-31T08:10:00.000Z',
 };
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

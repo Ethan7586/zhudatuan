@@ -5,15 +5,19 @@ import { HttpApp } from './HttpApp';
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 function routes(operation = 'identity.sessions.create'): RouteRegistry {
   return {
     match: () => ({
       operation,
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function routes(): RouteRegistry {
   return {
     match: () => ({
       operation: 'identity.sessions.create',
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 function routes(operation = 'identity.sessions.create'): RouteRegistry {
@@ -21,12 +25,15 @@ function routes(operation = 'identity.sessions.create'): RouteRegistry {
     match: () => ({
       operation,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       parameters: {},
       handler: async () => ({ status: 200, body: { accepted: true } }),
     }),
   } as unknown as RouteRegistry;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 describe('HttpApp request dispatch', () => {
@@ -60,6 +67,18 @@ describe('HttpApp request dispatch', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ accepted: true });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+describe('HttpApp contract handshake', () => {
+  it('returns upgrade required before invoking a route with a missing contract version', async () => {
+    const response = await new HttpApp(routes(), []).handle(new Request('https://api.example/api/v1/identity/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    }));
+    expect(response.status).toBe(426);
+    expect(response.headers.get('x-contract-version')).toBe(CONTRACT_VERSION);
+    expect(await response.json()).toMatchObject({ code: 'CONTRACT_VERSION_UNSUPPORTED', required: CONTRACT_VERSION });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 
   it('allows the exact generated contract version', async () => {
@@ -73,6 +92,7 @@ describe('HttpApp request dispatch', () => {
     expect(response.headers.get('access-control-allow-credentials')).toBe('true');
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -120,10 +140,13 @@ describe('HttpApp request dispatch', () => {
     const response = await new HttpApp(slow, ['https://shop.example'], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://shop.example', 'x-contract-version': CONTRACT_VERSION }, body: '{}',
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('ends a request when its total deadline is exhausted', async () => {
     const slow = { match: () => ({ operation: 'identity.sessions.create', parameters: {}, handler: async () => new Promise(() => undefined) }) } as unknown as RouteRegistry;
     const response = await new HttpApp(slow, [], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST', headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION }, body: '{}',
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   it('ends a request when its total deadline is exhausted', async () => {
@@ -131,6 +154,8 @@ describe('HttpApp request dispatch', () => {
     const response = await new HttpApp(slow, ['https://shop.example'], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://shop.example', 'x-contract-version': CONTRACT_VERSION }, body: '{}',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     }));
     expect(response.status).toBe(504);
     expect(await response.json()).toMatchObject({ code: 'DEADLINE_EXCEEDED' });

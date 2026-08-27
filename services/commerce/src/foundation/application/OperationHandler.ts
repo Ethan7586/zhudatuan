@@ -22,6 +22,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'identity.members.manage',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   'identity.members.reset',
@@ -37,6 +38,11 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  'identity.password.change',
+  'identity.password.verify',
+  'identity.password.reset',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
@@ -46,6 +52,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'access.center.read',
   'access.roles.manage',
   'access.scopes.manage',
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -62,6 +69,8 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'capability.assignments.read',
   'capability.assignments.manage',
   'partner.partners.read',
@@ -105,6 +114,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'marketing.campaigns.read',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   'referral.settings.read',
@@ -127,6 +137,8 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'reporting.dashboard.read',
   'reporting.sales.read',
   'reporting.products.read',
@@ -212,6 +224,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'finance.reconciliations.read',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   'finance.reconciliationrepairs.read',
@@ -224,6 +237,8 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'finance.settlements.read',
   'finance.settlements.decide',
   'finance.settlements.adjust',
@@ -237,6 +252,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'finance.backfills.read',
   'finance.backfills.decide',
   'finance.policies.manage',
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -254,6 +270,10 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  'invoice.profiles.manage',
+  'invoice.profiles.read',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'invoice.requests.create',
   'invoice.requests.read',
   'invoice.requests.cancel',
@@ -316,6 +336,7 @@ export interface OperationInput {
   readonly signal: AbortSignal;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   /** Server-derived target used for authorization and action-proof binding. */
   readonly resource?: string;
 =======
@@ -324,6 +345,8 @@ export interface OperationInput {
   /** Server-derived target used for authorization and action-proof binding. */
   readonly resource?: string;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly idempotency?: string;
   readonly expectedVersion?: number;
 }

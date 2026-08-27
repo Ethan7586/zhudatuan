@@ -1,17 +1,21 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { isIP } from 'node:net';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { isIP } from 'node:net';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { HttpApp } from './HttpApp';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): Readonly<{ close: () => Promise<void> }> {
@@ -21,6 +25,9 @@ export function listen(app: HttpApp, port: number): Readonly<{ close: () => Prom
 =======
 export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): Readonly<{ close: () => Promise<void> }> {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+export function listen(app: HttpApp, port: number): Readonly<{ close: () => Promise<void> }> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const server = createServer(async (request, response) => {
     const controller = new AbortController();
     request.once('aborted', () => controller.abort(new Error('REQUEST_ABORTED')));
@@ -39,6 +46,7 @@ export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0'
   server.maxRequestsPerSocket = RUNTIME_LIMITS.http.maximumRequestsPerSocket;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   server.listen(port, host);
 =======
   server.listen(port, '0.0.0.0');
@@ -46,6 +54,9 @@ export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0'
 =======
   server.listen(port, host);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  server.listen(port, '0.0.0.0');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return { close: () => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())) };
 }
 
@@ -60,6 +71,7 @@ async function convert(request: IncomingMessage, signal: AbortSignal): Promise<R
   }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   headers.set('x-peer-address', trustedPeerAddress(request.headers['x-real-ip'], request.socket.remoteAddress));
 =======
   headers.set('x-peer-address', request.socket.remoteAddress ?? 'unknown');
@@ -67,11 +79,15 @@ async function convert(request: IncomingMessage, signal: AbortSignal): Promise<R
 =======
   headers.set('x-peer-address', trustedPeerAddress(request.headers['x-real-ip'], request.socket.remoteAddress));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  headers.set('x-peer-address', request.socket.remoteAddress ?? 'unknown');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const body = await read(request);
   return new Request(`${protocol}://${host}${request.url ?? '/'}`, { method: request.method ?? 'GET', headers, signal,
     ...(body === undefined ? {} : { body: body.toString('utf8') }) });
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -88,6 +104,8 @@ export function trustedPeerAddress(forwarded: string | string[] | undefined, rem
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 async function read(request: IncomingMessage): Promise<Buffer | undefined> {
   if (request.method === 'GET' || request.method === 'HEAD') return undefined;
   const chunks: Buffer[] = [];

@@ -29,6 +29,7 @@ export function requiredValue(value: string | undefined, code: string): string {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export function bearerToken(value: string | undefined, code: string): string {
@@ -47,6 +48,8 @@ export function distinctValues(left: string, right: string, code: string): void 
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function integerValue(value: string | undefined, fallback: number, minimum: number, maximum: number, code: string): number {
   const parsed = value === undefined ? fallback : Number(value);
   if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) throw new Error(code);

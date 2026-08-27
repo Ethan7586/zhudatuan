@@ -3,12 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { Empty } from './Empty';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ContextualAccessDenied } from './AccessDenied';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { ContextualAccessDenied } from './AccessDenied';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { ErrorView } from './Error';
 import { ResourceState, resourceCondition, resourceConditions, type ResourceCondition } from './ResourceState';
 
@@ -16,16 +19,22 @@ describe('resource state contract', () => {
   it('exposes the complete asynchronous state union', () => {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     expect(resourceConditions).toEqual(['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry']);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(resourceConditions).toEqual([
       'loading', 'empty', 'ready', 'refreshing', 'stale', 'denied',
       'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry',
     ]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     expect(resourceConditions).toEqual(['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry']);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 
   it.each([
@@ -39,6 +48,7 @@ describe('resource state contract', () => {
     expect(resourceCondition(data, rows, error)).toBe(expected);
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -65,6 +75,8 @@ describe('resource state contract', () => {
   });
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it.each(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)(
     'renders %s as an explicit error boundary',
     (condition: ResourceCondition) => {
@@ -75,9 +87,12 @@ describe('resource state contract', () => {
       expect(result.props.message).toBe('FAILURE_CODE');
     },
   );
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   it('announces loading, renders empty and preserves ready children', () => {
     const loading = ResourceState({ condition: 'loading', children: 'ready' });

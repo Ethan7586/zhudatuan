@@ -3,6 +3,7 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import { BenefitPort } from '../../benefit/BenefitModule';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { FinancePort } from '../../finance/application/port/FinancePort';
 import { VoucherPort } from '../../voucher/VoucherModule';
 import { orderPort } from '../../order/OrderModule';
@@ -10,11 +11,14 @@ import { orderPort } from '../../order/OrderModule';
 const benefit = new BenefitPort(new FinancePort());
 const voucher = new VoucherPort(new FinancePort());
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { VoucherPort } from '../../voucher/VoucherModule';
 import { orderPort } from '../../order/OrderModule';
 
 const benefit = new BenefitPort();
 const voucher = new VoucherPort();
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { FinancePort } from '../../finance/application/port/FinancePort';
@@ -24,6 +28,8 @@ import { orderPort } from '../../order/OrderModule';
 const benefit = new BenefitPort(new FinancePort());
 const voucher = new VoucherPort(new FinancePort());
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface RefundRow {
   readonly id: string;
@@ -58,6 +64,7 @@ export class RefundSettlement {
     if (legs.length === 0 || legs.reduce((sum, leg) => sum + leg.amount_minor, 0) !== refund.amount_minor) throw new Error('PAYMENT_REFUND_PLAN_INTEGRITY_FAILED');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     const externalMinor = legs.reduce((sum, leg) => sum+(leg.kind === 'wechat' ? leg.amount_minor : 0), 0);
     const providerOccurredAt = await refundProviderOccurredAt(database, refund, providerReference, externalMinor);
 =======
@@ -66,6 +73,8 @@ export class RefundSettlement {
     const externalMinor = legs.reduce((sum, leg) => sum+(leg.kind === 'wechat' ? leg.amount_minor : 0), 0);
     const providerOccurredAt = await refundProviderOccurredAt(database, refund, providerReference, externalMinor);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     for (const leg of legs) {
       if (leg.kind === 'benefit') await restoreBenefit(database, refund, leg);
       if (leg.kind === 'voucher') await restoreVoucher(database, refund, leg);
@@ -89,6 +98,7 @@ export class RefundSettlement {
           from organization.unitclosure where descendant_id=$3),'timezone',(select timezone from organization.organization where id=$9)),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         $1,coalesce($11::timestamptz,clock_timestamp()),clock_timestamp())`, [`event:${randomUUID()}`, refundid, refund.scope_id, refund.payment_id,
       refund.amount_minor, refund.currency, refund.member_id, refund.order_id, refund.mall_id, JSON.stringify(legs), providerOccurredAt]);
   }
@@ -116,11 +126,14 @@ async function refundProviderOccurredAt(database: OperationDatabase, refund: Ref
 }
 
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         $1,clock_timestamp(),clock_timestamp())`, [`event:${randomUUID()}`, refundid, refund.scope_id, refund.payment_id,
       refund.amount_minor, refund.currency, refund.member_id, refund.order_id, refund.mall_id, JSON.stringify(legs)]);
   }
 }
 
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
         $1,coalesce($11::timestamptz,clock_timestamp()),clock_timestamp())`, [`event:${randomUUID()}`, refundid, refund.scope_id, refund.payment_id,
@@ -150,6 +163,8 @@ async function refundProviderOccurredAt(database: OperationDatabase, refund: Ref
 }
 
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 async function restoreBenefit(database: OperationDatabase, refund: RefundRow, leg: RefundLeg): Promise<void> {
   if (!leg.reference_id) throw new Error('BENEFIT_REFUND_ACCOUNT_MISSING');
   await benefit.refund(database, { id: refund.id, order: refund.order_id, member: refund.member_id, scope: refund.scope_id,

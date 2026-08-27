@@ -2,6 +2,7 @@ version: 1
 objects:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: identity.challenge.session_hash
@@ -74,12 +75,15 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membership_version
     kind: function
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -200,10 +204,13 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.resolve_membership
     kind: function
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: access.resolve_membership
@@ -211,11 +218,14 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resolve_scope
     kind: function
     owner: access
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     source: database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql
@@ -225,6 +235,9 @@ objects:
 =======
     source: database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resource_scope
@@ -242,6 +255,7 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: access
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -306,6 +320,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.reject_mutation
     kind: function
     owner: audit
@@ -316,6 +332,7 @@ objects:
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -350,6 +367,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.membership_operations
     kind: function
     owner: capability
@@ -444,6 +463,7 @@ objects:
     operationalOwner: finance
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: finance.account_role
@@ -506,6 +526,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.enforce_balanced_journal
     kind: function
     owner: finance
@@ -516,6 +538,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -575,11 +598,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.post
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -624,11 +650,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reject_ledger_mutation
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -658,11 +687,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.resource_scope
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -707,11 +739,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.notification_recipient
     kind: function
     owner: identity
     source: database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: identity
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1001,11 +1036,20 @@ objects:
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
     operationalOwner: identity
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - id: identity.resolve_session
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    callers:
+      - services/commerce/src/foundation/security/PgAccessResolvers.ts
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.resource_scope
     kind: function
     owner: notification
     source: database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: notification
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1020,12 +1064,15 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.webhook_scope
     kind: function
     owner: payment
     source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
     callers:
       - services/commerce/src/modules/payment/PaymentWebhook.ts
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1095,6 +1142,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.cockpit
     kind: function
     owner: reporting
@@ -1134,6 +1183,7 @@ objects:
     operationalOwner: runtime
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: runtime.claim_identity_notification_job
@@ -1147,12 +1197,15 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.claim_job
     kind: function
     owner: runtime
     source: database/supabase/migrations/20260821012000_create_runtime_control.sql
     callers:
       - services/commerce/src/foundation/application/JobRunner.ts
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1172,6 +1225,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.release_lease
     kind: function
     owner: runtime
@@ -1187,6 +1242,7 @@ objects:
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1252,6 +1308,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:access.membership_version(text):execute
     kind: grant
     owner: access
@@ -1265,6 +1323,7 @@ objects:
     owner: access
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 =======
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
@@ -1272,10 +1331,14 @@ objects:
 =======
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     role: shopapp
     objectType: function
     target: access.resolve_membership(text)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1294,10 +1357,13 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:access.resolve_scope(text,text,text):execute
     kind: grant
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: shopapp:function:access.resolve_scope(text,text,text):execute
@@ -1305,6 +1371,8 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     role: shopapp
     objectType: function
     target: access.resolve_scope(text,text,text)
@@ -1335,6 +1403,7 @@ objects:
     privilege: execute
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopapp:function:access.zhudatuan_owner_context():execute
@@ -1357,6 +1426,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:audit.scope_allowed(text):execute
     kind: grant
     owner: audit
@@ -1495,6 +1566,7 @@ objects:
     privilege: execute
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopapp:function:finance.account_role(text,text):execute
@@ -1534,6 +1606,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:finance.ensure_account(text,text,text,text):execute
     kind: grant
     owner: finance
@@ -1542,6 +1616,7 @@ objects:
     objectType: function
     target: finance.ensure_account(text,text,text,text)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1583,6 +1658,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone):execute
     kind: grant
     owner: finance
@@ -1591,6 +1668,7 @@ objects:
     objectType: function
     target: finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1632,6 +1710,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:finance.resource_scope(text):execute
     kind: grant
     owner: finance
@@ -1640,6 +1720,7 @@ objects:
     objectType: function
     target: finance.resource_scope(text)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1689,6 +1770,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:identity.notification_recipient(text):execute
     kind: grant
     owner: identity
@@ -1702,6 +1785,7 @@ objects:
     owner: identity
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 =======
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
@@ -1709,10 +1793,14 @@ objects:
 =======
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     role: shopapp
     objectType: function
     target: identity.resolve_session(text)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1762,6 +1850,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:payment.webhook_scope(text,text):execute
     kind: grant
     owner: payment
@@ -1770,6 +1860,7 @@ objects:
     objectType: function
     target: payment.webhook_scope(text,text)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1803,6 +1894,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:function:reporting.cockpit(text):execute
     kind: grant
     owner: reporting
@@ -2021,6 +2114,7 @@ objects:
     privilege: usage
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopapp:schema:referral:usage
@@ -2036,6 +2130,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:schema:reporting:usage
     kind: grant
     owner: reporting
@@ -2214,6 +2310,7 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopapp:table:access.owneractionproof:insert
@@ -2237,6 +2334,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:access.permission:delete
     kind: grant
     owner: access
@@ -2271,6 +2370,7 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopapp:table:access.platformowner:select
@@ -2286,6 +2386,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:access.role:delete
     kind: grant
     owner: access
@@ -4264,7 +4366,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.account:delete
     kind: grant
     owner: finance
@@ -4281,9 +4386,12 @@ objects:
     objectType: table
     target: finance.account
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.account:select
     kind: grant
     owner: finance
@@ -4292,6 +4400,7 @@ objects:
     objectType: table
     target: finance.account
     privilege: select
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopapp:table:finance.accountingeventrule:select
@@ -4313,6 +4422,14 @@ objects:
     role: shopapp
     objectType: table
 <<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.account:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     target: finance.account
     privilege: update
   - id: shopapp:table:finance.backfill:delete
@@ -4323,11 +4440,14 @@ objects:
     objectType: table
     target: finance.backfill
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     target: finance.accountingeventrule
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.backfill:insert
     kind: grant
     owner: finance
@@ -4354,7 +4474,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.entry:delete
     kind: grant
     owner: finance
@@ -4371,9 +4494,12 @@ objects:
     objectType: table
     target: finance.entry
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.entry:select
     kind: grant
     owner: finance
@@ -4384,7 +4510,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.entry:update
     kind: grant
     owner: finance
@@ -4401,9 +4530,12 @@ objects:
     objectType: table
     target: finance.hold
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.hold:insert
     kind: grant
     owner: finance
@@ -4430,7 +4562,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.journal:delete
     kind: grant
     owner: finance
@@ -4447,9 +4582,12 @@ objects:
     objectType: table
     target: finance.journal
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.journal:select
     kind: grant
     owner: finance
@@ -4458,6 +4596,7 @@ objects:
     objectType: table
     target: finance.journal
     privilege: select
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopapp:table:finance.ledger:select
@@ -4479,6 +4618,14 @@ objects:
     role: shopapp
     objectType: table
 <<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.journal:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     target: finance.journal
     privilege: update
   - id: shopapp:table:finance.period:delete
@@ -4497,11 +4644,14 @@ objects:
     objectType: table
     target: finance.period
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     target: finance.ledger
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.period:select
     kind: grant
     owner: finance
@@ -4512,7 +4662,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.period:update
     kind: grant
     owner: finance
@@ -4529,9 +4682,12 @@ objects:
     objectType: table
     target: finance.periodclose
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.periodclose:insert
     kind: grant
     owner: finance
@@ -4558,7 +4714,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.policy:delete
     kind: grant
     owner: finance
@@ -4575,9 +4734,12 @@ objects:
     objectType: table
     target: finance.policy
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.policy:select
     kind: grant
     owner: finance
@@ -4586,6 +4748,7 @@ objects:
     objectType: table
     target: finance.policy
     privilege: select
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopapp:table:finance.policyrevision:select
@@ -4607,6 +4770,14 @@ objects:
     role: shopapp
     objectType: table
 <<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.policy:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     target: finance.policy
     privilege: update
   - id: shopapp:table:finance.reconciliation:delete
@@ -4617,11 +4788,14 @@ objects:
     objectType: table
     target: finance.reconciliation
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     target: finance.policyrevision
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.reconciliation:insert
     kind: grant
     owner: finance
@@ -4648,7 +4822,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.reconciliationitem:delete
     kind: grant
     owner: finance
@@ -4657,9 +4834,12 @@ objects:
     objectType: table
     target: finance.reconciliationitem
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.reconciliationitem:insert
     kind: grant
     owner: finance
@@ -4686,7 +4866,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlement:delete
     kind: grant
     owner: finance
@@ -4695,9 +4878,12 @@ objects:
     objectType: table
     target: finance.settlement
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlement:insert
     kind: grant
     owner: finance
@@ -4724,7 +4910,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlementadjustment:delete
     kind: grant
     owner: finance
@@ -4733,9 +4922,12 @@ objects:
     objectType: table
     target: finance.settlementadjustment
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlementadjustment:insert
     kind: grant
     owner: finance
@@ -4762,7 +4954,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlementline:delete
     kind: grant
     owner: finance
@@ -4779,9 +4974,12 @@ objects:
     objectType: table
     target: finance.settlementline
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlementline:select
     kind: grant
     owner: finance
@@ -4792,7 +4990,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.settlementline:update
     kind: grant
     owner: finance
@@ -4817,9 +5018,12 @@ objects:
     objectType: table
     target: finance.split
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.split:select
     kind: grant
     owner: finance
@@ -4830,7 +5034,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.split:update
     kind: grant
     owner: finance
@@ -4855,9 +5062,12 @@ objects:
     objectType: table
     target: finance.statement
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.statement:select
     kind: grant
     owner: finance
@@ -4866,6 +5076,7 @@ objects:
     objectType: table
     target: finance.statement
     privilege: select
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopapp:table:finance.statementaccount:select
@@ -4887,6 +5098,14 @@ objects:
     role: shopapp
     objectType: table
 <<<<<<< HEAD
+=======
+  - id: shopapp:table:finance.statement:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     target: finance.statement
     privilege: update
   - id: shopapp:table:finance.statementline:delete
@@ -4897,11 +5116,14 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     target: finance.statementaccount
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.statementline:insert
     kind: grant
     owner: finance
@@ -4926,6 +5148,7 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: update
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopapp:table:finance.subledger:select
@@ -4970,6 +5193,16 @@ objects:
     target: finance.subledgerentry
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - id: shopapp:table:finance.withdrawal:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopapp
+    objectType: table
+    target: finance.withdrawal
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:finance.withdrawal:insert
     kind: grant
     owner: finance
@@ -5828,7 +6061,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.document:delete
     kind: grant
     owner: invoice
@@ -5845,9 +6081,12 @@ objects:
     objectType: table
     target: invoice.document
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.document:select
     kind: grant
     owner: invoice
@@ -5858,7 +6097,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.document:update
     kind: grant
     owner: invoice
@@ -5883,9 +6125,12 @@ objects:
     objectType: table
     target: invoice.line
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.line:select
     kind: grant
     owner: invoice
@@ -5896,7 +6141,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.line:update
     kind: grant
     owner: invoice
@@ -5913,9 +6161,12 @@ objects:
     objectType: table
     target: invoice.profile
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.profile:insert
     kind: grant
     owner: invoice
@@ -5942,7 +6193,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.request:delete
     kind: grant
     owner: invoice
@@ -5959,9 +6213,12 @@ objects:
     objectType: table
     target: invoice.request
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.request:select
     kind: grant
     owner: invoice
@@ -5972,7 +6229,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.request:update
     kind: grant
     owner: invoice
@@ -5997,9 +6257,12 @@ objects:
     objectType: table
     target: invoice.requestline
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.requestline:select
     kind: grant
     owner: invoice
@@ -6010,7 +6273,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.requestline:update
     kind: grant
     owner: invoice
@@ -6035,9 +6301,12 @@ objects:
     objectType: table
     target: invoice.requestprofile
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.requestprofile:select
     kind: grant
     owner: invoice
@@ -6048,7 +6317,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.requestprofile:update
     kind: grant
     owner: invoice
@@ -6073,9 +6345,12 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.statusevent:select
     kind: grant
     owner: invoice
@@ -6086,7 +6361,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:invoice.statusevent:update
     kind: grant
     owner: invoice
@@ -6095,9 +6373,12 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:marketing.campaign:delete
     kind: grant
     owner: marketing
@@ -8084,6 +8365,7 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopapp:table:referral.binding:insert
@@ -8227,6 +8509,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopapp:table:reporting.export:delete
     kind: grant
     owner: reporting
@@ -10125,6 +10409,7 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopjob:function:access.ensure_imported_membership(text,text,text,text,text):execute
@@ -10146,6 +10431,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:channel.build_private_statement(text,jsonb):execute
     kind: grant
     owner: channel
@@ -10252,6 +10539,7 @@ objects:
     privilege: execute
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopjob:function:finance.account_role(text,text):execute
@@ -10267,6 +10555,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:finance.ensure_account(text,text,text,text):execute
     kind: grant
     owner: finance
@@ -10275,6 +10565,7 @@ objects:
     objectType: function
     target: finance.ensure_account(text,text,text,text)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -10316,6 +10607,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone):execute
     kind: grant
     owner: finance
@@ -10324,6 +10617,7 @@ objects:
     objectType: function
     target: finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -10341,6 +10635,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:finance.resource_scope(text):execute
     kind: grant
     owner: finance
@@ -10349,6 +10645,7 @@ objects:
     objectType: function
     target: finance.resource_scope(text)
     privilege: execute
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -10459,6 +10756,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:function:reporting.cockpit(text):execute
     kind: grant
     owner: reporting
@@ -10701,6 +11000,7 @@ objects:
     privilege: usage
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopjob:schema:referral:usage
@@ -10716,6 +11016,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:schema:reporting:usage
     kind: grant
     owner: reporting
@@ -10798,7 +11100,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:access.membership:delete
     kind: grant
     owner: access
@@ -10895,9 +11200,12 @@ objects:
     objectType: table
     target: access.membershiprole
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:access.permission:delete
     kind: grant
     owner: access
@@ -10996,7 +11304,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:access.scopegrant:delete
     kind: grant
     owner: access
@@ -11029,9 +11340,12 @@ objects:
     objectType: table
     target: access.scopegrant
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:audit.accessrecord:delete
     kind: grant
     owner: audit
@@ -12970,7 +13284,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.account:delete
     kind: grant
     owner: finance
@@ -12987,9 +13304,12 @@ objects:
     objectType: table
     target: finance.account
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.account:select
     kind: grant
     owner: finance
@@ -12998,6 +13318,7 @@ objects:
     objectType: table
     target: finance.account
     privilege: select
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopjob:table:finance.accountingeventrule:select
@@ -13019,6 +13340,14 @@ objects:
     role: shopjob
     objectType: table
 <<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.account:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     target: finance.account
     privilege: update
   - id: shopjob:table:finance.backfill:delete
@@ -13029,11 +13358,14 @@ objects:
     objectType: table
     target: finance.backfill
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     target: finance.accountingeventrule
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.backfill:insert
     kind: grant
     owner: finance
@@ -13060,7 +13392,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.entry:delete
     kind: grant
     owner: finance
@@ -13077,9 +13412,12 @@ objects:
     objectType: table
     target: finance.entry
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.entry:select
     kind: grant
     owner: finance
@@ -13090,7 +13428,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.entry:update
     kind: grant
     owner: finance
@@ -13107,9 +13448,12 @@ objects:
     objectType: table
     target: finance.hold
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.hold:insert
     kind: grant
     owner: finance
@@ -13136,7 +13480,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.journal:delete
     kind: grant
     owner: finance
@@ -13153,9 +13500,12 @@ objects:
     objectType: table
     target: finance.journal
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.journal:select
     kind: grant
     owner: finance
@@ -13164,6 +13514,7 @@ objects:
     objectType: table
     target: finance.journal
     privilege: select
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopjob:table:finance.ledger:select
@@ -13185,6 +13536,14 @@ objects:
     role: shopjob
     objectType: table
 <<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.journal:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     target: finance.journal
     privilege: update
   - id: shopjob:table:finance.period:delete
@@ -13203,11 +13562,14 @@ objects:
     objectType: table
     target: finance.period
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     target: finance.ledger
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.period:select
     kind: grant
     owner: finance
@@ -13218,7 +13580,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.period:update
     kind: grant
     owner: finance
@@ -13235,9 +13600,12 @@ objects:
     objectType: table
     target: finance.periodclose
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.periodclose:insert
     kind: grant
     owner: finance
@@ -13264,7 +13632,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.policy:delete
     kind: grant
     owner: finance
@@ -13281,9 +13652,12 @@ objects:
     objectType: table
     target: finance.policy
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.policy:select
     kind: grant
     owner: finance
@@ -13294,7 +13668,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.policy:update
     kind: grant
     owner: finance
@@ -13311,9 +13688,12 @@ objects:
     objectType: table
     target: finance.reconciliation
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.reconciliation:insert
     kind: grant
     owner: finance
@@ -13340,7 +13720,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.reconciliationitem:delete
     kind: grant
     owner: finance
@@ -13349,9 +13732,12 @@ objects:
     objectType: table
     target: finance.reconciliationitem
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.reconciliationitem:insert
     kind: grant
     owner: finance
@@ -13378,7 +13764,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlement:delete
     kind: grant
     owner: finance
@@ -13387,9 +13776,12 @@ objects:
     objectType: table
     target: finance.settlement
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlement:insert
     kind: grant
     owner: finance
@@ -13416,7 +13808,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlementadjustment:delete
     kind: grant
     owner: finance
@@ -13425,9 +13820,12 @@ objects:
     objectType: table
     target: finance.settlementadjustment
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlementadjustment:insert
     kind: grant
     owner: finance
@@ -13454,7 +13852,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlementline:delete
     kind: grant
     owner: finance
@@ -13471,9 +13872,12 @@ objects:
     objectType: table
     target: finance.settlementline
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlementline:select
     kind: grant
     owner: finance
@@ -13484,7 +13888,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.settlementline:update
     kind: grant
     owner: finance
@@ -13509,9 +13916,12 @@ objects:
     objectType: table
     target: finance.split
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.split:select
     kind: grant
     owner: finance
@@ -13522,7 +13932,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.split:update
     kind: grant
     owner: finance
@@ -13547,9 +13960,12 @@ objects:
     objectType: table
     target: finance.statement
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.statement:select
     kind: grant
     owner: finance
@@ -13558,6 +13974,7 @@ objects:
     objectType: table
     target: finance.statement
     privilege: select
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopjob:table:finance.statementaccount:select
@@ -13579,6 +13996,14 @@ objects:
     role: shopjob
     objectType: table
 <<<<<<< HEAD
+=======
+  - id: shopjob:table:finance.statement:update
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     target: finance.statement
     privilege: update
   - id: shopjob:table:finance.statementline:delete
@@ -13589,11 +14014,14 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     target: finance.statementaccount
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.statementline:insert
     kind: grant
     owner: finance
@@ -13618,6 +14046,7 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: update
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: shopjob:table:finance.subledger:select
@@ -13662,6 +14091,16 @@ objects:
     target: finance.subledgerentry
     privilege: select
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - id: shopjob:table:finance.withdrawal:delete
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    role: shopjob
+    objectType: table
+    target: finance.withdrawal
+    privilege: delete
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:finance.withdrawal:insert
     kind: grant
     owner: finance
@@ -13816,7 +14255,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.assurance:delete
     kind: grant
     owner: identity
@@ -13849,9 +14291,12 @@ objects:
     objectType: table
     target: identity.assurance
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.authticket:delete
     kind: grant
     owner: identity
@@ -13886,7 +14331,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challenge:delete
     kind: grant
     owner: identity
@@ -13903,9 +14351,12 @@ objects:
     objectType: table
     target: identity.challenge
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challenge:select
     kind: grant
     owner: identity
@@ -13916,7 +14367,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challenge:update
     kind: grant
     owner: identity
@@ -13925,9 +14379,12 @@ objects:
     objectType: table
     target: identity.challenge
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challengedelivery:delete
     kind: grant
     owner: identity
@@ -13962,7 +14419,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challengesecret:delete
     kind: grant
     owner: identity
@@ -13979,9 +14439,12 @@ objects:
     objectType: table
     target: identity.challengesecret
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challengesecret:select
     kind: grant
     owner: identity
@@ -13992,7 +14455,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.challengesecret:update
     kind: grant
     owner: identity
@@ -14033,9 +14499,12 @@ objects:
     objectType: table
     target: identity.credential
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.federatedidentity:delete
     kind: grant
     owner: identity
@@ -14102,7 +14571,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.principal:delete
     kind: grant
     owner: identity
@@ -14135,9 +14607,12 @@ objects:
     objectType: table
     target: identity.principal
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.registrationpolicy:delete
     kind: grant
     owner: identity
@@ -14172,7 +14647,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.session:delete
     kind: grant
     owner: identity
@@ -14205,9 +14683,12 @@ objects:
     objectType: table
     target: identity.session
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:identity.wechatgrant:delete
     kind: grant
     owner: identity
@@ -14594,7 +15075,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.document:delete
     kind: grant
     owner: invoice
@@ -14611,9 +15095,12 @@ objects:
     objectType: table
     target: invoice.document
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.document:select
     kind: grant
     owner: invoice
@@ -14624,7 +15111,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.document:update
     kind: grant
     owner: invoice
@@ -14649,9 +15139,12 @@ objects:
     objectType: table
     target: invoice.line
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.line:select
     kind: grant
     owner: invoice
@@ -14662,7 +15155,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.line:update
     kind: grant
     owner: invoice
@@ -14679,9 +15175,12 @@ objects:
     objectType: table
     target: invoice.profile
     privilege: delete
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.profile:insert
     kind: grant
     owner: invoice
@@ -14708,7 +15207,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.request:delete
     kind: grant
     owner: invoice
@@ -14725,9 +15227,12 @@ objects:
     objectType: table
     target: invoice.request
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.request:select
     kind: grant
     owner: invoice
@@ -14738,7 +15243,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.request:update
     kind: grant
     owner: invoice
@@ -14763,9 +15271,12 @@ objects:
     objectType: table
     target: invoice.requestline
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.requestline:select
     kind: grant
     owner: invoice
@@ -14776,7 +15287,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.requestline:update
     kind: grant
     owner: invoice
@@ -14801,9 +15315,12 @@ objects:
     objectType: table
     target: invoice.requestprofile
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.requestprofile:select
     kind: grant
     owner: invoice
@@ -14814,7 +15331,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.requestprofile:update
     kind: grant
     owner: invoice
@@ -14839,9 +15359,12 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: insert
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.statusevent:select
     kind: grant
     owner: invoice
@@ -14852,7 +15375,10 @@ objects:
     privilege: select
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:invoice.statusevent:update
     kind: grant
     owner: invoice
@@ -14861,9 +15387,12 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:marketing.campaign:delete
     kind: grant
     owner: marketing
@@ -15058,7 +15587,10 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:member.profile:delete
     kind: grant
     owner: member
@@ -15091,9 +15623,12 @@ objects:
     objectType: table
     target: member.profile
     privilege: update
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:notification.announcement:delete
     kind: grant
     owner: notification
@@ -16888,6 +17423,7 @@ objects:
     privilege: update
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: shopjob:table:referral.binding:insert
@@ -17055,6 +17591,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: shopjob:table:reporting.export:delete
     kind: grant
     owner: reporting
@@ -19013,6 +19551,7 @@ objects:
     source: database/supabase/migrations/20260821070000_repair_decision_audit_scope.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: access.decisionaudit.consoledecision
@@ -19024,10 +19563,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.decisionaudit.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19057,12 +19599,15 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membership.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: access.membership.consoleself
     kind: policy
     owner: access
@@ -19080,10 +19625,13 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membership.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: access.membership.consoleself
@@ -19103,21 +19651,27 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membershipoverride.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: access.membershipoverride.zhudatuanidentityapi
     kind: policy
     owner: access
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membershipoverride.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: access.membershipoverride.zhudatuanidentityapi
@@ -19125,12 +19679,15 @@ objects:
     owner: access
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membershiprole.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: access.membershiprole.zhudatuanbootstrap
     kind: policy
     owner: access
@@ -19152,10 +19709,13 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.membershiprole.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: access.membershiprole.zhudatuanbootstrap
@@ -19179,6 +19739,8 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.permission.appscope
     kind: policy
     owner: access
@@ -19187,6 +19749,7 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19212,6 +19775,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.role.appscope
     kind: policy
     owner: access
@@ -19220,6 +19785,7 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19237,6 +19803,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.rolepermission.appscope
     kind: policy
     owner: access
@@ -19245,6 +19813,7 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19262,10 +19831,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.scopegrant.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: access.scopegrant.zhudatuanidentityapi
@@ -19277,10 +19849,13 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.scopegrant.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: access.scopegrant.zhudatuanidentityapi
@@ -19292,6 +19867,8 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.accessrecord.appinsert
     kind: policy
     owner: audit
@@ -19300,6 +19877,7 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19317,10 +19895,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.accessrecord.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19358,10 +19939,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.archiveref.appselect
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19375,10 +19959,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.archiveref.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19408,6 +19995,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.record.appinsert
     kind: policy
     owner: audit
@@ -19416,6 +20005,7 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19433,10 +20023,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.record.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19486,6 +20079,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.recorddefault.appinsert
     kind: policy
     owner: audit
@@ -19494,6 +20089,7 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19511,6 +20107,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.recorddefault.jobscope
     kind: policy
     owner: audit
@@ -19533,6 +20131,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: benefit.account.zhudatuanwebapi
@@ -19544,6 +20143,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.action.appscope
     kind: policy
     owner: benefit
@@ -19594,6 +20195,7 @@ objects:
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: benefit.lot.zhudatuanwebapi
@@ -19605,6 +20207,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: benefit.lotmovement.appscope
     kind: policy
     owner: benefit
@@ -19655,6 +20259,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: capability.capability.zhudatuanidentityapi
@@ -19666,6 +20271,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.dependency.appscope
     kind: policy
     owner: capability
@@ -19684,6 +20291,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: capability.entitlement.zhudatuanidentityapi
@@ -19695,6 +20303,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: capability.operation.appscope
     kind: policy
     owner: capability
@@ -19703,6 +20313,7 @@ objects:
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19716,6 +20327,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: cart.cart.appscope
     kind: policy
     owner: cart
@@ -19724,6 +20337,7 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19745,6 +20359,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: cart.item.appscope
     kind: policy
     owner: cart
@@ -19753,6 +20369,7 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19770,6 +20387,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.availabilitycity.appscope
     kind: policy
     owner: catalog
@@ -19804,6 +20423,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: catalog.category.zhudatuansandboxbootstrap
@@ -19819,6 +20439,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.classificationrule.appscope
     kind: policy
     owner: catalog
@@ -19857,6 +20479,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: catalog.listing.zhudatuanpurchaseapi
@@ -19880,6 +20503,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.pool.appscope
     kind: policy
     owner: catalog
@@ -19888,6 +20513,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19905,6 +20531,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.poolbinding.appscope
     kind: policy
     owner: catalog
@@ -19913,6 +20541,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19930,6 +20559,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.poolitem.appscope
     kind: policy
     owner: catalog
@@ -19938,6 +20569,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19955,6 +20587,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.product.appscope
     kind: policy
     owner: catalog
@@ -19963,6 +20597,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -19988,6 +20623,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.review.appscope
     kind: policy
     owner: catalog
@@ -20004,6 +20641,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20029,6 +20667,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.sourcelisting.appscope
     kind: policy
     owner: catalog
@@ -20037,6 +20677,7 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20054,6 +20695,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.suppliercategory.appscope
     kind: policy
     owner: catalog
@@ -20144,6 +20787,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: checkout.address.zhudatuanpurchaseapi
@@ -20159,6 +20803,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: checkout.evidence.appscope
     kind: policy
     owner: checkout
@@ -20167,6 +20813,7 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20184,6 +20831,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: checkout.session.appscope
     kind: policy
     owner: checkout
@@ -20192,6 +20841,7 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20213,6 +20863,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.application.appscope
     kind: policy
     owner: experience
@@ -20221,6 +20873,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20242,6 +20895,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.binding.appscope
     kind: policy
     owner: experience
@@ -20250,6 +20905,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20267,6 +20923,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.publication.appscope
     kind: policy
     owner: experience
@@ -20275,6 +20933,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821033000_complete_experience_publication.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20296,6 +20955,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.release.appscope
     kind: policy
     owner: experience
@@ -20304,6 +20965,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20321,6 +20983,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: experience.version.appscope
     kind: policy
     owner: experience
@@ -20329,6 +20993,7 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20346,6 +21011,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: extension.activationhistory.appinsert
     kind: policy
     owner: extension
@@ -20404,15 +21071,19 @@ objects:
     source: database/supabase/migrations/20260821051000_extension_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: finance.account.appread
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.account.appscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: finance.account.appread
@@ -20420,10 +21091,13 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.account.jobscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20441,6 +21115,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.backfill.appscope
     kind: policy
     owner: finance
@@ -20451,15 +21127,19 @@ objects:
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: finance.entry.appread
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.entry.appscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: finance.entry.appread
@@ -20467,6 +21147,8 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.entry.jobscope
     kind: policy
     owner: finance
@@ -20481,15 +21163,19 @@ objects:
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: finance.journal.appread
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.journal.appscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: finance.journal.appread
@@ -20497,10 +21183,13 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.journal.jobscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20518,6 +21207,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.period.appscope
     kind: policy
     owner: finance
@@ -20544,6 +21235,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: finance.policyrevision.appscope
@@ -20555,6 +21247,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reconciliation.appscope
     kind: policy
     owner: finance
@@ -20613,6 +21307,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: finance.statementaccount.appscope
@@ -20628,6 +21323,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.statementline.appscope
     kind: policy
     owner: finance
@@ -20636,6 +21333,7 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20661,6 +21359,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawal.appscope
     kind: policy
     owner: finance
@@ -20677,6 +21377,7 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20698,6 +21399,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.line.appscope
     kind: policy
     owner: fulfillment
@@ -20706,6 +21409,7 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20723,6 +21427,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: fulfillment.milestone.appscope
     kind: policy
     owner: fulfillment
@@ -20745,15 +21451,19 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: identity.assurance.zhudatuanidentityapi
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.assurance.jobscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: identity.assurance.zhudatuanidentityapi
@@ -20761,6 +21471,8 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.authticket.appscope
     kind: policy
     owner: identity
@@ -20769,6 +21481,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821035000_add_auth_ticket_exchange.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20782,6 +21495,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.challenge.appscope
     kind: policy
     owner: identity
@@ -20790,6 +21505,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20807,6 +21523,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.challengedelivery.appscope
     kind: policy
     owner: identity
@@ -20815,6 +21533,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20836,6 +21555,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.challengesecret.appscope
     kind: policy
     owner: identity
@@ -20844,6 +21565,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20861,10 +21583,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.credential.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: identity.credential.zhudatuanidentityapi
@@ -20872,10 +21597,13 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.credential.jobscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: identity.credential.zhudatuanidentityapi
@@ -20883,6 +21611,8 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.federatedidentity.appscope
     kind: policy
     owner: identity
@@ -20891,6 +21621,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20904,6 +21635,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.loginattempt.appscope
     kind: policy
     owner: identity
@@ -20912,6 +21645,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20925,10 +21659,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.principal.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: identity.principal.zhudatuanbootstrapowner
@@ -20940,10 +21677,13 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.principal.jobscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: identity.principal.zhudatuanbootstrapowner
@@ -20955,6 +21695,8 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.registrationpolicy.appscope
     kind: policy
     owner: identity
@@ -20963,6 +21705,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -20980,10 +21723,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.session.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: identity.session.zhudatuanidentityapi
@@ -20991,10 +21737,13 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.session.jobscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: identity.session.zhudatuanidentityapi
@@ -21002,6 +21751,8 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: identity.wechatgrant.appscope
     kind: policy
     owner: identity
@@ -21010,6 +21761,7 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21023,6 +21775,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.command.appscope
     kind: policy
     owner: inventory
@@ -21069,6 +21823,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: inventory.movement.zhudatuanpurchaseapi
@@ -21080,6 +21835,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.observation.appscope
     kind: policy
     owner: inventory
@@ -21096,6 +21853,7 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21121,6 +21879,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.snapshot.appscope
     kind: policy
     owner: inventory
@@ -21137,6 +21897,7 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21166,6 +21927,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: inventory.syncstate.appscope
     kind: policy
     owner: inventory
@@ -21176,15 +21939,19 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - id: invoice.document.appread
     kind: policy
     owner: invoice
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.document.appscope
     kind: policy
     owner: invoice
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: invoice.document.appread
@@ -21192,6 +21959,8 @@ objects:
     owner: invoice
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.document.jobscope
     kind: policy
     owner: invoice
@@ -21214,6 +21983,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: invoice.profile.zhudatuanpurchaseapi
@@ -21225,6 +21995,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.request.appscope
     kind: policy
     owner: invoice
@@ -21267,6 +22039,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: marketing.campaign.zhudatuanpurchaseapiselect
@@ -21282,6 +22055,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: marketing.redemption.appscope
     kind: policy
     owner: marketing
@@ -21290,6 +22065,7 @@ objects:
     kind: policy
     owner: marketing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21311,6 +22087,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.importerror.appscope
     kind: policy
     owner: member
@@ -21341,6 +22119,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: member.invite.zhudatuanbootstrap
@@ -21368,10 +22147,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.profile.appscope
     kind: policy
     owner: member
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - id: member.profile.shopjob_member_status
@@ -21383,10 +22165,13 @@ objects:
     owner: member
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: member.profile.jobscope
     kind: policy
     owner: member
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   - id: member.profile.shopjob_member_status
@@ -21398,6 +22183,8 @@ objects:
     owner: member
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: notification.announcement.appscope
     kind: policy
     owner: notification
@@ -21464,6 +22251,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: ordering.aftersale.zhudatuanwebapi
@@ -21475,6 +22263,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: ordering.line.appscope
     kind: policy
     owner: ordering
@@ -21483,6 +22273,7 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21504,6 +22295,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: ordering.orderrecord.appscope
     kind: policy
     owner: ordering
@@ -21512,6 +22305,7 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21537,6 +22331,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: ordering.reminder.appscope
     kind: policy
     owner: ordering
@@ -21571,6 +22367,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: ordering.suborder.zhudatuanpurchaseapiinsert
@@ -21586,6 +22383,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.assignment.appscope
     kind: policy
     owner: organization
@@ -21610,6 +22409,7 @@ objects:
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21639,6 +22439,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.sourcebinding.appscope
     kind: policy
     owner: organization
@@ -21653,6 +22455,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: organization.unitclosure.consoleclosure
@@ -21664,10 +22467,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: organization.unitclosure.jobscope
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21693,6 +22499,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: partner.agreement.appscope
     kind: policy
     owner: partner
@@ -21759,6 +22567,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: payment.allocation.zhudatuanpurchaseapiinsert
@@ -21774,6 +22583,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.attempt.appscope
     kind: policy
     owner: payment
@@ -21792,6 +22603,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: payment.capture.zhudatuanpurchaseapiinsert
@@ -21807,6 +22619,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.deadletterreview.appscope
     kind: policy
     owner: payment
@@ -21833,6 +22647,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: payment.intent.zhudatuanpurchaseapiinsert
@@ -21852,6 +22667,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.intenttender.appscope
     kind: policy
     owner: payment
@@ -21860,6 +22677,7 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821039000_checkout_atomic_order.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -21881,6 +22699,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.observation.appscope
     kind: policy
     owner: payment
@@ -21899,6 +22719,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: payment.payment.zhudatuanpurchaseapiinsert
@@ -21914,6 +22735,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.prepay.appscope
     kind: policy
     owner: payment
@@ -21988,6 +22811,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: pricing.price.zhudatuanpurchaseapi
@@ -22011,6 +22835,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.pricebook.appscope
     kind: policy
     owner: pricing
@@ -22019,6 +22845,7 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22044,6 +22871,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.quote.appscope
     kind: policy
     owner: pricing
@@ -22052,6 +22881,7 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22073,6 +22903,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: pricing.rule.appscope
     kind: policy
     owner: pricing
@@ -22081,6 +22913,7 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22094,6 +22927,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.changerequest.appscope
     kind: policy
     owner: qualification
@@ -22120,6 +22955,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: qualification.policy.zhudatuanpurchaseapi
@@ -22131,6 +22967,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.policyversion.appscope
     kind: policy
     owner: qualification
@@ -22139,6 +22977,7 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22152,6 +22991,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.profile.appscope
     kind: policy
     owner: qualification
@@ -22160,6 +23001,7 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22173,6 +23015,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.purchaselimit.appscope
     kind: policy
     owner: qualification
@@ -22181,6 +23025,7 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22194,6 +23039,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.resource.appscope
     kind: policy
     owner: qualification
@@ -22202,6 +23049,7 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22215,6 +23063,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.subject.appscope
     kind: policy
     owner: qualification
@@ -22223,6 +23073,7 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22236,6 +23087,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: qualification.tag.appscope
     kind: policy
     owner: qualification
@@ -22244,6 +23097,7 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22321,6 +23175,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.export.appscope
     kind: policy
     owner: reporting
@@ -22343,6 +23199,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: reporting.fact.zhudatuanwebapi
@@ -22354,6 +23211,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.financeprojection.appscope
     kind: policy
     owner: reporting
@@ -22376,6 +23235,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: reporting.metric.zhudatuanwebapi
@@ -22387,6 +23247,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.orderprojection.appscope
     kind: policy
     owner: reporting
@@ -22417,6 +23279,7 @@ objects:
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: risk.case.consoleriskcasinsert
@@ -22428,6 +23291,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.case.jobscope
     kind: policy
     owner: risk
@@ -22440,6 +23305,7 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22457,10 +23323,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.decision.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22474,6 +23343,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.listentry.appinsert
     kind: policy
     owner: risk
@@ -22488,6 +23359,7 @@ objects:
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: risk.listentry.consolerisklistselect
@@ -22499,10 +23371,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.listentry.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22524,6 +23399,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policy.appinsert
     kind: policy
     owner: risk
@@ -22538,6 +23415,7 @@ objects:
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: risk.policy.consoleriskpolicyselect
@@ -22549,10 +23427,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policy.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22574,6 +23455,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policyversion.appinsert
     kind: policy
     owner: risk
@@ -22588,6 +23471,7 @@ objects:
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: risk.policyversion.consoleriskversionselect
@@ -22599,10 +23483,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.policyversion.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22624,6 +23511,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.replay.appinsert
     kind: policy
     owner: risk
@@ -22650,6 +23539,7 @@ objects:
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: risk.signal.consolerisksignalselect
@@ -22661,10 +23551,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: risk.signal.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22686,6 +23579,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.deadletter.appscope
     kind: policy
     owner: runtime
@@ -22694,6 +23589,7 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22707,6 +23603,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.event.appscope
     kind: policy
     owner: runtime
@@ -22721,6 +23619,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: runtime.idempotency.consoleidempotency
@@ -22732,10 +23631,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.idempotency.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22773,6 +23675,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.inbox.appscope
     kind: policy
     owner: runtime
@@ -22789,6 +23693,7 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22814,6 +23719,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.lease.appscope
     kind: policy
     owner: runtime
@@ -22828,6 +23735,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: runtime.operation.consoleoperationselect
@@ -22839,6 +23747,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.operation.jobscope
     kind: policy
     owner: runtime
@@ -22847,6 +23757,7 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22860,10 +23771,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.outbox.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22885,6 +23799,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.projectionoffset.appscope
     kind: policy
     owner: runtime
@@ -22923,6 +23839,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: runtime.schemaversion.consoleschemaversionselect
@@ -22934,10 +23851,13 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: runtime.schemaversion.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -22971,6 +23891,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.account.appscope
     kind: policy
     owner: support
@@ -23009,6 +23931,7 @@ objects:
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: support.conversation.consolesupportconversationselect
@@ -23024,6 +23947,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.conversation.jobscope
     kind: policy
     owner: support
@@ -23042,6 +23967,7 @@ objects:
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: support.evidence.consolesupportevidenceselect
@@ -23053,6 +23979,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.evidence.jobscope
     kind: policy
     owner: support
@@ -23061,6 +23989,7 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -23074,6 +24003,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.history.jobscope
     kind: policy
     owner: support
@@ -23082,6 +24013,7 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -23099,6 +24031,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.message.jobscope
     kind: policy
     owner: support
@@ -23117,6 +24051,7 @@ objects:
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: support.ticket.consolesupportticketselect
@@ -23132,6 +24067,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.ticket.jobscope
     kind: policy
     owner: support
@@ -23422,6 +24359,7 @@ objects:
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: referral
@@ -23433,6 +24371,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting
     kind: schema
     owner: reporting
@@ -23459,6 +24399,7 @@ objects:
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: access.actionproof
@@ -23471,6 +24412,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.decisionaudit
     kind: table
     owner: access
@@ -23493,6 +24436,7 @@ objects:
     rls: true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: access.owneractionproof
@@ -23510,11 +24454,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.permission
     kind: table
     owner: access
     source: database/supabase/migrations/20260821013000_create_identity_access.sql
     rls: true
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -23539,6 +24486,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.role
     kind: table
     owner: access
@@ -23871,6 +24820,7 @@ objects:
     rls: true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: finance.accountingeventrule
@@ -23883,6 +24833,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.backfill
     kind: table
     owner: finance
@@ -23905,6 +24857,7 @@ objects:
     rls: true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: finance.ledger
@@ -23917,6 +24870,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.period
     kind: table
     owner: finance
@@ -23932,6 +24887,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -23951,6 +24907,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.reconciliation
     kind: table
     owner: finance
@@ -23961,6 +24919,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     rls: true
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -23990,6 +24949,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.settlement
     kind: table
     owner: finance
@@ -24017,6 +24978,7 @@ objects:
     rls: true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: finance.statementaccount
@@ -24029,11 +24991,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.statementline
     kind: table
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     rls: true
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -24053,6 +25018,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.withdrawal
     kind: table
     owner: finance
@@ -24200,6 +25167,7 @@ objects:
     rls: true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: invoice.issueartifact
@@ -24212,6 +25180,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.line
     kind: table
     owner: invoice
@@ -24559,6 +25529,7 @@ objects:
     rls: true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: referral.binding
@@ -24606,6 +25577,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: reporting.export
     kind: table
     owner: reporting
@@ -24908,6 +25881,7 @@ objects:
     rls: true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: access.membership.platform_owner_singleton_membership
@@ -25029,6 +26003,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: audit.accessrecord.immutable
     kind: trigger
     owner: audit
@@ -25049,6 +26025,7 @@ objects:
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -25077,11 +26054,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.entry.finance_entry_immutable
     kind: trigger
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -25096,6 +26076,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.journal.finance_journal_balance
     kind: trigger
     owner: finance
@@ -25106,6 +26088,7 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -25155,11 +26138,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: finance.settlementline.finance_settlementline_immutable
     kind: trigger
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -25244,11 +26230,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requestline.invoice_requestline_immutable
     kind: trigger
     owner: invoice
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: invoice
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -25268,11 +26257,14 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: invoice.requestprofile.invoice_requestprofile_immutable
     kind: trigger
     owner: invoice
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: invoice
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -25371,6 +26363,8 @@ objects:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: support.history.support_history_immutable
     kind: trigger
     owner: support

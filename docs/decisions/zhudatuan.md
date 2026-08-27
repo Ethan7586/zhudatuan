@@ -3,6 +3,7 @@
 > 智慧翼／築大團 MVP 的產品口徑、系統邊界與已確認決策。  
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 > 最後更新：2026-08-28
@@ -71,6 +72,8 @@
 本次評估只記錄架構現況，未修改前端、後端、合同、資料庫或部署代碼。
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 > 最後更新：2026-08-27
 
 ## 2026-08-27：`archives/` 歷史提詞庫與代碼找回庫
@@ -84,9 +87,12 @@
 - 兩棵原始 Smart Wing 資料樹由根 `.gitignore` 排除；主倉只保留提詞庫說明與未來整理出的純文字索引。
 
 完整使用規則見 [`archives/README.md`](./archives/README.md)。
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 ## 2026-08-27：會員與權限、渠道與分銷、系統治理台
 
@@ -141,7 +147,11 @@
 舊工作台位於：
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 `../../../archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
+=======
+`archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 `archives/smart-wing-20260826/Shop/pre-contract-code-merge-20260820/smart-wing-membership-permissions/apps/admin-web/src/components/workstations/MembershipPermissionWorkstation.tsx`
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -207,6 +217,7 @@ MVP 階段應包含：
 當前狀態：**只完成定義、審計與記錄；未開始修改業務代碼，等待下一條指令。**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 
@@ -253,3 +264,5 @@ Owner 批准財務系統解除暫停並向本地 MVP **90/100** 衝刺。本階�
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

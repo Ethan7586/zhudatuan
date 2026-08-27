@@ -13,6 +13,7 @@ export function getInvoicesOperations(): OperationActions {
     },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     'invoice.operatorprofiles.read': async (request, database) => {
@@ -27,12 +28,15 @@ export function getInvoicesOperations(): OperationActions {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'invoice.requests.read': async (request, database) => {
       const access = requireAccess(request); const page = queryPage(request);
       const result = await database.query(`select request.*,document.object_ref,document.sha256,document.issued_at,
         coalesce((select jsonb_agg(jsonb_build_object('settlementLine',line.settlement_line_id,'amountMinor',line.amount_minor,
           'taxMinor',line.tax_minor,'sourceHash',line.source_hash) order by line.settlement_line_id)
           from invoice.requestline line where line.request_id=request.id),'[]'::jsonb) lines from invoice.request request
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         join invoice.requestprofile snapshot on snapshot.request_id=request.id
@@ -47,6 +51,10 @@ export function getInvoicesOperations(): OperationActions {
         left join invoice.document document on document.request_id=request.id
         where snapshot.owner_id=$1 and ($2::timestamptz is null or (request.created_at,request.id)<($2::timestamptz,$3))
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        join invoice.profile profile on profile.id=request.profile_id left join invoice.document document on document.request_id=request.id
+        where profile.owner_id=$1 and ($2::timestamptz is null or (request.created_at,request.id)<($2::timestamptz,$3))
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         order by request.created_at desc,request.id desc limit $4`, [access.scope.id, page.sort, page.id, page.fetch]);
       return keysetResult(result, page, 'created_at');
     },

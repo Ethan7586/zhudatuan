@@ -6,6 +6,7 @@ import { domainEvent } from '../../../foundation/domain/DomainEvent';
 import { appendOutbox } from '../../../foundation/infrastructure/OutboxStore';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { CheckoutPort, type CheckoutQuote } from '../../checkout/CheckoutPort';
@@ -22,6 +23,8 @@ export interface OrderVoucherGateway {
 }
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { CheckoutPort, checkoutSessionPort, type CheckoutQuote } from '../../checkout/CheckoutModule';
 import { InventoryPort } from '../../inventory/InventoryModule';
 import { PaymentPort } from '../../payment/PaymentModule';
@@ -29,9 +32,12 @@ import { BenefitPort } from '../../benefit/BenefitModule';
 import { VoucherPort } from '../../voucher/VoucherModule';
 import { marketingPort } from '../../marketing/MarketingModule';
 import { cartPort } from '../../cart/CartModule';
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface StoredQuote {
   readonly checkout: string; readonly cart_id: string; readonly member_id: string; readonly mall_id: string; readonly application_id: string;
@@ -40,6 +46,7 @@ interface StoredQuote {
 }
 
 export class PlaceOrder {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -58,6 +65,10 @@ export class PlaceOrder {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  constructor(private readonly checkout: CheckoutPort, private readonly inventory = new InventoryPort(), private readonly payment = new PaymentPort(),
+    private readonly benefit = new BenefitPort(), private readonly voucher = new VoucherPort()) {}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   async execute(request: OperationRequest, database: OperationDatabase): Promise<OperationResult> {
     const access = request.access;
@@ -114,6 +125,7 @@ export class PlaceOrder {
       where session.quote_id=$1 and membership.id=$2 and session.state='quoted' and session.expires_at>clock_timestamp()
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         and quote.expires_at>clock_timestamp() for update of session`, [quote, membership]);
 =======
         and quote.expires_at>clock_timestamp() for update of session,quote`, [quote, membership]);
@@ -121,6 +133,9 @@ export class PlaceOrder {
 =======
         and quote.expires_at>clock_timestamp() for update of session`, [quote, membership]);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        and quote.expires_at>clock_timestamp() for update of session,quote`, [quote, membership]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const row = result.rows[0];
     if (!row) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
     return row;

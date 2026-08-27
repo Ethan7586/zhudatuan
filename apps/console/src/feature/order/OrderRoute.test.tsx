@@ -6,6 +6,7 @@ import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 =======
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -13,6 +14,9 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 =======
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './OrderRoute';
@@ -131,12 +135,15 @@ afterEach(() => {
   cleanup();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   vi.restoreAllMocks();
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   vi.restoreAllMocks();
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   server.resetHandlers();
   getRequests.length = 0;
   postRequests.length = 0;
@@ -151,6 +158,7 @@ describe('Order route', () => {
     expect(screen.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeTruthy();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     expect(screen.getByRole('note').textContent).toBe('当前页导出只使用已经加载的服务端读模型；发货、退款、售后及其他写操作仍保持关闭。');
 =======
     expect(screen.getByRole('note').textContent).toContain('当前生产读合同仅保证');
@@ -158,6 +166,9 @@ describe('Order route', () => {
 =======
     expect(screen.getByRole('note').textContent).toBe('当前页导出只使用已经加载的服务端读模型；发货、退款、售后及其他写操作仍保持关闭。');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    expect(screen.getByRole('note').textContent).toContain('当前生产读合同仅保证');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
     expect(screen.getByText('member:verified-1')).toBeTruthy();
@@ -309,6 +320,7 @@ describe('Order route', () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   it('renders the calm access boundary for a denied order read without offering a futile retry', async () => {
@@ -328,10 +340,14 @@ describe('Order route', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  it('renders a read error and retries it without inventing stale data', async () => {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     let attempts = 0;
     server.use(
       http.get('*/api/v1/orders', () => {
         attempts += 1;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         return attempts === 1 ? HttpResponse.json(listPage) : HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:revoked' }, { status: 403 });
@@ -341,10 +357,14 @@ describe('Order route', () => {
 =======
         return attempts === 1 ? HttpResponse.json(listPage) : HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:revoked' }, { status: 403 });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        return attempts === 1 ? HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:failed' }, { status: 403 }) : HttpResponse.json(listPage);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       })
     );
     const user = userEvent.setup();
     renderRoute();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
@@ -354,6 +374,8 @@ describe('Order route', () => {
     expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
     expect(screen.queryByText(order.order_number)).toBeNull();
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
     const alert = await screen.findByRole('alert');
     expect(within(alert).getByText('订单读取失败')).toBeTruthy();
@@ -361,6 +383,7 @@ describe('Order route', () => {
     await user.click(within(alert).getByRole('button', { name: '重试' }));
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
     expect(attempts).toBe(2);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
@@ -370,6 +393,8 @@ describe('Order route', () => {
     expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
     expect(screen.queryByText(order.order_number)).toBeNull();
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 
   it('configures optional columns and selecting a row never opens its drawer', async () => {
@@ -432,6 +457,7 @@ describe('Order route', () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   it('downloads exactly the loaded order page, opens local import, and sends no additional request', async () => {
@@ -464,10 +490,14 @@ describe('Order route', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  it('keeps every exposed final action disabled and sends no POST even with AAL2 and write permissions', async () => {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const user = userEvent.setup();
     renderRoute();
     await screen.findByRole('table', { name: '订单列表' });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     const moreFilters = screen.getByRole<HTMLButtonElement>('button', { name: '更多筛选' });
@@ -487,6 +517,15 @@ describe('Order route', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    const exportButton = screen.getByRole<HTMLButtonElement>('button', { name: '导出订单' });
+    const moreFilters = screen.getByRole<HTMLButtonElement>('button', { name: '更多筛选' });
+    const rowMore = screen.getByRole<HTMLButtonElement>('button', { name: `订单 ${order.order_number} 更多操作` });
+    expect(exportButton.disabled).toBe(true);
+    expect(moreFilters.disabled).toBe(true);
+    expect(rowMore.disabled).toBe(true);
+    await user.click(exportButton);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     await user.click(moreFilters);
     await user.click(rowMore);
 
@@ -509,11 +548,15 @@ describe('Order route', () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: '导出订单' }), '导出订单预览');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    await openAndCloseSafePreview(user, screen.getByRole('button', { name: '导出订单' }), '导出订单预览');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: '更多筛选' }), '更多筛选');
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: `订单 ${order.order_number} 更多操作` }), `订单操作预览 ${order.order_number}`);
 
@@ -573,6 +616,7 @@ function orderRequestCount(limit: string): number {
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 
@@ -610,3 +654,5 @@ function csvRowCount(csv: string): number {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -49,17 +49,21 @@ curl -I https://smart.hbbtzn.com
 CORE_READ_CACHE_URL=http://127.0.0.1:3002
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # CORE_READ_CACHE_TOKEN must be injected by the deployment secret store.
 TAIR_HOST=实例的 VPC 内网地址
 TAIR_PORT=6379
 TAIR_USERNAME=实例账号
 # TAIR_PASSWORD must be injected by the deployment secret store.
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 CORE_READ_CACHE_TOKEN=独立随机内部令牌
 TAIR_HOST=实例的 VPC 内网地址
 TAIR_PORT=6379
 TAIR_USERNAME=实例账号
 TAIR_PASSWORD=实例密码
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 # CORE_READ_CACHE_TOKEN must be injected by the deployment secret store.
@@ -68,6 +72,8 @@ TAIR_PORT=6379
 TAIR_USERNAME=实例账号
 # TAIR_PASSWORD must be injected by the deployment secret store.
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 TAIR_TLS_ENABLED=true
 ```
 

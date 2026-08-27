@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { CAKEUNCLE_MEAL_BRANDS, type CakeuncleMealBrand } from '@shop/vendorcakeuncle';
 import type { VendorConnection } from '@shop/vendorcore';
 
@@ -36,6 +37,8 @@ export function mealCatalogScopes(connection: VendorConnection): readonly MealCa
   return Object.freeze(scopes);
 }
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export const MEAL_BRANDS = Object.freeze([
   'KFC',
   'MCDONALDS',
@@ -43,6 +46,7 @@ export const MEAL_BRANDS = Object.freeze([
   'STARBUCKS',
   'COTTI',
 ] as const);
+<<<<<<< HEAD
 =======
 import { CAKEUNCLE_MEAL_BRANDS, type CakeuncleMealBrand } from '@shop/vendorcakeuncle';
 import type { VendorConnection } from '@shop/vendorcore';
@@ -84,3 +88,7 @@ export function mealCatalogScopes(connection: VendorConnection): readonly MealCa
   return Object.freeze(scopes);
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+
+export type MealBrand = (typeof MEAL_BRANDS)[number];
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -9,6 +9,7 @@ export default defineConfig(() => {
     server: {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       port: 4173,
 =======
       port: 5173,
@@ -16,6 +17,9 @@ export default defineConfig(() => {
 =======
       port: 4173,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      port: 5173,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       /**
        * In production Caddy reverse-proxies smart.hbbtzn.com/api/* to the commerce
        * runtime. The dev server must do the same or every authenticated request

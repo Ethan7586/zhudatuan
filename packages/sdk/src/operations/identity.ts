@@ -19,6 +19,7 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.members.manage",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   "identity.members.reset",
@@ -34,6 +35,11 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  "identity.password.change",
+  "identity.password.verify",
+  "identity.password.reset",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
@@ -56,6 +62,7 @@ export interface IdentityOperations {
   readonly membersManage: OperationMethod<"identity.members.manage">;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly membersReset: OperationMethod<"identity.members.reset">;
@@ -71,6 +78,11 @@ export interface IdentityOperations {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  readonly passwordChange: OperationMethod<"identity.password.change">;
+  readonly passwordVerify: OperationMethod<"identity.password.verify">;
+  readonly passwordReset: OperationMethod<"identity.password.reset">;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly mobileManage: OperationMethod<"identity.mobile.manage">;
   readonly stepupStart: OperationMethod<"identity.stepup.start">;
   readonly stepupComplete: OperationMethod<"identity.stepup.complete">;
@@ -98,6 +110,7 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     membersManage: bindMembersManage(client),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     membersReset: bindMembersReset(client),
@@ -113,6 +126,11 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    passwordChange: bindPasswordChange(client),
+    passwordVerify: bindPasswordVerify(client),
+    passwordReset: bindPasswordReset(client),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     mobileManage: bindMobileManage(client),
     stepupStart: bindStepupStart(client),
     stepupComplete: bindStepupComplete(client),
@@ -219,6 +237,7 @@ function bindMembersManage(client: OperationExecutor): OperationMethod<"identity
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export function createFetchIdentityMembersReset(baseUrl: string): OperationMethod<"identity.members.reset"> {
@@ -234,6 +253,8 @@ function bindMembersReset(client: OperationExecutor): OperationMethod<"identity.
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function createFetchIdentityPasswordChange(baseUrl: string): OperationMethod<"identity.password.change"> {
   return bindPasswordChange(new ApiClient(baseUrl, new FetchTransport()));
 }
@@ -260,6 +281,7 @@ function bindPasswordReset(client: OperationExecutor): OperationMethod<"identity
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export function createFetchIdentityMobileChallenge(baseUrl: string): OperationMethod<"identity.mobile.challenge"> {
@@ -275,6 +297,8 @@ function bindMobileChallenge(client: OperationExecutor): OperationMethod<"identi
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function createFetchIdentityMobileManage(baseUrl: string): OperationMethod<"identity.mobile.manage"> {
   return bindMobileManage(new ApiClient(baseUrl, new FetchTransport()));
 }

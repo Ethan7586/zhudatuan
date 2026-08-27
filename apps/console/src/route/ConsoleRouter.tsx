@@ -6,6 +6,7 @@ import { landingLoader, scopeLoader } from './SessionLoader';
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
 
 =======
@@ -14,6 +15,8 @@ const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefine
 const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
 
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export const consoleRouter = createBrowserRouter([
   {
     path: '/',
@@ -38,6 +41,7 @@ export const consoleRouter = createBrowserRouter([
       { path: 'orders/:orderId', lazy: () => import('../feature/order/OrderDetailRoute') },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       { path: 'referral', element: <Navigate to="settings" replace /> },
@@ -52,6 +56,8 @@ export const consoleRouter = createBrowserRouter([
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       { path: 'finance', lazy: () => import('../feature/finance/FinanceRoute') },
       { path: 'finance/entries', lazy: () => import('../feature/finance/EntryRoute') },
       { path: 'finance/statements', lazy: () => import('../feature/finance/StatementRoute') },
@@ -75,6 +81,7 @@ export const consoleRouter = createBrowserRouter([
   { path: '*', lazy: () => import('./NotFoundRoute') },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ], previewBasename === undefined ? undefined : { basename: previewBasename });
 =======
 ]);
@@ -82,3 +89,6 @@ export const consoleRouter = createBrowserRouter([
 =======
 ], previewBasename === undefined ? undefined : { basename: previewBasename });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

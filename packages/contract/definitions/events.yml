@@ -30,6 +30,7 @@ events:
     handlers: [projection]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - id: identity.member.reset
@@ -44,6 +45,8 @@ events:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: access.version.changed
     owner: access
     version: 1
@@ -51,6 +54,7 @@ events:
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
     handlers: [projection]
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -88,6 +92,8 @@ events:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: catalog.listing.published
     owner: catalog
     version: 1
@@ -138,6 +144,7 @@ events:
     schemaRegistry: services/commerce/src/app/events.ts
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     handlers: [projection, reconciliation, referral]
 =======
     handlers: [projection]
@@ -145,12 +152,16 @@ events:
 =======
     handlers: [projection, reconciliation, referral]
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    handlers: [projection]
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.paid
     owner: order
     version: 1
     schema: contract://events/order.paid/v1
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -169,12 +180,16 @@ events:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    handlers: [projection]
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: order.cancelled
     owner: order
     version: 1
     schema: contract://events/order.cancelled/v1
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     handlers: [projection, reconciliation, referral]
@@ -184,6 +199,9 @@ events:
 =======
     handlers: [projection, reconciliation, referral]
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    handlers: [projection]
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.succeeded
     owner: payment
     version: 1
@@ -199,6 +217,7 @@ events:
     schemaRegistry: services/commerce/src/app/events.ts
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     handlers: [projection, notification, reconciliation, referral]
 =======
     handlers: [projection, notification, reconciliation]
@@ -206,6 +225,9 @@ events:
 =======
     handlers: [projection, notification, reconciliation, referral]
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    handlers: [projection, notification, reconciliation]
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - id: payment.late.detected
     owner: payment
     version: 1

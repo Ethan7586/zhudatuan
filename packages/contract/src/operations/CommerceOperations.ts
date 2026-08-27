@@ -1,5 +1,6 @@
 // Generated from definitions/operations.yml. Do not edit.
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { operation, type HttpMethod, type OperationAudience, type OperationAvailability, type OperationExecution, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';
 
 type Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationExecution, OperationAvailability, string, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];
@@ -335,6 +336,8 @@ export const COMMERCE_OPERATION_DEFINITIONS = Object.freeze(rows.map((row) => op
 export const COMMERCE_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'runtime'));
 export const FROZEN_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'frozen'));
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { operation, type HttpMethod, type OperationAudience, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';
 
 type Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];
@@ -356,11 +359,17 @@ const rows = [
   ["identity.invitations.revoke","DELETE","/api/v1/identity/invitations/{invitationid}","identity","operator","identity.invitation.manage",true,"required","optional","high",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP13","MVP22"]],
   ["identity.members.create","POST","/api/v1/identity/members","identity","public",null,false,"required","optional","low",false,[],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
   ["identity.members.manage","PUT","/api/v1/identity/members/{membershipid}","identity","operator","member.manage",true,"required","optional","high",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP13","MVP22"]],
+<<<<<<< HEAD
   ["identity.members.reset","PUT","/api/v1/identity/members/{membershipid}/registration","identity","operator","identity.registration.reset",true,"required","required","high",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP13","MVP22"]],
   ["identity.password.change","PUT","/api/v1/identity/password","identity","member","identity.credential.manage",true,"required","optional","critical",true,["self"],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
   ["identity.password.verify","POST","/api/v1/identity/password/verify","identity","member","identity.assurance.manage",false,"required","optional","elevated",false,["self"],"structural",["MVP13","MVP22"]],
   ["identity.password.reset","POST","/api/v1/identity/password/reset","identity","public",null,false,"required","optional","low",false,[],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
   ["identity.mobile.challenge","POST","/api/v1/identity/mobile/challenges","identity","member","identity.mobile.manage",false,"required","optional","high",false,["self"],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
+=======
+  ["identity.password.change","PUT","/api/v1/identity/password","identity","member","identity.credential.manage",true,"required","optional","critical",true,["self"],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
+  ["identity.password.verify","POST","/api/v1/identity/password/verify","identity","member","identity.assurance.manage",false,"required","optional","elevated",false,["self"],"structural",["MVP13","MVP22"]],
+  ["identity.password.reset","POST","/api/v1/identity/password/reset","identity","public",null,false,"required","optional","low",false,[],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["identity.mobile.manage","PUT","/api/v1/identity/mobile","identity","member","identity.mobile.manage",true,"required","optional","high",false,["self"],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
   ["identity.stepup.start","POST","/api/v1/identity/stepup/challenges","identity","member","identity.assurance.manage",false,"required","optional","elevated",false,["self"],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
   ["identity.stepup.complete","POST","/api/v1/identity/stepup/verifications","identity","member","identity.assurance.manage",false,"required","optional","elevated",false,["self"],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
@@ -370,6 +379,7 @@ const rows = [
   ["access.center.read","GET","/api/v1/access/center","access","operator","access.center.read",true,"none","none","high",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP13","MVP22"]],
   ["access.roles.manage","PUT","/api/v1/access/roles/{roleid}","access","operator","access.role.manage",true,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP13","MVP22"]],
   ["access.scopes.manage","PUT","/api/v1/access/memberships/{membershipid}/scopes","access","operator","access.scope.manage",true,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP13","MVP22"]],
+<<<<<<< HEAD
   ["access.ownership.read","GET","/api/v1/access/ownership","access","operator","access.ownership.read",true,"none","none","high",false,["self"],"structural",["MVP13","MVP22"]],
   ["access.ownership.transfers.preview","POST","/api/v1/access/ownership/transfers/preview","access","operator","access.ownership.transfer",true,"required","optional","critical",true,["self"],"structural",["MVP13","MVP22"]],
   ["access.ownership.transfers.create","POST","/api/v1/access/ownership/transfers","access","operator","access.ownership.transfer",true,"required","optional","critical",true,["self"],"structural",["MVP13","MVP22"]],
@@ -377,6 +387,8 @@ const rows = [
   ["access.ownership.transfers.accept","POST","/api/v1/access/ownership/transfers/{transferid}/accept","access","operator","access.ownership.accept",true,"required","optional","critical",true,["self"],"structural",["MVP13","MVP22"]],
   ["access.ownership.transfers.cancel","POST","/api/v1/access/ownership/transfers/{transferid}/cancel","access","operator","access.ownership.transfer",true,"required","optional","critical",true,["self"],"structural",["MVP13","MVP22"]],
   ["access.ownership.transfers.cancel.preview","POST","/api/v1/access/ownership/transfers/{transferid}/cancel/preview","access","operator","access.ownership.transfer",true,"required","optional","critical",true,["self"],"structural",["MVP13","MVP22"]],
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["capability.assignments.read","GET","/api/v1/capabilities/assignments","capability","operator","capability.assignment.read",true,"none","none","high",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP04","MVP13","MVP22"]],
   ["capability.assignments.manage","PUT","/api/v1/capabilities/assignments/{assignmentid}","capability","operator","capability.assignment.manage",true,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP04","MVP13","MVP22"]],
   ["partner.partners.read","GET","/api/v1/partners","partner","operator","partner.read",true,"none","none","low",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP13","MVP22"]],
@@ -418,6 +430,7 @@ const rows = [
   ["inventory.imports.create","POST","/api/v1/inventory/imports","inventory","operator","inventory.import.manage",false,"required","optional","high",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP07","MVP16"]],
   ["inventory.imports.read","GET","/api/v1/inventory/imports","inventory","operator","inventory.import.read",true,"none","none","low",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP07","MVP16"]],
   ["marketing.campaigns.read","GET","/api/v1/marketing/campaigns","marketing","operator","marketing.read",true,"none","none","low",false,["platform","distributor","tenant","enterprise","mall","department","supplier","brand","store","owner","self"],"structural",["MVP03","MVP04","MVP05","MVP06","MVP07","MVP08","MVP09","MVP10","MVP11","MVP12","MVP13","MVP14","MVP15","MVP16","MVP17","MVP18","MVP19","MVP20","MVP21","MVP22","MVP23"]],
+<<<<<<< HEAD
   ["referral.settings.read","GET","/api/v1/referral/settings","referral","operator","referral.settings.read",true,"none","none","elevated",false,["mall"],"structural",["MVP04"]],
   ["referral.settings.manage","PUT","/api/v1/referral/settings","referral","operator","referral.settings.manage",true,"required","optional","critical",true,["mall"],"structural",["MVP04"]],
   ["referral.products.read","GET","/api/v1/referral/products","referral","operator","referral.products.read",true,"none","none","low",false,["mall"],"structural",["MVP04"]],
@@ -433,6 +446,8 @@ const rows = [
   ["referral.links.read","GET","/api/v1/referral/links","referral","member","referral.self.read",true,"none","none","low",false,["owner"],"structural",["MVP04"]],
   ["referral.withdrawals.read","GET","/api/v1/referral/withdrawals","referral","member","referral.self.read",true,"none","none","low",false,["owner"],"structural",["MVP04"]],
   ["referral.withdrawals.create","POST","/api/v1/referral/withdrawals","referral","member","referral.withdrawals.create",false,"required","optional","critical",true,["owner"],"structural",["MVP04"]],
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["reporting.dashboard.read","GET","/api/v1/reports/dashboard","reporting","operator","reporting.dashboard.read",true,"none","none","low",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP05","MVP14"]],
   ["reporting.sales.read","GET","/api/v1/reports/sales","reporting","operator","reporting.sales.read",true,"none","none","low",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP11","MVP20"]],
   ["reporting.products.read","GET","/api/v1/reports/products","reporting","operator","reporting.product.read",true,"none","none","low",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP11","MVP20"]],
@@ -516,11 +531,14 @@ const rows = [
   ["finance.statements.export","POST","/api/v1/finance/statements/exports","finance","operator","finance.statement.export",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.reconciliations.manage","PUT","/api/v1/finance/reconciliations/{reconciliationid}","finance","operator","finance.reconciliation.manage",true,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.reconciliations.read","GET","/api/v1/finance/reconciliations","finance","operator","finance.reconciliation.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
+<<<<<<< HEAD
   ["finance.reconciliationrepairs.read","GET","/api/v1/finance/reconciliation-repairs/{repairid}","finance","operator","finance.reconciliation.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.reconciliationrepairs.preview","POST","/api/v1/finance/reconciliations/{reconciliationid}/items/{itemid}/repairs/preview","finance","operator","finance.reconciliation.manage",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.reconciliationrepairs.submit","POST","/api/v1/finance/reconciliation-repairs/{repairid}/submit","finance","operator","finance.reconciliation.manage",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.reconciliationrepairs.decide","POST","/api/v1/finance/reconciliation-repairs/{repairid}/decide","finance","operator","finance.reconciliation.manage",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.reconciliationrepairs.reverse","POST","/api/v1/finance/reconciliation-repairs/{repairid}/reverse","finance","operator","finance.reconciliation.manage",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["finance.settlements.read","GET","/api/v1/finance/settlements","finance","operator","finance.settlement.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.settlements.decide","POST","/api/v1/finance/settlements/{settlementid}/decide","finance","operator","finance.settlement.decide",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.settlements.adjust","POST","/api/v1/finance/settlements/{settlementid}/adjust","finance","operator","finance.settlement.adjust",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
@@ -534,6 +552,7 @@ const rows = [
   ["finance.backfills.read","GET","/api/v1/finance/backfills","finance","operator","finance.backfill.read",true,"none","none","high",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.backfills.decide","POST","/api/v1/finance/backfills/{backfillid}/decide","finance","operator","finance.backfill.decide",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.policies.manage","PUT","/api/v1/finance/policies/{policyid}","finance","operator","finance.policy.manage",true,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
+<<<<<<< HEAD
   ["finance.policies.preview","POST","/api/v1/finance/policies/{policyid}/preview","finance","operator","finance.policy.manage",true,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.policies.read","GET","/api/v1/finance/policies","finance","operator","finance.policy.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["finance.audit.read","GET","/api/v1/finance/audits","finance","operator","audit.read",true,"none","none","high",false,["platform","distributor","tenant","enterprise","mall","department","store","supplier","brand"],"structural",["MVP10","MVP19"]],
@@ -541,6 +560,11 @@ const rows = [
   ["invoice.profiles.read","GET","/api/v1/invoices/profiles","finance","member","invoice.profile.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department","supplier","brand","store","owner","self"],"structural",["MVP10","MVP17","MVP19"]],
   ["invoice.operatorprofiles.read","GET","/api/v1/invoices/operator-profiles","finance","operator","invoice.profile.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department","supplier","brand","store","owner","self"],"structural",["MVP10","MVP19"]],
   ["invoice.requests.create","POST","/api/v1/invoices/requests","finance","operator","invoice.request.create",false,"required","optional","high",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
+=======
+  ["invoice.profiles.manage","PUT","/api/v1/invoices/profiles/{profileid}","finance","operator","invoice.profile.manage",true,"required","optional","high",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
+  ["invoice.profiles.read","GET","/api/v1/invoices/profiles","finance","member","invoice.profile.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department","supplier","brand","store","owner","self"],"structural",["MVP10","MVP17","MVP19"]],
+  ["invoice.requests.create","POST","/api/v1/invoices/requests","finance","member","invoice.request.create",false,"required","optional","high",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["invoice.requests.read","GET","/api/v1/invoices/requests","finance","operator","invoice.request.read",true,"none","none","elevated",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["invoice.requests.cancel","DELETE","/api/v1/invoices/requests/{requestid}","finance","operator","invoice.request.cancel",true,"required","optional","high",false,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
   ["invoice.requests.decide","POST","/api/v1/invoices/requests/{requestid}/decide","finance","operator","invoice.request.decide",false,"required","optional","critical",true,["platform","distributor","tenant","enterprise","mall","department"],"structural",["MVP10","MVP19"]],
@@ -593,4 +617,7 @@ const rows = [
 ] as const satisfies readonly Row[];
 
 export const COMMERCE_OPERATIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], risk: row[9], stepup: row[10], scopeKinds: row[11], schema: row[12], requirements: row[13] })));
+<<<<<<< HEAD
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

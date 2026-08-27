@@ -34,6 +34,7 @@ jobs:
       PGDATABASE: shop
       PGUSER: postgres
 <<<<<<< HEAD
+<<<<<<< HEAD
       PGPASSWORD: shop-ci-${{ github.run_id }}-${{ github.run_attempt }}
       SHOP_TEST_REDIS_URL: redis://127.0.0.1:6379
       VITE_API_BASE_URL: http://127.0.0.1:3001
@@ -47,6 +48,9 @@ jobs:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> bc283dd3 (fix(auth): fail builds with missing runtime values)
+=======
+      PGPASSWORD: ${{ env.SHOP_CI_DATABASE_PASSWORD }}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     services:
       postgres:
         image: postgres:17-alpine
@@ -82,6 +86,7 @@ jobs:
           npm ci
           npm run check:cleaninstall
 <<<<<<< HEAD
+<<<<<<< HEAD
           npm run check:artifacts
           npm run check:approved-ui
           npm run check:registration-deployment
@@ -92,6 +97,9 @@ jobs:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+          npm run check:migration-inventory
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
       - name: ci/02_secretlicense
         run: |

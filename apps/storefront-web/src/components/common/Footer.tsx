@@ -1,6 +1,10 @@
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
  * 主打团企业福利商城 - 页脚 Footer 组件
+=======
+ * 智慧翼企业福利商城 - 页脚 Footer 组件
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
  * 智慧翼企业福利商城 - 页脚 Footer 组件
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -155,6 +159,7 @@ export const Footer: React.FC = () => {
           <div className="mt-4 pt-3 border-t border-gray-700/80">
             <div className="text-[11px] text-gray-400">项目状态：</div>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <div className="text-sm font-black text-white mt-0.5">主打团福利商城</div>
             <div className="text-[10px] text-gray-300 mt-1">技术服务：雍彻科技</div>
 <<<<<<< HEAD
@@ -164,11 +169,16 @@ export const Footer: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+            <div className="text-sm font-black text-white mt-0.5">智慧翼福利商城</div>
+            <div className="text-[10px] text-gray-500 mt-1">技术服务：雍彻科技</div>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           </div>
         </div>
       </div>
 
       {/* 3. 版权、备案与技术服务方标志 */}
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       <div className="border-t border-gray-800 bg-gray-950 py-5 text-center text-gray-400 text-[11px]">
@@ -178,6 +188,9 @@ export const Footer: React.FC = () => {
 =======
       <div className="border-t border-gray-800 bg-gray-950 py-5 text-center text-gray-400 text-[11px]">
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+      <div className="border-t border-gray-800 bg-gray-950 py-5 text-center text-gray-500 text-[11px]">
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <div className="sw-web-container max-w-[1280px] mx-auto px-4 space-y-2">
           <div className="flex items-center justify-center gap-4 flex-wrap text-gray-400">
             <span className="flex items-center gap-1.5">
@@ -194,6 +207,7 @@ export const Footer: React.FC = () => {
           </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
           <div>© 2026 主打团 Enterprise Welfare Mall. All Rights Reserved. 技术服务：雍彻科技</div>
 
           <div className="text-gray-400 text-[10px]">商品、库存、企业权益与订单状态以登录账户的实时数据为准。</div>
@@ -205,6 +219,11 @@ export const Footer: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+          <div>© 2026 智慧翼 Enterprise Welfare Mall. All Rights Reserved. 技术服务：雍彻科技</div>
+
+          <div className="text-gray-600 text-[10px]">商品、库存、企业权益与订单状态以登录账户的实时数据为准。</div>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         </div>
       </div>
     </footer>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
 =======
 import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
@@ -8,6 +9,9 @@ import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientA
 =======
 import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const operations = [
   operation('identity.session.read', 'GET', '/api/v1/identity/session', 'member'),
@@ -33,6 +37,7 @@ describe('SDK client artifacts', () => {
       expect(source).not.toContain('call<T');
     }
   });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -72,6 +77,8 @@ describe('SDK client artifacts', () => {
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
   });
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });
 
 function operation(

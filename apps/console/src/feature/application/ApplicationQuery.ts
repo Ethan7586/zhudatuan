@@ -8,6 +8,7 @@ const applicationsRead = createFetchExperienceApplicationsRead(appConfig.apiBase
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 export const applicationRootKey = (context: ConsoleContext) => Object.freeze(['console', context.scope.kind, context.scope.id, context.session.accessVersion, 'experience.applications.read'] as const);
 
 export const applicationKey = (context: ConsoleContext, cursor?: string) => Object.freeze([...applicationRootKey(context), cursor ?? null, 50] as const);
@@ -15,6 +16,8 @@ export const applicationKey = (context: ConsoleContext, cursor?: string) => Obje
 export async function readApplications(context: ConsoleContext, cursor: string | undefined, signal: AbortSignal) {
   const value = await applicationsRead({ query: { limit: 50, ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion));
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export const applicationKey = (context: ConsoleContext, cursor?: string) => Object.freeze([
   'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'experience.applications.read', cursor ?? null, 50,
 ] as const);
@@ -22,6 +25,7 @@ export const applicationKey = (context: ConsoleContext, cursor?: string) => Obje
 export async function readApplications(context: ConsoleContext, cursor: string | undefined, signal: AbortSignal) {
   const value = await applicationsRead({ query: { limit: 50,
     ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion));
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 export const applicationRootKey = (context: ConsoleContext) => Object.freeze(['console', context.scope.kind, context.scope.id, context.session.accessVersion, 'experience.applications.read'] as const);
@@ -31,5 +35,7 @@ export const applicationKey = (context: ConsoleContext, cursor?: string) => Obje
 export async function readApplications(context: ConsoleContext, cursor: string | undefined, signal: AbortSignal) {
   const value = await applicationsRead({ query: { limit: 50, ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return ApplicationPageSchema.parse(value);
 }

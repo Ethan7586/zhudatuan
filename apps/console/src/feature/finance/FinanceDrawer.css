@@ -111,6 +111,7 @@
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 .financedrawer .financedrawerheader .financeimmutablealert p {
 =======
 .financeimmutablealert p {
@@ -118,6 +119,9 @@
 =======
 .financedrawer .financedrawerheader .financeimmutablealert p {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+.financeimmutablealert p {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   margin: 0;
   color: var(--sw-warning-strong);
   font-size: 9px;

@@ -16,12 +16,15 @@ export function queryCondition(input: QueryStateInput): ResourceCondition {
     const condition = errorCondition(input.error);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (condition === 'unauthenticated' || condition === 'denied') return condition;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     if (condition === 'unauthenticated' || condition === 'denied') return condition;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (input.fetching) return 'retry';
     if (input.hasData && (condition === 'offline' || condition === 'failure')) return 'stale';
     return condition;
@@ -40,6 +43,7 @@ export function safeQueryError(error: Error | null): string | undefined {
 }
 
 function errorCondition(error: Error): ResourceCondition {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const api = apiError(error);
@@ -61,6 +65,12 @@ function errorCondition(error: Error): ResourceCondition {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  if (!online()) return 'offline';
+  const api = apiError(error);
+  if (api === null) return 'failure';
+  if (api.status === 401 || api.status === 403) return 'denied';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (api.status === 404) return 'notfound';
   if (api.status === 409 || api.status === 412) return 'conflict';
   if (api.status === 429) return 'ratelimited';
@@ -72,6 +82,7 @@ function apiError(error: Error): Pick<ApiError, 'code' | 'requestId' | 'status'>
   const value = error as Error & Partial<Pick<ApiError, 'code' | 'requestId' | 'status'>>;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   return value.name === 'ApiError' && typeof value.code === 'string' && typeof value.requestId === 'string' && typeof value.status === 'number' ? (value as Pick<ApiError, 'code' | 'requestId' | 'status'>) : null;
 =======
   return value.name === 'ApiError' && typeof value.code === 'string' && typeof value.requestId === 'string'
@@ -80,6 +91,10 @@ function apiError(error: Error): Pick<ApiError, 'code' | 'requestId' | 'status'>
 =======
   return value.name === 'ApiError' && typeof value.code === 'string' && typeof value.requestId === 'string' && typeof value.status === 'number' ? (value as Pick<ApiError, 'code' | 'requestId' | 'status'>) : null;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  return value.name === 'ApiError' && typeof value.code === 'string' && typeof value.requestId === 'string'
+    && typeof value.status === 'number' ? value as Pick<ApiError, 'code' | 'requestId' | 'status'> : null;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function online(): boolean {

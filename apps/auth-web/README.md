@@ -6,6 +6,7 @@ and the cross-domain callback screen.
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 Console password login uses the canonical Commerce identity API with an
@@ -21,13 +22,18 @@ during their migration. QR login, enterprise SSO and admin step-up remain
 visibly unavailable until their authoritative services exist.
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 It is a UI prototype at this stage. Production authentication, membership,
 ticket exchange, rate limiting, and audit logging belong to
 `services/commerce-api` and `packages/authz`; browser code must not contain
 secrets or issue real sessions.
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 Run it from the repository root:
 
@@ -35,6 +41,7 @@ Run it from the repository root:
 npm run dev:auth
 ```
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -50,3 +57,6 @@ It uses port `3002` locally.
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+It uses port `3002` locally.
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

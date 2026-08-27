@@ -7,16 +7,20 @@ import { orderPreviewPage, OrderPreviewQueryError } from './OrderPreviewFixtures
 import { productPreviewPage, ProductPreviewQueryError } from './ProductPreviewFixtures.ts';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { referralPreviewBindings, referralPreviewCommissions, referralPreviewMembers, referralPreviewProducts, referralPreviewSetting } from './ReferralPreviewFixtures.ts';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { referralPreviewBindings, referralPreviewCommissions, referralPreviewMembers, referralPreviewProducts, referralPreviewSetting } from './ReferralPreviewFixtures.ts';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { voucherPreviewPage } from './VoucherPreviewFixtures.ts';
 
 const port = Number(process.env.CONSOLE_PREVIEW_API_PORT ?? 4311);
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -54,6 +58,9 @@ const previewSession = Object.freeze({ ...consoleSession, scope: previewScope, s
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+const previewSession = Object.freeze({ ...consoleSession, scope: previewScope, scopes: [previewScope] });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 const server = createServer((request, response) => {
   setCors(request, response);
@@ -62,6 +69,7 @@ const server = createServer((request, response) => {
     response.end();
     return;
   }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -75,6 +83,8 @@ const server = createServer((request, response) => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   const url = new URL(request.url ?? '/', `http://${request.headers.host ?? `127.0.0.1:${port}`}`);
   const route = `${request.method ?? 'GET'} ${url.pathname}`;
@@ -90,6 +100,7 @@ const server = createServer((request, response) => {
     }
     return;
   }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -121,6 +132,8 @@ const server = createServer((request, response) => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (route === 'GET /api/v1/orders') {
     try {
       send(response, orderPreviewPage(url.searchParams));
@@ -174,6 +187,7 @@ const server = createServer((request, response) => {
   if (result === undefined) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     send(response, errorContract(request, 'PREVIEW_OPERATION_FORBIDDEN', '当前预览账号尚未开通此页面。'), 403);
 =======
     send(response, { code: 'PREVIEW_OPERATION_NOT_REGISTERED', method: request.method, path: url.pathname }, 501);
@@ -181,6 +195,9 @@ const server = createServer((request, response) => {
 =======
     send(response, errorContract(request, 'PREVIEW_OPERATION_FORBIDDEN', '当前预览账号尚未开通此页面。'), 403);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    send(response, { code: 'PREVIEW_OPERATION_NOT_REGISTERED', method: request.method, path: url.pathname }, 501);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     return;
   }
 
@@ -205,6 +222,7 @@ function send(response, body, status = 200) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 function page(items) {
@@ -226,6 +244,8 @@ function requestId(request) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function setCors(request, response) {
   response.setHeader('access-control-allow-origin', request.headers.origin ?? 'http://127.0.0.1:4173');
   response.setHeader('access-control-allow-credentials', 'true');

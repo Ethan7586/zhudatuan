@@ -4,6 +4,7 @@ import type { CheckoutQuote, CheckoutSelection, QuoteLine } from '../domain/mode
 import { CheckoutPolicy, type CampaignRule } from '../domain/policy/CheckoutPolicy';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import type { BenefitChoice, BenefitGateway } from '../../benefit/application/port/BenefitPort';
@@ -25,6 +26,10 @@ import { VoucherPort, type VoucherChoice } from '../../voucher/VoucherModule';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { BenefitPort, type BenefitChoice } from '../../benefit/BenefitModule';
+import { VoucherPort, type VoucherChoice } from '../../voucher/VoucherModule';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface CartRow {
   readonly id: string; readonly member_id: string; readonly mall_id: string; readonly application_id: string; readonly version: number;
@@ -53,6 +58,7 @@ interface PriceRuleRow { readonly id: string; readonly version: number; readonly
 export class QuoteReader {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   constructor(
@@ -66,6 +72,9 @@ export class QuoteReader {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  constructor(private readonly policy = new CheckoutPolicy(), private readonly benefit = new BenefitPort(), private readonly voucher = new VoucherPort()) {}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   async read(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CheckoutQuote> {
     const cart = await this.cart(database, membership, selection);
@@ -207,6 +216,7 @@ export class QuoteReader {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly QuoteVoucherChoice[]> {
 =======
   private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly VoucherChoice[]> {
@@ -214,6 +224,9 @@ export class QuoteReader {
 =======
   private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly QuoteVoucherChoice[]> {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly VoucherChoice[]> {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (selection.vouchers.length === 0) return [];
     const rows = await this.voucher.preview(database, selection.vouchers, cart.member_id, cart.mall_id);
     if (rows.length !== selection.vouchers.length) throw new Error('VOUCHER_NOT_USABLE');

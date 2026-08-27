@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import type { CatalogSource, JsonObject, PriceSource, ProviderCallContext, ProviderPorts, SourceSkuKey } from '@shop/contract';
 import { Provider, assertInstallation, requireConnection, type ProviderFactory, type ProviderInstallation } from '@shop/providercore';
 import { CakeuncleClient, CAKEUNCLE_VOUCHER_ENDPOINTS, type CakeuncleInvocation } from '@shop/vendorcakeuncle';
@@ -43,6 +44,14 @@ export function createFoodvoucherPorts(client: FoodvoucherClient,
   return Object.freeze({ catalog: catalog(client, mapper), price: price(client, mapper) });
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { createPorts, Provider, assertInstallation, requireConnection, type ProviderFactory, type ProviderInstallation } from '@shop/providercore';
+import { createCakeuncleClient } from '@shop/vendorcakeuncle';
+import { definition } from './manifest';
+import { FoodvoucherMapper } from './Mapper';
+
+const operations = Object.freeze({ catalog: 'voucher.product.pull', order: 'voucher.issue', cancel: 'voucher.void', refund: 'voucher.refund.submit', statement: 'voucher.statement.pull', verification: 'voucher.verify' });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export const FoodvoucherProvider: ProviderFactory = Object.freeze({
   id: definition.id,
@@ -50,6 +59,7 @@ export const FoodvoucherProvider: ProviderFactory = Object.freeze({
   definition,
   create(installation: ProviderInstallation) {
     assertInstallation(FoodvoucherProvider, installation);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -103,10 +113,13 @@ function uniqueIds(keys: readonly SourceSkuKey[]): readonly string[] {
   return ids;
 }
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const client = createCakeuncleClient(requireConnection(installation));
     return new Provider(installation.manifest, client, createPorts(client, operations, new FoodvoucherMapper(), requireConnection(installation).secret));
   },
 });
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   },
@@ -151,3 +164,5 @@ function uniqueIds(keys: readonly SourceSkuKey[]): readonly string[] {
   return ids;
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

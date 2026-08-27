@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it, vi } from 'vitest';
 import { clientEnvironment } from './ClientEnvironment';
@@ -340,12 +341,38 @@ describe('runtime configuration schema', () => {
 =======
       KMS_BEARER_TOKEN: kmsBearerToken,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { describe, expect, it } from 'vitest';
+import { clientEnvironment } from './ClientEnvironment';
+import { miniappEnvironment } from './MiniappEnvironment';
+import { API_ENVIRONMENT_KEYS, JOBS_ENVIRONMENT_KEYS, LOCAL_ENVIRONMENT_KEYS, WechatApplicationCatalog, apiReturnTargets, integerValue, isPrivateIpv4Host, localInfrastructureEnvironment, localSeedEnvironment, requiredValue, validateApiEnvironment } from './ServerEnvironment';
+
+describe('runtime configuration schema', () => {
+  it('owns every shared key exactly once', () => {
+    expect(new Set(API_ENVIRONMENT_KEYS).size).toBe(API_ENVIRONMENT_KEYS.length);
+    expect(new Set(JOBS_ENVIRONMENT_KEYS).size).toBe(JOBS_ENVIRONMENT_KEYS.length);
+    expect(new Set(Object.values(LOCAL_ENVIRONMENT_KEYS)).size).toBe(Object.values(LOCAL_ENVIRONMENT_KEYS).length);
+  });
+
+  it('validates local infrastructure and seed contracts without weakening production schemas', () => {
+    expect(localInfrastructureEnvironment({
+      LOCAL_TLS_KEY_FILE: '/private/local.key', LOCAL_TLS_CERT_FILE: '/private/local.crt', LOCAL_SECRETS_FILE: '/private/secrets.json',
+      LOCAL_SECRETS_PORT: '8443', LOCAL_KMS_PORT: '8444', LOCAL_KMS_MASTER_KEY: 'local-master',
+      LOCAL_OBJECTS_PORT: '8445', LOCAL_OBJECTS_DIRECTORY: '/private/objects', LOCAL_OBJECTS_TOKEN: 'local-object-token-value',
+    }).objectsPort).toBe(8445);
+    const seed = {
+      SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443', LOCAL_ADMIN_DATABASE_CONNECTION_REF: 'shop/local/database/admin',
+      MIGRATION_DATABASE_CONNECTION_REF: 'shop/local/database/migration',
+      LOCAL_ETHAN_PASSWORD_REF: 'local/ethan/password', IDENTITY_KEY_REF: 'shop/local/identity/index',
+      KMS_ENDPOINT: 'https://127.0.0.1:8444', OBJECT_STORE_ENDPOINT: 'https://127.0.0.1:8445', OBJECT_STORE_TOKEN_REF: 'shop/local/objects/api',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     };
     expect(localSeedEnvironment(seed).adminDatabaseConnectionRef).toBe('shop/local/database/admin');
     expect(localSeedEnvironment(seed).migrationDatabaseConnectionRef).toBe('shop/local/database/migration');
     expect(() => localSeedEnvironment({ ...seed, KMS_ENDPOINT: 'http://127.0.0.1:8444' })).toThrow('KMS_ENDPOINT_INVALID');
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -397,6 +424,11 @@ describe('runtime configuration schema', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  it('normalizes required values and rejects blank secrets', () => {
+    expect(requiredValue(' value ', 'MISSING')).toBe('value');
+    expect(() => requiredValue('   ', 'MISSING')).toThrow('MISSING');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 
   it('accepts only bounded integer configuration', () => {
@@ -405,6 +437,7 @@ describe('runtime configuration schema', () => {
     expect(() => integerValue('20.5', 10, 1, 20, 'INVALID')).toThrow('INVALID');
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -448,6 +481,8 @@ describe('runtime configuration schema', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('fails closed for incomplete browser, storefront, and miniapp deployment identity', () => {
     const client = { VITE_API_BASE_URL: 'https://api.example.com', VITE_AUTH_BASE_URL: 'https://auth.example.com', VITE_CLIENT_VERSION: '2.4.1' };
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
@@ -471,12 +506,15 @@ describe('runtime configuration schema', () => {
       KMS_ENDPOINT: 'https://kms.internal',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       KMS_BEARER_TOKEN: kmsBearerToken,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       KMS_BEARER_TOKEN: kmsBearerToken,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       PII_KEY_REF: 'secret/pii/encryption',
       WECHAT_APPLICATION_CONFIG_REF: 'secret/wechat/applications',
       WECHAT_PAYMENT_CONFIG_REF: 'secret/payment/wechat',
@@ -487,17 +525,21 @@ describe('runtime configuration schema', () => {
       SECRET_STORE_ENDPOINT: 'https://secrets.internal',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     };
     expect(() => validateApiEnvironment(valid)).not.toThrow();
     expect(() => validateApiEnvironment({ ...valid, AUTH_MODE: 'test' })).toThrow('PRODUCTION_AUTH_MODE_INVALID');
     expect(() => validateApiEnvironment({ ...valid, DATABASE_API_CONNECTION_REF: '' })).toThrow('DATABASE_API_CONNECTION_REF_MISSING');
     expect(() => validateApiEnvironment({ ...valid, SECRET_STORE_ENDPOINT: '' })).toThrow('SECRET_STORE_ENDPOINT_MISSING');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -511,6 +553,8 @@ describe('runtime configuration schema', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(apiReturnTargets(valid).storefront).toBe('https://storefront.example.com');
     expect(() => apiReturnTargets({ ...valid, AUTH_RETURN_TARGETS: '{"storefront":"https://evil.example.com"}' })).toThrow('AUTH_RETURN_TARGETS_INVALID');
   });

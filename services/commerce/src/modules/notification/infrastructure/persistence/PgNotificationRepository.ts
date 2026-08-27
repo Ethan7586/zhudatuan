@@ -6,6 +6,7 @@ import type { ChallengeRecord, DispatchRecord, EndpointRecord, MemberContext, No
 import type { DeliveryChannelId } from '../../domain/model/Template';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { identityNotificationPort } from '../../../identity/IdentityNotificationPort';
 =======
 import { identityNotificationPort } from '../../../identity/IdentityModule';
@@ -13,6 +14,9 @@ import { identityNotificationPort } from '../../../identity/IdentityModule';
 =======
 import { identityNotificationPort } from '../../../identity/IdentityNotificationPort';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { identityNotificationPort } from '../../../identity/IdentityModule';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export class PgNotificationRepository implements NotificationRepository {
   constructor(private readonly database: OperationDatabase) {}
@@ -175,6 +179,7 @@ export class PgNotificationRepository implements NotificationRepository {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   beginChallengeAttempt(id: string, provider: string) { return identityNotificationPort.beginAttempt(this.database, id, provider); }
@@ -193,5 +198,9 @@ export class PgNotificationRepository implements NotificationRepository {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  challengeAttempt(id: string, provider: string, state: 'sent' | 'failed', external: string | null, code: string | null) {
+    return identityNotificationPort.attempt(this.database, id, provider, state, external, code);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }

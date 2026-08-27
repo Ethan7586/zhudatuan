@@ -7,12 +7,15 @@ import { Client } from 'pg';
 import { parse } from 'yaml';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { verifyFinanceAccountingIntegrity } from './finance-accounting-integrity.mjs';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { verifyFinanceAccountingIntegrity } from './finance-accounting-integrity.mjs';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
 const ROOT = repositoryRoot;
@@ -21,16 +24,20 @@ const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const REGISTRATION_MIGRATION_RUNNER = join(ROOT, 'services', 'commerce', 'src', 'foundation', 'infrastructure', 'RegistrationMigrationRunner.ts');
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 const REGISTRATION_MIGRATION_RUNNER = join(ROOT, 'services', 'commerce', 'src', 'foundation', 'infrastructure', 'RegistrationMigrationRunner.ts');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
 const REPAIR_FILES = [
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -70,6 +77,8 @@ const REPAIR_FILES = [
   '20260821042000_benefit_lifecycle.sql',
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   '20260821010000_assert_source_head.sql','20260821011000_create_domain_schemas.sql','20260821012000_create_runtime_control.sql',
   '20260821013000_create_identity_access.sql','20260821014000_create_organization_partner.sql','20260821015000_create_capability_member.sql',
   '20260821016000_create_qualification.sql','20260821017000_create_catalog_pricing.sql','20260821018000_create_inventory_experience.sql',
@@ -81,9 +90,12 @@ const REPAIR_FILES = [
   '20260821034000_add_storefront_offer_read.sql','20260821035000_add_auth_ticket_exchange.sql',
   '20260821036000_add_invitation_terms_read.sql','20260821037000_add_member_journey.sql','20260821038000_add_keyset_indexes.sql',
   '20260821039000_checkout_atomic_order.sql','20260821040000_payment_recovery.sql','20260821041000_voucher_lifecycle.sql','20260821042000_benefit_lifecycle.sql',
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   '20260821043000_finance_lifecycle.sql',
   '20260821044000_channel_lifecycle.sql',
   '20260821045000_channel_scope_mapping.sql',
@@ -121,6 +133,7 @@ const REPAIR_FILES = [
   '20260821077000_add_reporting_cockpit.sql',
   '20260821078000_complete_experience_application.sql',
   '20260821079000_resolve_experience_version_scope.sql',
+<<<<<<< HEAD
 <<<<<<< HEAD
   '20260821080000_restore_member_scope_authorization.sql',
   '20260828091000_finance_reconciliation_integrity.sql',
@@ -165,10 +178,13 @@ const REPAIR_FILES = [
 const mode = process.argv[2];
 if (!['--check-inventory', '--schema-fresh', '--environment-bootstrap', '--inventory-cutover-unsafe', '--postgres-fresh', '--mvp-kernel'].includes(mode)) {
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 ];
 
 const mode = process.argv[2];
 if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel'].includes(mode)) {
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 ];
@@ -176,6 +192,8 @@ if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventor
 const mode = process.argv[2];
 if (!['--check-inventory', '--schema-fresh', '--environment-bootstrap', '--inventory-cutover-unsafe', '--postgres-fresh', '--mvp-kernel'].includes(mode)) {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
@@ -190,6 +208,7 @@ if (mode === '--check-inventory') {
 
 const database = await openDatabase();
 try {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -245,11 +264,28 @@ try {
 =======
       await assertUnsafeInventoryCutoverRejected(database, await readFile(join(MIGRATIONS, name), 'utf8'));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  await execute(database, `
+    create role anon nologin; create role authenticated nologin; create role service_role nologin;
+  `, 'database role bootstrap');
+  if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
+  await execute(database, `
+    create schema supabase_migrations;
+    create table supabase_migrations.schema_migrations(version text primary key,statements text[],name text);
+  `, 'database bootstrap');
+  let applied = 0;
+  for (const name of migrationFiles) {
+    if (name === BOOTSTRAP) await seedBootstrapPrecondition(database);
+    if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
+      await seedUnsafeInventoryCutover(database);
+      await assertUnsafeInventoryCutoverRejected(database, await readFile(join(MIGRATIONS,name),'utf8'));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       console.log(`unsafe inventory cutover rejected atomically: migrations_before_cutover=${applied}`);
       process.exitCode = 0;
       break;
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     await execute(database, await readFile(join(MIGRATIONS, name), 'utf8'), `migration ${name}`);
@@ -262,6 +298,10 @@ try {
     await execute(database, await readFile(join(MIGRATIONS, name), 'utf8'), `migration ${name}`);
     await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0, 14), name]);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    await execute(database, await readFile(join(MIGRATIONS,name),'utf8'), `migration ${name}`);
+    await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0,14),name]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     applied += 1;
   }
   if (mode !== '--inventory-cutover-unsafe') {
@@ -285,6 +325,7 @@ async function openDatabase() {
   return Object.freeze({
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     exec: async (sql) => {
       await client.query(sql);
     },
@@ -296,6 +337,9 @@ async function openDatabase() {
       await client.query(sql);
     },
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    exec: async (sql) => { await client.query(sql); },
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     query: (sql, parameters) => client.query(sql, parameters),
     close: () => client.end(),
   });
@@ -304,6 +348,7 @@ async function openDatabase() {
 async function verifyInventory(files) {
   const duplicates = duplicateVersions(files);
   if (duplicates.size) throw new Error(`duplicate migration versions: ${JSON.stringify([...duplicates])}`);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -336,10 +381,13 @@ async function verifyInventory(files) {
     throw new Error('DATABASE_OBJECT_CONTRACT_MISSING');
   });
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const history = JSON.parse(await readFile(HISTORY,'utf8'));
   if (history.algorithm!=='sha256' || history.count!==94 || history.migrations.length!==94) throw new Error('HISTORICAL_MIGRATION_MANIFEST_INVALID');
   const historical = files.filter((name)=>name.slice(0,14)<=history.head);
   if (JSON.stringify(historical)!==JSON.stringify(history.migrations.map((item)=>item.file))) throw new Error('HISTORICAL_MIGRATION_FILESET_DRIFT');
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   for (const item of history.migrations) {
@@ -371,6 +419,15 @@ async function verifyInventory(files) {
     throw new Error('DATABASE_OBJECT_CONTRACT_MISSING');
   });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  for (const item of history.migrations) {
+    const digest = createHash('sha256').update(await readFile(join(MIGRATIONS,item.file))).digest('hex');
+    if (digest!==item.sha256) throw new Error(`HISTORICAL_MIGRATION_HASH_DRIFT:${item.file}`);
+  }
+  const repair = files.filter((name)=>name.slice(0,14)>history.head);
+  if (JSON.stringify(repair)!==JSON.stringify(REPAIR_FILES)) throw new Error(`REPAIR_MIGRATION_SEQUENCE_DRIFT:${JSON.stringify(repair)}`);
+  await readFile(OBJECTS,'utf8').catch(()=>{ throw new Error('DATABASE_OBJECT_CONTRACT_MISSING'); });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function duplicateVersions(files) {
@@ -379,6 +436,7 @@ function duplicateVersions(files) {
     const match = /^(\d{14})_[a-z0-9_]+\.sql$/.exec(file);
     if (!match) throw new Error(`INVALID_MIGRATION_FILENAME:${file}`);
     const existing = versions.get(match[1]) ?? [];
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     existing.push(file);
@@ -518,6 +576,27 @@ async function stageFreshReplaySecrets(database) {
     database,
     `insert into runtime.vouchersecretstage(voucher_id,code_ciphertext,code_fingerprint,key_version,staged_at)
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    existing.push(file); versions.set(match[1],existing);
+  }
+  return new Map([...versions].filter(([,names])=>names.length>1));
+}
+
+async function execute(database,sql,label) {
+  try { await database.exec(sql); }
+  catch (error) { throw new Error(`${label}: ${error instanceof Error ? error.message : String(error)}`,{cause:error}); }
+}
+
+async function seedBootstrapPrecondition(database) {
+  await execute(database, `insert into public.users(id,tenant_id,enterprise_id,department_id,employee_no,display_name,email,status)
+    values('user-fresh-replay-ethan','tenant-smart-wing','enterprise-demo','department-digital','SW_FRESH_REPLAY_ETHAN','Fresh Replay Ethan','fresh-replay@example.invalid','active');
+    insert into public.members(id,user_id,primary_identifier,status) values('member-fresh-replay-ethan','user-fresh-replay-ethan','local_username:ethan','active');
+    insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,'bootstrap precondition');
+}
+
+async function stageFreshReplaySecrets(database) {
+  await execute(database, `insert into runtime.vouchersecretstage(voucher_id,code_ciphertext,code_fingerprint,key_version,staged_at)
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     select id,'fixturekms:v1:'||encode(digest(voucher_code,'sha256'),'base64'),encode(digest(lower(voucher_code),'sha256'),'hex'),'fixture-v1',created_at
     from public.vouchers on conflict(voucher_id) do nothing;
     insert into runtime.partneraddressstage(store_id,address_ciphertext,address_token,key_version,staged_at)
@@ -525,6 +604,7 @@ async function stageFreshReplaySecrets(database) {
     from public.stores where address_text is not null on conflict(store_id) do nothing;
     insert into runtime.distributorcontactstage(distributor_id,contact_ciphertext,contact_token,key_version,staged_at)
     select id,'fixturekms:v1:'||encode(digest(contact_json::text,'sha256'),'base64'),encode(digest(contact_json::text,'sha256'),'hex'),'fixture-v1',created_at
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     from public.distributors where contact_json<>'{}'::jsonb on conflict(distributor_id) do nothing;`,
@@ -555,10 +635,20 @@ async function seedUnsafeInventoryCutover(database) {
 }
 
 <<<<<<< HEAD
+=======
+    from public.distributors where contact_json<>'{}'::jsonb on conflict(distributor_id) do nothing;`,'secure fixture stage');
+}
+
+async function seedUnsafeInventoryCutover(database) {
+  await execute(database, `do $$ begin update public.inventory set reserved_qty=greatest(reserved_qty,1); if not found then raise exception 'UNSAFE_INVENTORY_FIXTURE_MISSING'; end if; end $$;`,'unsafe inventory fixture');
+}
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 async function assertUnsafeInventoryCutoverRejected(database,sql) {
   try { await database.exec(sql); }
   catch (error) {
     if (!String(error instanceof Error?error.message:error).includes('INVENTORY_CUTOVER_RECONCILIATION_REQUIRED')) throw error;
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 async function assertUnsafeInventoryCutoverRejected(database, sql) {
@@ -567,6 +657,8 @@ async function assertUnsafeInventoryCutoverRejected(database, sql) {
   } catch (error) {
     if (!String(error instanceof Error ? error.message : error).includes('INVENTORY_CUTOVER_RECONCILIATION_REQUIRED')) throw error;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if ((await database.query("select to_regclass('inventory.cutover_reviews') is not null as leaked")).rows[0].leaked) throw new Error('UNSAFE_INVENTORY_CUTOVER_PARTIAL_COMMIT');
     return;
   }
@@ -574,6 +666,7 @@ async function assertUnsafeInventoryCutoverRejected(database, sql) {
 }
 
 async function verifyTarget(database) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const operationContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'operations.yml'), 'utf8'));
@@ -586,6 +679,10 @@ async function verifyTarget(database) {
   const operationContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'operations.yml'), 'utf8'));
   const eventContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'events.yml'), 'utf8'));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const operationContract = parse(await readFile(join(ROOT,'packages','contract','definitions','operations.yml'),'utf8'));
+  const eventContract = parse(await readFile(join(ROOT,'packages','contract','definitions','events.yml'),'utf8'));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const expectedOperations = Array.isArray(operationContract?.operations) ? operationContract.operations.length : -1;
   const expectedEvents = Array.isArray(eventContract?.events) ? eventContract.events.length : -1;
   const result = await database.query(`select
@@ -595,6 +692,7 @@ async function verifyTarget(database) {
     (select count(*)::integer from supabase_migrations.schema_migrations) migrations`);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const row = result.rows[0];
   if (row.operations !== expectedOperations || row.events !== expectedEvents || row.public_tables !== 0 || row.migrations !== migrationFiles.length) throw new Error(`TARGET_CATALOG_INVALID:${JSON.stringify(row)}`);
   await verifyFinanceAccountingIntegrity(database);
@@ -602,10 +700,13 @@ async function verifyTarget(database) {
   await verifyRls(database);
   await verifyRuntimeSchemaVisibility(database);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const row=result.rows[0];
   if (row.operations!==expectedOperations || row.events!==expectedEvents || row.public_tables!==0 || row.migrations!==migrationFiles.length) throw new Error(`TARGET_CATALOG_INVALID:${JSON.stringify(row)}`);
   await verifyObjectContract(database);
   await verifyRls(database);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   const row = result.rows[0];
@@ -615,11 +716,14 @@ async function verifyTarget(database) {
   await verifyRls(database);
   await verifyRuntimeSchemaVisibility(database);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await verifyAuditImmutability(database);
   await verifyExperiencePublication(database);
   await verifyExtensionLifecycle(database);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -672,6 +776,8 @@ async function verifyExtensionLifecycle(database) {
     [manifest, hash]
   );
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 async function verifyExtensionLifecycle(database) {
   const hash='c'.repeat(64);
   const manifest=JSON.stringify({id:'replayprovider',kind:'channel',priority:1,version:'1.0.0',apiVersion:'2026-08-21',
@@ -680,6 +786,7 @@ async function verifyExtensionLifecycle(database) {
       requestsPerSecond:1,maxAttempts:1,failureThreshold:1,recoveryMs:100},signature:'c2lnbmVk'});
   await database.query(`insert into extension.manifest(id,version,kind,contract_version,manifest,manifest_hash,signature,registered_at)
     values('replayprovider','1.0.0','channel','replay.v1',$1::jsonb,$2,'c2lnbmVk',clock_timestamp());`,[manifest,hash]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 async function verifyExtensionLifecycle(database) {
@@ -706,11 +813,14 @@ async function verifyExtensionLifecycle(database) {
     [manifest, hash]
   );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await database.exec(`insert into extension.contractversion(extension_id,contract_version,schema_hash,status)
     values('replayprovider','replay.v1','${hash}','verified');
     insert into extension.installation(id,extension_id,extension_version,scope_id,status,manifest,base_url,endpoints,secret_ref,health_operation,installed_at)
     values('extension:replay-active','replayprovider','1.0.0','rls-scope-a','enabled','${manifest}'::jsonb,'https://replay.invalid','{"local":"/health"}','secret/replay','local',clock_timestamp()),
       ('extension:replay-candidate','replayprovider','1.0.0','rls-scope-a','testing','${manifest}'::jsonb,'https://replay.invalid','{"local":"/health"}','secret/replay','local',clock_timestamp());`);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -780,11 +890,28 @@ async function verifyExtensionLifecycle(database) {
     mutationRejected = true;
   }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  let uniqueRejected=false;
+  try { await database.exec("update extension.installation set status='enabled' where id='extension:replay-candidate'"); }
+  catch (error) { if (!String(error instanceof Error?error.message:error).toLowerCase().includes('unique')) throw error; uniqueRejected=true; }
+  if (!uniqueRejected) throw new Error('EXTENSION_SINGLE_ACTIVE_CONSTRAINT_MISSING');
+  await database.exec(`begin; set local role shopapp; select set_config('app.workload','api',true),
+    set_config('app.scope_id','rls-scope-a',true),set_config('app.actor_id','extension-auditor',true);`);
+  const visible=await database.query("select id from extension.load_installation('extension:replay-candidate','rls-scope-a')");
+  const manifestVisible=await database.query("select count(*)::integer count from extension.manifest where id='replayprovider'");
+  await database.exec('commit');
+  if (visible.rows[0]?.id!=='extension:replay-candidate' || manifestVisible.rows[0]?.count!==1) throw new Error('EXTENSION_SCOPE_POLICY_INVALID');
+  let mutationRejected=false;
+  await database.exec(`begin; set local role shopapp; select set_config('app.workload','api',true),set_config('app.scope_id','rls-scope-a',true);`);
+  try { await database.query("update extension.manifest set signature='forged' where id='replayprovider'"); }
+  catch (error) { if (!String(error instanceof Error?error.message:error).toLowerCase().includes('permission')) throw error; mutationRejected=true; }
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await database.exec('rollback');
   if (!mutationRejected) throw new Error('EXTENSION_MANIFEST_MUTATION_ALLOWED');
 }
 
 async function verifyAuditImmutability(database) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const hash = 'b'.repeat(64);
@@ -794,11 +921,15 @@ async function verifyAuditImmutability(database) {
 =======
   const hash = 'b'.repeat(64);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const hash='b'.repeat(64);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await database.exec(`insert into audit.record(id,scope_id,actor_id,actor_type,action,resource_type,resource_id,before_hash,after_hash,
     evidence,trace_id,previous_hash,record_hash,recorded_at) values('audit:immutability','organization-platform-root','audit-test','system',
     'audit.test','audit','audit:immutability',null,null,'{}','audit:test',null,'${hash}',clock_timestamp());`);
   await database.exec(`begin; set local role shopapp; select set_config('app.workload','api',true),
     set_config('app.scope_id','organization-platform-root',true);`);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -821,11 +952,14 @@ async function verifyAuditImmutability(database) {
   const deleted = await database.query("select count(*)::integer count from audit.record where id='audit:immutability'");
   if (deleted.rows[0]?.count !== 0) throw new Error('AUDIT_ARCHIVE_DELETE_INVALID');
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   let rejected=false; let changed=0;
   try { changed=(await database.query("update audit.record set action='mutated' where id='audit:immutability'")).rowCount ?? 0; }
   catch (error) {
     if (!String(error instanceof Error?error.message:error).includes('AUDIT_IMMUTABLE')) throw error;
     rejected=true;
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   }
@@ -843,6 +977,17 @@ async function verifyAuditImmutability(database) {
   const deleted = await database.query("select count(*)::integer count from audit.record where id='audit:immutability'");
   if (deleted.rows[0]?.count !== 0) throw new Error('AUDIT_ARCHIVE_DELETE_INVALID');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  }
+  await database.exec('rollback');
+  if (!rejected && changed!==0) throw new Error('AUDIT_UPDATE_WAS_NOT_REJECTED');
+  const unchanged=await database.query("select action from audit.record where id='audit:immutability'");
+  if (unchanged.rows[0]?.action!=='audit.test') throw new Error('AUDIT_UPDATE_IMMUTABILITY_INVALID');
+  await database.exec(`begin; set local role shopjob; select set_config('app.workload','jobs',true),set_config('app.audit_archive','true',true);
+    delete from audit.record where id='audit:immutability'; commit;`);
+  const deleted=await database.query("select count(*)::integer count from audit.record where id='audit:immutability'");
+  if (deleted.rows[0]?.count!==0) throw new Error('AUDIT_ARCHIVE_DELETE_INVALID');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 async function verifyExperiencePublication(database) {
@@ -878,6 +1023,7 @@ async function verifyRls(database) {
   await database.exec('commit');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   if (JSON.stringify(visible.rows[0]?.ids) !== JSON.stringify(['rls-policy-a'])) throw new Error('RLS_SCOPE_READ_ISOLATION_INVALID');
 =======
   if (JSON.stringify(visible.rows[0]?.ids)!==JSON.stringify(['rls-policy-a'])) throw new Error('RLS_SCOPE_READ_ISOLATION_INVALID');
@@ -885,12 +1031,16 @@ async function verifyRls(database) {
 =======
   if (JSON.stringify(visible.rows[0]?.ids) !== JSON.stringify(['rls-policy-a'])) throw new Error('RLS_SCOPE_READ_ISOLATION_INVALID');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  if (JSON.stringify(visible.rows[0]?.ids)!==JSON.stringify(['rls-policy-a'])) throw new Error('RLS_SCOPE_READ_ISOLATION_INVALID');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await database.exec(`begin; set local role shopapp;
     select set_config('app.workload','api',true),set_config('app.scope_id','rls-scope-a',true),set_config('app.actor_id','rls-auditor',true);`);
   try {
     await database.query("insert into risk.policy(id,scope_id,name,status,next_version,updated_at) values('rls-policy-forbidden','rls-scope-b','forbidden','draft',1,clock_timestamp())");
   } catch (error) {
     await database.exec('rollback');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -907,6 +1057,9 @@ async function verifyRls(database) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    if (!String(error instanceof Error ? error.message : error).toLowerCase().includes('row-level security')) throw error;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     return;
   }
   await database.exec('rollback');
@@ -916,6 +1069,7 @@ async function verifyRls(database) {
 async function verifyObjectContract(database) {
   const contract = parse(await readFile(OBJECTS, 'utf8'));
   const entries = Array.isArray(contract?.objects) ? contract.objects : [];
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -930,6 +1084,9 @@ async function verifyObjectContract(database) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const schemas = entries.filter((entry) => entry.kind === 'schema').map((entry) => entry.id).sort();
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const expected = new Map([
     ['schema', new Set(schemas)],
     ['table', new Set(entries.filter((entry) => entry.kind === 'table').map((entry) => entry.id))],
@@ -940,6 +1097,7 @@ async function verifyObjectContract(database) {
     ['grant', new Set(entries.filter((entry) => entry.kind === 'grant').map((entry) => entry.id))],
   ]);
   const schemaRows = await database.query('select schema_name id from information_schema.schemata where schema_name=any($1::text[])', [schemas]);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const tableRows = await database.query(
@@ -1067,6 +1225,29 @@ async function verifyObjectContract(database) {
   const roleRows = await database.query(
     `with roles(role) as (values('shopapp'),('shopjob'),('shopmigration'),('shopread')),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const tableRows = await database.query(`select namespace.nspname||'.'||relation.relname id,relation.relrowsecurity rls
+    from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+    where namespace.nspname=any($1::text[]) and relation.relkind in('r','p')`, [schemas]);
+  const viewRows = await database.query(`select namespace.nspname||'.'||relation.relname id from pg_class relation
+    join pg_namespace namespace on namespace.oid=relation.relnamespace
+    where namespace.nspname=any($1::text[]) and relation.relkind in('v','m')`, [schemas]);
+  const functionRows = await database.query(`select namespace.nspname||'.'||procedure.proname id from pg_proc procedure
+    join pg_namespace namespace on namespace.oid=procedure.pronamespace where namespace.nspname=any($1::text[])`, [schemas]);
+  const triggerRows = await database.query(`select namespace.nspname||'.'||relation.relname||'.'||trigger.tgname id from pg_trigger trigger
+    join pg_class relation on relation.oid=trigger.tgrelid join pg_namespace namespace on namespace.oid=relation.relnamespace
+    where not trigger.tgisinternal and namespace.nspname=any($1::text[])`, [schemas]);
+  const policyRows = await database.query(`select schemaname||'.'||tablename||'.'||policyname id from pg_policies where schemaname=any($1::text[])`, [schemas]);
+  compareSet('schema', expected.get('schema'), schemaRows.rows.map((row) => row.id));
+  compareSet('table', expected.get('table'), tableRows.rows.map((row) => row.id));
+  compareSet('view', expected.get('view'), viewRows.rows.map((row) => row.id));
+  compareSet('function', expected.get('function'), functionRows.rows.map((row) => row.id));
+  compareSet('trigger', expected.get('trigger'), triggerRows.rows.map((row) => row.id));
+  compareSet('policy', expected.get('policy'), policyRows.rows.map((row) => row.id));
+  if (tableRows.rows.some((row) => !row.rls)) throw new Error('DATABASE_OBJECT_RLS_DRIFT');
+
+  const roleRows = await database.query(`with roles(role) as (values('shopapp'),('shopjob'),('shopmigration'),('shopread')),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     table_privilege(privilege) as (values('SELECT'),('INSERT'),('UPDATE'),('DELETE'),('TRUNCATE'),('REFERENCES'),('TRIGGER')),
     schema_privilege(privilege) as (values('USAGE'),('CREATE')),
     schemas as (select namespace.nspname schema,namespace.nspowner::regrole::text owner
@@ -1087,6 +1268,7 @@ async function verifyObjectContract(database) {
     select role||':function:'||replace(signature,' ','')||':execute' from roles cross join functions
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       where role<>owner and has_function_privilege(role,oid,'EXECUTE')`,
@@ -1104,6 +1286,10 @@ async function verifyObjectContract(database) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      where role<>owner and has_function_privilege(role,oid,'EXECUTE')`, [schemas]);
+  compareSet('grant', expected.get('grant'), roleRows.rows.map((row) => row.id));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function compareSet(kind, expected, actualValues) {

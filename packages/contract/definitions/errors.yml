@@ -22,6 +22,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: ACCOUNTS_API_CADDY_MATCHER_MISSING
@@ -35,6 +36,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: ACTION_PROOF_REQUIRED
     status: 403
   - code: ACTIVE_MALL_APPLICATION_MISSING
@@ -105,6 +108,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: API_BIND_HOST_INVALID
     status: 500
 =======
@@ -113,6 +117,8 @@ errors:
   - code: API_BIND_HOST_INVALID
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: APP_ROOT_MISSING
     status: 500
   - code: APPLICATION_ROLE_BYPASSES_RLS
@@ -121,6 +127,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: ARTIFACT_MANIFEST_SCHEMA_INVALID
     status: 500
 =======
@@ -129,6 +136,8 @@ errors:
   - code: ARTIFACT_MANIFEST_SCHEMA_INVALID
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: AUDIT_ACCESS_ID_INVALID
     status: 400
   - code: AUDIT_ACCESS_INVALID
@@ -163,6 +172,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: AUTH_MODE_INVALID
     status: 500
 =======
@@ -171,12 +181,15 @@ errors:
   - code: AUTH_MODE_INVALID
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: AUTH_RETURN_TARGET_INVALID
     status: 400
   - code: AUTH_RETURN_TARGETS_INVALID
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: AUTH_SESSION_CREATE_FAILED
     status: 500
 =======
@@ -185,6 +198,8 @@ errors:
   - code: AUTH_SESSION_CREATE_FAILED
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: AUTH_SESSION_STORAGE_UNAVAILABLE
     status: 503
   - code: AUTH_STATE_EXPIRED
@@ -207,6 +222,7 @@ errors:
     status: 403
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: AUTHORIZATION_TIME_INVALID
     status: 500
 =======
@@ -215,6 +231,8 @@ errors:
   - code: AUTHORIZATION_TIME_INVALID
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: BENEFIT_ACCOUNT_CREATE_FAILED
     status: 500
   - code: BENEFIT_ACCOUNT_NOT_USABLE
@@ -249,6 +267,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: BENEFIT_FINANCE_DEPENDENCY_REQUIRED
     status: 400
 =======
@@ -257,6 +276,8 @@ errors:
   - code: BENEFIT_FINANCE_DEPENDENCY_REQUIRED
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: BENEFIT_FINANCE_PROJECTION_MISSING
     status: 400
   - code: BENEFIT_FOUR_EYES_REQUIRED
@@ -321,6 +342,7 @@ errors:
     status: 500
   - code: CACHE_TTL_INVALID
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -412,6 +434,10 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: CAKE_MANIFEST_SIGNATURE_MISSING
+    status: 400
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: CANDIDATE_CLIENT_MISSING
     status: 400
   - code: CANDIDATE_COMMIT_INVALID
@@ -428,6 +454,7 @@ errors:
     status: 403
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: CANONICAL_API_FALLBACK_HANDLE_MISSING
@@ -439,6 +466,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: CANONICAL_PLATFORM_ORG_UNIT_NOT_FOUND
     status: 404
   - code: CANONICAL_PLATFORM_OWNER_NOT_FOUND
@@ -583,6 +612,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: CONSOLE_PENDING_ROLE_NOT_FOUND
     status: 404
 =======
@@ -591,12 +621,15 @@ errors:
   - code: CONSOLE_PENDING_ROLE_NOT_FOUND
     status: 404
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: CONSOLE_SCOPE_MISSING
     status: 400
   - code: CONSOLE_SESSION_READ_FAILED
     status: 503
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: CONSOLE_SUPPORT_STARTUP_CHECK_FAILED
     status: 500
 =======
@@ -605,6 +638,8 @@ errors:
   - code: CONSOLE_SUPPORT_STARTUP_CHECK_FAILED
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: CONTAINER_BINDING_DUPLICATE
     status: 500
   - code: CONTAINER_BINDING_MISSING
@@ -625,6 +660,7 @@ errors:
     status: 404
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: CREDENTIAL_PROVIDER_INVALID
     status: 400
 =======
@@ -633,6 +669,8 @@ errors:
   - code: CREDENTIAL_PROVIDER_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: CSRF_TOKEN_INVALID
     status: 403
   - code: CSV_COLUMN_COUNT_INVALID
@@ -713,6 +751,7 @@ errors:
     status: 504
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: DEPLOYMENT_BOUNDARY_MISSING
     status: 500
 =======
@@ -721,6 +760,8 @@ errors:
   - code: DEPLOYMENT_BOUNDARY_MISSING
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: DEPLOYMENT_CONTRACT_MISSING
     status: 400
   - code: DEVICE_ADAPTER_DUPLICATE
@@ -939,6 +980,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: EXTERNAL_PAYMENT_DISABLED
     status: 503
 =======
@@ -947,6 +989,8 @@ errors:
   - code: EXTERNAL_PAYMENT_DISABLED
     status: 503
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FEDERATED_MEMBERSHIP_ORPHAN
     status: 500
   - code: FEDERATED_PRINCIPAL_ORPHAN
@@ -959,6 +1003,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: FINANCE_AUTOREFUND_EVIDENCE_MISMATCH
     status: 409
 =======
@@ -967,10 +1012,13 @@ errors:
   - code: FINANCE_AUTOREFUND_EVIDENCE_MISMATCH
     status: 409
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_BACKFILL_CONFLICT_OR_MISMATCH
     status: 409
   - code: FINANCE_BACKFILL_DECISION_INVALID
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -994,12 +1042,15 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_CURRENCY_UNSUPPORTED
     status: 400
   - code: FINANCE_EVENT_CONTEXT_MISSING
     status: 400
   - code: FINANCE_EVENT_UNSUPPORTED
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1037,6 +1088,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_HOLD_AMOUNT_INVALID
     status: 400
   - code: FINANCE_HOLD_INSUFFICIENT_OR_CONFLICT
@@ -1047,6 +1100,7 @@ errors:
     status: 409
   - code: FINANCE_IDEMPOTENCY_MISMATCH
     status: 409
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1064,10 +1118,15 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: FINANCE_JOURNAL_UNBALANCED
+    status: 500
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_LEDGER_APPEND_ONLY
     status: 500
   - code: FINANCE_LEDGER_UNBALANCED
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1093,6 +1152,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_PERIOD_ACTION_INVALID
     status: 400
   - code: FINANCE_PERIOD_CLOSE_CONFLICT_OR_HASH_MISMATCH
@@ -1103,6 +1164,7 @@ errors:
     status: 500
   - code: FINANCE_PERIOD_INVALID
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1162,12 +1224,17 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: FINANCE_POST_AMOUNT_INVALID
+    status: 400
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_POST_FAILED
     status: 500
   - code: FINANCE_POST_INVALID
     status: 400
   - code: FINANCE_POST_SAME_ACCOUNT
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - code: FINANCE_QUERY_PERIOD_INVALID
@@ -1178,10 +1245,13 @@ errors:
   - code: FINANCE_QUERY_PERIOD_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_RECONCILIATION_ACTION_INVALID
     status: 400
   - code: FINANCE_RECONCILIATION_NOT_AUTHORIZED
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1205,12 +1275,15 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_SETTLEMENT_ADJUSTMENT_ACTION_INVALID
     status: 400
   - code: FINANCE_SETTLEMENT_ADJUSTMENT_CONFLICT_OR_SEPARATION
     status: 409
   - code: FINANCE_SETTLEMENT_ADJUSTMENT_DIRECTION_INVALID
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1230,6 +1303,10 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: FINANCE_SETTLEMENT_AMOUNT_INVALID
+    status: 400
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_SETTLEMENT_CONFLICT_OR_SEPARATION
     status: 409
   - code: FINANCE_SETTLEMENT_DECISION_INVALID
@@ -1242,6 +1319,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: FINANCE_SETTLEMENT_LINE_STALE
     status: 409
 =======
@@ -1250,10 +1328,13 @@ errors:
   - code: FINANCE_SETTLEMENT_LINE_STALE
     status: 409
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_SETTLEMENT_NET_INVALID
     status: 400
   - code: FINANCE_SETTLEMENT_SEPARATION_REQUIRED
     status: 403
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1317,6 +1398,10 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: FINANCE_STATEMENT_FINALIZATION_FAILED
+    status: 500
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FINANCE_WITHDRAWAL_CONFLICT_OR_SEPARATION
     status: 409
   - code: FINANCE_WITHDRAWAL_DECISION_INVALID
@@ -1325,6 +1410,7 @@ errors:
     status: 409
   - code: FINANCE_WITHDRAWAL_NOT_RECOVERABLE
     status: 409
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1453,6 +1539,12 @@ errors:
   - code: FOODVOUCHER_SERVICE_TYPE_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: FLOWER_MANIFEST_SIGNATURE_MISSING
+    status: 400
+  - code: FOODVOUCHER_MANIFEST_SIGNATURE_MISSING
+    status: 400
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: FRONTEND_FILE_MANIFEST_DRIFT
     status: 409
   - code: FULFILLMENT_IDENTITY_IMMUTABLE
@@ -1461,6 +1553,7 @@ errors:
     status: 500
   - code: FULFILLMENT_NOT_RUNNABLE
     status: 409
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1496,10 +1589,13 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: GENERATED_CONTRACT_DRIFT
     status: 500
   - code: GENERATED_RUNTIME_CONFIG_DRIFT
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   - code: GENERIC_CANONICAL_API_WILDCARD_FORBIDDEN
@@ -1510,6 +1606,8 @@ errors:
   - code: GENERIC_CANONICAL_API_WILDCARD_FORBIDDEN
     status: 403
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: GENERIC_DOMAIN_EXECUTE_FORBIDDEN
     status: 403
   - code: HASH_INVALID
@@ -1536,6 +1634,7 @@ errors:
     status: 409
   - code: IDEMPOTENCY_PAYLOAD_MISMATCH
     status: 409
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1624,6 +1723,12 @@ errors:
   - code: IDENTITY_SUBJECT_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: IDENTITY_INVITE_REQUIRED
+    status: 400
+  - code: IDENTITY_SUBJECT_EXISTS
+    status: 409
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: IDENTITY_SUBJECT_REQUIRED
     status: 400
   - code: IMPORT_FILE_EMPTY
@@ -1658,6 +1763,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: INTERNAL_PAYMENT_AMOUNT_INVALID
     status: 400
 =======
@@ -1666,6 +1772,8 @@ errors:
   - code: INTERNAL_PAYMENT_AMOUNT_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: INTERNAL_PAYMENT_INPUT_INVALID
     status: 400
   - code: INTERNAL_PAYMENT_INTENT_ALREADY_EXISTS
@@ -1716,6 +1824,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: INVALID_PII_CIPHER
     status: 400
 =======
@@ -1724,6 +1833,8 @@ errors:
   - code: INVALID_PII_CIPHER
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: INVALID_PRODUCT_STATUS_INPUT
     status: 500
   - code: INVALID_SIMULATION_BENEFIT
@@ -1856,6 +1967,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: INVITATION_CSRF_MISSING
@@ -1873,10 +1985,15 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: INVITATION_NOT_FOUND
+    status: 404
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: INVITATION_TERMS_CAPABILITY_MISSING
     status: 400
   - code: INVITE_INVALID
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1890,6 +2007,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: INVOICE_CONFIGURATION_INVALID
     status: 500
   - code: INVOICE_DECISION_CONFLICT_OR_SEPARATION
@@ -1898,6 +2017,7 @@ errors:
     status: 400
   - code: INVOICE_DOCUMENT_INVALID
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1911,6 +2031,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH
     status: 409
   - code: INVOICE_NOT_RUNNABLE
@@ -1953,6 +2075,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: JOB_RUNTIME_PROFILE_INVALID
     status: 400
 =======
@@ -1961,6 +2084,8 @@ errors:
   - code: JOB_RUNTIME_PROFILE_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: JSON_OBJECT_REQUIRED
     status: 400
   - code: JSON_VALUE_INVALID
@@ -1991,6 +2116,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: LEGACY_CADDY_RELOAD_MUST_REMAIN_EXCLUDED
     status: 500
 =======
@@ -1999,6 +2125,8 @@ errors:
   - code: LEGACY_CADDY_RELOAD_MUST_REMAIN_EXCLUDED
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: LEGACY_INVENTORY_TABLE_REMAINS
     status: 500
   - code: LEGACY_PUBLIC_FUNCTION_REMAINS
@@ -2031,6 +2159,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: LOCAL_ENVIRONMENT_FILE_INVALID
     status: 500
 =======
@@ -2039,6 +2168,8 @@ errors:
   - code: LOCAL_ENVIRONMENT_FILE_INVALID
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: LOCAL_ETHAN_OPERATOR_MEMBERSHIP_MISSING
     status: 500
   - code: LOCAL_ETHAN_PRINCIPAL_MISSING
@@ -2057,6 +2188,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: LOCAL_KMS_BEARER_TOKEN_DRIFT
     status: 500
 =======
@@ -2065,6 +2197,8 @@ errors:
   - code: LOCAL_KMS_BEARER_TOKEN_DRIFT
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: LOCAL_KMS_ENVELOPE_INVALID
     status: 500
   - code: LOCAL_KMS_MASTER_KEY_INVALID
@@ -2077,6 +2211,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: LOCAL_OBJECT_DATA_CORRUPT
     status: 400
 =======
@@ -2085,6 +2220,8 @@ errors:
   - code: LOCAL_OBJECT_DATA_CORRUPT
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: LOCAL_OBJECT_METADATA_CORRUPT
     status: 500
   - code: LOCAL_OBJECT_ROUNDTRIP_FAILED
@@ -2093,6 +2230,7 @@ errors:
     status: 500
   - code: LOCAL_OBJECTS_CONFIGURATION_INVALID
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2141,6 +2279,12 @@ errors:
   - code: LOCAL_RUNTIME_PROFILE_INVALID
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: LOCAL_PROCESS_FAILED
+    status: 500
+  - code: LOCAL_RUNTIME_COUNTS_INVALID
+    status: 500
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: LOCAL_SECRET_INVALID
     status: 500
   - code: LOCAL_SECRET_MISSING
@@ -2149,6 +2293,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: LOCAL_SECRET_STORE_BEARER_TOKEN_DRIFT
     status: 500
 =======
@@ -2157,6 +2302,8 @@ errors:
   - code: LOCAL_SECRET_STORE_BEARER_TOKEN_DRIFT
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: LOCAL_SECRET_VALUE_INVALID
     status: 500
   - code: LOCAL_SECRETS_INVALID
@@ -2165,6 +2312,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER
     status: 500
 =======
@@ -2173,6 +2321,8 @@ errors:
   - code: LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: MALL_APPLICATION_ACTION_INVALID
     status: 400
   - code: MALL_APPLICATION_ALREADY_PUBLISHED
@@ -2203,6 +2353,7 @@ errors:
     status: 409
   - code: MARKETING_RULE_INVALID
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2252,6 +2403,10 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: MEAL_MANIFEST_SIGNATURE_MISSING
+    status: 400
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: MEMBER_CLIENT_INVALID
     status: 400
   - code: MEMBER_DATA_SCOPE_RESOLVER_MISSING
@@ -2268,6 +2423,7 @@ errors:
     status: 404
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: MEMBER_RESET_CSRF_MISSING
@@ -2281,6 +2437,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: MEMBERSHIP_CREATE_FAILED
     status: 500
   - code: MEMBERSHIP_FUNCTION_SOURCE_UNEXPECTED
@@ -2333,6 +2491,7 @@ errors:
     status: 403
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: MINIAPP_SESSION_SIGNING_KEY_NOT_CONFIGURED
     status: 503
 =======
@@ -2341,12 +2500,15 @@ errors:
   - code: MINIAPP_SESSION_SIGNING_KEY_NOT_CONFIGURED
     status: 503
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: MINIAPP_THEME_GENERATED_DRIFT
     status: 500
   - code: MINIAPP_WING_CODE_GENERATED_DRIFT
     status: 409
   - code: MOBILE_ASSURANCE_REQUIRED
     status: 403
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2360,6 +2522,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: MOBILE_INVALID
     status: 400
   - code: MODULE_DEPENDENCY_CYCLE
@@ -2530,6 +2694,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: OPERATION_NOT_EXPOSED
     status: 500
 =======
@@ -2538,6 +2703,8 @@ errors:
   - code: OPERATION_NOT_EXPOSED
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: OPERATION_PATH_INVALID
     status: 500
   - code: OPERATION_PERMISSION_UNKNOWN
@@ -2606,6 +2773,7 @@ errors:
     status: 400
   - code: OUTBOX_LEASE_LOST
     status: 503
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2700,6 +2868,12 @@ errors:
   - code: OWNER_TRANSFER_TARGET_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: OWNER_MEMBERSHIP_PROTECTED
+    status: 500
+  - code: OWNER_ROLE_PROTECTED
+    status: 500
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: P0_CLIENT_ENVIRONMENT_EXAMPLE_MISSING
     status: 400
   - code: P0_CLIENT_PORT_INVALID
@@ -2748,6 +2922,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: PAYMENT_CAPTURE_PROVIDER_EFFECT_MISMATCH
     status: 409
 =======
@@ -2756,6 +2931,8 @@ errors:
   - code: PAYMENT_CAPTURE_PROVIDER_EFFECT_MISMATCH
     status: 409
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PAYMENT_CAPTURE_STATE_INVALID
     status: 409
   - code: PAYMENT_CLOSE_OPERATION_MISMATCH
@@ -2776,6 +2953,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: PAYMENT_EXTERNAL_TENDER_FORBIDDEN
     status: 403
 =======
@@ -2784,6 +2962,8 @@ errors:
   - code: PAYMENT_EXTERNAL_TENDER_FORBIDDEN
     status: 403
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PAYMENT_EXTERNAL_TENDER_NOT_CAPTURED
     status: 409
   - code: PAYMENT_FULFILLMENT_EVIDENCE_MISMATCH
@@ -2794,6 +2974,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: PAYMENT_INTENT_CARDINALITY_INVALID
     status: 400
 =======
@@ -2802,10 +2983,13 @@ errors:
   - code: PAYMENT_INTENT_CARDINALITY_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PAYMENT_INTENT_NOT_FOUND
     status: 404
   - code: PAYMENT_INTENT_NOT_PAYABLE
     status: 409
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2825,6 +3009,10 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: PAYMENT_INTERNAL_OUTBOX_STATE_MISMATCH
+    status: 409
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PAYMENT_LEGACY_RUNTIME_REMAINS
     status: 500
   - code: PAYMENT_NOT_REFUNDABLE
@@ -2863,6 +3051,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: PAYMENT_PROVIDER_EFFECT_MISMATCH
@@ -2874,6 +3063,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PAYMENT_PROVIDER_EVENT_MISSING
     status: 400
   - code: PAYMENT_PROVIDER_TRANSACTION_MISSING
@@ -2910,6 +3101,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: PAYMENT_REFUND_NOT_FOUND
     status: 404
 =======
@@ -2918,12 +3110,15 @@ errors:
   - code: PAYMENT_REFUND_NOT_FOUND
     status: 404
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PAYMENT_REFUND_NOT_RETRYABLE
     status: 409
   - code: PAYMENT_REFUND_PLAN_INTEGRITY_FAILED
     status: 409
   - code: PAYMENT_REFUND_PLAN_MISSING
     status: 400
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2941,6 +3136,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PAYMENT_REFUND_STATE_INVALID
     status: 409
   - code: PAYMENT_SCENE_INVALID
@@ -3013,6 +3210,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: POSTGRES_INIT_FIXTURE_COMMAND_REJECTED
@@ -3048,6 +3246,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: POSTGRES_QUEUE_CLAIM_INVALID
     status: 500
   - code: POSTGRES_REPOSITORY_ENDPOINT_REQUIRED
@@ -3078,6 +3278,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: PRODUCTION_SHOWCASE_CADDY_MATCHER_MISSING
@@ -3089,6 +3290,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: PROMOTION_AUTHORITY_INVALID
     status: 400
   - code: PROMOTION_COMMIT_MISMATCH
@@ -3175,6 +3378,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: PURCHASE_API_BIND_HOST_INVALID
@@ -3248,6 +3452,10 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: PURCHASE_LIMIT_EXCEEDED
+    status: 409
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: QUALIFICATION_ACTIVE_RESOURCE_EMPTY
     status: 400
   - code: QUALIFICATION_ACTOR_INVALID
@@ -3326,6 +3534,7 @@ errors:
     status: 500
   - code: REDIS_LEASE_READ_INVALID
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3531,6 +3740,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: REFUND_ALLOCATION_RULE_REQUIRED
     status: 400
   - code: REFUND_ALREADY_REQUESTED
@@ -3551,6 +3762,7 @@ errors:
     status: 500
   - code: REFUND_WEBHOOK_INTEGRITY_MISMATCH
     status: 409
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3662,6 +3874,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: REGISTRATION_REQUIRED
     status: 400
   - code: RELEASE_APPROVAL_INVALID
@@ -3720,6 +3934,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: REPORT_COCKPIT_FAILED
     status: 400
 =======
@@ -3728,6 +3943,8 @@ errors:
   - code: REPORT_COCKPIT_FAILED
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: REPORT_EVENT_MAPPING_MISSING
     status: 400
   - code: REPORT_EVENT_VERSION_UNSUPPORTED
@@ -3848,6 +4065,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: SANDBOX_CATALOG_CONFIRMATION_REQUIRED
@@ -3915,12 +4133,17 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: SCOPE_DENIED
+    status: 403
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SCOPE_GRANT_EXCEEDS_ACTOR
     status: 500
   - code: SCOPE_MISMATCH
     status: 409
   - code: SCOPE_NOT_ALLOWED_FOR_OPERATION
     status: 403
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3936,12 +4159,15 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SDK_BASE_URL_INVALID
     status: 500
   - code: SDK_CONTRACT_VERSION_MISMATCH
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: SDK_EXPECTED_VERSION_REQUIRED
     status: 400
 =======
@@ -3950,12 +4176,15 @@ errors:
   - code: SDK_EXPECTED_VERSION_REQUIRED
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SDK_IDEMPOTENCY_KEY_REQUIRED
     status: 400
   - code: SDK_PATH_VALUE_MISSING
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: SDK_SECURE_HASH_SOURCE_UNAVAILABLE
     status: 503
 =======
@@ -3964,6 +4193,8 @@ errors:
   - code: SDK_SECURE_HASH_SOURCE_UNAVAILABLE
     status: 503
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SDK_SECURE_ID_SOURCE_UNAVAILABLE
     status: 503
   - code: SECRET_READ_FAILED
@@ -3988,6 +4219,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: SESSION_SIGNING_KEY_NOT_CONFIGURED
@@ -3999,6 +4231,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SETTLEMENT_LINE_TOTAL_MISMATCH
     status: 409
   - code: SETTLEMENT_NOT_RUNNABLE
@@ -4049,6 +4283,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: STAGING_OWNER_BOOTSTRAP_ACTOR_INVALID
@@ -4084,6 +4319,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: STALE_SCOPE_RESPONSE
     status: 409
   - code: STATE_INVALID
@@ -4096,6 +4333,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: STATEMENT_HEADER_INVALID
     status: 400
   - code: STATEMENT_INTEGRITY_FAILED
@@ -4131,6 +4369,12 @@ errors:
   - code: STATEMENT_TAX_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: STATEMENT_INTEGRITY_FAILED
+    status: 409
+  - code: STATEMENT_REFERENCE_DUPLICATE
+    status: 409
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: STATEMENT_TOTAL_OVERFLOW
     status: 500
   - code: STATEMENT_TYPE_INVALID
@@ -4141,6 +4385,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: STEP_UP_DESTINATION_FORBIDDEN
     status: 400
 =======
@@ -4149,6 +4394,8 @@ errors:
   - code: STEP_UP_DESTINATION_FORBIDDEN
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: STEP_UP_DESTINATION_MISSING
     status: 409
   - code: STEP_UP_FACTOR_NOT_CONFIGURED
@@ -4159,6 +4406,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: STEP_UP_SESSION_RECEIPT_INVALID
     status: 400
 =======
@@ -4167,6 +4415,8 @@ errors:
   - code: STEP_UP_SESSION_RECEIPT_INVALID
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: STEPUP_REQUIRED
     status: 403
   - code: STORE_ROUTE_FORBIDDEN
@@ -4195,6 +4445,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: STOREFRONT_SCOPE_REQUIRED
     status: 400
 =======
@@ -4203,12 +4454,15 @@ errors:
   - code: STOREFRONT_SCOPE_REQUIRED
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: STOREFRONT_SESSION_MISSING
     status: 401
   - code: STRING_ARRAY_REQUIRED
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: SUPABASE_NOT_CONFIGURED
     status: 503
 =======
@@ -4217,6 +4471,8 @@ errors:
   - code: SUPABASE_NOT_CONFIGURED
     status: 503
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SUPPLIER_EXPORT_ID_INVALID
     status: 400
   - code: SUPPLIER_ROUTE_FORBIDDEN
@@ -4247,6 +4503,7 @@ errors:
     status: 400
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: SUPPORT_CASE_CLOSED
@@ -4258,6 +4515,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SUPPORT_CONVERSATION_INVALID
     status: 400
   - code: SUPPORT_FORM_INVALID
@@ -4266,6 +4525,7 @@ errors:
     status: 400
   - code: SUPPORT_MESSAGE_APPEND_FAILED
     status: 500
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -4287,6 +4547,10 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  - code: SUPPORT_MESSAGE_INVALID
+    status: 400
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: SUPPORT_ORDER_SCOPE_INVALID
     status: 400
   - code: SUPPORT_PRIORITY_INVALID
@@ -4361,6 +4625,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: UNVERIFIED_ARTIFACT_MARKED_RELEASE_ELIGIBLE
     status: 500
 =======
@@ -4369,6 +4634,8 @@ errors:
   - code: UNVERIFIED_ARTIFACT_MARKED_RELEASE_ELIGIBLE
     status: 500
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: VALIDATION_FAILED
     status: 400
   - code: VENDOR_AUTH_INVALID
@@ -4451,6 +4718,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   - code: VOUCHER_FINANCE_DEPENDENCY_REQUIRED
     status: 400
 =======
@@ -4459,6 +4727,8 @@ errors:
   - code: VOUCHER_FINANCE_DEPENDENCY_REQUIRED
     status: 400
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: VOUCHER_FINGERPRINT_DUPLICATE
     status: 409
   - code: VOUCHER_HOLD_MANAGE_OPERATION_REQUIRED
@@ -4569,6 +4839,7 @@ errors:
     status: 500
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: WEB_BUSINESS_API_BIND_HOST_INVALID
@@ -4604,6 +4875,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: WECHAT_APP_ID_INVALID
     status: 400
   - code: WECHAT_APPLICATION_CONFIG_INVALID
@@ -4766,6 +5039,7 @@ errors:
     status: 409
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: WITHDRAWAL_SOURCE_INVALID
@@ -4777,6 +5051,8 @@ errors:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: WORKSPACE_LINK_FORBIDDEN
     status: 403
   - code: WORKSTATION_PAGE_MISSING

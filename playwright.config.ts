@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './tests/browser/Origins';
 
 const clientVersion = '1.0.0-e2e';
@@ -30,6 +31,17 @@ function webServer(workspace: string, origin: string, environment: Readonly<Reco
     command: `${variables} npm run dev --workspace ${shell(workspace)} -- --host 127.0.0.1 --port ${port} --strictPort`,
     url: origin,
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+
+const apiOrigin = 'http://127.0.0.1:4311';
+const authOrigin = 'http://127.0.0.1:4176';
+const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
+
+function webServer(workspace: string, port: number) {
+  return {
+    command: `${environment} npm run dev --workspace ${workspace} -- --host 127.0.0.1 --port ${port} --strictPort`,
+    url: `http://127.0.0.1:${port}`,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     reuseExistingServer: false,
     timeout: 120_000,
     stdout: 'pipe' as const,
@@ -37,6 +49,7 @@ function webServer(workspace: string, origin: string, environment: Readonly<Reco
   };
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -57,6 +70,8 @@ function shell(value: string): string {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export default defineConfig({
   testDir: './tests/browser',
   testMatch: '**/*.spec.ts',
@@ -71,7 +86,10 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
 <<<<<<< HEAD
+<<<<<<< HEAD
     baseURL: CONSOLE_ORIGIN,
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     locale: 'zh-CN',
@@ -80,6 +98,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -101,5 +120,8 @@ export default defineConfig({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+  webServer: [webServer('@shop/auth', 4176), webServer('@shop/console', 4173), webServer('@shop/store', 4174), webServer('@shop/supplier', 4175), webServer('@shop/storefront', 4177)],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

@@ -5,6 +5,7 @@ export interface MemberInvite {
   readonly role_id: string;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly target_client: 'storefront' | 'operator';
   readonly terms_hash: string;
   readonly storefront_organization_id: string | null;
@@ -16,6 +17,9 @@ export interface MemberInvite {
   readonly terms_hash: string;
   readonly storefront_organization_id: string | null;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  readonly terms_hash: string;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export interface MemberProfile {
@@ -25,6 +29,7 @@ export interface MemberProfile {
   readonly status: 'active' | 'pending';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly mobileCiphertext?: string;
   readonly mobileFingerprint?: string;
   readonly mobileMasked?: string;
@@ -35,10 +40,13 @@ export interface MemberProfile {
   readonly mobileFingerprint?: string;
   readonly mobileMasked?: string;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export class MemberPort {
   async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ mobileCiphertext: string | null }>> {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -55,10 +63,15 @@ export class MemberPort {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    const result = await database.query<{ mobile_ciphertext: string | null }>(`select mobile_ciphertext from member.profile
+      where principal_id=$1 and status='active'`, [principal]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     return { mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null };
   }
 
   invite(database: OperationDatabase, token: string) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     return database.query(
@@ -127,11 +140,19 @@ export class MemberPort {
   }
 
 <<<<<<< HEAD
+=======
+    return database.query(`select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,invite.effective_at,invite.expires_at
+      from member.invite invite join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
+      where invite.token_hash=$1 and invite.status='active' and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses`, [token]);
+  }
+
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   async consumeInvite(database: OperationDatabase, token: string): Promise<MemberInvite> {
     const result = await database.query<MemberInvite>(`with consumed as(update member.invite set use_count=use_count+1,
       accepted_at=case when use_count+1=max_uses then clock_timestamp() else accepted_at end,version=version+1
       where token_hash=$1 and status='active' and expires_at>clock_timestamp() and use_count<max_uses
       returning organization_id,role_id,terms_hash) select organization_id,role_id,terms_hash from consumed`, [token]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   async assertRegistrationInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<void> {
@@ -166,12 +187,15 @@ export class MemberPort {
       returning candidate.organization_id,candidate.role_id,candidate.terms_hash,candidate.target_client,candidate.storefront_organization_id)
       select organization_id,role_id,terms_hash,target_client,storefront_organization_id from consumed`, [token, destinationHash]);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const invitation = result.rows[0];
     if (!invitation) throw new Error('INVITE_INVALID');
     return invitation;
   }
 
   async create(database: OperationDatabase, input: MemberProfile): Promise<void> {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -217,6 +241,22 @@ export class MemberPort {
       [principal, ciphertext, fingerprint, masked]
     );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    await database.query(`insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
+      values($1,$2,$3,$4,clock_timestamp(),clock_timestamp())`, [input.member, input.principal, input.display, input.status]);
+  }
+
+  async ensureImported(database: OperationDatabase, input: MemberProfile): Promise<void> {
+    await database.query(`insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
+      values($1,$2,$3,$4,clock_timestamp(),clock_timestamp()) on conflict(id) do update set
+      display_name=excluded.display_name,updated_at=clock_timestamp(),version=member.profile.version+1`,
+    [input.member, input.principal, input.display, input.status]);
+  }
+
+  async changeMobile(database: OperationDatabase, principal: string, ciphertext: string, fingerprint: string, masked: string): Promise<Readonly<Record<string, unknown>>> {
+    const result = await database.query(`update member.profile set mobile_ciphertext=$2,mobile_token=$3,version=version+1,updated_at=clock_timestamp()
+      where principal_id=$1 returning id,display_name,$4::text mobile_masked,version`, [principal, ciphertext, fingerprint, masked]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const row = result.rows[0];
     if (!row) throw new Error('MEMBER_PROFILE_NOT_FOUND');
     return row;
@@ -224,6 +264,7 @@ export class MemberPort {
 }
 
 export const memberPort = new MemberPort();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -247,3 +288,5 @@ function registrationInviteBoundary(): string {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

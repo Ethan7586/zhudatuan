@@ -7,6 +7,7 @@ export function getFinanceOverviewOperations(): OperationActions {
       const access = requireAccess(request);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       const result = await database.query(
@@ -35,6 +36,8 @@ export function getFinanceOverviewOperations(): OperationActions {
         [access.scope.id]
       );
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await database.query(`with balance as(select account.currency,account.kind,account.code,
           coalesce(sum(case when account.kind in('liability','income') then case entry.side when 'credit' then entry.amount_minor
             else -entry.amount_minor end else case entry.side when 'debit' then entry.amount_minor else -entry.amount_minor end end),0) amount,
@@ -48,6 +51,7 @@ export function getFinanceOverviewOperations(): OperationActions {
           coalesce(sum(amount) filter(where kind='expense'),0)::float8 expense_minor,
           coalesce(sum(amount) filter(where code='cash'),0)::float8 cash_minor,sum(journal_count)::integer journal_count,max(watermark) watermark
         from balance group by currency order by currency`, [access.scope.id]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
           coalesce(sum(case when account.kind in('liability','income') then case entry.side when 'credit' then entry.amount_minor
@@ -70,6 +74,8 @@ export function getFinanceOverviewOperations(): OperationActions {
         [access.scope.id]
       );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return { status: 200, body: { items: result.rows } };
     },
   };

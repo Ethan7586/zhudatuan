@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { loadRequirementAuthorities, loadRequirementAuthority } from './Authority';
 =======
 import { loadRequirementAuthority } from './Authority';
@@ -13,6 +14,9 @@ import { loadRequirementAuthority } from './Authority';
 =======
 import { loadRequirementAuthorities, loadRequirementAuthority } from './Authority';
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+import { loadRequirementAuthority } from './Authority';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 describe('requirement authority', () => {
   it('binds the repository 260821 workbook by content hash', async () => {
@@ -26,6 +30,7 @@ describe('requirement authority', () => {
     expect(result.bytes.length).toBeGreaterThan(0);
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -59,6 +64,8 @@ describe('requirement authority', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('rejects parent traversal before reading the authority', async () => {
     const fixture = await createFixture('../outside.xlsx');
     try {
@@ -68,6 +75,7 @@ describe('requirement authority', () => {
     }
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -86,6 +94,8 @@ describe('requirement authority', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   it('rejects a repository symlink that resolves outside the repository', async () => {
     const fixture = await createFixture('docs/authority.xlsx');
     try {
@@ -100,6 +110,7 @@ describe('requirement authority', () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 async function createFixture(repositoryRelativePath: string, declaredHash?: string) {
 =======
 async function createFixture(repositoryRelativePath: string) {
@@ -107,6 +118,9 @@ async function createFixture(repositoryRelativePath: string) {
 =======
 async function createFixture(repositoryRelativePath: string, declaredHash?: string) {
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+async function createFixture(repositoryRelativePath: string) {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const directory = await mkdtemp(join(tmpdir(), 'smart-wing-authority-'));
   const root = join(directory, 'repository');
   const outside = join(directory, 'outside.xlsx');
@@ -120,6 +134,7 @@ async function createFixture(repositoryRelativePath: string, declaredHash?: stri
     `  repositoryRelativePath: ${repositoryRelativePath}`,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     `  sha256: ${declaredHash ?? createHash('sha256').update(bytes).digest('hex')}`,
 =======
     `  sha256: ${createHash('sha256').update(bytes).digest('hex')}`,
@@ -127,6 +142,9 @@ async function createFixture(repositoryRelativePath: string, declaredHash?: stri
 =======
     `  sha256: ${declaredHash ?? createHash('sha256').update(bytes).digest('hex')}`,
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+    `  sha256: ${createHash('sha256').update(bytes).digest('hex')}`,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     '  sheets:',
     '    requirements: 0',
     '    mvp: 0',

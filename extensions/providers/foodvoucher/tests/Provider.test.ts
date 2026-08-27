@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { describe, expect, it, vi } from 'vitest';
@@ -138,4 +139,18 @@ describe('foodvoucher provider contract', () => {
     await expect(malformed.catalog.pullCatalog(context)).rejects.toThrow('FOODVOUCHER_PRICE_INVALID');
   });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { describe, expect, it } from 'vitest';
+import { REQUIRED_PROVIDER_IDS } from '@shop/contract';
+import { FoodvoucherProvider } from '../Provider';
+import { manifest } from '../manifest';
+
+describe('foodvoucher provider contract', () => {
+  it('is an explicit P1 provider with a release-injected signature', () => {
+    expect(REQUIRED_PROVIDER_IDS).toContain('foodvoucher');
+    expect(FoodvoucherProvider.definition.id).toBe('foodvoucher');
+    expect(manifest('signed').signature).toBe('signed');
+    expect(() => manifest('')).toThrow('FOODVOUCHER_MANIFEST_SIGNATURE_MISSING');
+  });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

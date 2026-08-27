@@ -5,16 +5,20 @@ import { apiReturnTargets, WechatApplicationCatalog, type ApiEnvironment, type J
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { PgActionProofVerifier } from '../foundation/security/ActionProof';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { PgActionProofVerifier } from '../foundation/security/ActionProof';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { createPool, type DatabasePool } from '../foundation/persistence/Pool';
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 import { IDENTITY_SECURITY_KEYS, SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
@@ -24,6 +28,9 @@ import { SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/
 =======
 import { IDENTITY_SECURITY_KEYS, SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { DATABASE_POOL } from '../foundation/persistence/Pool';
 import { QUERY_METRICS, QueryMetrics } from '../foundation/persistence/QueryMetrics';
@@ -76,6 +83,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
   const endpoint = required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const secrets = new WorkloadSecretStore(endpoint, required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'));
 =======
   const secrets = new WorkloadSecretStore(endpoint);
@@ -83,6 +91,9 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
 =======
   const secrets = new WorkloadSecretStore(endpoint, required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const secrets = new WorkloadSecretStore(endpoint);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const telemetry = commerceTelemetry();
   const dependencies = new DependencyMetrics(telemetry);
   const bootstrapContext = { requestId: `bootstrap:${workload}`, traceId: `bootstrap:${workload}`, module: 'runtime', operation: 'bootstrap' };
@@ -101,6 +112,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
   if (role.rows[0]?.current_user !== expectedRole) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     console.warn(`DATABASE_ROLE_WARNING:expected=${expectedRole}:actual=${role.rows[0]?.current_user ?? 'unknown'}`);
 =======
     await pool.end();
@@ -109,12 +121,17 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
 =======
     console.warn(`DATABASE_ROLE_WARNING:expected=${expectedRole}:actual=${role.rows[0]?.current_user ?? 'unknown'}`);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    await pool.end();
+    throw new Error(`DATABASE_ROLE_INVALID:${expectedRole}`);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
   const security = 'SESSION_KEY_REF' in environment && environment.SESSION_KEY_REF && environment.IDENTITY_KEY_REF && environment.QUOTE_KEY_REF
     ? { session: await secrets.read(environment.SESSION_KEY_REF), identity: await secrets.read(environment.IDENTITY_KEY_REF),
       quote: await secrets.read(environment.QUOTE_KEY_REF) }
     : null;
   const returnTargets = workload === 'api' ? apiReturnTargets(environment as ApiEnvironment) : null;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const kms = environment.KMS_ENDPOINT
@@ -128,6 +145,9 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     ? new KmsClient(environment.KMS_ENDPOINT, required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'))
     : null;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const kms = environment.KMS_ENDPOINT ? new KmsClient(environment.KMS_ENDPOINT) : null;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const [applicationSource, paymentSource] = await Promise.all([
     secrets.read(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING')),
     secrets.read(required(environment.WECHAT_PAYMENT_CONFIG_REF, 'WECHAT_PAYMENT_CONFIG_REF_MISSING')),
@@ -165,6 +185,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     new PgDecisionSink(pool),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     undefined,
     new PgActionProofVerifier(pool),
 =======
@@ -173,6 +194,8 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     undefined,
     new PgActionProofVerifier(pool),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   );
   const handlers = new Map<OperationId, OperationHandler>();
   return {
@@ -195,6 +218,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
       container.bind(SECRET_STORE, secrets);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       if (security !== null) {
@@ -207,6 +231,9 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      if (security !== null) container.bind(SECURITY_KEYS, security);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       if (returnTargets !== null) container.bind(RETURN_TARGETS, returnTargets);
       if (kms !== null) container.bind(KMS_CLIENT, kms);
       container.bind(PAYMENT_GATEWAY, payment);

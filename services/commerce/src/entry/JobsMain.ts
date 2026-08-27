@@ -1,10 +1,13 @@
 import { jobsEnvironment } from '@shop/config/server';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { runJobs } from './JobsEntrypoint';
 
 await runJobs(jobsEnvironment());
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { bootstrapJobs } from '../bootstrap/JobsBootstrap';
 import { createRuntime } from '../bootstrap/CommerceRuntime';
 import { JOB_CATALOG } from '../app/jobs';
@@ -30,9 +33,12 @@ const scheduler = new RuntimeScheduler(runtime.pool, environment.JOB_WORKER_ID!)
 await Promise.all([...registry.all().map((definition) => definition.job.execute(undefined, { id: definition.id, attempt: 1, signal: controller.signal })),
   relay.run(controller.signal), scheduler.run(controller.signal)]);
 await runtime.close();
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { runJobs } from './JobsEntrypoint';
 
 await runJobs(jobsEnvironment());
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

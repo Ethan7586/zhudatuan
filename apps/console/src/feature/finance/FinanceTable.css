@@ -22,15 +22,19 @@
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 .financeworkspace .financetable th {
   height: 38px;
   background: var(--sw-surface-subtle);
   color: var(--sw-text-secondary);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .financetable th {
   height: 38px;
   background: var(--sw-surface-subtle);
   color: var(--sw-muted);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 .financeworkspace .financetable th {
@@ -38,6 +42,8 @@
   background: var(--sw-surface-subtle);
   color: var(--sw-text-secondary);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   font-weight: 700;
 }
 .financetable th:last-child,
@@ -195,12 +201,15 @@
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .financequerystate.iserror {
   color: var(--sw-danger-strong);
 }

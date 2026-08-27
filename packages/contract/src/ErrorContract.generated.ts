@@ -15,6 +15,7 @@ const rows = [
   ["ACCOUNT_NOT_ACTIVE",409],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["ACCOUNTS_API_CADDY_MATCHER_MISSING",500],
   ["ACCOUNTS_API_STATIC_FALLBACK_BOUNDARY_INVALID",500],
   ["ACTION_PROOF_INVALID",400],
@@ -25,6 +26,8 @@ const rows = [
   ["ACCOUNTS_API_STATIC_FALLBACK_BOUNDARY_INVALID",500],
   ["ACTION_PROOF_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["ACTION_PROOF_REQUIRED",403],
   ["ACTIVE_MALL_APPLICATION_MISSING",400],
   ["ACTIVE_PLATFORM_OWNER_NOT_UNIQUE",500],
@@ -61,6 +64,7 @@ const rows = [
   ["API_ALLOWED_ORIGINS_INVALID",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["API_BIND_HOST_INVALID",500],
@@ -76,6 +80,11 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["APP_ROOT_MISSING",500],
+  ["APPLICATION_ROLE_BYPASSES_RLS",500],
+  ["APPLICATION_ROLE_BYPASSRLS",500],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["AUDIT_ACCESS_ID_INVALID",400],
   ["AUDIT_ACCESS_INVALID",400],
   ["AUDIT_APP_MUTATION_POLICY_PRESENT",500],
@@ -94,6 +103,7 @@ const rows = [
   ["AUDIT_UPDATE_WAS_NOT_REJECTED",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["AUTH_MODE_INVALID",500],
@@ -107,6 +117,10 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["AUTH_RETURN_TARGET_INVALID",400],
+  ["AUTH_RETURN_TARGETS_INVALID",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["AUTH_SESSION_STORAGE_UNAVAILABLE",503],
   ["AUTH_STATE_EXPIRED",500],
   ["AUTH_STATE_INVALID",409],
@@ -119,12 +133,15 @@ const rows = [
   ["AUTHORIZATION_DENIED",403],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["AUTHORIZATION_TIME_INVALID",500],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["AUTHORIZATION_TIME_INVALID",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["BENEFIT_ACCOUNT_CREATE_FAILED",500],
   ["BENEFIT_ACCOUNT_NOT_USABLE",409],
   ["BENEFIT_ACCOUNT_REQUIRED",400],
@@ -143,12 +160,15 @@ const rows = [
   ["BENEFIT_DECISION_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["BENEFIT_FINANCE_DEPENDENCY_REQUIRED",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["BENEFIT_FINANCE_DEPENDENCY_REQUIRED",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["BENEFIT_FINANCE_PROJECTION_MISSING",400],
   ["BENEFIT_FOUR_EYES_REQUIRED",403],
   ["BENEFIT_HOLD_MISSING",400],
@@ -181,6 +201,7 @@ const rows = [
   ["CACHE_KEY_VALUE_INVALID",500],
   ["CACHE_POLICY_INVALID",500],
   ["CACHE_TTL_INVALID",500],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -231,6 +252,9 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["CAKE_MANIFEST_SIGNATURE_MISSING",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["CANDIDATE_CLIENT_MISSING",400],
   ["CANDIDATE_COMMIT_INVALID",400],
   ["CANDIDATE_EVIDENCE_SOURCE_MISSING",400],
@@ -238,6 +262,7 @@ const rows = [
   ["CANDIDATE_OUTPUT_MUST_NOT_EXIST",500],
   ["CANDIDATE_SCHEMA_INVALID",400],
   ["CANNOT_GRANT_UNOWNED_SCOPE",403],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   ["CANONICAL_API_FALLBACK_HANDLE_MISSING",500],
@@ -248,6 +273,8 @@ const rows = [
   ["CANONICAL_API_FALLBACK_HANDLE_MISSING",500],
   ["CANONICAL_API_HANDLER_ORDER_INVALID",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["CANONICAL_PLATFORM_ORG_UNIT_NOT_FOUND",404],
   ["CANONICAL_PLATFORM_OWNER_NOT_FOUND",404],
   ["CAPABILITY_DENIED",403],
@@ -321,6 +348,7 @@ const rows = [
   ["CONSOLE_CONTEXT_MISSING",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["CONSOLE_PENDING_ROLE_NOT_FOUND",404],
@@ -334,6 +362,10 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["CONSOLE_SCOPE_MISSING",400],
+  ["CONSOLE_SESSION_READ_FAILED",503],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["CONTAINER_BINDING_DUPLICATE",500],
   ["CONTAINER_BINDING_MISSING",500],
   ["CONTAINER_FROZEN",500],
@@ -345,12 +377,15 @@ const rows = [
   ["CREDENTIAL_NOT_FOUND",404],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["CREDENTIAL_PROVIDER_INVALID",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["CREDENTIAL_PROVIDER_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["CSRF_TOKEN_INVALID",403],
   ["CSV_COLUMN_COUNT_INVALID",400],
   ["CSV_HEADER_INVALID",400],
@@ -392,12 +427,15 @@ const rows = [
   ["DEPENDENCY_TIMEOUT",504],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["DEPLOYMENT_BOUNDARY_MISSING",500],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["DEPLOYMENT_BOUNDARY_MISSING",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["DEPLOYMENT_CONTRACT_MISSING",400],
   ["DEVICE_ADAPTER_DUPLICATE",409],
   ["DEVICE_ADAPTER_INVALID",400],
@@ -508,12 +546,15 @@ const rows = [
   ["EXTERNAL_OBJECT_DUPLICATE",409],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["EXTERNAL_PAYMENT_DISABLED",503],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["EXTERNAL_PAYMENT_DISABLED",503],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["FEDERATED_MEMBERSHIP_ORPHAN",500],
   ["FEDERATED_PRINCIPAL_ORPHAN",500],
   ["FINANCE_ACCOUNT_CONTRACT_MISMATCH",409],
@@ -521,6 +562,7 @@ const rows = [
   ["FINANCE_ACCOUNT_KIND_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["FINANCE_AUTOREFUND_EVIDENCE_MISMATCH",409],
   ["FINANCE_BACKFILL_CONFLICT_OR_MISMATCH",409],
   ["FINANCE_BACKFILL_DECISION_INVALID",400],
@@ -582,6 +624,13 @@ const rows = [
   ["FINANCE_FIELD_TYPE_INVALID",400],
   ["FINANCE_FIELD_UNIT_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["FINANCE_BACKFILL_CONFLICT_OR_MISMATCH",409],
+  ["FINANCE_BACKFILL_DECISION_INVALID",400],
+  ["FINANCE_CURRENCY_UNSUPPORTED",400],
+  ["FINANCE_EVENT_CONTEXT_MISSING",400],
+  ["FINANCE_EVENT_UNSUPPORTED",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["FINANCE_HOLD_AMOUNT_INVALID",400],
   ["FINANCE_HOLD_INSUFFICIENT_OR_CONFLICT",409],
   ["FINANCE_HOLD_NOT_CAPTURABLE",409],
@@ -589,6 +638,7 @@ const rows = [
   ["FINANCE_IDEMPOTENCY_MISMATCH",409],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["FINANCE_JOURNAL_EVIDENCE_INVALID",500],
   ["FINANCE_JOURNAL_UNBALANCED",500],
   ["FINANCE_LATE_CAPTURE_EVIDENCE_MISMATCH",409],
@@ -622,11 +672,17 @@ const rows = [
   ["FINANCE_ORDER_TENDER_TOTAL_OVERFLOW",400],
   ["FINANCE_ORDER_TENDERS_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["FINANCE_JOURNAL_UNBALANCED",500],
+  ["FINANCE_LEDGER_APPEND_ONLY",500],
+  ["FINANCE_LEDGER_UNBALANCED",500],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["FINANCE_PERIOD_ACTION_INVALID",400],
   ["FINANCE_PERIOD_CLOSE_CONFLICT_OR_HASH_MISMATCH",409],
   ["FINANCE_PERIOD_CLOSE_NOT_REQUESTABLE",409],
   ["FINANCE_PERIOD_CLOSED",500],
   ["FINANCE_PERIOD_INVALID",400],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -705,11 +761,24 @@ const rows = [
   ["FINANCE_SETTLEMENT_AMOUNT_UNSAFE",500],
   ["FINANCE_SETTLEMENT_CALCULATION_STALE",409],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["FINANCE_POST_AMOUNT_INVALID",400],
+  ["FINANCE_POST_FAILED",500],
+  ["FINANCE_POST_INVALID",400],
+  ["FINANCE_POST_SAME_ACCOUNT",500],
+  ["FINANCE_RECONCILIATION_ACTION_INVALID",400],
+  ["FINANCE_RECONCILIATION_NOT_AUTHORIZED",500],
+  ["FINANCE_SETTLEMENT_ADJUSTMENT_ACTION_INVALID",400],
+  ["FINANCE_SETTLEMENT_ADJUSTMENT_CONFLICT_OR_SEPARATION",409],
+  ["FINANCE_SETTLEMENT_ADJUSTMENT_DIRECTION_INVALID",400],
+  ["FINANCE_SETTLEMENT_AMOUNT_INVALID",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["FINANCE_SETTLEMENT_CONFLICT_OR_SEPARATION",409],
   ["FINANCE_SETTLEMENT_DECISION_INVALID",400],
   ["FINANCE_SETTLEMENT_FEE_INVALID",400],
   ["FINANCE_SETTLEMENT_INVOICE_BASIS_INVALID",400],
   ["FINANCE_SETTLEMENT_LINE_NOT_ADJUSTABLE",409],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   ["FINANCE_SETTLEMENT_LINE_STALE",409],
@@ -777,10 +846,16 @@ const rows = [
   ["FINANCE_TAX_TYPE_INVALID",400],
   ["FINANCE_TRIAL_BALANCE_REFRESH_FAILED",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["FINANCE_SETTLEMENT_NET_INVALID",400],
+  ["FINANCE_SETTLEMENT_SEPARATION_REQUIRED",403],
+  ["FINANCE_STATEMENT_FINALIZATION_FAILED",500],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["FINANCE_WITHDRAWAL_CONFLICT_OR_SEPARATION",409],
   ["FINANCE_WITHDRAWAL_DECISION_INVALID",400],
   ["FINANCE_WITHDRAWAL_EXCEEDS_PAYABLE",409],
   ["FINANCE_WITHDRAWAL_NOT_RECOVERABLE",409],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -851,10 +926,15 @@ const rows = [
   ["FOODVOUCHER_RETAIL_PRICE_INVALID",400],
   ["FOODVOUCHER_SERVICE_TYPE_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["FLOWER_MANIFEST_SIGNATURE_MISSING",400],
+  ["FOODVOUCHER_MANIFEST_SIGNATURE_MISSING",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["FRONTEND_FILE_MANIFEST_DRIFT",409],
   ["FULFILLMENT_IDENTITY_IMMUTABLE",500],
   ["FULFILLMENT_LINE_ORPHAN",500],
   ["FULFILLMENT_NOT_RUNNABLE",409],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -882,6 +962,10 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["GENERATED_CONTRACT_DRIFT",500],
+  ["GENERATED_RUNTIME_CONFIG_DRIFT",500],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["GENERIC_DOMAIN_EXECUTE_FORBIDDEN",403],
   ["HASH_INVALID",400],
   ["HISTORICAL_MIGRATION_FILESET_DRIFT",500],
@@ -895,6 +979,7 @@ const rows = [
   ["IDEMPOTENCY_KEY_REQUIRED",400],
   ["IDEMPOTENCY_KEY_REUSED",409],
   ["IDEMPOTENCY_PAYLOAD_MISMATCH",409],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -945,6 +1030,10 @@ const rows = [
 =======
   ["IDENTITY_SUBJECT_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["IDENTITY_INVITE_REQUIRED",400],
+  ["IDENTITY_SUBJECT_EXISTS",409],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["IDENTITY_SUBJECT_REQUIRED",400],
   ["IMPORT_FILE_EMPTY",400],
   ["IMPORT_HASH_MISMATCH",409],
@@ -963,12 +1052,15 @@ const rows = [
   ["INTERNAL_PAYMENT_ACTOR_NOT_AUTHORIZED",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["INTERNAL_PAYMENT_AMOUNT_INVALID",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["INTERNAL_PAYMENT_AMOUNT_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["INTERNAL_PAYMENT_INPUT_INVALID",400],
   ["INTERNAL_PAYMENT_INTENT_ALREADY_EXISTS",500],
   ["INTERNAL_PAYMENT_INTENT_EVIDENCE_INVALID",400],
@@ -995,12 +1087,15 @@ const rows = [
   ["INVALID_ORDER_INPUT",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["INVALID_PII_CIPHER",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["INVALID_PII_CIPHER",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["INVALID_PRODUCT_STATUS_INPUT",500],
   ["INVALID_SIMULATION_BENEFIT",500],
   ["INVALID_SIMULATION_PAYMENT",500],
@@ -1068,6 +1163,7 @@ const rows = [
   ["INVENTORY_SYNC_STATE_VERSION_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["INVITATION_CSRF_MISSING",400],
   ["INVITATION_NOT_FOUND",404],
   ["INVITATION_SCOPE_INVALID",400],
@@ -1091,12 +1187,18 @@ const rows = [
   ["INVOICE_AMOUNT_INVALID",400],
   ["INVOICE_CLAIM_LOST",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["INVITATION_NOT_FOUND",404],
+  ["INVITATION_TERMS_CAPABILITY_MISSING",400],
+  ["INVITE_INVALID",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["INVOICE_CONFIGURATION_INVALID",500],
   ["INVOICE_DECISION_CONFLICT_OR_SEPARATION",409],
   ["INVOICE_DECISION_INVALID",400],
   ["INVOICE_DOCUMENT_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["INVOICE_JOB_SCOPE_REQUIRED",400],
   ["INVOICE_LINES_INVALID",400],
 =======
@@ -1105,6 +1207,8 @@ const rows = [
   ["INVOICE_JOB_SCOPE_REQUIRED",400],
   ["INVOICE_LINES_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH",409],
   ["INVOICE_NOT_RUNNABLE",409],
   ["INVOICE_ORIGINAL_DOCUMENT_MISSING",400],
@@ -1127,12 +1231,15 @@ const rows = [
   ["JOB_RUNTIME_CATALOG_DRIFT",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["JOB_RUNTIME_PROFILE_INVALID",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["JOB_RUNTIME_PROFILE_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["JSON_OBJECT_REQUIRED",400],
   ["JSON_VALUE_INVALID",400],
   ["KMS_DECRYPT_FAILED",500],
@@ -1149,12 +1256,15 @@ const rows = [
   ["LEGACY_BENEFIT_ENTRY_STILL_PRESENT",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["LEGACY_CADDY_RELOAD_MUST_REMAIN_EXCLUDED",500],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["LEGACY_CADDY_RELOAD_MUST_REMAIN_EXCLUDED",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["LEGACY_INVENTORY_TABLE_REMAINS",500],
   ["LEGACY_PUBLIC_FUNCTION_REMAINS",500],
   ["LEGACY_SUPPORT_CASE_REFERENCE_REMAINS",500],
@@ -1172,12 +1282,15 @@ const rows = [
   ["LOCAL_EMPLOYEE_STOREFRONT_MEMBERSHIP_MISSING",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["LOCAL_ENVIRONMENT_FILE_INVALID",500],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["LOCAL_ENVIRONMENT_FILE_INVALID",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["LOCAL_ETHAN_OPERATOR_MEMBERSHIP_MISSING",500],
   ["LOCAL_ETHAN_PRINCIPAL_MISSING",500],
   ["LOCAL_ETHAN_STOREFRONT_MEMBERSHIP_MISSING",500],
@@ -1188,12 +1301,15 @@ const rows = [
   ["LOCAL_JSON_INVALID",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["LOCAL_KMS_BEARER_TOKEN_DRIFT",500],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["LOCAL_KMS_BEARER_TOKEN_DRIFT",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["LOCAL_KMS_ENVELOPE_INVALID",500],
   ["LOCAL_KMS_MASTER_KEY_INVALID",500],
   ["LOCAL_KMS_ROUNDTRIP_FAILED",500],
@@ -1201,16 +1317,20 @@ const rows = [
   ["LOCAL_OBJECT_COMPLETION_INVALID",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["LOCAL_OBJECT_DATA_CORRUPT",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["LOCAL_OBJECT_DATA_CORRUPT",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["LOCAL_OBJECT_METADATA_CORRUPT",500],
   ["LOCAL_OBJECT_ROUNDTRIP_FAILED",500],
   ["LOCAL_OBJECT_UPLOAD_INVALID",500],
   ["LOCAL_OBJECTS_CONFIGURATION_INVALID",500],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1257,6 +1377,16 @@ const rows = [
 =======
   ["LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["LOCAL_PROCESS_FAILED",500],
+  ["LOCAL_RUNTIME_COUNTS_INVALID",500],
+  ["LOCAL_SECRET_INVALID",500],
+  ["LOCAL_SECRET_MISSING",500],
+  ["LOCAL_SECRET_REQUEST_INVALID",500],
+  ["LOCAL_SECRET_VALUE_INVALID",500],
+  ["LOCAL_SECRETS_INVALID",500],
+  ["LOCAL_SERVICE_HEALTH_FAILED",500],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["MALL_APPLICATION_ACTION_INVALID",400],
   ["MALL_APPLICATION_ALREADY_PUBLISHED",500],
   ["MALL_APPLICATION_CODE_OR_SLUG_CONFLICT",409],
@@ -1272,6 +1402,7 @@ const rows = [
   ["MALL_FINANCE_THRESHOLD_OUT_OF_RANGE",400],
   ["MARKETING_BUDGET_CONFLICT",409],
   ["MARKETING_RULE_INVALID",400],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1301,6 +1432,9 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["MEAL_MANIFEST_SIGNATURE_MISSING",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["MEMBER_CLIENT_INVALID",400],
   ["MEMBER_DATA_SCOPE_RESOLVER_MISSING",400],
   ["MEMBER_IMPORT_PROGRESS_INVALID",400],
@@ -1308,6 +1442,7 @@ const rows = [
   ["MEMBER_MEMBERSHIP_COMPATIBILITY_REMAINS",500],
   ["MEMBER_OPERATION_AUDIENCE_MISMATCH",409],
   ["MEMBER_PROFILE_NOT_FOUND",404],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   ["MEMBER_RESET_CSRF_MISSING",400],
@@ -1320,6 +1455,8 @@ const rows = [
   ["MEMBER_RESET_NOT_AVAILABLE",500],
   ["MEMBER_RESET_TARGET_PROTECTED",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["MEMBERSHIP_CREATE_FAILED",500],
   ["MEMBERSHIP_FUNCTION_SOURCE_UNEXPECTED",500],
   ["MEMBERSHIP_INACTIVE",403],
@@ -1347,6 +1484,7 @@ const rows = [
   ["MINIAPP_SCOPE_NOT_ALLOWED",403],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["MINIAPP_SESSION_SIGNING_KEY_NOT_CONFIGURED",503],
@@ -1363,6 +1501,11 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["MINIAPP_THEME_GENERATED_DRIFT",500],
+  ["MINIAPP_WING_CODE_GENERATED_DRIFT",409],
+  ["MOBILE_ASSURANCE_REQUIRED",403],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["MOBILE_INVALID",400],
   ["MODULE_DEPENDENCY_CYCLE",500],
   ["MODULE_DEPENDENCY_MISSING",500],
@@ -1449,12 +1592,15 @@ const rows = [
   ["OPERATION_INPUT_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["OPERATION_NOT_EXPOSED",500],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["OPERATION_NOT_EXPOSED",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["OPERATION_PATH_INVALID",500],
   ["OPERATION_PERMISSION_UNKNOWN",500],
   ["OPERATION_QUERY_INVALID",400],
@@ -1489,6 +1635,7 @@ const rows = [
   ["ORIGIN_REQUIRED",403],
   ["OUTBOX_CLAIM_INVALID",400],
   ["OUTBOX_LEASE_LOST",503],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1542,6 +1689,10 @@ const rows = [
   ["OWNER_TRANSFER_ROLE_INVALID",400],
   ["OWNER_TRANSFER_TARGET_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["OWNER_MEMBERSHIP_PROTECTED",500],
+  ["OWNER_ROLE_PROTECTED",500],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["P0_CLIENT_ENVIRONMENT_EXAMPLE_MISSING",400],
   ["P0_CLIENT_PORT_INVALID",400],
   ["P0_CORS_PORT_MISSING",400],
@@ -1567,12 +1718,15 @@ const rows = [
   ["PAYMENT_APPLICATION_CONFLICT",409],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["PAYMENT_CAPTURE_PROVIDER_EFFECT_MISMATCH",409],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["PAYMENT_CAPTURE_PROVIDER_EFFECT_MISMATCH",409],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["PAYMENT_CAPTURE_STATE_INVALID",409],
   ["PAYMENT_CLOSE_OPERATION_MISMATCH",409],
   ["PAYMENT_CLOSE_RESULT_INVALID",400],
@@ -1584,18 +1738,22 @@ const rows = [
   ["PAYMENT_EXPIRY_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["PAYMENT_EXTERNAL_TENDER_FORBIDDEN",403],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["PAYMENT_EXTERNAL_TENDER_FORBIDDEN",403],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["PAYMENT_EXTERNAL_TENDER_NOT_CAPTURED",409],
   ["PAYMENT_FULFILLMENT_EVIDENCE_MISMATCH",409],
   ["PAYMENT_FULFILLMENT_ITEMS_MISSING",400],
   ["PAYMENT_FULFILLMENT_SUBORDER_MISSING",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["PAYMENT_INTENT_CARDINALITY_INVALID",400],
   ["PAYMENT_INTENT_NOT_FOUND",404],
   ["PAYMENT_INTENT_NOT_PAYABLE",409],
@@ -1617,6 +1775,11 @@ const rows = [
 =======
   ["PAYMENT_INTERNAL_REFUND_PROVIDER_REFERENCE_FORBIDDEN",403],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["PAYMENT_INTENT_NOT_FOUND",404],
+  ["PAYMENT_INTENT_NOT_PAYABLE",409],
+  ["PAYMENT_INTERNAL_OUTBOX_STATE_MISMATCH",409],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["PAYMENT_LEGACY_RUNTIME_REMAINS",500],
   ["PAYMENT_NOT_REFUNDABLE",409],
   ["PAYMENT_NOTIFICATION_EVIDENCE_MISMATCH",409],
@@ -1637,6 +1800,7 @@ const rows = [
   ["PAYMENT_PROVIDER_AMOUNT_MISMATCH",409],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["PAYMENT_PROVIDER_EFFECT_MISMATCH",409],
   ["PAYMENT_PROVIDER_EVENT_EFFECT_MISMATCH",409],
 =======
@@ -1645,6 +1809,8 @@ const rows = [
   ["PAYMENT_PROVIDER_EFFECT_MISMATCH",409],
   ["PAYMENT_PROVIDER_EVENT_EFFECT_MISMATCH",409],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["PAYMENT_PROVIDER_EVENT_MISSING",400],
   ["PAYMENT_PROVIDER_TRANSACTION_MISSING",400],
   ["PAYMENT_QUERY_FAILURE_INVALID",400],
@@ -1662,6 +1828,7 @@ const rows = [
   ["PAYMENT_REFERENCE_SOURCE_INVALID",400],
   ["PAYMENT_REFUND_EXCEEDS_AVAILABLE",409],
   ["PAYMENT_REFUND_IDEMPOTENCY_CONFLICT",409],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1682,6 +1849,11 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["PAYMENT_REFUND_NOT_RETRYABLE",409],
+  ["PAYMENT_REFUND_PLAN_INTEGRITY_FAILED",409],
+  ["PAYMENT_REFUND_PLAN_MISSING",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["PAYMENT_REFUND_STATE_INVALID",409],
   ["PAYMENT_SCENE_INVALID",400],
   ["PAYMENT_TENDER_CAPTURE_INTEGRITY_FAILED",409],
@@ -1719,6 +1891,7 @@ const rows = [
   ["POSTGRES_FRESH_URL_INVALID",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["POSTGRES_INIT_FIXTURE_COMMAND_REJECTED",400],
@@ -1740,6 +1913,8 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["POSTGRES_QUEUE_CLAIM_INVALID",500],
   ["POSTGRES_REPOSITORY_ENDPOINT_REQUIRED",500],
   ["PRICE_QUOTE_EXPIRED",409],
@@ -1756,6 +1931,7 @@ const rows = [
   ["PRODUCTION_AUTH_MODE_INVALID",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["PRODUCTION_SHOWCASE_CADDY_MATCHER_MISSING",500],
   ["PRODUCTION_SHOWCASE_MUST_BE_EXPLICIT_NON_MOCK",500],
 =======
@@ -1764,6 +1940,8 @@ const rows = [
   ["PRODUCTION_SHOWCASE_CADDY_MATCHER_MISSING",500],
   ["PRODUCTION_SHOWCASE_MUST_BE_EXPLICIT_NON_MOCK",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["PROMOTION_AUTHORITY_INVALID",400],
   ["PROMOTION_COMMIT_MISMATCH",409],
   ["PROMOTION_EVIDENCE_MISMATCH",409],
@@ -1808,6 +1986,7 @@ const rows = [
   ["PUBLIC_BUSINESS_TABLE_REMAINS",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["PURCHASE_API_BIND_HOST_INVALID",500],
@@ -1848,6 +2027,9 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["PURCHASE_LIMIT_EXCEEDED",409],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["QUALIFICATION_ACTIVE_RESOURCE_EMPTY",400],
   ["QUALIFICATION_ACTOR_INVALID",400],
   ["QUALIFICATION_APPROVAL_ALREADY_PENDING",409],
@@ -1887,6 +2069,7 @@ const rows = [
   ["REDIS_LEASE_CREATE_INVALID",500],
   ["REDIS_LEASE_DUPLICATE_INVALID",500],
   ["REDIS_LEASE_READ_INVALID",500],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1994,6 +2177,8 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["REFUND_ALLOCATION_RULE_REQUIRED",400],
   ["REFUND_ALREADY_REQUESTED",500],
   ["REFUND_AMOUNT_EXCEEDED",500],
@@ -2004,6 +2189,7 @@ const rows = [
   ["REFUND_INTERNAL_EVIDENCE_MISMATCH",409],
   ["REFUND_OPERATOR_NOT_AUTHORIZED",500],
   ["REFUND_WEBHOOK_INTEGRITY_MISMATCH",409],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2064,6 +2250,8 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["REGISTRATION_REQUIRED",400],
   ["RELEASE_APPROVAL_INVALID",400],
   ["RELEASE_BUNDLE_FILE_MISSING",400],
@@ -2094,12 +2282,15 @@ const rows = [
   ["REPORT_AUTHORIZATION_SNAPSHOT_REQUIRED",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["REPORT_COCKPIT_FAILED",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["REPORT_COCKPIT_FAILED",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["REPORT_EVENT_MAPPING_MISSING",400],
   ["REPORT_EVENT_VERSION_UNSUPPORTED",400],
   ["REPORT_EXPORT_ATTEMPTS_INVALID",400],
@@ -2159,6 +2350,7 @@ const rows = [
   ["ROUTE_REGISTRY_FROZEN",500],
   ["ROUTE_REGISTRY_NOT_FROZEN",500],
   ["RUNTIME_CONTRACT_CHECKSUM_MISMATCH",409],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2226,6 +2418,16 @@ const rows = [
 =======
   ["SDK_SECURE_HASH_SOURCE_UNAVAILABLE",503],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["SCOPE_DENIED",403],
+  ["SCOPE_GRANT_EXCEEDS_ACTOR",500],
+  ["SCOPE_MISMATCH",409],
+  ["SCOPE_NOT_ALLOWED_FOR_OPERATION",403],
+  ["SDK_BASE_URL_INVALID",500],
+  ["SDK_CONTRACT_VERSION_MISMATCH",409],
+  ["SDK_IDEMPOTENCY_KEY_REQUIRED",400],
+  ["SDK_PATH_VALUE_MISSING",500],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["SDK_SECURE_ID_SOURCE_UNAVAILABLE",503],
   ["SECRET_READ_FAILED",500],
   ["SECRET_REFERENCE_INVALID",500],
@@ -2239,6 +2441,7 @@ const rows = [
   ["SEMAPHORE_QUEUE_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["SESSION_SIGNING_KEY_NOT_CONFIGURED",503],
   ["SETTLEMENT_FROZEN_BASIS_MISMATCH",409],
 =======
@@ -2247,6 +2450,8 @@ const rows = [
   ["SESSION_SIGNING_KEY_NOT_CONFIGURED",503],
   ["SETTLEMENT_FROZEN_BASIS_MISMATCH",409],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["SETTLEMENT_LINE_TOTAL_MISMATCH",409],
   ["SETTLEMENT_NOT_RUNNABLE",409],
   ["SHOP_SMOKE_BASE_URL_INVALID",400],
@@ -2273,6 +2478,7 @@ const rows = [
   ["STAGE_TIME_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["STAGING_OWNER_BOOTSTRAP_ACTOR_INVALID",400],
@@ -2294,6 +2500,8 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["STALE_SCOPE_RESPONSE",409],
   ["STATE_INVALID",400],
   ["STATEMENT_CURRENCY_UNSUPPORTED",400],
@@ -2301,6 +2509,7 @@ const rows = [
   ["STATEMENT_HASH_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["STATEMENT_HEADER_INVALID",400],
   ["STATEMENT_INTEGRITY_FAILED",409],
   ["STATEMENT_OCCURRED_AT_INVALID",400],
@@ -2322,30 +2531,40 @@ const rows = [
   ["STATEMENT_REFERENCE_INVALID",400],
   ["STATEMENT_TAX_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["STATEMENT_INTEGRITY_FAILED",409],
+  ["STATEMENT_REFERENCE_DUPLICATE",409],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["STATEMENT_TOTAL_OVERFLOW",500],
   ["STATEMENT_TYPE_INVALID",400],
   ["STEP_UP_CHALLENGE_EXPIRED",500],
   ["STEP_UP_CHALLENGE_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["STEP_UP_DESTINATION_FORBIDDEN",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["STEP_UP_DESTINATION_FORBIDDEN",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["STEP_UP_DESTINATION_MISSING",409],
   ["STEP_UP_FACTOR_NOT_CONFIGURED",500],
   ["STEP_UP_IDENTITY_INVALID",400],
   ["STEP_UP_SESSION_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["STEP_UP_SESSION_RECEIPT_INVALID",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["STEP_UP_SESSION_RECEIPT_INVALID",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["STEPUP_REQUIRED",403],
   ["STORE_ROUTE_FORBIDDEN",403],
   ["STORE_SCOPE_MISSING",400],
@@ -2361,6 +2580,7 @@ const rows = [
   ["STOREFRONT_SCOPE_MISSING",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["STOREFRONT_SCOPE_REQUIRED",400],
@@ -2374,6 +2594,10 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["STOREFRONT_SESSION_MISSING",401],
+  ["STRING_ARRAY_REQUIRED",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["SUPPLIER_EXPORT_ID_INVALID",400],
   ["SUPPLIER_ROUTE_FORBIDDEN",403],
   ["SUPPLIER_SCOPE_MISSING",400],
@@ -2390,6 +2614,7 @@ const rows = [
   ["SUPPORT_BENEFIT_REFERENCE_INVALID",400],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["SUPPORT_CASE_CLOSED",500],
   ["SUPPORT_CASE_CONTEXT_MISSING",500],
 =======
@@ -2398,10 +2623,13 @@ const rows = [
   ["SUPPORT_CASE_CLOSED",500],
   ["SUPPORT_CASE_CONTEXT_MISSING",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["SUPPORT_CONVERSATION_INVALID",400],
   ["SUPPORT_FORM_INVALID",400],
   ["SUPPORT_KEYSET_INDEX_MISSING",400],
   ["SUPPORT_MESSAGE_APPEND_FAILED",500],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2417,6 +2645,9 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ["SUPPORT_MESSAGE_INVALID",400],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["SUPPORT_ORDER_SCOPE_INVALID",400],
   ["SUPPORT_PRIORITY_INVALID",400],
   ["SUPPORT_REASSIGNMENT_BATCH_EXCEEDED",413],
@@ -2455,12 +2686,15 @@ const rows = [
   ["UNUSED",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["UNVERIFIED_ARTIFACT_MARKED_RELEASE_ELIGIBLE",500],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["UNVERIFIED_ARTIFACT_MARKED_RELEASE_ELIGIBLE",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["VALIDATION_FAILED",400],
   ["VENDOR_AUTH_INVALID",400],
   ["VENDOR_BASE_URL_HTTPS_REQUIRED",400],
@@ -2503,12 +2737,15 @@ const rows = [
   ["VOUCHER_EXTENSION_STATE_INVALID",409],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["VOUCHER_FINANCE_DEPENDENCY_REQUIRED",400],
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   ["VOUCHER_FINANCE_DEPENDENCY_REQUIRED",400],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["VOUCHER_FINGERPRINT_DUPLICATE",409],
   ["VOUCHER_HOLD_MANAGE_OPERATION_REQUIRED",501],
   ["VOUCHER_HOLD_MISSING",400],
@@ -2565,6 +2802,7 @@ const rows = [
   ["VOUCHER_VOID_HOLD_NOT_OPEN",500],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   ["WEB_BUSINESS_API_BIND_HOST_INVALID",500],
@@ -2586,6 +2824,8 @@ const rows = [
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["WECHAT_APP_ID_INVALID",400],
   ["WECHAT_APPLICATION_CONFIG_INVALID",400],
   ["WECHAT_AUTHORIZATION_SCENE_INVALID",400],
@@ -2668,6 +2908,7 @@ const rows = [
   ["WITHDRAWAL_NOT_RUNNABLE",409],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   ["WITHDRAWAL_SOURCE_INVALID",400],
   ["WORKLOAD_BEARER_TOKEN_INVALID",500],
 =======
@@ -2676,6 +2917,8 @@ const rows = [
   ["WITHDRAWAL_SOURCE_INVALID",400],
   ["WORKLOAD_BEARER_TOKEN_INVALID",500],
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ["WORKSPACE_LINK_FORBIDDEN",403],
   ["WORKSTATION_PAGE_MISSING",400],
   ["WORKSTATION_SCOPE_MISSING",400],

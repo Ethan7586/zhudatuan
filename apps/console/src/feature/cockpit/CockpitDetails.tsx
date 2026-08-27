@@ -8,6 +8,7 @@ export function MallComparison({ malls }: Readonly<{ malls: readonly MallPerform
       <div className="mallhead"><span>商城</span><span>净成交额</span><span>退款率</span></div>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       {malls.length === 0 ? <article>
@@ -20,6 +21,9 @@ export function MallComparison({ malls }: Readonly<{ malls: readonly MallPerform
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      {malls.length === 0 ? <p className="cockpitempty">暂无权威商城对比</p> : malls.map((mall) => <article key={mall.id}>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <div className="mallrow"><strong>{mall.name}</strong><span>{money(mall.salesCents)}</span>
           <span className={mall.refundRate >= 0.04 ? 'isnegative' : ''}>{percent(mall.refundRate)}</span></div>
         <div className="malltrack" aria-hidden="true"><i style={{ width: `${Math.max(4, (mall.salesCents / maximum) * 100)}%` }} /></div>
@@ -35,6 +39,7 @@ export function BusinessEvents({ events }: Readonly<{ events: readonly BusinessE
       <div className="eventhead"><span>事件</span><span>指标</span><span>时间</span></div>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       {events.length === 0 ? <article>
         <EventIcon kind="calendar" /><strong>经营动态</strong><span>0 条</span><time>—</time>
       </article> : events.map((event) => <article key={event.id}>
@@ -46,6 +51,9 @@ export function BusinessEvents({ events }: Readonly<{ events: readonly BusinessE
         <EventIcon kind="calendar" /><strong>经营动态</strong><span>0 条</span><time>—</time>
       </article> : events.map((event) => <article key={event.id}>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      {events.length === 0 ? <p className="cockpitempty">暂无权威经营动态</p> : events.map((event) => <article key={event.id}>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <EventIcon kind={event.kind} /><strong>{event.title}</strong><span className={event.kind === 'warning' ? 'isnegative' : ''}>{event.metric}</span><time>{event.time}</time>
       </article>)}
     </section>
@@ -61,6 +69,7 @@ export function BusinessInsights({ insights, onOpen }: Readonly<{
       <h2 id="insightstitle">需要关注</h2>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       {insights.length === 0 ? <article data-tone="positive">
@@ -73,6 +82,9 @@ export function BusinessInsights({ insights, onOpen }: Readonly<{
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      {insights.length === 0 ? <p className="cockpitempty">暂无服务端经营洞察</p> : insights.map((insight) => <article key={insight.id} data-tone={insight.tone}>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <InsightIcon tone={insight.tone} />
         <div><strong>{insight.title}</strong>{insight.detail === undefined ? null : <span>{insight.detail}</span>}
           <button type="button" onClick={() => onOpen(insight)}>{insight.action} →</button></div>

@@ -9,12 +9,15 @@ const reconciliationsRead = createFetchFinanceReconciliationsRead(appConfig.apiB
 export interface FinanceReconciliationQuery extends FinanceFilter {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly kind: 'payment' | 'refund';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   readonly kind: 'payment' | 'refund';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly cursor?: string;
   readonly limit: number;
 }
@@ -38,12 +41,15 @@ export const financeReconciliationKey = (context: ConsoleContext, filter: Financ
     filter.difference,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     filter.kind,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     filter.kind,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     filter.cursor ?? null,
     filter.limit,
   ] as const);
@@ -51,15 +57,20 @@ export const financeReconciliationKey = (context: ConsoleContext, filter: Financ
 export async function readFinanceReconciliations(context: ConsoleContext, filter: FinanceReconciliationQuery, signal: AbortSignal) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   const preview = isFinancePreviewContext(context);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const preview = isFinancePreviewContext(context);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const value = await reconciliationsRead(
     {
       query: {
         limit: filter.limit,
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         kind: filter.kind,
@@ -71,6 +82,8 @@ export async function readFinanceReconciliations(context: ConsoleContext, filter
         ...(filter.status !== '' ? { status: filter.status } : {}),
         ...(filter.difference !== '' ? { difference: filter.difference } : {}),
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
         ...(preview && filter.q !== '' ? { q: filter.q } : {}),
         ...(preview && filter.period !== '' ? { period: filter.period } : {}),
@@ -78,6 +91,7 @@ export async function readFinanceReconciliations(context: ConsoleContext, filter
         ...(preview && filter.mall !== '' ? { mall: filter.mall } : {}),
         ...(preview && filter.status !== '' ? { status: filter.status } : {}),
         ...(preview && filter.difference !== '' ? { difference: filter.difference } : {}),
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
         kind: filter.kind,
@@ -89,6 +103,8 @@ export async function readFinanceReconciliations(context: ConsoleContext, filter
         ...(filter.status !== '' ? { status: filter.status } : {}),
         ...(filter.difference !== '' ? { difference: filter.difference } : {}),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       },
     },
     consoleRequest(context.scope, signal, context.session.accessVersion)

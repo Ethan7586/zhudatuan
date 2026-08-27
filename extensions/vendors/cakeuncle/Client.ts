@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { randomUUID } from 'node:crypto';
@@ -232,11 +233,14 @@ function isJsonValue(value: unknown): value is JsonValue {
   return value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ||
     (Array.isArray(value) && value.every(isJsonValue)) || isJsonObject(value);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { VendorClient, type VendorConnection } from '@shop/vendorcore';
 import { createCakeuncleAuth } from './Auth';
 
 export function createCakeuncleClient(connection: VendorConnection, fetcher?: typeof fetch): VendorClient {
   return new VendorClient(connection, createCakeuncleAuth(connection.secret), fetcher);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 
@@ -462,4 +466,6 @@ function isJsonValue(value: unknown): value is JsonValue {
   return value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ||
     (Array.isArray(value) && value.every(isJsonValue)) || isJsonObject(value);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

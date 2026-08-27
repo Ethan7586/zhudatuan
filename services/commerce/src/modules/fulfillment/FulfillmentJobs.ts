@@ -84,6 +84,7 @@ export class FulfillmentJobProcessor implements JobProcessor {
         on conflict(id) do nothing`, [`event:fulfillment:shipped:${digest(id)}`, id, loaded.scope_id, loaded.order_id, loaded.member_id, completed ? 'delivered' : 'shipped', job.id]);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       if (completed) {
@@ -100,6 +101,10 @@ export class FulfillmentJobProcessor implements JobProcessor {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      if (completed) await orderPort.completeFulfillment(client, loaded.order_id);
+      else await enqueue(client, 'tracking', loaded.scope_id, { fulfillment: id }, 300);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       await client.query('commit');
     } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
   }

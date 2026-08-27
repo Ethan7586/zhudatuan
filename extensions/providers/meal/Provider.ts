@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { randomUUID } from 'node:crypto';
@@ -32,6 +33,14 @@ export interface MealTransport {
   invoke: CakeuncleClient['invoke'];
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { createPorts, Provider, assertInstallation, requireConnection, type ProviderFactory, type ProviderInstallation } from '@shop/providercore';
+import { createCakeuncleClient } from '@shop/vendorcakeuncle';
+import { definition } from './manifest';
+import { MealMapper } from './Mapper';
+
+const operations = Object.freeze({ catalog: 'meal.menu.pull', price: 'meal.price.pull', stock: 'meal.inventory.pull', order: 'meal.order.submit', cancel: 'meal.order.cancel', tracking: 'meal.pickup.query', refund: 'meal.refund.submit', statement: 'meal.statement.pull', verification: 'meal.pickup.verify' });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export const MealProvider: ProviderFactory = Object.freeze({
   id: definition.id,
@@ -39,6 +48,7 @@ export const MealProvider: ProviderFactory = Object.freeze({
   definition,
   create(installation: ProviderInstallation) {
     assertInstallation(MealProvider, installation);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -130,10 +140,13 @@ function text(value: JsonValue | undefined, code: string): string {
   return value.trim();
 }
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const client = createCakeuncleClient(requireConnection(installation));
     return new Provider(installation.manifest, client, createPorts(client, operations, new MealMapper(), requireConnection(installation).secret));
   },
 });
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   },
@@ -214,3 +227,5 @@ function text(value: JsonValue | undefined, code: string): string {
   return value.trim();
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

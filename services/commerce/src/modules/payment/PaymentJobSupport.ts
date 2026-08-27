@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { providerOccurredAt, type PaymentGateway } from './application/port/PaymentGateway';
 =======
 import type { PaymentGateway } from './application/port/PaymentGateway';
@@ -8,6 +9,9 @@ import type { PaymentGateway } from './application/port/PaymentGateway';
 =======
 import { providerOccurredAt, type PaymentGateway } from './application/port/PaymentGateway';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import type { PaymentGateway } from './application/port/PaymentGateway';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import type { PaymentApplication } from './application/port/PaymentGateway';
 
@@ -55,6 +59,7 @@ export function assertProviderAmount(selected: IntentTarget, observed: ProviderO
 export async function recordProviderObservation(pool: DatabasePool, selected: IntentTarget, observed: ProviderObservation, source: 'query' | 'close'): Promise<void> {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   const occurredAt = observed.occurredAt === undefined ? null : providerOccurredAt(observed.occurredAt);
@@ -72,12 +77,17 @@ export async function recordProviderObservation(pool: DatabasePool, selected: In
     paymentDigest(evidence), occurredAt, occurredAt === null ? null : evidence]);
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const evidence = JSON.stringify({ source, state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor });
   const event = `${source}:${paymentDigest(`${selected.intent}:${evidence}`)}`;
   await pool.query(`insert into payment.observation(id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at)
     values($1,$2,$3,$4,$5,$6,$7,clock_timestamp()) on conflict(provider_event_id) do nothing`,
   [`observation:${paymentDigest(event)}`, selected.attempt, event, observed.state, observed.amountMinor, selected.currency, paymentDigest(evidence)]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

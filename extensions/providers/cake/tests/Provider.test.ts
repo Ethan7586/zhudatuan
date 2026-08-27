@@ -3,6 +3,7 @@ import { REQUIRED_PROVIDER_IDS } from '@shop/contract';
 import { CakeProvider } from '../Provider';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { definition, manifest } from '../manifest';
 =======
 import { manifest } from '../manifest';
@@ -10,11 +11,15 @@ import { manifest } from '../manifest';
 =======
 import { definition, manifest } from '../manifest';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { manifest } from '../manifest';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 describe('cake provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('cake');
     expect(CakeProvider.definition.id).toBe('cake');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -66,4 +71,9 @@ describe('cake provider contract', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    expect(manifest('signed').signature).toBe('signed');
+    expect(() => manifest('')).toThrow('CAKE_MANIFEST_SIGNATURE_MISSING');
+  });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

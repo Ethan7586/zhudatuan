@@ -8,6 +8,7 @@ export interface IdentityChallenge {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export interface IdentityChallengeAttempt {
@@ -21,6 +22,8 @@ export interface IdentityChallengeAttempt {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export class IdentityNotificationPort {
   challenge(database: OperationDatabase, id: string) {
     return database.query<IdentityChallenge>(`select challenge.purpose,secret.code_ciphertext,secret.destination_ciphertext
@@ -28,6 +31,7 @@ export class IdentityNotificationPort {
       where challenge.id=$1 and challenge.consumed_at is null and challenge.expires_at>clock_timestamp()`, [id]);
   }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -63,13 +67,18 @@ export class IdentityNotificationPort {
       where challenge_id=$1 and sequence=$2 and state='sending' returning challenge_id,sequence,state`, [id, sequence, code]);
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   attempt(database: OperationDatabase, id: string, provider: string, state: 'sent' | 'failed', external: string | null, code: string | null) {
     return database.query(`insert into identity.challengedelivery(challenge_id,sequence,provider,external_id,state,error_code,attempted_at)
       select $1,coalesce(max(sequence),0)+1,$2,$3,$4,$5,clock_timestamp() from identity.challengedelivery where challenge_id=$1`,
     [id, provider, external, state, code]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }
 

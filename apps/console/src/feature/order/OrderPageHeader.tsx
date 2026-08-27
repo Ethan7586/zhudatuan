@@ -1,6 +1,7 @@
 import { OrderIcon } from './OrderIcon';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 export function OrderPageHeader({
   isFetching,
@@ -34,6 +35,19 @@ export function OrderPageHeader({
   onImport: () => void;
   onExport: () => void;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { OrderPreviewAction } from './OrderPreviewAction';
+
+export function OrderPageHeader({
+  previewEnabled,
+  isFetching,
+  pageCount,
+  onRefresh,
+}: Readonly<{
+  previewEnabled: boolean;
+  isFetching: boolean;
+  pageCount: number;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   onRefresh: () => void;
 }>) {
   return (
@@ -44,6 +58,7 @@ export function OrderPageHeader({
         <span>统一处理订单、支付、履约、退款与售后</span>
       </div>
       <div className="orderpageactions">
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -64,6 +79,8 @@ export function OrderPageHeader({
           导出当前页
         </button>
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <OrderPreviewAction
           ariaLabel="导出订单"
           title="导出订单预览"
@@ -79,6 +96,7 @@ export function OrderPageHeader({
         >
           {() => <p className="orderpreviewdetail">当前页已验证 {pageCount} 条；正式导出仍需服务端 Filter Snapshot、权限重读与 Operation 回执。</p>}
         </OrderPreviewAction>
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
         >
@@ -86,6 +104,8 @@ export function OrderPageHeader({
           导出当前页
         </button>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <button type="button" onClick={onRefresh} disabled={isFetching}>
           <OrderIcon name="refresh" />
           {isFetching ? '刷新中' : '刷新数据'}

@@ -3,6 +3,7 @@ import type { OperationActions } from '../../../../foundation/application/Module
 import { operationLifecycle, requireAccess } from '../../../../foundation/application/ModuleOperations';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { encodeCursor, keysetResult, queryPage } from '../../../../foundation/interface/Validation';
 =======
 import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
@@ -10,6 +11,9 @@ import { keysetResult, queryPage } from '../../../../foundation/interface/Valida
 =======
 import { encodeCursor, keysetResult, queryPage } from '../../../../foundation/interface/Validation';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { SupportPortFactory } from '../port/SupportPort';
 
@@ -40,6 +44,7 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
           where ticket.id=$1 and (conversation.member_id=$3 or exists(select 1 from organization.unitclosure where ancestor_id=$2
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           and descendant_id=ticket.scope_id)) and ($4::timestamptz is null or (message.created_at,message.id)<($4::timestamptz,$5))
           order by message.created_at desc,message.id desc limit $6`, [request.input.path.caseid!, access.scope.id, member, page.sort, page.id, page.fetch]);
         const attachments = await database.query(`select evidence.id,evidence.object_ref,evidence.sha256,evidence.kind,evidence.size_bytes,
@@ -52,6 +57,8 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
           ...(more && oldest ? { nextCursor: encodeCursor({ sort: timestamp(oldest.created_at), id: oldest.id }) } : {}),
           attachments: attachments.rows } };
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           and descendant_id=ticket.scope_id)) and ($4::timestamptz is null or (message.created_at,message.id)>($4::timestamptz,$5))
           order by message.created_at,message.id limit $6`, [request.input.path.caseid!, access.scope.id, member, page.sort, page.id, page.fetch]);
         const attachments = await database.query(`select evidence.id,evidence.object_ref,evidence.sha256,evidence.kind,evidence.size_bytes,
@@ -59,6 +66,7 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
           where ticket.id=$1 and evidence.state='clean' order by evidence.created_at,evidence.id`, [request.input.path.caseid!]);
         const paged = keysetResult(result, page, 'created_at');
         return { ...paged, body: { ...(paged.body as object), attachments: attachments.rows } };
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
           and descendant_id=ticket.scope_id)) and ($4::timestamptz is null or (message.created_at,message.id)<($4::timestamptz,$5))
@@ -73,6 +81,8 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
           ...(more && oldest ? { nextCursor: encodeCursor({ sort: timestamp(oldest.created_at), id: oldest.id }) } : {}),
           attachments: attachments.rows } };
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       },
       finalize: async (_request, result) => {
         const body = result.body as { readonly items: readonly MessageRow[]; readonly attachments: readonly unknown[];
@@ -88,6 +98,7 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 
@@ -99,3 +110,5 @@ function timestamp(value: string | Date): string {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

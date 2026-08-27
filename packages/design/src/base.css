@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 *,
 *::before,
 *::after {
@@ -11,6 +12,9 @@
 *::before,
 *::after {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+*, *::before, *::after {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   box-sizing: border-box;
 }
 
@@ -32,6 +36,7 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 button,
@@ -44,10 +49,14 @@ button, input, select, textarea {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+button, input, select, textarea {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   color: inherit;
   font: inherit;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -63,6 +72,9 @@ button, a, input, select, textarea {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+button, a, input, select, textarea {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -75,6 +87,7 @@ button:disabled {
   cursor: not-allowed;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   opacity: var(--sw-opacity-disabled);
 }
 
@@ -82,12 +95,15 @@ button:disabled {
   outline: var(--sw-focus-width) solid var(--sw-brand);
   outline-offset: var(--sw-focus-offset);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   opacity: 0.58;
 }
 
 :focus-visible {
   outline: 0.1875rem solid var(--sw-brand);
   outline-offset: 0.125rem;
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   opacity: var(--sw-opacity-disabled);
@@ -97,6 +113,8 @@ button:disabled {
   outline: var(--sw-focus-width) solid var(--sw-brand);
   outline-offset: var(--sw-focus-offset);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 ::selection {
@@ -104,6 +122,7 @@ button:disabled {
   color: var(--sw-brand-ink);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -118,6 +137,9 @@ h1, h2, h3, p {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+h1, h2, h3, p {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   margin-top: 0;
 }
 
@@ -197,6 +219,7 @@ a {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 section[role='alert'],
 section[role='status'] {
 =======
@@ -206,6 +229,9 @@ section[role='alert'], section[role='status'] {
 section[role='alert'],
 section[role='status'] {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+section[role='alert'], section[role='status'] {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   border: 0.0625rem solid var(--sw-border);
   border-radius: var(--sw-radius-md);
   background: var(--sw-surface);
@@ -226,6 +252,7 @@ section[role='alert'] > button {
   padding: var(--sw-space-1) var(--sw-space-2);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -398,6 +425,8 @@ section[role='alert'] > button {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 .sr-only {
   position: absolute;
   width: 0.0625rem;
@@ -411,6 +440,7 @@ section[role='alert'] > button {
 }
 
 @media (prefers-reduced-motion: no-preference) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -432,5 +462,9 @@ section[role='alert'] > button {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  button, a, input, select, textarea {
+    transition: border-color var(--sw-duration-fast) var(--sw-ease-standard), background-color var(--sw-duration-fast) var(--sw-ease-standard), color var(--sw-duration-fast) var(--sw-ease-standard), box-shadow var(--sw-duration-fast) var(--sw-ease-standard);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }

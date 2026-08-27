@@ -4,6 +4,7 @@ export * from './Environment';
 export * from './JobsEnvironment';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export * from './IdentityRegistrationApiEnvironment';
@@ -19,6 +20,10 @@ export * from './MigrationEnvironment';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+export * from './LocalEnvironment';
+export * from './MigrationEnvironment';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export * from './Network';
 export * from './ProviderEnvironment';
 export * from './Release';

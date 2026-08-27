@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { expectWcagAA } from './Accessibility';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { cockpit, consoleSession, controlHealth } from './Fixtures';
 import { OperationMock } from './OperationMock';
 import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './Origins';
@@ -14,6 +15,10 @@ import { cockpit, consoleSession, controlHealth } from './Fixtures';
 import { OperationMock } from './OperationMock';
 import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './Origins';
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+import { cockpit, consoleSession, controlHealth, publication, storeSession, supplierSession } from './Fixtures';
+import { OperationMock } from './OperationMock';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) => {
   const api = new OperationMock(page).post('/api/v1/identity/sessions', (call) => {
@@ -28,6 +33,7 @@ test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) 
   });
   await api.install();
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   await page.goto(`${AUTH_ORIGIN}/login?client=console`);
@@ -45,11 +51,14 @@ test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) 
 
   const status = await page.evaluate(async (origin) => (await fetch(`${origin}/api/v1/not-registered`)).status, API_ORIGIN);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await page.goto('http://127.0.0.1:4176/login?client=console');
   const heading = page.getByRole('heading', { level: 1, name: '登录福利商城' });
   await expect(heading).toBeFocused();
   await expect(page).toHaveTitle('登录 · 智慧翼 Smart Wing');
   await expect(page.getByRole('navigation', { name: '身份服务' })).toContainText('找回密码');
+<<<<<<< HEAD
 =======
   await page.goto(`${AUTH_ORIGIN}/login?client=console`);
   await expect(page.getByRole('heading', { level: 1, name: /企业福利\s*全新定义/ })).toBeVisible();
@@ -71,6 +80,17 @@ test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) 
 =======
   const status = await page.evaluate(async (origin) => (await fetch(`${origin}/api/v1/not-registered`)).status, API_ORIGIN);
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+
+  await page.getByLabel('手机号或用户名').fill('e2e-user');
+  await page.getByLabel('密码').fill('correct-horse');
+  await page.getByRole('button', { name: '安全登录', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('请选择本次进入的会员身份。');
+  await expect(page.getByLabel('选择身份')).toHaveValue('');
+  await expectWcagAA(page);
+
+  const status = await page.evaluate(async () => (await fetch('http://127.0.0.1:4311/api/v1/not-registered')).status);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   expect(status).toBe(501);
   expect(api.unmatched).toHaveLength(1);
   expect(api.unmatched[0]?.path).toBe('/api/v1/not-registered');
@@ -80,6 +100,7 @@ test('Console 经营驾驶舱深链展示权威读模型并满足 WCAG A/AA', as
   const api = new OperationMock(page).get('/api/v1/identity/session', consoleSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' }).get('/api/v1/reports/dashboard', cockpit);
   await api.install();
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/cockpit?period=30days`);
@@ -95,6 +116,9 @@ test('Console 经营驾驶舱深链展示权威读模型并满足 WCAG A/AA', as
 =======
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/cockpit?period=30days`);
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/cockpit?period=30days');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const heading = page.getByRole('heading', { level: 1, name: '经营驾驶舱' });
   await expect(heading).toBeFocused();
   await expect(page).toHaveTitle('经营驾驶舱 · 智慧翼');
@@ -102,6 +126,9 @@ test('Console 经营驾驶舱深链展示权威读模型并满足 WCAG A/AA', as
   await expect(page.getByRole('heading', { name: '商城经营对比' })).toBeVisible();
   await expect(page.getByRole('button', { name: '经营驾驶舱' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('button', { name: '智慧翼中控台' })).toBeVisible();
+<<<<<<< HEAD
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   expect(api.unmatched).toEqual([]);
   await expectWcagAA(page);
@@ -113,6 +140,7 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
     permissions: [...consoleSession.permissions, 'runtime.health.read'],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     capabilities: [...consoleSession.capabilities, 'runtime.health.dependency'],
 =======
     capabilities: [...consoleSession.capabilities, 'runtime.health.read'],
@@ -120,10 +148,14 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
 =======
     capabilities: [...consoleSession.capabilities, 'runtime.health.dependency'],
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+    capabilities: [...consoleSession.capabilities, 'runtime.health.read'],
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     assurance: { level: 2, verified: 'step-up' },
   };
   const api = new OperationMock(page).get('/api/v1/identity/session', controlSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' });
   let healthReads = 0;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   await page.route(`${API_ORIGIN}/health/dependency`, async (route) => {
@@ -131,10 +163,13 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
     const corsHeaders = {
       'access-control-allow-origin': CONSOLE_ORIGIN,
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await page.route('http://127.0.0.1:4311/health/dependency', async (route) => {
     const request = route.request();
     const corsHeaders = {
       'access-control-allow-origin': 'http://127.0.0.1:4173',
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   await page.route(`${API_ORIGIN}/health/dependency`, async (route) => {
@@ -142,6 +177,8 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
     const corsHeaders = {
       'access-control-allow-origin': CONSOLE_ORIGIN,
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       'access-control-allow-credentials': 'true',
     };
     if (request.method() === 'OPTIONS') {
@@ -165,6 +202,7 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/control`);
   const heading = page.getByRole('heading', { level: 1, name: '主打团中控台' });
   await expect(heading).toBeVisible();
@@ -176,11 +214,17 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
 =======
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/control`);
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/control');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const heading = page.getByRole('heading', { level: 1, name: '智慧翼中控台' });
   await expect(heading).toBeVisible();
   await expect(page).toHaveTitle('中控台 · 智慧翼');
   await expect(page.getByText(controlHealth.controlPlane.conclusion, { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '智慧翼中控台', exact: true })).toHaveAttribute('aria-current', 'page');
+<<<<<<< HEAD
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   await expect(page.getByRole('heading', { name: '平台能力链' })).toBeVisible();
   expect(healthReads).toBeGreaterThanOrEqual(1);
@@ -208,6 +252,7 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
   await expectWcagAA(page);
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 test('Storefront 未登录首页只读取会话并失败关闭且满足 WCAG A/AA', async ({ page }) => {
@@ -245,4 +290,49 @@ test('Storefront 未登录首页只读取会话并失败关闭且满足 WCAG A/A
   expect([...new Set(api.calls.map((call) => call.path))]).toEqual(['/api/v1/identity/session']);
   expect([...new Set(api.unmatched.map((call) => call.path))]).toEqual(['/api/v1/identity/session']);
 >>>>>>> 05ea98a5 (fix(release): restore selected app verification)
+=======
+test('Store 品牌页深链失败关闭并满足 WCAG A/AA', async ({ page }) => {
+  const api = new OperationMock(page).get('/api/v1/identity/session', storeSession);
+  await api.install();
+
+  await page.goto('http://127.0.0.1:4174/stores/store%3Ae2e/brand');
+  const heading = page.getByRole('heading', { level: 1, name: '品牌管理' });
+  await expect(heading).toBeFocused();
+  await expect(page).toHaveTitle('品牌管理 · 智慧翼');
+  await expect(page.getByRole('button', { name: /品牌管理/ })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByText(/OPERATION_GAP · STORE\.brand/)).toBeVisible();
+  expect(api.unmatched).toEqual([]);
+  await expectWcagAA(page);
+});
+
+test('Supplier 品牌页深链失败关闭并满足 WCAG A/AA', async ({ page }) => {
+  const api = new OperationMock(page).get('/api/v1/identity/session', supplierSession);
+  await api.install();
+
+  await page.goto('http://127.0.0.1:4175/suppliers/supplier%3Ae2e/brand');
+  const heading = page.getByRole('heading', { level: 1, name: '品牌管理' });
+  await expect(heading).toBeFocused();
+  await expect(page).toHaveTitle('品牌管理 · 智慧翼');
+  await expect(page.getByRole('button', { name: /品牌管理/ })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByText(/OPERATION_GAP · SUPPLIER\.brand/)).toBeVisible();
+  expect(api.unmatched).toEqual([]);
+  await expectWcagAA(page);
+});
+
+test('Storefront 公开首页无需会话即可深链并满足 WCAG A/AA', async ({ page }) => {
+  const api = new OperationMock(page).get('/api/v1/experiences/published', publication);
+  await api.install();
+
+  await page.goto('http://127.0.0.1:4177/m/mall%3Ae2e');
+  await expect(page.getByRole('heading', { level: 1, name: '智慧翼福利首页测试' })).toBeFocused();
+  await expect(page).toHaveTitle('首页 · 智慧翼福利商城');
+  await expect(page.getByRole('navigation', { name: '商城主导航' })).toContainText('全部商品分类');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('navigation', { name: '移动端主导航' })).toContainText('首页分类翼码订单我的');
+  const operationPaths = api.calls.map((call) => call.path);
+  expect(operationPaths.length).toBeGreaterThan(0);
+  expect(new Set(operationPaths)).toEqual(new Set(['/api/v1/experiences/published']));
+  expect(api.unmatched).toEqual([]);
+  await expectWcagAA(page);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

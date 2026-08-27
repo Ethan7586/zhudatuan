@@ -12,6 +12,7 @@ export async function localJson(input: string | URL, init?: RequestInit): Promis
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export async function localSecret(endpoint: string, bearerToken: string, reference: string): Promise<string> {
@@ -28,6 +29,11 @@ export async function localSecret(endpoint: string, reference: string): Promise<
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+export async function localSecret(endpoint: string, reference: string): Promise<string> {
+  if (!endpoint.startsWith('https://') || !/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(reference)) throw new Error('LOCAL_SECRET_REQUEST_INVALID');
+  const value = await localJson(`${endpoint.replace(/\/$/, '')}/v1/secrets/${encodeURIComponent(reference)}`, { headers: { accept: 'application/json' } });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (typeof value.value !== 'string' || value.value.length === 0) throw new Error('LOCAL_SECRET_VALUE_INVALID');
   return value.value;
 }

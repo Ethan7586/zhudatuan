@@ -2,6 +2,7 @@ import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ModuleOperations, operationLifecycle, operationRequestHash, requireAccess, rowResult, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
 import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foundation/interface/Validation';
@@ -14,10 +15,15 @@ import { ModuleOperations, operationLifecycle, operationRequestHash, requireAcce
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
 import { bodyRecord, keysetResult, queryPage, textField } from '../../../../foundation/interface/Validation';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { ModuleOperations, operationLifecycle, requireAccess, rowResult, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
 import { financeLifecycleOperations } from '../../FinanceLifecycleOperations';
 import { resolveDifferenceOperations } from '../../application/command/ResolveDifference';
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 import { reconciliationRepairOperations } from '../../application/command/ReconciliationRepair';
@@ -26,6 +32,8 @@ import { reconciliationRepairOperations } from '../../application/command/Reconc
 =======
 import { reconciliationRepairOperations } from '../../application/command/ReconciliationRepair';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { requestInvoiceOperations } from '../../application/command/RequestInvoice';
 import { closeSettlementOperations } from '../../application/command/CloseSettlement';
 import { requestWithdrawalOperations } from '../../application/command/RequestWithdrawal';
@@ -34,6 +42,7 @@ import { getBillsOperations } from '../../application/query/GetBills';
 import { getInvoicesOperations } from '../../application/query/GetInvoices';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { getReconciliationRepairOperations } from '../../application/query/GetReconciliationRepair';
 import { ConfigFieldPolicy } from '../../domain/policy/ConfigFieldPolicy';
 =======
@@ -42,12 +51,15 @@ import { ConfigFieldPolicy } from '../../domain/policy/ConfigFieldPolicy';
 import { getReconciliationRepairOperations } from '../../application/query/GetReconciliationRepair';
 import { ConfigFieldPolicy } from '../../domain/policy/ConfigFieldPolicy';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { SettlementPolicy } from '../../domain/policy/SettlementPolicy';
 import { PgFinanceRepository } from '../../infrastructure/persistence/PgFinanceRepository';
 
 const settlementPolicy = new SettlementPolicy();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const configurablePolicy = new ConfigFieldPolicy();
 const previewPolicyFields = Object.freeze(new Set(['action', 'kind', 'rule', 'desiredState']));
 const managePolicyFields = Object.freeze(new Set(['action', 'previewHash', 'reason', 'evidence']));
@@ -58,6 +70,8 @@ const configurablePolicy = new ConfigFieldPolicy();
 const previewPolicyFields = Object.freeze(new Set(['action', 'kind', 'rule', 'desiredState']));
 const managePolicyFields = Object.freeze(new Set(['action', 'previewHash', 'reason', 'evidence']));
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export function financeRoutes(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
@@ -67,18 +81,22 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
     ...resolveDifferenceOperations(),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     ...reconciliationRepairOperations(),
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     ...reconciliationRepairOperations(),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     ...requestInvoiceOperations((database) => new PgFinanceRepository(database)),
     ...closeSettlementOperations((database) => new PgFinanceRepository(database)),
     ...requestWithdrawalOperations((database) => new PgFinanceRepository(database)),
     ...getFinanceOverviewOperations(),
     ...getBillsOperations(),
     ...getInvoicesOperations(),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -173,6 +191,8 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
       ]);
       return policyReceipt(result, 'policy');
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     'finance.policies.manage': async (request, database) => {
       const access = requireAccess(request);
       const body = bodyRecord(request);
@@ -187,6 +207,7 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
       [request.input.path.policyid!, access.scope.id, kind, JSON.stringify(rule), request.input.expectedVersion ?? null]);
       if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
       return rowResult(result);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     'finance.policies.manage': async (request, database) => {
@@ -206,6 +227,8 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
       ]);
       return policyReceipt(result, 'policy');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     },
     'invoice.profiles.manage': operationLifecycle({
       prepare: async (request) => {
@@ -219,6 +242,7 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
         return { access, body, title, taxid, address };
       },
       execute: async (request, database, { access, body, title, taxid, address }) => {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -235,6 +259,8 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
         );
         if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await database.query(`insert into invoice.profile(id,owner_id,title_ciphertext,title_key_version,taxid_ciphertext,taxid_token,taxid_key_version,address_ciphertext,address_key_version,status,version)
         values($1,$2,$3,$4,$5,$6,$7,$8,$9,'active',0) on conflict(id) do update set title_ciphertext=excluded.title_ciphertext,title_key_version=excluded.title_key_version,
         taxid_ciphertext=excluded.taxid_ciphertext,taxid_token=excluded.taxid_token,taxid_key_version=excluded.taxid_key_version,address_ciphertext=excluded.address_ciphertext,
@@ -243,6 +269,7 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
       [request.input.path.profileid!, access.scope.id, title.ciphertext, title.keyVersion, taxid.ciphertext, taxid.fingerprint, taxid.keyVersion,
         address?.ciphertext ?? null, address?.keyVersion ?? null, request.input.expectedVersion ?? null]);
       if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
         taxid_ciphertext=excluded.taxid_ciphertext,taxid_token=excluded.taxid_token,taxid_key_version=excluded.taxid_key_version,address_ciphertext=excluded.address_ciphertext,
@@ -252,12 +279,15 @@ export function financeRoutes(context: ModuleContext): ModuleOperations {
         );
         if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         return rowResult(result);
       },
     }),
   });
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 async function validateMallPolicy(database: OperationDatabase, scope: string, scopeKind: string, kind: string, rule: Readonly<Record<string, unknown>>): Promise<void> {
@@ -421,3 +451,20 @@ function policyReceipt(result: Readonly<{ rows: readonly { receipt: unknown }[] 
   return { status, body: receipt, headers: { etag: `"${String(version)}"` } };
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+async function validateMallPolicy(database: OperationDatabase, scope: string, scopeKind: string, kind: string,
+  rule: Readonly<Record<string, unknown>>): Promise<void> {
+  if (scopeKind !== 'mall') return;
+  if (!['invoice', 'reconciliation', 'threshold'].includes(kind)) throw new Error('MALL_FINANCE_POLICY_KIND_FORBIDDEN');
+  const parent = await database.query<{ rule: Readonly<Record<string, unknown>> }>(`select policy.rule from organization.unitclosure closure
+    join organization.organization organization on organization.id=closure.ancestor_id
+    join finance.policy policy on policy.scope_id=organization.id and policy.kind='mallfinance' and policy.state='active'
+    where closure.descendant_id=$1 and closure.depth>0 order by closure.depth limit 1`, [scope]);
+  const guard = parent.rows[0]?.rule;
+  if (!guard || !Array.isArray(guard.allowedKinds) || !guard.allowedKinds.includes(kind)) throw new Error('MALL_FINANCE_POLICY_NOT_DELEGATED');
+  if (kind === 'threshold' && typeof rule.amountMinor === 'number') {
+    if (!Number.isSafeInteger(rule.amountMinor) || rule.amountMinor < 0 || !Number.isSafeInteger(guard.maximumThresholdMinor)
+      || rule.amountMinor > (guard.maximumThresholdMinor as number)) throw new Error('MALL_FINANCE_THRESHOLD_OUT_OF_RANGE');
+  }
+}
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

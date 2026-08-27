@@ -50,6 +50,7 @@ afterAll(() => server.close());
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 function renderCockpit() {
@@ -64,18 +65,23 @@ describe('Cockpit route', () => {
   it('renders the scoped Operation response without cross-domain browser aggregation', async () => {
     renderCockpit();
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 describe('Cockpit route', () => {
   it('renders the scoped Operation response without cross-domain browser aggregation', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
     render(<MemoryRouter initialEntries={['/?period=30days']}><QueryClientProvider client={client}>
       <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
     </QueryClientProvider></MemoryRouter>);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 describe('Cockpit route', () => {
   it('renders the scoped Operation response without cross-domain browser aggregation', async () => {
     renderCockpit();
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(await screen.findByRole('heading', { level: 1, name: '经营驾驶舱' })).toBeTruthy();
     expect(screen.getByText('¥315.00')).toBeTruthy();
     expect(screen.getByText('环比 +12.8%')).toBeTruthy();
@@ -83,6 +89,7 @@ describe('Cockpit route', () => {
     expect(screen.getByRole('heading', { name: '商城经营对比' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '查看售后订单 →' })).toBeTruthy();
   });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -116,4 +123,6 @@ describe('Cockpit route', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

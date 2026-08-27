@@ -15,6 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 const failureStates = new Set<ResourceCondition>(['unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure']);
 =======
 const failureStates = new Set<ResourceCondition>(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure']);
@@ -22,6 +23,9 @@ const failureStates = new Set<ResourceCondition>(['denied', 'notfound', 'conflic
 =======
 const failureStates = new Set<ResourceCondition>(['unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure']);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+const failureStates = new Set<ResourceCondition>(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure']);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export const Matrix: Story = {
   render: () => (
@@ -31,17 +35,23 @@ export const Matrix: Story = {
           <h2>{condition}</h2>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           <ResourceState condition={condition} {...(failureStates.has(condition) ? { error: 'EXPLICIT_ERROR_CONTRACT' } : {})} retry={() => undefined}>
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           <ResourceState
             condition={condition}
             {...(failureStates.has(condition) ? { error: 'EXPLICIT_ERROR_CONTRACT' } : {})}
             retry={() => undefined}
           >
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
           <ResourceState condition={condition} {...(failureStates.has(condition) ? { error: 'EXPLICIT_ERROR_CONTRACT' } : {})} retry={() => undefined}>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
             <p>最近一次成功读取的数据。</p>
           </ResourceState>
         </section>

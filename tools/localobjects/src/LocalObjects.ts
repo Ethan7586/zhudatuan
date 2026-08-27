@@ -75,6 +75,7 @@ export class LocalObjects {
     if (sha256 !== expectedHash) throw new LocalHttpError(400, 'OBJECT_UPLOAD_INTEGRITY_INVALID');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     const referenceHash = createHash('sha256').update(`${id}\n${upload.path}\n${sha256}`, 'utf8').digest('hex');
     const reference = `local:object:${referenceHash}`;
 =======
@@ -84,6 +85,9 @@ export class LocalObjects {
     const referenceHash = createHash('sha256').update(`${id}\n${upload.path}\n${sha256}`, 'utf8').digest('hex');
     const reference = `local:object:${referenceHash}`;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    const reference = `local:object:${sha256}`;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const metadata: ObjectMetadata = Object.freeze({
       contentType: upload.contentType,
       path: upload.path,
@@ -94,6 +98,7 @@ export class LocalObjects {
     });
     const temporary = join(this.directory, 'temporary', `${id}.object`);
     await writeFile(temporary, bytes, { mode: 0o600 });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     const previous = await this.find(upload.path);
@@ -113,6 +118,11 @@ export class LocalObjects {
     await writeFile(this.pathFile(upload.path), reference, { mode: 0o600 });
     if (previous !== undefined) await this.delete(previous.reference);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    await rename(temporary, join(this.directory, 'objects', sha256));
+    await writeFile(this.metadataFile(sha256), JSON.stringify(metadata), { mode: 0o600 });
+    await writeFile(this.pathFile(upload.path), reference, { mode: 0o600 });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     this.uploads.delete(id);
     return metadata;
   }
@@ -143,6 +153,7 @@ export class LocalObjects {
     const metadata = await this.inspect(reference);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     const bytes = new Uint8Array(await readFile(join(this.directory, 'objects', this.hash(reference))));
@@ -168,6 +179,9 @@ export class LocalObjects {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    return Object.freeze({ bytes: new Uint8Array(await readFile(join(this.directory, 'objects', metadata.sha256))), metadata });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 
   async authorize(reference: string, expiresIn: unknown): Promise<Readonly<{ expiresAt: string; url: string }>> {

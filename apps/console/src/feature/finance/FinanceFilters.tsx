@@ -13,6 +13,7 @@ export function FinanceFilters({
   value,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   enabled,
   facets,
   columnsOpen,
@@ -47,6 +48,19 @@ export function FinanceFilters({
 =======
   onPatch: (value: Partial<FinanceFilter>) => void;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  previewEnabled,
+  facets,
+  columnsOpen,
+  onApply,
+  onColumns,
+}: Readonly<{
+  value: FinanceFilter;
+  previewEnabled: boolean;
+  facets: FinanceFacets | undefined;
+  columnsOpen: boolean;
+  onApply: (value: FinanceFilter) => void;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   onColumns: () => void;
 }>) {
   const form = useForm<FinanceFilter>({ resolver: zodResolver(FinanceFilterSchema), values: value });
@@ -60,6 +74,7 @@ export function FinanceFilters({
     form.reset(next);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     onPatch(patch);
 =======
     onApply(next);
@@ -67,6 +82,9 @@ export function FinanceFilters({
 =======
     onPatch(patch);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    onApply(next);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   };
   const select = (key: Exclude<keyof FinanceFilter, 'q'>) => ({
     registration: form.register(key),
@@ -85,6 +103,7 @@ export function FinanceFilters({
           <FinanceIcon name="search" />
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           <Input {...form.register('q')} disabled={!enabled} placeholder="搜索批次号、订单号、支付单号或渠道流水" aria-describedby="financefilterboundary" />
         </TextField>
         <FilterSelect label="账期" disabled={!enabled} options={options(facets?.periods)} {...select('period')} />
@@ -94,6 +113,8 @@ export function FinanceFilters({
         <FilterSelect label="差异类型" disabled={!enabled} options={options(facets?.differenceTypes)} {...select('difference')} />
         <button className="financefilterbutton" type="button" disabled={!enabled} onClick={() => setMoreOpen(true)}>
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           <Input {...form.register('q')} disabled={!previewEnabled} placeholder="搜索批次号、订单号、支付单号或渠道流水" aria-describedby="financefilterboundary" />
         </TextField>
         <FilterSelect label="账期" disabled={!previewEnabled} options={options(facets?.periods)} {...select('period')} />
@@ -102,6 +123,7 @@ export function FinanceFilters({
         <FilterSelect label="对账状态" disabled={!previewEnabled} options={options(facets?.statuses)} {...select('status')} />
         <FilterSelect label="差异类型" disabled={!previewEnabled} options={options(facets?.differenceTypes)} {...select('difference')} />
         <button className="financefilterbutton" type="button" disabled={!previewEnabled} onClick={() => setMoreOpen(true)}>
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
           <Input {...form.register('q')} disabled={!enabled} placeholder="搜索批次号、订单号、支付单号或渠道流水" aria-describedby="financefilterboundary" />
@@ -113,6 +135,8 @@ export function FinanceFilters({
         <FilterSelect label="差异类型" disabled={!enabled} options={options(facets?.differenceTypes)} {...select('difference')} />
         <button className="financefilterbutton" type="button" disabled={!enabled} onClick={() => setMoreOpen(true)}>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           <FinanceIcon name="filter" />
           更多筛选
           <FinanceIcon name="chevron" />
@@ -131,6 +155,7 @@ export function FinanceFilters({
         <p id="financefilterboundary" className="sr-only">
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           筛选条件提交至服务端权威读模型；浏览器不对当前页面数据冒充全量筛选。
 =======
           生产合同没有这些服务端筛选能力；控件仅在隔离的本地预览范围启用。
@@ -138,10 +163,14 @@ export function FinanceFilters({
 =======
           筛选条件提交至服务端权威读模型；浏览器不对当前页面数据冒充全量筛选。
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+          生产合同没有这些服务端筛选能力；控件仅在隔离的本地预览范围启用。
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         </p>
       </Form>
       <Dialog open={moreOpen} title="更多筛选" onClose={() => setMoreOpen(false)}>
         <div className="financemorefilters">
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           <p>快捷条件由服务端筛选，不会对当前 DOM 行做全量统计。</p>
@@ -151,6 +180,9 @@ export function FinanceFilters({
 =======
           <p>快捷条件由服务端筛选，不会对当前 DOM 行做全量统计。</p>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+          <p>快捷条件仍由本地预览服务端筛选，不会对当前 DOM 行做全量统计。</p>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           <Button
             onPress={() => {
               applyPatch({ status: 'difference' });
@@ -196,12 +228,15 @@ function FilterSelect({
         onChange={(event) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           void registration.onChange(event);
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
           void registration.onChange(event);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           onValue(event.target.value);
         }}
       >

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { COMMERCE_EVENTS, OperationCatalog } from '@shop/contract';
 import { RUNTIME_CONTRACT_CHECKSUM } from '@shop/config/server';
 import { describe, expect, it } from 'vitest';
@@ -11,10 +12,13 @@ function pool(state: Readonly<Record<string, unknown>>, boundary = databaseBound
     ? { rows: [boundary], rowCount: 1 }
     : { rows: [], rowCount: 0 }, connect: async () => ({
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { COMMERCE_EVENTS, CONTRACT_CHECKSUM, OperationCatalog } from '@shop/contract';
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import type { ExtensionRegistry } from './ExtensionRegistry';
+<<<<<<< HEAD
 import { assertRuntimeCompatibility, runtimeCompatibility } from './RuntimeCompatibility';
 
 <<<<<<< HEAD
@@ -27,6 +31,12 @@ function pool(state: Readonly<Record<string, unknown>>, boundary = databaseBound
     ? { rows: [boundary], rowCount: 1 }
     : { rows: [], rowCount: 0 }, connect: async () => ({
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { runtimeCompatibility } from './RuntimeCompatibility';
+
+function pool(state: Readonly<Record<string, unknown>>): DatabasePool {
+  return { connect: async () => ({
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     query: async (statement: string) => statement.startsWith('select not pg_is_in_recovery')
       ? { rows: [state], rowCount: 1 }
       : { rows: [], rowCount: 0 },
@@ -48,19 +58,26 @@ describe('runtime compatibility', () => {
       contract: true,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       scope_resolver: true,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       scope_resolver: true,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
     }), extensions());
     expect(state.healthy).toBe(true);
 <<<<<<< HEAD
+<<<<<<< HEAD
     expect(state.contract).toEqual({ checksum: RUNTIME_CONTRACT_CHECKSUM, matches: true });
+=======
+    expect(state.contract).toEqual({ checksum: CONTRACT_CHECKSUM, matches: true });
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     expect(state.contract).toEqual({ checksum: CONTRACT_CHECKSUM, matches: true });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -74,18 +91,22 @@ describe('runtime compatibility', () => {
       contract: true,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       scope_resolver: true,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       scope_resolver: true,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
     }), extensions('degraded'));
     expect(state.healthy).toBe(false);
   });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -175,3 +196,6 @@ function databaseBoundary(current_user: string) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+});
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

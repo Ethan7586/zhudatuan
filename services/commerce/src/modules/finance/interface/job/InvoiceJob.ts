@@ -4,6 +4,7 @@ import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient'
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
 import type { InvoiceIssuer } from '../../application/port/InvoiceIssuer';
 
@@ -15,11 +16,14 @@ export class InvoiceJobProcessor implements JobProcessor {
     private readonly issuer: InvoiceIssuer
   ) {}
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { InvoiceIssuer } from '../../application/port/InvoiceIssuer';
 
 export class InvoiceJobProcessor implements JobProcessor {
   constructor(private readonly pool: DatabasePool, private readonly objects: ObjectStore,
     private readonly kms: KmsClient, private readonly issuer: InvoiceIssuer) {}
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
@@ -33,10 +37,13 @@ export class InvoiceJobProcessor implements JobProcessor {
     private readonly issuer: InvoiceIssuer
   ) {}
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
   async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
     if (job.kind !== 'invoice') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     if (job.scope_id === null) throw new Error('INVOICE_JOB_SCOPE_REQUIRED');
@@ -128,6 +135,44 @@ export class InvoiceJobProcessor implements JobProcessor {
       await upload.append(issued.document);
       const stored = await upload.complete();
 <<<<<<< HEAD
+=======
+    const payload = object(job.payload);
+    await this.issue(text(payload.request, 'INVOICE_REQUEST_REQUIRED'));
+  }
+
+  private async issue(request: string): Promise<void> {
+    const selected = await this.pool.query<InvoiceRow>(`update invoice.request request set state='issuing',version=version+1
+      from invoice.requestprofile profile where request.id=$1 and profile.request_id=request.id and request.state in('approved','issuing')
+      returning request.id,profile.owner_id,request.amount_minor::float8 amount_minor,request.currency,request.profile_id,
+        request.kind,request.red_of_request_id,profile.title_ciphertext,profile.taxid_ciphertext,profile.address_ciphertext`, [request]);
+    const invoice = selected.rows[0];
+    if (!invoice) {
+      const complete = await this.pool.query(`select 1 from invoice.request where id=$1 and state in('issued','red')`, [request]);
+      if (complete.rows[0]) return;
+      throw new Error('INVOICE_NOT_RUNNABLE');
+    }
+    const original = invoice.red_of_request_id === null ? undefined : (await this.pool.query<{ id: string; external_id: string }>(`select document.id,document.external_id
+      from invoice.document document join invoice.request request on request.id=document.request_id
+      where request.id=$1 and request.state='issued' and document.kind='original'`, [invoice.red_of_request_id])).rows[0];
+    if (invoice.kind === 'red' && !original) throw new Error('INVOICE_ORIGINAL_DOCUMENT_MISSING');
+    const context = { owner: invoice.owner_id };
+    const [title, taxid, address, lines] = await Promise.all([
+      this.kms.decrypt('pii/invoice', invoice.title_ciphertext, { ...context, field: 'title' }),
+      this.kms.decrypt('pii/invoice', invoice.taxid_ciphertext, { ...context, field: 'taxid' }),
+      invoice.address_ciphertext === null ? Promise.resolve(undefined)
+        : this.kms.decrypt('pii/invoice', invoice.address_ciphertext, { ...context, field: 'address' }),
+      this.pool.query<{ description: string; amount_minor: number; tax_minor: number }>(`select description,amount_minor::float8 amount_minor,
+        tax_minor::float8 tax_minor from invoice.line where request_id=$1 order by sequence`, [invoice.id]),
+    ]);
+    const issued = await this.issuer.issue({ request: invoice.id, kind: invoice.kind,
+      ...(original === undefined ? {} : { originalExternalId: original.external_id }), title, taxid,
+      ...(address === undefined ? {} : { address }), amountMinor: invoice.amount_minor, currency: invoice.currency,
+      lines: lines.rows.map((line) => ({ description: line.description, amountMinor: line.amount_minor, taxMinor: line.tax_minor })) });
+    const upload = await this.objects.create(`invoices/${invoice.id}.pdf`, issued.contentType);
+    try {
+      await upload.append(issued.document);
+      const stored = await upload.complete();
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const client = await this.pool.connect();
       try {
         await client.query('begin');
@@ -152,6 +197,7 @@ export class InvoiceJobProcessor implements JobProcessor {
         await client.query('commit');
       } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
     } catch (cause) { await upload.abort(); throw cause; }
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       const registered = await workerTransaction(this.pool, scope, (database) =>
@@ -168,12 +214,15 @@ export class InvoiceJobProcessor implements JobProcessor {
       throw cause;
     }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }
 }
 
 interface InvoiceRow {
   readonly id: string;
   readonly owner_id: string;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   readonly amount_minor: string;
@@ -208,12 +257,23 @@ interface InvoiceRow {
   readonly claim_token: string;
   readonly claim_id: string;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  readonly amount_minor: number;
+  readonly currency: string;
+  readonly profile_id: string;
+  readonly kind: 'original' | 'red';
+  readonly red_of_request_id: string | null;
+  readonly title_ciphertext: string;
+  readonly taxid_ciphertext: string;
+  readonly address_ciphertext: string | null;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function object(value: unknown): Record<string, unknown> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID');
   return value as Record<string, unknown>;
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -252,3 +312,6 @@ function text(value: unknown, code: string): string { if (typeof value !== 'stri
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

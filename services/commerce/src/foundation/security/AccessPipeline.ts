@@ -1,12 +1,15 @@
 import { checkAssurance, checkScope, permissionDefinition, precheck, type MembershipAccess } from '@shop/authz';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { OperationCatalog, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { OperationCatalog, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { Clock } from '@shop/kernel';
 import { DomainError } from '../domain/DomainError';
 import type { AccessContext } from './AccessContext';
@@ -15,6 +18,7 @@ import type { SessionResolver } from './SessionResolver';
 import { StepupPolicy } from './StepupPolicy';
 import type { DecisionSink } from './DecisionSink';
 import { assertRiskAllowed, type RiskGate } from './RiskGate';
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 import type { ActionProofVerifier } from './ActionProof';
@@ -42,6 +46,11 @@ export interface MembershipSnapshot {
   readonly access: MembershipAccess;
   readonly evaluatedAt: Date;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+
+export interface MembershipResolver {
+  resolve(actor: string): Promise<MembershipAccess>;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 export interface AccessVersionResolver {
@@ -65,12 +74,15 @@ export class AccessPipeline {
     private readonly stepup = new StepupPolicy(),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     private readonly actionProof?: ActionProofVerifier
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     private readonly actionProof?: ActionProofVerifier
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   ) {}
 
   async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string): Promise<AccessContext> {
@@ -78,6 +90,7 @@ export class AccessPipeline {
     const trace = headers['x-trace-id'] ?? actor.session;
     let scope: AccessContext['scope'] | undefined;
     try {
+<<<<<<< HEAD
 <<<<<<< HEAD
       assertAudienceTarget(operation, actor.target);
       const resolvedMembership = await this.memberships.resolve(actor.membership);
@@ -96,11 +109,17 @@ export class AccessPipeline {
       const now = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.evaluatedAt : this.clock.now();
       if (!Number.isFinite(now.getTime())) throw new DomainError('PERMISSION_DENIED', { reason: 'AUTHORIZATION_TIME_INVALID' });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      const membership = await this.memberships.resolve(actor.membership);
+      const accessVersion = await this.versions.resolve(membership.id);
+      const now = this.clock.now();
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const permissionFailure = precheck(membership, permission, { expectedAccessVersion: actor.accessVersion, now });
       if (permissionFailure !== null) throw new DomainError(mapReason(permissionFailure));
       if (accessVersion !== actor.accessVersion) throw new DomainError('MEMBERSHIP_INACTIVE', { reason: 'ACCESS_VERSION_STALE' });
       const scopeHint = headers['x-scope-hint'];
       if (scopeHint !== undefined && (!scopeHint || scopeHint.length > 255)) throw new DomainError('SCOPE_DENIED');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       scope = await this.scopes.resolve(actor, operation, resource, scopeHint);
@@ -110,6 +129,9 @@ export class AccessPipeline {
 =======
       scope = await this.scopes.resolve(actor, operation, resource, scopeHint);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      scope = await this.scopes.resolve(actor, operation, resource ?? scopeHint);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const scopeDecision = checkScope(membership, permission, scope, now);
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
       const capabilities = await this.capabilities.resolve(membership.id);
@@ -118,6 +140,7 @@ export class AccessPipeline {
       if (assuranceFailure !== null || !this.stepup.accepts(permissionDefinition(permission).stepup, actor.assurance, now)) throw new DomainError('STEPUP_REQUIRED');
       const risk = await this.risk.evaluate({ actor, operation, scope, trace, ...(resource === undefined ? {} : { resource }) });
       assertRiskAllowed(risk.outcome);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -135,6 +158,8 @@ export class AccessPipeline {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       await this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, ...(resource === undefined ? {} : { resource }) });
       return { actor, membership, scope, accessVersion, capabilities, assurance: actor.assurance, trace };
     } catch (cause) {
@@ -146,6 +171,7 @@ export class AccessPipeline {
   }
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -169,6 +195,8 @@ function assertAudienceTarget(operation: string, target: AccessContext['actor'][
   }
 }
 
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 function mapReason(reason: string): string {

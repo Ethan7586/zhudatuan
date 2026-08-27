@@ -33,12 +33,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -84,6 +87,7 @@ requirements:
       - audit.records.read
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - voucher.credentialpools.create
@@ -101,6 +105,8 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     modules:
       - audit
       - benefit
@@ -180,12 +186,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -204,6 +213,7 @@ requirements:
       - pricing.offers.read
       - inventory.availability.read
       - marketing.campaigns.read
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -228,6 +238,8 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - cart.current.read
       - cart.items.put
       - cart.items.batch
@@ -277,12 +289,15 @@ requirements:
       - pricing
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - referral
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - referral
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - runtime
       - verification
       - voucher
@@ -309,12 +324,15 @@ requirements:
       - services/commerce/src/modules/pricing
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/referral
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - services/commerce/src/modules/referral
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -358,12 +376,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -478,12 +499,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -611,12 +635,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -745,12 +772,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -880,12 +910,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -943,6 +976,7 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1029,6 +1063,9 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+    modules:
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - audit
       - benefit
       - cart
@@ -1042,12 +1079,15 @@ requirements:
       - order
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - partner
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - payment
       - pricing
       - runtime
@@ -1061,12 +1101,15 @@ requirements:
     moduleSources:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/approval
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - services/commerce/src/modules/approval
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -1080,12 +1123,15 @@ requirements:
       - services/commerce/src/modules/order
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - services/commerce/src/modules/partner
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -1133,12 +1179,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1181,6 +1230,7 @@ requirements:
       - finance.reconciliations.read
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.reconciliationrepairs.read
@@ -1193,6 +1243,8 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -1206,6 +1258,7 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1223,6 +1276,10 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      - invoice.profiles.manage
+      - invoice.profiles.read
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -1311,12 +1368,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1442,12 +1502,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1590,6 +1653,7 @@ requirements:
       - identity.members.manage
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.members.reset
@@ -1605,12 +1669,18 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      - identity.password.change
+      - identity.password.verify
+      - identity.password.reset
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1627,6 +1697,8 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -1769,12 +1841,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1889,12 +1964,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2022,12 +2100,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2155,12 +2236,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2293,12 +2377,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2356,6 +2443,7 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2442,6 +2530,9 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+    modules:
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - audit
       - benefit
       - cart
@@ -2455,12 +2546,15 @@ requirements:
       - order
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - partner
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - payment
       - pricing
       - runtime
@@ -2473,12 +2567,15 @@ requirements:
     moduleSources:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/approval
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - services/commerce/src/modules/approval
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -2492,12 +2589,15 @@ requirements:
       - services/commerce/src/modules/order
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - services/commerce/src/modules/partner
 >>>>>>> c71368a3 (fix(release): align production generated artifacts)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -2545,12 +2645,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2593,6 +2696,7 @@ requirements:
       - finance.reconciliations.read
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.reconciliationrepairs.read
@@ -2605,6 +2709,8 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -2618,6 +2724,7 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2635,6 +2742,10 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      - invoice.profiles.manage
+      - invoice.profiles.read
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -2722,12 +2833,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2855,12 +2969,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -3004,6 +3121,7 @@ requirements:
       - identity.members.manage
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.members.reset
@@ -3019,12 +3137,18 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      - identity.password.change
+      - identity.password.verify
+      - identity.password.reset
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3041,6 +3165,8 @@ requirements:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -3185,12 +3311,15 @@ requirements:
       - identity.password.reset
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       - identity.mobile.challenge
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete

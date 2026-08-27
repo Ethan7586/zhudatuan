@@ -21,6 +21,7 @@ describe('Console route manifest', () => {
     expect(professionalRoutes.map(({ featureKey }) => featureKey)).toEqual([
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       'applications', 'vouchers', 'reports', 'support', 'referralhome', 'referralsettings', 'referralproducts', 'referralreview',
       'referralbindings', 'referralwithdrawals', 'referralpromotion', 'channels', 'imports', 'entries', 'statements',
 =======
@@ -30,6 +31,9 @@ describe('Console route manifest', () => {
       'applications', 'vouchers', 'reports', 'support', 'referralhome', 'referralsettings', 'referralproducts', 'referralreview',
       'referralbindings', 'referralwithdrawals', 'referralpromotion', 'channels', 'imports', 'entries', 'statements',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      'applications', 'vouchers', 'reports', 'support', 'channels', 'imports', 'entries', 'statements',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       'reconciliations', 'settlements', 'withdrawals', 'invoices', 'access', 'members', 'qualification',
       'notification', 'productdetail', 'orderdetail',
     ]);
@@ -37,6 +41,7 @@ describe('Console route manifest', () => {
       .toBe('finance.settlements.read');
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/imports/voucher/job%3A1')?.operations)
       .toContain('voucher.imports.read');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/referral/withdrawals')?.operation)
@@ -47,6 +52,8 @@ describe('Console route manifest', () => {
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/referral/withdrawals')?.operation)
       .toBe('referral.commissions.read');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/products/product%3A1')?.blocker)
       .toContain('catalog.product.detail.read');
   });

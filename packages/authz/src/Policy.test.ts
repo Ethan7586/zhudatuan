@@ -3,6 +3,7 @@ import { checkAssurance, checkScope, decide, precheck, SCOPE_KINDS, type Members
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 const scope: Scope = {
@@ -20,6 +21,9 @@ const scope: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [{ 
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+const scope: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [{ kind: 'tenant', id: 'tenant-a' }, { kind: 'enterprise', id: 'enterprise-a' }] };
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const membership: MembershipAccess = { id: 'membership-a', active: true, accessVersion: 3, denies: [], grants: [{ scope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
 
 describe('authorization policy', () => {
@@ -51,6 +55,7 @@ describe('authorization policy', () => {
     const now = new Date('2026-08-21T00:00:00.000Z');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     const resource: Scope = {
@@ -67,14 +72,19 @@ describe('authorization policy', () => {
     for (const grantScope of [resource, ...resource.path.map((item) => ({ ...item, tenant: item.kind === 'platform' ? undefined : 'tenant-a', path: [] }) as Scope)]) {
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const resource: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [
       { kind: 'platform', id: 'platform-a' }, { kind: 'distributor', id: 'distributor-a' },
       { kind: 'tenant', id: 'tenant-a' }, { kind: 'enterprise', id: 'enterprise-a' },
     ] };
     for (const grantScope of [resource, ...resource.path.map((item) => ({ ...item, tenant: item.kind === 'platform' ? undefined : 'tenant-a', path: [] } as Scope))]) {
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const access: MembershipAccess = { ...membership, grants: [{ scope: grantScope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
       expect(decide(access, 'order.read', resource, { expectedAccessVersion: 3, now }).allowed).toBe(true);
     }
@@ -83,6 +93,7 @@ describe('authorization policy', () => {
     const expired: MembershipAccess = { ...membership, grants: [{ scope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: '2026-08-20T23:59:59.000Z' }] };
     expect(decide(expired, 'order.read', scope, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'PERMISSION_MISSING' });
   });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -116,4 +127,6 @@ describe('authorization policy', () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 });

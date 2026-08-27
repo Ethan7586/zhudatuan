@@ -11,16 +11,20 @@ export function queryCondition(state: QueryStateInput): ResourceCondition {
   if (state.error !== null && state.error !== undefined) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     const status = responseStatus(state.error);
     if (status === 401) return 'unauthenticated';
     if (status === 403) return 'denied';
     if (state.fetching) return 'retry';
     if (!state.empty) return 'stale';
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (state.fetching) return 'retry';
     if (!state.empty) return 'stale';
     const status = responseStatus(state.error);
     if (status === 403) return 'denied';
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     const status = responseStatus(state.error);
@@ -29,6 +33,8 @@ export function queryCondition(state: QueryStateInput): ResourceCondition {
     if (state.fetching) return 'retry';
     if (!state.empty) return 'stale';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     if (status === 404) return 'notfound';
     if (status === 409 || status === 412) return 'conflict';
     if (status === 429) return 'ratelimited';

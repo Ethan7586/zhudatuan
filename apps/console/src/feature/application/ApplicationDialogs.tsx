@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { Button, Dialog, Form } from '@shop/design';
@@ -58,11 +59,28 @@ export function ApplicationRecordDrawer({
   onCopy: (record: Application) => void;
   onDisable: (record: Application) => void;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { useEffect, useRef, type RefObject } from 'react';
+import { formatDate } from '../../shared/ui/Format';
+import {
+  applicationStatusLabel,
+  applicationStatusTone,
+  publicationLabel,
+  validationLabel,
+  validationTone,
+} from './ApplicationPresentation';
+import type { Application } from './ApplicationSchema';
+import type { CommerceScopePresentation, CommerceWorkspaceMode } from './ApplicationScope';
+
+export function ApplicationRecordDrawer({ record, onClose }: Readonly<{
+  record: Application | undefined;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   onClose: () => void;
 }>) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useDialogKeyboard(record !== undefined, onClose, closeRef);
   if (record === undefined) return null;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -409,6 +427,8 @@ export function CommerceFlowPreview({
   onClose,
 }: Readonly<{
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return <div className="commerceoverlay is-drawer">
     <button className="commercedialogbackdrop" type="button" onClick={onClose} aria-label="关闭商城应用摘要" />
     <aside className="commercedrawer" role="dialog" aria-modal="true" aria-labelledby="commercedrawertitle">
@@ -438,6 +458,7 @@ export function CommerceFlowPreview({
 }
 
 export function CommerceFlowPreview({ open, presentation, onClose }: Readonly<{
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 }
@@ -689,6 +710,8 @@ export function CommerceFlowPreview({
   onClose,
 }: Readonly<{
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   open: boolean;
   presentation: CommerceScopePresentation;
   onClose: () => void;
@@ -697,6 +720,7 @@ export function CommerceFlowPreview({
   useDialogKeyboard(open, onClose, closeRef);
   if (!open) return null;
   const copy = previewCopy(presentation.mode);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -742,6 +766,8 @@ export function CommerceFlowPreview({
   );
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return <div className="commerceoverlay">
     <button className="commercedialogbackdrop" type="button" onClick={onClose} aria-label={`关闭${copy.title}`} />
     <section className="commerceflowdialog" role="dialog" aria-modal="true" aria-labelledby="commerceflowtitle">
@@ -755,9 +781,12 @@ export function CommerceFlowPreview({
       <footer><button type="button" onClick={onClose}>返回{presentation.title}</button></footer>
     </section>
   </div>;
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 interface PreviewCopy {
@@ -769,6 +798,7 @@ interface PreviewCopy {
 }
 
 function previewCopy(mode: CommerceWorkspaceMode): PreviewCopy {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -804,6 +834,8 @@ function previewCopy(mode: CommerceWorkspaceMode): PreviewCopy {
     };
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (mode === 'management') return {
     title: '创建商城 · 六步安全预览',
     notice: '这是已确认的集团建店路径预览；所有步骤都可查看，但现在不会写入商城、组织关系、商品池或应用。',
@@ -831,9 +863,12 @@ function previewCopy(mode: CommerceWorkspaceMode): PreviewCopy {
       ['发布上线', '生成新版本并保留恢复点'],
     ],
   };
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return {
     title: '商城准入 · 治理边界',
     notice: '平台在这里查看跨商城应用与异常；商户建店和装修仍在所属集团与商城 Scope 内完成。',
@@ -853,6 +888,7 @@ function useDialogKeyboard(open: boolean, onClose: () => void, focusRef: RefObje
     if (!open) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     focusRef.current?.focus();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -878,5 +914,10 @@ function useDialogKeyboard(open: boolean, onClose: () => void, focusRef: RefObje
       previous?.focus();
     };
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => { document.removeEventListener('keydown', closeOnEscape); previous?.focus(); };
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   }, [focusRef, onClose, open]);
 }

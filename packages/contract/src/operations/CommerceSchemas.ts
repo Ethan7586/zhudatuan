@@ -21,6 +21,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "identity.members.manage": Object.freeze({ input: structuralOperationInput(["membershipid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   "identity.members.reset": Object.freeze({ input: structuralOperationInput(["membershipid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
@@ -36,6 +37,11 @@ export const OPERATION_SCHEMAS = Object.freeze({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  "identity.password.change": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+  "identity.password.verify": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+  "identity.password.reset": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "identity.mobile.manage": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "identity.stepup.start": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "identity.stepup.complete": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
@@ -45,6 +51,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "access.center.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "access.roles.manage": Object.freeze({ input: structuralOperationInput(["roleid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "access.scopes.manage": Object.freeze({ input: structuralOperationInput(["membershipid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -61,6 +68,8 @@ export const OPERATION_SCHEMAS = Object.freeze({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "capability.assignments.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "capability.assignments.manage": Object.freeze({ input: structuralOperationInput(["assignmentid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "partner.partners.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
@@ -104,6 +113,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "marketing.campaigns.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   "referral.settings.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
@@ -126,6 +136,8 @@ export const OPERATION_SCHEMAS = Object.freeze({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "reporting.dashboard.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "reporting.sales.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "reporting.products.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
@@ -211,6 +223,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "finance.reconciliations.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   "finance.reconciliationrepairs.read": Object.freeze({ input: structuralOperationInput(["repairid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
@@ -223,6 +236,8 @@ export const OPERATION_SCHEMAS = Object.freeze({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "finance.settlements.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "finance.settlements.decide": Object.freeze({ input: structuralOperationInput(["settlementid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "finance.settlements.adjust": Object.freeze({ input: structuralOperationInput(["settlementid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
@@ -236,6 +251,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "finance.backfills.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "finance.backfills.decide": Object.freeze({ input: structuralOperationInput(["backfillid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "finance.policies.manage": Object.freeze({ input: structuralOperationInput(["policyid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -253,6 +269,10 @@ export const OPERATION_SCHEMAS = Object.freeze({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  "invoice.profiles.manage": Object.freeze({ input: structuralOperationInput(["profileid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+  "invoice.profiles.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   "invoice.requests.create": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "invoice.requests.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "invoice.requests.cancel": Object.freeze({ input: structuralOperationInput(["requestid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),

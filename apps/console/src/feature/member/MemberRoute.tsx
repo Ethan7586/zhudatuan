@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Button } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
@@ -19,6 +20,11 @@ import { useConsoleContext } from '../../entity/session/ConsoleContext';
 =======
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
+import { useConsoleContext } from '../../entity/session/ConsoleContext';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import type { DataColumn } from '../../shared/ui/DataTable';
 import { formatDate } from '../../shared/ui/Format';
@@ -27,6 +33,7 @@ import { pageCursor } from '../../shared/url/PageCursor';
 import { memberKey, readMembers } from './MemberQuery';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { MemberInvitationDialog } from './MemberInvitationDialog';
 import { MemberRegistrationResetDialog } from './MemberRegistrationResetDialog';
 import type { Member } from './MemberSchema';
@@ -50,6 +57,13 @@ const baseColumns: readonly DataColumn<Member>[] = [
 =======
   { key: 'client', label: '身份端', render: (row) => row.client === 'operator' ? '后台' : row.client === 'storefront' ? '购物端' : row.client },
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import type { Member } from './MemberSchema';
+
+const columns: readonly DataColumn<Member>[] = [
+  { key: 'name', label: '成员', render: (row) => row.display_name },
+  { key: 'employee', label: '员工号', render: (row) => row.employee_no ?? '—' },
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   { key: 'profile', label: '档案状态', render: (row) => row.status },
   { key: 'membership', label: '成员状态', render: (row) => row.membership_status },
   { key: 'joined', label: '加入时间', render: (row) => formatDate(row.joined_at) },
@@ -57,6 +71,7 @@ const baseColumns: readonly DataColumn<Member>[] = [
 ];
 
 export function Component() {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -129,6 +144,8 @@ export function Component() {
 function memberInvitationContext(context: ConsoleContext): ConsoleContext {
   return context;
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const context = useConsoleContext(); const [search, setSearch] = useSearchParams(); const cursor = search.get('cursor') ?? undefined;
   const query = useQuery({ queryKey: memberKey(context, cursor), queryFn: ({ signal }) => readMembers(context, cursor, signal) });
   const data = query.data; const error = safeQueryError(query.error);
@@ -139,6 +156,7 @@ function memberInvitationContext(context: ConsoleContext): ConsoleContext {
     count={data?.count ?? 0} {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
     boundary={{ title: '成员变更保持关闭', message: '邀请、批量导入和成员管理未闭合完整校验、错误报告与回读旅程。' }}
     retry={() => { void query.refetch(); }} next={(next) => setSearch(pageCursor(search, next))} />;
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   const query = useQuery({ queryKey: memberKey(context, cursor), queryFn: ({ signal }) => readMembers(context, cursor, signal) });
@@ -203,4 +221,6 @@ function memberInvitationContext(context: ConsoleContext): ConsoleContext {
 function memberInvitationContext(context: ConsoleContext): ConsoleContext {
   return context;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

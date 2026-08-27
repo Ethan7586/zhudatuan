@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { COMMERCE_EVENTS, OperationCatalog } from '@shop/contract';
 import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import { JOB_CATALOG } from '../app/jobs';
@@ -18,11 +19,19 @@ import type { ExtensionRegistry } from './ExtensionRegistry';
 =======
 import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { COMMERCE_EVENTS, CONTRACT_CHECKSUM, OperationCatalog } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD } from '@shop/config/server';
+import { JOB_CATALOG } from '../app/jobs';
+import type { DatabasePool } from '../foundation/persistence/Pool';
+import type { ExtensionRegistry } from './ExtensionRegistry';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 interface DatabaseCompatibility {
   readonly writable: boolean;
   readonly schema: boolean;
   readonly contract: boolean;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   readonly scope_resolver: boolean;
@@ -31,6 +40,8 @@ interface DatabaseCompatibility {
 =======
   readonly scope_resolver: boolean;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly operations: number;
   readonly capabilities: number;
   readonly events: number;
@@ -43,18 +54,22 @@ export interface RuntimeCompatibilityState {
   readonly registries: Readonly<{ operations: number; events: number; jobs: number }>;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly cache: CacheState;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   readonly cache: CacheState;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   readonly database: DatabaseCompatibility;
   readonly extensions: Awaited<ReturnType<ExtensionRegistry['healthAll']>>;
 }
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 export async function runtimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs' = 'api',
   cache: CacheState = Object.freeze({ available: false, reason: 'CACHE_STATE_UNAVAILABLE' })): Promise<RuntimeCompatibilityState> {
   const statement = 'select not pg_is_in_recovery() writable,'
@@ -62,10 +77,13 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     + 'exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,'
     + "to_regprocedure('access.resolve_scope(text,text,text,text)') is not null scope_resolver,"
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export async function runtimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs' = 'api'): Promise<RuntimeCompatibilityState> {
   const statement = 'select not pg_is_in_recovery() writable,'
     + 'exists(select 1 from runtime.schemaversion where version=$1) schema,'
     + 'exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,'
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 export async function runtimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs' = 'api',
@@ -75,6 +93,8 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     + 'exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,'
     + "to_regprocedure('access.resolve_scope(text,text,text,text)') is not null scope_resolver,"
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     + '(select count(*)::integer from runtime.operation) operations,'
     + '(select count(*)::integer from capability.operation) capabilities,'
     + '(select count(*)::integer from runtime.event) events';
@@ -84,7 +104,11 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     await client.query('begin');
     await client.query("select set_config('app.workload',$1,true)", [workload]);
 <<<<<<< HEAD
+<<<<<<< HEAD
     result = await client.query<DatabaseCompatibility>(statement, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
+=======
+    result = await client.query<DatabaseCompatibility>(statement, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     result = await client.query<DatabaseCompatibility>(statement, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -103,6 +127,7 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     jobs: JOB_CATALOG.length,
   });
   const healthy = database.writable
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     && database.schema
@@ -129,6 +154,12 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     && database.capabilities === registries.operations
     && database.events === registries.events
     && (workload !== 'jobs' || cache.available)
+=======
+    && database.contract
+    && database.operations === registries.operations
+    && database.capabilities === registries.operations
+    && database.events === registries.events
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     && health.every(({ state }) => state === 'healthy');
   return Object.freeze({
     healthy,
@@ -136,15 +167,19 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     schema: Object.freeze({ version: TARGET_SCHEMA_HEAD, matches: database.schema }),
     registries,
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     cache: Object.freeze({ ...cache }),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     database,
     extensions: health,
   });
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 export async function assertRuntimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs',
@@ -164,5 +199,10 @@ export async function assertRuntimeCompatibility(pool: DatabasePool, extensions:
   if (!state.healthy) throw new Error('RUNTIME_COMPATIBILITY_FAILED:' + JSON.stringify(state));
   if (workload === 'jobs') await assertLiveDatabaseBoundary(pool, 'shopjob');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+export async function assertRuntimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs'): Promise<RuntimeCompatibilityState> {
+  const state = await runtimeCompatibility(pool, extensions, workload);
+  if (!state.healthy) throw new Error('RUNTIME_COMPATIBILITY_FAILED:' + JSON.stringify(state));
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return state;
 }

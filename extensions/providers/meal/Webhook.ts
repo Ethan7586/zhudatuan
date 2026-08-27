@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 /**
@@ -13,3 +14,6 @@ export { Webhook as MealWebhook } from '@shop/providercore';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+export { Webhook as MealWebhook } from '@shop/providercore';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

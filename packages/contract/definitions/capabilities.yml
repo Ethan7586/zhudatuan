@@ -67,6 +67,7 @@ capabilities:
     audience: operator
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: identity.members.reset
@@ -79,6 +80,8 @@ capabilities:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: identity.password.change
     kind: operation
     owner: identity
@@ -96,6 +99,7 @@ capabilities:
     audience: public
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: identity.mobile.challenge
@@ -108,6 +112,8 @@ capabilities:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: identity.mobile.manage
     kind: operation
     owner: identity
@@ -143,6 +149,7 @@ capabilities:
     owner: access
     permission: access.scope.manage
     audience: operator
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -187,6 +194,8 @@ capabilities:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: capability.assignments.read
     kind: operation
     owner: capability
@@ -379,6 +388,7 @@ capabilities:
     audience: operator
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: referral.settings.read
@@ -461,6 +471,8 @@ capabilities:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: reporting.dashboard.read
     kind: operation
     owner: reporting
@@ -853,6 +865,7 @@ capabilities:
     audience: operator
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   - code: finance.policies.preview
@@ -875,6 +888,8 @@ capabilities:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: invoice.profiles.manage
     kind: operation
     owner: finance
@@ -885,6 +900,7 @@ capabilities:
     owner: finance
     permission: invoice.profile.read
     audience: member
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -899,10 +915,13 @@ capabilities:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: invoice.requests.create
     kind: operation
     owner: finance
     permission: invoice.request.create
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     audience: operator
@@ -912,6 +931,9 @@ capabilities:
 =======
     audience: operator
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    audience: member
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   - code: invoice.requests.read
     kind: operation
     owner: finance

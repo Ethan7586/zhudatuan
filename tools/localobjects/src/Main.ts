@@ -55,6 +55,7 @@ const handler: LocalHandler = async request => {
   }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   if (request.url.pathname === '/v1/objects' && request.method === 'DELETE') {
@@ -66,6 +67,8 @@ const handler: LocalHandler = async request => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   if (request.url.pathname === '/v1/objects/authorizations' && request.method === 'POST') {
     const body = jsonBody(request);
     return jsonResponse(200, await objects.authorize(typeof body.reference === 'string' ? body.reference : '', body.expiresIn));

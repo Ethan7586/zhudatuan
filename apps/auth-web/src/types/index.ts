@@ -36,8 +36,11 @@ export interface PreAuthContext {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export interface StepUpChallenge {
   challengeId: string;
   preAuthToken: string;
@@ -64,10 +67,13 @@ export interface LockoutState {
 export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com' | 'hbbtzn.com' | 'smart.hbbtzn.com';
 
 export type ScreenType = 'login' | 'storefront_home' | 'admin_dashboard' | 'auth_callback' | 'force_password_reset';
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 export interface MallContextType {
   currentDomain: DomainType;

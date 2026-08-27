@@ -63,6 +63,7 @@ export class DispatchNotification {
     const selected = (await this.repository.challenge(id)).rows[0]; if (!selected) return;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     const attempt = (await this.repository.beginChallengeAttempt(id, 'sms')).rows[0];
@@ -89,10 +90,13 @@ export class DispatchNotification {
       if (definitiveProviderRejection(code)) await this.repository.failChallengeAttempt(id, attempt.sequence, code);
       else await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, code);
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     const [code, recipient] = await Promise.all([
       this.kms.decrypt('identity/challenge', selected.code_ciphertext, { challenge: id, purpose: selected.purpose }),
       this.kms.decrypt('identity/destination', selected.destination_ciphertext, { challenge: id, purpose: selected.purpose }),
     ]);
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     try {
@@ -109,6 +113,14 @@ export class DispatchNotification {
       if (definitiveProviderRejection(code)) await this.repository.failChallengeAttempt(id, attempt.sequence, code);
       else await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, code);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    try {
+      const receipt = await this.deliveries.require('sms').send({ recipient, providerTemplate: null, variables: { code }, subject: null,
+        body: 'verification', idempotency: id });
+      await this.repository.challengeAttempt(id, receipt.provider, 'sent', receipt.externalId, null);
+    } catch (cause) {
+      await this.repository.challengeAttempt(id, 'sms', 'failed', null, deliveryError(cause)); throw cause;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     }
   }
 
@@ -138,6 +150,7 @@ function deliveryError(value: unknown): string {
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 function definitiveProviderRejection(code: string): boolean {
   return code === 'ALIYUN_SMS_REJECTED' || code.startsWith('ALIYUN_SMS_ISV.');
 }
@@ -148,3 +161,5 @@ function definitiveProviderRejection(code: string): boolean {
   return code === 'ALIYUN_SMS_REJECTED' || code.startsWith('ALIYUN_SMS_ISV.');
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

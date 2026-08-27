@@ -27,6 +27,7 @@ describe('HTTP boundary contract', () => {
       method: 'POST',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       headers: { origin: 'https://console.example', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
 =======
       headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
@@ -34,6 +35,9 @@ describe('HTTP boundary contract', () => {
 =======
       headers: { origin: 'https://console.example', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       body: '{',
     }));
     expect(response.status).toBe(400);
@@ -42,6 +46,7 @@ describe('HTTP boundary contract', () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
+<<<<<<< HEAD
   it('allows cookie-authenticated writes without a matching CSRF token', async () => {
     const { app, handler } = application();
 <<<<<<< HEAD
@@ -53,14 +58,25 @@ describe('HTTP boundary contract', () => {
 =======
     const response = await app.handle(new Request('https://api.example/api/v1/identity/challenges', {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  it('requires a matching CSRF token for cookie-authenticated writes', async () => {
+    const { app, handler } = application();
+    const response = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       method: 'POST',
       headers: { cookie: 'shop_session=session; shop_csrf=expected', origin: 'https://console.example',
         'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-csrf-token': 'wrong' },
       body: '{}',
     }));
+<<<<<<< HEAD
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ accepted: true });
     expect(handler).toHaveBeenCalledOnce();
+=======
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
+    expect(handler).not.toHaveBeenCalled();
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   });
 
   it('returns the security and contract headers on an accepted request', async () => {

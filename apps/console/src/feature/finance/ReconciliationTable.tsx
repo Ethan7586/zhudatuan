@@ -11,12 +11,15 @@ export function ReconciliationTable({
   page,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   caption,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   caption,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   previewEnabled,
   visible,
   selected,
@@ -27,12 +30,15 @@ export function ReconciliationTable({
   page: FinanceReconciliationPage;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   caption: string;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   caption: string;
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   previewEnabled: boolean;
   visible: ReadonlySet<FinanceColumnKey>;
   selected: ReadonlySet<string>;
@@ -46,6 +52,7 @@ export function ReconciliationTable({
       <table className="financetable">
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         <caption className="sr-only">{caption}</caption>
 =======
         <caption className="sr-only">支付对账批次</caption>
@@ -53,6 +60,9 @@ export function ReconciliationTable({
 =======
         <caption className="sr-only">{caption}</caption>
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        <caption className="sr-only">支付对账批次</caption>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         <thead>
           <tr>
             <th className="financecheckcell">
@@ -100,6 +110,7 @@ function ReconciliationRow({
   const preview = previewEnabled && row.preview?.source === 'local-preview' ? row.preview : undefined;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const canOpen = row.items.some((item) => item.state === 'difference' || item.state === 'resolutionpending');
 =======
   const canOpen = row.items.length > 0;
@@ -107,6 +118,9 @@ function ReconciliationRow({
 =======
   const canOpen = row.items.some((item) => item.state === 'difference' || item.state === 'resolutionpending');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const canOpen = row.items.length > 0;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return (
     <tr className={row.state === 'difference' || row.state === 'resolutionpending' ? 'hasdifference' : undefined} onClick={canOpen ? onOpen : undefined}>
       <td className="financecheckcell" onClick={(event) => event.stopPropagation()}>

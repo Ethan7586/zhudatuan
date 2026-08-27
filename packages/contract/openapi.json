@@ -361,6 +361,7 @@
     },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "/api/v1/access/ownership": {
@@ -1336,6 +1337,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/access/roles/{roleid}": {
       "put": {
         "operationId": "access.roles.manage",
@@ -10257,6 +10260,7 @@
     },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "/api/v1/finance/audits": {
@@ -10396,6 +10400,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/finance/backfills": {
       "get": {
         "operationId": "finance.backfills.read",
@@ -11341,6 +11347,7 @@
     },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "/api/v1/finance/policies": {
@@ -11477,6 +11484,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/finance/policies/{policyid}": {
       "put": {
         "operationId": "finance.policies.manage",
@@ -11626,6 +11635,7 @@
         "x-stepup": true
       }
     },
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -12370,6 +12380,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/finance/reconciliations": {
       "get": {
         "operationId": "finance.reconciliations.read",
@@ -12486,6 +12498,7 @@
           "MVP10",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
 =======
@@ -12495,6 +12508,9 @@
           "MVP19",
           "OMS-011"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP19"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -12645,6 +12661,7 @@
           "MVP10",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
         ],
@@ -12968,6 +12985,8 @@
         "x-permission": "finance.reconciliation.manage",
         "x-requirements": [
           "MVP10",
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           "MVP19"
         ],
         "x-risk": "critical",
@@ -13099,6 +13118,7 @@
           "MVP10",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
 =======
@@ -13108,6 +13128,9 @@
           "MVP19",
           "OMS-011"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP19"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -15750,6 +15773,7 @@
     },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "/api/v1/identity/members/{membershipid}/registration": {
@@ -15909,6 +15933,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/identity/mobile": {
       "put": {
         "operationId": "identity.mobile.manage",
@@ -16062,6 +16088,7 @@
         "x-stepup": false
       }
     },
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -16224,6 +16251,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/identity/password": {
       "put": {
         "operationId": "identity.password.change",
@@ -18503,6 +18532,7 @@
     },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "/api/v1/invoices/operator-profiles": {
@@ -18644,6 +18674,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/invoices/profiles": {
       "get": {
         "operationId": "invoice.profiles.read",
@@ -19174,6 +19206,7 @@
         ],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "x-audience": "operator",
 =======
         "x-audience": "member",
@@ -19181,6 +19214,9 @@
 =======
         "x-audience": "operator",
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        "x-audience": "member",
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         "x-expected-version": "optional",
         "x-idempotency": "required",
         "x-idempotent": false,
@@ -21963,6 +21999,7 @@
           "MVP08",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
           "MVP17",
@@ -21975,6 +22012,9 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -22281,6 +22321,7 @@
           "MVP08",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
@@ -22290,6 +22331,9 @@
           "MVP17",
           "OMS-008"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -22578,6 +22622,7 @@
           "MVP08",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
@@ -22587,6 +22632,9 @@
           "MVP17",
           "OMS-008"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -22742,6 +22790,7 @@
           "MVP08",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
@@ -22751,6 +22800,9 @@
           "MVP17",
           "OMS-008"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -22902,6 +22954,7 @@
           "MVP08",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
@@ -22911,6 +22964,9 @@
           "MVP17",
           "OMS-008"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -23054,6 +23110,7 @@
           "MVP08",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-007"
 =======
@@ -23063,6 +23120,9 @@
           "MVP17",
           "OMS-007"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP17"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -23192,6 +23252,7 @@
         "x-requirements": [
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP03",
           "OMS-004"
 =======
@@ -23201,6 +23262,9 @@
           "MVP03",
           "OMS-004"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP03"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -25239,6 +25303,7 @@
     },
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
     "/api/v1/referral/bindings": {
@@ -27153,6 +27218,8 @@
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     "/api/v1/reports/categories": {
       "get": {
         "operationId": "reporting.categories.read",
@@ -27527,6 +27594,7 @@
           "MVP05",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP14",
           "OMS-012"
 =======
@@ -27536,6 +27604,9 @@
           "MVP14",
           "OMS-012"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP14"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -28331,6 +28402,7 @@
           "MVP11",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP20",
           "OMS-012"
 =======
@@ -28340,6 +28412,9 @@
           "MVP20",
           "OMS-012"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP20"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -29740,6 +29815,7 @@
           "MVP12",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP21",
           "OMS-013"
 =======
@@ -29749,6 +29825,9 @@
           "MVP21",
           "OMS-013"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP21"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -30635,6 +30714,7 @@
           "MVP12",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP21",
           "OMS-013"
 =======
@@ -30644,6 +30724,9 @@
           "MVP21",
           "OMS-013"
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+          "MVP21"
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         ],
         "x-risk": "high",
         "x-schema-fidelity": "structural",

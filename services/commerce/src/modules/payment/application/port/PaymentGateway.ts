@@ -18,6 +18,7 @@ export interface PrepayInput {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export type ProviderReceiptEvidence = Readonly<Record<string, unknown>>;
@@ -167,3 +168,39 @@ export function providerOccurredAt(value: unknown, code = 'PAYMENT_PROVIDER_OCCU
   return value;
 }
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+export interface PaymentGateway {
+  application(scene: WechatScene): PaymentApplication;
+  prepay(input: PrepayInput): Promise<Readonly<Record<string, string>>>;
+  query(orderNumber: string, application: PaymentApplication): Promise<Readonly<{ state: ProviderPaymentState; transaction?: string; amountMinor: number }>>;
+  close(orderNumber: string, application: PaymentApplication): Promise<void>;
+  refund(input: Readonly<{ refundNumber: string; transaction: string; refundMinor: number; totalMinor: number; reason: string }>): Promise<Readonly<{ state: 'processing' | 'succeeded' | 'failed'; reference: string }>>;
+  queryRefund(refundNumber: string): Promise<Readonly<{ state: 'processing' | 'succeeded' | 'failed'; reference: string }>>;
+  verifyNotification(headers: Readonly<Record<string, string>>, body: string): Promise<PaymentNotification>;
+}
+
+export type PaymentNotification = Readonly<{
+  kind: 'payment';
+  id: string;
+  providerReference: string;
+  transaction: string;
+  amountMinor: number;
+  currency: 'CNY';
+  payerHash: string;
+  application: PaymentApplication;
+  occurredAt: string;
+  evidence: object;
+}> | Readonly<{
+  kind: 'refund';
+  id: string;
+  providerReference: string;
+  transaction: string;
+  amountMinor: number;
+  totalMinor: number;
+  state: 'succeeded' | 'failed';
+  occurredAt: string;
+  evidence: object;
+}>;
+
+export const PAYMENT_GATEWAY = token<PaymentGateway>('payment.gateway');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

@@ -9,6 +9,7 @@ import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import type { CheckoutPort } from './CheckoutPort';
 import { fullCheckoutPort } from './FullCheckoutPort';
 =======
@@ -18,10 +19,14 @@ import { CheckoutPort } from './CheckoutPort';
 import type { CheckoutPort } from './CheckoutPort';
 import { fullCheckoutPort } from './FullCheckoutPort';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { CheckoutPort } from './CheckoutPort';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { pricingPort } from '../pricing/PricingModule';
 
 export function checkoutOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const checkout = fullCheckoutPort(context.container.get(SECURITY_KEYS).quote);
@@ -31,6 +36,9 @@ export function checkoutOperations(context: ModuleContext): ModuleOperations {
 =======
   const checkout = fullCheckoutPort(context.container.get(SECURITY_KEYS).quote);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const checkout = new CheckoutPort(context.container.get(SECURITY_KEYS).quote);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return new ModuleOperations('checkout', pool, context.container.get(AUDIT_SINK), {
     'checkout.quote.create': async (request, database) => {
       const access = requireAccess(request);

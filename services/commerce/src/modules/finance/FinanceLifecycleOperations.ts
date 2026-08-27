@@ -10,6 +10,7 @@ export function financeLifecycleOperations(): OperationActions {
       const page = queryPage(request);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
       const q = queryText(request.input.query, 'q', 200);
@@ -174,10 +175,24 @@ export function financeLifecycleOperations(): OperationActions {
         },
       };
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      const result = await database.query(`select reconciliation.*,
+        coalesce((select jsonb_object_agg(state,count) from (select state,count(*) count from finance.reconciliationitem item
+          where item.reconciliation_id=reconciliation.id group by state) states),'{}'::jsonb) item_counts,
+        coalesce((select jsonb_agg(jsonb_build_object('id',item.id,'externalMinor',item.external_minor,'internalMinor',item.internal_minor,
+          'differenceMinor',item.difference_minor,'state',item.state,'reasonCode',item.reason_code,'evidence',item.evidence,
+          'resolution',item.resolution,'resolvedBy',item.resolved_by,'approvedBy',item.approved_by) order by item.id)
+          from finance.reconciliationitem item where item.reconciliation_id=reconciliation.id),'[]'::jsonb) items
+        from finance.reconciliation reconciliation where access.scope_allowed(reconciliation.scope_id)
+        and reconciliation.scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
+        and ($2::text is null or reconciliation.id>$2) order by reconciliation.id limit $3`, [access.scope.id, page.id, page.fetch]);
+      return keysetResult(result, page, 'id');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
     },
     'finance.settlements.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       const result = await database.query(
@@ -189,6 +204,9 @@ export function financeLifecycleOperations(): OperationActions {
       const result = await database.query(
         `select settlement.*,
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      const result = await database.query(`select settlement.*,
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         coalesce((select jsonb_agg(jsonb_build_object('id',line.id,'sourceType',line.source_type,'sourceId',line.source_id,
           'amountMinor',line.amount_minor,'taxMinor',line.tax_minor,'state',line.state,'adjustmentOf',line.adjustment_of) order by line.id)
           from finance.settlementline line where line.settlement_id=settlement.id),'[]'::jsonb) lines
@@ -204,6 +222,7 @@ export function financeLifecycleOperations(): OperationActions {
         and settlement.scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         and ($2::text is null or settlement.id>$2) order by settlement.id limit $3`,
         [access.scope.id, page.id, page.fetch]
       );
@@ -215,6 +234,9 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.id, page.fetch]
       );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        and ($2::text is null or settlement.id>$2) order by settlement.id limit $3`, [access.scope.id, page.id, page.fetch]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return keysetResult(result, page, 'id');
     },
     'finance.withdrawals.read': async (request, database) => {
@@ -222,6 +244,7 @@ export function financeLifecycleOperations(): OperationActions {
       const page = queryPage(request);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       const result = await database.query(
         `select withdrawal.* from finance.withdrawal withdrawal where access.scope_allowed(withdrawal.scope_id)
         and withdrawal.scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
@@ -230,10 +253,13 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.sort, page.id, page.fetch]
       );
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await database.query(`select withdrawal.* from finance.withdrawal withdrawal where access.scope_allowed(withdrawal.scope_id)
         and withdrawal.scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
         and ($2::timestamptz is null or (withdrawal.created_at,withdrawal.id)<($2::timestamptz,$3))
         order by withdrawal.created_at desc,withdrawal.id desc limit $4`, [access.scope.id, page.sort, page.id, page.fetch]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       const result = await database.query(
@@ -244,6 +270,8 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.sort, page.id, page.fetch]
       );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return keysetResult(result, page, 'created_at');
     },
     'finance.holds.read': async (request, database) => {
@@ -251,6 +279,7 @@ export function financeLifecycleOperations(): OperationActions {
       const page = queryPage(request);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       const result = await database.query(
         `select hold.*,account.code,account.currency from finance.hold hold join finance.account account on account.id=hold.account_id
         where access.scope_allowed(hold.scope_id) and hold.scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
@@ -259,10 +288,13 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.sort, page.id, page.fetch]
       );
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await database.query(`select hold.*,account.code,account.currency from finance.hold hold join finance.account account on account.id=hold.account_id
         where access.scope_allowed(hold.scope_id) and hold.scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
         and ($2::timestamptz is null or (hold.created_at,hold.id)<($2::timestamptz,$3))
         order by hold.created_at desc,hold.id desc limit $4`, [access.scope.id, page.sort, page.id, page.fetch]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       const result = await database.query(
@@ -273,11 +305,14 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.sort, page.id, page.fetch]
       );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return keysetResult(result, page, 'created_at');
     },
     'finance.periods.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       const result = await database.query(
@@ -321,6 +356,17 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.id, page.fetch]
       );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      const result = await database.query(`select period.scope_id,period.period,period.state,period.closed_at,period.closed_by,
+        close.id close_id,close.state close_state,close.source_hash,close.requested_by,close.approved_by,close.reason,close.evidence,
+        statement.debit_minor,statement.credit_minor,statement.state statement_state from finance.period period
+        left join finance.periodclose close on close.scope_id=period.scope_id and close.period=period.period
+        left join finance.statement statement on statement.scope_id=period.scope_id
+          and to_char(statement.period_start,'YYYY-MM')=period.period and statement.currency='CNY'
+        where period.scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
+        and ($2::text is null or period.scope_id||':'||period.period>$2) order by period.scope_id,period.period limit $3`,
+      [access.scope.id, page.id, page.fetch]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return keysetResult(result, page, 'period');
     },
     'finance.periods.manage': async (request, database) => {
@@ -330,6 +376,7 @@ export function financeLifecycleOperations(): OperationActions {
       if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) throw new Error('FINANCE_PERIOD_INVALID');
       const action = textField(body, 'action', 20);
       if (action === 'request') {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -389,12 +436,26 @@ export function financeLifecycleOperations(): OperationActions {
           [access.scope.id, period, access.actor.id, textField(body, 'reason', 1000), JSON.stringify(record(body.evidence)), request.input.expectedVersion!]
         );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        const result = await database.query(`with current as(select encode(public.digest(coalesce(string_agg(journal.id||':'||entry.id||':'||entry.amount_minor,
+            ',' order by journal.id,entry.id),''),'sha256'),'hex') hash from finance.journal journal
+            join finance.entry entry on entry.journal_id=journal.id where journal.scope_id=$1 and journal.period=$2),
+          created as(insert into finance.periodclose(id,scope_id,period,state,source_hash,requested_by,reason,evidence,requested_at,version)
+            select 'periodclose:'||encode(public.digest($1||':'||$2,'sha256'),'hex'),period.scope_id,period.period,'pending',current.hash,$3,$4,$5::jsonb,
+              clock_timestamp(),0 from finance.period period cross join current where period.scope_id=$1 and period.period=$2 and period.state='open'
+              and exists(select 1 from finance.statement where scope_id=$1 and to_char(period_start,'YYYY-MM')=$2 and state='draft')
+            on conflict(scope_id,period) do update set state='pending',source_hash=excluded.source_hash,requested_by=excluded.requested_by,
+              approved_by=null,reason=excluded.reason,evidence=excluded.evidence,requested_at=clock_timestamp(),decided_at=null,version=finance.periodclose.version+1
+              where finance.periodclose.state='rejected' returning *) select * from created`,
+        [access.scope.id, period, access.actor.id, textField(body, 'reason', 1000), JSON.stringify(record(body.evidence))]);
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         if (!result.rows[0]) throw new Error('FINANCE_PERIOD_CLOSE_NOT_REQUESTABLE');
         await database.query(`update finance.period set state='closing' where scope_id=$1 and period=$2 and state='open'`, [access.scope.id, period]);
         return rowResult(result, 201);
       }
       const decision = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : null;
       if (!decision) throw new Error('FINANCE_PERIOD_ACTION_INVALID');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       const result = await database.query(
@@ -505,12 +566,35 @@ export function financeLifecycleOperations(): OperationActions {
         const snapshot = statement.rows[0];
         if (!snapshot) throw new Error('FINANCE_STATEMENT_FINALIZATION_FAILED');
 <<<<<<< HEAD
+=======
+      const result = await database.query(`with current as(select encode(public.digest(coalesce(string_agg(journal.id||':'||entry.id||':'||entry.amount_minor,
+          ',' order by journal.id,entry.id),''),'sha256'),'hex') hash from finance.journal journal
+          join finance.entry entry on entry.journal_id=journal.id where journal.scope_id=$1 and journal.period=$2)
+        update finance.periodclose close set state=$3,approved_by=$4,decided_at=clock_timestamp(),reason=$5,evidence=evidence||$6::jsonb,
+          version=version+1 from current where close.scope_id=$1 and close.period=$2 and close.state='pending' and close.requested_by<>$4
+          and close.source_hash=current.hash returning close.*`,
+      [access.scope.id, period, decision, access.actor.id, textField(body, 'reason', 1000),
+        JSON.stringify({ decisionEvidence: record(body.evidence), trace: access.trace })]);
+      const close = result.rows[0] as { id?: string } | undefined;
+      if (!close?.id) throw new Error('FINANCE_PERIOD_CLOSE_CONFLICT_OR_HASH_MISMATCH');
+      if (decision === 'approved') {
+        await database.query(`update finance.period set state='closed',closed_at=clock_timestamp(),closed_by=$3
+          where scope_id=$1 and period=$2 and state='closing'`, [access.scope.id, period, access.actor.id]);
+        const statement = await database.query<{ id: string; period_start: string; period_end: string; currency: string; opening_minor: number;
+          debit_minor: number; credit_minor: number; closing_minor: number; state: string }>(`update finance.statement set state='final',
+          generated_at=clock_timestamp() where scope_id=$1 and to_char(period_start,'YYYY-MM')=$2 and state='draft'
+          returning id,period_start,period_end,currency,opening_minor::float8 opening_minor,debit_minor::float8 debit_minor,
+          credit_minor::float8 credit_minor,closing_minor::float8 closing_minor,state`, [access.scope.id, period]);
+        const snapshot = statement.rows[0];
+        if (!snapshot) throw new Error('FINANCE_STATEMENT_FINALIZATION_FAILED');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         await event(database, 'finance.period.closed', 'periodclose', close.id, access.scope.id,
           { period, close: close.id, sourceHash: (close as { source_hash?: string }).source_hash, statementSnapshot: {
             statement: snapshot.id, periodStart: snapshot.period_start, periodEnd: snapshot.period_end, currency: snapshot.currency,
             openingMinor: snapshot.opening_minor, debitMinor: snapshot.debit_minor, creditMinor: snapshot.credit_minor,
             closingMinor: snapshot.closing_minor, state: snapshot.state,
           } });
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
         await event(database, 'finance.period.closed', 'periodclose', close.id, access.scope.id, {
@@ -533,12 +617,15 @@ export function financeLifecycleOperations(): OperationActions {
           },
         });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       } else await database.query(`update finance.period set state='open' where scope_id=$1 and period=$2 and state='closing'`, [access.scope.id, period]);
       return rowResult(result);
     },
     'finance.backfills.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request);
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       const result = await database.query(
@@ -548,10 +635,13 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.sort, page.id, page.fetch]
       );
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await database.query(`select * from finance.backfill where access.scope_allowed(scope_id)
         and scope_id in(select descendant_id from organization.unitclosure where ancestor_id=$1)
         and ($2::timestamptz is null or (prepared_at,id)<($2::timestamptz,$3)) order by prepared_at desc,id desc limit $4`,
       [access.scope.id, page.sort, page.id, page.fetch]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
       const result = await database.query(
@@ -561,6 +651,8 @@ export function financeLifecycleOperations(): OperationActions {
         [access.scope.id, page.sort, page.id, page.fetch]
       );
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       return keysetResult(result, page, 'prepared_at');
     },
     'finance.backfills.decide': async (request, database) => {
@@ -568,6 +660,7 @@ export function financeLifecycleOperations(): OperationActions {
       const body = bodyRecord(request);
       const decision = body.decision === 'approved' ? 'approved' : body.decision === 'rejected' ? 'rejected' : null;
       if (!decision) throw new Error('FINANCE_BACKFILL_DECISION_INVALID');
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -580,13 +673,18 @@ export function financeLifecycleOperations(): OperationActions {
       );
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       const result = await database.query(`update finance.backfill set state=$2,signed_by=$3,signed_at=clock_timestamp(),
         evidence=evidence||$4::jsonb where id=$1 and state='pending' and prepared_by<>$3 and source_hash=target_hash
         and source_count=target_count and source_minor=target_minor returning *`, [request.input.path.backfillid!, decision, access.actor.id,
         JSON.stringify({ reason: textField(body, 'reason', 1000), evidence: record(body.evidence) })]);
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       if (!result.rows[0]) throw new Error('FINANCE_BACKFILL_CONFLICT_OR_MISMATCH');
       return rowResult(result);
     },
@@ -594,6 +692,7 @@ export function financeLifecycleOperations(): OperationActions {
 }
 
 async function event(database: OperationDatabase, type: string, aggregateType: string, aggregate: string, scope: string, payload: unknown) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   await database.query(
@@ -687,4 +786,13 @@ function queryChoice<const T extends readonly string[]>(query: Readonly<Record<s
   if (!choices.includes(value)) throw new Error(`VALIDATION_FAILED:${field}`);
   return value as T[number];
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
+    values($1,$2,1,$3,$4,$5,$6::jsonb,$1,clock_timestamp(),clock_timestamp())`,
+  [`event:${randomUUID()}`, type, aggregateType, aggregate, scope, JSON.stringify(payload)]);
+}
+
+function record(value: unknown): Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Readonly<Record<string, unknown>> : {};
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }

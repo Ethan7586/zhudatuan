@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Button, ResourcePanel, ResourceState } from '@shop/design';
 =======
 import { Button, ResourcePanel } from '@shop/design';
@@ -7,6 +8,9 @@ import { Button, ResourcePanel } from '@shop/design';
 =======
 import { Button, ResourcePanel, ResourceState } from '@shop/design';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { Button, ResourcePanel } from '@shop/design';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -83,6 +87,7 @@ export function Component() {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   if (condition === 'unauthenticated' || condition === 'denied') {
@@ -99,6 +104,8 @@ export function Component() {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return (
     <div className="voucherworkspace" data-view={view}>
       <ResourcePanel

@@ -1,15 +1,19 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ResourceState } from '@shop/design';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 import { ResourceState } from '@shop/design';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Button, Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
@@ -19,6 +23,9 @@ import { safeQueryError } from '../../shared/api/QueryState';
 =======
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { safeQueryError } from '../../shared/api/QueryState';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
@@ -56,6 +63,7 @@ export function OrderDrawer({
   });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   const detailCondition = queryCondition({
@@ -74,6 +82,9 @@ export function OrderDrawer({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  const order = query.data;
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   const preview = order === undefined ? undefined : previewRecord(order, previewEnabled);
   const error = safeQueryError(query.error);
 
@@ -152,6 +163,7 @@ export function OrderDrawer({
               ) : null}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
               {accessBlocked ? (
@@ -165,6 +177,9 @@ export function OrderDrawer({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+              {query.isError ? (
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                 <section className="orderdrawererror" role="alert">
                   <strong>订单详情读取失败</strong>
                   <p>{error}</p>

@@ -20,6 +20,7 @@ const sourceLabels: Record<ResourceCondition, string> = {
   stale: '数据已过期',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   unauthenticated: '登录失效',
   denied: '没有权限',
 =======
@@ -29,6 +30,9 @@ const sourceLabels: Record<ResourceCondition, string> = {
   unauthenticated: '登录失效',
   denied: '没有权限',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  denied: '访问受限',
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   notfound: '资源不存在',
   conflict: '数据冲突',
   ratelimited: '请求受限',
@@ -41,12 +45,15 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
   const titleId = useId();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const accessBlocked = condition === 'unauthenticated' || condition === 'denied';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   const accessBlocked = condition === 'unauthenticated' || condition === 'denied';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   return (
     <section className="resourcepanel" aria-labelledby={titleId}>
       <header className="resourceheading">
@@ -60,6 +67,7 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
           {sourceLabels[condition]}
         </span>
       </header>
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -77,6 +85,10 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      {actions === undefined ? null : <div className="resourceactions" role="group" aria-label={`${title}操作`}>{actions}</div>}
+      <ResourceState condition={condition} {...(error === undefined ? {} : { error })} {...(retry === undefined ? {} : { retry })}>
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
         {children}
       </ResourceState>
     </section>

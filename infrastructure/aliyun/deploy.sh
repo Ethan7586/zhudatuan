@@ -9,12 +9,15 @@ cutover="${SHOP_CUTOVER_CONTROLLER:-}"
 cutover_evidence="${SHOP_CUTOVER_EVIDENCE:-}"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 production_evidence_root="${SHOP_PRODUCTION_EVIDENCE_ROOT:-/var/lib/shop/production-evidence}"
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 production_evidence_root="${SHOP_PRODUCTION_EVIDENCE_ROOT:-/var/lib/shop/production-evidence}"
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
 fail() { printf 'release refused: %s\n' "$*" >&2; exit 1; }
 command -v cosign >/dev/null || fail 'cosign is required'
@@ -24,6 +27,7 @@ command -v ossutil >/dev/null || fail 'ossutil is required'
 [[ "$cutover" == /* && -x "$cutover" ]] || fail 'SHOP_CUTOVER_CONTROLLER must be an absolute audited executable'
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 [[ "$production_evidence_root" == /* && "$production_evidence_root" != / ]] || fail 'SHOP_PRODUCTION_EVIDENCE_ROOT must be an absolute non-root path'
 [[ "$cutover_evidence" == /* && "$cutover_evidence" != / && ! -e "$cutover_evidence" ]] || fail 'SHOP_CUTOVER_EVIDENCE must be a new absolute non-root file'
 [[ "$cutover_evidence" == "$production_evidence_root"/* ]] || fail 'SHOP_CUTOVER_EVIDENCE must be inside the production-evidence root'
@@ -35,6 +39,9 @@ command -v ossutil >/dev/null || fail 'ossutil is required'
 [[ "$cutover_evidence" == /* && "$cutover_evidence" != / && ! -e "$cutover_evidence" ]] || fail 'SHOP_CUTOVER_EVIDENCE must be a new absolute non-root file'
 [[ "$cutover_evidence" == "$production_evidence_root"/* ]] || fail 'SHOP_CUTOVER_EVIDENCE must be inside the production-evidence root'
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+[[ "$cutover_evidence" == /* && "$cutover_evidence" != / && ! -e "$cutover_evidence" ]] || fail 'SHOP_CUTOVER_EVIDENCE must be a new absolute non-root file'
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 [[ "$release_root" == /* && "$release_root" != / ]] || fail 'signed release directory must be an absolute non-root path'
 [[ -d "$release_root" ]] || fail 'signed release directory does not exist'
 

@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { bearerToken, distinctValues, enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 =======
 import { enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
@@ -7,10 +8,14 @@ import { enumValue, integerValue, pickEnvironment, processEnvironment, requiredV
 =======
 import { bearerToken, distinctValues, enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+import { enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import type { AuthTarget } from './ClientEnvironment';
 
 export const API_ENVIRONMENT_KEYS = [
   'API_PORT',
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   'API_BIND_HOST',
@@ -19,6 +24,8 @@ export const API_ENVIRONMENT_KEYS = [
 =======
   'API_BIND_HOST',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'APP_ENV',
   'SERVICE_VERSION',
   'AUTH_MODE',
@@ -32,12 +39,15 @@ export const API_ENVIRONMENT_KEYS = [
   'KMS_ENDPOINT',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   'KMS_BEARER_TOKEN',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   'KMS_BEARER_TOKEN',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   'PII_KEY_REF',
   'WECHAT_APPLICATION_CONFIG_REF',
   'WECHAT_PAYMENT_CONFIG_REF',
@@ -50,12 +60,15 @@ export const API_ENVIRONMENT_KEYS = [
   'SECRET_STORE_ENDPOINT',
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   'SECRET_STORE_BEARER_TOKEN',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   'SECRET_STORE_BEARER_TOKEN',
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 ] as const;
 
 export type ApiEnvironment = Readonly<Partial<Record<(typeof API_ENVIRONMENT_KEYS)[number], string>>>;
@@ -72,6 +85,7 @@ export function apiPort(environment: ApiEnvironment): number {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 export function apiBindHost(environment: ApiEnvironment): '127.0.0.1' | '0.0.0.0' {
@@ -85,6 +99,8 @@ export function apiBindHost(environment: ApiEnvironment): '127.0.0.1' | '0.0.0.0
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 export function apiAllowedOrigins(environment: ApiEnvironment): readonly string[] {
   const values = requiredValue(environment.API_ALLOWED_ORIGINS, 'API_ALLOWED_ORIGINS_MISSING').split(',').map((value) => value.trim());
   if (values.length === 0 || values.some((value) => !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value)
@@ -128,6 +144,7 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
     ['KMS_ENDPOINT', 'KMS_ENDPOINT_MISSING'],
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     ['SECRET_STORE_ENDPOINT', 'SECRET_STORE_ENDPOINT_MISSING'],
   ] as const) requiredValue(source[key], code);
   const kmsBearer = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
@@ -144,6 +161,10 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
   const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  ] as const) requiredValue(source[key], code);
+  if (app === 'production') requiredValue(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING');
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 }
 
 function webUrl(value: unknown): string {

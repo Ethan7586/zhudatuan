@@ -54,12 +54,15 @@ if (process.argv.includes('--check')) {
 } else {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   mkdirSync(dirname(target), { recursive: true });
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
   mkdirSync(dirname(target), { recursive: true });
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
   writeFileSync(target, output);
   mkdirSync(join(root, 'apps/miniapp/miniprogram/assets'), { recursive: true });
   writeFileSync(brandTarget, readFileSync(brandSource));
