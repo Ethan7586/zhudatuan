@@ -1,0 +1,172 @@
+.financedraweroverlay {
+  position: fixed;
+  inset: 59px 0 0;
+  z-index: 55;
+  display: flex;
+  justify-content: flex-end;
+  background: color-mix(in srgb, var(--sw-brand-ink) 8%, transparent);
+}
+.financedrawermodal {
+  width: min(570px, calc(100vw - 48px));
+  height: 100%;
+  margin-left: auto;
+  outline: 0;
+}
+.financedrawer {
+  display: grid;
+  height: 100%;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-left: 1px solid var(--sw-border);
+  background: var(--sw-surface);
+  box-shadow: -9px 0 28px color-mix(in srgb, var(--sw-brand-ink) 13%, transparent);
+  outline: 0;
+}
+.financedrawerheader {
+  position: relative;
+  border-bottom: 1px solid var(--sw-border);
+  padding: 16px 19px 14px;
+}
+.financedrawerback,
+.financedrawerclose,
+.financedrawertitle button {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--sw-muted);
+  padding: 0;
+  font-size: 10px;
+}
+.financedrawerback svg,
+.financedrawerclose svg,
+.financedrawertitle button svg {
+  width: 14px;
+  height: 14px;
+}
+.financedrawerclose {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 30px;
+  justify-content: center;
+  color: var(--sw-text);
+}
+.financedrawertitle {
+  margin-top: 6px;
+}
+.financedrawertitle h2 {
+  margin: 0 0 3px;
+  color: var(--sw-text);
+  font-size: 16px;
+}
+.financedrawertitle > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sw-text);
+}
+.financedrawertitle > div strong {
+  font-size: 10px;
+}
+.financedrawerbadges {
+  display: inline-flex;
+  gap: 6px;
+  margin: 7px 0 4px;
+}
+.financedrawerbadges i {
+  min-height: 21px;
+  border-radius: 4px;
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
+  padding: 4px 7px 0;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 650;
+}
+.financedrawerbadges i:last-child {
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+.financedrawertitle > small {
+  display: block;
+  color: var(--sw-muted);
+  font-size: 9px;
+}
+.financeimmutablealert {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  margin-top: 11px;
+  border: 1px solid color-mix(in srgb, var(--sw-warning) 50%, var(--sw-border));
+  border-radius: 5px;
+  background: var(--sw-warning-surface);
+  padding: 8px 9px;
+}
+.financeimmutablealert svg {
+  width: 15px;
+  height: 15px;
+  color: var(--sw-warning-strong);
+}
+.financeimmutablealert p {
+  margin: 0;
+  color: var(--sw-warning-strong);
+  font-size: 9px;
+  line-height: 1.55;
+}
+.financedrawerbody {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 13px 19px 22px;
+}
+.financedrawerbody:focus-visible {
+  outline: 2px solid var(--sw-brand);
+  outline-offset: -3px;
+}
+.financereviewsections {
+  display: grid;
+  gap: 14px;
+}
+.financereviewsection {
+  border-bottom: 1px solid var(--sw-border);
+  padding-bottom: 13px;
+}
+.financereviewsection:last-child {
+  border-bottom: 0;
+}
+.financereviewsection h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 9px;
+  color: var(--sw-text);
+  font-size: 11px;
+}
+.financereviewsection h3 > span {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
+  font-size: 9px;
+}
+.financedetailgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px 12px;
+  margin: 0;
+}
+.financedetailgrid > div,
+.financeevidence > div {
+  display: grid;
+  grid-template-columns: 83px minmax(0, 1fr);
+  gap: 7px;
+}
+.financedetailgrid dt,
+.financeevidence dt {
+  color: var(--sw-muted);
+  font-size: 9px;
+}

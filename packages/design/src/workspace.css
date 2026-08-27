@@ -1,0 +1,236 @@
+@import './command.css';
+
+.layout {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.layout > aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sw-space-3);
+  background: var(--sw-sidebar-gradient);
+  color: var(--sw-surface);
+  padding: var(--sw-space-3) var(--sw-space-2);
+}
+
+.layout > aside nav {
+  display: grid;
+  gap: var(--sw-space-1);
+}
+
+.layout > aside button {
+  border: 0.0625rem solid transparent;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: var(--sw-border-strong);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  text-align: left;
+}
+
+.layout > aside button:hover,
+.layout > aside button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--sw-brand) 70%, transparent);
+  background: color-mix(in srgb, var(--sw-brand) 24%, transparent);
+  color: var(--sw-surface);
+}
+
+.layout > main {
+  min-width: 0;
+  width: 100%;
+  max-width: 90rem;
+  margin: 0 auto;
+  padding: var(--sw-space-4);
+}
+
+.layout main > header {
+  padding: var(--sw-space-1) 0;
+}
+
+.resourceheading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-3);
+}
+
+.resourceheading h1,
+.resourceheading p,
+.sectionhead h2,
+.sectionhead p {
+  margin-bottom: 0;
+}
+
+.datasource {
+  display: inline-flex;
+  min-height: 2rem;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: var(--sw-space-0-5) var(--sw-space-1-5);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 700;
+}
+
+.datasource i {
+  width: var(--sw-space-1);
+  height: var(--sw-space-1);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-warning);
+}
+
+.datasource-ready i,
+.datasource-empty i,
+.datasource-refreshing i {
+  background: var(--sw-success);
+}
+
+.datasource-denied i,
+.datasource-notfound i,
+.datasource-offline i,
+.datasource-conflict i,
+.datasource-ratelimited i,
+.datasource-stale i,
+.datasource-failure i {
+  background: var(--sw-danger);
+}
+
+.eyebrow {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.layout main > section {
+  margin: var(--sw-space-2) 0;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-3);
+  box-shadow: var(--sw-shadow-card);
+}
+
+.sectionhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.sectionhead > div:first-child {
+  min-width: 0;
+}
+
+.sectionhead p {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.resourceactions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+}
+
+.tablewrap {
+  width: 100%;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 0.0625rem solid var(--sw-border);
+  padding: var(--sw-space-1-5);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.actions,
+.pagination {
+  display: flex;
+  gap: var(--sw-space-1);
+  flex-wrap: wrap;
+}
+
+.pagination {
+  justify-content: flex-end;
+  margin-top: var(--sw-space-2);
+}
+
+.actions button,
+.pagination button,
+.sectionhead button,
+.command button {
+  border: 0.0625rem solid var(--sw-brand);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-brand-dark);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+}
+
+.actions button:hover,
+.actions button.active,
+.command .primary {
+  background: var(--sw-brand);
+  color: var(--sw-surface);
+}
+
+@media (max-width: 48rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .layout > aside {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    gap: var(--sw-space-1-5);
+    padding: var(--sw-space-1-5) var(--sw-space-2);
+  }
+
+  .layout > aside nav {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .layout > aside button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .layout > main {
+    padding: var(--sw-space-2);
+  }
+
+  .resourceheading,
+  .sectionhead {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .datasource {
+    align-self: flex-start;
+  }
+
+  .resourceactions {
+    justify-content: flex-start;
+  }
+}

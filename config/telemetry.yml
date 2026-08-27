@@ -1,0 +1,20 @@
+version: 1
+owner: reliability
+slo:
+  catalogP95Ms: 150
+  queryP95Ms: 300
+  commandP95Ms: 800
+  orderP95Ms: 1500
+  paymentCallbackP99Ms: 500
+  outboxP99Seconds: 30
+  availabilityPercent: 99.95
+  rpoMinutes: 5
+  rtoMinutes: 30
+redaction:
+  deny:
+    - authorization
+    - cookie
+    - password
+    - otp
+    - secret
+    - cardsecret

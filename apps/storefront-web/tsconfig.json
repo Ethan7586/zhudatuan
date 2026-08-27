@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "types": ["@cloudflare/workers-types", "node"],
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "noEmit": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts", "**/*.mts", "../../services/commerce-api/src/**/*.ts", "../../packages/**/*.ts"],
+  "exclude": ["node_modules"]
+}

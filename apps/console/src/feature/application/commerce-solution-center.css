@@ -1,0 +1,290 @@
+.commerce-solution-overlay { z-index: 150; }
+
+.commercesolutiondialog { position: relative; z-index: 1; display: flex; width: min(1180px, calc(100vw - 32px)); max-height: calc(100vh - 32px); flex-direction: column; overflow: hidden; border: 1px solid #d7e1ee; border-radius: 18px; background: #f7f9fc; box-shadow: 0 28px 80px rgb(7 24 47 / 28%); }
+
+.commercesolutiondialog.is-studio { width: calc(100vw - 24px); height: calc(100vh - 24px); max-height: none; }
+
+.commercesolutionhead,
+.commercestudiohead { display: flex; min-height: 88px; align-items: flex-start; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--vi-line); background: #fff; padding: 17px 22px; }
+
+.commercesolutionhead p,
+.commercestudiohead > div > span { margin: 0 0 4px; color: var(--vi-brand); font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+
+.commercesolutionhead h2,
+.commercestudiohead h2 { margin: 0; color: var(--vi-ink); font-size: 21px; line-height: 28px; letter-spacing: -.02em; }
+
+.commercesolutionhead div > span,
+.commercestudiohead p { display: block; margin: 3px 0 0; color: #6e8097; font-size: 10px; line-height: 17px; }
+
+.commercesolutionhead > button,
+.commercestudioactions > button { width: 44px; height: 44px; flex: 0 0 auto; border: 1px solid var(--vi-line); border-radius: 11px; background: #fff; color: #52677f; font: inherit; font-size: 22px; cursor: pointer; }
+
+.commercesolutionhead > button:hover,
+.commercestudioactions > button:hover { border-color: #b6c8de; background: #f6f9fd; color: var(--vi-ink); }
+
+.commercesolutionbody { display: grid; gap: 16px; overflow: auto; overscroll-behavior: contain; padding: 18px 20px 20px; }
+
+.commercesolutionintro { display: flex; min-height: 66px; align-items: center; gap: 12px; border: 1px solid #ccdaf0; border-radius: 13px; background: linear-gradient(90deg, #f1f6ff, #fff); padding: 11px 14px; }
+
+.commercesolutionintro > span { display: grid; width: 36px; height: 36px; flex: 0 0 auto; border-radius: 10px; background: var(--vi-brand); color: #fff; font-size: 15px; font-weight: 850; place-items: center; box-shadow: 0 6px 14px rgb(31 94 255 / 20%); }
+
+.commercesolutionintro strong { display: block; color: #21364f; font-size: 12px; }
+.commercesolutionintro p { margin: 3px 0 0; color: #667a93; font-size: 10px; line-height: 17px; }
+.commercesolutiongrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+
+.commercesolutioncard { display: grid; min-width: 0; overflow: hidden; border: 1px solid #dbe4ef; border-radius: 15px; background: #fff; box-shadow: 0 2px 5px rgb(7 24 47 / 4%); transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+
+.commercesolutioncard:hover { border-color: #afc3dc; transform: translateY(-2px); box-shadow: 0 16px 30px rgb(7 24 47 / 10%); }
+
+.commercesolutioncard.is-selected { border-color: var(--vi-brand); box-shadow: 0 0 0 3px rgb(31 94 255 / 10%), 0 16px 30px rgb(7 24 47 / 10%); }
+
+.commercesolutionpreview { position: relative; display: block; height: 238px; overflow: hidden; border-bottom: 1px solid #e2e9f2; background: #e9eef6; cursor: pointer; }
+
+.commercesolutionpreview input { position: absolute; z-index: 6; top: 14px; right: 14px; width: 20px; height: 20px; margin: 0; accent-color: var(--vi-brand); }
+
+.commercesolutionpreview:has(input:focus-visible) { outline: 3px solid rgb(31 94 255 / 40%); outline-offset: -3px; }
+
+.commercesolutionordinal,
+.commercesolutionbadge {
+  position: absolute;
+  z-index: 5;
+  top: 12px;
+  border: 1px solid rgb(255 255 255 / 80%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: #36506e;
+  font-size: 8px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgb(7 24 47 / 12%);
+  backdrop-filter: blur(8px);
+}
+
+.commercesolutionordinal { left: 12px; display: grid; width: 28px; height: 24px; place-items: center; }
+.commercesolutionbadge { left: 46px; min-height: 24px; padding: 6px 9px 0; color: var(--vi-brand); }
+
+.commercesolutioncover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  padding: 34px 28px 48px;
+  color: #f7f4ec;
+}
+
+.commercesolutioncover::before,
+.commercesolutioncover::after {
+  position: absolute;
+  content: '';
+  pointer-events: none;
+}
+
+.commercesolutioncover::before {
+  width: 220px;
+  height: 220px;
+  border: 1px solid currentcolor;
+  border-radius: 50%;
+  opacity: .17;
+  right: -86px;
+  top: -84px;
+}
+
+.commercesolutioncover::after {
+  right: 28px;
+  bottom: 50px;
+  left: 28px;
+  height: 1px;
+  background: currentcolor;
+  opacity: .22;
+}
+
+.commercesolutioncoverbrand {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 28px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 12%);
+  font-size: 16px;
+  font-weight: 850;
+  place-items: center;
+}
+
+.commercesolutioncover > small {
+  z-index: 1;
+  margin-bottom: 7px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  opacity: .72;
+}
+
+.commercesolutioncover > strong { z-index: 1; font-size: 27px; line-height: 34px; letter-spacing: -.03em; }
+.commercesolutioncover > i { width: 30px; height: 2px; margin-top: 14px; background: currentcolor; opacity: .75; }
+.commercesolutioncovermeta { position: absolute; z-index: 1; right: 28px; bottom: 58px; left: 28px; display: flex; justify-content: space-between; gap: 12px; }
+.commercesolutioncovermeta b { font-size: 8px; font-weight: 650; opacity: .68; }
+.commercesolutioncard.is-jingxu .commercesolutioncover { background: radial-gradient(circle at 80% 20%, #806eaa, transparent 38%), linear-gradient(145deg, #241d35, #514168); }
+.commercesolutioncard.is-oriental .commercesolutioncover { background: radial-gradient(circle at 20% 20%, #d4d0dc, transparent 32%), linear-gradient(145deg, #777181, #25222b); }
+.commercesolutioncard.is-warm-workshop .commercesolutioncover { background: radial-gradient(circle at 78% 18%, #f6bb6d, transparent 34%), linear-gradient(145deg, #b85128, #5d291d); }
+
+.commercesolutionveil {
+  position: absolute;
+  z-index: 4;
+  inset: auto 0 0;
+  display: flex;
+  height: 48px;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(transparent, rgb(7 24 47 / 78%));
+  padding: 14px 13px 0;
+  color: #fff;
+}
+
+.commercesolutionveil i { display: grid; width: 22px; height: 22px; border-radius: 7px; background: rgb(255 255 255 / 16%); font-size: 10px; font-style: normal; place-items: center; }
+.commercesolutionveil b { font-size: 9px; }
+.commercesolutioncopy { display: grid; align-content: start; gap: 7px; min-height: 188px; padding: 14px 15px 12px; }
+.commercesolutioncopy > small { color: var(--vi-brand); font-size: 8px; font-weight: 800; letter-spacing: .1em; }
+.commercesolutioncopy > div { display: flex; min-height: 22px; align-items: center; justify-content: space-between; gap: 8px; }
+.commercesolutioncopy > div strong { color: #172b45; font-size: 14px; }
+.commercesolutioncopy > div em { flex: 0 0 auto; border-radius: 999px; background: #eaf1ff; padding: 4px 7px; color: var(--vi-brand); font-size: 8px; font-style: normal; font-weight: 800; }
+.commercesolutioncopy > p { min-height: 34px; margin: 0; color: #697c93; font-size: 10px; line-height: 17px; }
+.commercesolutioncopy dl { display: grid; grid-template-columns: 34px 1fr; gap: 6px; margin: 0; border-top: 1px solid #edf1f6; padding-top: 8px; font-size: 9px; line-height: 15px; }
+.commercesolutioncopy dt { color: #93a0b1; }
+.commercesolutioncopy dd { margin: 0; color: #52677f; }
+.commercesolutiondna { display: flex; flex-wrap: wrap; gap: 5px; }
+.commercesolutiondna i { border-radius: 999px; background: #f1f5fa; padding: 4px 7px; color: #65788f; font-size: 8px; font-style: normal; font-weight: 650; }
+
+.commercesolutionactions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid #e7edf4; padding: 11px 12px 12px; }
+.commercesolutionactions button,
+.commercesolutionfooteractions button,
+.commercestudiofooter button,
+.commercestudiostatus button {
+  min-height: 44px;
+  border: 1px solid #c8d6e7;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0 12px;
+  color: #36506f;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.commercesolutionactions button:hover,
+.commercesolutionfooteractions button:hover { border-color: #9db5d1; background: #f7faff; }
+.commercesolutionactions button.is-primary,
+.commercesolutionfooteractions button.is-primary,
+.commercestudiofooter button { border-color: var(--vi-brand); background: var(--vi-brand); color: #fff; }
+.commercesolutionactions button:disabled,
+.commercestudiofooter button:disabled { border-color: #d6deea; background: #edf1f6; color: #7c8ca0; cursor: default; }
+
+.commercesolutionfooter,
+.commercestudiofooter {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--vi-line);
+  background: #fff;
+  padding: 12px 20px;
+}
+
+.commercesolutionfooter > div:first-child,
+.commercestudiofooter > div { display: grid; min-width: 0; gap: 3px; }
+.commercesolutionfooter strong,
+.commercestudiofooter strong { color: #263b55; font-size: 11px; }
+.commercesolutionfooter span,
+.commercestudiofooter span { color: #7d8da1; font-size: 9px; line-height: 15px; }
+.commercesolutionfooteractions { display: flex; flex: 0 0 auto; gap: 8px; }
+.commercesolutionfooteractions button,
+.commercestudiofooter button { flex: 0 0 auto; min-width: 110px; }
+
+.commercestudiohead { min-height: 78px; align-items: center; padding: 12px 16px; }
+.commercestudiohead > div:nth-child(2) { min-width: 0; flex: 1; }
+.commercestudiohead h2 { font-size: 17px; line-height: 23px; }
+.commercestudiohead p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.commercestudioback,
+.commercestudioactions a,
+.commercestudioactions .is-disabled {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c9d6e6;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0 13px;
+  color: #405973;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.commercestudioback { cursor: pointer; }
+.commercestudioback:hover,
+.commercestudioactions a:hover { border-color: #9fb6d0; background: #f5f8fd; color: var(--vi-brand); }
+.commercestudioactions .is-disabled { border-style: dashed; color: #8b99aa; }
+.commercestudioactions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.commercestudioactions > button { width: 44px; }
+
+.commercestudiobody { display: flex; min-height: 0; flex: 1; flex-direction: column; background: #edf2f8; }
+.commercestudiostatus { display: flex; min-height: 36px; align-items: center; gap: 7px; border-bottom: 1px solid #d8e2ee; background: #f8fafd; padding: 0 14px; color: #627790; font-size: 9px; }
+.commercestudiostatus > span { width: 7px; height: 7px; border-radius: 50%; background: #e7a23d; box-shadow: 0 0 0 3px #fff1d8; }
+.commercestudiostatus > span.is-ready { background: #0f9f6e; box-shadow: 0 0 0 3px #dcf7ed; }
+.commercestudiostatus > span.is-slow { background: #d67b16; box-shadow: 0 0 0 3px #fff0d9; }
+.commercestudiostatus b { margin-left: auto; color: #7e8da0; font-size: 8px; }
+.commercestudiostatus button { min-height: 28px; border-radius: 8px; padding: 0 9px; font-size: 9px; }
+.commercestudioframe { min-height: 0; flex: 1; padding: 10px; }
+.commercestudioframe iframe { display: block; width: 100%; height: 100%; border: 1px solid #cedae8; border-radius: 12px; background: #fff; box-shadow: 0 8px 22px rgb(7 24 47 / 9%); }
+.commercestudiofooter { min-height: 68px; padding: 10px 16px; }
+.commercestudiobody.is-unavailable { justify-content: space-between; }
+.commercestudioerror { display: flex; width: min(650px, calc(100% - 32px)); align-items: flex-start; gap: 14px; margin: auto; border: 1px solid #efc987; border-radius: 14px; background: #fffaf0; padding: 20px; color: #6c4b17; }
+.commercestudioerror > span { display: grid; width: 34px; height: 34px; flex: 0 0 auto; border-radius: 10px; background: #f3a323; color: #fff; font-weight: 850; place-items: center; }
+.commercestudioerror strong { display: block; font-size: 13px; }
+.commercestudioerror p { margin: 5px 0 0; color: #846536; font-size: 10px; line-height: 18px; }
+.commercestudioerror code { font-size: 9px; }
+
+.commercesolutiondialog :where(button, a, input):focus-visible {
+  outline: 3px solid rgb(31 94 255 / 32%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1279px) {
+  .commercesolutiongrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .commercestudiohead > div:nth-child(2) p { display: none; }
+}
+
+@media (max-width: 767px) {
+  .commercesolutiondialog,
+  .commercesolutiondialog.is-studio { width: 100vw; height: 100vh; max-height: none; border: 0; border-radius: 0; }
+  .commercesolutionhead { min-height: 82px; padding: 14px 15px; }
+  .commercesolutionhead div > span { max-width: 275px; }
+  .commercesolutionbody { padding: 12px; }
+  .commercesolutionintro { align-items: flex-start; }
+  .commercesolutiongrid { grid-template-columns: 1fr; }
+  .commercesolutionpreview { height: 220px; }
+  .commercesolutioncopy { min-height: 0; }
+  .commercesolutionfooter { position: sticky; bottom: 0; align-items: stretch; flex-direction: column; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .commercesolutionfooteractions { width: 100%; }
+  .commercesolutionfooteractions button { flex: 1; }
+  .commercestudiohead { align-items: stretch; flex-wrap: wrap; }
+  .commercestudiohead > div:nth-child(2) { order: -1; width: calc(100% - 52px); flex: none; }
+  .commercestudioback { flex: 1; }
+  .commercestudioactions a,
+  .commercestudioactions .is-disabled { display: none; }
+  .commercestudiostatus b { display: none; }
+  .commercestudioframe { padding: 0; }
+  .commercestudioframe iframe { border: 0; border-radius: 0; }
+  .commercestudiofooter { align-items: stretch; flex-direction: column; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .commercestudiofooter button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commercesolutioncard { transition: none; }
+  .commercesolutioncard:hover { transform: none; }
+}

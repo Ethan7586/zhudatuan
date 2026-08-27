@@ -1,0 +1,50 @@
+{
+  "name": "@shop/commerce",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@alicloud/credentials": "^2.4.5",
+    "@alicloud/dysmsapi20170525": "^4.6.0",
+    "@alicloud/openapi-client": "^0.4.15",
+    "@alicloud/tea-util": "^1.4.11",
+    "@shop/authz": "1.0.0",
+    "@shop/config": "1.0.0",
+    "@shop/contract": "1.0.0",
+    "@shop/kernel": "1.0.0",
+    "@shop/providercore": "1.0.0",
+    "@shop/providerbook": "1.0.0",
+    "@shop/providercake": "1.0.0",
+    "@shop/providerdirectcharge": "1.0.0",
+    "@shop/providerflower": "1.0.0",
+    "@shop/providerfoodvoucher": "1.0.0",
+    "@shop/providerjdfresh": "1.0.0",
+    "@shop/providerjdproduct": "1.0.0",
+    "@shop/providermeal": "1.0.0",
+    "@shop/providermovie": "1.0.0",
+    "@shop/providerprivate": "1.0.0",
+    "@shop/providertmallmarket": "1.0.0",
+    "@shop/telemetry": "1.0.0",
+    "@shop/wechatpayment": "1.0.0",
+    "@shop/vendorcore": "1.0.0",
+    "pg": "8.16.3",
+    "qrcode-generator": "1.4.4",
+    "redis": "6.2.1"
+  },
+  "scripts": {
+    "build": "npm run typecheck",
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run typecheck",
+    "test": "vitest run --config vitest.config.ts",
+    "test:contract": "vitest run --config vitest.contract.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260724.1",
+    "@shop/testing": "1.0.0",
+    "@types/node": "22.19.19",
+    "@types/pg": "8.15.5",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

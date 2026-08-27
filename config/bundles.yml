@@ -1,0 +1,10 @@
+version: 1
+owner: frontend
+budgets:
+  consoleInitialGzipKb: 95
+  storefrontInitialGzipKb: 110
+  authInitialGzipKb: 90
+  storeInitialGzipKb: 90
+  supplierInitialGzipKb: 90
+  miniappMainKb: 1500
+  lazyFeatureGzipKb: 100

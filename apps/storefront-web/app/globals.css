@@ -1,0 +1,94 @@
+@import '../../../packages/design-system/src/tokens.css';
+@import 'tailwindcss';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--sw-background);
+}
+
+body {
+  margin: 0;
+  background: var(--sw-background);
+  color: var(--sw-text);
+  font-family: var(--sw-font-sans);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/*
+ * Smart Wing consumer Web component standard.
+ * Laptop and 27-inch desktop share one component tree; only density changes.
+ */
+@media (min-width: 1536px) {
+  [data-storefront-web-surface='desktop-1920'] .sw-web-switcher-container {
+    max-width: 1760px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-container {
+    max-width: 1680px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-search {
+    max-width: 680px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-category-sidebar,
+  [data-storefront-web-surface='desktop-1920'] .sw-web-filter-sidebar:not(.is-collapsed) {
+    width: 232px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-account-sidebar {
+    width: 280px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-home-product-grid,
+  [data-storefront-web-surface='desktop-1920'] .sw-web-category-product-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-home-product-media {
+    height: 140px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-category-product-media {
+    height: 150px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-detail-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-detail-media {
+    height: 360px;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-orders-grid {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-orders-sidebar,
+  [data-storefront-web-surface='desktop-1920'] .sw-web-orders-list {
+    grid-column: auto;
+  }
+
+  [data-storefront-web-surface='desktop-1920'] .sw-web-checkout-summary {
+    top: 166px;
+  }
+}
+
+/* The preview switcher wraps below 1280px (including Windows 175%). */
+@media (max-width: 1279px) {
+  [data-storefront-web-standard] .sw-web-header,
+  [data-storefront-web-standard] .sw-web-checkout-summary {
+    position: static;
+  }
+}

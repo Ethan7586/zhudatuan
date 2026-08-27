@@ -1,0 +1,33 @@
+{
+  "name": "@shop/sdk",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "npm run typecheck",
+    "lint": "npm run typecheck",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./commerce": "./src/ClientFactory.ts",
+    "./context": "./src/RequestContextFactory.ts",
+    "./error": "./src/error/index.ts",
+    "./url": "./src/url/index.ts",
+    "./*": "./src/operations/*.ts",
+    "./operations/*": "./src/operations/*.ts"
+  },
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@shop/authz": "1.0.0",
+    "@shop/config": "1.0.0",
+    "@shop/contract": "1.0.0",
+    "@shop/kernel": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

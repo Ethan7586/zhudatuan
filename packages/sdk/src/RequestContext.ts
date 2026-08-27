@@ -1,0 +1,19 @@
+import type { ScopeKind } from '@shop/authz';
+
+export interface RequestScope {
+  readonly kind: ScopeKind;
+  readonly id: string;
+}
+
+export interface RequestContext {
+  readonly clientVersion: string;
+  readonly contractVersion: string;
+  readonly traceId: string;
+  readonly scope?: RequestScope;
+  readonly accessVersion?: number;
+  readonly signal?: AbortSignal;
+  readonly idempotencyKey?: string;
+  readonly expectedVersion?: number;
+  readonly proof?: string;
+  readonly csrfToken?: string;
+}

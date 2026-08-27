@@ -1,0 +1,12 @@
+{
+  "name": "@smart-wing/design-system",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./src/tokens.css",
+    "./tokens.json": "./src/tokens.json",
+    "./mobile-platforms.json": "./src/mobile-platforms.json",
+    "./brand/*": "./src/brand/*"
+  }
+}

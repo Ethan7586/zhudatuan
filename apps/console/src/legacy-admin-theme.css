@@ -1,0 +1,927 @@
+/*
+ * Legacy admin-web visual theme.
+ *
+ * This file intentionally changes presentation only. Route components, data
+ * queries, permissions and mutations continue to come from the current Console.
+ */
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
+  overflow: hidden;
+  background: #f8fafc;
+  color: #334155;
+  font-family: var(--sw-font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] {
+  --legacy-brand: #1f5eff;
+  --legacy-brand-hover: #174ed1;
+  --legacy-ink: #07182f;
+  --legacy-sidebar-top: #10294d;
+  --legacy-surface: #fff;
+  --legacy-canvas: #f8fafc;
+  --legacy-line: rgb(226 232 240 / 90%);
+  --legacy-muted: #64748b;
+  --legacy-success: #15a46b;
+  --legacy-warning: #f59e0b;
+  --legacy-danger: #ef476f;
+  --legacy-card-radius: 14px;
+  --legacy-control-radius: 8px;
+  --legacy-header-height: 56px;
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  grid-template-columns: 220px minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--legacy-canvas);
+  color: #334155;
+  font-size: 13px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'][data-sidebar='collapsed'] {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consoleworkspace {
+  display: flex;
+  min-width: 0;
+  height: 100vh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--legacy-canvas);
+}
+
+/* Sidebar */
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar {
+  position: relative;
+  top: auto;
+  z-index: 40;
+  height: 100vh;
+  border-right: 1px solid rgb(255 255 255 / 10%);
+  background: linear-gradient(180deg, var(--legacy-sidebar-top) 0%, var(--legacy-ink) 100%);
+  color: #cbd5e1;
+  box-shadow: 8px 0 24px rgb(7 24 47 / 10%);
+  user-select: none;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand {
+  height: 72px;
+  min-height: 72px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  padding: 16px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand .swbrand {
+  min-width: 32px;
+  flex-basis: 32px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand .swbrand-mark img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  filter: drop-shadow(0 4px 8px rgb(31 94 255 / 30%));
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandcopy {
+  gap: 2px;
+  margin-top: 0;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandcopy strong {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandcopy small {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebartoggle {
+  top: 21px;
+  right: 8px;
+  width: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  border: 0;
+  border-radius: 6px;
+  opacity: 1;
+  background: transparent;
+  color: #94a3b8;
+  transform: none;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebartoggle:hover {
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavtitle {
+  padding: 0 18px 8px;
+  color: rgb(148 163 184 / 80%);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation {
+  flex: 1;
+  gap: 4px;
+  padding: 0 10px 10px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button {
+  height: 36px;
+  min-height: 36px;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #cbd5e1;
+  padding: 0 9px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button > svg {
+  width: 16px;
+  height: 16px;
+  flex-basis: 16px;
+  color: currentColor;
+  opacity: 0.72;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarlabel {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:hover {
+  background: rgb(255 255 255 / 5%);
+  color: #fff;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[aria-current='page'] {
+  border-color: rgb(31 94 255 / 40%);
+  background: rgb(31 94 255 / 20%);
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(7 24 47 / 14%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[aria-current='page']::before {
+  display: none;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[aria-current='page'] > svg {
+  color: var(--legacy-brand);
+  opacity: 1;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofile {
+  display: flex;
+  min-height: 57px;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(0 0 0 / 20%);
+  padding: 12px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofileavatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #4f46e5);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofilecopy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofilecopy strong,
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofilecopy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofilecopy strong {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofilecopy small {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarbrand {
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebartoggle {
+  top: 68px;
+  right: 19px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarnavtitle,
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarprofilecopy {
+  display: none;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarnavigation {
+  padding: 28px 8px 10px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarprofile {
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+/* Header */
+.consolelayout[data-visual-theme='admin-web-v1'] .consoleheader {
+  position: relative;
+  z-index: 30;
+  display: grid;
+  height: var(--legacy-header-height);
+  min-height: var(--legacy-header-height);
+  grid-template-columns: minmax(200px, 1fr) minmax(256px, 288px) auto;
+  gap: 16px;
+  border-bottom: 1px solid rgb(226 232 240 / 80%);
+  background: #fff;
+  padding: 0 24px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolebreadcrumb {
+  gap: 8px;
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolebreadcrumb > strong {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolebreadcrumb > i {
+  color: #cbd5e1;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consoleheadersummary {
+  min-width: 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger {
+  height: 34px;
+  min-height: 34px;
+  border-color: rgb(226 232 240 / 80%);
+  border-radius: 999px;
+  background: #f1f5f9;
+  padding: 0 8px 0 13px;
+  color: #64748b;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger:hover {
+  border-color: #cbd5e1;
+  background: #eef2f7;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger kbd {
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  padding: 2px 6px;
+  color: #94a3b8;
+  font-size: 10px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consoleactions {
+  gap: 12px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .taskbutton {
+  width: auto;
+  height: 30px;
+  min-height: 30px;
+  gap: 6px;
+  border-color: rgb(245 158 11 / 30%);
+  border-radius: 999px;
+  background: rgb(245 158 11 / 10%);
+  color: #78350f;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .taskbutton span {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--legacy-warning);
+  color: #fff;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .taskbutton span::after {
+  content: '12';
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .languageindicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .languageindicator small {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .iconbutton {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  border-radius: 50%;
+  color: #64748b;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .iconbutton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorprofile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 1px solid #e2e8f0;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .avatarbutton {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border: 1px solid rgb(31 94 255 / 30%);
+  background: rgb(31 94 255 / 10%);
+  color: var(--legacy-brand);
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy strong {
+  max-width: 90px;
+  overflow: hidden;
+  color: #1e293b;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy em {
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--legacy-brand);
+  padding: 1px 5px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy small {
+  max-width: 150px;
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .headerpopup {
+  border-color: #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 18px 45px rgb(15 23 42 / 18%);
+}
+
+/* Scope rail, workspace and footer */
+.consolelayout[data-visual-theme='admin-web-v1'] .scopebar {
+  height: 40px;
+  min-height: 40px;
+  border-bottom-color: rgb(226 232 240 / 80%);
+  padding: 0 24px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .scopecontext select {
+  min-height: 26px;
+  border-radius: 7px;
+  color: #475569;
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .workspacebody {
+  width: min(100%, 1600px);
+  min-height: 0;
+  flex: 1;
+  margin: 0 auto;
+  overflow-y: auto;
+  padding: 24px;
+  scrollbar-gutter: stable;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .workspacebody h1[tabindex='-1']:focus {
+  outline: none;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolefooter {
+  display: flex;
+  height: 36px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid rgb(226 232 240 / 80%);
+  background: #fff;
+  color: #94a3b8;
+  padding: 0 24px;
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--legacy-success);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolefooter code {
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 2px 8px;
+  font-family: var(--sw-font-mono, ui-monospace, monospace);
+  font-size: 11px;
+}
+
+/* Shared legacy surfaces and controls */
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .cockpitcard,
+  .controlcard,
+  .productpage,
+  .orderworkspace,
+  .financeworkspace,
+  .financeprofessionalworkspace > .financetabs
+) {
+  border-color: var(--legacy-line);
+  border-radius: var(--legacy-card-radius);
+  background: var(--legacy-surface);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 7%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  button,
+  input,
+  select
+) {
+  font-family: inherit;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .productaction,
+  .productheroactions button,
+  .producttoolbutton,
+  .productsearchfield,
+  .productselectcontrol,
+  .orderpageactions button,
+  .ordertoolbutton,
+  .ordersearchfield,
+  .orderselectcontrol select,
+  .financepageactions button,
+  .financefilterbutton,
+  .financesearchfield,
+  .financeselect select
+) {
+  border-radius: var(--legacy-control-radius);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .productactionprimary,
+  .productheroactions .productactionprimary,
+  .orderconfirmbutton,
+  .financepageactions .financeprimarybutton,
+  .financedrawerfooter .financesubmitreview
+) {
+  border-color: var(--legacy-brand);
+  background: var(--legacy-brand);
+  color: #fff;
+  box-shadow: 0 4px 10px rgb(31 94 255 / 18%);
+}
+
+/* Cockpit: match the original dark executive dashboard. */
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitstack {
+  gap: 24px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpithero {
+  min-height: 128px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-left-width: 1px;
+  border-radius: var(--legacy-card-radius);
+  background: linear-gradient(100deg, var(--legacy-sidebar-top), var(--legacy-ink));
+  color: #fff;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgb(7 24 47 / 14%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpiteyebrow {
+  display: inline-block;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  background: var(--legacy-brand);
+  color: #fff;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpithero h1 {
+  color: #fff;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitconclusion {
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitperiod {
+  margin-top: 6px;
+  color: #93c5fd;
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitheroicon {
+  width: 120px;
+  height: 86px;
+  stroke: #7ba5ee;
+  opacity: 0.24;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband article,
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband article:first-child {
+  min-height: 104px;
+  border: 1px solid var(--legacy-line);
+  border-radius: var(--legacy-card-radius);
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 7%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband strong {
+  color: var(--legacy-ink);
+  font-size: 24px;
+  line-height: 32px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband small {
+  font-size: 11px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitprimarygrid,
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitsecondarygrid {
+  gap: 20px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitcard h2,
+.consolelayout[data-visual-theme='admin-web-v1'] .controlcard h2 {
+  color: var(--legacy-sidebar-top);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* The control room already used the legacy dark hero; align its geometry. */
+.consolelayout[data-visual-theme='admin-web-v1'] .controlstack {
+  gap: 20px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .controlhero {
+  border-radius: var(--legacy-card-radius);
+  background: linear-gradient(100deg, var(--legacy-sidebar-top), var(--legacy-ink));
+  box-shadow: 0 4px 12px rgb(7 24 47 / 14%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .controlprimarygrid,
+.consolelayout[data-visual-theme='admin-web-v1'] .controlsecondarygrid {
+  gap: 20px;
+}
+
+/* Product, order and finance keep their current behavior and use legacy density. */
+.consolelayout[data-visual-theme='admin-web-v1'] .producthero,
+.consolelayout[data-visual-theme='admin-web-v1'] .orderpageheader,
+.consolelayout[data-visual-theme='admin-web-v1'] .financepageheader {
+  min-height: 128px;
+  padding-inline: 24px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .producthero h1,
+  .orderpageheader h1,
+  .financepageheader h1
+) {
+  color: #0f172a;
+  font-size: 27px;
+  line-height: 36px;
+  letter-spacing: -0.03em;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .producttabs,
+  .orderstatustabs,
+  .financetabs
+) {
+  border-bottom-color: var(--legacy-line);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .producttablecard,
+  .productcontrols,
+  .productpagination
+) {
+  border-color: var(--legacy-line);
+  border-radius: 10px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .producttablewrap th,
+  .ordertable th,
+  .financetable th
+) {
+  background: rgb(241 245 249 / 70%);
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .producttablewrap td,
+  .ordertable td,
+  .financetable td
+) {
+  border-color: var(--legacy-line);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] :where(
+  .producttablewrap tbody tr:hover,
+  .ordertable tbody tr:hover,
+  .financetable tbody tr:hover
+) {
+  background: rgb(239 246 255 / 55%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .producttablewrap th,
+.consolelayout[data-visual-theme='admin-web-v1'] .producttablewrap td {
+  padding-inline: 12px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .producttablewrap td {
+  height: 58px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .financeworkspace {
+  border-radius: var(--legacy-card-radius);
+}
+
+/* Portalled drawers live outside .consolelayout, so they inherit the theme via :has(). */
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
+  .productdraweroverlay,
+  .orderdraweroverlay,
+  .financedraweroverlay
+) {
+  inset: var(--legacy-header-height, 56px) 0 0;
+  background: rgb(15 23 42 / 50%);
+  backdrop-filter: blur(2px);
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
+  .productdrawer,
+  .orderdrawer,
+  .financedrawer
+) {
+  border-left-color: #e2e8f0;
+  background: #fff;
+  box-shadow: -16px 0 42px rgb(15 23 42 / 22%);
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
+  .productdrawerheader,
+  .orderdrawerheader,
+  .financedrawerheader
+) {
+  border-bottom-color: #1e293b;
+  background: #0f172a;
+  color: #fff;
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
+  .productdrawerheader h2,
+  .productdrawerheader strong,
+  .orderdrawerheader h2,
+  .orderdrawerheader strong,
+  .financedrawerheader h2,
+  .financedrawerheader strong
+) {
+  color: #fff;
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
+  .productdrawerheader p,
+  .productdrawerheader small,
+  .orderdrawerheader p,
+  .orderdrawerheader small,
+  .financedrawerheader p,
+  .financedrawerheader small,
+  .financedrawerback
+) {
+  color: #94a3b8;
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
+  .productdrawerclose,
+  .orderdrawerclose,
+  .financedrawerclose
+) {
+  border-radius: 8px;
+  color: #cbd5e1;
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
+  .productdrawerclose:hover,
+  .orderdrawerclose:hover,
+  .financedrawerclose:hover
+) {
+  background: #1e293b;
+  color: #fff;
+}
+
+@media (max-width: 1220px) {
+  .consolelayout[data-visual-theme='admin-web-v1'] .consoleheader {
+    grid-template-columns: minmax(150px, 1fr) minmax(220px, 256px) auto;
+    gap: 10px;
+    padding-inline: 16px;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .consoleheadersummary,
+  .consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy,
+  .consolelayout[data-visual-theme='admin-web-v1'] .languageindicator {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband article:nth-child(n) {
+    border: 1px solid var(--legacy-line);
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .consolelayout[data-visual-theme='admin-web-v1'],
+  .consolelayout[data-visual-theme='admin-web-v1'][data-sidebar='collapsed'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'][data-mobile-nav] .consolesidebar,
+  .consolelayout[data-visual-theme='admin-web-v1'][data-mobile-nav] .consolesidebar.iscollapsed {
+    position: fixed;
+    width: 220px;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .consoleheader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding-inline: 12px;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .workspacebody {
+    padding: 16px 12px;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .consolefooter {
+    padding-inline: 12px;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .consolefooter > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .consolefooter code {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband {
+    grid-template-columns: 1fr;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband article:nth-child(n) {
+    min-height: 92px;
+  }
+
+  .consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consolelayout[data-visual-theme='admin-web-v1'],
+  .consolelayout[data-visual-theme='admin-web-v1'] *,
+  .consolelayout[data-visual-theme='admin-web-v1'] *::before,
+  .consolelayout[data-visual-theme='admin-web-v1'] *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,0 +1,5637 @@
+source: RepositoryAuthority docs/福利商城功能清单260821.xlsx
+workbookSha256: 78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942
+generated: true
+count: 296
+chain:
+  - Requirement
+  - Client
+  - Route
+  - Feature
+  - Operation
+  - Test
+  - Evidence
+requirements:
+  - requirement: PLAT001
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT002
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT003
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT004
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT005
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/pricing
+    operation: pricing.rules.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/pricing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/pricing
+    callees:
+      - sdk:pricing.rules.create
+      - operation:pricing.rules.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT006
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/access
+    operation: access.roles.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/access
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/access
+    callees:
+      - sdk:access.roles.manage
+      - operation:access.roles.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT007
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT008
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/pricing
+    operation: pricing.rules.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/pricing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/pricing
+    callees:
+      - sdk:pricing.rules.create
+      - operation:pricing.rules.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT009
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/access
+    operation: access.roles.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/access
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/access
+    callees:
+      - sdk:access.roles.manage
+      - operation:access.roles.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT010
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT011
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/access
+    operation: access.roles.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/access
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/access
+    callees:
+      - sdk:access.roles.manage
+      - operation:access.roles.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT012
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/capability
+    operation: capability.assignments.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/capability
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/capability
+    callees:
+      - sdk:capability.assignments.manage
+      - operation:capability.assignments.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT013
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/capability
+    operation: capability.assignments.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/capability
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/capability
+    callees:
+      - sdk:capability.assignments.manage
+      - operation:capability.assignments.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT014
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/capability
+    operation: capability.assignments.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/capability
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/capability
+    callees:
+      - sdk:capability.assignments.manage
+      - operation:capability.assignments.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT015
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT016
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT017
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT018
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT019
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT020
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT021
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT022
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT023
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT024
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT025
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT026
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT027
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT028
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT029
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT030
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT031
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT032
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT033
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT034
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT035
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT036
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/pricing
+    operation: pricing.rules.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/pricing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/pricing
+    callees:
+      - sdk:pricing.rules.create
+      - operation:pricing.rules.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT037
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/order
+    operation: order.orders.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT038
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT039
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT040
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT041
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT042
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.read
+      - operation:partner.partners.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT043
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/order
+    operation: order.orders.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT044
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT045
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT046
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: PLAT047
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT048
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT049
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT050
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: PLAT051
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: PLAT052
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT053
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT054
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/support
+    operation: support.cases.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/support
+    callees:
+      - sdk:support.cases.read
+      - operation:support.cases.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT055
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/support
+    operation: support.cases.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: PLAT056
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/capability
+    operation: capability.assignments.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/capability
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/capability
+    callees:
+      - sdk:capability.assignments.manage
+      - operation:capability.assignments.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT057
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/capability
+    operation: capability.assignments.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/capability
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/capability
+    callees:
+      - sdk:capability.assignments.manage
+      - operation:capability.assignments.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT058
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/capability
+    operation: capability.assignments.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/capability
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/capability
+    callees:
+      - sdk:capability.assignments.manage
+      - operation:capability.assignments.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT059
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT060
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/risk
+    operation: risk.policies.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/risk
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/risk
+    callees:
+      - sdk:risk.policies.manage
+      - operation:risk.policies.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT061
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/notification
+    operation: notification.preferences.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/notification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/notification
+    callees:
+      - sdk:notification.preferences.manage
+      - operation:notification.preferences.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT062
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT063
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: PLAT064
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/risk
+    operation: risk.policies.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/risk
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/risk
+    callees:
+      - sdk:risk.policies.manage
+      - operation:risk.policies.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT065
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT066
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT067
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: PLAT068
+    disposition: InScope
+    client: console
+    route: /platform
+    feature: platform/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/platform
+      - platform/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST001
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: DIST002
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: DIST003
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: DIST004
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: DIST005
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/pricing
+    operation: pricing.rules.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/pricing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/pricing
+    callees:
+      - sdk:pricing.rules.create
+      - operation:pricing.rules.create
+    status: Missing
+    evidence: []
+  - requirement: DIST006
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/access
+    operation: access.roles.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/access
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/access
+    callees:
+      - sdk:access.roles.manage
+      - operation:access.roles.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST007
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: DIST008
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: DIST009
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: DIST010
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: DIST011
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: DIST012
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: DIST013
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: DIST014
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST015
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST016
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST017
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: DIST018
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: DIST019
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: DIST020
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: DIST021
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST022
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST023
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST024
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/partner
+    operation: partner.partners.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/partner
+    callees:
+      - sdk:partner.partners.read
+      - operation:partner.partners.read
+    status: Missing
+    evidence: []
+  - requirement: DIST025
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/order
+    operation: order.orders.create
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: DIST026
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST027
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST028
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: DIST029
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST030
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST031
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST032
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: DIST033
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: DIST034
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST035
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST036
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: DIST037
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/risk
+    operation: risk.policies.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/risk
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/risk
+    callees:
+      - sdk:risk.policies.manage
+      - operation:risk.policies.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST038
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST039
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST040
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: DIST041
+    disposition: InScope
+    client: console
+    route: /distributors
+    feature: distribution/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp04_distribution.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/distributors
+      - distribution/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP001
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP002
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/pricing
+    operation: pricing.rules.create
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/pricing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/pricing
+    callees:
+      - sdk:pricing.rules.create
+      - operation:pricing.rules.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP003
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/pricing
+    operation: pricing.rules.create
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/pricing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/pricing
+    callees:
+      - sdk:pricing.rules.create
+      - operation:pricing.rules.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP004
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/catalog
+    operation: catalog.pools.read
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/catalog
+    callees:
+      - sdk:catalog.pools.read
+      - operation:catalog.pools.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP005
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP006
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP007
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: GROUP008
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP009
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/pricing
+    operation: pricing.rules.create
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/pricing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/pricing
+    callees:
+      - sdk:pricing.rules.create
+      - operation:pricing.rules.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP010
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.read
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.read
+      - operation:order.orders.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP011
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP012
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP013
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP014
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP015
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP016
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP017
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP018
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP019
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP020
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP021
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP022
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/voucher
+    operation: voucher.cardlibraries.read
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/voucher
+    callees:
+      - sdk:voucher.cardlibraries.read
+      - operation:voucher.cardlibraries.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP023
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/voucher
+    operation: voucher.cardlibraries.read
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/voucher
+    callees:
+      - sdk:voucher.cardlibraries.read
+      - operation:voucher.cardlibraries.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP024
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/voucher
+    operation: voucher.cardlibraries.read
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/voucher
+    callees:
+      - sdk:voucher.cardlibraries.read
+      - operation:voucher.cardlibraries.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP025
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: GROUP026
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP027
+    disposition: InScope
+    client: console
+    route: /enterprises/current/support
+    feature: enterprise/support
+    operation: support.cases.create
+    test: tests/journeys/mvp12_groupsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/support
+      - enterprise/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP028
+    disposition: InScope
+    client: console
+    route: /enterprises/current/support
+    feature: enterprise/support
+    operation: support.cases.create
+    test: tests/journeys/mvp12_groupsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/support
+      - enterprise/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP029
+    disposition: InScope
+    client: console
+    route: /enterprises/current/support
+    feature: enterprise/support
+    operation: support.cases.create
+    test: tests/journeys/mvp12_groupsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/support
+      - enterprise/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP030
+    disposition: InScope
+    client: console
+    route: /enterprises/current/support
+    feature: enterprise/support
+    operation: support.cases.read
+    test: tests/journeys/mvp12_groupsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/support
+      - enterprise/support
+    callees:
+      - sdk:support.cases.read
+      - operation:support.cases.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP031
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP032
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP033
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: GROUP034
+    disposition: InScope
+    client: console
+    route: /enterprises/current/vouchers
+    feature: enterprise/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp09_groupvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/vouchers
+      - enterprise/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: GROUP035
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP036
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP037
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP038
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: GROUP039
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP040
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: GROUP041
+    disposition: InScope
+    client: console
+    route: /enterprises/current/support
+    feature: enterprise/support
+    operation: support.cases.create
+    test: tests/journeys/mvp12_groupsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/support
+      - enterprise/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP042
+    disposition: InScope
+    client: console
+    route: /enterprises/current/support
+    feature: enterprise/support
+    operation: support.cases.create
+    test: tests/journeys/mvp12_groupsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/support
+      - enterprise/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP043
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: GROUP044
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP045
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP046
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/notification
+    operation: notification.preferences.manage
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/notification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/notification
+    callees:
+      - sdk:notification.preferences.manage
+      - operation:notification.preferences.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP047
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/notification
+    operation: notification.preferences.manage
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/notification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/notification
+    callees:
+      - sdk:notification.preferences.manage
+      - operation:notification.preferences.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP048
+    disposition: InScope
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/notification
+    operation: notification.preferences.manage
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/notification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/notification
+    callees:
+      - sdk:notification.preferences.manage
+      - operation:notification.preferences.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP049
+    disposition: InScope
+    client: console
+    route: /enterprises/current/finance
+    feature: enterprise/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp10_groupfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/finance
+      - enterprise/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP050
+    disposition: InScope
+    client: console
+    route: /enterprises/current/finance
+    feature: enterprise/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp10_groupfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/finance
+      - enterprise/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: GROUP051
+    disposition: InScope
+    client: console
+    route: /enterprises/current/finance
+    feature: enterprise/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp10_groupfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/finance
+      - enterprise/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: GROUP052
+    disposition: InScope
+    client: console
+    route: /enterprises/current/finance
+    feature: enterprise/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp10_groupfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/finance
+      - enterprise/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP053
+    disposition: InScope
+    client: console
+    route: /enterprises/current/finance
+    feature: enterprise/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp10_groupfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/finance
+      - enterprise/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: GROUP054
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP055
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP056
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP057
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP058
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP059
+    disposition: NotRequired
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP060
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP061
+    disposition: InScope
+    client: console
+    route: /enterprises/current/dashboard
+    feature: enterprise/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp05_groupdashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/dashboard
+      - enterprise/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP062
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP063
+    disposition: NotRequired
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: GROUP064
+    disposition: NotRequired
+    client: console
+    route: /enterprises/current/settings
+    feature: enterprise/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp13_groupsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/settings
+      - enterprise/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: GROUP065
+    disposition: InScope
+    client: console
+    route: /enterprises/current/products
+    feature: enterprise/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp07_groupproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/products
+      - enterprise/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: GROUP066
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP067
+    disposition: InScope
+    client: console
+    route: /enterprises/current/orders
+    feature: enterprise/order
+    operation: order.orders.create
+    test: tests/journeys/mvp08_grouporder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/orders
+      - enterprise/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: GROUP068
+    disposition: InScope
+    client: console
+    route: /enterprises/current/support
+    feature: enterprise/support
+    operation: support.cases.create
+    test: tests/journeys/mvp12_groupsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/enterprises/current/support
+      - enterprise/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: MALL001
+    disposition: InScope
+    client: console
+    route: /malls/current/dashboard
+    feature: mall/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp14_malldashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/dashboard
+      - mall/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: MALL002
+    disposition: InScope
+    client: console
+    route: /malls/current/products
+    feature: mall/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp16_mallproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/products
+      - mall/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: MALL003
+    disposition: InScope
+    client: console
+    route: /malls/current/design
+    feature: mall/experience
+    operation: experience.applications.create
+    test: tests/journeys/mvp15_malldesign.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/experience
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/design
+      - mall/experience
+    callees:
+      - sdk:experience.applications.create
+      - operation:experience.applications.create
+    status: Missing
+    evidence: []
+  - requirement: MALL004
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: MALL005
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: MALL006
+    disposition: InScope
+    client: console
+    route: /malls/current/products
+    feature: mall/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp16_mallproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/products
+      - mall/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: MALL007
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: MALL008
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: MALL009
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/voucher
+    operation: voucher.cardlibraries.read
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/voucher
+    callees:
+      - sdk:voucher.cardlibraries.read
+      - operation:voucher.cardlibraries.read
+    status: Missing
+    evidence: []
+  - requirement: MALL010
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/voucher
+    operation: voucher.cardlibraries.read
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/voucher
+    callees:
+      - sdk:voucher.cardlibraries.read
+      - operation:voucher.cardlibraries.read
+    status: Missing
+    evidence: []
+  - requirement: MALL011
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: MALL012
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/marketing
+    operation: marketing.campaigns.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/marketing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/marketing
+    callees:
+      - sdk:marketing.campaigns.read
+      - operation:marketing.campaigns.read
+    status: Missing
+    evidence: []
+  - requirement: MALL013
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/voucher
+    operation: voucher.cardlibraries.create
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/voucher
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/voucher
+    callees:
+      - sdk:voucher.cardlibraries.create
+      - operation:voucher.cardlibraries.create
+    status: Missing
+    evidence: []
+  - requirement: MALL014
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/marketing
+    operation: marketing.campaigns.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/marketing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/marketing
+    callees:
+      - sdk:marketing.campaigns.read
+      - operation:marketing.campaigns.read
+    status: Missing
+    evidence: []
+  - requirement: MALL015
+    disposition: InScope
+    client: console
+    route: /malls/current/products
+    feature: mall/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp16_mallproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/products
+      - mall/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: MALL016
+    disposition: InScope
+    client: console
+    route: /malls/current/products
+    feature: mall/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp16_mallproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/products
+      - mall/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: MALL017
+    disposition: InScope
+    client: console
+    route: /malls/current/products
+    feature: mall/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp16_mallproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/products
+      - mall/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: MALL018
+    disposition: InScope
+    client: console
+    route: /malls/current/orders
+    feature: mall/order
+    operation: order.orders.read
+    test: tests/journeys/mvp17_mallorder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/orders
+      - mall/order
+    callees:
+      - sdk:order.orders.read
+      - operation:order.orders.read
+    status: Missing
+    evidence: []
+  - requirement: MALL019
+    disposition: InScope
+    client: console
+    route: /malls/current/orders
+    feature: mall/order
+    operation: order.orders.create
+    test: tests/journeys/mvp17_mallorder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/orders
+      - mall/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: MALL020
+    disposition: InScope
+    client: console
+    route: /malls/current/finance
+    feature: mall/finance
+    operation: finance.overview.read
+    test: tests/journeys/mvp19_mallfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/finance
+      - mall/finance
+    callees:
+      - sdk:finance.overview.read
+      - operation:finance.overview.read
+    status: Missing
+    evidence: []
+  - requirement: MALL021
+    disposition: InScope
+    client: console
+    route: /malls/current/dashboard
+    feature: mall/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp14_malldashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/dashboard
+      - mall/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: MALL022
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: MALL023
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: MALL024
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: MALL025
+    disposition: InScope
+    client: console
+    route: /malls/current/support
+    feature: mall/support
+    operation: support.cases.create
+    test: tests/journeys/mvp21_mallsupport.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/support
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/support
+      - mall/support
+    callees:
+      - sdk:support.cases.create
+      - operation:support.cases.create
+    status: Missing
+    evidence: []
+  - requirement: MALL026
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/access
+    operation: access.roles.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/access
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/access
+    callees:
+      - sdk:access.roles.manage
+      - operation:access.roles.manage
+    status: Missing
+    evidence: []
+  - requirement: MALL027
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: MALL028
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: MALL029
+    disposition: InScope
+    client: console
+    route: /malls/current/dashboard
+    feature: mall/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp14_malldashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/dashboard
+      - mall/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: MALL030
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/marketing
+    operation: marketing.campaigns.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/marketing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/marketing
+    callees:
+      - sdk:marketing.campaigns.read
+      - operation:marketing.campaigns.read
+    status: Missing
+    evidence: []
+  - requirement: MALL031
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/marketing
+    operation: marketing.campaigns.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/marketing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/marketing
+    callees:
+      - sdk:marketing.campaigns.read
+      - operation:marketing.campaigns.read
+    status: Missing
+    evidence: []
+  - requirement: MALL032
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/marketing
+    operation: marketing.campaigns.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/marketing
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/marketing
+    callees:
+      - sdk:marketing.campaigns.read
+      - operation:marketing.campaigns.read
+    status: Missing
+    evidence: []
+  - requirement: MALL033
+    disposition: InScope
+    client: console
+    route: /malls/current/dashboard
+    feature: mall/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp14_malldashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/dashboard
+      - mall/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: MALL034
+    disposition: InScope
+    client: console
+    route: /malls/current/dashboard
+    feature: mall/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp14_malldashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/dashboard
+      - mall/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: MALL035
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: MALL036
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: MALL037
+    disposition: InScope
+    client: console
+    route: /malls/current/orders
+    feature: mall/order
+    operation: order.orders.create
+    test: tests/journeys/mvp17_mallorder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/orders
+      - mall/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: MALL038
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: MALL039
+    disposition: InScope
+    client: console
+    route: /malls/current/orders
+    feature: mall/order
+    operation: order.orders.create
+    test: tests/journeys/mvp17_mallorder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/orders
+      - mall/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: MALL040
+    disposition: InScope
+    client: console
+    route: /malls/current/finance
+    feature: mall/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp19_mallfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/finance
+      - mall/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: MALL041
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/organization
+    operation: organization.layers.read
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/organization
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/organization
+    callees:
+      - sdk:organization.layers.read
+      - operation:organization.layers.read
+    status: Missing
+    evidence: []
+  - requirement: MALL042
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: MALL043
+    disposition: InScope
+    client: console
+    route: /malls/current/vouchers
+    feature: mall/verification
+    operation: verification.sessions.read
+    test: tests/journeys/mvp18_mallvoucher.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/vouchers
+      - mall/verification
+    callees:
+      - sdk:verification.sessions.read
+      - operation:verification.sessions.read
+    status: Missing
+    evidence: []
+  - requirement: MALL044
+    disposition: InScope
+    client: console
+    route: /malls/current/dashboard
+    feature: mall/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp14_malldashboard.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/dashboard
+      - mall/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: MALL045
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: MALL046
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: MALL047
+    disposition: InScope
+    client: console
+    route: /malls/current/orders
+    feature: mall/order
+    operation: order.orders.create
+    test: tests/journeys/mvp17_mallorder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/orders
+      - mall/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: MALL048
+    disposition: InScope
+    client: console
+    route: /malls/current/orders
+    feature: mall/order
+    operation: order.orders.read
+    test: tests/journeys/mvp17_mallorder.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/orders
+      - mall/order
+    callees:
+      - sdk:order.orders.read
+      - operation:order.orders.read
+    status: Missing
+    evidence: []
+  - requirement: MALL049
+    disposition: InScope
+    client: console
+    route: /malls/current/finance
+    feature: mall/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp19_mallfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/finance
+      - mall/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: MALL050
+    disposition: InScope
+    client: console
+    route: /malls/current/finance
+    feature: mall/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp19_mallfinance.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/finance
+      - mall/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: MALL051
+    disposition: InScope
+    client: console
+    route: /malls/current/products
+    feature: mall/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp16_mallproduct.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/products
+      - mall/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: MALL052
+    disposition: InScope
+    client: console
+    route: /malls/current/settings
+    feature: mall/notification
+    operation: notification.preferences.manage
+    test: tests/journeys/mvp22_mallsetting.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/notification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/malls/current/settings
+      - mall/notification
+    callees:
+      - sdk:notification.preferences.manage
+      - operation:notification.preferences.manage
+    status: Missing
+    evidence: []
+  - requirement: STORE001
+    disposition: InScope
+    client: store
+    route: /stores/current/reporting
+    feature: store/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/reporting
+      - store/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: STORE002
+    disposition: InScope
+    client: store
+    route: /stores/current/partner
+    feature: store/partner
+    operation: partner.partners.read
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/partner
+      - store/partner
+    callees:
+      - sdk:partner.partners.read
+      - operation:partner.partners.read
+    status: Missing
+    evidence: []
+  - requirement: STORE003
+    disposition: InScope
+    client: store
+    route: /stores/current/partner
+    feature: store/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/partner
+      - store/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: STORE004
+    disposition: InScope
+    client: store
+    route: /stores/current/partner
+    feature: store/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/partner
+      - store/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: STORE005
+    disposition: InScope
+    client: store
+    route: /stores/current/catalog
+    feature: store/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/catalog
+      - store/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: STORE006
+    disposition: InScope
+    client: store
+    route: /stores/current/verification
+    feature: store/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/verification
+      - store/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: STORE007
+    disposition: InScope
+    client: store
+    route: /stores/current/reporting
+    feature: store/reporting
+    operation: reporting.exports.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/reporting
+      - store/reporting
+    callees:
+      - sdk:reporting.exports.create
+      - operation:reporting.exports.create
+    status: Missing
+    evidence: []
+  - requirement: STORE008
+    disposition: InScope
+    client: store
+    route: /stores/current/order
+    feature: store/order
+    operation: order.orders.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/order
+      - store/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: STORE009
+    disposition: InScope
+    client: store
+    route: /stores/current/order
+    feature: store/order
+    operation: order.orders.create
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/order
+      - store/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: STORE010
+    disposition: InScope
+    client: store
+    route: /stores/current/verification
+    feature: store/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/verification
+      - store/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: STORE011
+    disposition: InScope
+    client: store
+    route: /stores/current/verification
+    feature: store/verification
+    operation: verification.challenges.issue
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/verification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/verification
+      - store/verification
+    callees:
+      - sdk:verification.challenges.issue
+      - operation:verification.challenges.issue
+    status: Missing
+    evidence: []
+  - requirement: STORE012
+    disposition: InScope
+    client: store
+    route: /stores/current/member
+    feature: store/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/member
+      - store/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: STORE013
+    disposition: InScope
+    client: store
+    route: /stores/current/partner
+    feature: store/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/partner
+      - store/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: STORE014
+    disposition: InScope
+    client: store
+    route: /stores/current/finance
+    feature: store/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/finance
+      - store/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: STORE015
+    disposition: InScope
+    client: store
+    route: /stores/current/finance
+    feature: store/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/finance
+      - store/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: STORE016
+    disposition: InScope
+    client: store
+    route: /stores/current/finance
+    feature: store/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/finance
+      - store/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: STORE017
+    disposition: InScope
+    client: store
+    route: /stores/current/finance
+    feature: store/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/finance
+      - store/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: STORE018
+    disposition: InScope
+    client: store
+    route: /stores/current/risk
+    feature: store/risk
+    operation: risk.policies.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/risk
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/risk
+      - store/risk
+    callees:
+      - sdk:risk.policies.manage
+      - operation:risk.policies.manage
+    status: Missing
+    evidence: []
+  - requirement: STORE019
+    disposition: InScope
+    client: store
+    route: /stores/current/catalog
+    feature: store/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/catalog
+      - store/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: STORE020
+    disposition: InScope
+    client: store
+    route: /stores/current/notification
+    feature: store/notification
+    operation: notification.preferences.manage
+    test: tests/journeys/mvp03_platform.spec.ts
+    files:
+      route: apps/store/src/route/routes.tsx
+      feature: apps/store/src/feature/notification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - store:/stores/current/notification
+      - store/notification
+    callees:
+      - sdk:notification.preferences.manage
+      - operation:notification.preferences.manage
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY001
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/reporting
+    feature: supplier/reporting
+    operation: reporting.dashboard.read
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/reporting
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/reporting
+      - supplier/reporting
+    callees:
+      - sdk:reporting.dashboard.read
+      - operation:reporting.dashboard.read
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY002
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/partner
+    feature: supplier/partner
+    operation: partner.partners.read
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/partner
+      - supplier/partner
+    callees:
+      - sdk:partner.partners.read
+      - operation:partner.partners.read
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY003
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/partner
+    feature: supplier/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/partner
+      - supplier/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY004
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/partner
+    feature: supplier/partner
+    operation: partner.partners.manage
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/partner
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/partner
+      - supplier/partner
+    callees:
+      - sdk:partner.partners.manage
+      - operation:partner.partners.manage
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY005
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/catalog
+    feature: supplier/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/catalog
+      - supplier/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY006
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/order
+    feature: supplier/order
+    operation: order.orders.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/order
+      - supplier/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY007
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/order
+    feature: supplier/order
+    operation: order.orders.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/order
+      - supplier/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY008
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/order
+    feature: supplier/order
+    operation: order.orders.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/order
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/order
+      - supplier/order
+    callees:
+      - sdk:order.orders.create
+      - operation:order.orders.create
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY009
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/member
+    feature: supplier/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/member
+      - supplier/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY010
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/member
+    feature: supplier/member
+    operation: member.addresses.manage
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/member
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/member
+      - supplier/member
+    callees:
+      - sdk:member.addresses.manage
+      - operation:member.addresses.manage
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY011
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/finance
+    feature: supplier/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/finance
+      - supplier/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY012
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/finance
+    feature: supplier/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/finance
+      - supplier/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY013
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/finance
+    feature: supplier/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/finance
+      - supplier/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY014
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/finance
+    feature: supplier/finance
+    operation: finance.statements.export
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/finance
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/finance
+      - supplier/finance
+    callees:
+      - sdk:finance.statements.export
+      - operation:finance.statements.export
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY015
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/risk
+    feature: supplier/risk
+    operation: risk.policies.manage
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/risk
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/risk
+      - supplier/risk
+    callees:
+      - sdk:risk.policies.manage
+      - operation:risk.policies.manage
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY016
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/fulfillment
+    feature: supplier/fulfillment
+    operation: fulfillment.shipments.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/fulfillment
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/fulfillment
+      - supplier/fulfillment
+    callees:
+      - sdk:fulfillment.shipments.create
+      - operation:fulfillment.shipments.create
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY017
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/fulfillment
+    feature: supplier/fulfillment
+    operation: fulfillment.shipments.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/fulfillment
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/fulfillment
+      - supplier/fulfillment
+    callees:
+      - sdk:fulfillment.shipments.create
+      - operation:fulfillment.shipments.create
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY018
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/catalog
+    feature: supplier/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/catalog
+      - supplier/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY019
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/catalog
+    feature: supplier/catalog
+    operation: catalog.pools.attach
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/catalog
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/catalog
+      - supplier/catalog
+    callees:
+      - sdk:catalog.pools.attach
+      - operation:catalog.pools.attach
+    status: Missing
+    evidence: []
+  - requirement: SUPPLY020
+    disposition: InScope
+    client: supplier
+    route: /suppliers/current/notification
+    feature: supplier/notification
+    operation: notification.preferences.manage
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/supplier/src/route/routes.tsx
+      feature: apps/supplier/src/feature/notification
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - supplier:/suppliers/current/notification
+      - supplier/notification
+    callees:
+      - sdk:notification.preferences.manage
+      - operation:notification.preferences.manage
+    status: Missing
+    evidence: []
+  - requirement: CHAIN001
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: CHAIN002
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: CHAIN003
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: CHAIN004
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: CHAIN005
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: CHAIN006
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: CHAIN007
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG001
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG002
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG003
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG004
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG005
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG006
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG007
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG008
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG009
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG010
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG011
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG012
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG013
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG014
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG015
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG016
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG017
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG018
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG019
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []
+  - requirement: INTEG020
+    disposition: InScope
+    client: console
+    route: /channels
+    feature: platform/channel
+    operation: channel.distributors.create
+    test: tests/journeys/mvp23_providers.spec.ts
+    files:
+      route: apps/console/src/route/routes.tsx
+      feature: apps/console/src/feature/channel
+      sdk: packages/sdk/src/operations/CommerceClient.ts
+    callers:
+      - console:/channels
+      - platform/channel
+    callees:
+      - sdk:channel.distributors.create
+      - operation:channel.distributors.create
+    status: Missing
+    evidence: []

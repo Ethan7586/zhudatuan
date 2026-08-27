@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "useUnknownInCatchVariables": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "files": [],
+  "references": [
+    { "path": "apps/auth-web" },
+    { "path": "apps/console" },
+    { "path": "apps/storefront-web" },
+    { "path": "services/commerce" },
+    { "path": "services/commerce-api" },
+    { "path": "packages/api-contract" },
+    { "path": "packages/authz" },
+    { "path": "packages/config" },
+    { "path": "packages/contract" },
+    { "path": "packages/design" },
+    { "path": "packages/kernel" },
+    { "path": "packages/sdk" },
+    { "path": "packages/smart-wing-authz" },
+    { "path": "packages/telemetry" },
+    { "path": "packages/testing" },
+    { "path": "extensions/payment/wechat" }
+  ]
+}

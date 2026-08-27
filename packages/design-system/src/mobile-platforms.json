@@ -1,0 +1,223 @@
+{
+  "version": "1.0.0",
+  "principle": "同一品牌、同一业务、平台原生",
+  "shared": {
+    "navigation": ["首页", "分类", "会员码", "订单", "我的"],
+    "pageHorizontalInset": 16,
+    "cardRadius": 16,
+    "wingCodeValidSeconds": 45,
+    "financialNumbers": "tabular"
+  },
+  "ios": {
+    "unit": "pt",
+    "minimumTouchTarget": 44,
+    "pageHorizontalInset": 16,
+    "wingCodeButtonSize": 56,
+    "wingCodeProtrusion": 12,
+    "behavior": ["尊重系统安全区", "支持动态字体", "保留系统返回手势", "使用原生触感反馈"]
+  },
+  "android": {
+    "unit": "dp",
+    "minimumTouchTarget": 48,
+    "pageHorizontalInset": 16,
+    "wingCodeButtonSize": 64,
+    "wingCodeProtrusion": 16,
+    "behavior": ["Material 3 触控节奏", "系统返回与预测返回", "edge-to-edge 安全区", "使用系统触感反馈"]
+  },
+  "wechatMiniProgram": {
+    "unit": "rpx",
+    "minimumTouchTarget": 88,
+    "pageHorizontalInset": 32,
+    "wingCodeButtonSize": 112,
+    "wingCodeProtrusion": 24,
+    "tabLabelSize": 20,
+    "tabLabelLineHeight": 28,
+    "behavior": ["动态读取胶囊位置", "自定义 tabBar", "适配底部安全区", "返回后台立即刷新会员码"],
+    "tabBarHeight": 136,
+    "tabIconTop": 26,
+    "tabLabelTop": 82,
+    "tabGeometryNote": "VI 冻结圆盘 112rpx 与上浮 24rpx，都不动，圆盘下沿固定 88rpx。中央要浮在整排之上、而不是与两侧齐平，做法是把左右四项上移，不是把中央下移 —— 后者要改冻结的上浮值。左右图标 26–74、文字 82–110；中央圆盘 −24–88、文字 98–126。圆盘下沿比两侧图标低 14rpx，中央文字比两侧低 16rpx，层次由此产生。中央净空 10rpx 是 Ethan 确认过的收紧值。五组文字各自绝对定位，不随档位文字系数漂移。",
+    "tabLabelClearance": 10,
+    "tabCenterLabelTop": 98
+  },
+  "sizeClassPrinciple": "布局跟随屏幕比例缩放，文字保持物理尺寸大致恒定。rpx 会把两者一起缩放，所以文字需要按档位反向补偿。四档同时成立，都是正式移动端 VI，不是主次关系。",
+  "sizeClasses": [
+    {
+      "key": "compact",
+      "label": "紧凑",
+      "minWidthPt": 0,
+      "maxWidthPt": 344,
+      "referenceWidthPt": 320,
+      "devices": "iPhone SE 一代 / 5s、小屏安卓、分屏窗口",
+      "textScale": 1.12,
+      "pageHorizontalInset": 24,
+      "productColumns": 2,
+      "segmentColumns": 2,
+      "partnerVisible": 4.5,
+      "navTitleStyle": "h3",
+      "note": "文字放大 12% 补偿窄屏；边距收窄让出内容宽度；标题降一级避免与胶囊抢位。",
+      "spaceScale": 1,
+      "contentMaxWidthPt": null,
+      "deviceKind": "phone",
+      "categoryColumns": 3
+    },
+    {
+      "key": "standard",
+      "label": "标准",
+      "minWidthPt": 345,
+      "maxWidthPt": 392,
+      "referenceWidthPt": 375,
+      "devices": "iPhone SE2/SE3、13 mini、多数安卓",
+      "textScale": 1,
+      "pageHorizontalInset": 32,
+      "productColumns": 2,
+      "segmentColumns": 2,
+      "partnerVisible": 5,
+      "navTitleStyle": "h2",
+      "note": "设计基线。750rpx = 375pt，所有令牌的原始换算档位。",
+      "spaceScale": 1,
+      "contentMaxWidthPt": null,
+      "deviceKind": "phone",
+      "categoryColumns": 3
+    },
+    {
+      "key": "regular",
+      "label": "常规",
+      "minWidthPt": 393,
+      "maxWidthPt": 428,
+      "referenceWidthPt": 410,
+      "devices": "iPhone 14/15/16、主流大屏安卓",
+      "textScale": 0.94,
+      "pageHorizontalInset": 32,
+      "productColumns": 2,
+      "segmentColumns": 2,
+      "partnerVisible": 5.5,
+      "navTitleStyle": "h2",
+      "note": "文字缩 6%，抵消 rpx 在宽屏上的放大，同时多容纳内容。",
+      "spaceScale": 1,
+      "contentMaxWidthPt": null,
+      "deviceKind": "phone",
+      "categoryColumns": 3
+    },
+    {
+      "key": "large",
+      "label": "宽屏",
+      "minWidthPt": 429,
+      "maxWidthPt": 599,
+      "referenceWidthPt": 440,
+      "devices": "Pro Max、大屏安卓、折叠机内屏",
+      "textScale": 0.9,
+      "pageHorizontalInset": 40,
+      "productColumns": 3,
+      "segmentColumns": 2,
+      "partnerVisible": 6.5,
+      "navTitleStyle": "h2",
+      "note": "边距加宽避免内容摊平；推荐位改三列利用横向空间；文字缩 10% 保持物理尺寸。",
+      "spaceScale": 1,
+      "contentMaxWidthPt": null,
+      "deviceKind": "phone",
+      "categoryColumns": 4
+    },
+    {
+      "key": "tablet",
+      "label": "平板",
+      "minWidthPt": 600,
+      "maxWidthPt": 899,
+      "referenceWidthPt": 768,
+      "devices": "iPad 竖屏、8–11 寸安卓平板、折叠机展开",
+      "deviceKind": "tablet",
+      "textScale": null,
+      "spaceScale": null,
+      "scaleFrom": 375,
+      "contentMaxWidthPt": 600,
+      "pageHorizontalInset": 32,
+      "productColumns": 3,
+      "segmentColumns": 2,
+      "partnerVisible": 7.5,
+      "navTitleStyle": "h2",
+      "note": "两个 scale 由 375/屏宽 在运行时算出，不是固定值。内容列封顶 600pt 居中，两侧留白是有意的，不是没适配。",
+      "categoryColumns": 5
+    },
+    {
+      "key": "tabletWide",
+      "label": "平板宽屏",
+      "minWidthPt": 900,
+      "maxWidthPt": null,
+      "referenceWidthPt": 1024,
+      "devices": "iPad 横屏、12 寸以上平板、桌面端微信",
+      "deviceKind": "tablet",
+      "textScale": null,
+      "spaceScale": null,
+      "scaleFrom": 375,
+      "contentMaxWidthPt": 720,
+      "pageHorizontalInset": 32,
+      "productColumns": 4,
+      "segmentColumns": 2,
+      "partnerVisible": 9,
+      "navTitleStyle": "h2",
+      "note": "内容列封顶 720pt。底栏同样收窄到内容列宽度并居中，否则五个图标会散在一整条 1024pt 上。",
+      "categoryColumns": 6
+    }
+  ],
+  "overflowRules": [
+    {
+      "key": "no-horizontal-scroll",
+      "rule": "页面本身禁止横向滚动。任何横向内容必须自带 scroll-view，不得靠页面溢出实现。"
+    },
+    {
+      "key": "amount-never-truncates",
+      "rule": "金额永不换行、永不省略、永不缩小字号。空间不足时由相邻元素让位。"
+    },
+    {
+      "key": "product-title-two-lines",
+      "rule": "商品标题固定预留两行并夹断，无论实际是一行还是三行 —— 同一行卡片的价格与来源必须落在同一基线。"
+    },
+    {
+      "key": "single-line-clamp",
+      "rule": "分区描述、来源、企业名等辅助文字单行夹断。企业名与部门名同时超长时，先省略部门名，保留企业名。"
+    },
+    {
+      "key": "badge-cap",
+      "rule": "角标数字大于 99 显示「99+」，不得撑宽角标。"
+    },
+    {
+      "key": "nav-title-single-line",
+      "rule": "顶部标题必须单行且不截断。空间不足由 navTitleStyle 降级解决，不得省略号，不得隐藏购物车。"
+    },
+    {
+      "key": "touch-target-floor",
+      "rule": "任何可点区域的最小边不低于 minimumTouchTarget，档位变化不得突破这条下限。"
+    }
+  ],
+  "tabletPrinciple": "rpx 恒等于屏宽的 1/750，平板上一个 rpx 接近 1.4pt，纯 rpx 布局会整体放大到不可用。平板不靠调系数解决，而是：① 内容列定宽居中，② 绝对尺寸（间距/圆角/图标/触控/字号）按 375/屏宽 缩回手机的物理尺寸，③ 列内布局一律容器相对，禁止再出现以 750rpx 为基准的绝对宽度。",
+  "tabletRules": [
+    {
+      "key": "content-column",
+      "rule": "平板上内容列定宽居中，两侧为页面底色。这是有意的留白，不得为了填满而拉伸卡片或放大字号。"
+    },
+    {
+      "key": "tabbar-follows-column",
+      "rule": "底栏宽度跟随内容列并居中，不得铺满整屏。五个图标散在 1024pt 上不成立。"
+    },
+    {
+      "key": "no-750-absolutes",
+      "rule": "列内任何宽度不得以 750rpx 为基准计算。一律用百分比或 flex，否则内容列封顶后必然溢出。"
+    },
+    {
+      "key": "physical-constant",
+      "rule": "图标、字号、触控区、圆角在平板上必须缩回与手机相同的物理尺寸。放大它们不是适配，是失控。"
+    },
+    {
+      "key": "resizable-required",
+      "rule": "app.json 必须 resizable:true，否则 iPad 上只以手机窗口运行，旋转也不会重排。"
+    },
+    {
+      "key": "recompute-on-resize",
+      "rule": "平板可旋转、可分屏，尺寸档必须在 onResize 时重算，不能只在 onLaunch 算一次。"
+    },
+    {
+      "key": "phase-two-layouts",
+      "rule": "真正的平板专属布局（主从分栏、侧边分类）属于后续阶段。当前标准只保证不破版、不失控，不假装已经为平板重新设计过。"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Smart Wing PostgreSQL backup
+
+[Timer]
+OnCalendar=*-*-* 03:20:00 Asia/Shanghai
+RandomizedDelaySec=20m
+Persistent=true
+Unit=smart-wing-postgres-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,16 @@
+# The toolchain (prettier endOfLine:lf, the miniapp packer and the SQL fixtures)
+# requires LF. Without eol=lf a Windows checkout produces CRLF for .ts/.tsx/.md
+# and check:format reports every file as unformatted, which makes the local gate
+# useless and hides real drift.
+* text=auto eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.mjs text eol=lf
+*.css text eol=lf
+*.svg text eol=lf
+*.wxml text eol=lf
+*.wxss text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary

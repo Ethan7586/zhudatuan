@@ -1,0 +1,295 @@
+{
+  "events": [
+    {
+      "module": "identity",
+      "type": "identity.session.created",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "type": "identity.session.revoked",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "type": "identity.challenge.started",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "type": "identity.member.registered",
+      "version": 1
+    },
+    {
+      "module": "access",
+      "type": "access.version.changed",
+      "version": 1
+    },
+    {
+      "module": "catalog",
+      "type": "catalog.listing.published",
+      "version": 1
+    },
+    {
+      "module": "inventory",
+      "type": "inventory.stock.changed",
+      "version": 1
+    },
+    {
+      "module": "inventory",
+      "type": "inventory.stock.reserved",
+      "version": 1
+    },
+    {
+      "module": "experience",
+      "type": "experience.published",
+      "version": 1
+    },
+    {
+      "module": "checkout",
+      "type": "checkout.quote.created",
+      "version": 1
+    },
+    {
+      "module": "checkout",
+      "type": "checkout.quote.confirmed",
+      "version": 1
+    },
+    {
+      "module": "order",
+      "type": "order.placed",
+      "version": 1
+    },
+    {
+      "module": "order",
+      "type": "order.paid",
+      "version": 1
+    },
+    {
+      "module": "order",
+      "type": "order.cancelled",
+      "version": 1
+    },
+    {
+      "module": "payment",
+      "type": "payment.succeeded",
+      "version": 1
+    },
+    {
+      "module": "payment",
+      "type": "payment.refunded",
+      "version": 1
+    },
+    {
+      "module": "payment",
+      "type": "payment.late.detected",
+      "version": 1
+    },
+    {
+      "module": "payment",
+      "type": "payment.attempt.failed",
+      "version": 1
+    },
+    {
+      "module": "payment",
+      "type": "payment.provider.observed",
+      "version": 1
+    },
+    {
+      "module": "payment",
+      "type": "payment.autorefund.requested",
+      "version": 1
+    },
+    {
+      "module": "payment",
+      "type": "payment.recovery.opened",
+      "version": 1
+    },
+    {
+      "module": "fulfillment",
+      "type": "fulfillment.shipped",
+      "version": 1
+    },
+    {
+      "module": "voucher",
+      "type": "voucher.issued",
+      "version": 1
+    },
+    {
+      "module": "voucher",
+      "type": "voucher.issue.failed",
+      "version": 1
+    },
+    {
+      "module": "voucher",
+      "type": "voucher.import.failed",
+      "version": 1
+    },
+    {
+      "module": "voucher",
+      "type": "voucher.status.failed",
+      "version": 1
+    },
+    {
+      "module": "voucher",
+      "type": "voucher.redeemed",
+      "version": 1
+    },
+    {
+      "module": "benefit",
+      "type": "benefit.granted",
+      "version": 1
+    },
+    {
+      "module": "benefit",
+      "type": "benefit.expired",
+      "version": 1
+    },
+    {
+      "module": "benefit",
+      "type": "benefit.expiry.reminded",
+      "version": 1
+    },
+    {
+      "module": "benefit",
+      "type": "benefit.revoked",
+      "version": 1
+    },
+    {
+      "module": "benefit",
+      "type": "benefit.grant.failed",
+      "version": 1
+    },
+    {
+      "module": "benefit",
+      "type": "benefit.revoke.failed",
+      "version": 1
+    },
+    {
+      "module": "benefit",
+      "type": "benefit.expiry.failed",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "finance.entry.posted",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "finance.reconciliation.difference",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "finance.settlement.approved",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "finance.settlement.adjusted",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "finance.period.closed",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "finance.withdrawal.paid",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "finance.withdrawal.uncertain",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "invoice.issued",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "type": "invoice.red.issued",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "type": "support.message.sent",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "type": "support.ticket.assigned",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "type": "support.sla.escalated",
+      "version": 1
+    },
+    {
+      "module": "channel",
+      "type": "channel.sync.completed",
+      "version": 1
+    },
+    {
+      "module": "channel",
+      "type": "channel.webhook.applied",
+      "version": 1
+    },
+    {
+      "module": "channel",
+      "type": "channel.refund.changed",
+      "version": 1
+    },
+    {
+      "module": "notification",
+      "type": "notification.delivered",
+      "version": 1
+    },
+    {
+      "module": "risk",
+      "type": "risk.policy.activated",
+      "version": 1
+    },
+    {
+      "module": "catalog",
+      "type": "catalog.listing.unpublished",
+      "version": 1
+    },
+    {
+      "module": "risk",
+      "type": "risk.case.opened",
+      "version": 1
+    },
+    {
+      "module": "risk",
+      "type": "risk.case.resolved",
+      "version": 1
+    },
+    {
+      "module": "risk",
+      "type": "risk.transaction.blocked",
+      "version": 1
+    },
+    {
+      "module": "extension",
+      "type": "extension.enabled",
+      "version": 1
+    },
+    {
+      "module": "extension",
+      "type": "extension.disabled",
+      "version": 1
+    },
+    {
+      "module": "extension",
+      "type": "extension.degraded",
+      "version": 1
+    }
+  ],
+  "version": 1
+}

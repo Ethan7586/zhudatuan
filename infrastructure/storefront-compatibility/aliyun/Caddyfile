@@ -1,0 +1,55 @@
+{
+  servers {
+    # Only Cloudflare may supply the client address used by the application.
+    # Keep these ranges in sync with https://www.cloudflare.com/ips/.
+    trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+    trusted_proxies_strict
+    client_ip_headers CF-Connecting-IP
+  }
+}
+
+zhudatuan.com, www.zhudatuan.com, hbbtzn.com, www.hbbtzn.com {
+  encode gzip
+
+  # 统一登录是独立前端，只挂载在 /login；员工商城根路径仍由 storefront 提供。
+  @authWeb path /login /login/*
+  handle @authWeb {
+    uri strip_prefix /login
+    reverse_proxy localhost:3010 {
+      header_up X-Real-IP {client_ip}
+    }
+  }
+
+  handle {
+    reverse_proxy localhost:3000 {
+      header_up X-Real-IP {client_ip}
+    }
+  }
+}
+
+console.zhudatuan.com, smart.hbbtzn.com {
+  encode gzip
+
+  # 运营后台页面由 admin-web 服务，但身份、会话与交易 API 必须统一经过
+  # commerce-api，确保后台域签发 __Host-hbbtzn_admin_session 独立 Cookie。
+  @commerceApi path /api/health /api/v1/*
+  handle @commerceApi {
+    reverse_proxy localhost:3000 {
+      header_up X-Real-IP {client_ip}
+    }
+  }
+
+  # AI 请求仍由 admin-api 提供，但服务端会验证独立的后台会话，防止匿名消耗模型额度。
+  @adminAi path /api/ai/*
+  handle @adminAi {
+    reverse_proxy localhost:3001 {
+      header_up X-Real-IP {client_ip}
+    }
+  }
+
+  handle {
+    reverse_proxy localhost:3001 {
+      header_up X-Real-IP {client_ip}
+    }
+  }
+}

@@ -1,0 +1,240 @@
+{
+  "documentType": "codex-security.hardening-analysis",
+  "schemaVersion": "1.0",
+  "analysisId": "membership_hierarchy_20260812",
+  "sourceEvidence": {
+    "kind": "source_collection",
+    "label": "Smart Wing membership authorization source",
+    "collectionSha256": "e62666f787d7b51cd5c14ad8753d811c4c12c87875e16b66b63d64bc39e0bc50",
+    "artifactCount": 5,
+    "targetRevision": "2b39175",
+    "sourceDrift": "present"
+  },
+  "assessment": {
+    "outcome": "opportunities_identified",
+    "summary": "A compatibility organization hierarchy reduces scope-model drift while preserving tenant isolation and rollback."
+  },
+  "constraints": {
+    "profile": "balanced",
+    "changeHorizons": ["incremental", "medium_term"],
+    "nonNegotiables": ["Organization ancestry is loaded by the server from the database.", "Only explicit global hierarchy grants can cross a security tenant.", "Existing flat scope columns remain available during migration."],
+    "assumptions": ["No measured latency or memory budget was supplied."]
+  },
+  "opportunities": [
+    {
+      "opportunityId": "hierarchical-scope-containment",
+      "title": "Centralize hierarchical scope containment",
+      "summary": "Represent organization ancestry once and attach a trusted path to resource authorization facts.",
+      "diagnosis": "Flat resource scope fields and exact matching require engine changes for every new organization level and cannot safely express controlled cross-tenant governance.",
+      "evidence": [
+        { "claimType": "observed", "sourceKind": "source", "evidenceId": "E001", "path": "packages/api-contract/src/index.ts", "claim": "ResourceScope represented each level as a separate optional ID." },
+        { "claimType": "observed", "sourceKind": "source", "evidenceId": "E002", "path": "packages/authz/src/index.ts", "claim": "Authorization used hard tenant equality and exact per-kind matching." },
+        {
+          "claimType": "observed",
+          "sourceKind": "source",
+          "evidenceId": "E004",
+          "path": "database/supabase/migrations/20260812160000_membership_permission_command_center.sql",
+          "claim": "Distributor, brand and store kinds were reserved while delegation remained flat."
+        },
+        {
+          "claimType": "inferred",
+          "sourceKind": "source",
+          "evidenceId": "E005",
+          "path": "services/commerce-api/src/api/membershipContext.ts",
+          "claim": "The existing server-owned resource scope boundary can safely carry database-derived ancestry."
+        }
+      ],
+      "desiredInvariants": [
+        "Every hierarchical match is supported by a database-derived ancestor path.",
+        "Only platform and distributor grants can authorize resources in another security tenant.",
+        "Role permission edits invalidate every active membership that holds the role."
+      ],
+      "proposalPath": "proposals/hierarchical-scope-containment.md",
+      "options": [
+        {
+          "optionId": "flat-scope-expansion",
+          "title": "Continue expanding flat scope fields",
+          "kind": "baseline",
+          "summary": "Add distributor and future IDs to every contract, row projection and matcher.",
+          "diagramPaths": { "before": "diagrams/hierarchical-scope-containment-before.mmd", "after": "diagrams/hierarchical-scope-containment-flat-scope-expansion-after.mmd" },
+          "evidenceCoverage": [{ "evidenceId": "E002", "effect": "mitigates", "tacticalFixRequired": true, "rationale": "Additional cases can serve current levels but preserve structural drift." }],
+          "tradeoffs": [
+            {
+              "dimension": "security",
+              "direction": "improves",
+              "confidence": "medium",
+              "basis": "source-derived",
+              "assessment": "Explicit cases can stay fail closed, but future omissions remain likely.",
+              "validationPlan": "Add cross-tenant tests for every scope kind."
+            },
+            { "dimension": "performance", "direction": "neutral", "confidence": "medium", "basis": "source-derived", "assessment": "Exact comparisons add no database hop.", "validationPlan": "Benchmark authorization decisions." },
+            { "dimension": "memory", "direction": "neutral", "confidence": "high", "basis": "source-derived", "assessment": "Only bounded optional IDs are added.", "validationPlan": "Compare serialized scope size." },
+            {
+              "dimension": "reliability",
+              "direction": "regresses",
+              "confidence": "medium",
+              "basis": "source-derived",
+              "assessment": "More duplicated projections create compatibility drift.",
+              "validationPlan": "Run contract parity tests across every route."
+            },
+            {
+              "dimension": "operability",
+              "direction": "neutral",
+              "confidence": "medium",
+              "basis": "source-derived",
+              "assessment": "No new table appears, but every level requires coordinated releases.",
+              "validationPlan": "Track files changed for the next scope addition."
+            },
+            { "dimension": "migration", "direction": "improves", "confidence": "high", "basis": "source-derived", "assessment": "This is the smallest immediate patch.", "validationPlan": "Exercise existing resource routes." }
+          ],
+          "residualRisks": ["Scope semantics remain distributed across contracts, SQL projections and matchers."],
+          "implementationReadiness": {
+            "affectedComponents": ["packages/api-contract", "packages/authz", "services/commerce-api"],
+            "workPackages": ["Add flat scope fields and tests."],
+            "acceptanceCriteria": ["Every new level has an explicit matcher."],
+            "migrationNotes": [],
+            "rollback": "Revert the new fields and matchers."
+          }
+        },
+        {
+          "optionId": "compatibility-org-closure",
+          "title": "Add a compatibility organization hierarchy",
+          "kind": "structural",
+          "summary": "Add organization nodes and a closure table while keeping legacy resource columns.",
+          "diagramPaths": { "before": "diagrams/hierarchical-scope-containment-before.mmd", "after": "diagrams/hierarchical-scope-containment-compatibility-org-closure-after.mmd" },
+          "evidenceCoverage": [
+            { "evidenceId": "E002", "effect": "addresses", "tacticalFixRequired": true, "rationale": "Ancestor containment becomes data-driven; cross-tenant guard tests remain required." },
+            { "evidenceId": "E004", "effect": "mitigates", "tacticalFixRequired": true, "rationale": "Role-permission invalidation is added while global grant ceremony remains deferred." }
+          ],
+          "tradeoffs": [
+            {
+              "dimension": "security",
+              "direction": "improves",
+              "confidence": "high",
+              "basis": "source-derived",
+              "assessment": "Ancestry comes from one server-owned database boundary and lower scopes cannot cross tenants.",
+              "validationPlan": "Run cross-tenant and malformed-path tests plus SQL assertions."
+            },
+            {
+              "dimension": "performance",
+              "direction": "regresses",
+              "confidence": "medium",
+              "basis": "source-derived",
+              "assessment": "Resource scope RPCs add an indexed closure lookup.",
+              "validationPlan": "Compare p95 scope lookup latency before production enablement."
+            },
+            {
+              "dimension": "memory",
+              "direction": "regresses",
+              "confidence": "low",
+              "basis": "source-derived",
+              "assessment": "Closure rows grow with the number of ancestor-descendant pairs.",
+              "validationPlan": "Measure closure row count and index size on a production-shaped fixture."
+            },
+            {
+              "dimension": "reliability",
+              "direction": "improves",
+              "confidence": "medium",
+              "basis": "source-derived",
+              "assessment": "Legacy flat fields remain a rollback path; hierarchy mutation needs controlled transactions.",
+              "validationPlan": "Test node moves, cycles and rollback to flat-only reads."
+            },
+            {
+              "dimension": "operability",
+              "direction": "regresses",
+              "confidence": "medium",
+              "basis": "source-derived",
+              "assessment": "Operators must monitor hierarchy consistency and closure rebuilds.",
+              "validationPlan": "Add mapping and closure integrity checks to deployment verification."
+            },
+            {
+              "dimension": "migration",
+              "direction": "improves",
+              "confidence": "high",
+              "basis": "source-derived",
+              "assessment": "Backfill is additive and does not remove existing fields or APIs.",
+              "validationPlan": "Execute all migrations against an empty PostgreSQL 17 database and a production-shaped snapshot."
+            }
+          ],
+          "residualRisks": ["Global grant lifecycle is not yet exposed.", "Large hierarchy move performance is unmeasured."],
+          "implementationReadiness": {
+            "affectedComponents": ["database/supabase/migrations", "packages/api-contract", "packages/authz", "services/commerce-api"],
+            "workPackages": ["Backfill hierarchy.", "Attach trusted ancestor paths.", "Propagate role permission invalidation."],
+            "acceptanceCriteria": ["All legacy entities map once.", "Cross-tenant lower grants fail.", "Role permission edits bump affected memberships."],
+            "migrationNotes": ["Keep legacy fields."],
+            "rollback": "Stop returning org_unit_path; the flat matcher remains available."
+          }
+        },
+        {
+          "optionId": "immediate-org-replacement",
+          "title": "Replace legacy scope columns immediately",
+          "kind": "foundational",
+          "summary": "Move all reads and writes to organization IDs in one release.",
+          "diagramPaths": { "before": "diagrams/hierarchical-scope-containment-before.mmd", "after": "diagrams/hierarchical-scope-containment-immediate-org-replacement-after.mmd" },
+          "evidenceCoverage": [{ "evidenceId": "E001", "effect": "addresses", "tacticalFixRequired": true, "rationale": "Flat fields disappear but every current query and write path must migrate atomically." }],
+          "tradeoffs": [
+            {
+              "dimension": "security",
+              "direction": "improves",
+              "confidence": "medium",
+              "basis": "hypothetical",
+              "assessment": "One model reduces ambiguity after a complete cutover.",
+              "validationPlan": "Audit every resource lookup and mutation after conversion."
+            },
+            {
+              "dimension": "performance",
+              "direction": "unknown",
+              "confidence": "low",
+              "basis": "hypothetical",
+              "assessment": "All query plans change and no production-shaped benchmark exists.",
+              "validationPlan": "Benchmark complete catalog, order and admin workloads."
+            },
+            {
+              "dimension": "memory",
+              "direction": "regresses",
+              "confidence": "low",
+              "basis": "analogous",
+              "assessment": "Closure indexes replace some denormalized fields but actual size is unknown.",
+              "validationPlan": "Compare database and application memory on a restored snapshot."
+            },
+            {
+              "dimension": "reliability",
+              "direction": "regresses",
+              "confidence": "high",
+              "basis": "source-derived",
+              "assessment": "A broad atomic cutover removes the tested rollback path.",
+              "validationPlan": "Run a full restore and rollback rehearsal."
+            },
+            {
+              "dimension": "operability",
+              "direction": "regresses",
+              "confidence": "high",
+              "basis": "source-derived",
+              "assessment": "Deployment coordinates every service and database caller.",
+              "validationPlan": "Inventory and stage all callers before cutover."
+            },
+            {
+              "dimension": "migration",
+              "direction": "regresses",
+              "confidence": "high",
+              "basis": "source-derived",
+              "assessment": "Historical data and every RPC require conversion at once.",
+              "validationPlan": "Dry-run against a production copy and reconcile every row."
+            }
+          ],
+          "residualRisks": ["Unknown callers can fail after the irreversible cutover."],
+          "implementationReadiness": {
+            "affectedComponents": ["all database and application scope callers"],
+            "workPackages": ["Replace every scope field and query."],
+            "acceptanceCriteria": ["No legacy scope consumer remains."],
+            "migrationNotes": ["Requires a coordinated maintenance window."],
+            "rollback": "Restore the database and prior application release."
+          }
+        }
+      ],
+      "recommendedOptionId": "compatibility-org-closure",
+      "recommendation": "Use the additive compatibility hierarchy under the current uptime and rollback constraints."
+    }
+  ],
+  "openQuestions": ["Which identities may receive a platform or distributor scope?", "What production-shaped upper bound should closure rebuild time satisfy?"]
+}

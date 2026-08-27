@@ -1,0 +1,9 @@
+version: 1
+requirements:
+  logicalSource: RepositoryAuthority docs/福利商城功能清单260821.xlsx
+  repositoryRelativePath: docs/福利商城功能清单260821.xlsx
+  sha256: 78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942
+  sheets:
+    requirements: 296
+    mvp: 21
+    providers: 20

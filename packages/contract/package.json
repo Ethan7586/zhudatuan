@@ -1,0 +1,30 @@
+{
+  "name": "@shop/contract",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run typecheck",
+    "build": "npm run typecheck",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/ClientSchema.ts",
+    "./error": "./src/ErrorSchema.ts",
+    "./schema": "./src/schema/index.ts",
+    "./version": "./src/ContractIdentity.generated.ts",
+    "./openapi.json": "./openapi.json",
+    "./events.json": "./events.json"
+  },
+  "types": "./src/index.ts",
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

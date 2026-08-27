@@ -1,0 +1,192 @@
+.ordertablewrap {
+  width: 100%;
+  overflow: auto;
+}
+.ordertable {
+  width: 100%;
+  min-width: 70rem;
+  border-collapse: collapse;
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-caption);
+  font-variant-numeric: tabular-nums;
+}
+.ordertable th,
+.ordertable td {
+  height: 4rem;
+  border-bottom: 0.0625rem solid var(--sw-border);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.ordertable th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 2.75rem;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  font-weight: 600;
+}
+.ordertable tbody tr {
+  cursor: pointer;
+}
+.ordertable tbody tr:hover,
+.ordertable tbody tr:focus-visible {
+  background: var(--sw-surface-subtle);
+}
+.ordertable tbody tr.isactive {
+  background: var(--sw-brand-light);
+}
+.ordertable input[type='checkbox'] {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  accent-color: var(--sw-brand);
+}
+.ordercheckcell {
+  width: 2.75rem;
+  text-align: center;
+}
+.orderprimarycell {
+  display: grid;
+  gap: 0.125rem;
+}
+.orderprimarycell strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 600;
+}
+.orderprimarycell > span {
+  color: var(--sw-muted);
+}
+
+.orderproductcell {
+  display: flex;
+  max-width: 15rem;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+.orderproductthumb {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 2.75rem;
+  place-items: center;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  color: var(--sw-brand-dark);
+}
+.orderproductthumb svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+.orderproductcell > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+}
+.orderproductcell strong,
+.orderproductcell small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.orderproductcell strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-caption);
+}
+.orderproductcell small {
+  color: var(--sw-muted);
+}
+
+.orderstatuspill,
+.orderstatustext,
+.ordersla {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+  font-weight: 600;
+}
+.orderstatuspill {
+  border-radius: var(--sw-radius-full);
+  padding: 0.1875rem var(--sw-space-1);
+}
+.orderstatuspill svg,
+.ordersla svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.orderstatustext i {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: var(--sw-radius-full);
+  background: currentColor;
+}
+.orderworkspace .tone-brand,
+.orderdrawer .tone-brand {
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
+}
+.orderworkspace .tone-success,
+.orderdrawer .tone-success {
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+.orderworkspace .tone-warning,
+.orderdrawer .tone-warning {
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+.orderworkspace .tone-danger,
+.orderdrawer .tone-danger {
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+.orderworkspace .tone-muted,
+.orderdrawer .tone-muted {
+  background: var(--sw-surface-subtle);
+  color: var(--sw-muted);
+}
+.orderprimarycell .orderstatustext {
+  background: transparent;
+  padding: 0;
+}
+.ordermutetext {
+  color: var(--sw-muted);
+}
+.ordersla {
+  background: transparent;
+}
+
+.orderrowactions {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+.orderrowactions button {
+  min-height: 2rem;
+  border: 0;
+  background: transparent;
+  color: var(--sw-brand);
+  padding: 0 var(--sw-space-0-5);
+  font-size: var(--sw-font-size-caption);
+}
+.orderrowactions .ordermorebutton {
+  width: 2rem;
+  color: var(--sw-text-secondary);
+  padding: 0;
+}
+.ordermorebutton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 72rem) {
+  .ordertable {
+    min-width: 64rem;
+  }
+  .ordertable th,
+  .ordertable td {
+    padding-inline: var(--sw-space-1);
+  }
+}

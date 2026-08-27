@@ -1,0 +1,22 @@
+{
+  "name": "@shop/kernel",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "build": "npm run typecheck",
+    "lint": "npm run typecheck",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./deadline": "./src/deadline/index.ts"
+  },
+  "types": "./src/index.ts",
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

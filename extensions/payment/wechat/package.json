@@ -1,0 +1,21 @@
+{
+  "name": "@shop/wechatpayment",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "build": "npm run typecheck",
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run typecheck",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@shop/config": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

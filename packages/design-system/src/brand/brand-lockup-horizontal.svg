@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="80" viewBox="0 0 360 80" role="img" aria-labelledby="title desc">
+  <title id="title">智慧翼 Smart Wing</title>
+  <desc id="desc">智慧翼企业福利商城横向品牌组合</desc>
+  <defs>
+    <linearGradient id="smart-wing-blue" x1="9" y1="5" x2="55" y2="59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2B72FF" />
+      <stop offset="0.55" stop-color="#1F5EFF" />
+      <stop offset="1" stop-color="#143A8F" />
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="64" height="64" rx="17" fill="url(#smart-wing-blue)" />
+  <path d="M17.5 25H26.7L34.7 45.7L40 32.7L45.3 45.7L53.3 25H62.5L50.2 56H42.5L40 49.8L37.5 56H29.8L17.5 25Z" fill="#FFFFFF" />
+  <text x="92" y="39" fill="#172033" font-family="Microsoft YaHei, PingFang SC, Noto Sans SC, Arial, sans-serif" font-size="26" font-weight="700">智慧翼</text>
+  <text x="92" y="61" fill="#143A8F" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.2">SMART WING</text>
+  <path d="M220 21V59" stroke="#CBD5E1" />
+  <text x="239" y="39" fill="#475569" font-family="Microsoft YaHei, PingFang SC, Noto Sans SC, Arial, sans-serif" font-size="15" font-weight="600">企业福利商城</text>
+  <text x="239" y="58" fill="#94A3B8" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="600" letter-spacing="0.8">ENTERPRISE BENEFITS</text>
+</svg>

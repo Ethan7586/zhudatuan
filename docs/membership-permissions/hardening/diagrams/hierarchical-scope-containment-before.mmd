@@ -1,0 +1,6 @@
+flowchart LR
+  DB[Business row] --> FLAT[tenantId + enterpriseId + mallId]
+  FLAT --> API[Commerce API]
+  API --> MATCH[Exact scope matcher]
+  MEMBER[Membership bindings] --> MATCH
+  MATCH --> ACTION[Privileged action]
