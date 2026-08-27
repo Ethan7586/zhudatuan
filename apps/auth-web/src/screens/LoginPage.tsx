@@ -19,6 +19,7 @@
 import React, { useState, useEffect } from 'react';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
 import { useMallContext } from '../context/MallContext';
 import { useSmsResendCountdown } from '../hooks/useSmsResendCountdown';
@@ -102,6 +103,23 @@ import { loginWithPassword, getLockoutState, acceptInvitation, changeInitialPass
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
+import { useMallContext } from '../context/MallContext';
+import { Membership, PreAuthContext } from '../types';
+import {
+  loginWithPassword,
+  getLockoutState,
+  changeInitialPassword,
+  registerUsernameMember,
+  buildCredentialLoginAction,
+  requiresAuthoritativeMembershipSelection,
+  resolveAdminLoginOrigin,
+  resolveStorefrontLoginOrigin,
+} from '../services/auth';
+
+type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
@@ -121,6 +139,7 @@ export const LoginPage: React.FC = () => {
   const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
 =======
 
+<<<<<<< HEAD
   // 当前流程阶段: 1 = 账号认证, 2 = 选择会员身份
   const [stage, setStage] = useState<1 | 2>(1);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -129,6 +148,14 @@ export const LoginPage: React.FC = () => {
   // 当前流程阶段: 1 = 账号认证, 2 = 选择会员身份
   const [stage, setStage] = useState<1 | 2>(1);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
+  const [stage, setStage] = useState<1 | 2 | 3>(1);
+  const [activeTab, setActiveTab] = useState<AuthMethod>('password');
+  const [qrLoginChannel, setQrLoginChannel] = useState<'work_weixin' | 'wechat'>('work_weixin');
+  const [ssoDomain, setSsoDomain] = useState('');
+  const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
   // 表单受控字段
   const [identifier, setIdentifier] = useState<string>('');
@@ -332,6 +359,21 @@ export const LoginPage: React.FC = () => {
       setLockoutSeconds(lock.remainingSeconds);
     }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+  };
+
+  const selectAuthMethod = (method: AuthMethod) => {
+    setActiveTab(method);
+    setFormError('');
+    setFieldErrors({});
+  };
+
+  const fillDevelopmentAccount = (account: string) => {
+    if (!import.meta.env.DEV) return;
+    setIdentifier(account);
+    setPassword('');
+    setActiveTab('password');
+    setFormError('');
+    setFieldErrors({});
   };
 
   // 校验第一段表单
@@ -724,8 +766,9 @@ export const LoginPage: React.FC = () => {
       const response = await fetch('/api/v1/auth/security/otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mobile: resetForm.mobile, purpose: 'password_reset' }) });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error?.message || '验证码发送失败');
-      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: payload.debugCode ?? current.code }));
-      setRegistrationNotice(payload.debugCode ? `开发环境验证码：${payload.debugCode}` : '验证码已发送');
+      const developmentCode = import.meta.env.DEV && typeof payload?.debugCode === 'string' ? payload.debugCode : '';
+      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: developmentCode || current.code }));
+      setRegistrationNotice(developmentCode ? `开发环境验证码：${developmentCode}` : '验证码已发送');
     } catch (error: any) {
       setFormError(error.message || '验证码发送失败');
 <<<<<<< HEAD
@@ -889,6 +932,9 @@ export const LoginPage: React.FC = () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   const submitCredentialForm = (targetOrigin: string) => {
     // A top-level form lets the destination host create its own __Host-
     // HttpOnly cookie. Credentials remain in the POST body and never enter the
@@ -909,16 +955,22 @@ export const LoginPage: React.FC = () => {
     form.submit();
   };
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   // 处理 PreAuth 上下文并路由到第2段或自动跳转
   const completeStorefrontLogin = async (membershipId: string) => {
     // Credential discovery never creates a cookie. The final login is the only
     // place that establishes the tracked, revocable HttpOnly device session.
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     let storefrontOrigin: string;
     try {
       const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
@@ -941,10 +993,13 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     const response = await fetch('/api/v1/auth/login', {
       method: 'POST',
       credentials: 'same-origin',
@@ -965,6 +1020,7 @@ export const LoginPage: React.FC = () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     // 商城同源登录页必须离开认证壳，进入已经建立真实会话的商城首页。
 =======
     // 独立登录页必须离开认证壳，进入已经建立真实会话的商城首页。
@@ -972,6 +1028,9 @@ export const LoginPage: React.FC = () => {
 =======
     // 独立登录页必须离开认证壳，进入已经建立真实会话的商城首页。
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    // 商城同源登录页必须离开认证壳，进入已经建立真实会话的商城首页。
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     window.location.replace('/');
   };
 
@@ -981,6 +1040,9 @@ export const LoginPage: React.FC = () => {
     // Credentials are deliberately submitted in the request body, never URL.
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     let adminOrigin: string;
     try {
       const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
@@ -988,6 +1050,7 @@ export const LoginPage: React.FC = () => {
     } catch (error: any) {
       setFormError(error.message || '后台登录目标配置无效');
       return;
+<<<<<<< HEAD
     }
 
     submitCredentialForm(adminOrigin);
@@ -1016,6 +1079,11 @@ export const LoginPage: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    }
+
+    submitCredentialForm(adminOrigin);
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
@@ -1040,6 +1108,7 @@ export const LoginPage: React.FC = () => {
         if (singleMem.requiresStepUp) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           setSelectedMembership(singleMem);
           setStage(3);
 =======
@@ -1050,6 +1119,10 @@ export const LoginPage: React.FC = () => {
           setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
           setStage(1);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          setSelectedMembership(singleMem);
+          setStage(3);
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
         } else {
           completeAdminLogin();
         }
@@ -1059,22 +1132,33 @@ export const LoginPage: React.FC = () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     // 多条身份仍保留确认过的第2段 UI，但当前服务端尚未提供
     // 绑定会话的选择 token，所以任何点击都必须安全失败。
     if (requiresAuthoritativeMembershipSelection(activeMemberships)) {
       setFormError('检测到多个可用身份。服务端身份选择尚未接通，已停止建立会话。');
     }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     // 多条身份或包含复杂状态，进入第2段选择会员关系
     setStage(2);
   };
 
   // 2. 选中并确认某条会员关系
   const handleSelectMembership = async (mem: Membership) => {
+    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
+      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
+      return;
+    }
+
     if (mem.status === 'invited') {
       setFormError(`【${mem.enterpriseName}】的邀请尚待接受，请先确认加入该企业福利计划`);
       return;
@@ -1130,6 +1214,7 @@ export const LoginPage: React.FC = () => {
 =======
     setFormError('');
     if (mem.target === 'admin' && mem.requiresStepUp) {
+<<<<<<< HEAD
       setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
@@ -1137,6 +1222,10 @@ export const LoginPage: React.FC = () => {
     if (mem.target === 'admin' && mem.requiresStepUp) {
       setFormError('该管理身份需要二次验证；正式二次验证尚未接通，当前不开放登录。');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      setSelectedMembership(mem);
+      setStage(3);
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     } else {
       // 嵌入员工商城时，认证页只负责完成身份选择；不在右侧抽屉渲染另一套商城。
       if (mem.target === 'storefront') {
@@ -1152,6 +1241,7 @@ export const LoginPage: React.FC = () => {
   };
 
   // 处理接受邀请按钮
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   const handleAcceptInvite = (e: React.MouseEvent, mem: Membership) => {
@@ -1179,6 +1269,11 @@ export const LoginPage: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const handleAcceptInvite = (e: React.MouseEvent, mem: Membership) => {
+    e.stopPropagation();
+    setFormError(`【${mem.enterpriseName}】的邀请接受服务尚未接通，请联系企业管理员；系统不会在浏览器内模拟授权。`);
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   };
 
   // 返回上一步
@@ -1186,16 +1281,22 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     if (stage === 3) {
       setSelectedMembership(null);
       setStage(2);
     } else if (stage === 2) {
+<<<<<<< HEAD
 =======
     if (stage === 2) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
     if (stage === 2) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
       setStage(1);
     }
   };
@@ -1237,6 +1338,7 @@ export const LoginPage: React.FC = () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     const isSmartDomain = currentDomain === 'console.zhudatuan.com';
 =======
     // 运营后台域优先显示管理身份；保留旧域名兼容。
@@ -1246,6 +1348,9 @@ export const LoginPage: React.FC = () => {
     // 运营后台域优先显示管理身份；保留旧域名兼容。
     const isSmartDomain = currentDomain === 'console.zhudatuan.com' || currentDomain === 'smart.hbbtzn.com';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    const isSmartDomain = currentDomain === 'console.zhudatuan.com';
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
     const renderStorefrontSection = () => (
       <div className="space-y-3 mb-6">
@@ -1439,6 +1544,9 @@ export const LoginPage: React.FC = () => {
   return (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     <div className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : 'min-h-screen bg-slate-50 flex flex-col justify-between'} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}>
       {import.meta.env.DEV && !isStorefrontEmbed && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-300">
@@ -1460,6 +1568,7 @@ export const LoginPage: React.FC = () => {
         </div>
       )}
 
+<<<<<<< HEAD
       {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
       <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
         <div
@@ -1476,6 +1585,13 @@ export const LoginPage: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
+      <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
+        <div
+          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
+        >
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
           {isStorefrontEmbed && (
             <button
               type="button"
@@ -1532,11 +1648,15 @@ export const LoginPage: React.FC = () => {
           {/* 认证卡：桌面端由右向左叠压蓝色底板的 80% 区域 */}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
           <div className={isStorefrontEmbed ? 'relative z-10 w-full p-0' : `relative z-10 p-4 sm:p-6 lg:absolute lg:inset-y-6 lg:right-6 lg:flex lg:items-center lg:p-0 ${stage === 2 ? 'lg:w-[620px]' : 'lg:w-[460px]'}`}>
             <div className="w-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/15 transition-all duration-300">
               {/* 卡片顶部：3003 三段式身份流程 */}
               <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-white via-slate-50 to-blue-50/70 px-6 py-4 sm:px-8">
                 <div className="flex items-center gap-2.5">
+<<<<<<< HEAD
                   {stage > 1 && (
                     <button onClick={handleGoBack} className="mr-0.5 rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-800" aria-label="返回上一阶段">
 =======
@@ -1553,16 +1673,24 @@ export const LoginPage: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+                  {stage > 1 && (
+                    <button onClick={handleGoBack} className="mr-0.5 rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-800" aria-label="返回上一阶段">
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                       <ArrowLeft className="w-4 h-4" />
                     </button>
                   )}
                   {/* 步骤 1 */}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   <div className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage > 1 ? 'bg-blue-100 text-[var(--sw-brand)]' : 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25'}`}>
                     {stage > 1 ? <CheckCircle2 className="h-3.5 w-3.5" /> : '1'}
                   </div>
                   <div className={`h-[2px] w-5 sm:w-7 ${stage >= 2 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
+<<<<<<< HEAD
 
                   {/* 步骤 2 */}
                   <div
@@ -1582,21 +1710,36 @@ export const LoginPage: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                   <div className={`flex items-center justify-center w-6 h-6 rounded-full font-bold text-[10px] ${stage >= 1 ? 'bg-[var(--sw-brand)] text-white shadow-sm' : 'border-2 border-slate-200 text-slate-400'}`}>1</div>
                   <div className={`w-6 sm:w-8 h-[2px] ${stage >= 2 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
                   {/* 步骤 2 */}
                   <div
-                    className={`flex items-center justify-center w-6 h-6 rounded-full font-bold text-[10px] ${stage === 2 ? 'border-2 border-[var(--sw-brand)] text-[var(--sw-brand)] bg-white font-black' : 'border-2 border-slate-200 text-slate-400'}`}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage > 2 ? 'bg-blue-100 text-[var(--sw-brand)]' : stage === 2 ? 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25' : 'border-2 border-slate-200 bg-white text-slate-400'}`}
                   >
+<<<<<<< HEAD
                     2
 <<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+                    {stage > 2 ? <CheckCircle2 className="h-3.5 w-3.5" /> : '2'}
+                  </div>
+                  <div className={`h-[2px] w-5 sm:w-7 ${stage >= 3 ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
+
+                  {/* 步骤 3 */}
+                  <div
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${stage === 3 ? 'bg-[var(--sw-brand)] text-white shadow-md shadow-blue-500/25' : 'border-2 border-slate-200 bg-white text-slate-400'}`}
+                  >
+                    3
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-5 w-5 rounded-md" />
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                   <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
@@ -1613,6 +1756,12 @@ export const LoginPage: React.FC = () => {
                     {stage === 1 && '账号认证'}
                     {stage === 2 && '选择访问身份'}
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+                  <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                    {stage === 1 && '账号认证'}
+                    {stage === 2 && '选择进入方式'}
+                    {stage === 3 && '二次验证'}
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   </span>
                 </div>
               </div>
@@ -1621,6 +1770,7 @@ export const LoginPage: React.FC = () => {
               <div className="p-6 sm:p-8">
                 {/* 阶段标题 */}
                 <div className="mb-6">
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                   <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
@@ -1641,12 +1791,17 @@ export const LoginPage: React.FC = () => {
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                   <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+=======
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                     {stage === 1 && '统一账号认证'}
-                    {stage === 2 && '选择关联会员关系'}
+                    {stage === 2 && '选择你的工作台'}
+                    {stage === 3 && '管理身份二次验证 (Step-Up)'}
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                    {stage === 1 && '使用登录账号或已绑定手机号进入商城'}
-                    {stage === 2 && '检测到您有多个关联账号，请选择需要进入的主体：'}
+                  <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+                    {stage === 1 && '请选择适合您的登录方式与身份核验'}
+                    {stage === 2 && '同一账号，可在福利消费与运营管理之间自由切换。'}
+                    {stage === 3 && '该高权限身份要求正式二次验证；当前服务尚未接通。'}
                   </p>
                 </div>
 
@@ -1676,6 +1831,7 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1793,17 +1949,54 @@ export const LoginPage: React.FC = () => {
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                 {/* 第一段：正式账号密码认证 */}
+=======
+                {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    <div className="rounded-xl bg-slate-100 p-1 text-xs font-medium" aria-label="登录方式">
-                      <div className="rounded-lg bg-white px-3 py-2 text-center font-bold text-[var(--sw-brand)] shadow-sm">账号密码登录</div>
+                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
+                      <button type="button" disabled className="cursor-not-allowed rounded-lg px-1 py-2 text-center text-slate-400 opacity-60" role="tab" aria-selected={false} aria-label="手机验证码登录尚未接通">
+                        验证码（待接入）
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('password')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'password' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'password'}
+                      >
+                        密码登录
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('work_weixin')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'work_weixin'}
+                      >
+                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('sso')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'sso'}
+                      >
+                        企业 SSO
+                      </button>
                     </div>
 
+<<<<<<< HEAD
                     <div id="login-method-panel" aria-live="polite">
 <<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+                    <div id="login-method-panel" role="tabpanel" aria-live="polite">
+                      {activeTab === 'password' && (
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                         <form onSubmit={handleStage1Submit} className="space-y-4">
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-slate-700 flex items-center gap-1">
@@ -1914,11 +2107,13 @@ export const LoginPage: React.FC = () => {
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
                               }}
-                              className="font-semibold text-[var(--sw-brand)] hover:underline"
+                              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-950 bg-slate-950 px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:border-slate-800 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/25 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
                             >
+                              <UserCheck className="h-4 w-4" />
                               新用户注册
                             </button>
                           </div>
+                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建员工商城账号</p>
 
                           <button
                             type="submit"
@@ -1946,6 +2141,9 @@ export const LoginPage: React.FC = () => {
                         </form>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                       )}
 
                       {activeTab === 'work_weixin' && (
@@ -1992,12 +2190,15 @@ export const LoginPage: React.FC = () => {
                           </button>
                         </div>
                       )}
+<<<<<<< HEAD
 =======
 
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                     </div>
 
                     {/* 底部合规与协议勾选 */}
@@ -2049,6 +2250,9 @@ export const LoginPage: React.FC = () => {
                 {stage === 2 && (
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                   <div className="space-y-5">
                     <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-cyan-50 px-4 py-3.5 text-xs text-slate-600">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--sw-brand)] shadow-sm ring-1 ring-blue-100">
@@ -2058,6 +2262,7 @@ export const LoginPage: React.FC = () => {
                         <p className="font-bold text-slate-800">一次登录，按需进入</p>
                         <p className="mt-0.5 leading-relaxed text-slate-500">商城用于福利消费与订单；后台用于运营管理，仅展示你已经获得授权的工作台。</p>
                       </div>
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -2069,6 +2274,8 @@ export const LoginPage: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                     </div>
 
                     {renderMembershipsList()}
@@ -2077,6 +2284,9 @@ export const LoginPage: React.FC = () => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                 {/* 第三段保留 3003 视觉，但正式二次验证未接通时必须关闭 */}
                 {stage === 3 && selectedMembership && (
                   <div className="space-y-5">
@@ -2109,10 +2319,13 @@ export const LoginPage: React.FC = () => {
                     </button>
                   </div>
                 )}
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
               </div>
             </div>
           </div>
@@ -2619,6 +2832,7 @@ export const LoginPage: React.FC = () => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
               <p>本《统一身份与登录服务协议》适用于主打团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
@@ -2638,6 +2852,13 @@ export const LoginPage: React.FC = () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+              <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
+
+              <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
+              <p>
+                1. 本系统由服务端建立可撤销的 Host-only HttpOnly 会话。前端不落地存储密码、永久 Token 或跨域票据。
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
                 <br />
                 2. 涉及高风险管理权限（如资金退款、角色授权、审计查询）的操作，须在正式二次验证服务接通后方可使用。
                 <br />

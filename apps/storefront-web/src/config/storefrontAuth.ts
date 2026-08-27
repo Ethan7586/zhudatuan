@@ -1,6 +1,9 @@
 export const CANONICAL_STOREFRONT_AUTH_ORIGIN = 'https://accounts.zhudatuan.com';
 export const LOCAL_STOREFRONT_AUTH_ORIGIN = 'http://127.0.0.1:3002';
+<<<<<<< HEAD
 export const DEFAULT_STOREFRONT_APPLICATION = 'zdt-l1-verify';
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
 const LOCAL_AUTH_ORIGINS = new Set([LOCAL_STOREFRONT_AUTH_ORIGIN, 'http://localhost:3002']);
 
@@ -9,13 +12,18 @@ const LOCAL_AUTH_ORIGINS = new Set([LOCAL_STOREFRONT_AUTH_ORIGIN, 'http://localh
  * to turn the production storefront into an open redirect.
  */
 export function resolveStorefrontAuthOrigin(candidate: string | undefined, environment: string | undefined): string {
+<<<<<<< HEAD
   if (environment === 'production') {
     return CANONICAL_STOREFRONT_AUTH_ORIGIN;
   }
+=======
+  if (environment === 'production') return CANONICAL_STOREFRONT_AUTH_ORIGIN;
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
   if (candidate === CANONICAL_STOREFRONT_AUTH_ORIGIN || (candidate && LOCAL_AUTH_ORIGINS.has(candidate))) return candidate;
   return LOCAL_STOREFRONT_AUTH_ORIGIN;
 }
 
+<<<<<<< HEAD
 export function storefrontAuthHref(surface: StorefrontSurface = runtimeStorefrontSurface()): string {
   const target = new URL('/', resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV));
   target.searchParams.set('target', 'storefront');
@@ -26,4 +34,9 @@ export function storefrontAuthHref(surface: StorefrontSurface = runtimeStorefron
 function runtimeStorefrontSurface(): StorefrontSurface {
   if (typeof window === 'undefined') return 'web';
   return window.location.hostname === 'h5.zhudatuan.com' || window.location.pathname === '/h5' ? 'h5' : 'web';
+=======
+export function storefrontAuthHref(): string {
+  if (process.env.NODE_ENV === 'production') return `${CANONICAL_STOREFRONT_AUTH_ORIGIN}/`;
+  return `${resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, 'development')}/`;
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 }

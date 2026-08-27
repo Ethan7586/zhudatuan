@@ -30,7 +30,10 @@ describe('showcase host boundary', () => {
   it('fails closed when a production storefront host could enable development authentication', () => {
     expect(isStorefrontRuntimeConfigurationAllowed('zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('www.zhudatuan.com', 'production', 'membership')).toBe(true);
+<<<<<<< HEAD
     expect(isStorefrontRuntimeConfigurationAllowed('h5.zhudatuan.com', 'production', 'membership')).toBe(true);
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
     expect(isStorefrontRuntimeConfigurationAllowed('accounts.zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('console.zhudatuan.com', 'production', 'membership')).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('zhudatuan.com', 'development', 'development')).toBe(false);

@@ -188,7 +188,7 @@ describe('member registration routes', () => {
 });
 
 function post(path: string, body: unknown): Request {
-  return new Request(`https://hbbtzn.com/api/v1/auth/registration${path}`, {
+  return new Request(`https://zhudatuan.com/api/v1/auth/registration${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-real-ip': '203.0.113.9' },
     body: JSON.stringify(body),

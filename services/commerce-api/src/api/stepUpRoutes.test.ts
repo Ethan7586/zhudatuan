@@ -34,7 +34,7 @@ describe('step-up route', () => {
     const fetchRpc = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('true', { status: 200, headers: { 'content-type': 'application/json' } }));
     try {
       const response = await handleStepUp(
-        new Request('https://smart.hbbtzn.com/api/v1/auth/step-up', { method: 'POST', headers: { 'x-real-ip': '203.0.113.12' }, body: JSON.stringify({ password: 'wrong' }) }),
+        new Request('https://console.zhudatuan.com/api/v1/auth/step-up', { method: 'POST', headers: { 'x-real-ip': '203.0.113.12' }, body: JSON.stringify({ password: 'wrong' }) }),
         env,
         authorization,
         'step-wrong'
@@ -50,9 +50,9 @@ describe('step-up route', () => {
   it('issues a fresh host-only admin session after a valid password', async () => {
     const fetchRpc = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('true', { status: 200, headers: { 'content-type': 'application/json' } }));
     try {
-      const response = await handleStepUp(new Request('https://smart.hbbtzn.com/api/v1/auth/step-up', { method: 'POST', body: JSON.stringify({ password: '123456' }) }), env, authorization, 'step-ok');
+      const response = await handleStepUp(new Request('https://console.zhudatuan.com/api/v1/auth/step-up', { method: 'POST', body: JSON.stringify({ password: '123456' }) }), env, authorization, 'step-ok');
       expect(response.status).toBe(200);
-      expect(response.headers.get('set-cookie')).toContain('__Host-hbbtzn_admin_session=');
+      expect(response.headers.get('set-cookie')).toContain('__Host-zhudatuan_admin_session=');
       expect(fetchRpc).toHaveBeenCalledTimes(5);
       await expect(response.json()).resolves.toMatchObject({ verified: true });
     } finally {
@@ -63,7 +63,7 @@ describe('step-up route', () => {
   it('stops before password verification when the shared limiter is blocked', async () => {
     const fetchRpc = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('false', { status: 200, headers: { 'content-type': 'application/json' } }));
     try {
-      const response = await handleStepUp(new Request('https://smart.hbbtzn.com/api/v1/auth/step-up', { method: 'POST', body: JSON.stringify({ password: '123456' }) }), env, authorization, 'step-limited');
+      const response = await handleStepUp(new Request('https://console.zhudatuan.com/api/v1/auth/step-up', { method: 'POST', body: JSON.stringify({ password: '123456' }) }), env, authorization, 'step-limited');
       expect(response.status).toBe(429);
       expect(fetchRpc).toHaveBeenCalledTimes(1);
     } finally {

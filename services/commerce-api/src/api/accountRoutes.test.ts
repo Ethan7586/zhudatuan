@@ -55,7 +55,7 @@ describe('storefront bootstrap member identity', () => {
       vi.fn(async () => new Response(JSON.stringify(responses.shift()), { status: 200, headers: { 'content-type': 'application/json' } }))
     );
 
-    const response = await handleBootstrap(new Request('https://hbbtzn.com/api/v1/bootstrap'), environment, authorization, 'profile-test');
+    const response = await handleBootstrap(new Request('https://zhudatuan.com/api/v1/bootstrap'), environment, authorization, 'profile-test');
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
@@ -70,7 +70,7 @@ describe('storefront bootstrap member identity', () => {
       vi.fn(async () => new Response(JSON.stringify(responses.shift()), { status: 200, headers: { 'content-type': 'application/json' } }))
     );
 
-    const response = await handleBootstrap(new Request('https://hbbtzn.com/api/v1/bootstrap'), environment, authorization, 'missing-profile');
+    const response = await handleBootstrap(new Request('https://zhudatuan.com/api/v1/bootstrap'), environment, authorization, 'missing-profile');
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({ error: { code: 'MEMBER_PROFILE_UNAVAILABLE' } });

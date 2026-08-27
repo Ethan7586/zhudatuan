@@ -26,7 +26,6 @@ export interface Membership {
 }
 
 export interface PreAuthContext {
-  preAuthToken: string;
   phone?: string;
   identifier?: string;
   loginMethod: LoginMethod;
@@ -34,6 +33,7 @@ export interface PreAuthContext {
   memberships: Membership[];
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -58,12 +58,15 @@ export interface StepUpVerifyResult {
   expiresInSeconds: number;
 }
 
+=======
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 export interface LockoutState {
   isLocked: boolean;
   remainingSeconds: number;
   failedAttempts: number;
 }
 
+<<<<<<< HEAD
 export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com' | 'hbbtzn.com' | 'smart.hbbtzn.com';
 
 export type ScreenType = 'login' | 'storefront_home' | 'admin_dashboard' | 'auth_callback' | 'force_password_reset';
@@ -74,19 +77,12 @@ export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
 export interface MallContextType {
   currentDomain: DomainType;
-  setDomain: (domain: DomainType) => void;
-  currentScreen: ScreenType;
-  screenParams: Record<string, any>;
-  navigateTo: (screen: ScreenType, params?: Record<string, any>) => void;
   acceptedTerms: boolean;
   setAcceptedTerms: (accepted: boolean) => void;
-  activeSession: {
-    membership?: Membership;
-    domain?: DomainType;
-    ticket?: string;
-  } | null;
-  setActiveSession: (session: any) => void;
 }

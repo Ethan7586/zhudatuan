@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const sourceRoot = dirname(fileURLToPath(import.meta.url));
-const blockedSegments = ['/mock/', '/services/mallService', '/services/mallState', '/services/mallCatalogCart', '/services/mallOrders'];
+const blockedSegments = ['/mock/', '/services/mallService', '/services/mallState', '/services/mallCatalogCart', '/services/mallOrders', '/screens/', '/components/home/', '/components/security/', '/features/architecture/'];
 
 function resolveSourceImport(importer: string, specifier: string) {
   if (!specifier.startsWith('.')) return null;
@@ -36,12 +36,20 @@ function productionImportGraph(entry: string) {
 
 describe('production storefront data boundary', () => {
   it.each([
-    ['main App', resolve(sourceRoot, 'App.tsx')],
+    ['canonical storefront root', resolve(sourceRoot, 'StorefrontRoot.tsx')],
     ['production route', resolve(sourceRoot, '../app/page.tsx')],
-  ])('cannot reach the local demo catalogue from the %s entry', (_label, entry) => {
+  ])('cannot reach retired or local-demo UI from the %s entry', (_label, entry) => {
     const graph = productionImportGraph(entry);
     const blocked = graph.filter((file) => blockedSegments.some((segment) => file.replaceAll('\\', '/').includes(segment)));
 
     expect(blocked).toEqual([]);
+  });
+
+  it('routes production through the approved storefront component family', () => {
+    const graph = productionImportGraph(resolve(sourceRoot, '../app/page.tsx')).map((file) => file.replaceAll('\\', '/'));
+
+    expect(graph.some((file) => file.endsWith('/src/StorefrontRoot.tsx'))).toBe(true);
+    expect(graph.some((file) => file.endsWith('/src/components/laptop/LaptopFrame.tsx'))).toBe(true);
+    expect(graph.some((file) => file.endsWith('/src/App.tsx'))).toBe(false);
   });
 });

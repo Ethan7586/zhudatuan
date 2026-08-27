@@ -21,7 +21,7 @@ export default defineConfig(() => {
       port: 5173,
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
       /**
-       * In production Caddy reverse-proxies smart.hbbtzn.com/api/* to the commerce
+       * In production Caddy reverse-proxies console.zhudatuan.com/api/* to the commerce
        * runtime. The dev server must do the same or every authenticated request
        * would hit the Vite server itself and fail.
        */

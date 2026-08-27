@@ -7,6 +7,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { Membership } from '../types';
@@ -54,6 +55,9 @@ export function requiresAuthoritativeMembershipSelection(memberships: Membership
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 import { Membership, PreAuthContext, StepUpVerifyResult, LockoutState } from '../types';
+=======
+import { Membership, PreAuthContext, LockoutState } from '../types';
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 
 // 内存中维护的登录失败记录（模拟服务端 Redis / DB 锁定策略）
 interface FailureRecord {
@@ -62,15 +66,61 @@ interface FailureRecord {
 }
 
 const failureMap: Record<string, FailureRecord> = {};
-const stepUpFailureMap: Record<string, FailureRecord> = {};
+export const MAX_LOGIN_FAILURES = 10;
+const CANONICAL_ADMIN_ORIGIN = 'https://console.zhudatuan.com';
+const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
 
 // 模拟审计日志
 const auditLogs: Array<{ timestamp: string; identifier: string; reason: string }> = [];
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string, allowLocalDevelopment: boolean): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(configuredOrigin?.trim() || canonicalOrigin);
+  } catch {
+    throw new Error(`${targetLabel}登录目标配置无效，已停止提交账号凭证`);
+  }
+
+  const isCanonical = parsed.origin === canonicalOrigin;
+  const isLocalDevelopment = allowLocalDevelopment && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
+  if ((!isCanonical && !isLocalDevelopment) || parsed.username || parsed.password) {
+    throw new Error(`${targetLabel}登录目标不在允许清单，已停止提交账号凭证`);
+  }
+
+  return parsed.origin;
+}
+
+export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_ORIGIN, '后台', allowLocalDevelopment);
+}
+
+export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_STOREFRONT_ORIGIN, '商城', allowLocalDevelopment);
+}
+
+export function buildCredentialLoginAction(targetOrigin: string): string {
+  const action = new URL('/api/v1/auth/login', targetOrigin);
+  action.searchParams.set('redirect', '/');
+  return action.toString();
+}
+
+/**
+ * Credential discovery currently returns one authoritative authorization.
+ * Multiple usable memberships require a server-bound selection token; until
+ * that contract exists the UI may display them, but it must not choose one in
+ * the browser and silently create a session for another membership.
+ */
+export function requiresAuthoritativeMembershipSelection(memberships: Membership[]): boolean {
+  return memberships.filter((membership) => membership.status === 'active' || membership.status === 'invited').length > 1;
+}
+
+>>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
 // 模拟不同场景的预设会员关系数据集
 const MOCK_MEMBERSHIPS_MAP: Record<string, Membership[]> = {
   // 13800138000: 综合多身份账号（混合员工与管理身份）
@@ -353,7 +403,7 @@ export function getLockoutState(identifier: string): LockoutState {
   }
 
   // 锁定时间已过，重置状态
-  if (record.attempts >= 5 && record.lockedUntil <= now) {
+  if (record.attempts >= MAX_LOGIN_FAILURES && record.lockedUntil <= now) {
     delete failureMap[identifier];
   }
 
@@ -379,10 +429,10 @@ export async function reportLoginFailure(identifier: string, reason: string): Pr
     failureMap[identifier].attempts += 1;
   }
 
-  // 连续失败5次，锁定15分钟 (15 * 60 * 1000 ms)
-  if (failureMap[identifier].attempts >= 5) {
+  // 与服务端数据库策略一致：连续失败10次，锁定15分钟。
+  if (failureMap[identifier].attempts >= MAX_LOGIN_FAILURES) {
     failureMap[identifier].lockedUntil = Date.now() + 15 * 60 * 1000;
-    console.error(`[SECURITY ALERT] Identifier "${identifier}" locked for 15 minutes due to 5 consecutive failures.`);
+    console.error(`[SECURITY ALERT] Identifier "${identifier}" locked for 15 minutes due to ${MAX_LOGIN_FAILURES} consecutive failures.`);
   }
 }
 
@@ -454,7 +504,6 @@ export async function loginWithPassword(identifier: string, password: string): P
   if (typeof membershipId !== 'string' || (target !== 'storefront' && target !== 'admin')) throw new Error('会员身份未正确建立');
   delete failureMap[cleanId];
   return {
-    preAuthToken: `PAT_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
     identifier: cleanId,
     loginMethod: 'password',
     requiresPasswordReset: payload.requiresPasswordReset === true,
@@ -538,77 +587,13 @@ export async function registerUsernameMember(input: {
 /**
  * 4. 接受邀请 API
  */
-export async function acceptInvitation(preAuthToken: string, membershipId: string): Promise<Membership[]> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  // 模拟将 invited 改为 active
-  return [];
+export async function acceptInvitation(_preAuthToken?: string, _membershipId?: string): Promise<never> {
+  throw new Error('邀请接受服务尚未接通；浏览器不会模拟授权成功');
 }
 
 /**
  * 5. Step-Up 动态二次验证 (TOTP 6位)
  */
-export async function verifyStepUp(preAuthToken: string, membershipId: string, totpCode: string): Promise<StepUpVerifyResult> {
-  const cleanCode = totpCode.trim();
-
-  if (!/^\d{6}$/.test(cleanCode)) {
-    throw new Error('请输入6位数字动态口令');
-  }
-
-  await new Promise((resolve) => setTimeout(resolve, 700));
-
-  // 测试环境只接受明确公布的动态口令，不接受任意六位数。
-  if (cleanCode !== '123456') {
-    // 独立计数与独立审计
-    const auditKey = `stepup_${preAuthToken}`;
-    if (!stepUpFailureMap[auditKey]) {
-      stepUpFailureMap[auditKey] = { attempts: 1, lockedUntil: 0 };
-    } else {
-      stepUpFailureMap[auditKey].attempts += 1;
-    }
-    await reportLoginFailure(preAuthToken, `Step-Up 二次验证失败 (${membershipId})`);
-    // 安全红线：不退回也不透露身份存在性
-    throw new Error('二次验证失败：动态口令错误或已过期');
-  }
-
-  // 产生一次性高权限票据 Ticket
-  const ticket = `TICKET_SMART_${Date.now()}_${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-
-  return {
-    ticket,
-    targetDomain: 'smart.hbbtzn.com',
-    redirectUrl: `https://smart.hbbtzn.com/auth/callback?ticket=${ticket}`,
-    expiresInSeconds: 60,
-  };
-}
-
-/**
- * 6. 一次性票据兑换（运营后台 smart.hbbtzn.com 回调处理）
- */
-export async function exchangeTicket(ticket: string): Promise<{ success: boolean; sessionInfo: any }> {
-  await new Promise((resolve) => setTimeout(resolve, 600));
-
-  if (!ticket || !ticket.startsWith('TICKET_SMART_')) {
-    throw new Error('票据无效或已过期，请重新进行统一登录');
-  }
-
-  return {
-    success: true,
-    sessionInfo: {
-      userId: 'usr_admin_001',
-      role: 'EnterpriseAdmin',
-      domain: 'smart.hbbtzn.com',
-      issuedAt: new Date().toISOString(),
-    },
-  };
-}
-
-/**
- * 7. 修改密码预留接口
- */
-export async function updatePassword(preAuthToken: string, oldPw: string, newPw: string): Promise<boolean> {
-  await new Promise((resolve) => setTimeout(resolve, 600));
-  if (newPw.length < 8) {
-    throw new Error('新密码长度不能少于8位');
-  }
-  return true;
+export async function verifyStepUp(_preAuthToken?: string, _membershipId?: string, _totpCode?: string): Promise<never> {
+  throw new Error('正式二次验证服务尚未接通；系统不会接受固定口令或签发浏览器票据');
 }
