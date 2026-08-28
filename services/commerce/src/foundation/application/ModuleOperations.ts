@@ -29,14 +29,11 @@ const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, reado
   'identity.tickets.exchange': Object.freeze([]),
   'identity.challenges.create': Object.freeze(['purpose']),
   'identity.invitations.read': Object.freeze([]),
-  'identity.invitations.create': Object.freeze(['label', 'targetClient', 'maxUses', 'expiresAt', 'storefrontOrganization']),
-  'identity.invitations.revoke': Object.freeze([]),
   'identity.members.create': Object.freeze(['termsAccepted', 'termsHash']),
   'identity.members.manage': Object.freeze(['action', 'status', 'departmentId']),
   'identity.password.change': Object.freeze([]),
   'identity.password.verify': Object.freeze([]),
   'identity.password.reset': Object.freeze([]),
-  'identity.mobile.challenge': Object.freeze([]),
   'identity.mobile.manage': Object.freeze([]),
   'identity.stepup.start': Object.freeze([]),
   'identity.stepup.complete': Object.freeze([]),
@@ -45,9 +42,6 @@ const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, reado
 });
 
 const IDENTITY_AUDIT_OUTPUT_FIELDS: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
-  'access.ownership.transfers.preview': Object.freeze(['proof']),
-  'access.ownership.transfers.accept.preview': Object.freeze(['proof']),
-  'access.ownership.transfers.cancel.preview': Object.freeze(['proof']),
   'identity.invitations.create': Object.freeze(['code']),
   'identity.tickets.exchange': Object.freeze(['proof']),
 });
@@ -249,7 +243,8 @@ function idempotencyBody(request: OperationRequest): unknown {
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
 
 function idempotencyReplayResponse(request: OperationRequest, result: OperationResult): OperationResult {
-  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange') {
+  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange'
+    || request.type === 'identity.invitations.create') {
     return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME' } };
   }
   return result;
