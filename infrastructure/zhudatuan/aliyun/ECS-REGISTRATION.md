@@ -20,7 +20,7 @@
 2. 建立獨立資料目錄、專用 `zhudatuan` 系統帳號及 0600 私密配置。
 3. 由 `zhudatuan-registration-database.service` 啟動 `registration-compose.yml` 的單一 PostgreSQL，只接受 `127.0.0.1:55432`。
 4. 啟動 `zhudatuan-internal-runtime.service`；它只執行已 bundle 的 `InternalRuntimeMain.js`，Secret Store 與 KMS 兩個 readiness 全部成功後才成為 active。
-5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。Migration inventory、registration-only transform ledger、`20260828170000` 註冊基線、`20260828173000` WebBusiness access 與 `20260828180000` Purchase target 任一失敗即停止。
+5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。Migration inventory、registration-only transform ledger、`20260828170000` 註冊基線、`20260828173000` WebBusiness access、`20260828180000` Purchase schema 與 `20260828183000` runtime readiness repair 任一失敗即停止。Purchase E2E receipt 仍固定驗證 `20260828180000`，不得與 migration runner 的最終 head 混用。
 6. 啟動 `zhudatuan-api.service`、`zhudatuan-web-api.service`、`zhudatuan-purchase-api.service` 與 `zhudatuan-identity-notification-jobs.service`。四者分別只能執行 `IdentityRegistrationApiMain.js`、`WebBusinessApiMain.js`、`PurchaseApiMain.js` 與 `IdentityNotificationJobsOnlyMain.js`；profile、loopback host 與 port 均由 systemd 固定，不接受 env 降級。
 7. 在不公開網域的情況下完成邀請、真短信 BizId、OTP、建立會員、重複手機 409、Console scope 載入、Storefront 商品／購物車／訂單讀取、三條 Purchase command 及審計驗收。WebBusiness 驗收不得載入 Finance、Payment Provider 或舊 Commerce API；Purchase 驗收不得暴露 refund、webhook、recovery 或管理操作。
 8. 只有全部通過後才新增 Cloudflare DNS、安裝並驗證本目錄 Caddyfile；`api.zhudatuan.com` 的 Identity／health 路徑指向 4321，精確 WebBusiness allowlist 指向 4322，精確 Purchase POST allowlist 與同路徑 OPTIONS preflight 指向 4323，其他路徑維持 404。

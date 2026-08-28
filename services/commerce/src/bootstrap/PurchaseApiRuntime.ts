@@ -170,7 +170,7 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
       and has_column_privilege(current_user,'inventory.stockitem','onhand','UPDATE')
       and has_column_privilege(current_user,'inventory.stockitem','version','UPDATE')
       and has_column_privilege(current_user,'inventory.stockitem','updated_at','UPDATE')
-      and not has_column_privilege(current_user,'inventory.stockitem','mall_id','UPDATE')
+      and not has_column_privilege(current_user,'inventory.stockitem','scope_id','UPDATE')
       and has_table_privilege(current_user,'inventory.reservation','INSERT')
       and not has_table_privilege(current_user,'inventory.reservation','UPDATE')
       and has_column_privilege(current_user,'inventory.reservation','state','UPDATE')
