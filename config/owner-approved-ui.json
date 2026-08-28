@@ -30,7 +30,7 @@
     ],
     "requiredValidation": ["caddy validate --adapter caddyfile", "multi-membership discovery returns 409 without Set-Cookie"],
     "lockedFiles": {
-      "infrastructure/zhudatuan/aliyun/Caddyfile": "26d1cb3fb76ba6aa665e2573b3e4260aa585aaba30521f76996bace517aed8ee",
+      "infrastructure/zhudatuan/aliyun/Caddyfile": "a0cc43278e45c775400a45b9bef062757ae6878c5850c1375836150f667fee1e",
       "infrastructure/zhudatuan/aliyun/delivery.yml": "1ac5a2173224afc1d769ef1dbd2187d57f4253e45829cb9d75d8c503354d95f4",
       "infrastructure/zhudatuan/aliyun/ecosystem.config.cjs": "d8a8584d01dd6f69229c6d9e41672543267af7f91f5d3e82db806c2a1fb3fa52"
     }
@@ -116,7 +116,23 @@
         "apps/console/src/components/Sidebar.tsx": "5052da5087da512e5c4ecf14869f94bedb87c1e7cc100d523402c1ccb1d2fe96",
         "apps/console/src/feature/cockpit/CockpitRoute.tsx": "9a0699f178f45ebd21c6130bb3d9dffd872a907cde2f01c75cea13770b6147e6",
         "apps/console/src/smart-wing-vi.css": "847cdcf3dbbedd6b7a7cf7f7bbe1a8cc1ae08682ab4963fd8989f9da26a8495e",
-        "apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084"
+        "apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084",
+        "apps/console/public/demo/index.html": "b89bb6134f363f4e1cbb34d2a82f5622a0fdb4c8fbf8e90743b536814623de60",
+        "apps/console/public/demo/variants.css": "c3b1889c002bdf81b9b5562803c4d21be32ee4a5c8658f3743c3e7324ba85c04",
+        "apps/console/public/demo/variants.html": "8ea4c7cb15dddba8981768f4fdc29197fc2b93b9f017890f6565e087c44eca09",
+        "apps/console/public/demo/variants.js": "0a5ada95c79fd1b076ff29049beaf319a5919d782382652d786979511e3b2e4d",
+        "apps/console/public/design-references/admin/first-design/.thumbnail": "9c0544381244360a31962c065618bf204018dfc216b7bb6d293a8b5b81a5cd37",
+        "apps/console/public/design-references/admin/first-design/_ds/nocturne-e988e8c4-aa78-44b6-8271-bee3c9ef8a68/_adherence.oxlintrc.json": "06186bb46f06c0fa5afd27543508082248de52d249988265ce294511a684923d",
+        "apps/console/public/design-references/admin/first-design/_ds/nocturne-e988e8c4-aa78-44b6-8271-bee3c9ef8a68/_ds_bundle.js": "aceb66bfea8c86f6ebf519525c4669e2d6bda22791fdf24db8f2cff09deabfb0",
+        "apps/console/public/design-references/admin/first-design/_ds/nocturne-e988e8c4-aa78-44b6-8271-bee3c9ef8a68/_ds_manifest.json": "232f36fe241f1d1dba230d5c82f4dc02baeb28ffae6172db00d0a952d909da4c",
+        "apps/console/public/design-references/admin/first-design/_ds/nocturne-e988e8c4-aa78-44b6-8271-bee3c9ef8a68/readme.md": "dcc4460813d2feb7cc696c1a6f881626137537c96dd57a504cca7de330fc7499",
+        "apps/console/public/design-references/admin/first-design/_ds/nocturne-e988e8c4-aa78-44b6-8271-bee3c9ef8a68/styles.css": "6fea354710ec4e3b2b979b723ed37d8e8959bb7d9137425d0d562b4ad8733cda",
+        "apps/console/public/design-references/admin/first-design/assets/smart-wing-brand-mark.svg": "f5ffd1f09616c60b1d3fe4254ae1c68558149fd999a626e8c0eda5179b69309e",
+        "apps/console/public/design-references/admin/first-design/index.html": "e045036a9a2e7856f47964c59b4d1c4014be667fa6b0f338b33db3d64bb7ea49",
+        "apps/console/public/design-references/admin/first-design/support.js": "8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe",
+        "apps/console/public/design-references/admin/kaidian/dist/assets/index-D8hfjiOE.css": "8de6ba859b4be8ac1920583ef0ab259295ea46538f11a17d2901d8a51814243d",
+        "apps/console/public/design-references/admin/kaidian/dist/assets/index-Dq9Y9kxY.js": "56be3fc0c01e4dad02444b4a1c0262ec8824c53c747e6a271012e3389d919929",
+        "apps/console/public/design-references/admin/kaidian/dist/index.html": "7128a59078669a92738873f46455a87af068f33ef71cf70d7490e65e707c4770"
       }
     }
   }
