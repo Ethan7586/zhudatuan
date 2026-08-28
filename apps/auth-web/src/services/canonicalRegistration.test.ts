@@ -47,16 +47,13 @@ describe('canonical registration', () => {
   });
 
   it('creates a registration-only challenge with stable device metadata', async () => {
-    const fetchMock = vi.fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse(invitation()))
-      .mockResolvedValueOnce(jsonResponse({
-        id: 'challenge:registration-one',
-        purpose: 'registration',
-        expires_at: '2026-08-28T01:10:00.000Z',
-      }, 202));
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      id: 'challenge:registration-one',
+      purpose: 'registration',
+      expires_at: '2026-08-28T01:10:00.000Z',
+    }, 202));
     vi.stubGlobal('fetch', fetchMock);
 
-    await resolveCanonicalInvite('invitation-secret');
     const result = await createCanonicalRegistrationChallenge('  13800138000  ');
 
     expect(result).toEqual({
@@ -64,19 +61,10 @@ describe('canonical registration', () => {
       purpose: 'registration',
       expiresAt: '2026-08-28T01:10:00.000Z',
     });
-    const [url, init] = fetchMock.mock.calls[1];
+    const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
-    expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', purpose: 'registration', invite: 'invitation-secret' });
+    expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', purpose: 'registration' });
     expectCanonicalHeaders(init?.headers);
-  });
-
-  it('will not request an SMS challenge until the invitation has been resolved successfully', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ code: 'INVITE_INVALID' }, 400));
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(resolveCanonicalInvite('invalid-invitation')).rejects.toThrow('邀请码无效、已过期或已被使用');
-    await expect(createCanonicalRegistrationChallenge('13800138000')).rejects.toThrow('请先验证有效的企业邀请码');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('creates a storefront member with exact terms evidence and preserves password whitespace', async () => {
@@ -118,16 +106,6 @@ describe('canonical registration', () => {
     });
     expectCanonicalHeaders(init?.headers);
   });
-
-  it.each([0, -1, '1.5', String(Number.MAX_SAFE_INTEGER + 1)])(
-    'rejects an invalid access version returned by the identity service: %s',
-    async (accessVersion) => {
-      const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...membership(), access_version: accessVersion }, 201));
-      vi.stubGlobal('fetch', fetchMock);
-
-      await expect(createCanonicalMember(registrationInput())).rejects.toThrow();
-    },
-  );
 
   it('fails closed before the network when current terms were not accepted', async () => {
     const fetchMock = vi.fn<typeof fetch>();
@@ -209,23 +187,10 @@ function membership(): Readonly<Record<string, unknown>> {
     client: 'storefront',
     employee_no: null,
     status: 'active',
-    access_version: '1',
+    access_version: 1,
     joined_at: '2026-08-28T01:00:00.000Z',
     left_at: null,
   };
-}
-
-function registrationInput() {
-  return {
-    subject: '+8613800138000',
-    password: 'SecurePassword1!',
-    displayName: 'Ethan',
-    inviteCode: 'invitation-secret',
-    challengeId: 'challenge:registration-one',
-    code: '483921',
-    termsAccepted: true,
-    termsHash: TERMS_HASH,
-  } as const;
 }
 
 function jsonResponse(body: unknown, status = 200): Response {

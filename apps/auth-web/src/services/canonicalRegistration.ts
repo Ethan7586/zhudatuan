@@ -1,10 +1,8 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
-import { transportInteger } from '@shop/contract/client';
 import { z } from 'zod';
 
 const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
-let activeInvitation: Readonly<{ code: string; expiresAt: string }> | null = null;
 
 const InvitationSchema = z.strictObject({
   terms_title: z.string().min(1),
@@ -29,7 +27,7 @@ const MembershipSchema = z.strictObject({
   client: z.literal('storefront'),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
-  access_version: transportInteger.pipe(z.number().positive()),
+  access_version: z.number().int().positive(),
   joined_at: z.iso.datetime(),
   left_at: z.iso.datetime().nullable(),
 });
@@ -75,9 +73,7 @@ export interface CanonicalRegisteredMember {
 
 export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortSignal): Promise<CanonicalInvitation> {
   const invite = requiredText(inviteCode, '请输入有效的邀请码');
-  activeInvitation = null;
   const output = InvitationSchema.parse(await identityRequest('/api/v1/identity/invitations/resolve', { invite }, signal));
-  activeInvitation = Object.freeze({ code: invite, expiresAt: output.expires_at });
   return Object.freeze({
     termsTitle: output.terms_title,
     termsBody: output.terms_body,
@@ -93,16 +89,9 @@ export async function createCanonicalRegistrationChallenge(
   destination: string,
   signal?: AbortSignal,
 ): Promise<CanonicalRegistrationChallenge> {
-  const mobile = requiredMobile(destination);
-  const invitation = activeInvitation;
-  if (invitation === null || Date.parse(invitation.expiresAt) <= Date.now()) {
-    activeInvitation = null;
-    throw new Error('请先验证有效的企业邀请码');
-  }
   const output = ChallengeSchema.parse(await identityRequest('/api/v1/identity/challenges', {
-    destination: mobile,
+    destination: requiredMobile(destination),
     purpose: 'registration',
-    invite: invitation.code,
   }, signal));
   return Object.freeze({ challengeId: output.id, purpose: output.purpose, expiresAt: output.expires_at });
 }

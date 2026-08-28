@@ -33,49 +33,16 @@ export class MemberPort {
       `select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,
         invite.target_client,invite.effective_at,invite.expires_at
       from member.invite invite join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
-      join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
       where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
-        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
-        and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
-        and policy.terms_hash=invite.terms_hash`, [token]);
-  }
-
-  async assertRegistrationInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<void> {
-    const result = await database.query<{ id: string }>(`select invite.id from member.invite invite
-      join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
-      join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
-      where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
-        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
-        and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
-        and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
-        and policy.terms_hash=invite.terms_hash`, [token, destinationHash]);
-    if (!result.rows[0]) throw new Error('INVITE_INVALID');
+        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses`, [token]);
   }
 
   async consumeInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<MemberInvite> {
-    const result = await database.query<MemberInvite>(`with candidate as materialized(
-      select invite.id,invite.organization_id,invite.role_id,invite.terms_hash from member.invite invite
-      join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
-      join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
-      where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
-        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
-        and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
-        and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
-        and policy.terms_hash=invite.terms_hash for update of invite
-    ), consumed as(update member.invite invite set use_count=invite.use_count+1,
-      accepted_at=case when invite.use_count+1=invite.max_uses then clock_timestamp() else invite.accepted_at end,version=invite.version+1
-      from candidate where invite.id=candidate.id
-      returning candidate.organization_id,candidate.role_id,candidate.terms_hash)
-      select organization_id,role_id,terms_hash from consumed`, [token, destinationHash]);
+    const result = await database.query<MemberInvite>(`with consumed as(update member.invite set use_count=use_count+1,
+      accepted_at=case when use_count+1=max_uses then clock_timestamp() else accepted_at end,version=version+1
+      where token_hash=$1 and status='active' and effective_at<=clock_timestamp() and expires_at>clock_timestamp()
+        and use_count<max_uses and (allowed_destination_hash is null or allowed_destination_hash=$2)
+      returning organization_id,role_id,terms_hash) select organization_id,role_id,terms_hash from consumed`, [token, destinationHash]);
     const invitation = result.rows[0];
     if (!invitation) throw new Error('INVITE_INVALID');
     return invitation;

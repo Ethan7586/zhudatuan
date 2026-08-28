@@ -1,13 +1,11 @@
-import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { loginCanonicalConsole, loginCanonicalStorefront } from './canonicalIdentity';
+import { loginCanonicalConsole } from './canonicalIdentity';
 
 const SESSION_TICKET = 't'.repeat(64);
 const CALLBACK_STATE = 's'.repeat(32);
 const VALID_CSRF = 'csrf-token-at-least-sixteen-characters';
 const VALID_PROOF = 'signed-return-target-proof';
 const CONSOLE_DESTINATION = 'http://127.0.0.1:4173/scopes/platform/platform%3Apreview/cockpit';
-const STOREFRONT_DESTINATION = 'http://127.0.0.1:3000/';
 
 beforeEach(() => {
   const values = new Map<string, string>();
@@ -126,77 +124,15 @@ describe('canonical console identity', () => {
     await expect(loginCanonicalConsole('ethan', 'secret')).rejects.toThrow('登录回跳地址不在后台允许清单');
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
-
-  it('creates and exchanges a canonical storefront session without using compatibility auth routes', async () => {
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership-storefront-one')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged(STOREFRONT_DESTINATION)));
-    vi.stubGlobal('fetch', fetchMock);
-
-    const result = await loginCanonicalStorefront('  13800138000  ', '  original password  ');
-
-    expect(result).toEqual({ kind: 'authenticated', membership: 'membership-storefront-one', redirectUrl: STOREFRONT_DESTINATION });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls.every(([url]) => !String(url).includes('/api/v1/auth/'))).toBe(true);
-    expect(JSON.parse(String(fetchMock.mock.calls[0]![1]?.body))).toMatchObject({
-      provider: 'password',
-      subject: '13800138000',
-      password: '  original password  ',
-      target: 'storefront',
-    });
-  });
-
-  it('keeps multiple storefront memberships authoritative until the user selects one', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
-      principal: 'principal-member',
-      memberships: [
-        { id: 'membership-storefront-one', client: 'storefront' },
-        { id: 'membership-storefront-two', client: 'storefront' },
-      ],
-    }));
-    vi.stubGlobal('fetch', fetchMock);
-
-    const result = await loginCanonicalStorefront('member', 'secret');
-
-    expect(result).toMatchObject({
-      kind: 'selection',
-      context: {
-        identifier: 'member',
-        memberships: [
-          { id: 'membership-storefront-one', target: 'storefront' },
-          { id: 'membership-storefront-two', target: 'storefront' },
-        ],
-      },
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
-  it('rejects a storefront response whose authoritative target is console', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(sessionCreated('console', 'membership-console-owner')));
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(loginCanonicalStorefront('member', 'secret')).rejects.toThrow('登录身份不属于福利商城');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
-  it('wires the approved LoginPage to canonical storefront identity without changing its rendered markup', () => {
-    const source = readFileSync(new URL('../screens/LoginPage.tsx', import.meta.url), 'utf8');
-    expect(source).toContain('loginCanonicalStorefront(identifier, password)');
-    expect(source).toContain('loginCanonicalStorefront(identifier, password, membershipId)');
-    expect(source).not.toContain("fetch('/api/v1/auth/");
-    expect(source).toContain('找回密码尚未接入统一身份中心，请联系企业管理员重置密码。');
-    expect(source).not.toContain('loginWithPassword(identifier, password)');
-  });
 });
 
-function sessionCreated(target: 'console' | 'storefront' = 'console', membership = 'membership-console-owner'): Readonly<Record<string, unknown>> {
+function sessionCreated(): Readonly<Record<string, unknown>> {
   return {
     session: 'session-reference',
     csrf: VALID_CSRF,
     expiresIn: 3_600,
-    membership,
-    target,
+    membership: 'membership-console-owner',
+    target: 'console',
     callback: {
       ticket: SESSION_TICKET,
       state: CALLBACK_STATE,

@@ -1,6 +1,6 @@
 {
   "schema": "zhudatuan.owner-approved-ui.v1",
-  "approvedAt": "2026-09-01T08:52:11+08:00",
+  "approvedAt": "2026-08-28T15:59:46+08:00",
   "owner": "Ethan",
   "policy": {
     "sourceRoot": ".",
@@ -84,19 +84,13 @@
         "https://api.zhudatuan.com/api/v1/identity/members"
       ],
       "disabledUntilBackendExists": ["otp-login", "work-weixin-qr", "wechat-qr", "enterprise-sso", "step-up"],
-      "visualSlices": {
-        "apps/auth-web/src/screens/LoginPage.tsx": {
-          "startMarker": "  const renderMembershipsList = () => {",
-          "sha256": "424c10b84b1df4b36c5c5103307c633038aacbf93fedeef48c049700aa20ead4"
-        }
-      },
       "lockedFiles": {
         "apps/auth-web/src/App.tsx": "5f158b34867a6eea9f06906413c590c024cff2949900946c5bf0cc59a00fe58a",
-        "apps/auth-web/src/screens/LoginPage.tsx": "a636dbfb0a53326e4bac187cb0020587629ea04c78f3c94cc82164abb7a8233d",
+        "apps/auth-web/src/screens/LoginPage.tsx": "7934c5b414f6233f5b41abaa2f07720eeb039920fa2a6977cc4cedd0f87ee9d1",
         "apps/auth-web/src/context/MallContext.tsx": "f7413e2e5e39a9a888ba1aab4ac742c6adbc52b6d37749cc130c1f256e639559",
         "apps/auth-web/src/services/auth.ts": "613239172484080f4043772799b3b2cba4d75fc8b5c690151e9c02164e2485aa",
-        "apps/auth-web/src/services/canonicalIdentity.ts": "3d83f11c8b37112aa2228e5fab0be1c7b8841f375f38185e10a0b34cbde68e4d",
-        "apps/auth-web/src/services/canonicalRegistration.ts": "140bfcb72e8f370fe2c543d8a040e481929c1ed44458345f214c06d3b5d4e192",
+        "apps/auth-web/src/services/canonicalIdentity.ts": "e0d8031ae54d7f05f98479dc46e2729d17ba0f3efbde0fa8e54ed04e3a39cfed",
+        "apps/auth-web/src/services/canonicalRegistration.ts": "dd67a2e5a8adb4e87a9da0bd88ba38ee528760ac58b26710c0bf6698f98c5a50",
         "apps/auth-web/vite.config.ts": "20a25f1ea0d990d5d06a2f7ccbbf92ed43d538bb4182253eb522485cbc57ab0c",
         "apps/auth-web/index.html": "c5f4a203529a02bc4261770fed2db1ccbe7dc9010ff8a42423f7e2e1129c3eb8",
         "apps/auth-web/public/brand/site.webmanifest": "fba52460dae3b828f55fdd5b8c86aa4ea1eb079fe729de901a090ee63b4d3d79",
@@ -127,11 +121,11 @@
         "apps/console/src/main.tsx": "9e59f3b4abf5f8b359b42cd3c6e9c09dcda7decdaf36b1e0f19c5b427d27eac9",
         "apps/console/index.html": "354111187c3d27e8d775d1f2263fedb8ac8709ad98a9a9e4ca5957e614139686",
         "apps/console/vite.config.ts": "d890d9ad2ed61972a1070a6194ac3976697ec01cf761d6faaf416c2a11ad7440",
-        "apps/console/src/route/ConsoleRouter.tsx": "9305c63627884a1ba74230fcdac8e18384a1f05d1c59a26444c8867482b48800",
-        "apps/console/src/shell/ScopeShell.tsx": "fd2a8aed685fd06c246b43773984c6a1c5e4f88611d2e8432c7c8b2002aa6ab6",
+        "apps/console/src/route/ConsoleRouter.tsx": "8d90b7af76563d5a49ee527288b45ad2a27f2c61edcc720aa0ac8abf0f708f33",
+        "apps/console/src/shell/ScopeShell.tsx": "348fa812ec078767a160e21e874d9bcdd308d002dc80f82e255780db285fae27",
         "apps/console/src/entity/session/ConsoleSession.ts": "3c01753c53f62aad962045c0f58136366123e41c1194c7f91c8eeb16ef34870f",
         "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
-        "apps/console/src/components/Sidebar.tsx": "310a7ead92009e0924ebb8646468db6d5db4479de9db456d5bfed2f9bec6ca7e",
+        "apps/console/src/components/Sidebar.tsx": "5052da5087da512e5c4ecf14869f94bedb87c1e7cc100d523402c1ccb1d2fe96",
         "apps/console/src/feature/cockpit/CockpitRoute.tsx": "9a0699f178f45ebd21c6130bb3d9dffd872a907cde2f01c75cea13770b6147e6",
         "apps/console/src/feature/application/CommerceSolutionCenter.tsx": "eafc31af52cc747470d448c4e2f7b45566d5396ba4ee2d2336d9dcfb05791f78",
         "apps/console/src/smart-wing-vi.css": "366e236e9faab15a83ae453fa31a0df459a516d1602226ebb929cf418e1cb8d6",

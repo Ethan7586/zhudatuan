@@ -18,6 +18,8 @@
 
 身份邊界：員工自助註冊經 Canonical 邀請、短信 Challenge 與版本化條款建立 `storefront` 身份；不會自動授予 Console 權限。現有消費 Web 的 Session Adapter 尚待接通，因此註冊成功不等同於商城自動登入。
 
+身份邊界：員工自助註冊經 Canonical 邀請、短信 Challenge 與版本化條款建立 `storefront` 身份；不會自動授予 Console 權限。現有消費 Web 的 Session Adapter 尚待接通，因此註冊成功不等同於商城自動登入。
+
 兩套合同不可共用同一組 Migration：新版使用 `@shop/*` Canonical Operation；消費端目前仍使用 `@smart-wing/*` REST/RPC 合同。正式合流需要新增 Adapter/BFF 並逐項驗證，不能直接覆蓋。
 
 8 月 21 日的 206 個 Canonical Operations 已核實為目前 217 個 Operations 的嚴格子集，無 API 原碼需要搬回。詳細矩陣、權限修復與未完成證據見 [`docs/operations/2026-08-27-api-recovery-log.md`](./docs/operations/2026-08-27-api-recovery-log.md)。正式制品集合由 [`config/artifacts.json`](./config/artifacts.json) 鎖定；在真資料庫與外部 Provider 驗收前，兩條軌道均保持 `releaseEligible=false`。

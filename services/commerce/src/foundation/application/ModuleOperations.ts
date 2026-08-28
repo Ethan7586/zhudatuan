@@ -243,8 +243,7 @@ function idempotencyBody(request: OperationRequest): unknown {
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
 
 function idempotencyReplayResponse(request: OperationRequest, result: OperationResult): OperationResult {
-  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange'
-    || request.type === 'identity.invitations.create') {
+  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange') {
     return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME' } };
   }
   return result;

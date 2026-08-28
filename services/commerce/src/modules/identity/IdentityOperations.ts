@@ -21,7 +21,7 @@ import { memberPort } from '../member/MemberPort';
 import { organizationPort } from '../organization/OrganizationPort';
 import { canonicalIdentitySubject, canonicalMobile, identitySubjectVariants } from './IdentitySubject';
 
-export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
+const CORE_OPERATIONS = [
   'identity.sessions.create',
   'identity.tickets.exchange',
   'identity.session.read',
@@ -40,17 +40,7 @@ export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
-] as const satisfies readonly OperationId[]);
-
-export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
-  'identity.sessions.create',
-  'identity.tickets.exchange',
-  'identity.session.read',
-  'identity.session.delete',
-  'identity.challenges.create',
-  'identity.invitations.read',
-  'identity.members.create',
-] as const satisfies readonly OperationId[]);
+] as const satisfies readonly OperationId[];
 
 export function identityOperations(context: ModuleContext): OperationUsecase {
   return identityCoreOperations(context, IDENTITY_CORE_OPERATION_IDS, false);
@@ -70,14 +60,16 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
   const tickets = new PgAuthTicket(new ReturnTargetSigner(context.container.get(RETURN_TARGETS), keys.session));
   const digest = (value: string) => createHmac('sha256', keys.identity).update(value.trim().toLowerCase()).digest('hex');
   const codeDigest = (challenge: string, code: string) => createHmac('sha256', keys.session).update(`${challenge}:${code}`).digest('hex');
-  const actions: OperationActions = {
+  const core = new ModuleOperations(
+    'identity',
+    pool,
+    audit,
+    {
       'identity.sessions.create': operationLifecycle({
         prepare: async (request) => {
           const body = bodyRecord(request);
           const authorization = AuthTransaction.start(body.authorization);
-          const subjects = identitySubjectVariants(textField(body, 'subject'));
-          const subjectHashes = subjects.map(digest);
-          const subject = subjectHashes[0]!;
+          const subject = digest(textField(body, 'subject'));
           const peer = digest(request.input.headers['x-peer-address'] ?? 'unknown');
           const device = digest(request.input.headers['x-device-id'] ?? 'unknown');
           const client = digest(`${peer}:${request.input.headers['user-agent'] ?? 'unknown'}:${device}`);
@@ -86,7 +78,6 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
             body,
             authorization,
             subject,
-            subjectHashes,
             client,
             rateKeys: [
               [subject, client],
@@ -96,22 +87,21 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
             ] as const,
           };
         },
-        execute: async (request, database, { body, authorization, subject, subjectHashes, client, rateKeys }) => {
+        execute: async (request, database, { body, authorization, subject, client, rateKeys }) => {
           await assertLoginAllowed(database, rateKeys);
           const credential = await database.query<{ principal_id: string; secret_hash: string | null; credential_version: number }>(
             `select credential.principal_id,credential.secret_hash,principal.credential_version
           from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
-          where credential.provider=$1 and credential.subject_hash=any($2::text[]) and credential.status='active' and principal.status='active'
-          order by array_position($2::text[],credential.subject_hash) for update`,
-            [body.provider ?? 'password', subjectHashes]
+          where credential.provider=$1 and credential.subject_hash=$2 and credential.status='active' and principal.status='active' for update`,
+            [body.provider ?? 'password', subject]
           );
-          const found = credential.rows.length === 1 ? credential.rows[0] : undefined;
+          const found = credential.rows[0];
           if (!(await passwords.verify(textField(body, 'password', 128), found?.secret_hash ?? null))) {
             await recordLoginFailure(database, rateKeys);
             reject(401, 'CREDENTIAL_INVALID');
           }
           if (!found) reject(401, 'CREDENTIAL_INVALID');
-          await database.query("delete from identity.loginattempt where subject_hash=any($1::text[]) and client_hash in($2,'account')", [subjectHashes, client]);
+          await database.query("delete from identity.loginattempt where subject_hash=$1 and client_hash in($2,'account')", [subject, client]);
           const memberships = await database.query<{ id: string; access_version: number; client: string }>(
             `select membership.id,membership.access_version,membership.client from member.profile profile
           join access.membership membership on membership.member_id=profile.id where profile.principal_id=$1 and membership.status='active' order by membership.id`,
@@ -135,14 +125,9 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           }
           const token = randomBytes(48).toString('base64url');
           const id = `session:${randomUUID()}`;
-          const phoneAssurance = await database.query<{ level: number }>(`select case when exists(
-            select 1 from identity.assurance where principal_id=$1 and method='phone_otp' and level=2
-              and verified_at<=clock_timestamp() and expires_at>clock_timestamp()
-          ) then 2 else 1 end::smallint level`, [found.principal_id]);
-          const assurance = phoneAssurance.rows[0]?.level === 2 ? 2 : 1;
           await database.query(
             `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
-          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
+          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
             [
               id,
               found.principal_id,
@@ -154,11 +139,9 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
               digest(request.input.headers['x-peer-address'] ?? 'unknown'),
               String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
               String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128),
-              assurance,
             ]
           );
-          await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!,
-            { principal: found.principal_id, membership: membership.id, assurance });
+          await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!, { principal: found.principal_id, membership: membership.id });
           const csrf = randomBytes(32).toString('base64url');
           const target = authTarget(membership.client);
           const callback = await tickets.issue(database, id, target, authorization);
@@ -262,26 +245,19 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           const body = bodyRecord(request);
           const id = `challenge:${randomUUID()}`;
           const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-          const requestedDestination = textField(body, 'destination').trim();
+          const destination = textField(body, 'destination').trim();
           const purpose = textField(body, 'purpose');
-          if (registrationOnly && purpose !== 'registration') reject(400, 'CHALLENGE_PURPOSE_INVALID');
           if (!['registration', 'password_reset', 'phone_change', 'stepup', 'wechat_bind'].includes(purpose)) throw new Error('CHALLENGE_PURPOSE_INVALID');
-          const destination = purpose === 'registration' ? canonicalMobile(requestedDestination)
-            : purpose === 'password_reset' ? canonicalIdentitySubject(requestedDestination) : requestedDestination;
+          if (purpose === 'registration' && !/^\+?[1-9][0-9]{7,14}$/.test(destination)) throw new Error('MOBILE_INVALID');
           const destinationHash = digest(destination);
-          const inviteHash = purpose === 'registration' ? digest(textField(body, 'invite')) : undefined;
           const device = digest(request.input.headers['x-device-id'] ?? 'unknown');
           const peer = digest(request.input.headers['x-peer-address'] ?? 'unknown');
           await assertPublicRisk(risk, request, destinationHash, device);
           const [envelope, recipient] = await Promise.all([kms.encrypt('identity/challenge', code, { challenge: id, purpose }), kms.encrypt('identity/destination', destination, { challenge: id, purpose })]);
-          return { body, id, code, purpose, destinationHash, inviteHash, device, peer, envelope, recipient };
+          return { body, id, code, purpose, destinationHash, device, peer, envelope, recipient };
         },
         execute: async (request, database, prepared) => {
-          const { body, id, code, purpose, destinationHash, inviteHash, device, peer, envelope, recipient } = prepared;
-          if (purpose === 'registration') {
-            if (!inviteHash) throw new Error('INVITE_INVALID');
-            await requireValidInvite(memberPort.assertRegistrationInvite(database, inviteHash, destinationHash));
-          }
+          const { body, id, code, purpose, destinationHash, device, peer, envelope, recipient } = prepared;
           await consumeChallengeRate(database, [
             [destinationHash, purpose],
             [peer, `network:${purpose}`],
@@ -302,11 +278,11 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           values($1,$2,$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
         ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
-            [id, principal, purpose, destinationHash, codeDigest(id, inviteHash === undefined ? code : `${code}:${inviteHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+            [id, principal, purpose, destinationHash, codeDigest(id, code), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-          values($1,'identitynotification','identity',jsonb_build_object('challenge',$2::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+          values($1,'notification','identity',jsonb_build_object('challenge',$2::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
             [`job:notify:${id}`, id]
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, { challenge: id, destination: destinationHash, purpose });
@@ -369,20 +345,15 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
       'identity.members.create': operationLifecycle({
         prepare: async (request) => {
           const body = bodyRecord(request);
-          const subject = canonicalMobile(textField(body, 'subject'));
+          const subject = textField(body, 'subject').trim();
+          if (!/^\+?[1-9][0-9]{7,14}$/.test(subject)) throw new Error('MOBILE_INVALID');
           await assertPublicRisk(risk, request, digest(subject), digest(request.input.headers['x-device-id'] ?? 'unknown'));
-          const principal = `principal:${randomUUID()}`;
-          const [password, mobile] = await Promise.all([
-            passwords.hash(textField(body, 'password', 128)),
-            kms.encrypt('identity/mobile', subject, { principal }),
-          ]);
+          const password = await passwords.hash(textField(body, 'password', 128));
           return {
             body,
             subject,
             password,
-            principal,
-            mobile,
-            assurance: `assurance:${randomUUID()}`,
+            principal: `principal:${randomUUID()}`,
             member: `member:${randomUUID()}`,
             membership: `membership:${randomUUID()}`,
             credential: `credential:${randomUUID()}`,
@@ -390,18 +361,16 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           };
         },
         execute: async (request, database, prepared) => {
-          const { body, subject, password, principal, member, membership, credential, scopes, mobile, assurance } = prepared;
+          const { body, subject, password, principal, member, membership, credential, scopes } = prepared;
           const subjectHash = digest(subject);
-          const subjectHashes = identitySubjectVariants(subject).map(digest);
           await database.query('select pg_advisory_xact_lock(hashtext($1))', [subjectHash]);
           const existing = await database.query(`select 1 from identity.credential
-            where provider='password' and subject_hash=any($1::text[]) and status='active'`, [subjectHashes]);
+            where provider='password' and subject_hash=$1 and status='active'`, [subjectHash]);
           if (existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
-          const inviteHash = digest(textField(body, 'invite'));
-          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
-            (challenge, code) => codeDigest(challenge, `${code}:${inviteHash}`), undefined,
+          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, undefined,
             { purpose: 'registration', destinationHash: subjectHash });
-          const invitation = await requireValidInvite(memberPort.consumeInvite(database, inviteHash, subjectHash));
+          const inviteHash = digest(textField(body, 'invite'));
+          const invitation = await memberPort.consumeInvite(database, inviteHash, subjectHash);
           const organization = invitation.organization_id;
           if (body.termsAccepted !== true || body.termsHash !== invitation.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
           await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
@@ -410,18 +379,11 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           values($1,$2,'password',$3,$4,'active',clock_timestamp())`,
             [credential, principal, subjectHash, password]
           );
-          await memberPort.create(database, { member, principal, display: textField(body, 'displayName'), status: 'active',
-            mobileCiphertext: mobile.ciphertext, mobileFingerprint: mobile.fingerprint, mobileMasked: maskMobile(subject) });
-          await database.query(`update identity.assurance set expires_at=least(coalesce(expires_at,clock_timestamp()),clock_timestamp())
-            where principal_id=$1 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`, [principal]);
-          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-            values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-          [assurance, principal, subjectHash]);
+          await memberPort.create(database, { member, principal, display: textField(body, 'displayName'), status: 'active' });
           const scopeKind = await organizationPort.kind(database, organization);
           const result = await accessPort.createRegistration(database, { membership, member, principal, organization, role: invitation.role_id, scopeKind, scopes });
           if (typeof body.wechatToken === 'string') await bindWechat(database, tokenHash(body.wechatToken), principal, membership);
-          await publishIdentityEvent(database, 'identity.member.registered', principal, organization, request.input.idempotency!,
-            { principal, member, membership, assurance: { method: 'phone_otp', level: 2, expiresInDays: 365 } });
+          await publishIdentityEvent(database, 'identity.member.registered', principal, organization, request.input.idempotency!, { principal, member, membership });
           return { status: 201, body: result };
         },
       }),
@@ -564,7 +526,8 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         prepare: async (request) => {
           const access = requireAccess(request);
           const body = bodyRecord(request);
-          const mobile = canonicalMobile(textField(body, 'mobile', 32));
+          const mobile = textField(body, 'mobile', 32).trim();
+          if (!/^\+?[1-9][0-9]{7,14}$/.test(mobile)) throw new Error('MOBILE_INVALID');
           const envelope = await kms.encrypt('identity/mobile', mobile, { principal: access.actor.id });
           return { access, body, mobile, envelope };
         },
@@ -575,11 +538,6 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           if (!credential.rows[0]) throw new Error('CREDENTIAL_NOT_FOUND');
           await database.query(`update identity.credential set subject_hash=$2,rotated_at=clock_timestamp() where id=$1`, [credential.rows[0].id, digest(mobile)]);
           const result = await memberPort.changeMobile(database, access.actor.id, envelope.ciphertext, envelope.fingerprint, maskMobile(mobile));
-          await database.query(`update identity.assurance set expires_at=least(coalesce(expires_at,clock_timestamp()),clock_timestamp())
-            where principal_id=$1 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`, [access.actor.id]);
-          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-            values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-          [`assurance:${randomUUID()}`, access.actor.id, digest(mobile)]);
           await database.query(`update identity.principal set credential_version=credential_version+1,version=version+1,updated_at=clock_timestamp() where id=$1`, [access.actor.id]);
           await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='mobile_changed' where principal_id=$1 and id<>$2 and revoked_at is null", [access.actor.id, access.actor.session]);
           return { status: 200, body: result, headers: { etag: `\"${String(result.version)}\"` } };
@@ -621,7 +579,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-          values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+          values($1,'notification','identity',$2,jsonb_build_object('challenge',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
             [`job:notify:${id}`, access.scope.id, id]
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!, { challenge: id, purpose: 'stepup' });
@@ -646,22 +604,10 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         );
         return rowResult(result);
       },
-    };
-  const selected = Object.fromEntries(ownedOperations.map((operationId) => {
-    const action = actions[operationId];
-    if (!action) throw new Error(`IDENTITY_OPERATION_NOT_AVAILABLE:${operationId}`);
-    return [operationId, action];
-  })) as OperationActions;
-  return new ModuleOperations('identity', pool, audit, selected, ownedOperations);
-}
-
-async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {
-  try {
-    return await operation;
-  } catch (cause) {
-    if (cause instanceof Error && cause.message === 'INVITE_INVALID') reject(400, 'INVITE_INVALID');
-    throw cause;
-  }
+    },
+    CORE_OPERATIONS
+  );
+  return new WechatOperations(core, pool.workload('command'), context.container.get(WECHAT_IDENTITY), kms, audit, keys.identity, keys.session, tickets);
 }
 
 function maskMobile(value: string): string {

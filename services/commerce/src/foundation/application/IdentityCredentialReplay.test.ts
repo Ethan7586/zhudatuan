@@ -7,11 +7,10 @@ import type { OperationRequest, OperationResult } from './OperationHandler';
 import type { DatabasePool } from '../persistence/Pool';
 
 describe('identity credential idempotency', () => {
-  it.each(['identity.sessions.create', 'identity.tickets.exchange', 'identity.invitations.create'] as const)(
-    'persists a secret-free one-time replay for %s', async (operation) => {
+  it.each(['identity.sessions.create', 'identity.tickets.exchange'] as const)('persists a secret-free one-time replay for %s', async (operation) => {
     const secret = `secret-for-${operation}`;
     const result: OperationResult = {
-      status: operation === 'identity.tickets.exchange' ? 200 : 201,
+      status: operation === 'identity.sessions.create' ? 201 : 200,
       body: {
         session: `session-${secret}`,
         csrf: `csrf-${secret}`,
@@ -81,7 +80,7 @@ function identityOperationHarness(
   return Object.freeze({ operations, persisted: () => replay, executions: () => executions });
 }
 
-function identityRequest(type: 'identity.sessions.create' | 'identity.tickets.exchange' | 'identity.invitations.create'): OperationRequest {
+function identityRequest(type: 'identity.sessions.create' | 'identity.tickets.exchange'): OperationRequest {
   return {
     type,
     access: null,

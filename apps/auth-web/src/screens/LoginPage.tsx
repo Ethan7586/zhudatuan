@@ -11,8 +11,12 @@ import { Membership, PreAuthContext } from '../types';
 import {
   getLockoutState,
   changeInitialPassword,
+  buildCredentialLoginAction,
+  requiresAuthoritativeMembershipSelection,
+  resolveAdminLoginOrigin,
+  resolveStorefrontLoginOrigin,
 } from '../services/auth';
-import { loginCanonicalConsole, loginCanonicalStorefront } from '../services/canonicalIdentity';
+import { loginCanonicalConsole } from '../services/canonicalIdentity';
 import {
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
@@ -21,8 +25,6 @@ import {
 } from '../services/canonicalRegistration';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
-
-const PASSWORD_RECOVERY_UNAVAILABLE = '找回密码尚未接入统一身份中心，请联系企业管理员重置密码。';
 
 function isStrongRegistrationPassword(value: string): boolean {
   return value.length >= 12 && value.length <= 128
@@ -105,6 +107,14 @@ export const LoginPage: React.FC = () => {
     const timer = window.setInterval(() => setLoginOtpSeconds((seconds) => Math.max(0, seconds - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [loginOtpSeconds]);
+
+  useEffect(() => {
+    if (registrationCodeSeconds <= 0) return;
+    const timer = window.setInterval(() => {
+      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [registrationCodeSeconds]);
 
   useEffect(() => {
     if (registrationCodeSeconds <= 0) return;
@@ -313,6 +323,16 @@ export const LoginPage: React.FC = () => {
         return;
       }
 
+      const context: PreAuthContext = await loginWithPassword(identifier, password);
+
+      // 如果需要重置密码
+      if (context.requiresPasswordReset) {
+        setPreAuthContext(context);
+        setShowForcePasswordModal(true);
+        setLoading(false);
+        return;
+      }
+
       const result = await loginCanonicalStorefront(identifier, password);
       if (result.kind === 'authenticated') {
         window.location.replace(result.redirectUrl);
@@ -404,6 +424,11 @@ export const LoginPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
+      return;
+    }
+
+    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
+      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
       return;
     }
 
