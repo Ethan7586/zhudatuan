@@ -16,6 +16,9 @@ describe('purchase API runtime', () => {
     const pool = (state: typeof healthy) => ({ query: async (sql: string, values: readonly unknown[]) => {
       expect(sql).toContain("to_regprocedure('benefit.purchase_consume(text,text,text,text,text,bigint)')");
       expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
+      expect(sql).toContain("namespace.nspname='finance' and procedure.proname='post'");
+      expect(sql).toContain("has_function_privilege(current_user,procedure.oid,'EXECUTE')");
+      expect(sql).not.toContain("has_function_privilege(current_user,\n        'finance.post");
       expect(sql).toContain("not has_table_privilege(current_user,'payment.refund','INSERT,UPDATE,DELETE')");
       expect(sql).toContain("not has_table_privilege(current_user,'payment.recoverycase','INSERT,UPDATE,DELETE')");
       expect(sql).toContain("not has_table_privilege(current_user,'ordering.orderrecord','UPDATE')");
