@@ -23,6 +23,8 @@ const REGISTRATION_BOUNDARY_RECONCILE = join(
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
+const REGISTRATION_BOOTSTRAP_REPAIR = '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql';
+const REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION = /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000' and version<>'20260829040000'\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
   [INVITATION_SCOPE,/\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
   ['20260821069000_add_store_management.sql',/\n  select id into membership from access\.membership[\s\S]*?STORE_CREATE_SCOPE_UNRESOLVED'; end if;\n/],
@@ -110,6 +112,7 @@ const REPAIR_FILES = [
   '20260828180000_zhudatuan_purchase_access.sql',
   '20260828183000_zhudatuan_runtime_readiness_repair.sql',
   '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
+  '20260829054500_zhudatuan_identity_login_acl_repair.sql',
 ];
 
 const mode = process.argv[2];
@@ -772,9 +775,13 @@ async function verifyZhudatuanRegistrationBaseline(database) {
   }
   // The historical baseline intentionally recreates its original policies.
   // Restore the immutable forward repair before any current-head ACL checks.
+  const bootstrapRepair = await readFile(join(MIGRATIONS,REGISTRATION_BOOTSTRAP_REPAIR),'utf8');
   await execute(database,
-    await readFile(join(MIGRATIONS,'20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql'),'utf8'),
+    omitExactEnvironmentAssertion(bootstrapRepair,REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION,REGISTRATION_BOOTSTRAP_REPAIR),
     'idempotent zhudatuan registration bootstrap repair replay');
+  await execute(database,
+    await readFile(join(MIGRATIONS,'20260829054500_zhudatuan_identity_login_acl_repair.sql'),'utf8'),
+    'idempotent zhudatuan identity login ACL repair replay');
 }
 
 async function verifyPhoneAssuranceRevocation(database) {
