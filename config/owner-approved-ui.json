@@ -96,7 +96,7 @@
         "apps/auth-web/src/context/MallContext.tsx": "f7413e2e5e39a9a888ba1aab4ac742c6adbc52b6d37749cc130c1f256e639559",
         "apps/auth-web/src/services/auth.ts": "613239172484080f4043772799b3b2cba4d75fc8b5c690151e9c02164e2485aa",
         "apps/auth-web/src/services/canonicalIdentity.ts": "3d83f11c8b37112aa2228e5fab0be1c7b8841f375f38185e10a0b34cbde68e4d",
-        "apps/auth-web/src/services/canonicalRegistration.ts": "140bfcb72e8f370fe2c543d8a040e481929c1ed44458345f214c06d3b5d4e192",
+        "apps/auth-web/src/services/canonicalRegistration.ts": "b221610934fceaf44f565253ca9913b538b97c8c71afe2b8c68923fbc70f502f",
         "apps/auth-web/vite.config.ts": "20a25f1ea0d990d5d06a2f7ccbbf92ed43d538bb4182253eb522485cbc57ab0c",
         "apps/auth-web/index.html": "c5f4a203529a02bc4261770fed2db1ccbe7dc9010ff8a42423f7e2e1129c3eb8",
         "apps/auth-web/public/brand/site.webmanifest": "fba52460dae3b828f55fdd5b8c86aa4ea1eb079fe729de901a090ee63b4d3d79",
