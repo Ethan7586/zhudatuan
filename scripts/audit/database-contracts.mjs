@@ -13,6 +13,13 @@ const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
 const SANDBOX_CATALOG = join(ROOT, 'tools', 'seed', 'src', 'SandboxCatalogDatabase.sql');
+const REGISTRATION_BOUNDARY_RECONCILE = join(
+  ROOT,
+  'infrastructure',
+  'zhudatuan',
+  'aliyun',
+  'postgres-reconcile-registration-boundary.sql',
+);
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
@@ -102,6 +109,7 @@ const REPAIR_FILES = [
   '20260828173000_zhudatuan_web_business_access.sql',
   '20260828180000_zhudatuan_purchase_access.sql',
   '20260828183000_zhudatuan_runtime_readiness_repair.sql',
+  '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
 ];
 
 const mode = process.argv[2];
@@ -163,6 +171,7 @@ try {
     applied += 1;
   }
   if (mode !== '--inventory-cutover-unsafe') {
+    if (mode === '--registration-fresh') await reconcileRegistrationReplayBoundary(database);
     await verifyTarget(database);
     if (mode === '--mvp-kernel') {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
@@ -311,19 +320,56 @@ async function installRegistrationReplayBoundary(database) {
     values('zhudatuan-registration-v1',current_database(),encode(public.digest('${sentinel}','sha256'),'hex'));
     create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
     returns boolean language sql stable security definer set search_path=pg_catalog,deployment,public as $function$
-      select exists(select 1 from deployment.boundary
-        where id='zhudatuan-registration-v1' and database_name=current_database()
-          and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+      select current_database()='zhudatuan_registration'
+        and session_user='zhudatuanbootstrap'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database()
+            and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
     $function$;
     create or replace function deployment.is_independent_registration_database()
     returns boolean language sql stable security definer set search_path=pg_catalog,deployment as $function$
-      select exists(select 1 from deployment.boundary
-        where id='zhudatuan-registration-v1' and database_name=current_database())
+      select current_database()='zhudatuan_registration'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database())
     $function$;
     revoke all on deployment.boundary from public;
     revoke all on function deployment.registration_bootstrap_boundary(text) from public;
     revoke all on function deployment.is_independent_registration_database() from public;
   `,'registration replay boundary');
+}
+
+async function reconcileRegistrationReplayBoundary(database) {
+  // Model an existing volume initialized before shopmigration was added to
+  // the nested SECURITY DEFINER boundary. The replay must exercise the exact
+  // privileged reconciliation artifact used in production.
+  await execute(database, `
+    alter role zhudatuanbootstrap noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    alter role shopmigration noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    grant usage on schema deployment to zhudatuanbootstrap,shopmigration;
+    revoke execute on function deployment.registration_bootstrap_boundary(text) from shopmigration;
+    grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap;
+    grant execute on function deployment.is_independent_registration_database() to shopmigration;
+  `,'registration replay legacy boundary state');
+  const before = await database.query(`select
+    has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE') bootstrap_allowed,
+    has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed`);
+  if (JSON.stringify(before.rows[0])!==JSON.stringify({bootstrap_allowed:true,definer_allowed:false})) {
+    throw new Error(`REGISTRATION_REPLAY_LEGACY_BOUNDARY_INVALID:${JSON.stringify(before.rows[0])}`);
+  }
+  await execute(
+    database,
+    await readFile(REGISTRATION_BOUNDARY_RECONCILE,'utf8'),
+    'registration replay privileged boundary reconciliation',
+  );
+  const after = await database.query(`select
+    has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE') bootstrap_allowed,
+    has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed,
+    has_function_privilege('shopmigration','deployment.is_independent_registration_database()','EXECUTE') migration_boundary_allowed`);
+  if (JSON.stringify(after.rows[0])!==JSON.stringify({
+    bootstrap_allowed:true,definer_allowed:true,migration_boundary_allowed:true,
+  })) {
+    throw new Error(`REGISTRATION_REPLAY_RECONCILED_BOUNDARY_INVALID:${JSON.stringify(after.rows[0])}`);
+  }
 }
 
 async function stageFreshReplaySecrets(database) {
@@ -376,6 +422,7 @@ async function verifyTarget(database) {
   await verifyAuditImmutability(database);
   await verifyZhudatuanRegistrationBaseline(database);
   await verifyZhudatuanRuntimeReadinessRepair(database);
+  await verifyZhudatuanBootstrapRuntimeRepair(database);
   await verifyZhudatuanWebBusinessAccess(database);
   await verifyZhudatuanPurchaseAccess(database);
   await verifySandboxCatalogBootstrap(database);
@@ -407,6 +454,76 @@ async function verifyZhudatuanRuntimeReadinessRepair(database) {
       }
     } finally {
       await database.exec('rollback');
+    }
+  }
+}
+
+async function verifyZhudatuanBootstrapRuntimeRepair(database) {
+  const canonicalOwnerRole = await database.query(`select id,scope_id,status from access.role
+    where id='role-platform-owner-v2'`);
+  if (JSON.stringify(canonicalOwnerRole.rows)!==JSON.stringify([{
+    id:'role-platform-owner-v2',scope_id:'tenant-zhudatuan',status:'active',
+  }])) throw new Error(`ZHUDATUAN_BOOTSTRAP_OWNER_ROLE_INVALID:${JSON.stringify(canonicalOwnerRole.rows)}`);
+  await database.exec(`begin;
+    insert into identity.principal(id,status,credential_version,created_at,updated_at,version) values
+      ('principal:bootstrap-rls-legacy','active',1,clock_timestamp(),clock_timestamp(),0),
+      ('principal:bootstrap-rls-canonical','active',1,clock_timestamp(),clock_timestamp(),0);
+    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version) values
+      ('member:bootstrap-rls-legacy','principal:bootstrap-rls-legacy','Legacy RLS Fixture','active',clock_timestamp(),clock_timestamp(),0),
+      ('member:bootstrap-rls-canonical','principal:bootstrap-rls-canonical','Canonical RLS Fixture','active',clock_timestamp(),clock_timestamp(),0);
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at) values
+      ('membership:bootstrap-rls-legacy','member:bootstrap-rls-legacy','mall-demo','storefront','active',1,clock_timestamp()),
+      ('membership:bootstrap-rls-canonical','member:bootstrap-rls-canonical','mall-zhudatuan','storefront','active',1,clock_timestamp());
+    insert into access.membershiprole(membership_id,role_id,effective_at) values
+      ('membership:bootstrap-rls-legacy','role-zhudatuan-storefront-member',clock_timestamp()),
+      ('membership:bootstrap-rls-canonical','role-zhudatuan-storefront-member',clock_timestamp());
+    set local role zhudatuanbootstrap;`);
+  try {
+    const result = await database.query(`select
+      has_table_privilege(current_user,'identity.principal','SELECT') principal_read,
+      has_table_privilege(current_user,'access.membership','SELECT') membership_read,
+      has_table_privilege(current_user,'access.membershiprole','SELECT') membership_role_read,
+      has_table_privilege(current_user,'member.invite','SELECT,INSERT') invite_read_create,
+      has_table_privilege(current_user,'identity.principal','INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') principal_write,
+      has_table_privilege(current_user,'access.membership','INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') membership_write,
+      has_table_privilege(current_user,'access.membershiprole','INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') membership_role_write,
+      has_table_privilege(current_user,'member.invite','UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') invite_mutate,
+      (select array_agg(id order by id) from access.role where id in(
+        'role-platform-owner-v2','role-zhudatuan-storefront-member','role:self')) visible_roles,
+      (select count(*)::integer from access.membershiprole assignment
+        join access.membership membership on membership.id=assignment.membership_id
+        where assignment.role_id='role-zhudatuan-storefront-member'
+          and membership.organization_id in('tenant-smart-wing','enterprise-demo','mall-demo')) legacy_assignments,
+      (select array_agg(membership_id order by membership_id) from access.membershiprole
+        where membership_id in('membership:bootstrap-rls-legacy','membership:bootstrap-rls-canonical')) fixture_assignments,
+      (select count(*)::integer from member.invite where status='active' and (
+        id='invite-demo-employee-2026' or organization_id in('tenant-smart-wing','enterprise-demo','mall-demo'))) legacy_invites,
+      (select count(*)::integer from identity.principal
+        where id='principal:zhudatuan:owner:ethan:v1') fixed_owner_principals,
+      (select count(*)::integer from access.membership
+        where id='membership-platform-owner-ethan-v1'
+          and organization_id='tenant-zhudatuan' and client='operator') fixed_owner_memberships`);
+    const row = result.rows[0];
+    if (JSON.stringify(row)!==JSON.stringify({
+      principal_read:true,membership_read:true,membership_role_read:true,invite_read_create:true,
+      principal_write:false,membership_write:false,membership_role_write:false,invite_mutate:false,
+      visible_roles:['role-platform-owner-v2','role-zhudatuan-storefront-member','role:self'],
+      legacy_assignments:1,fixture_assignments:['membership:bootstrap-rls-legacy'],legacy_invites:0,
+      fixed_owner_principals:0,fixed_owner_memberships:0,
+    })) {
+      const policies = await database.query(`select policyname,permissive,roles,qual from pg_policies
+        where schemaname='access' and tablename='role' order by policyname`);
+      throw new Error(`ZHUDATUAN_BOOTSTRAP_RUNTIME_ACCESS_INVALID:${JSON.stringify({row,policies:policies.rows})}`);
+    }
+  } finally {
+    await database.exec('rollback');
+  }
+  if (mode==='--registration-fresh') {
+    const boundary = await database.query(`select
+      has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE') bootstrap_allowed,
+      has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed`);
+    if (JSON.stringify(boundary.rows[0])!==JSON.stringify({bootstrap_allowed:true,definer_allowed:true})) {
+      throw new Error(`ZHUDATUAN_BOOTSTRAP_DEFINER_BOUNDARY_INVALID:${JSON.stringify(boundary.rows[0])}`);
     }
   }
 }
@@ -653,6 +770,11 @@ async function verifyZhudatuanRegistrationBaseline(database) {
   if (JSON.stringify(afterReplay)!==JSON.stringify(beforeReplay)) {
     throw new Error(`ZHUDATUAN_REGISTRATION_BASELINE_NOT_IDEMPOTENT:${JSON.stringify({ beforeReplay,afterReplay })}`);
   }
+  // The historical baseline intentionally recreates its original policies.
+  // Restore the immutable forward repair before any current-head ACL checks.
+  await execute(database,
+    await readFile(join(MIGRATIONS,'20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql'),'utf8'),
+    'idempotent zhudatuan registration bootstrap repair replay');
 }
 
 async function verifyPhoneAssuranceRevocation(database) {

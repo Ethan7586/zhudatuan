@@ -21951,6 +21951,10 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.membership.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
   - id: access.membership.zhudatuanidentityapi
     kind: policy
     owner: access
@@ -21959,6 +21963,10 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.membershiprole.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
   - id: access.membershiprole.zhudatuanidentityapi
     kind: policy
     owner: access
@@ -21974,7 +21982,7 @@ objects:
   - id: access.role.zhudatuanbootstrap
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
   - id: access.role.zhudatuanidentityapi
     kind: policy
     owner: access
@@ -22079,6 +22087,10 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.principal.zhudatuanbootstrapowner
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
   - id: identity.principal.zhudatuanidentityapi
     kind: policy
     owner: identity
@@ -22102,7 +22114,7 @@ objects:
   - id: member.invite.zhudatuanbootstrap
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
   - id: member.invite.zhudatuanbootstrapinsert
     kind: policy
     owner: member

@@ -110,6 +110,11 @@ $function$;
 revoke all on function deployment.registration_bootstrap_boundary(text) from public;
 revoke all on function deployment.is_independent_registration_database() from public;
 grant usage on schema deployment to zhudatuanbootstrap,shopmigration;
-grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap;
+-- bootstrap_zhudatuan_owner is SECURITY DEFINER owned by shopmigration. Its
+-- nested boundary call is privilege-checked as the definer, while the boundary
+-- itself still requires session_user=zhudatuanbootstrap. Granting EXECUTE to
+-- shopmigration therefore enables only the canonical bootstrap call chain; a
+-- direct shopmigration session continues to receive false.
+grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration;
 grant execute on function deployment.is_independent_registration_database() to shopmigration;
 SQL

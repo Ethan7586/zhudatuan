@@ -14,6 +14,25 @@ runtime:
   purchaseApiProfile: purchase-only
   identityNotificationProfile: identity-notification-only
 oneShots:
+  registrationBoundaryReconcile:
+    artifact: infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql
+    invocation: docker-compose-psql-stdin
+    databaseRole: cluster-owner
+    before:
+      - registrationBootstrap
+      - ownerBootstrap
+    runtimeRoles:
+      - zhudatuanbootstrap
+      - shopmigration
+    publicRuntimeRole: forbidden
+  registrationBootstrap:
+    artifact: services/commerce/dist/BootstrapRegistration.js
+    process: zhudatuan-registration-bootstrap.service
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-registration-bootstrap.service
+    environment: infrastructure/zhudatuan/aliyun/registration-bootstrap.env.example
+    output: /opt/zhudatuan/shared/registration-bootstrap/registration-invitation.json
+    databaseRole: zhudatuanbootstrap
+    publicOperatorRole: forbidden
   ownerBootstrap:
     artifact: services/commerce/dist/BootstrapOwner.js
     process: zhudatuan-owner-bootstrap.service
