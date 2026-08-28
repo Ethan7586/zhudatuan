@@ -112,7 +112,6 @@ const REPAIR_FILES = [
   '20260828180000_zhudatuan_purchase_access.sql',
   '20260828183000_zhudatuan_runtime_readiness_repair.sql',
   '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
-  '20260829054500_zhudatuan_identity_login_acl_repair.sql',
 ];
 
 const mode = process.argv[2];
@@ -775,13 +774,9 @@ async function verifyZhudatuanRegistrationBaseline(database) {
   }
   // The historical baseline intentionally recreates its original policies.
   // Restore the immutable forward repair before any current-head ACL checks.
-  const bootstrapRepair = await readFile(join(MIGRATIONS,REGISTRATION_BOOTSTRAP_REPAIR),'utf8');
   await execute(database,
-    omitExactEnvironmentAssertion(bootstrapRepair,REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION,REGISTRATION_BOOTSTRAP_REPAIR),
+    await readFile(join(MIGRATIONS,'20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql'),'utf8'),
     'idempotent zhudatuan registration bootstrap repair replay');
-  await execute(database,
-    await readFile(join(MIGRATIONS,'20260829054500_zhudatuan_identity_login_acl_repair.sql'),'utf8'),
-    'idempotent zhudatuan identity login ACL repair replay');
 }
 
 async function verifyPhoneAssuranceRevocation(database) {
