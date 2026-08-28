@@ -39,7 +39,10 @@ export function ScopeShell() {
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
             : professional?.featureKey ?? workstation?.key;
   const logout = useMutation({
-    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, { accessVersion: context.session.accessVersion })),
+    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
+      accessVersion: context.session.accessVersion,
+      ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+    })),
     onSuccess: () => {
       queryClient.clear();
       window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);

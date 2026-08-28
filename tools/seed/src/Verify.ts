@@ -44,6 +44,7 @@ const challenge = await localFetch('http://127.0.0.1:3001/api/v1/identity/challe
   headers: {
     'content-type': 'application/json',
     'idempotency-key': randomUUID(),
+    origin: 'http://127.0.0.1:3000',
     'x-client-version': '0.0.0',
     'x-contract-version': CONTRACT_VERSION,
     'x-device-id': `local-${randomUUID()}`,
@@ -112,6 +113,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     headers: {
       'content-type': 'application/json',
       'idempotency-key': randomUUID(),
+      origin: 'http://127.0.0.1:3000',
       'x-client-version': '0.0.0',
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': `local-${randomUUID()}`,
@@ -131,7 +133,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
       && (item as Readonly<Record<string, unknown>>).client === 'storefront');
     operatorMembership = memberships.find((item): item is Readonly<{ id: string; client: string }> => item !== null && typeof item === 'object'
       && !Array.isArray(item) && typeof (item as Readonly<Record<string, unknown>>).id === 'string'
-      && (item as Readonly<Record<string, unknown>>).client === 'operator')?.id;
+      && (item as Readonly<Record<string, unknown>>).client === 'console')?.id;
     if (!storefront) throw new Error('LOCAL_EMPLOYEE_STOREFRONT_MEMBERSHIP_MISSING');
     login = await authenticate(storefront.id);
   }

@@ -120,8 +120,9 @@ export class ModuleOperations implements OperationUsecase {
         result = cause.result;
       }
       await appendOperationAudit(this.audit, client, request, this.module, result, actor, scope, hash);
+      const replay = idempotencyReplayResponse(request, result);
       await client.query(`update runtime.idempotency set state='completed',response=$4::jsonb
-        where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(result)]);
+        where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(replay)]);
       return result;
     });
   }
@@ -177,6 +178,13 @@ export function operationRequestHash(request: OperationRequest): string {
 }
 
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
+
+function idempotencyReplayResponse(request: OperationRequest, result: OperationResult): OperationResult {
+  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange') {
+    return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME' } };
+  }
+  return result;
+}
 
 function projection(value: unknown): readonly string[] {
   if (!value || typeof value!=='object') return [];

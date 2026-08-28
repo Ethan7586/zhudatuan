@@ -10,19 +10,20 @@
 
 ## 域名責任
 
-| 域名                    | 制品／服務            | 當前合同                             |
-| ----------------------- | --------------------- | ------------------------------------ |
-| `www.zhudatuan.com`     | `apps/storefront-web` | 消費端 REST/RPC 相容層，同源提供 API |
-| `auth.zhudatuan.com`    | `apps/auth-web`       | 消費端相容身份流程                   |
-| `console.zhudatuan.com` | `apps/console`        | Canonical Operation SDK              |
-| `api.zhudatuan.com`     | `services/commerce`   | 217 個 Canonical Operations          |
-| `chat.zhudatuan.com`    | 客服系統              | 尚未納入本次代碼基線                 |
+| 域名                     | 制品／服務            | 當前合同                                                        |
+| ------------------------ | --------------------- | --------------------------------------------------------------- |
+| `zhudatuan.com`          | `apps/storefront-web` | 消費端 REST/RPC 相容層，同源提供 API                            |
+| `www.zhudatuan.com`      | 邊緣重定向            | 永久跳轉到 `zhudatuan.com`                                     |
+| `accounts.zhudatuan.com` | `apps/auth-web`       | Console Canonical 登入；Canonical 員工註冊只建立 Storefront 身份 |
+| `console.zhudatuan.com`  | `apps/console`        | Canonical Operation SDK                                        |
+| `api.zhudatuan.com`      | `services/commerce`   | 217 個 Canonical Operations                                    |
+| `chat.zhudatuan.com`     | 客服系統              | 尚未納入本次代碼基線                                            |
 
 ## 部署軌道
 
 ### 核心營運軌道
 
-`apps/console`、`services/commerce` 與 `database/supabase` 必須使用同一提交與合同 Hash。阿里雲正式拓撲和不可變 Release Bundle 規範見 [`infrastructure/aliyun/DEPLOY-阿里云.md`](./infrastructure/aliyun/DEPLOY-%E9%98%BF%E9%87%8C%E4%BA%91.md)。在真資料庫 E2E、權限負例和 Provider 沙箱證據完成前，只允許部署到隔離測試環境。
+`apps/auth-web`（Canonical 登入／註冊）、`apps/console`、`services/commerce` 與 `database/supabase` 必須使用同一提交與合同 Hash。生產 `API_ALLOWED_ORIGINS` 必須使用精確 Origin 白名單。阿里雲正式拓撲和不可變 Release Bundle 規範見 [`infrastructure/aliyun/DEPLOY-阿里云.md`](./infrastructure/aliyun/DEPLOY-%E9%98%BF%E9%87%8C%E4%BA%91.md)。在真資料庫 E2E、權限負例和 Provider 沙箱證據完成前，只允許部署到隔離測試環境。
 
 ### 消費端相容軌道
 

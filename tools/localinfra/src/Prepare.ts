@@ -25,10 +25,10 @@ const values = await loadOrCreateSecrets();
 await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(values));
 await writePrivate(commerceEnvironmentFile, commerceEnvironment());
 const clientEnvironments: ReadonlyArray<readonly [string, string]> = [
-  ['console', viteEnvironment(5173)],
+  ['console', viteEnvironment(4173)],
   ['store', viteEnvironment(5174)],
   ['supplier', viteEnvironment(5175)],
-  ['auth', viteEnvironment(5176)],
+  ['auth', viteEnvironment(3002)],
   ['storefront', viteEnvironment(3000)],
   ['miniapp', miniappEnvironment()],
 ];
@@ -156,8 +156,8 @@ function commerceEnvironment(): string {
     SERVICE_VERSION: 'local',
     AUTH_MODE: 'membership',
     API_PORT: '3001',
-    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175,http://localhost:5176,http://127.0.0.1:5176',
-    AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://localhost:5173', storefront: 'http://localhost:3000', store: 'http://localhost:5174', supplier: 'http://localhost:5175' }),
+    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175',
+    AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://127.0.0.1:4173', storefront: 'http://127.0.0.1:3000', store: 'http://127.0.0.1:5174', supplier: 'http://127.0.0.1:5175' }),
     DATABASE_API_CONNECTION_REF: 'shop/local/database/api',
     DATABASE_JOB_CONNECTION_REF: 'shop/local/database/jobs',
     REDIS_CONNECTION_REF: 'shop/local/redis/query',
@@ -194,7 +194,7 @@ function commerceEnvironment(): string {
 }
 
 function viteEnvironment(port: number): string {
-  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:5176', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
+  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
 }
 
 function miniappEnvironment(): string {

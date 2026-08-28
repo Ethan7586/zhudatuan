@@ -6,7 +6,7 @@
 
 - 消費 Web：`apps/storefront-web`，來自使用者確認的 27 吋／Laptop 標準版本。
 - 營運後臺：`apps/console`，來自使用者確認的 4173 新版後臺。
-- 統一登入：`apps/auth-web`，是消費 Web 的必要運行依賴。
+- 統一登入：`apps/auth-web`，保留已批准的 3003 VI；Console 登入與員工自助註冊使用 Canonical Identity。
 
 ## API 邊界
 
@@ -14,6 +14,8 @@
 
 1. 核心營運鏈路：`apps/console` → `services/commerce` → `database/supabase`。
 2. 消費端相容鏈路：`apps/storefront-web`／`apps/auth-web` → `services/commerce-api` → `database/storefront-compatibility/supabase`。
+
+身份邊界：員工自助註冊經 Canonical 邀請、短信 Challenge 與版本化條款建立 `storefront` 身份；不會自動授予 Console 權限。現有消費 Web 的 Session Adapter 尚待接通，因此註冊成功不等同於商城自動登入。
 
 兩套合同不可共用同一組 Migration：新版使用 `@shop/*` Canonical Operation；消費端目前仍使用 `@smart-wing/*` REST/RPC 合同。正式合流需要新增 Adapter/BFF 並逐項驗證，不能直接覆蓋。
 
@@ -40,10 +42,11 @@ npm run build:commerce
 
 `services/commerce-api` 的完整 REST Router 目前由 `apps/storefront-web` Worker 同源嵌入，會隨 Storefront 一起構建；歷史 `adminServer.ts` 只包含 Health／AI 接口，不是完整相容 API 制品。
 
-## 建議域名
+## 正式域名
 
-- `www.zhudatuan.com`：消費 Web
-- `auth.zhudatuan.com`：統一登入
+- `zhudatuan.com`：消費者購物 Web
+- `www.zhudatuan.com`：永久跳轉到 `zhudatuan.com`
+- `accounts.zhudatuan.com`：統一身份中心
 - `console.zhudatuan.com`：營運後臺
 - `api.zhudatuan.com`：核心營運 API
 - `chat.zhudatuan.com`：客服系統

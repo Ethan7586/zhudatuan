@@ -12,18 +12,37 @@ import {
   loginWithPassword,
   getLockoutState,
   changeInitialPassword,
-  registerUsernameMember,
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
   resolveStorefrontLoginOrigin,
 } from '../services/auth';
+import { loginCanonicalConsole } from '../services/canonicalIdentity';
+import {
+  createCanonicalMember,
+  createCanonicalRegistrationChallenge,
+  resolveCanonicalInvite,
+  type CanonicalInvitation,
+} from '../services/canonicalRegistration';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
+
+function isStrongRegistrationPassword(value: string): boolean {
+  return value.length >= 12 && value.length <= 128
+    && /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value);
+}
+
+function maskMobile(value: string): string {
+  const mobile = value.trim();
+  if (mobile.length <= 7) return mobile;
+  return `${mobile.slice(0, 3)}****${mobile.slice(-4)}`;
+}
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
+  const isCanonicalConsoleRequest = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('client') === 'console';
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
@@ -36,8 +55,23 @@ export const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [registrationOpen, setRegistrationOpen] = useState(false);
-  const [registration, setRegistration] = useState({ username: '', displayName: '', inviteCode: '', password: '', confirmPassword: '' });
+  const [registration, setRegistration] = useState({
+    mobile: '',
+    displayName: '',
+    inviteCode: '',
+    code: '',
+    challengeId: '',
+    challengeMobile: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [registrationInvite, setRegistrationInvite] = useState<CanonicalInvitation | null>(null);
+  const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(false);
+  const [registrationPolicyModal, setRegistrationPolicyModal] = useState<'terms' | 'privacy' | null>(null);
+  const [registrationBusy, setRegistrationBusy] = useState<'invite' | 'code' | 'submit' | null>(null);
+  const [registrationCodeSeconds, setRegistrationCodeSeconds] = useState(0);
   const [registrationNotice, setRegistrationNotice] = useState('');
+  const [formNotice, setFormNotice] = useState('');
   const [resetOpen, setResetOpen] = useState(false);
   const [resetForm, setResetForm] = useState({ mobile: '', code: '', challengeId: '', password: '', confirm: '' });
 
@@ -77,9 +111,18 @@ export const LoginPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [lockoutSeconds]);
 
+  useEffect(() => {
+    if (registrationCodeSeconds <= 0) return;
+    const timer = window.setInterval(() => {
+      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [registrationCodeSeconds]);
+
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
     setFormError('');
+    setFormNotice('');
     setFieldErrors((prev) => ({ ...prev, identifier: '' }));
     const lock = getLockoutState(val.trim());
     if (lock.isLocked) {
@@ -90,6 +133,7 @@ export const LoginPage: React.FC = () => {
   const selectAuthMethod = (method: AuthMethod) => {
     setActiveTab(method);
     setFormError('');
+    setFormNotice('');
     setFieldErrors({});
   };
 
@@ -117,33 +161,113 @@ export const LoginPage: React.FC = () => {
   };
 
   const updateRegistration = (field: keyof typeof registration, value: string) => {
-    setRegistration((current) => ({ ...current, [field]: value }));
+    setRegistration((current) => {
+      if (field === 'mobile') {
+        return { ...current, mobile: value, code: '', challengeId: '', challengeMobile: '' };
+      }
+      return { ...current, [field]: value };
+    });
+    if (field === 'inviteCode') {
+      setRegistrationInvite(null);
+      setRegistrationTermsAccepted(false);
+    }
+    if (field === 'mobile') setRegistrationCodeSeconds(0);
     setFormError('');
+    setRegistrationNotice('');
+  };
+
+  const closeRegistration = () => {
+    setRegistrationOpen(false);
+    setRegistrationInvite(null);
+    setRegistrationTermsAccepted(false);
+    setRegistrationPolicyModal(null);
+    setRegistrationCodeSeconds(0);
+    setRegistrationBusy(null);
+    setRegistrationNotice('');
+    setFormError('');
+    setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
+  };
+
+  const handleResolveRegistrationInvite = async () => {
+    setRegistrationBusy('invite');
+    setFormError('');
+    setRegistrationNotice('');
+    try {
+      const invitation = await resolveCanonicalInvite(registration.inviteCode);
+      setRegistrationInvite(invitation);
+      setRegistrationTermsAccepted(false);
+      setRegistrationNotice('企业邀请已验证。请核对本次注册适用的服务协议与隐私政策。');
+    } catch (error) {
+      setRegistrationInvite(null);
+      setRegistrationTermsAccepted(false);
+      setFormError(error instanceof Error ? error.message : '邀请码验证失败');
+    } finally {
+      setRegistrationBusy(null);
+    }
+  };
+
+  const handleSendRegistrationCode = async () => {
+    if (!registrationInvite) {
+      setFormError('请先验证企业邀请码');
+      return;
+    }
+    setRegistrationBusy('code');
+    setFormError('');
+    setRegistrationNotice('');
+    try {
+      const challenge = await createCanonicalRegistrationChallenge(registration.mobile);
+      const seconds = Math.max(1, Math.floor((new Date(challenge.expiresAt).getTime() - Date.now()) / 1000));
+      setRegistration((current) => ({
+        ...current,
+        code: '',
+        challengeId: challenge.challengeId,
+        challengeMobile: current.mobile.trim(),
+      }));
+      setRegistrationCodeSeconds(seconds);
+      setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}，请在有效期内完成注册。`);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : '验证码发送失败');
+    } finally {
+      setRegistrationBusy(null);
+    }
   };
 
   const handleRegistrationSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!acceptedTerms) return setFormError('请先阅读并同意用户协议和隐私政策');
+    if (!registrationInvite) return setFormError('请先验证企业邀请码');
+    if (!registration.challengeId || registration.challengeMobile !== registration.mobile.trim()) return setFormError('请为当前手机号重新获取验证码');
+    if (!/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
+    if (!registrationTermsAccepted) return setFormError('请先阅读并同意本次邀请绑定的服务协议与隐私政策');
+    if (!isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
     if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
-    setLoading(true);
+    setRegistrationBusy('submit');
     setFormError('');
     try {
-      await registerUsernameMember({
-        username: registration.username.trim(),
+      await createCanonicalMember({
+        subject: registration.mobile,
         password: registration.password,
-        displayName: registration.displayName.trim(),
-        inviteCode: registration.inviteCode.trim(),
-        acceptedTerms: true,
+        displayName: registration.displayName,
+        inviteCode: registration.inviteCode,
+        challengeId: registration.challengeId,
+        code: registration.code,
+        termsAccepted: registrationTermsAccepted,
+        termsHash: registrationInvite.termsHash,
       });
-      setIdentifier(registration.username.trim().toLowerCase());
-      setPassword(registration.password);
+      setIdentifier(registration.mobile.trim());
+      setPassword('');
       setRegistrationOpen(false);
       setRegistrationNotice('');
-      setFormError('注册成功。已建立基础会员身份；手机尚未验证，可登录和浏览，短信认证完成前暂不能提交订单或付款。');
-    } catch (error: any) {
-      setFormError(error.message || '注册失败');
+      setRegistrationInvite(null);
+      setRegistrationTermsAccepted(false);
+      setRegistrationCodeSeconds(0);
+      setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
+      setFormNotice(isCanonicalConsoleRequest
+        ? '员工商城账号已创建。该账号只具备消费商城身份；进入运营后台仍需管理员另行授予权限。'
+        : '员工商城账号已创建。消费商城会话接通前不会自动登录，也不会重复创建账号。');
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : '注册失败');
     } finally {
-      setLoading(false);
+      setRegistrationBusy(null);
     }
   };
 
@@ -202,6 +326,17 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 
     try {
+      if (isCanonicalConsoleRequest) {
+        const result = await loginCanonicalConsole(identifier, password);
+        if (result.kind === 'authenticated') {
+          window.location.replace(result.redirectUrl);
+          return;
+        }
+        setPreAuthContext(result.context);
+        setStage(2);
+        return;
+      }
+
       const context: PreAuthContext = await loginWithPassword(identifier, password);
 
       // 如果需要重置密码
@@ -351,11 +486,6 @@ export const LoginPage: React.FC = () => {
 
   // 2. 选中并确认某条会员关系
   const handleSelectMembership = async (mem: Membership) => {
-    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
-      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
-      return;
-    }
-
     if (mem.status === 'invited') {
       setFormError(`【${mem.enterpriseName}】的邀请尚待接受，请先确认加入该企业福利计划`);
       return;
@@ -370,6 +500,30 @@ export const LoginPage: React.FC = () => {
     }
     if (mem.status === 'expired') {
       setFormError(`【${mem.enterpriseName}】福利周期已届满到期`);
+      return;
+    }
+
+    if (isCanonicalConsoleRequest) {
+      if (mem.target !== 'admin') {
+        setFormError('该身份不属于运营后台');
+        return;
+      }
+      setLoading(true);
+      setFormError('');
+      try {
+        const result = await loginCanonicalConsole(identifier, password, mem.id);
+        if (result.kind !== 'authenticated') throw new Error('服务端未确认所选后台身份');
+        window.location.replace(result.redirectUrl);
+      } catch (error: any) {
+        setFormError(error.message || '后台身份选择失败');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
+      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
       return;
     }
 
@@ -757,6 +911,13 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
+                {formNotice && lockoutSeconds === 0 && (
+                  <div className="mb-5 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800" role="status">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <p className="flex-1">{formNotice}</p>
+                  </div>
+                )}
+
                 {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
@@ -857,6 +1018,8 @@ export const LoginPage: React.FC = () => {
                               onClick={() => {
                                 setRegistrationOpen(true);
                                 setFormError('');
+                                setFormNotice('');
+                                setRegistrationNotice('');
                               }}
                               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-950 bg-slate-950 px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:border-slate-800 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/25 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
                             >
@@ -1027,9 +1190,9 @@ export const LoginPage: React.FC = () => {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">Member Registration</p>
                 <h3 className="mt-1 text-2xl font-bold text-slate-950">注册员工会员</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">先用账号密码建立普通员工会员。手机号、微信和企业微信以后可绑定到同一个账号；管理员与 Owner 不开放自助注册。</p>
+                <p className="mt-2 text-sm leading-6 text-slate-500">手机号验证后建立普通员工会员；管理员与 Owner 不开放自助注册。</p>
               </div>
-              <button type="button" onClick={() => setRegistrationOpen(false)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
+              <button type="button" onClick={closeRegistration} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -1047,29 +1210,65 @@ export const LoginPage: React.FC = () => {
                 />
               </label>
               <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                企业邀请码
+                <span className="flex items-center justify-between gap-2">
+                  企业邀请码
+                  {registrationInvite && <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600"><CheckCircle2 className="h-3 w-3" />已验证</span>}
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    value={registration.inviteCode}
+                    onChange={(event) => updateRegistration('inviteCode', event.target.value)}
+                    maxLength={255}
+                    required
+                    autoComplete="off"
+                    placeholder="由企业福利管理员提供"
+                    className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleResolveRegistrationInvite}
+                    disabled={registrationBusy !== null || !registration.inviteCode.trim()}
+                    className="rounded-xl border border-blue-200 bg-blue-50 px-3 text-[11px] font-bold text-[var(--sw-brand)] disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    {registrationBusy === 'invite' ? '验证中' : '验证'}
+                  </button>
+                </div>
+              </label>
+              <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
+                登录手机号
                 <input
-                  value={registration.inviteCode}
-                  onChange={(e) => updateRegistration('inviteCode', e.target.value.toUpperCase())}
-                  maxLength={80}
+                  value={registration.mobile}
+                  onChange={(event) => updateRegistration('mobile', event.target.value)}
+                  maxLength={16}
                   required
-                  placeholder="由企业福利管理员提供"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono uppercase outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="用于登录、验证与找回密码"
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </label>
               <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
-                登录账号
-                <input
-                  value={registration.username}
-                  onChange={(e) => updateRegistration('username', e.target.value.toLowerCase())}
-                  minLength={4}
-                  maxLength={32}
-                  pattern="[A-Za-z][A-Za-z0-9._-]{3,31}"
-                  required
-                  autoComplete="username"
-                  placeholder="4–32位，以字母开头，可含数字、点、横线和下划线"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
+                手机验证码
+                <div className="flex gap-2">
+                  <input
+                    value={registration.code}
+                    onChange={(event) => updateRegistration('code', event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                    required
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="输入 6 位验证码"
+                    className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm tracking-[0.22em] outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendRegistrationCode}
+                    disabled={registrationBusy !== null || registrationCodeSeconds > 0 || !registrationInvite || !registration.mobile.trim()}
+                    className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    {registrationBusy === 'code' ? '发送中…' : registrationCodeSeconds > 0 ? `${registrationCodeSeconds}s` : '获取验证码'}
+                  </button>
+                </div>
               </label>
               <label className="space-y-1.5 text-xs font-medium text-slate-700">
                 设置密码
@@ -1077,10 +1276,11 @@ export const LoginPage: React.FC = () => {
                   type="password"
                   value={registration.password}
                   onChange={(e) => updateRegistration('password', e.target.value)}
-                  minLength={10}
+                  minLength={12}
                   maxLength={128}
                   required
-                  placeholder="至少10位，含字母和数字"
+                  autoComplete="new-password"
+                  placeholder="12位以上，含大小写、数字和符号"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </label>
@@ -1090,9 +1290,10 @@ export const LoginPage: React.FC = () => {
                   type="password"
                   value={registration.confirmPassword}
                   onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
-                  minLength={10}
+                  minLength={12}
                   maxLength={128}
                   required
+                  autoComplete="new-password"
                   placeholder="再次输入密码"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
@@ -1102,19 +1303,54 @@ export const LoginPage: React.FC = () => {
             {registrationNotice && <p className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">{registrationNotice}</p>}
             {formError && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{formError}</p>}
             <label className="mt-5 flex cursor-pointer items-start gap-2 text-xs leading-5 text-slate-500">
-              <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300 accent-[var(--sw-brand)]" />
-              <span>我已阅读并同意《用户服务协议》和《隐私保护政策》，并确认使用本人账号注册。</span>
+              <input
+                type="checkbox"
+                checked={registrationTermsAccepted}
+                onChange={(event) => setRegistrationTermsAccepted(event.target.checked)}
+                disabled={!registrationInvite}
+                className="mt-1 h-4 w-4 rounded border-slate-300 accent-[var(--sw-brand)] disabled:cursor-not-allowed"
+              />
+              <span>
+                我已阅读并同意
+                <button type="button" disabled={!registrationInvite} onClick={() => setRegistrationPolicyModal('terms')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《用户服务协议》</button>
+                和
+                <button type="button" disabled={!registrationInvite} onClick={() => setRegistrationPolicyModal('privacy')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《隐私保护政策》</button>
+                ，并确认使用本人手机号注册。
+              </span>
             </label>
             <button
               type="submit"
-              disabled={loading || !acceptedTerms}
+              disabled={registrationBusy !== null || !registrationInvite || !registration.challengeId || !registrationTermsAccepted}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
             >
-              {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
+              {registrationBusy === 'submit' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
               创建普通员工会员账号
             </button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">企业管理员不能查看你的密码。手机号与微信绑定入口已预留；未绑定手机前无法自助找回密码。</p>
+            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">密码、邀请码和验证码不会写入浏览器长期存储。自助注册只开通消费商城，后台权限须由管理员另行授予。</p>
           </form>
+        </div>
+      )}
+
+      {registrationPolicyModal && registrationInvite && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+                <FileText className="h-5 w-5 text-[var(--sw-brand)]" />
+                {registrationPolicyModal === 'terms' ? registrationInvite.termsTitle : registrationInvite.privacyTitle}
+              </div>
+              <button type="button" onClick={() => setRegistrationPolicyModal(null)} className="rounded-lg p-1 text-slate-400 hover:text-slate-600" aria-label="关闭注册条款">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto whitespace-pre-wrap pr-2 text-xs leading-6 text-slate-600">
+              {registrationPolicyModal === 'terms' ? registrationInvite.termsBody : registrationInvite.privacyBody}
+            </div>
+            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-[10px] text-slate-400">
+              <span>版本 {registrationInvite.termsHash.slice(0, 12)}…</span>
+              <button type="button" onClick={() => setRegistrationPolicyModal(null)} className="rounded-xl bg-[var(--sw-brand)] px-5 py-2 text-xs font-semibold text-white">关闭</button>
+            </div>
+          </div>
         </div>
       )}
 
