@@ -9,15 +9,10 @@ import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle,
 import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
 import {
-  loginWithPassword,
   getLockoutState,
   changeInitialPassword,
-  buildCredentialLoginAction,
-  requiresAuthoritativeMembershipSelection,
-  resolveAdminLoginOrigin,
-  resolveStorefrontLoginOrigin,
 } from '../services/auth';
-import { loginCanonicalConsole } from '../services/canonicalIdentity';
+import { loginCanonicalConsole, loginCanonicalStorefront } from '../services/canonicalIdentity';
 import {
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
@@ -26,6 +21,8 @@ import {
 } from '../services/canonicalRegistration';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
+
+const PASSWORD_RECOVERY_UNAVAILABLE = '找回密码尚未接入统一身份中心，请联系企业管理员重置密码。';
 
 function isStrongRegistrationPassword(value: string): boolean {
   return value.length >= 12 && value.length <= 128
@@ -271,46 +268,18 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const sendResetCode = async () => {
-    setLoading(true);
+  const sendResetCode = () => {
+    setLoading(false);
     setFormError('');
-    try {
-      const response = await fetch('/api/v1/auth/security/otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mobile: resetForm.mobile, purpose: 'password_reset' }) });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '验证码发送失败');
-      const developmentCode = import.meta.env.DEV && typeof payload?.debugCode === 'string' ? payload.debugCode : '';
-      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: developmentCode || current.code }));
-      setRegistrationNotice(developmentCode ? `开发环境验证码：${developmentCode}` : '验证码已发送');
-    } catch (error: any) {
-      setFormError(error.message || '验证码发送失败');
-    } finally {
-      setLoading(false);
-    }
+    setRegistrationNotice('');
+    setFormError(PASSWORD_RECOVERY_UNAVAILABLE);
   };
 
-  const submitPasswordReset = async (event: React.FormEvent) => {
+  const submitPasswordReset = (event: React.FormEvent) => {
     event.preventDefault();
-    if (resetForm.password !== resetForm.confirm) return setFormError('两次输入的新密码不一致');
-    setLoading(true);
-    setFormError('');
-    try {
-      const response = await fetch('/api/v1/auth/password/reset', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ mobile: resetForm.mobile, challengeId: resetForm.challengeId, code: resetForm.code, newPassword: resetForm.password }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '密码重置失败');
-      setIdentifier(resetForm.mobile);
-      setPassword(resetForm.password);
-      setResetOpen(false);
-      setRegistrationNotice('');
-      setFormError('密码已重置，所有旧设备均已下线，请重新登录。');
-    } catch (error: any) {
-      setFormError(error.message || '密码重置失败');
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+    setRegistrationNotice('');
+    setFormError(PASSWORD_RECOVERY_UNAVAILABLE);
   };
 
   // 1. 提交第一段认证
@@ -337,18 +306,13 @@ export const LoginPage: React.FC = () => {
         return;
       }
 
-      const context: PreAuthContext = await loginWithPassword(identifier, password);
-
-      // 如果需要重置密码
-      if (context.requiresPasswordReset) {
-        setPreAuthContext(context);
-        setShowForcePasswordModal(true);
-        setLoading(false);
+      const result = await loginCanonicalStorefront(identifier, password);
+      if (result.kind === 'authenticated') {
+        window.location.replace(result.redirectUrl);
         return;
       }
-
-      setPreAuthContext(context);
-      await processPreAuthContext(context);
+      setPreAuthContext(result.context);
+      await processPreAuthContext(result.context);
     } catch (err: any) {
       setFormError(err.message || '认证失败');
       // 检查是否触发锁定
@@ -361,63 +325,10 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const submitCredentialForm = (targetOrigin: string) => {
-    // A top-level form lets the destination host create its own __Host-
-    // HttpOnly cookie. Credentials remain in the POST body and never enter the
-    // URL, browser history or referrer.
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = buildCredentialLoginAction(targetOrigin);
-    form.target = '_top';
-    form.style.display = 'none';
-    for (const [name, value] of Object.entries({ username: identifier, password })) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    }
-    document.body.appendChild(form);
-    form.submit();
-  };
-
   // 处理 PreAuth 上下文并路由到第2段或自动跳转
   const completeStorefrontLogin = async (membershipId: string) => {
-    // Credential discovery never creates a cookie. The final login is the only
-    // place that establishes the tracked, revocable HttpOnly device session.
-    let storefrontOrigin: string;
-    try {
-      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-      storefrontOrigin = resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV);
-    } catch (error: any) {
-      setFormError(error.message || '商城登录目标配置无效');
-      return;
-    }
-
-    // When accounts.zhudatuan.com is the standalone shell, a relative fetch
-    // would set a host-only cookie on the wrong host and then loop back here.
-    // Transfer the browser to the storefront host before the final login.
-    if (isStorefrontEmbed && window.location.origin !== storefrontOrigin) {
-      setFormError('商城嵌入登录必须与商城同源，已停止提交账号凭证。');
-      return;
-    }
-
-    if (window.location.origin !== storefrontOrigin) {
-      submitCredentialForm(storefrontOrigin);
-      return;
-    }
-
-    const response = await fetch('/api/v1/auth/login', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: identifier, password }),
-    });
-
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      throw new Error(payload?.error?.message || '登录失败，请检查账号与密码');
-    }
+    const result = await loginCanonicalStorefront(identifier, password, membershipId);
+    if (result.kind !== 'authenticated') throw new Error('服务端未确认所选商城身份');
 
     if (isStorefrontEmbed) {
       // iframe 与商城同源；只通知父窗口刷新已建立的 HttpOnly 会话，不传递密码或票据。
@@ -425,24 +336,7 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    // 商城同源登录页必须离开认证壳，进入已经建立真实会话的商城首页。
-    window.location.replace('/');
-  };
-
-  const completeAdminLogin = () => {
-    // The browser performs a top-level POST on the target host, allowing the
-    // admin domain to create its own __Host- cookie before loading the app.
-    // Credentials are deliberately submitted in the request body, never URL.
-    let adminOrigin: string;
-    try {
-      const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
-      adminOrigin = resolveAdminLoginOrigin(configuredOrigin, import.meta.env.DEV);
-    } catch (error: any) {
-      setFormError(error.message || '后台登录目标配置无效');
-      return;
-    }
-
-    submitCredentialForm(adminOrigin);
+    window.location.replace(result.redirectUrl);
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
@@ -464,20 +358,9 @@ export const LoginPage: React.FC = () => {
         await completeStorefrontLogin(singleMem.id);
         return;
       } else if (singleMem.target === 'admin') {
-        if (singleMem.requiresStepUp) {
-          setSelectedMembership(singleMem);
-          setStage(3);
-        } else {
-          completeAdminLogin();
-        }
+        setStage(2);
         return;
       }
-    }
-
-    // 多条身份仍保留确认过的第2段 UI，但当前服务端尚未提供
-    // 绑定会话的选择 token，所以任何点击都必须安全失败。
-    if (requiresAuthoritativeMembershipSelection(activeMemberships)) {
-      setFormError('检测到多个可用身份。服务端身份选择尚未接通，已停止建立会话。');
     }
 
     // 多条身份或包含复杂状态，进入第2段选择会员关系
@@ -522,11 +405,6 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
-      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
-      return;
-    }
-
     setFormError('');
     if (mem.target === 'admin' && mem.requiresStepUp) {
       setSelectedMembership(mem);
@@ -539,7 +417,6 @@ export const LoginPage: React.FC = () => {
       }
 
       if (mem.target === 'admin') {
-        completeAdminLogin();
         return;
       }
     }

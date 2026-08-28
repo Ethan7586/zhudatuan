@@ -6,7 +6,6 @@ import { mapApiOrder, mapApiProduct } from './mallMappers';
 import type { CatalogSyncStatus, SessionStatus } from './MallContext.types';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 import { mergeAuthenticatedMemberProfile } from './storefrontMemberProfile';
-import { createCatalogPublisher } from './catalogSync';
 
 interface ProductionSyncSetters {
   setProducts: Dispatch<SetStateAction<Product[]>>;
@@ -27,16 +26,16 @@ type CatalogPageLoader = typeof productionApi.listProducts;
 
 async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProduct[]> {
   const items = new Map<string, ApiProduct>();
-  let cursor: number | null = 0;
+  let cursor: string | null = null;
   let pageCount = 0;
 
-  while (cursor !== null && pageCount < 60) {
+  while (pageCount < 60) {
     const page = await loadPage({
-      cursor,
+      ...(cursor ? { cursor } : {}),
       limit: 100,
     });
     page.items.forEach((item) => items.set(item.id, item));
-    if (page.pagination.nextCursor === cursor) break;
+    if (!page.pagination.nextCursor || page.pagination.nextCursor === cursor) break;
     cursor = page.pagination.nextCursor;
     pageCount += 1;
   }
@@ -64,28 +63,19 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
   };
 
   const refreshPublicCatalog = async () => {
-    const syncVersion = ++syncVersionRef.current;
+    ++syncVersionRef.current;
     setters.setProducts([]);
-    setters.setCatalogSyncStatus('syncing');
-    try {
-      const items = await loadCompleteCatalog(productionApi.listProducts);
-      if (syncVersion === syncVersionRef.current) publishCatalog(items);
-    } catch (error) {
-      if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
-      throw error;
-    }
+    // The canonical backend currently has no anonymous listing operation.
+    // Guest mode therefore stays empty instead of falling back to the retired
+    // same-origin public-catalog facade.
+    setters.setCatalogSyncStatus('idle');
   };
 
   const refreshProductionData = async () => {
     if (!enabled) return;
     const syncVersion = ++syncVersionRef.current;
-    // Public products are available to every visitor. Authentication only
-    // upgrades this snapshot with member pricing and purchase qualification.
     setters.setProducts([]);
     setters.setCatalogSyncStatus('syncing');
-    const publisher = createCatalogPublisher(() => syncVersion === syncVersionRef.current, publishCatalog);
-    const publicCatalogRequest = loadCompleteCatalog(productionApi.listProducts);
-    void publicCatalogRequest.then(publisher.commitPublic).catch(() => undefined);
     let snapshot: Awaited<ReturnType<typeof productionApi.getHomeSnapshot>>;
     try {
       snapshot = await productionApi.getHomeSnapshot();
@@ -93,17 +83,10 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       if (syncVersion !== syncVersionRef.current) return;
       closeMemberData();
       setters.setSessionStatus('guest');
-      try {
-        publisher.commitPublic(await publicCatalogRequest);
-      } catch {
-        if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
-      }
+      setters.setCatalogSyncStatus('idle');
       throw error;
     }
-    if (syncVersion !== syncVersionRef.current) {
-      void publicCatalogRequest.catch(() => undefined);
-      return;
-    }
+    if (syncVersion !== syncVersionRef.current) return;
     const { bootstrap, accounts, orders: orderResult, accountLedgers: ledgerResult } = snapshot;
     const welfare = accounts.items.find((account) => account.type === 'welfare');
     const meal = accounts.items.find((account) => account.type === 'meal');
@@ -143,13 +126,11 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     // background without hiding account actions such as logout.
     setters.setSessionStatus('authenticated');
     void loadCompleteCatalog(productionApi.listQualifiedProducts)
-      .then(publisher.commitQualified)
-      .catch(async () => {
-        try {
-          await publicCatalogRequest;
-        } catch {
-          if (syncVersion === syncVersionRef.current && !publisher.hasPublicFallback()) setters.setCatalogSyncStatus('error');
-        }
+      .then((items) => {
+        if (syncVersion === syncVersionRef.current) publishCatalog(items);
+      })
+      .catch(() => {
+        if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
       });
   };
 
@@ -161,8 +142,8 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
   useEffect(() => {
     if (!enabled) return;
     let active = true;
-    // /home is both the authorization check and the initial data snapshot.
-    // Avoid a separate /auth/session round trip before loading the page.
+    // The canonical session read is the authorization check; member, benefit
+    // and order projections are then loaded from their typed operations.
     void refreshProductionData().catch(() => {
       if (active) setters.setSessionStatus('guest');
     });

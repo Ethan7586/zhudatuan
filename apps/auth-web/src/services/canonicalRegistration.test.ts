@@ -47,13 +47,16 @@ describe('canonical registration', () => {
   });
 
   it('creates a registration-only challenge with stable device metadata', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
-      id: 'challenge:registration-one',
-      purpose: 'registration',
-      expires_at: '2026-08-28T01:10:00.000Z',
-    }, 202));
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(invitation()))
+      .mockResolvedValueOnce(jsonResponse({
+        id: 'challenge:registration-one',
+        purpose: 'registration',
+        expires_at: '2026-08-28T01:10:00.000Z',
+      }, 202));
     vi.stubGlobal('fetch', fetchMock);
 
+    await resolveCanonicalInvite('invitation-secret');
     const result = await createCanonicalRegistrationChallenge('  13800138000  ');
 
     expect(result).toEqual({
@@ -61,10 +64,19 @@ describe('canonical registration', () => {
       purpose: 'registration',
       expiresAt: '2026-08-28T01:10:00.000Z',
     });
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[1];
     expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
-    expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', purpose: 'registration' });
+    expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', purpose: 'registration', invite: 'invitation-secret' });
     expectCanonicalHeaders(init?.headers);
+  });
+
+  it('will not request an SMS challenge until the invitation has been resolved successfully', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ code: 'INVITE_INVALID' }, 400));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveCanonicalInvite('invalid-invitation')).rejects.toThrow('邀请码无效、已过期或已被使用');
+    await expect(createCanonicalRegistrationChallenge('13800138000')).rejects.toThrow('请先验证有效的企业邀请码');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('creates a storefront member with exact terms evidence and preserves password whitespace', async () => {

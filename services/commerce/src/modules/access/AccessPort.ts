@@ -22,7 +22,8 @@ export class AccessPort {
   async createRegistration(database: OperationDatabase, input: RegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
     const membership = await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
       values($1,$2,$3,'storefront','active',1,clock_timestamp()) returning *`, [input.membership, input.member, input.organization]);
-    await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values($1,$2,clock_timestamp())`, [input.membership, input.role]);
+    await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
+      ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp())`, [input.membership, input.role]);
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
       ($1,$2,$3,$4,$4,'allow',clock_timestamp(),1),($5,$2,'owner',$6,$6,'allow',clock_timestamp(),1),($7,$2,'self',$8,$8,'allow',clock_timestamp(),1)`,
     [input.scopes[0], input.membership, input.scopeKind, input.organization, input.scopes[1], input.member, input.scopes[2], input.principal]);

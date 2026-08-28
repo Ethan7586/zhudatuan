@@ -1,0 +1,129 @@
+import { SystemClock } from '@shop/kernel';
+import type { Telemetry } from '@shop/telemetry';
+import { CONTRACT_CHECKSUM, type OperationId } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD, identityRegistrationApiReturnTargets, type IdentityRegistrationApiEnvironment } from '@shop/config/server';
+import type { OperationHandler } from '../foundation/application/OperationHandler';
+import { AUDIT_SINK } from '../foundation/application/AuditSink';
+import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
+import { IDENTITY_SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
+import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
+import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
+import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
+import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
+import { RISK_GATE } from '../foundation/security/RiskGate';
+import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
+import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
+import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
+import { RETURN_TARGETS } from '../modules/identity/infrastructure/ReturnTargetCatalog';
+import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
+import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
+import type { Container } from './Container';
+import { ExtensionRegistry } from './ExtensionRegistry';
+
+interface CompatibilityRow {
+  readonly current_user: string;
+  readonly writable: boolean;
+  readonly schema: boolean;
+  readonly contract: boolean;
+  readonly registration: boolean;
+  readonly relations: boolean;
+}
+
+export interface IdentityRegistrationApiRuntime {
+  readonly pool: DatabasePool;
+  readonly extensions: ExtensionRegistry;
+  readonly telemetry: Telemetry;
+  readonly configure: (container: Container) => void;
+  close(): Promise<void>;
+}
+
+export async function createIdentityRegistrationApiRuntime(
+  environment: IdentityRegistrationApiEnvironment,
+): Promise<IdentityRegistrationApiRuntime> {
+  const secrets = new WorkloadSecretStore(
+    required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
+    required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
+  );
+  const [connection, sessionKey, identityKey] = await Promise.all([
+    secrets.read(required(environment.DATABASE_API_CONNECTION_REF, 'DATABASE_API_CONNECTION_REF_MISSING')),
+    secrets.read(required(environment.SESSION_KEY_REF, 'SESSION_KEY_REF_MISSING')),
+    secrets.read(required(environment.IDENTITY_KEY_REF, 'IDENTITY_KEY_REF_MISSING')),
+  ]);
+  const pool = createPool(connection, 'api');
+  try {
+    await assertIdentityRegistrationRuntimeCompatibility(pool);
+  } catch (cause) {
+    await pool.end();
+    throw cause;
+  }
+  const risk = new RiskCheckAdapter(pool);
+  const audit = new RecordAudit(new PgAuditRepository());
+  const access = new AccessPipeline(
+    new PgSessionResolver(pool),
+    new PgMembershipResolver(pool),
+    new PgAccessVersionResolver(pool),
+    new PgScopeResolver(pool),
+    new PgCapabilityResolver(pool),
+    new SystemClock(),
+    risk,
+    new PgDecisionSink(pool),
+  );
+  const handlers = new Map<OperationId, OperationHandler>();
+  const extensions = new ExtensionRegistry({ verify: async () => false });
+  const telemetry = commerceTelemetry();
+  return Object.freeze({
+    pool,
+    extensions,
+    telemetry,
+    configure(container: Container) {
+      container.bind(OPERATION_HANDLERS, handlers);
+      container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
+      container.bind(DATABASE_POOL, pool);
+      container.bind(RISK_GATE, risk);
+      container.bind(AUDIT_SINK, audit);
+      container.bind(SECRET_STORE, secrets);
+      container.bind(IDENTITY_SECURITY_KEYS, Object.freeze({ session: sessionKey, identity: identityKey }));
+      container.bind(KMS_CLIENT, new KmsClient(
+        required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
+        required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
+      ));
+      container.bind(RETURN_TARGETS, identityRegistrationApiReturnTargets(environment));
+    },
+    async close() {
+      await extensions.stop();
+      await pool.end();
+    },
+  });
+}
+
+export async function identityRegistrationRuntimeCompatibility(pool: DatabasePool): Promise<Readonly<CompatibilityRow>> {
+  const result = await pool.query<CompatibilityRow>(`select current_user,
+    not pg_is_in_recovery() writable,
+    exists(select 1 from runtime.schemaversion where version=$1) schema,
+    exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,
+    exists(select 1 from runtime.schemaversion where version='20260828170000'
+      and checksum='5cf87482ba3d0db32500809d28a77973ac285657aeb9c14612ba3dc525a2965e') registration,
+    array_position(array[
+      to_regclass('runtime.idempotency'),to_regclass('runtime.job'),to_regclass('runtime.outbox'),
+      to_regclass('identity.principal'),to_regclass('identity.credential'),to_regclass('identity.session'),
+      to_regclass('identity.authticket'),to_regclass('identity.challenge'),to_regclass('identity.challengesecret'),
+      to_regclass('identity.registrationpolicy'),to_regclass('member.invite'),to_regclass('member.profile'),
+      to_regclass('access.membership'),to_regclass('access.membershiprole'),to_regclass('access.scopegrant'),
+      to_regclass('organization.organization'),to_regclass('audit.record'),to_regclass('audit.accessrecord')
+    ],null) is null relations`, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
+  const state = result.rows[0];
+  if (!state || state.current_user !== 'zhudatuanidentityapi' || !state.writable || !state.schema || !state.contract || !state.registration || !state.relations) {
+    throw new Error(`IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
+  }
+  return Object.freeze(state);
+}
+
+export async function assertIdentityRegistrationRuntimeCompatibility(pool: DatabasePool): Promise<void> {
+  await identityRegistrationRuntimeCompatibility(pool);
+}
+
+function required(value: string | undefined, code: string): string {
+  if (!value?.trim()) throw new Error(code);
+  return value.trim();
+}

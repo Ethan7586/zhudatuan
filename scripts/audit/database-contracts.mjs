@@ -11,7 +11,18 @@ const ROOT = repositoryRoot;
 const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
+const SANDBOX_CATALOG = join(ROOT, 'tools', 'seed', 'src', 'SandboxCatalogDatabase.sql');
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
+const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
+const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
+const REGISTRATION_ASSERTION_OMISSIONS = new Map([
+  [INVITATION_SCOPE,/\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
+  ['20260821069000_add_store_management.sql',/\n  select id into membership from access\.membership[\s\S]*?STORE_CREATE_SCOPE_UNRESOLVED'; end if;\n/],
+  ['20260821074000_grant_platform_owner_operations.sql',/\ndo \$assert\$[\s\S]*?\n\$assert\$;\n/],
+  ['20260821075000_grant_platform_cardlibrary_read.sql',/\ndo \$assert\$[\s\S]*?\nend \$assert\$;\n/],
+  ['20260821076000_grant_platform_cockpit_reads.sql',/\ndo \$assert\$[\s\S]*?\n\$assert\$;\n/],
+  ['20260821078000_complete_experience_application.sql',/\n  if exists\(\n    select 1 from unnest\(required_operations\)[\s\S]*?PLATFORM_OWNER_EXPERIENCE_OPERATION_MISSING';\n  end if;\n/],
+]);
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
 const REPAIR_FILES = [
@@ -64,11 +75,14 @@ const REPAIR_FILES = [
   '20260821078000_complete_experience_application.sql',
   '20260821079000_resolve_experience_version_scope.sql',
   '20260821080000_restore_member_scope_authorization.sql',
+  '20260828170000_zhudatuan_registration_baseline.sql',
+  '20260828173000_zhudatuan_web_business_access.sql',
+  '20260828180000_zhudatuan_purchase_access.sql',
 ];
 
 const mode = process.argv[2];
-if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel'].includes(mode)) {
-  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
+if (!['--check-inventory','--schema-fresh','--registration-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel'].includes(mode)) {
+  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--registration-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
@@ -85,6 +99,7 @@ try {
   await execute(database, `
     create role anon nologin; create role authenticated nologin; create role service_role nologin;
   `, 'database role bootstrap');
+  if (mode === '--registration-fresh') await installRegistrationReplayBoundary(database);
   if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
   await execute(database, `
     create schema supabase_migrations;
@@ -92,6 +107,12 @@ try {
   `, 'database bootstrap');
   let applied = 0;
   for (const name of migrationFiles) {
+    if (mode === '--registration-fresh' && (name === BOOTSTRAP || name === OWNER_RECONCILIATION)) {
+      await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)',
+        [name.slice(0,14),`environment-omitted:${name}`]);
+      applied += 1;
+      continue;
+    }
     if (name === BOOTSTRAP) await seedBootstrapPrecondition(database);
     if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
       await seedUnsafeInventoryCutover(database);
@@ -101,7 +122,12 @@ try {
       break;
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
-    await execute(database, await readFile(join(MIGRATIONS,name),'utf8'), `migration ${name}`);
+    const source = await readFile(join(MIGRATIONS,name),'utf8');
+    const omission=REGISTRATION_ASSERTION_OMISSIONS.get(name);
+    const sql = mode==='--registration-fresh' && omission
+      ? omitExactEnvironmentAssertion(source,omission,name)
+      : source;
+    await execute(database, sql, `migration ${name}`);
     await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0,14),name]);
     applied += 1;
   }
@@ -118,7 +144,16 @@ try {
 }
 
 async function openDatabase() {
-  if (mode !== '--postgres-fresh') return new PGlite({ extensions: { pgcrypto } });
+  if (mode !== '--postgres-fresh') {
+    // PGlite initializes only its default database. Build a tiny cluster image
+    // first, then connect to the canonical registration database so database-
+    // name boundaries are exercised instead of being skipped in replay.
+    const cluster = new PGlite();
+    await cluster.exec('create database zhudatuan_registration');
+    const data = await cluster.dumpDataDir('none');
+    await cluster.close();
+    return new PGlite({ database: 'zhudatuan_registration', loadDataDir: data, extensions: { pgcrypto } });
+  }
   const connectionString = process.argv[3];
   if (connectionString !== undefined && !/^postgres(?:ql)?:\/\//.test(connectionString)) throw new Error('POSTGRES_FRESH_URL_INVALID');
   const client = new Client({ ...(connectionString === undefined ? {} : { connectionString }), connectionTimeoutMillis: 5_000, statement_timeout: 120_000 });
@@ -157,6 +192,12 @@ function duplicateVersions(files) {
   return new Map([...versions].filter(([,names])=>names.length>1));
 }
 
+function omitExactEnvironmentAssertion(source,assertion,file) {
+  const matches=source.match(new RegExp(assertion.source,'g'));
+  if (matches?.length!==1) throw new Error(`MIGRATION_ENVIRONMENT_ASSERTION_DRIFT:${file}`);
+  return source.replace(assertion,'\n');
+}
+
 async function execute(database,sql,label) {
   try { await database.exec(sql); }
   catch (error) { throw new Error(`${label}: ${error instanceof Error ? error.message : String(error)}`,{cause:error}); }
@@ -167,6 +208,34 @@ async function seedBootstrapPrecondition(database) {
     values('user-fresh-replay-ethan','tenant-smart-wing','enterprise-demo','department-digital','SW_FRESH_REPLAY_ETHAN','Fresh Replay Ethan','fresh-replay@example.invalid','active');
     insert into public.members(id,user_id,primary_identifier,status) values('member-fresh-replay-ethan','user-fresh-replay-ethan','local_username:ethan','active');
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,'bootstrap precondition');
+}
+
+async function installRegistrationReplayBoundary(database) {
+  const sentinel='registration-fresh-replay-sentinel-not-for-production';
+  await execute(database, `create extension if not exists pgcrypto;
+    create schema deployment;
+    revoke all on schema deployment from public;
+    create table deployment.boundary(
+      id text primary key,database_name text not null,sentinel_hash char(64) not null check(sentinel_hash~'^[0-9a-f]{64}$'),
+      created_at timestamptz not null default clock_timestamp()
+    );
+    insert into deployment.boundary(id,database_name,sentinel_hash)
+    values('zhudatuan-registration-v1',current_database(),encode(public.digest('${sentinel}','sha256'),'hex'));
+    create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment,public as $function$
+      select exists(select 1 from deployment.boundary
+        where id='zhudatuan-registration-v1' and database_name=current_database()
+          and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+    $function$;
+    create or replace function deployment.is_independent_registration_database()
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment as $function$
+      select exists(select 1 from deployment.boundary
+        where id='zhudatuan-registration-v1' and database_name=current_database())
+    $function$;
+    revoke all on deployment.boundary from public;
+    revoke all on function deployment.registration_bootstrap_boundary(text) from public;
+    revoke all on function deployment.is_independent_registration_database() from public;
+  `,'registration replay boundary');
 }
 
 async function stageFreshReplaySecrets(database) {
@@ -210,8 +279,304 @@ async function verifyTarget(database) {
   await verifyObjectContract(database);
   await verifyRls(database);
   await verifyAuditImmutability(database);
+  await verifyZhudatuanRegistrationBaseline(database);
+  await verifyZhudatuanWebBusinessAccess(database);
+  await verifyZhudatuanPurchaseAccess(database);
+  await verifySandboxCatalogBootstrap(database);
   await verifyExperiencePublication(database);
   await verifyExtensionLifecycle(database);
+  // This must remain last: PGlite cannot reset SESSION AUTHORIZATION. The
+  // registration replay uses the canonical database name and sentinel, so it
+  // can exercise the real direct-login one-shot boundaries before close.
+  if (mode === '--registration-fresh') await verifySandboxMemberBootstraps(database);
+}
+
+async function verifySandboxMemberBootstraps(database) {
+  const sentinel='registration-fresh-replay-sentinel-not-for-production';
+  await database.exec(`
+    insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
+    values('principal:sandbox-member-bootstrap','active',1,clock_timestamp(),clock_timestamp(),0);
+    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
+    values('member:sandbox-member-bootstrap','principal:sandbox-member-bootstrap','Sandbox Bootstrap','active',
+      clock_timestamp(),clock_timestamp(),0);
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
+    values('membership:sandbox-member-bootstrap','member:sandbox-member-bootstrap','mall-zhudatuan','storefront','active',1,
+      clock_timestamp());
+    insert into access.membershiprole(membership_id,role_id,effective_at,expires_at,delegated_by)
+    values('membership:sandbox-member-bootstrap','role-zhudatuan-storefront-member',clock_timestamp(),null,
+      'registration-fresh-replay');
+    set session authorization zhudatuansandboxbootstrap;`);
+  const boundary=await database.query(`select current_database() database_name,current_user,session_user,
+    deployment.sandbox_catalog_bootstrap_boundary($1) sentinel_valid,
+    has_schema_privilege(current_user,'benefit','USAGE') benefit_usage,
+    has_schema_privilege(current_user,'finance','USAGE') finance_usage`,[sentinel]);
+  if (JSON.stringify(boundary.rows[0])!==JSON.stringify({
+    database_name:'zhudatuan_registration',current_user:'zhudatuansandboxbootstrap',session_user:'zhudatuansandboxbootstrap',
+    sentinel_valid:true,benefit_usage:false,finance_usage:false,
+  })) throw new Error(`SANDBOX_MEMBER_BOOTSTRAP_BOUNDARY_INVALID:${JSON.stringify(boundary.rows[0])}`);
+  for (let replay=0;replay<2;replay+=1) {
+    const qualification=await database.query(
+      'select deployment.sandbox_member_qualification_bootstrap($1,$2) result',
+      [sentinel,'membership:sandbox-member-bootstrap'],
+    );
+    const result=qualification.rows[0]?.result;
+    if (!result || result.membership!=='membership:sandbox-member-bootstrap'
+      || result.member!=='member:sandbox-member-bootstrap' || result.scope!=='mall-zhudatuan'
+      || result.status!=='active' || result.version!==1 || result.benefitAmountGranted!==false) {
+      throw new Error(`SANDBOX_QUALIFICATION_REPLAY_INVALID:${JSON.stringify(result??null)}`);
+    }
+  }
+  for (let replay=0;replay<2;replay+=1) {
+    const welfare=await database.query(
+      'select deployment.sandbox_member_welfare_bootstrap($1,$2,$3,$4,$5) result',
+      [sentinel,'membership:sandbox-member-bootstrap',500,'CNY','OWNER_APPROVES_ONE_EXPLICIT_SANDBOX_WELFARE_GRANT'],
+    );
+    const result=welfare.rows[0]?.result;
+    if (!result || result.membership!=='membership:sandbox-member-bootstrap'
+      || result.member!=='member:sandbox-member-bootstrap' || result.scope!=='mall-zhudatuan'
+      || result.amountMinor!==500 || result.currency!=='CNY' || result.expiresInDays!==30
+      || result.sandboxOnly!==true || typeof result.account!=='string' || typeof result.batch!=='string') {
+      throw new Error(`SANDBOX_WELFARE_REPLAY_INVALID:${JSON.stringify(result??null)}`);
+    }
+  }
+  let conflict=false;
+  try {
+    await database.query('select deployment.sandbox_member_welfare_bootstrap($1,$2,$3,$4,$5)',
+      [sentinel,'membership:sandbox-member-bootstrap',501,'CNY','OWNER_APPROVES_ONE_EXPLICIT_SANDBOX_WELFARE_GRANT']);
+  } catch (error) {
+    conflict=String(error instanceof Error?error.message:error).includes('SANDBOX_WELFARE_AMOUNT_CONFLICT');
+  }
+  if (!conflict) throw new Error('SANDBOX_WELFARE_DIFFERENT_AMOUNT_NOT_REJECTED');
+}
+
+async function verifyZhudatuanPurchaseAccess(database) {
+  await database.exec(`begin;
+    insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
+    values('principal:purchase-rls','active',1,clock_timestamp(),clock_timestamp(),0);
+    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
+    values('member:purchase-rls','principal:purchase-rls','Purchase RLS','active',clock_timestamp(),clock_timestamp(),0);
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
+    values('membership:purchase-rls','member:purchase-rls','mall-zhudatuan','storefront','active',1,clock_timestamp());
+    insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,
+      device_label,assurance_level,expires_at,last_seen_at,created_at)
+    values('session:purchase-rls','principal:purchase-rls','membership:purchase-rls','${'6'.repeat(64)}',1,1,
+      'storefront','${'7'.repeat(64)}','purchase-rls','purchase-rls',1,clock_timestamp()+interval '1 hour',clock_timestamp(),clock_timestamp());
+    insert into risk.policy(id,scope_id,name,status,next_version,updated_at) values
+      ('risk:purchase-ancestor','tenant-zhudatuan','Purchase ancestor','draft',1,clock_timestamp()),
+      ('risk:purchase-unrelated','scope:purchase-unrelated','Purchase unrelated','draft',1,clock_timestamp());
+    set local role zhudatuanpurchaseapi;
+    select set_config('app.membership_id','membership:purchase-rls',true),
+      set_config('app.actor_id','principal:purchase-rls',true),set_config('app.scope_id','mall-zhudatuan',true);`);
+  try {
+    const scopes=await database.query(`select
+      access.purchase_member_allowed('member:purchase-rls') member_allowed,
+      access.purchase_mall_allowed('mall-zhudatuan') mall_allowed,
+      access.purchase_risk_scope_allowed('tenant-zhudatuan') ancestor_allowed,
+      access.purchase_risk_scope_allowed('scope:purchase-unrelated') unrelated_allowed,
+      has_schema_privilege(current_user,'finance','USAGE') finance_usage,
+      has_schema_privilege(current_user,'voucher','USAGE') voucher_usage`);
+    if (JSON.stringify(scopes.rows[0])!==JSON.stringify({
+      member_allowed:true,mall_allowed:true,ancestor_allowed:true,unrelated_allowed:false,
+      finance_usage:false,voucher_usage:false,
+    })) throw new Error(`ZHUDATUAN_PURCHASE_SCOPE_INVALID:${JSON.stringify(scopes.rows[0])}`);
+    const visible=await database.query("select array_agg(id order by id) ids from risk.policy where id like 'risk:purchase-%'");
+    if (JSON.stringify(visible.rows[0]?.ids)!==JSON.stringify(['risk:purchase-ancestor'])) {
+      throw new Error(`ZHUDATUAN_PURCHASE_RISK_RLS_INVALID:${JSON.stringify(visible.rows[0])}`);
+    }
+    for (const expression of [
+      "access.purchase_member_scope('membership:purchase-rls','session:purchase-rls')",
+      "benefit.purchase_available('membership:purchase-rls','session:purchase-rls',array['benefit:none']::text[])",
+      "benefit.purchase_reserve('membership:purchase-rls','session:purchase-rls','order:guard','member:purchase-rls',array['benefit:none']::text[],array[1]::bigint[])",
+    ]) {
+      await database.exec('savepoint direct_purchase_session_guard');
+      let rejected=false;
+      try { await database.query(`select * from ${expression}`); }
+      catch (error) { rejected=String(error instanceof Error?error.message:error).includes('PURCHASE_SESSION_INVALID'); }
+      await database.exec('rollback to savepoint direct_purchase_session_guard');
+      if (!rejected) throw new Error(`ZHUDATUAN_PURCHASE_SET_ROLE_HELPER_ALLOWED:${expression}`);
+    }
+  } finally {
+    await database.exec('rollback');
+  }
+}
+
+async function verifyZhudatuanWebBusinessAccess(database) {
+  await database.exec(`begin;
+    insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
+    values('principal:web-business-rls','active',1,clock_timestamp(),clock_timestamp(),0);
+    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
+    values('member:web-business-rls','principal:web-business-rls','Web Business RLS','active',clock_timestamp(),clock_timestamp(),0);
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
+    values('membership:web-business-rls','member:web-business-rls','mall-zhudatuan','storefront','active',1,clock_timestamp());
+    insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,
+      device_label,assurance_level,expires_at,last_seen_at,created_at)
+    values('session:web-business-rls','principal:web-business-rls','membership:web-business-rls','${'4'.repeat(64)}',1,1,
+      'storefront','${'5'.repeat(64)}','web-business-rls','web-business-rls',1,clock_timestamp()+interval '1 hour',clock_timestamp(),clock_timestamp());
+    insert into risk.policy(id,scope_id,name,status,next_version,updated_at) values
+      ('risk:web-business-ancestor','tenant-zhudatuan','Web ancestor','draft',1,clock_timestamp()),
+      ('risk:web-business-unrelated','scope:web-business-unrelated','Web unrelated','draft',1,clock_timestamp());
+    insert into access.decisionaudit(id,actor_id,operation,resource_id,scope_id,decision,reason,policy_version,trace_id,decided_at) values
+      ('decision:web-business-member','principal:web-business-rls','member.profile.read',null,'member:web-business-rls','allow','fixture','1','trace:web-business-member',clock_timestamp()),
+      ('decision:web-business-ancestor','principal:web-business-rls','catalog.listings.read',null,'tenant-zhudatuan','allow','fixture','1','trace:web-business-ancestor',clock_timestamp()),
+      ('decision:web-business-unrelated','principal:web-business-rls','catalog.listings.read',null,'scope:web-business-unrelated','allow','fixture','1','trace:web-business-unrelated',clock_timestamp()),
+      ('decision:web-business-other-actor','principal:web-business-other','catalog.listings.read',null,'tenant-zhudatuan','allow','fixture','1','trace:web-business-other',clock_timestamp());
+    set local role zhudatuanwebapi;
+    select set_config('app.membership_id','membership:web-business-rls',true),
+      set_config('app.actor_id','principal:web-business-rls',true),set_config('app.scope_id','mall-zhudatuan',true);`);
+  try {
+    const scopes=await database.query(`select
+      access.web_scope_allowed('tenant-zhudatuan') business_ancestor,
+      access.web_risk_scope_allowed('member:web-business-rls') risk_member,
+      access.web_risk_scope_allowed('mall-zhudatuan') risk_mall,
+      access.web_risk_scope_allowed('tenant-zhudatuan') risk_ancestor,
+      access.web_risk_scope_allowed('scope:web-business-unrelated') risk_unrelated`);
+    if (JSON.stringify(scopes.rows[0])!==JSON.stringify({
+      business_ancestor:false,risk_member:true,risk_mall:true,risk_ancestor:true,risk_unrelated:false,
+    })) {
+      throw new Error(`ZHUDATUAN_WEB_RISK_SCOPE_INVALID:${JSON.stringify(scopes.rows[0])}`);
+    }
+    const visible=await database.query("select array_agg(id order by id) ids from risk.policy where id like 'risk:web-business-%'");
+    if (JSON.stringify(visible.rows[0]?.ids)!==JSON.stringify(['risk:web-business-ancestor'])) {
+      throw new Error(`ZHUDATUAN_WEB_RISK_RLS_INVALID:${JSON.stringify(visible.rows[0])}`);
+    }
+    const decisions=await database.query("select array_agg(id order by id) ids from access.decisionaudit where id like 'decision:web-business-%'");
+    if (JSON.stringify(decisions.rows[0]?.ids)!==JSON.stringify([
+      'decision:web-business-ancestor','decision:web-business-member',
+    ])) {
+      throw new Error(`ZHUDATUAN_WEB_DECISION_VELOCITY_RLS_INVALID:${JSON.stringify(decisions.rows[0])}`);
+    }
+    for (const expression of [
+      "access.web_member_scope('membership:web-business-rls','session:web-business-rls')",
+      "access.web_storefront_scope('membership:web-business-rls','session:web-business-rls')",
+      "benefit.web_account_balance('membership:web-business-rls','session:web-business-rls')",
+    ]) {
+      await database.exec('savepoint direct_session_guard');
+      let rejected=false;
+      try { await database.query(`select * from ${expression}`); }
+      catch (error) { rejected=String(error instanceof Error?error.message:error).includes('WEB_'); }
+      await database.exec('rollback to savepoint direct_session_guard');
+      if (!rejected) throw new Error(`ZHUDATUAN_WEB_SET_ROLE_HELPER_ALLOWED:${expression}`);
+    }
+  } finally {
+    await database.exec('rollback');
+  }
+}
+
+async function verifySandboxCatalogBootstrap(database) {
+  const sql = await readFile(SANDBOX_CATALOG,'utf8');
+  await database.exec(`begin; set local role zhudatuansandboxbootstrap;
+    select pg_advisory_xact_lock(hashtext('zhudatuan:sandbox-catalog:v1'));
+    select pg_advisory_xact_lock(hashtextextended('audit:mall-zhudatuan',0));`);
+  try {
+    await execute(database,sql,'sandbox catalog first replay');
+    await execute(database,sql,'sandbox catalog idempotent replay');
+    const result=await database.query(`select
+      (select count(*)::integer from experience.application where id='application:zhudatuan:sandbox:v1') applications,
+      (select count(*)::integer from experience.release where id='release:zhudatuan:sandbox:v1' and state='active') releases,
+      (select count(*)::integer from experience.publication where id='publication:zhudatuan:sandbox:v1' and state='active') publications,
+      (select count(*)::integer from catalog.product where id='product:zhudatuan:sandbox:welcome') products,
+      (select count(*)::integer from catalog.sku where id='sku:zhudatuan:sandbox:welcome') skus,
+      (select count(*)::integer from catalog.listing where id='listing:zhudatuan:sandbox:welcome') listings,
+      (select count(*)::integer from pricing.price where id='price:zhudatuan:sandbox:welcome') prices,
+      (select count(*)::integer from inventory.stockitem where id='stock:zhudatuan:sandbox:welcome') stocks,
+      (select count(*)::integer from audit.record
+        where id in('audit:zhudatuan:sandbox-catalog:v1','audit:zhudatuan:sandbox-publication:v1')) audits`);
+    if (JSON.stringify(result.rows[0])!==JSON.stringify({
+      applications:1,releases:1,publications:1,products:1,skus:1,listings:1,prices:1,stocks:1,audits:2,
+    })) {
+      throw new Error(`SANDBOX_CATALOG_REPLAY_INVALID:${JSON.stringify(result.rows[0])}`);
+    }
+  } finally {
+    await database.exec('rollback');
+  }
+  const leaked=await database.query("select count(*)::integer count from catalog.product where id='product:zhudatuan:sandbox:welcome'");
+  if (leaked.rows[0]?.count!==0) throw new Error('SANDBOX_CATALOG_REPLAY_LEAKED');
+}
+
+async function verifyZhudatuanRegistrationBaseline(database) {
+  const beforeReplay = await zhudatuanRegistrationFingerprint(database);
+  const baseline = await database.query(`select
+    (select count(*)::integer from organization.organization
+      where id in('tenant-zhudatuan','enterprise-zhudatuan','mall-zhudatuan') and status='active') organizations,
+    (select count(*)::integer from identity.registrationpolicy
+      where effective_at<=clock_timestamp() and (retired_at is null or retired_at>clock_timestamp())) active_policies,
+    (select count(*)::integer from identity.registrationpolicy
+      where id='registration:zhudatuan:2026-08-28-v1'
+        and terms_hash='207450deff7c7baece6af24957ff48adf3393532a5d37b6f8d369370253e557d'
+        and retired_at is null) canonical_policy,
+    (select count(*)::integer from member.invite
+      where status='active' and (id='invite-demo-employee-2026'
+        or organization_id in('tenant-smart-wing','enterprise-demo','mall-demo'))) legacy_invites,
+    (select count(*)::integer from access.membership membership join member.profile profile on profile.id=membership.member_id
+      join identity.principal principal on principal.id=profile.principal_id
+      where membership.organization_id in('tenant-smart-wing','enterprise-demo','mall-demo')
+        and (membership.status in('active','invited') or profile.status='active' or principal.status='active')) legacy_employee_assignments,
+    (select count(*)::integer from access.role
+      where id='role-zhudatuan-storefront-member' and scope_id='mall-zhudatuan' and status='active') employee_role,
+    (select count(*)::integer from access.rolepermission mapping
+      join access.permission permission on permission.id=mapping.permission_id
+      where mapping.role_id='role-zhudatuan-storefront-member' and mapping.effect='allow' and permission.code in(
+        'catalog.listing.read','pricing.offer.read','inventory.read','cart.read','cart.manage','checkout.create','order.create',
+        'order.read','order.aftersale.apply','payment.create','benefit.read','voucher.binding.read','support.case.create',
+        'observability.clienterror.create')) employee_permissions,
+    (select count(*)::integer from audit.record
+      where id='audit:zhudatuan:registration-baseline:v1' and action='identity.registration.baseline.established') audit_records`);
+  const row=baseline.rows[0];
+  if (JSON.stringify(row)!==JSON.stringify({ organizations:3,active_policies:1,canonical_policy:1,legacy_invites:0,legacy_employee_assignments:0,
+    employee_role:1,employee_permissions:14,audit_records:1 })) {
+    throw new Error(`ZHUDATUAN_REGISTRATION_BASELINE_INVALID:${JSON.stringify(row)}`);
+  }
+  await verifyPhoneAssuranceRevocation(database);
+  await execute(database, await readFile(join(MIGRATIONS,'20260828170000_zhudatuan_registration_baseline.sql'),'utf8'),
+    'idempotent zhudatuan registration baseline replay');
+  const afterReplay = await zhudatuanRegistrationFingerprint(database);
+  if (JSON.stringify(afterReplay)!==JSON.stringify(beforeReplay)) {
+    throw new Error(`ZHUDATUAN_REGISTRATION_BASELINE_NOT_IDEMPOTENT:${JSON.stringify({ beforeReplay,afterReplay })}`);
+  }
+}
+
+async function verifyPhoneAssuranceRevocation(database) {
+  const token='7'.repeat(64);
+  await database.exec(`begin;
+    insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
+    values('principal:registration-assurance-replay','active',1,clock_timestamp(),clock_timestamp(),0);
+    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
+    values('member:registration-assurance-replay','principal:registration-assurance-replay','Assurance Replay','active',clock_timestamp(),clock_timestamp(),0);
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
+    values('membership:registration-assurance-replay','member:registration-assurance-replay','mall-zhudatuan','storefront','active',1,clock_timestamp());
+    insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,
+      device_label,assurance_level,expires_at,last_seen_at,created_at)
+    values('session:registration-assurance-replay','principal:registration-assurance-replay','membership:registration-assurance-replay',
+      '${token}',1,1,'storefront','${'8'.repeat(64)}','fresh-replay','fresh-replay',2,clock_timestamp()+interval '1 hour',clock_timestamp(),clock_timestamp());
+    insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+    values('assurance:registration-assurance-replay','principal:registration-assurance-replay','phone_otp',2,'${'9'.repeat(64)}',
+      clock_timestamp(),clock_timestamp()+interval '1 hour');`);
+  try {
+    const active=await database.query('select assurance_level from identity.resolve_session($1)',[token]);
+    if (active.rows[0]?.assurance_level!==2) throw new Error(`PHONE_ASSURANCE_ACTIVE_INVALID:${JSON.stringify(active.rows)}`);
+    await database.query("update identity.assurance set expires_at=clock_timestamp() where id='assurance:registration-assurance-replay'");
+    const expired=await database.query('select assurance_level from identity.resolve_session($1)',[token]);
+    if (expired.rows[0]?.assurance_level!==1) throw new Error(`PHONE_ASSURANCE_REVOCATION_INVALID:${JSON.stringify(expired.rows)}`);
+  } finally {
+    await database.exec('rollback');
+  }
+}
+
+async function zhudatuanRegistrationFingerprint(database) {
+  const result = await database.query(`select
+    (select coalesce(sum(version),0)::text from organization.organization
+      where id in('tenant-zhudatuan','enterprise-zhudatuan','mall-zhudatuan')) organization_versions,
+    (select coalesce(sum(version),0)::text from identity.registrationpolicy
+      where id in('registration:2026-08-13','registration:zhudatuan:2026-08-28-v1')) policy_versions,
+    (select coalesce(sum(version),0)::text from access.role where id='role-zhudatuan-storefront-member') role_versions,
+    (select coalesce(sum(version),0)::text from member.invite
+      where id='invite-demo-employee-2026') legacy_invitation_versions,
+    (select count(*)::integer from audit.record where id like 'audit:zhudatuan:registration-baseline:%') audit_records,
+    (select count(*)::integer from access.membership membership join member.profile profile on profile.id=membership.member_id
+      join identity.principal principal on principal.id=profile.principal_id
+      where membership.organization_id in('tenant-smart-wing','enterprise-demo','mall-demo')
+        and (membership.status in('active','invited') or profile.status='active' or principal.status='active')) unexpired_legacy_assignments`);
+  return result.rows[0];
 }
 
 async function verifyExtensionLifecycle(database) {

@@ -6,6 +6,20 @@ runtime:
   sharedRoot: /opt/zhudatuan/shared
   processConfig: infrastructure/zhudatuan/aliyun/ecosystem.config.cjs
   proxyConfig: infrastructure/zhudatuan/aliyun/Caddyfile
+  acceptanceDataConfig: infrastructure/zhudatuan/aliyun/registration-compose.yml
+  canonicalApiPort: 4321
+  webBusinessApiPort: 4322
+  webBusinessApiProfile: web-business-only
+  purchaseApiPort: 4323
+  purchaseApiProfile: purchase-only
+  identityNotificationProfile: identity-notification-only
+oneShots:
+  ownerBootstrap:
+    artifact: services/commerce/dist/BootstrapOwner.js
+    process: zhudatuan-owner-bootstrap.service
+    environment: infrastructure/zhudatuan/aliyun/owner-bootstrap.env.example
+    databaseRole: zhudatuanbootstrap
+    publicRegistrationRole: forbidden
 routes:
   storefront:
     host: zhudatuan.com
@@ -27,6 +41,65 @@ routes:
     workspace: services/commerce
     artifact: services/commerce/dist
     process: zhudatuan-api
+    environment: infrastructure/zhudatuan/aliyun/identity-registration-api.env.example
+    profile: registration-only
+    port: 4321
+  webBusinessApi:
+    host: api.zhudatuan.com
+    workspace: services/commerce
+    artifact: services/commerce/dist/WebBusinessApiMain.js
+    readinessArtifact: services/commerce/dist/WebBusinessApiReadyMain.js
+    process: zhudatuan-web-api
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-web-api.service
+    environment: infrastructure/zhudatuan/aliyun/web-business-api.env.example
+    profile: web-business-only
+    port: 4322
+    allowedPaths:
+      - /api/v1/members/me
+      - /api/v1/members/me/addresses
+      - /api/v1/members/me/addresses/*
+      - /api/v1/organizations/layers
+      - /api/v1/reports/dashboard
+      - /api/v1/catalog/listings
+      - /api/v1/pricing/offers
+      - /api/v1/inventory/availability
+      - /api/v1/carts/current
+      - /api/v1/carts/current/*
+      - /api/v1/benefits/accounts
+      - /api/v1/benefits/ledgers
+      - /api/v1/orders
+  purchaseApi:
+    host: api.zhudatuan.com
+    workspace: services/commerce
+    artifact: services/commerce/dist/PurchaseApiMain.js
+    readinessArtifact: services/commerce/dist/PurchaseApiReadyMain.js
+    process: zhudatuan-purchase-api
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-purchase-api.service
+    environment: infrastructure/zhudatuan/aliyun/purchase-api.env.example
+    profile: purchase-only
+    port: 4323
+    allowedMethods:
+      - POST
+    allowedPaths:
+      - /api/v1/checkouts/quotes
+      - /api/v1/orders
+      - /api/v1/payments/intents
+    preflightMethods:
+      - OPTIONS
+    preflightPaths:
+      - /api/v1/checkouts/quotes
+      - /api/v1/orders
+      - /api/v1/payments/intents
+    forbiddenOperations:
+      - payment.refunds.request
+      - payment.webhooks.wechat
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+  identityNotificationJobs:
+    workspace: services/commerce
+    artifact: services/commerce/dist
+    process: zhudatuan-identity-notification-jobs
+    profile: identity-notification-only
   media:
     host: media.zhudatuan.com
     root: /opt/zhudatuan/media
@@ -44,8 +117,16 @@ forbiddenInputs:
   - apps/storefront
   - services/commerce-api/dist/admin-server.cjs
 release:
+  publicCutover: blocked
+  publicCutoverBlockReason: purchase-e2e-receipt-not-produced
+  purchaseE2eReceiptSchema: infrastructure/zhudatuan/aliyun/purchase-e2e-receipt.schema.json
+  purchaseE2eReceipt: null
   buildFromCleanCheckout: true
   ownerManifestMustPass: true
   compatibilityMigrationBeforeRuntime: 20260828060000_auth_membership_selection_boundary.sql
   mediaMigrationBeforeWriteback: 20260828061000_catalog_media_domain_boundary.sql
   caddyValidateBeforeReload: true
+  publicCutoverRequiresRealSmsReceipt: true
+  publicCutoverRequiresRegistrationE2e: true
+  publicCutoverRequiresWebBusinessE2e: true
+  publicCutoverRequiresPurchaseE2e: true
