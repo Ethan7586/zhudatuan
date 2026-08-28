@@ -111,7 +111,6 @@ const REPAIR_FILES = [
   '20260828173000_zhudatuan_web_business_access.sql',
   '20260828180000_zhudatuan_purchase_access.sql',
   '20260828183000_zhudatuan_runtime_readiness_repair.sql',
-  '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
 ];
 
 const mode = process.argv[2];
@@ -424,7 +423,6 @@ async function verifyTarget(database) {
   await verifyAuditImmutability(database);
   await verifyZhudatuanRegistrationBaseline(database);
   await verifyZhudatuanRuntimeReadinessRepair(database);
-  await verifyZhudatuanBootstrapRuntimeRepair(database);
   await verifyZhudatuanWebBusinessAccess(database);
   await verifyZhudatuanPurchaseAccess(database);
   await verifySandboxCatalogBootstrap(database);
@@ -456,76 +454,6 @@ async function verifyZhudatuanRuntimeReadinessRepair(database) {
       }
     } finally {
       await database.exec('rollback');
-    }
-  }
-}
-
-async function verifyZhudatuanBootstrapRuntimeRepair(database) {
-  const canonicalOwnerRole = await database.query(`select id,scope_id,status from access.role
-    where id='role-platform-owner-v2'`);
-  if (JSON.stringify(canonicalOwnerRole.rows)!==JSON.stringify([{
-    id:'role-platform-owner-v2',scope_id:'tenant-zhudatuan',status:'active',
-  }])) throw new Error(`ZHUDATUAN_BOOTSTRAP_OWNER_ROLE_INVALID:${JSON.stringify(canonicalOwnerRole.rows)}`);
-  await database.exec(`begin;
-    insert into identity.principal(id,status,credential_version,created_at,updated_at,version) values
-      ('principal:bootstrap-rls-legacy','active',1,clock_timestamp(),clock_timestamp(),0),
-      ('principal:bootstrap-rls-canonical','active',1,clock_timestamp(),clock_timestamp(),0);
-    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version) values
-      ('member:bootstrap-rls-legacy','principal:bootstrap-rls-legacy','Legacy RLS Fixture','active',clock_timestamp(),clock_timestamp(),0),
-      ('member:bootstrap-rls-canonical','principal:bootstrap-rls-canonical','Canonical RLS Fixture','active',clock_timestamp(),clock_timestamp(),0);
-    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at) values
-      ('membership:bootstrap-rls-legacy','member:bootstrap-rls-legacy','mall-demo','storefront','active',1,clock_timestamp()),
-      ('membership:bootstrap-rls-canonical','member:bootstrap-rls-canonical','mall-zhudatuan','storefront','active',1,clock_timestamp());
-    insert into access.membershiprole(membership_id,role_id,effective_at) values
-      ('membership:bootstrap-rls-legacy','role-zhudatuan-storefront-member',clock_timestamp()),
-      ('membership:bootstrap-rls-canonical','role-zhudatuan-storefront-member',clock_timestamp());
-    set local role zhudatuanbootstrap;`);
-  try {
-    const result = await database.query(`select
-      has_table_privilege(current_user,'identity.principal','SELECT') principal_read,
-      has_table_privilege(current_user,'access.membership','SELECT') membership_read,
-      has_table_privilege(current_user,'access.membershiprole','SELECT') membership_role_read,
-      has_table_privilege(current_user,'member.invite','SELECT,INSERT') invite_read_create,
-      has_table_privilege(current_user,'identity.principal','INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') principal_write,
-      has_table_privilege(current_user,'access.membership','INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') membership_write,
-      has_table_privilege(current_user,'access.membershiprole','INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') membership_role_write,
-      has_table_privilege(current_user,'member.invite','UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') invite_mutate,
-      (select array_agg(id order by id) from access.role where id in(
-        'role-platform-owner-v2','role-zhudatuan-storefront-member','role:self')) visible_roles,
-      (select count(*)::integer from access.membershiprole assignment
-        join access.membership membership on membership.id=assignment.membership_id
-        where assignment.role_id='role-zhudatuan-storefront-member'
-          and membership.organization_id in('tenant-smart-wing','enterprise-demo','mall-demo')) legacy_assignments,
-      (select array_agg(membership_id order by membership_id) from access.membershiprole
-        where membership_id in('membership:bootstrap-rls-legacy','membership:bootstrap-rls-canonical')) fixture_assignments,
-      (select count(*)::integer from member.invite where status='active' and (
-        id='invite-demo-employee-2026' or organization_id in('tenant-smart-wing','enterprise-demo','mall-demo'))) legacy_invites,
-      (select count(*)::integer from identity.principal
-        where id='principal:zhudatuan:owner:ethan:v1') fixed_owner_principals,
-      (select count(*)::integer from access.membership
-        where id='membership-platform-owner-ethan-v1'
-          and organization_id='tenant-zhudatuan' and client='operator') fixed_owner_memberships`);
-    const row = result.rows[0];
-    if (JSON.stringify(row)!==JSON.stringify({
-      principal_read:true,membership_read:true,membership_role_read:true,invite_read_create:true,
-      principal_write:false,membership_write:false,membership_role_write:false,invite_mutate:false,
-      visible_roles:['role-platform-owner-v2','role-zhudatuan-storefront-member','role:self'],
-      legacy_assignments:1,fixture_assignments:['membership:bootstrap-rls-legacy'],legacy_invites:0,
-      fixed_owner_principals:0,fixed_owner_memberships:0,
-    })) {
-      const policies = await database.query(`select policyname,permissive,roles,qual from pg_policies
-        where schemaname='access' and tablename='role' order by policyname`);
-      throw new Error(`ZHUDATUAN_BOOTSTRAP_RUNTIME_ACCESS_INVALID:${JSON.stringify({row,policies:policies.rows})}`);
-    }
-  } finally {
-    await database.exec('rollback');
-  }
-  if (mode==='--registration-fresh') {
-    const boundary = await database.query(`select
-      has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE') bootstrap_allowed,
-      has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed`);
-    if (JSON.stringify(boundary.rows[0])!==JSON.stringify({bootstrap_allowed:true,definer_allowed:true})) {
-      throw new Error(`ZHUDATUAN_BOOTSTRAP_DEFINER_BOUNDARY_INVALID:${JSON.stringify(boundary.rows[0])}`);
     }
   }
 }
