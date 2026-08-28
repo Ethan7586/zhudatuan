@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "npm run typecheck",
-    "test": "node --import tsx --test src/LocalRegistrationOtp.test.ts",
-    "typecheck": "tsc --noEmit"
+    "bootstrap:zhudatuan-sandbox-catalog": "node --import tsx src/BootstrapSandboxCatalog.ts",
+    "bootstrap:zhudatuan-sandbox-qualification": "node --import tsx src/BootstrapSandboxQualification.ts",
+    "bootstrap:zhudatuan-sandbox-welfare": "node --import tsx src/BootstrapSandboxWelfare.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test src/*.test.ts"
   },
   "dependencies": {
     "@shop/config": "1.0.0",

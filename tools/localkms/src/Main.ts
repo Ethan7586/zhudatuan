@@ -1,6 +1,5 @@
 import { localIdentityInfrastructureEnvironment } from '@shop/config/server';
-import { startLocalHttps } from '../../localinfra/src/Http';
-import { loadFullStagingWorkloadAccessPolicy, unrestrictedBearerAuthorization, workloadAuthorizationPreflight } from '../../localinfra/src/WorkloadAccessPolicy';
+import { startLocalHttps, workloadBearerPreflight } from '../../localinfra/src/Http';
 import { kmsHandler } from './Handler';
 import { LocalKms } from './LocalKms';
 
@@ -13,12 +12,7 @@ if (policy !== undefined && environment.objectsToken !== undefined) policy.asser
 const authorization = policy?.kms
   ?? unrestrictedBearerAuthorization(required(environment.kmsBearerToken, 'LOCAL_KMS_BEARER_TOKEN_MISSING'));
 
-await startLocalHttps('localkms', environment.kmsPort, kmsHandler(kms, authorization), {
+await startLocalHttps('localkms', environment.kmsPort, kmsHandler(kms, environment.kmsBearerToken), {
   certificateFile: environment.tlsCertificateFile,
   keyFile: environment.tlsKeyFile,
-}, 9 * 1024 * 1024, workloadAuthorizationPreflight(authorization));
-
-function required(value: string | undefined, code: string): string {
-  if (value === undefined) throw new Error(code);
-  return value;
-}
+}, 9 * 1024 * 1024, workloadBearerPreflight(environment.kmsBearerToken));

@@ -232,7 +232,7 @@ export function operationRequestHash(request: OperationRequest): string {
     type: request.type,
     path: request.input.path,
     query: request.input.query,
-    body: idempotencyBody(request),
+    body: request.input.body,
     expectedVersion: request.input.expectedVersion ?? null,
   }));
 }

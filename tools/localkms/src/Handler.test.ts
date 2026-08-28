@@ -28,18 +28,6 @@ describe('local KMS workload authentication', () => {
     }));
     assert.deepEqual(JSON.parse(new TextDecoder().decode(decrypted.body)), { plaintext: '13800138000' });
   });
-
-  it('rejects an authenticated workload before using a key outside its allowlist', async () => {
-    const scoped = kmsHandler(new LocalKms(Buffer.alloc(32, 7).toString('base64url')), {
-      authenticate: () => 'identity-registration-api',
-      require: (_workload, keyRef) => {
-        if (keyRef !== 'identity/mobile') throw new LocalHttpError(403, 'WORKLOAD_AUTHORIZATION_DENIED');
-      },
-    });
-    await assert.rejects(() => scoped(jsonRequest('/v1/envelopes', token, {
-      context: { probe: 'authorization' }, keyRef: 'voucher/code', plaintext: 'must-not-encrypt',
-    })), (cause: unknown) => cause instanceof LocalHttpError && cause.status === 403);
-  });
 });
 
 function jsonRequest(path: string, bearer: string, body: unknown): LocalRequest {

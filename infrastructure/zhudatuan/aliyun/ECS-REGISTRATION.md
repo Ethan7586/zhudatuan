@@ -20,23 +20,14 @@
 2. 建立獨立資料目錄、專用 `zhudatuan` 系統帳號及 0600 私密配置。
 3. 由 `zhudatuan-registration-database.service` 啟動 `registration-compose.yml` 的單一 PostgreSQL，只接受 `127.0.0.1:55432`。
 4. 啟動 `zhudatuan-internal-runtime.service`；它只執行已 bundle 的 `InternalRuntimeMain.js`，Secret Store 與 KMS 兩個 readiness 全部成功後才成為 active。
-5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。Migration inventory、registration-only transform ledger、`20260828170000` 註冊基線、`20260828173000` WebBusiness access、`20260828180000` Purchase schema、`20260828183000` runtime readiness repair、`20260829040000` registration bootstrap repair 與 `20260829054500` identity login ACL repair 任一失敗即停止。Purchase E2E receipt 仍固定驗證 `20260828180000`，不得與 migration runner 的最終 head 混用。
-6. Migration 完成後，以資料庫 cluster owner 執行一次版本化的 `postgres-reconcile-registration-boundary.sql`，只修復既有資料卷中 `zhudatuanbootstrap → SECURITY DEFINER(shopmigration) → registration_bootstrap_boundary` 的嵌套 EXECUTE 鏈；不得在伺服器互動式手寫 GRANT。正式命令如下：
-
-```sh
-sudo docker compose --env-file /opt/zhudatuan/shared/postgres.env \
-  -f /opt/zhudatuan/current/infrastructure/zhudatuan/aliyun/registration-compose.yml \
-  exec -T postgres sh -eu -c 'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1' \
-  < /opt/zhudatuan/current/infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql
-```
-
-7. 啟動 `zhudatuan-api.service`、`zhudatuan-web-api.service`、`zhudatuan-purchase-api.service` 與 `zhudatuan-identity-notification-jobs.service`。四者分別只能執行 `IdentityRegistrationApiMain.js`、`WebBusinessApiMain.js`、`PurchaseApiMain.js` 與 `IdentityNotificationJobsOnlyMain.js`；profile、loopback host 與 port 均由 systemd 固定，不接受 env 降級。
-8. 在不公開網域的情況下完成邀請、真短信 BizId、OTP、建立會員、重複手機 409、Console scope 載入、Storefront 商品／購物車／訂單讀取、三條 Purchase command 及審計驗收。WebBusiness 驗收不得載入 Finance、Payment Provider 或舊 Commerce API；Purchase 驗收不得暴露 refund、webhook、recovery 或管理操作。
-9. `api.zhudatuan.com` 的 Cloudflare DNS 與 Caddy API 分流已存在；每次 Release 仍須先驗證活動 Caddy：Identity／health 指向 4321，精確 WebBusiness allowlist 指向 4322，Purchase 三條 POST 與同路徑 OPTIONS 在 E2E receipt 產生前維持 503，其他路徑維持 404。只有全部驗收通過後才可切換其餘公開入口。
+5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。Migration inventory、registration-only transform ledger、`20260828170000` 註冊基線、`20260828173000` WebBusiness access 與 `20260828180000` Purchase target 任一失敗即停止。
+6. 啟動 `zhudatuan-api.service`、`zhudatuan-web-api.service`、`zhudatuan-purchase-api.service` 與 `zhudatuan-identity-notification-jobs.service`。四者分別只能執行 `IdentityRegistrationApiMain.js`、`WebBusinessApiMain.js`、`PurchaseApiMain.js` 與 `IdentityNotificationJobsOnlyMain.js`；profile、loopback host 與 port 均由 systemd 固定，不接受 env 降級。
+7. 在不公開網域的情況下完成邀請、真短信 BizId、OTP、建立會員、重複手機 409、Console scope 載入、Storefront 商品／購物車／訂單讀取、三條 Purchase command 及審計驗收。WebBusiness 驗收不得載入 Finance、Payment Provider 或舊 Commerce API；Purchase 驗收不得暴露 refund、webhook、recovery 或管理操作。
+8. 只有全部通過後才新增 Cloudflare DNS、安裝並驗證本目錄 Caddyfile；`api.zhudatuan.com` 的 Identity／health 路徑指向 4321，精確 WebBusiness allowlist 指向 4322，精確 Purchase POST allowlist 與同路徑 OPTIONS preflight 指向 4323，其他路徑維持 404。
 
 ## 必須由 Owner／供應商提供
 
-- 主打團可用的阿里雲 SMS 簽名。
+- 築大團可用的阿里雲 SMS 簽名。
 - 變數為 `code` 的驗證碼模板 Code。
 - 對應的最小權限 RAM Role，或只允許 `SendSms` 的獨立 AK/SK。
 
@@ -60,7 +51,7 @@ sudo docker compose --env-file /opt/zhudatuan/shared/postgres.env \
 - `/opt/zhudatuan/shared/web-business-api.env`：僅 web-business-only API allowlist，使用獨立 `zhudatuanwebapi` 資料庫角色與獨立 workload token。
 - `/opt/zhudatuan/shared/purchase-api.env`：僅 purchase-only API allowlist，使用獨立 purchase 資料庫角色與 Secret Store workload token。
 - `/opt/zhudatuan/shared/identity-notification-jobs.env`：僅 identity notification worker allowlist。
-- 一次性邀請才使用 `registration-bootstrap.env.example`；必須由 `zhudatuanbootstrap` 連至固定 loopback／port／DB，並通過該 DB 初始化的不可寫 sentinel。生產只執行已編譯的 `services/commerce/dist/BootstrapRegistration.js`，禁止在 Release 上用 `tsx` 即時編譯。
+- 一次性邀請才使用 `registration-bootstrap.env.example`；必須由 `zhudatuanbootstrap` 連至固定 loopback／port／DB，並通過該 DB 初始化的不可寫 sentinel。
 - 一次性原生商品驗收才使用 `sandbox-catalog-bootstrap.env.example`；必須由 `zhudatuansandboxbootstrap` 連至固定 loopback／port／DB，且只可在 `APP_ENV=test` 執行。完成後刪除該私密 env。
 - 一次性會員資格驗收才使用 `sandbox-member-qualification-bootstrap.env.example`；它只接受一個已完成正式註冊的 storefront membership，只建立最小 active qualification profile 與鎖定的 audit chain，不建立福利帳戶、不發放福利金。完成後刪除該私密 env。
 - 一次性福利金驗收才使用 `sandbox-member-welfare-bootstrap.env.example`；必須由 Owner 手動填入同一個已通過資格 one-shot 的 membership、明確正整數 minor amount、`CNY` 與完整確認字串。它不是註冊副作用，也沒有公開 route；完成後刪除該私密 env。
@@ -103,31 +94,11 @@ sudo systemctl status --no-pager zhudatuan-owner-bootstrap.service
 
 成功輸出只包含 `created`／`existing`、固定 principal 與 membership ID。腳本只可建立一個 `tenant-zhudatuan` Console operator，綁定 `role-platform-owner-v2`、`role:self` 與 platform／tenant／self scopes；任何第二個 Owner、固定 ID 漂移、密碼漂移、非 loopback DB／Secret Store 或 sentinel 不符都會失敗關閉。完成驗收後刪除伺服器上的 `owner-bootstrap.env`；Secret Store 內密碼仍按正式憑證生命週期管理。
 
-## Storefront 註冊邀請一次性初始化
-
-先從當前 Release 安裝受版本控制的 one-shot unit，再 reload systemd；不得沿用或手寫其他 ExecStart：
-
-```sh
-sudo install -m 0644 \
-  /opt/zhudatuan/current/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-registration-bootstrap.service \
-  /etc/systemd/system/zhudatuan-registration-bootstrap.service
-sudo systemctl daemon-reload
-```
-
-建立權限 `0700`、Owner 為 `zhudatuan:zhudatuan` 的 `/opt/zhudatuan/shared/registration-bootstrap`，再從 `registration-bootstrap.env.example` 逐鍵建立權限 `0600` 的 `/opt/zhudatuan/shared/registration-bootstrap.env`。確認 migration、cluster-owner boundary reconciliation 與通知 Worker ready 後執行：
-
-```sh
-sudo systemctl start zhudatuan-registration-bootstrap.service
-sudo systemctl status --no-pager zhudatuan-registration-bootstrap.service
-```
-
-成功輸出只包含 `created`／`existing`、固定 invitation ID、到期時間與受保護輸出路徑，不輸出明文邀請碼。邀請文件只允許寫入 `/opt/zhudatuan/shared/registration-bootstrap/registration-invitation.json`；完成真實註冊後立即作廢／刪除該一次性文件與私密 env。註冊頁必須以真實手機號申請 SMS challenge 並輸入收到的 6 位驗證碼；主登入頁的「短信驗證碼登入」仍保持停用，兩者不得混為一談。
-
 ## 公開切換阻斷
 
 `registration-compose.yml` 已鎖定 Docker Registry v2 官方 manifest endpoint 回傳的 `postgres:17-alpine` OCI index digest：`sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73`。本機 Docker daemon 不可用，因此公開 DNS／Caddy 切換前，交付人仍必須在目標 ECS 執行 `docker compose pull postgres`、核對實際 architecture manifest／image RepoDigest，並在該映像上重做空庫 replay；不得只依賴本地 PGlite。
 
-`api.zhudatuan.com` 已有可解析 DNS 與活動 Caddy 分流；部署時仍須現場核對 4321／4322／4323 的精確路由與 Purchase 503 gate，不得以 DNS／TLS 可達代替 E2E 證據，也不得在程式內降級 TLS 或改用不受信任端點繞過。
+此外，截至本基線建立時 `api.zhudatuan.com` 仍未有可解析 DNS；Repository 已聲明 4321／4322／4323 的精確 Caddy 分流，但目標 ECS 的活動 Caddy 是否已安裝並 reload 仍須現場驗證。不得在程式內降級 TLS 或改用不受信任端點繞過。
 
 ## 回滾
 

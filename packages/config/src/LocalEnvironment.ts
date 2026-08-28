@@ -9,7 +9,6 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
   kmsMasterKey: 'LOCAL_KMS_MASTER_KEY',
   kmsBearerToken: 'LOCAL_KMS_BEARER_TOKEN',
   secretStoreBearerToken: 'LOCAL_SECRET_STORE_BEARER_TOKEN',
-  workloadAccessPolicyFile: 'LOCAL_WORKLOAD_ACCESS_POLICY_FILE',
   objectsPort: 'LOCAL_OBJECTS_PORT',
   objectsDirectory: 'LOCAL_OBJECTS_DIRECTORY',
   objectsToken: 'LOCAL_OBJECTS_TOKEN',
@@ -28,7 +27,7 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
 } as const);
 
 export interface LocalInfrastructureEnvironment {
-  readonly kmsBearerToken?: string;
+  readonly kmsBearerToken: string;
   readonly kmsMasterKey: string;
   readonly kmsPort: number;
   readonly objectsDirectory: string;
@@ -36,7 +35,7 @@ export interface LocalInfrastructureEnvironment {
   readonly objectsToken: string;
   readonly secretsFile: string;
   readonly secretsPort: number;
-  readonly secretStoreBearerToken?: string;
+  readonly secretStoreBearerToken: string;
   readonly tlsCertificateFile: string;
   readonly tlsKeyFile: string;
   readonly workloadAccessPolicyFile?: string;
@@ -56,142 +55,62 @@ export interface LocalSeedEnvironment {
 }
 
 export interface LocalIdentityInfrastructureEnvironment {
-  readonly kmsBearerToken?: string;
+  readonly kmsBearerToken: string;
   readonly kmsMasterKey: string;
   readonly kmsPort: number;
   readonly secretsFile: string;
   readonly secretsPort: number;
-  readonly objectsToken?: string;
-  readonly secretStoreBearerToken?: string;
+  readonly secretStoreBearerToken: string;
   readonly tlsCertificateFile: string;
   readonly tlsKeyFile: string;
-  readonly workloadAccessPolicyFile?: string;
 }
 
 const IDENTITY_INFRASTRUCTURE_KEYS = new Set([
   'APP_ENV','LOCAL_RUNTIME_PROFILE','LOCAL_TLS_KEY_FILE','LOCAL_TLS_CERT_FILE','LOCAL_SECRETS_FILE','LOCAL_SECRETS_PORT',
   'LOCAL_KMS_PORT','LOCAL_KMS_MASTER_KEY','LOCAL_KMS_BEARER_TOKEN','LOCAL_SECRET_STORE_BEARER_TOKEN','NODE_EXTRA_CA_CERTS',
 ]);
-const FULL_STAGING_INFRASTRUCTURE_KEYS = new Set([
-  ...[...IDENTITY_INFRASTRUCTURE_KEYS].filter((key) => key !== 'LOCAL_KMS_BEARER_TOKEN' && key !== 'LOCAL_SECRET_STORE_BEARER_TOKEN'),
-  'LOCAL_WORKLOAD_ACCESS_POLICY_FILE',
-  'LOCAL_OBJECTS_PORT','LOCAL_OBJECTS_DIRECTORY','LOCAL_OBJECTS_TOKEN',
-]);
 const LOCAL_CONFIGURATION_KEY = /^(?:APP_ENV$|LOCAL_|NODE_EXTRA_CA_CERTS$|OBJECT_|REDIS_)/;
-const FULL_STAGING_SHARED = '/opt/zhudatuan-staging-full/shared';
-const FULL_STAGING_INTERNAL_CREDENTIALS = '/run/credentials/zhudatuan-staging-full-internal-runtime.service';
 
 export function localIdentityInfrastructureEnvironment(
   source: EnvironmentSource = processEnvironment(),
 ): LocalIdentityInfrastructureEnvironment {
-  if (source.LOCAL_RUNTIME_PROFILE === 'registration-only' || source.LOCAL_RUNTIME_PROFILE === 'full-staging') {
-    const allowed = source.LOCAL_RUNTIME_PROFILE === 'full-staging'
-      ? FULL_STAGING_INFRASTRUCTURE_KEYS
-      : IDENTITY_INFRASTRUCTURE_KEYS;
-    rejectUnknownLocalKeys(source, allowed, 'IDENTITY_INTERNAL_RUNTIME_KEY_FORBIDDEN');
+  if (source.LOCAL_RUNTIME_PROFILE === 'registration-only') {
+    for (const key of Object.keys(source).filter((candidate) => LOCAL_CONFIGURATION_KEY.test(candidate)
+      && !IDENTITY_INFRASTRUCTURE_KEYS.has(candidate)).sort()) throw new Error(`IDENTITY_INTERNAL_RUNTIME_KEY_FORBIDDEN:${key}`);
     if (source.APP_ENV !== 'production') throw new Error('IDENTITY_INTERNAL_RUNTIME_PRODUCTION_REQUIRED');
   } else if (source.LOCAL_RUNTIME_PROFILE !== undefined) throw new Error('IDENTITY_INTERNAL_RUNTIME_PROFILE_INVALID');
-  const fullStaging = source.LOCAL_RUNTIME_PROFILE === 'full-staging';
-  const legacyTokens = fullStaging ? undefined : {
-    kmsBearerToken: bearerToken(source.LOCAL_KMS_BEARER_TOKEN, 'LOCAL_KMS_BEARER_TOKEN_INVALID'),
-    secretStoreBearerToken: bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID'),
-  };
-  if (legacyTokens !== undefined) distinctValues(legacyTokens.kmsBearerToken, legacyTokens.secretStoreBearerToken,
-    'LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
-  const policy = fullStaging ? {
-    workloadAccessPolicyFile: requiredValue(source.LOCAL_WORKLOAD_ACCESS_POLICY_FILE, 'LOCAL_WORKLOAD_ACCESS_POLICY_FILE_MISSING'),
-    objectsToken: bearerToken(source.LOCAL_OBJECTS_TOKEN, 'LOCAL_OBJECTS_TOKEN_INVALID'),
-  } : undefined;
-  const environment = {
+  const kmsBearerToken = bearerToken(source.LOCAL_KMS_BEARER_TOKEN, 'LOCAL_KMS_BEARER_TOKEN_INVALID');
+  const secretStoreBearerToken = bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
+  distinctValues(kmsBearerToken, secretStoreBearerToken, 'LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+  return Object.freeze({
     tlsKeyFile: requiredValue(source.LOCAL_TLS_KEY_FILE, 'LOCAL_TLS_KEY_FILE_MISSING'),
     tlsCertificateFile: requiredValue(source.LOCAL_TLS_CERT_FILE, 'LOCAL_TLS_CERT_FILE_MISSING'),
     secretsFile: requiredValue(source.LOCAL_SECRETS_FILE, 'LOCAL_SECRETS_FILE_MISSING'),
     secretsPort: integerValue(source.LOCAL_SECRETS_PORT, 8443, 1024, 65_535, 'LOCAL_SECRETS_PORT_INVALID'),
     kmsPort: integerValue(source.LOCAL_KMS_PORT, 8444, 1024, 65_535, 'LOCAL_KMS_PORT_INVALID'),
     kmsMasterKey: requiredValue(source.LOCAL_KMS_MASTER_KEY, 'LOCAL_KMS_MASTER_KEY_MISSING'),
-    ...(legacyTokens ?? {}),
-    ...(policy ?? {}),
-  };
-  if (source.LOCAL_RUNTIME_PROFILE === 'full-staging') {
-    assertFullStagingIdentityBoundary(source, environment, source !== processEnvironment());
-  }
-  return Object.freeze(environment);
+    kmsBearerToken,
+    secretStoreBearerToken,
+  });
 }
 
 export function localInfrastructureEnvironment(source: EnvironmentSource = processEnvironment()): LocalInfrastructureEnvironment {
-  const fullStaging = source.LOCAL_RUNTIME_PROFILE === 'full-staging';
-  if (fullStaging) {
-    rejectUnknownLocalKeys(source, FULL_STAGING_INFRASTRUCTURE_KEYS, 'FULL_STAGING_INTERNAL_RUNTIME_KEY_FORBIDDEN');
-    if (source.APP_ENV !== 'production') throw new Error('FULL_STAGING_INTERNAL_RUNTIME_PRODUCTION_REQUIRED');
-  } else if (source.LOCAL_RUNTIME_PROFILE !== undefined) throw new Error('LOCAL_RUNTIME_PROFILE_INVALID');
-  const legacyTokens = fullStaging ? undefined : {
-    kmsBearerToken: bearerToken(source.LOCAL_KMS_BEARER_TOKEN, 'LOCAL_KMS_BEARER_TOKEN_INVALID'),
-    secretStoreBearerToken: bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID'),
-  };
-  if (legacyTokens !== undefined) distinctValues(legacyTokens.kmsBearerToken, legacyTokens.secretStoreBearerToken,
-    'LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
-  const objectsPort = integerValue(source.LOCAL_OBJECTS_PORT, 8445, 1024, 65_535, 'LOCAL_OBJECTS_PORT_INVALID');
-  const objectsDirectory = requiredValue(source.LOCAL_OBJECTS_DIRECTORY, 'LOCAL_OBJECTS_DIRECTORY_MISSING');
-  const objectsToken = fullStaging
-    ? bearerToken(source.LOCAL_OBJECTS_TOKEN, 'LOCAL_OBJECTS_TOKEN_INVALID')
-    : requiredValue(source.LOCAL_OBJECTS_TOKEN, 'LOCAL_OBJECTS_TOKEN_MISSING');
-  if (fullStaging) {
-    if (objectsPort !== 8645) throw new Error('FULL_STAGING_OBJECTS_PORT_INVALID');
-    if (objectsDirectory !== '/var/lib/zhudatuan-staging-full/objects') throw new Error('FULL_STAGING_OBJECTS_DIRECTORY_INVALID');
-  }
-  const workloadAccessPolicyFile = fullStaging
-    ? requiredValue(source.LOCAL_WORKLOAD_ACCESS_POLICY_FILE, 'LOCAL_WORKLOAD_ACCESS_POLICY_FILE_MISSING')
-    : undefined;
-  const environment = {
+  const kmsBearerToken = bearerToken(source.LOCAL_KMS_BEARER_TOKEN, 'LOCAL_KMS_BEARER_TOKEN_INVALID');
+  const secretStoreBearerToken = bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
+  distinctValues(kmsBearerToken, secretStoreBearerToken, 'LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+  return Object.freeze({
     tlsKeyFile: requiredValue(source.LOCAL_TLS_KEY_FILE, 'LOCAL_TLS_KEY_FILE_MISSING'),
     tlsCertificateFile: requiredValue(source.LOCAL_TLS_CERT_FILE, 'LOCAL_TLS_CERT_FILE_MISSING'),
     secretsFile: requiredValue(source.LOCAL_SECRETS_FILE, 'LOCAL_SECRETS_FILE_MISSING'),
     secretsPort: integerValue(source.LOCAL_SECRETS_PORT, 8443, 1024, 65_535, 'LOCAL_SECRETS_PORT_INVALID'),
     kmsPort: integerValue(source.LOCAL_KMS_PORT, 8444, 1024, 65_535, 'LOCAL_KMS_PORT_INVALID'),
     kmsMasterKey: requiredValue(source.LOCAL_KMS_MASTER_KEY, 'LOCAL_KMS_MASTER_KEY_MISSING'),
-    ...(legacyTokens ?? {}),
-    ...(workloadAccessPolicyFile === undefined ? {} : { workloadAccessPolicyFile }),
-    objectsPort,
-    objectsDirectory,
-    objectsToken,
-  };
-  if (fullStaging) assertFullStagingIdentityBoundary(source, environment, source !== processEnvironment());
-  return Object.freeze(environment);
-}
-
-function assertFullStagingIdentityBoundary(
-  source: EnvironmentSource,
-  environment: Pick<LocalIdentityInfrastructureEnvironment, 'kmsPort' | 'secretsFile' | 'secretsPort' | 'tlsCertificateFile' | 'tlsKeyFile'>,
-  staticValidation: boolean,
-): void {
-  if (environment.secretsPort !== 8643) throw new Error('FULL_STAGING_SECRETS_PORT_INVALID');
-  if (environment.kmsPort !== 8644) throw new Error('FULL_STAGING_KMS_PORT_INVALID');
-  assertFullStagingCredentialPath(environment.tlsKeyFile, 'internal-tls-key', `${FULL_STAGING_SHARED}/tls/internal.key`,
-    staticValidation, 'FULL_STAGING_TLS_KEY_FILE_INVALID');
-  assertFullStagingCredentialPath(environment.tlsCertificateFile, 'internal-tls-certificate', `${FULL_STAGING_SHARED}/tls/internal.crt`,
-    staticValidation, 'FULL_STAGING_TLS_CERTIFICATE_FILE_INVALID');
-  assertFullStagingCredentialPath(environment.secretsFile, 'secrets-catalog', `${FULL_STAGING_SHARED}/full-secrets.json`,
-    staticValidation, 'FULL_STAGING_SECRETS_FILE_INVALID');
-  assertFullStagingCredentialPath(source.LOCAL_WORKLOAD_ACCESS_POLICY_FILE, 'workload-access-policy',
-    `${FULL_STAGING_SHARED}/full-internal-access.json`, staticValidation, 'FULL_STAGING_WORKLOAD_ACCESS_POLICY_FILE_INVALID');
-  assertFullStagingCredentialPath(source.NODE_EXTRA_CA_CERTS, 'internal-ca-certificate', `${FULL_STAGING_SHARED}/tls/internal-ca.crt`,
-    staticValidation, 'FULL_STAGING_CA_FILE_INVALID');
-}
-
-function assertFullStagingCredentialPath(
-  actual: string | undefined,
-  credential: string,
-  staticSource: string,
-  staticValidation: boolean,
-  code: string,
-): void {
-  const runtime = `${FULL_STAGING_INTERNAL_CREDENTIALS}/${credential}`;
-  if (actual !== runtime && !(staticValidation && actual === staticSource)) throw new Error(code);
-}
-
-function rejectUnknownLocalKeys(source: EnvironmentSource, allowed: ReadonlySet<string>, code: string): void {
-  for (const key of Object.keys(source).filter((candidate) => LOCAL_CONFIGURATION_KEY.test(candidate)
-    && !allowed.has(candidate)).sort()) throw new Error(`${code}:${key}`);
+    kmsBearerToken,
+    secretStoreBearerToken,
+    objectsPort: integerValue(source.LOCAL_OBJECTS_PORT, 8445, 1024, 65_535, 'LOCAL_OBJECTS_PORT_INVALID'),
+    objectsDirectory: requiredValue(source.LOCAL_OBJECTS_DIRECTORY, 'LOCAL_OBJECTS_DIRECTORY_MISSING'),
+    objectsToken: requiredValue(source.LOCAL_OBJECTS_TOKEN, 'LOCAL_OBJECTS_TOKEN_MISSING'),
+  });
 }
 
 export function localSeedEnvironment(source: EnvironmentSource = processEnvironment()): LocalSeedEnvironment {

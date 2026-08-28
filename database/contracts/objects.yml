@@ -886,16 +886,12 @@ objects:
     source: database/supabase/migrations/20260821012000_create_runtime_control.sql
     callers:
       - services/commerce/src/foundation/application/JobRunner.ts
-  - id: runtime.reject_financial_inbox_fact_mutation
+  - id: runtime.claim_identity_notification_job
     kind: function
     owner: runtime
-    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
-    operationalOwner: runtime
-  - id: runtime.reject_financial_outbox_fact_mutation
-    kind: function
-    owner: runtime
-    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
-    operationalOwner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    callers:
+      - services/commerce/src/foundation/application/JobRunner.ts
   - id: runtime.release_lease
     kind: function
     owner: runtime
@@ -21951,3 +21947,1010 @@ objects:
     kind: view
     owner: benefit
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
+  - id: access.decisionaudit.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.membership.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.membershipoverride.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.membershiprole.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.permission.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.permission.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.role.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.role.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.rolepermission.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.rolepermission.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.scopegrant.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.accessrecord.zhudatuanbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.accessrecord.zhudatuanidentityapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.archiveref.zhudatuanbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.archiveref.zhudatuanidentityapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.record.zhudatuanbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.record.zhudatuanbootstrapinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.record.zhudatuanidentityapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: capability.capability.zhudatuanidentityapi
+    kind: policy
+    owner: capability
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: capability.entitlement.zhudatuanidentityapi
+    kind: policy
+    owner: capability
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: capability.operation.zhudatuanidentityapi
+    kind: policy
+    owner: capability
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.authticket.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.assurance.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challenge.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challenge.zhudatuanidentityjob
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengedelivery.zhudatuanidentityjob
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengedelivery.zhudatuanidentityjobinsert
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengedelivery.zhudatuanidentityjobupdate
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengesecret.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengesecret.zhudatuanidentityjob
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.credential.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.federatedidentity.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.loginattempt.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.principal.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.registrationpolicy.zhudatuanbootstrap
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.registrationpolicy.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.session.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.wechatgrant.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: member.invite.zhudatuanbootstrap
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: member.invite.zhudatuanbootstrapinsert
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: member.invite.zhudatuanidentityapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: member.profile.zhudatuanidentityapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.organization.zhudatuanbootstrap
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.organization.zhudatuanidentityapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.unitclosure.zhudatuanbootstrap
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.unitclosure.zhudatuanidentityapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.decision.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.listentry.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.policy.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.policyversion.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.signal.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.deadletter.zhudatuanidentityjob
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.idempotency.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.job.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.job.zhudatuanidentityjob
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.job.zhudatuanidentityjobupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.outbox.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.web_member_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_member_scope
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_storefront_scope
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_risk_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_order_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_audit_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: benefit.web_account_balance
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: benefit
+  - id: runtime.schemaversion.zhudatuanwebapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: runtime.idempotency.zhudatuanwebapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: runtime.idempotency.zhudatuanwebapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: runtime.idempotency.zhudatuanwebapiupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: access.membership.zhudatuanwebapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: access.decisionaudit.zhudatuanwebapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: access.decisionaudit.zhudatuanwebapiselect
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: member.profile.zhudatuanwebapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: organization.organization.zhudatuanwebapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: organization.unitclosure.zhudatuanwebapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: risk.policy.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: risk.policyversion.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: risk.signal.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: risk.listentry.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.record.zhudatuanwebapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.record.zhudatuanwebapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.accessrecord.zhudatuanwebapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.accessrecord.zhudatuanwebapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.archiveref.zhudatuanwebapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: reporting.metric.zhudatuanwebapi
+    kind: policy
+    owner: reporting
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: reporting.fact.zhudatuanwebapi
+    kind: policy
+    owner: reporting
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.listing.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.sourcelisting.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.sku.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.product.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.pricebook.zhudatuanwebapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.price.zhudatuanwebapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: inventory.stockitem.zhudatuanwebapi
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: inventory.reservation.zhudatuanwebapi
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.application.zhudatuanwebapi
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: cart.cart.zhudatuanwebapi
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: cart.item.zhudatuanwebapi
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: checkout.address.zhudatuanwebapi
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: benefit.account.zhudatuanwebapi
+    kind: policy
+    owner: benefit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: benefit.lot.zhudatuanwebapi
+    kind: policy
+    owner: benefit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: ordering.orderrecord.zhudatuanwebapi
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: ordering.line.zhudatuanwebapi
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: ordering.aftersale.zhudatuanwebapi
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: fulfillment.fulfillmentorder.zhudatuanwebapi
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: runtime.schemaversion.zhudatuansandboxbootstrap
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: organization.organization.zhudatuansandboxbootstrap
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.category.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.category.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.product.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.product.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.sku.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.sku.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.pool.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.pool.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.poolitem.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.poolitem.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.poolbinding.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.poolbinding.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.listing.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.listing.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.pricebook.zhudatuansandboxbootstrap
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.pricebook.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.price.zhudatuansandboxbootstrap
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.price.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: inventory.stockitem.zhudatuansandboxbootstrap
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: inventory.stockitem.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.application.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.application.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.version.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.version.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.binding.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.binding.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.record.zhudatuansandboxbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.record.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.accessrecord.zhudatuansandboxbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.archiveref.zhudatuansandboxbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: access.purchase_session_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_member_scope
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_member_mall_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_member_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_mall_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_order_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_checkout_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_quote_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_intent_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_fulfillment_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_application_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_benefit_account_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_risk_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_audit_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: benefit.web_ledger
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
+  - id: benefit.purchase_available
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
+  - id: benefit.purchase_reserve
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
+  - id: benefit.purchase_consume
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
+  - id: pricing.purchase_quote_immutable
+    kind: function
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: pricing
+  - id: pricing.quote.pricing_purchase_quote_immutable
+    kind: trigger
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.schemaversion.zhudatuanpurchaseapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.idempotency.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.idempotency.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.idempotency.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: access.membership.zhudatuanpurchaseapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: access.decisionaudit.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: access.decisionaudit.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: member.profile.zhudatuanpurchaseapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: organization.organization.zhudatuanpurchaseapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: organization.unitclosure.zhudatuanpurchaseapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.policy.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.policyversion.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.signal.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.listentry.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.record.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.record.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.accessrecord.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.accessrecord.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.archiveref.zhudatuanpurchaseapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: cart.cart.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: cart.cart.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: cart.item.zhudatuanpurchaseapi
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.address.zhudatuanpurchaseapi
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.session.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.session.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.session.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.evidence.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.evidence.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: qualification.profile.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: qualification.tag.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: qualification.policy.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: qualification.policyversion.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: qualification.subject.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: qualification.resource.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: qualification.purchaselimit.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: invoice.profile.zhudatuanpurchaseapi
+    kind: policy
+    owner: invoice
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.publication.zhudatuanpurchaseapi
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.listing.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.sourcelisting.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.sku.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.product.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.pricebook.zhudatuanpurchaseapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.price.zhudatuanpurchaseapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.rule.zhudatuanpurchaseapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.quote.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.quote.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.quote.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.stockitem.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.stockitem.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.reservation.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.reservation.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.reservation.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.movement.zhudatuanpurchaseapi
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.campaign.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.campaign.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.redemption.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.redemption.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.redemption.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.orderrecord.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.orderrecord.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.orderrecord.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.line.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.line.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.suborder.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.suborder.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intent.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intent.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intent.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intenttender.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intenttender.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intenttender.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.payment.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.payment.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.capture.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.capture.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.allocation.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.allocation.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: fulfillment.fulfillmentorder.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: fulfillment.fulfillmentorder.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: fulfillment.line.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: fulfillment.line.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.outbox.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.outbox.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.job.zhudatuanpurchaseapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.release.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.release.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.publication.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.publication.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.record.zhudatuansandboxpublicationinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql

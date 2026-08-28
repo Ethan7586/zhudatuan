@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { registrationMigrationExecution, registrationMigrationLedgerMatches } from './RegistrationMigrationPlan';
+import { registrationMigrationExecution } from './RegistrationMigrationPlan';
 
 const migration = (file: string) => fileURLToPath(new URL(`../../../../../database/supabase/migrations/${file}`, import.meta.url));
 
@@ -24,15 +24,6 @@ describe('registration migration execution plan', () => {
   });
 
   it.each([
-    '20260829060000_zhudatuan_operator_invitation_registration.sql',
-    '20260829210000_owner_operator_coverage.sql',
-    '20260829211000_platform_owner_transfer.sql',
-    '20260829212000_owner_runtime_boundary_hardening.sql',
-    '20260829213000_reconcile_contract_identity_checksum.sql',
-    '20260829214000_owner_personal_scope_and_invoice_scope.sql',
-    '20260829215000_restore_invoice_request_operator_boundary.sql',
-    '20260829216000_owner_capability_exactness.sql',
-    '20260829217000_scope_hint_resource_precedence.sql',
     '20260821066000_resolve_invitation_scope.sql',
     '20260821069000_add_store_management.sql',
     '20260821074000_grant_platform_owner_operations.sql',
@@ -52,10 +43,6 @@ describe('registration migration execution plan', () => {
       expect.stringMatching(/^reason=/),
     ]);
     expect(execution.ledgerStatements[1]).not.toBe(execution.ledgerStatements[2]);
-    if (file >= '20260829060000') {
-      expect(execution.sql).not.toContain('FUTURE_HEAD_INVALID');
-      expect(execution.sql).toContain('PREDECESSOR_INVALID');
-    }
   });
 
   it('fails closed when a known source assertion drifts', () => {
@@ -85,16 +72,5 @@ describe('registration migration execution plan', () => {
     expect(registrationMigrationExecution('20260820133000_inventory_single_source_cutover.sql', source)).toEqual({
       kind: 'original', ledgerName: '20260820133000_inventory_single_source_cutover.sql', ledgerStatements: [], sql: source,
     });
-  });
-
-  it('accepts only the known generic-ledger transition with empty statement metadata', async () => {
-    const file = '20260831150000_identity_experience_application_commands.sql';
-    const execution = registrationMigrationExecution(file, await readFile(migration(file), 'utf8'));
-
-    expect(registrationMigrationLedgerMatches(file, file, [], execution)).toBe(true);
-    expect(registrationMigrationLedgerMatches(
-      '20260831140000_identity_registration_profile_acl_repair.sql', file, [], execution,
-    )).toBe(false);
-    expect(registrationMigrationLedgerMatches(file, 'wrong.sql', [], execution)).toBe(false);
   });
 });

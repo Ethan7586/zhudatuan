@@ -61,8 +61,7 @@ export async function createWebBusinessApiRuntime(
   const connection = await secrets.read(required(environment.DATABASE_API_CONNECTION_REF, 'DATABASE_API_CONNECTION_REF_MISSING'));
   const pool = createPool(connection, 'api');
   try {
-    await assertWebBusinessRuntimeCompatibility(pool)
-      .catch((cause: unknown) => console.warn('WEB_BUSINESS_RUNTIME_COMPATIBILITY_WARNING', cause));
+    await assertWebBusinessRuntimeCompatibility(pool);
   } catch (cause) {
     await pool.end();
     throw cause;
@@ -132,7 +131,6 @@ export async function webBusinessRuntimeCompatibility(pool: DatabasePool): Promi
     array_position(array[
       to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text)'),
-      to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('access.resource_scope(text,text,text)'),to_regprocedure('access.scope_object(text)'),
       to_regprocedure('access.scope_allowed(text)'),to_regprocedure('capability.membership_operations(text)'),
       to_regprocedure('risk.scope_allowed(text)'),to_regprocedure('audit.scope_allowed(text)'),

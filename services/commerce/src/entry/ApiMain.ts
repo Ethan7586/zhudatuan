@@ -9,8 +9,7 @@ const environment = apiEnvironment();
 const runtime = await createRuntime(environment, 'api');
 const bootstrapped = await bootstrapApi({ modules: COMMERCE_MODULES, extensions: runtime.extensions, configure: runtime.configure,
   allowedOrigins: apiAllowedOrigins(environment), telemetry: runtime.telemetry });
-await assertRuntimeCompatibility(runtime.pool, runtime.extensions, 'api')
-  .catch((cause: unknown) => console.warn('RUNTIME_COMPATIBILITY_WARNING', cause));
+await assertRuntimeCompatibility(runtime.pool, runtime.extensions, 'api');
 const server = listen(bootstrapped.app, apiPort(environment), apiBindHost(environment));
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, async () => {

@@ -1,7 +1,7 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
-import { resolveAdminLoginOrigin } from './auth';
+import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './auth';
 
 const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
@@ -37,9 +37,10 @@ const TicketExchangeSchema = z.strictObject({
   expiresIn: z.number().int().positive(),
 });
 
-export type CanonicalConsoleLoginResult =
+export type CanonicalIdentityLoginResult =
   | Readonly<{ kind: 'selection'; context: PreAuthContext }>
   | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
+export type CanonicalConsoleLoginResult = CanonicalIdentityLoginResult;
 
 export async function loginCanonicalConsole(
   subject: string,
@@ -47,12 +48,31 @@ export async function loginCanonicalConsole(
   membership?: string,
   signal?: AbortSignal,
 ): Promise<CanonicalConsoleLoginResult> {
+  return loginCanonicalIdentity('console', subject, password, membership, signal);
+}
+
+export async function loginCanonicalStorefront(
+  subject: string,
+  password: string,
+  membership?: string,
+  signal?: AbortSignal,
+): Promise<CanonicalIdentityLoginResult> {
+  return loginCanonicalIdentity('storefront', subject, password, membership, signal);
+}
+
+async function loginCanonicalIdentity(
+  target: 'console' | 'storefront',
+  subject: string,
+  password: string,
+  membership?: string,
+  signal?: AbortSignal,
+): Promise<CanonicalIdentityLoginResult> {
   const authorization = await beginAuthorization();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
     provider: 'password',
     subject: subject.trim(),
     password,
-    target: 'console',
+    target,
     ...(membership === undefined ? {} : { membership }),
     authorization: authorization.request,
   }, signal));
@@ -61,7 +81,7 @@ export async function loginCanonicalConsole(
     const context: PreAuthContext = {
       identifier: subject.trim(),
       loginMethod: 'password',
-      memberships: output.memberships.map(consoleMembership),
+      memberships: output.memberships.map((value) => loginMembership(value, target)),
     };
     return Object.freeze({
       kind: 'selection',
@@ -69,28 +89,29 @@ export async function loginCanonicalConsole(
     });
   }
 
-  if (output.target !== 'console') throw new Error('登录身份不属于运营后台');
+  if (output.target !== target) throw new Error(target === 'console' ? '登录身份不属于运营后台' : '登录身份不属于福利商城');
   const exchanged = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
     ticket: output.callback.ticket,
     state: output.callback.state,
     nonce: authorization.secret.nonce,
     verifier: authorization.secret.verifier,
   }, signal));
-  const redirectUrl = approvedConsoleDestination(exchanged.returnTarget);
+  const redirectUrl = approvedDestination(exchanged.returnTarget, target);
   return Object.freeze({ kind: 'authenticated', membership: output.membership, redirectUrl });
 }
 
-function consoleMembership(value: z.infer<typeof MembershipSelectionSchema>['memberships'][number]): Membership {
-  if (value.client !== 'console') throw new Error('后台登录返回了错误的会员入口');
+function loginMembership(value: z.infer<typeof MembershipSelectionSchema>['memberships'][number], target: 'console' | 'storefront'): Membership {
+  if (value.client !== target) throw new Error(target === 'console' ? '后台登录返回了错误的会员入口' : '商城登录返回了错误的会员入口');
+  const console = target === 'console';
   return {
     id: value.id,
-    target: 'admin',
+    target: console ? 'admin' : 'storefront',
     status: 'active',
     enterpriseName: '已授权企业',
-    storeName: '筑大团运营后台',
-    roleName: '运营会员',
-    dataScope: '按权限系统授权范围',
-    subjectScope: '企业',
+    storeName: console ? '筑大团运营后台' : '筑大团福利商城',
+    roleName: console ? '运营会员' : '企业员工会员',
+    dataScope: console ? '按权限系统授权范围' : '个人福利账户',
+    ...(console ? { subjectScope: '企业' as const } : {}),
     requiresStepUp: false,
   };
 }
@@ -129,7 +150,7 @@ async function beginAuthorization(): Promise<Readonly<{
   });
 }
 
-function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {
+function approvedDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget'], target: 'console' | 'storefront'): string {
   const expiry = Date.parse(value.expiresAt);
   if (!Number.isFinite(expiry) || expiry <= Date.now()) throw new Error('登录回跳授权已经过期');
   let destination: URL;
@@ -138,10 +159,14 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
   } catch {
     throw new Error('登录回跳地址无效');
   }
-  const configured = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
-  const approvedOrigin = resolveAdminLoginOrigin(configured, import.meta.env.DEV);
+  const configured = target === 'console'
+    ? import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined)
+    : import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+  const approvedOrigin = target === 'console'
+    ? resolveAdminLoginOrigin(configured, import.meta.env.DEV)
+    : resolveStorefrontLoginOrigin(configured, import.meta.env.DEV);
   if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
-    throw new Error('登录回跳地址不在后台允许清单');
+    throw new Error(target === 'console' ? '登录回跳地址不在后台允许清单' : '登录回跳地址不在商城允许清单');
   }
   return destination.toString();
 }

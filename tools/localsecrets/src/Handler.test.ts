@@ -22,19 +22,6 @@ describe('local Secret Store workload authentication', () => {
     assert.equal(response.status, 200);
     assert.deepEqual(JSON.parse(new TextDecoder().decode(response.body)), { value: 'protected-value' });
   });
-
-  it('rejects an authenticated workload before reading a ref outside its allowlist', async () => {
-    let reads = 0;
-    const scoped = secretStoreHandler({ get: () => { reads += 1; return 'must-not-be-read'; } }, {
-      authenticate: () => 'identity-registration-api',
-      require: (_workload, reference) => {
-        if (reference !== 'secret/allowed') throw new LocalHttpError(403, 'WORKLOAD_AUTHORIZATION_DENIED');
-      },
-    });
-    await assert.rejects(() => scoped(request('/v1/secrets/secret%2Fowner-password', 'GET', token)),
-      (cause: unknown) => cause instanceof LocalHttpError && cause.status === 403);
-    assert.equal(reads, 0);
-  });
 });
 
 function request(path: string, method = 'GET', bearer?: string): LocalRequest {

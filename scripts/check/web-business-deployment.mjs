@@ -64,25 +64,18 @@ assertCaddyMatcher(apiHost, 'registrationPreflight', ['OPTIONS'], [
   '/api/v1/identity/tickets/exchange',
   '/api/v1/identity/session',
   '/api/v1/identity/challenges',
-  '/api/v1/identity/invitations',
-  '/api/v1/identity/invitations/*',
   '/api/v1/identity/invitations/resolve',
   '/api/v1/identity/members',
-  '/api/v1/members',
-  '/api/v1/access/center',
-], true);
+]);
 assertCaddyMatcher(apiHost, 'registrationPost', ['POST'], [
   '/api/v1/identity/sessions',
   '/api/v1/identity/tickets/exchange',
   '/api/v1/identity/challenges',
-  '/api/v1/identity/invitations',
   '/api/v1/identity/invitations/resolve',
   '/api/v1/identity/members',
 ]);
 assertCaddyMatcher(apiHost, 'registrationSessionRead', ['GET'], ['/api/v1/identity/session']);
 assertCaddyMatcher(apiHost, 'registrationSessionDelete', ['DELETE'], ['/api/v1/identity/session']);
-assertCaddyMatcher(apiHost, 'registrationInvitationDelete', ['DELETE'], ['/api/v1/identity/invitations/*'], true);
-assertCaddyMatcher(apiHost, 'registrationOperatorRead', ['GET'], ['/api/v1/members', '/api/v1/access/center']);
 assertCaddyMatcher(apiHost, 'purchasePublicBlocked', ['POST', 'OPTIONS'], [
   '/api/v1/checkouts/quotes',
   '/api/v1/orders',
@@ -103,11 +96,7 @@ const registrationOperations = [
   ['identity.session.delete', 'DELETE', '/api/v1/identity/session'],
   ['identity.challenges.create', 'POST', '/api/v1/identity/challenges'],
   ['identity.invitations.read', 'POST', '/api/v1/identity/invitations/resolve'],
-  ['identity.invitations.create', 'POST', '/api/v1/identity/invitations'],
-  ['identity.invitations.revoke', 'DELETE', '/api/v1/identity/invitations/{invitationid}'],
   ['identity.members.create', 'POST', '/api/v1/identity/members'],
-  ['member.members.read', 'GET', '/api/v1/members'],
-  ['access.center.read', 'GET', '/api/v1/access/center'],
 ];
 for (const [id, method, path] of registrationOperations) {
   const operation = operations.find((candidate) => candidate.id === id);
@@ -116,18 +105,15 @@ for (const [id, method, path] of registrationOperations) {
 if (apiHost.includes('/api/v1/*')) throw new Error('GENERIC_CANONICAL_API_WILDCARD_FORBIDDEN');
 assertExactSet(
   [...apiHost.matchAll(/^\s*@(\w+)(?:\s+path\b|\s*\{)/gm)].map((match) => match[1]),
-  ['registrationHealth', 'registrationPreflight', 'registrationPost', 'registrationSessionRead', 'registrationSessionDelete',
-    'registrationInvitationDelete', 'registrationOperatorRead', 'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi',
-    'consoleSupportPreflight', 'consoleSupportRead', 'consoleSupportSend', 'webBusinessApi'],
+  ['registrationHealth', 'registrationPreflight', 'registrationPost', 'registrationSessionRead', 'registrationSessionDelete', 'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi', 'webBusinessApi'],
   'CANONICAL_API_PATH_MATCHERS'
 );
 assertExactList(
   [...apiHost.matchAll(/reverse_proxy\s+127\.0\.0\.1:(\d+)/g)].map((match) => match[1]),
-  ['4321', '4321', '4321', '4321', '4321', '4321', '4321', '4323', '4323', '4324', '4324', '4324', '4322'],
+  ['4321', '4321', '4321', '4321', '4321', '4322', '4323', '4323'],
   'CANONICAL_API_PROXY_TARGETS'
 );
-if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@registrationSessionRead',
-  '@registrationSessionDelete', '@registrationInvitationDelete', '@registrationOperatorRead']
+if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@registrationSessionRead', '@registrationSessionDelete']
   .some((matcher) => apiHost.indexOf(matcher) > apiHost.indexOf('@purchaseApi'))
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchasePreflight')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchaseApi')
@@ -287,16 +273,14 @@ function assertExactList(actual, expected, label) {
   }
 }
 
-function assertCaddyMatcher(source, name, expectedMethods, expectedPaths, allowWildcard = false) {
+function assertCaddyMatcher(source, name, expectedMethods, expectedPaths) {
   const block = source.match(new RegExp(`^\\s*@${name}\\s*\\{([\\s\\S]*?)^\\s*\\}`, 'm'))?.[1];
   if (!block) throw new Error(`CADDY_MATCHER_MISSING:${name}`);
   const methods = block.match(/^\s*method\s+(.+)$/m)?.[1]?.trim().split(/\s+/) ?? [];
   const paths = block.match(/^\s*path\s+(.+)$/m)?.[1]?.trim().split(/\s+/) ?? [];
   assertExactSet(methods, expectedMethods, `${name}:METHODS`);
   assertExactSet(paths, expectedPaths, `${name}:PATHS`);
-  if (!allowWildcard && paths.some((path) => path.includes('*') || path.includes('{'))) {
-    throw new Error(`${name}:NON_EXACT_PATH_FORBIDDEN`);
-  }
+  if (paths.some((path) => path.includes('*') || path.includes('{'))) throw new Error(`${name}:NON_EXACT_PATH_FORBIDDEN`);
 }
 
 function handleBlock(source, name) {

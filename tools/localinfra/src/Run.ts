@@ -1,22 +1,14 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
-const profile = process.env.LOCAL_RUNTIME_PROFILE;
-if (profile !== undefined && profile !== 'registration-only' && profile !== 'full-staging') {
-  throw new Error('LOCAL_RUNTIME_PROFILE_INVALID');
-}
-const bundled = profile !== undefined;
-const children = (profile === 'registration-only' ? [
+const registrationOnly = process.env.LOCAL_RUNTIME_PROFILE === 'registration-only';
+const children = (registrationOnly ? [
   'services/commerce/dist/LocalSecretsMain.js',
   'services/commerce/dist/LocalKmsMain.js',
-] : profile === 'full-staging' ? [
-  'services/commerce/dist/LocalSecretsMain.js',
-  'services/commerce/dist/LocalKmsMain.js',
-  'services/commerce/dist/LocalObjectsMain.js',
 ] : [
   'tools/localsecrets/src/Main.ts',
   'tools/localkms/src/Main.ts',
   'tools/localobjects/src/Main.ts',
-]).map((entry) => start(entry, bundled));
+]).map((entry) => start(entry, registrationOnly));
 
 let stopping = false;
 for (const child of children) child.once('exit', (code, signal) => {

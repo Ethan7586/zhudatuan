@@ -35,6 +35,23 @@ describe('HttpApp contract handshake', () => {
     expect(response.headers.get('access-control-allow-credentials')).toBe('true');
   });
 
+  it('allows the SDK access-version and action-proof headers in credentialed preflight', async () => {
+    const response = await new HttpApp(routes(), ['https://shop.example']).handle(new Request('https://api.example/api/v1/carts/current', {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'https://shop.example',
+        'access-control-request-method': 'PUT',
+        'access-control-request-headers': 'x-access-version,x-action-proof',
+      },
+    }));
+    expect(response.status).toBe(204);
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://shop.example');
+    expect(response.headers.get('access-control-allow-credentials')).toBe('true');
+    const allowed = response.headers.get('access-control-allow-headers')?.split(',') ?? [];
+    expect(allowed).toContain('x-access-version');
+    expect(allowed).toContain('x-action-proof');
+  });
+
   it('rejects a stale authenticated API cookie on public registration without its matching CSRF token', async () => {
     const response = await new HttpApp(routes('identity.members.create'), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/members', {
       method: 'POST',

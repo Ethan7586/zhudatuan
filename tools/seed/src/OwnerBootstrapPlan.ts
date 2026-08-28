@@ -21,24 +21,22 @@ const REFERENCE_PATTERN = /^[a-z0-9][a-z0-9/._-]{2,255}$/;
 const SENTINEL_PATTERN = /^[A-Za-z0-9_-]{43,128}$/;
 const ACTOR_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:._-]{2,127}$/;
 
-export interface OwnerBootstrapDatabaseEnvironment {
+export interface OwnerBootstrapEnvironment {
   readonly connectionString: string;
   readonly expectedDatabase: typeof OWNER_DATABASE;
   readonly sentinel: string;
   readonly actor: string;
-}
-
-export interface OwnerBootstrapSecrets {
   readonly identityKeyRef: string;
   readonly passwordRef: string;
   readonly secretStoreEndpoint: 'https://127.0.0.1:8543';
   readonly secretStoreBearerToken: string;
 }
 
-export interface OwnerBootstrapEnvironment extends OwnerBootstrapDatabaseEnvironment, OwnerBootstrapSecrets {}
-
-export function ownerBootstrapDatabaseEnvironment(source: NodeJS.ProcessEnv): OwnerBootstrapDatabaseEnvironment {
+export function ownerBootstrapEnvironment(source: NodeJS.ProcessEnv): OwnerBootstrapEnvironment {
   if (source.APP_ENV !== 'production') throw new Error('OWNER_BOOTSTRAP_PRODUCTION_ENV_REQUIRED');
+  if (source.ZHUDATUAN_OWNER_BOOTSTRAP_CONFIRM !== OWNER_BOOTSTRAP_CONFIRMATION) {
+    throw new Error('OWNER_BOOTSTRAP_CONFIRMATION_REQUIRED');
+  }
   const connectionString = required(source.ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL, 'OWNER_BOOTSTRAP_DATABASE_URL_REQUIRED');
   let databaseUrl: URL;
   try { databaseUrl = new URL(connectionString); }
@@ -55,23 +53,13 @@ export function ownerBootstrapDatabaseEnvironment(source: NodeJS.ProcessEnv): Ow
   if (!SENTINEL_PATTERN.test(sentinel)) throw new Error('OWNER_BOOTSTRAP_SENTINEL_INVALID');
   const actor = source.ZHUDATUAN_OWNER_BOOTSTRAP_ACTOR?.trim() || 'owner:Ethan';
   if (!ACTOR_PATTERN.test(actor)) throw new Error('OWNER_BOOTSTRAP_ACTOR_INVALID');
-  return Object.freeze({ connectionString, expectedDatabase: OWNER_DATABASE, sentinel, actor });
-}
-
-export function ownerBootstrapSecrets(source: NodeJS.ProcessEnv): OwnerBootstrapSecrets {
-  if (source.ZHUDATUAN_OWNER_BOOTSTRAP_CONFIRM !== OWNER_BOOTSTRAP_CONFIRMATION) {
-    throw new Error('OWNER_BOOTSTRAP_CONFIRMATION_REQUIRED');
-  }
   const identityKeyRef = secretReference(source.IDENTITY_KEY_REF, 'OWNER_BOOTSTRAP_IDENTITY_KEY_REF_REQUIRED');
   const passwordRef = secretReference(source.ZHUDATUAN_OWNER_PASSWORD_REF, 'OWNER_BOOTSTRAP_PASSWORD_REF_REQUIRED');
   if (identityKeyRef === passwordRef) throw new Error('OWNER_BOOTSTRAP_SECRET_REFERENCES_MUST_DIFFER');
   const secretStoreEndpoint = secureSecretStoreEndpoint(source.SECRET_STORE_ENDPOINT);
   const secretStoreBearerToken = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'OWNER_BOOTSTRAP_SECRET_STORE_TOKEN_INVALID');
-  return Object.freeze({ identityKeyRef, passwordRef, secretStoreEndpoint, secretStoreBearerToken });
-}
-
-export function ownerBootstrapEnvironment(source: NodeJS.ProcessEnv): OwnerBootstrapEnvironment {
-  return Object.freeze({ ...ownerBootstrapDatabaseEnvironment(source), ...ownerBootstrapSecrets(source) });
+  return Object.freeze({ connectionString, expectedDatabase: OWNER_DATABASE, sentinel, actor, identityKeyRef,
+    passwordRef, secretStoreEndpoint, secretStoreBearerToken });
 }
 
 export function ownerSubjectHash(identityKey: string): string {
@@ -83,11 +71,8 @@ export function ownerPasswordFingerprint(identityKey: string, password: string):
   return keyedFingerprint(identityKey, `owner-password:${password}`);
 }
 
-export function ownerBootstrapSummary(state: 'created' | 'existing', identity: Readonly<{ principal: string; membership: string }>): string {
-  if (!ACTOR_PATTERN.test(identity.principal) || !ACTOR_PATTERN.test(identity.membership)) {
-    throw new Error('OWNER_BOOTSTRAP_SUMMARY_IDENTITY_INVALID');
-  }
-  return `ZHUDATUAN_OWNER_BOOTSTRAP_READY state=${state} principal=${identity.principal} membership=${identity.membership} target=console`;
+export function ownerBootstrapSummary(state: 'created' | 'existing'): string {
+  return `ZHUDATUAN_OWNER_BOOTSTRAP_READY state=${state} principal=${OWNER_PRINCIPAL_ID} membership=${OWNER_MEMBERSHIP_ID} target=console`;
 }
 
 function keyedFingerprint(key: string, value: string): string {

@@ -3,12 +3,11 @@ import { MIGRATION_APPROVAL } from './Release';
 
 export const REGISTRATION_MIGRATION_PROFILE = 'registration-only' as const;
 export const REGISTRATION_MIGRATION_DIRECTORY = '/opt/zhudatuan/current/database/supabase/migrations' as const;
-const IMMUTABLE_RELEASE_MIGRATION_DIRECTORY = /^\/opt\/zhudatuan\/releases\/[0-9a-f]{40}-[a-z0-9-]+\/database\/supabase\/migrations$/;
 
 export interface RegistrationMigrationEnvironment {
   readonly approval: typeof MIGRATION_APPROVAL;
   readonly databaseConnectionRef: string;
-  readonly directory: string;
+  readonly directory: typeof REGISTRATION_MIGRATION_DIRECTORY;
   readonly distributorKeyRef: string;
   readonly identityKeyRef: string;
   readonly kmsEndpoint: string;
@@ -49,9 +48,7 @@ export function registrationMigrationEnvironment(source: EnvironmentSource): Reg
   const profile = enumValue(source.REGISTRATION_MIGRATION_PROFILE, [REGISTRATION_MIGRATION_PROFILE] as const,
     'REGISTRATION_MIGRATION_PROFILE_INVALID');
   const directory = requiredValue(source.MIGRATION_DIRECTORY, 'REGISTRATION_MIGRATION_DIRECTORY_MISSING');
-  if (directory !== REGISTRATION_MIGRATION_DIRECTORY && !IMMUTABLE_RELEASE_MIGRATION_DIRECTORY.test(directory)) {
-    throw new Error('REGISTRATION_MIGRATION_DIRECTORY_INVALID');
-  }
+  if (directory !== REGISTRATION_MIGRATION_DIRECTORY) throw new Error('REGISTRATION_MIGRATION_DIRECTORY_INVALID');
   const kmsEndpoint = secureLoopbackEndpoint(source.KMS_ENDPOINT, 8544, 'REGISTRATION_MIGRATION_KMS_ENDPOINT_INVALID');
   const secretStoreEndpoint = secureLoopbackEndpoint(source.SECRET_STORE_ENDPOINT, 8543,
     'REGISTRATION_MIGRATION_SECRET_STORE_ENDPOINT_INVALID');
@@ -65,7 +62,7 @@ export function registrationMigrationEnvironment(source: EnvironmentSource): Reg
     approval: enumValue(source.MIGRATION_APPROVAL, [MIGRATION_APPROVAL] as const, 'REGISTRATION_MIGRATION_APPROVAL_INVALID'),
     databaseConnectionRef: exactReference(source.MIGRATION_DATABASE_CONNECTION_REF,
       'zhudatuan/registration/database/migration', 'REGISTRATION_MIGRATION_DATABASE_CONNECTION_REF_INVALID'),
-    directory,
+    directory: REGISTRATION_MIGRATION_DIRECTORY,
     distributorKeyRef: exactReference(source.MIGRATION_DISTRIBUTOR_KEY_REF,
       'zhudatuan/migration/distributor', 'REGISTRATION_MIGRATION_DISTRIBUTOR_KEY_REF_INVALID'),
     identityKeyRef: exactReference(source.MIGRATION_IDENTITY_KEY_REF,

@@ -2,14 +2,23 @@ import { Client } from 'pg';
 
 import { PasswordPolicy } from '../../../services/commerce/src/modules/identity/domain/policy/PasswordPolicy';
 import {
-  ownerBootstrapDatabaseEnvironment,
-  ownerBootstrapSecrets,
+  OWNER_MEMBERSHIP_ID,
+  OWNER_PRINCIPAL_ID,
+  ownerBootstrapEnvironment,
   ownerBootstrapSummary,
   ownerPasswordFingerprint,
   ownerSubjectHash,
 } from './OwnerBootstrapPlan';
 
-const environment = ownerBootstrapDatabaseEnvironment(process.env);
+const environment = ownerBootstrapEnvironment(process.env);
+const [identityKey, password] = await Promise.all([
+  readSecret(environment.secretStoreEndpoint, environment.secretStoreBearerToken, environment.identityKeyRef, 32),
+  readSecret(environment.secretStoreEndpoint, environment.secretStoreBearerToken, environment.passwordRef, 12),
+]);
+const passwordPolicy = new PasswordPolicy();
+const secretHash = await passwordPolicy.hash(password);
+const subjectHash = ownerSubjectHash(identityKey);
+const passwordFingerprint = ownerPasswordFingerprint(identityKey, password);
 const database = new Client({
   connectionString: environment.connectionString,
   application_name: 'zhudatuan-owner-bootstrap-v1',
@@ -19,34 +28,17 @@ const database = new Client({
 
 await database.connect();
 let state: 'created' | 'existing';
-let identity: Readonly<{ principal: string; membership: string }>;
 try {
   await database.query('begin isolation level serializable');
   await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:registration-bootstrap:v1'))");
-  await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
-  const boundary = await assertDatabaseBoundary(database, environment.expectedDatabase, environment.sentinel);
-  if (boundary.state === 'active') {
-    state = 'existing';
-    identity = boundary.identity;
-  } else {
-    const secrets = ownerBootstrapSecrets(process.env);
-    const [identityKey, password] = await Promise.all([
-      readSecret(secrets.secretStoreEndpoint, secrets.secretStoreBearerToken, secrets.identityKeyRef, 32),
-      readSecret(secrets.secretStoreEndpoint, secrets.secretStoreBearerToken, secrets.passwordRef, 12),
-    ]);
-    const secretHash = await new PasswordPolicy().hash(password);
-    const result = await database.query<{ state: string }>(
-      'select deployment.bootstrap_zhudatuan_owner($1,$2,$3,$4,$5) state',
-      [environment.sentinel, ownerSubjectHash(identityKey), secretHash,
-        ownerPasswordFingerprint(identityKey, password), environment.actor]
-    );
-    const returned = result.rows[0]?.state;
-    if (returned !== 'created' && returned !== 'existing') throw new Error('OWNER_BOOTSTRAP_RESULT_INVALID');
-    state = returned;
-    const activeBoundary = await assertDatabaseBoundary(database, environment.expectedDatabase, environment.sentinel);
-    if (activeBoundary.state !== 'active') throw new Error('OWNER_BOOTSTRAP_RESULT_INVALID');
-    identity = activeBoundary.identity;
-  }
+  await assertDatabaseBoundary(database, environment.expectedDatabase, environment.sentinel);
+  const result = await database.query<{ state: string }>(
+    'select deployment.bootstrap_zhudatuan_owner($1,$2,$3,$4,$5) state',
+    [environment.sentinel, subjectHash, secretHash, passwordFingerprint, environment.actor]
+  );
+  const returned = result.rows[0]?.state;
+  if (returned !== 'created' && returned !== 'existing') throw new Error('OWNER_BOOTSTRAP_RESULT_INVALID');
+  state = returned;
   await database.query('commit');
 } catch (cause) {
   await database.query('rollback').catch(() => undefined);
@@ -55,45 +47,34 @@ try {
   await database.end();
 }
 
-process.stdout.write(`${ownerBootstrapSummary(state, identity)}\n`);
+process.stdout.write(`${ownerBootstrapSummary(state)}\n`);
 
-async function assertDatabaseBoundary(database: Client, expectedDatabase: string, sentinel: string): Promise<Readonly<{
-  state: 'bootstrap_pending'; identity: null;
-} | { state: 'active'; identity: Readonly<{ principal: string; membership: string }> }>> {
+async function assertDatabaseBoundary(database: Client, expectedDatabase: string, sentinel: string): Promise<void> {
   const result = await database.query<{
     database_name: string;
     database_role: string;
     role_safe: boolean;
-    state: string;
-    active_owner_count: number;
-    principal_id: string | null;
-    membership_id: string | null;
-    current_owner_valid: boolean;
-    fixed_identity_collision: boolean;
+    sentinel_valid: boolean;
+    baseline_valid: boolean;
+    owner_role_valid: boolean;
+    self_role_valid: boolean;
+    fixed_identity_absent_or_owned: boolean;
   }>(`select current_database() database_name,current_user database_role,
     not exists(select 1 from pg_roles where rolname=current_user
       and (rolsuper or rolbypassrls or rolcreaterole or rolcreatedb or rolreplication or rolinherit)) role_safe,
-    bootstrap.state,bootstrap.active_owner_count,bootstrap.principal_id,bootstrap.membership_id,
-    bootstrap.current_owner_valid,bootstrap.fixed_identity_collision
-    from deployment.zhudatuan_owner_bootstrap_state($1) bootstrap`, [sentinel]);
+    deployment.registration_bootstrap_boundary($1) sentinel_valid,
+    exists(select 1 from runtime.schemaversion where version='20260828170000') baseline_valid,
+    exists(select 1 from access.role where id='role-platform-owner-v2' and scope_id='tenant-zhudatuan' and status='active') owner_role_valid,
+    exists(select 1 from access.role where id='role:self' and scope_id='self' and status='active') self_role_valid,
+    not exists(select 1 from identity.principal where id=$2 and status<>'active')
+      and not exists(select 1 from access.membership where id=$3 and (client<>'operator' or status<>'active')) fixed_identity_absent_or_owned`,
+  [sentinel, OWNER_PRINCIPAL_ID, OWNER_MEMBERSHIP_ID]);
   const row = result.rows[0];
-  if (result.rowCount !== 1 || !row || row.database_name !== expectedDatabase || row.database_role !== 'zhudatuanbootstrap'
-    || row.role_safe !== true || row.fixed_identity_collision !== false
-    || !['bootstrap_pending', 'active'].includes(row.state)) {
+  if (!row || row.database_name !== expectedDatabase || row.database_role !== 'zhudatuanbootstrap'
+    || row.role_safe !== true || row.sentinel_valid !== true || row.baseline_valid !== true
+    || row.owner_role_valid !== true || row.self_role_valid !== true || row.fixed_identity_absent_or_owned !== true) {
     throw new Error('OWNER_BOOTSTRAP_DATABASE_BOUNDARY_INVALID');
   }
-  if (row.state === 'active') {
-    if (row.active_owner_count !== 1 || row.current_owner_valid !== true
-      || row.principal_id === null || row.membership_id === null) {
-      throw new Error('OWNER_BOOTSTRAP_DATABASE_BOUNDARY_INVALID');
-    }
-    return { state: 'active', identity: { principal: row.principal_id, membership: row.membership_id } };
-  }
-  if (row.active_owner_count !== 0 || row.current_owner_valid !== false
-    || row.principal_id !== null || row.membership_id !== null) {
-    throw new Error('OWNER_BOOTSTRAP_DATABASE_BOUNDARY_INVALID');
-  }
-  return { state: 'bootstrap_pending', identity: null };
 }
 
 async function readSecret(endpoint: string, bearerToken: string, reference: string, minimumLength: number): Promise<string> {

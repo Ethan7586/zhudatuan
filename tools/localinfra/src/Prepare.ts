@@ -5,7 +5,6 @@ import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { LOCAL_ENVIRONMENT_KEYS, bearerToken } from '@shop/config/server';
-import { localBootstrapPassword } from './LocalPassword';
 
 const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');

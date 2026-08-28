@@ -1,6 +1,7 @@
 import { CommandBus } from '../foundation/application/CommandBus';
 import { QueryBus } from '../foundation/application/QueryBus';
 import type { Telemetry } from '@shop/telemetry';
+import type { OperationId } from '@shop/contract';
 import { HttpApp } from '../foundation/interface/HttpApp';
 import { OperationMetrics } from '../foundation/telemetry/OperationMetrics';
 import { Container } from './Container';

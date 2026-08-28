@@ -1,6 +1,6 @@
 [Unit]
 Description=Zhudatuan selected-operation Purchase API
-Requires=zhudatuan-internal-runtime.service docker.service
+Requires=zhudatuan-migration.service zhudatuan-internal-runtime.service docker.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service docker.service
 ConditionPathExists=/opt/zhudatuan/current/services/commerce/dist/PurchaseApiMain.js
 ConditionPathExists=/opt/zhudatuan/current/services/commerce/dist/PurchaseApiReadyMain.js
