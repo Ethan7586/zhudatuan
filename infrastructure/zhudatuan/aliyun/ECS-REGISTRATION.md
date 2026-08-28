@@ -20,7 +20,7 @@
 2. 建立獨立資料目錄、專用 `zhudatuan` 系統帳號及 0600 私密配置。
 3. 由 `zhudatuan-registration-database.service` 啟動 `registration-compose.yml` 的單一 PostgreSQL，只接受 `127.0.0.1:55432`。
 4. 啟動 `zhudatuan-internal-runtime.service`；它只執行已 bundle 的 `InternalRuntimeMain.js`，Secret Store 與 KMS 兩個 readiness 全部成功後才成為 active。
-5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。Migration inventory、registration-only transform ledger、`20260828170000` 註冊基線、`20260828173000` WebBusiness access、`20260828180000` Purchase schema、`20260828183000` runtime readiness repair 與 `20260829040000` registration bootstrap repair 任一失敗即停止。Purchase E2E receipt 仍固定驗證 `20260828180000`，不得與 migration runner 的最終 head 混用。
+5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。Migration inventory、registration-only transform ledger、`20260828170000` 註冊基線、`20260828173000` WebBusiness access、`20260828180000` Purchase schema、`20260828183000` runtime readiness repair、`20260829040000` registration bootstrap repair 與 `20260829054500` identity login ACL repair 任一失敗即停止。Purchase E2E receipt 仍固定驗證 `20260828180000`，不得與 migration runner 的最終 head 混用。
 6. Migration 完成後，以資料庫 cluster owner 執行一次版本化的 `postgres-reconcile-registration-boundary.sql`，只修復既有資料卷中 `zhudatuanbootstrap → SECURITY DEFINER(shopmigration) → registration_bootstrap_boundary` 的嵌套 EXECUTE 鏈；不得在伺服器互動式手寫 GRANT。正式命令如下：
 
 ```sh
