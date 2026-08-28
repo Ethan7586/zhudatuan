@@ -11,10 +11,11 @@ import {
   ownerSubjectHash,
 } from './OwnerBootstrapPlan';
 
+const databasePassword = 'test-only-owner-bootstrap-database-password';
 const valid = Object.freeze({
   APP_ENV: 'production',
   ZHUDATUAN_OWNER_BOOTSTRAP_CONFIRM: OWNER_BOOTSTRAP_CONFIRMATION,
-  ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: 'postgresql://zhudatuanbootstrap:a-very-long-database-password@127.0.0.1:55432/zhudatuan_registration',
+  ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: `postgresql://zhudatuanbootstrap:${databasePassword}@127.0.0.1:55432/zhudatuan_registration`,
   ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_NAME: 'zhudatuan_registration',
   ZHUDATUAN_OWNER_BOOTSTRAP_SENTINEL: 'database_boundary_sentinel_abcdefghijklmnopqrstuvwxyz',
   ZHUDATUAN_OWNER_BOOTSTRAP_ACTOR: 'owner:Ethan',
@@ -33,7 +34,7 @@ describe('owner bootstrap plan', () => {
     assert.throws(() => ownerBootstrapEnvironment({ ...valid, APP_ENV: 'test' }), /PRODUCTION_ENV_REQUIRED/);
     assert.throws(() => ownerBootstrapEnvironment({ ...valid, ZHUDATUAN_OWNER_BOOTSTRAP_CONFIRM: 'yes' }), /CONFIRMATION_REQUIRED/);
     assert.throws(() => ownerBootstrapEnvironment({ ...valid,
-      ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: 'postgresql://zhudatuanbootstrap:a-very-long-database-password@db.internal:5432/zhudatuan_registration' }),
+      ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: `postgresql://zhudatuanbootstrap:${databasePassword}@db.internal:5432/zhudatuan_registration` }),
     /DATABASE_ENDPOINT_INVALID/);
     assert.throws(() => ownerBootstrapEnvironment({ ...valid, SECRET_STORE_ENDPOINT: 'https://localhost:8543' }),
       /SECRET_STORE_ENDPOINT_INVALID/);
