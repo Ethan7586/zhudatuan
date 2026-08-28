@@ -61,16 +61,26 @@ export class DispatchNotification {
 
   async challenge(id: string): Promise<void> {
     const selected = (await this.repository.challenge(id)).rows[0]; if (!selected) return;
-    const [code, recipient] = await Promise.all([
-      this.kms.decrypt('identity/challenge', selected.code_ciphertext, { challenge: id, purpose: selected.purpose }),
-      this.kms.decrypt('identity/destination', selected.destination_ciphertext, { challenge: id, purpose: selected.purpose }),
-    ]);
+    const attempt = (await this.repository.beginChallengeAttempt(id, 'sms')).rows[0];
+    if (!attempt || !attempt.dispatch) return;
+    let code: string;
+    let recipient: string;
+    try {
+      [code, recipient] = await Promise.all([
+        this.kms.decrypt('identity/challenge', selected.code_ciphertext, { challenge: id, purpose: selected.purpose }),
+        this.kms.decrypt('identity/destination', selected.destination_ciphertext, { challenge: id, purpose: selected.purpose }),
+      ]);
+    } catch (cause) {
+      await this.repository.failChallengeAttempt(id, attempt.sequence, deliveryError(cause));
+      throw cause;
+    }
     try {
       const receipt = await this.deliveries.require('sms').send({ recipient, providerTemplate: null, variables: { code }, subject: null,
         body: 'verification', idempotency: id });
-      await this.repository.challengeAttempt(id, receipt.provider, 'sent', receipt.externalId, null);
+      const completed = await this.repository.completeChallengeAttempt(id, attempt.sequence, receipt.provider, receipt.externalId);
+      if (completed.rowCount !== 1) throw new Error('IDENTITY_NOTIFICATION_DELIVERY_STATE_LOST');
     } catch (cause) {
-      await this.repository.challengeAttempt(id, 'sms', 'failed', null, deliveryError(cause)); throw cause;
+      await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, deliveryError(cause));
     }
   }
 

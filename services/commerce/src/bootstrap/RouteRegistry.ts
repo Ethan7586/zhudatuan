@@ -20,8 +20,13 @@ export class RouteRegistry {
   private readonly routes: RegisteredRoute[] = [];
   private frozen = false;
 
+  constructor(private readonly expectedOperations: readonly OperationId[] = OperationCatalog.all().map((operation) => operation.id)) {
+    if (new Set(expectedOperations).size !== expectedOperations.length) throw new Error('ROUTE_EXPECTATION_DUPLICATE');
+  }
+
   register(definition: RouteDefinition): void {
     if (this.frozen) throw new Error('ROUTE_REGISTRY_FROZEN');
+    if (!this.expectedOperations.includes(definition.operation)) throw new Error(`ROUTE_OPERATION_FORBIDDEN:${definition.operation}`);
     const operation = OperationCatalog.get(definition.operation);
     if (this.routes.some((route) => route.method === operation.method && route.path === operation.path)) throw new Error(`ROUTE_DUPLICATE:${operation.method}:${operation.path}`);
     const compiled = compile(operation.path);
@@ -30,7 +35,7 @@ export class RouteRegistry {
 
   freeze(): void {
     const registered = new Set(this.routes.map((route) => route.operation));
-    const missing = OperationCatalog.all().filter((operation) => !registered.has(operation.id)).map((operation) => operation.id);
+    const missing = this.expectedOperations.filter((operation) => !registered.has(operation));
     if (missing.length > 0) throw new Error(`ROUTE_OPERATIONS_MISSING:${missing.join(',')}`);
     this.frozen = true;
     Object.freeze(this.routes);

@@ -21,6 +21,12 @@ zhudatuan.com {
 		X-Frame-Options "SAMEORIGIN"
 	}
 
+	@productionShowcases path /desktop-1920 /laptop-web /mini-program /android-app /tablet-app
+	handle @productionShowcases {
+		header Cache-Control "no-store"
+		respond "Not Found" 404
+	}
+
 	# Optional same-origin login drawer. Its frame policy deliberately differs
 	# from the standalone accounts host.
 	redir /login /login/ 308
@@ -32,7 +38,7 @@ zhudatuan.com {
 	}
 
 	handle {
-		reverse_proxy localhost:3000 {
+		reverse_proxy 127.0.0.1:4310 {
 			header_up X-Real-IP {client_ip}
 		}
 	}
@@ -48,11 +54,10 @@ accounts.zhudatuan.com {
 		X-Frame-Options "DENY"
 	}
 
-	@authApi path /api/v1/auth/*
-	handle @authApi {
-		reverse_proxy localhost:3000 {
-			header_up X-Real-IP {client_ip}
-		}
+	# Never let the static SPA fallback turn an API request into index.html 200.
+	@accountsApi path /api /api/*
+	handle @accountsApi {
+		respond "Not Found" 404
 	}
 
 	handle {
@@ -70,15 +75,6 @@ console.zhudatuan.com {
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
-	}
-
-	# Only the compatibility identity/session endpoints are same-host here.
-	# The Console's business API remains the separately configured Canonical API.
-	@compatAuth path /api/v1/auth/*
-	handle @compatAuth {
-		reverse_proxy localhost:3000 {
-			header_up X-Real-IP {client_ip}
-		}
 	}
 
 	@previewAssets path /design-references/* /demo/*
@@ -104,8 +100,102 @@ api.zhudatuan.com {
 		X-Frame-Options "DENY"
 	}
 
-	reverse_proxy localhost:3001 {
-		header_up X-Real-IP {client_ip}
+	@registrationHealth {
+		method GET
+		path /health/live /health/ready /health/startup
+	}
+	handle @registrationHealth {
+		reverse_proxy 127.0.0.1:4321 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@registrationPreflight {
+		method OPTIONS
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+	}
+	handle @registrationPreflight {
+		reverse_proxy 127.0.0.1:4321 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@registrationPost {
+		method POST
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+	}
+	handle @registrationPost {
+		reverse_proxy 127.0.0.1:4321 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@registrationSessionRead {
+		method GET
+		path /api/v1/identity/session
+	}
+	handle @registrationSessionRead {
+		reverse_proxy 127.0.0.1:4321 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@registrationSessionDelete {
+		method DELETE
+		path /api/v1/identity/session
+	}
+	handle @registrationSessionDelete {
+		reverse_proxy 127.0.0.1:4321 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	# Purchase commands have an independent runtime and database role. Match both
+	# method and exact path before the read-oriented WebBusiness surface because
+	# GET /api/v1/orders remains owned by WebBusiness on 4322.
+	# Public purchase traffic stays fail-closed until a real PostgreSQL E2E receipt
+	# is reviewed in a later code change. Loopback 4323 remains available for E2E.
+	@purchasePublicBlocked {
+		method POST OPTIONS
+		path /api/v1/checkouts/quotes /api/v1/orders /api/v1/payments/intents
+	}
+	handle @purchasePublicBlocked {
+		header Cache-Control "no-store"
+		respond "Purchase cutover blocked" 503
+	}
+
+	@purchasePreflight {
+		method OPTIONS
+		path /api/v1/checkouts/quotes /api/v1/orders /api/v1/payments/intents
+	}
+	handle @purchasePreflight {
+		reverse_proxy 127.0.0.1:4323 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@purchaseApi {
+		method POST
+		path /api/v1/checkouts/quotes /api/v1/orders /api/v1/payments/intents
+	}
+	handle @purchaseApi {
+		reverse_proxy 127.0.0.1:4323 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	# The WebBusiness process is deliberately narrower than the Canonical API
+	# contract. Keep every public path explicit so an added operation cannot
+	# become reachable merely because it shares an /api/v1 prefix.
+	@webBusinessApi path /api/v1/members/me /api/v1/members/me/addresses /api/v1/members/me/addresses/* /api/v1/organizations/layers /api/v1/reports/dashboard /api/v1/catalog/listings /api/v1/pricing/offers /api/v1/inventory/availability /api/v1/carts/current /api/v1/carts/current/* /api/v1/benefits/accounts /api/v1/benefits/ledgers /api/v1/orders
+	handle @webBusinessApi {
+		reverse_proxy 127.0.0.1:4322 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	handle {
+		respond "Not Found" 404
 	}
 }
 

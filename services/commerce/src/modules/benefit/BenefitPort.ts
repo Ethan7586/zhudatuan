@@ -1,12 +1,25 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-import { FinancePort } from '../finance/FinanceModule';
 import type { BenefitChoice, BenefitGateway, BenefitRefund, BenefitTender } from './application/port/BenefitPort';
 
 export type { BenefitChoice, BenefitRefund, BenefitTender } from './application/port/BenefitPort';
 
+interface FinancialPosting {
+  post(database: OperationDatabase, intent: Readonly<{
+    scope: string;
+    referenceType: string;
+    referenceId: string;
+    currency: string;
+    description: string;
+    debit: Readonly<{ code: string; kind: 'asset' | 'liability' | 'income' | 'expense' }>;
+    credit: Readonly<{ code: string; kind: 'asset' | 'liability' | 'income' | 'expense' }>;
+    amountMinor: number;
+    occurredAt?: string;
+  }>): Promise<string>;
+}
+
 export class BenefitPort implements BenefitGateway {
-  constructor(private readonly finance = new FinancePort()) {}
+  constructor(private readonly finance?: FinancialPosting) {}
 
   async preview(database: OperationDatabase, member: string, scope: string, accounts: readonly string[]): Promise<readonly BenefitChoice[]> {
     if (accounts.length === 0) return [];
@@ -63,7 +76,7 @@ export class BenefitPort implements BenefitGateway {
       remaining -= amount;
       if (remaining === 0) break;
     }
-    await this.finance.post(database, { scope: selected.scope_id, referenceType: 'benefit.consume', referenceId: `${selected.id}:${order}`,
+    await this.financial().post(database, { scope: selected.scope_id, referenceType: 'benefit.consume', referenceId: `${selected.id}:${order}`,
       currency: selected.currency, description: 'Benefit order consumption', debit: { code: `benefit.${selected.id}`, kind: 'liability' },
       credit: { code: 'commerce.benefit', kind: 'income' }, amountMinor });
     await database.query(`update benefit.reservation set state='consumed' where id=$1`, [reservation.rows[0].id]);
@@ -99,13 +112,18 @@ export class BenefitPort implements BenefitGateway {
       remaining -= amount;
       if (remaining === 0) break;
     }
-    await this.finance.post(database, { scope: input.scope, referenceType: 'benefit.refund', referenceId: `${selected.id}:${input.id}`,
+    await this.financial().post(database, { scope: input.scope, referenceType: 'benefit.refund', referenceId: `${selected.id}:${input.id}`,
       currency: selected.currency, description: 'Benefit refund restoration', debit: { code: 'benefit.refund', kind: 'expense' },
       credit: { code: `benefit.${selected.id}`, kind: 'liability' }, amountMinor: input.amountMinor });
   }
 
   async release(database: OperationDatabase, order: string): Promise<void> {
     await database.query(`update benefit.reservation set state='released' where owner_id=$1 and state='active'`, [order]);
+  }
+
+  private financial(): FinancialPosting {
+    if (!this.finance) throw new Error('BENEFIT_FINANCE_DEPENDENCY_REQUIRED');
+    return this.finance;
   }
 }
 

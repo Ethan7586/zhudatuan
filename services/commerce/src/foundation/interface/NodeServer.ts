@@ -5,7 +5,7 @@ import type { HttpApp } from './HttpApp';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 
-export function listen(app: HttpApp, port: number): Readonly<{ close: () => Promise<void> }> {
+export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): Readonly<{ close: () => Promise<void> }> {
   const server = createServer(async (request, response) => {
     const controller = new AbortController();
     request.once('aborted', () => controller.abort(new Error('REQUEST_ABORTED')));
@@ -22,7 +22,7 @@ export function listen(app: HttpApp, port: number): Readonly<{ close: () => Prom
   server.headersTimeout = RUNTIME_LIMITS.http.headersTimeoutMilliseconds;
   server.keepAliveTimeout = RUNTIME_LIMITS.http.keepAliveTimeoutMilliseconds;
   server.maxRequestsPerSocket = RUNTIME_LIMITS.http.maximumRequestsPerSocket;
-  server.listen(port, '0.0.0.0');
+  server.listen(port, host);
   return { close: () => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())) };
 }
 

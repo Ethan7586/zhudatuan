@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import { BenefitPort } from '../../benefit/BenefitModule';
+import { FinancePort } from '../../finance/application/port/FinancePort';
 import { VoucherPort } from '../../voucher/VoucherModule';
 import { orderPort } from '../../order/OrderModule';
 
-const benefit = new BenefitPort();
-const voucher = new VoucherPort();
+const benefit = new BenefitPort(new FinancePort());
+const voucher = new VoucherPort(new FinancePort());
 
 interface RefundRow {
   readonly id: string;

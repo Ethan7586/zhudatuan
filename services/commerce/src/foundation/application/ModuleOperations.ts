@@ -100,7 +100,7 @@ export class ModuleOperations implements OperationUsecase {
     if (!key) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
     return this.command.run(transactionContext(request, this.module, 'command'), async (client) => {
       const hash = operationRequestHash(request);
-      const actor = request.access?.actor.id ?? `public:${hash.slice(0, 24)}`;
+      const actor = request.access?.actor.id ?? `public:${request.type}`;
       const scope = request.access?.scope.id ?? `public:${this.module}`;
       await client.query(`insert into runtime.idempotency(scope,actor_id,key,request_hash,state,expires_at)
         values($1,$2,$3,$4,'started',clock_timestamp()+interval '24 hours') on conflict do nothing`, [scope, actor, key, hash]);
@@ -174,6 +174,7 @@ export function operationRequestHash(request: OperationRequest): string {
     path: request.input.path,
     query: request.input.query,
     body: request.input.body,
+    expectedVersion: request.input.expectedVersion ?? null,
   }));
 }
 
