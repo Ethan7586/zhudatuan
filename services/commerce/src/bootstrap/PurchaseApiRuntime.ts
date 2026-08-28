@@ -224,8 +224,12 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
       and not has_table_privilege(current_user,'payment.prepay','INSERT,UPDATE,DELETE')
       and not has_table_privilege(current_user,'payment.refund','INSERT,UPDATE,DELETE')
       and not has_table_privilege(current_user,'payment.recoverycase','INSERT,UPDATE,DELETE')
-      and not has_function_privilege(current_user,
-        'finance.post(text,text,text,text,text,text,text,text,text,bigint,timestamp with time zone)','EXECUTE') forbidden_privileges`,
+      and not exists(select 1 from pg_proc procedure
+        join pg_namespace namespace on namespace.oid=procedure.pronamespace
+        where namespace.nspname='finance' and procedure.proname='post'
+          and oidvectortypes(procedure.proargtypes)=
+            'text, text, text, text, text, text, text, text, text, bigint, timestamp with time zone'
+          and has_function_privilege(current_user,procedure.oid,'EXECUTE')) forbidden_privileges`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM, PURCHASE_SCHEMA_VERSION, PURCHASE_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanpurchaseapi' || state.session_user !== 'zhudatuanpurchaseapi' || !state.role_safe
