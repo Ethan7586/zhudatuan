@@ -53,8 +53,8 @@ describe('Commerce application workspace', () => {
 
   it('keeps the three official solutions stable and maps the old preview aliases', () => {
     expect(commerceSolutions.map(({ id, name, path }) => ({ id, name, path }))).toEqual([
-      { id: 'jingxu', name: '築店 · 静序', path: '/design-references/admin/first-design/index.html?screen=editor' },
-      { id: 'oriental', name: '築店 · 东方策展', path: '/design-references/admin/kaidian/dist/index.html' },
+      { id: 'jingxu', name: '築店 · 静序', path: '/design-references/admin/first-design/preview.html?release=20260828-2' },
+      { id: 'oriental', name: '築店 · 东方策展', path: '/design-references/admin/kaidian/dist/index.html?release=20260828-2' },
       { id: 'warm-workshop', name: '築店 · 暖筑工坊', path: '/demo/index.html' },
     ]);
     expect(readCommerceSolution('studio')).toBe('jingxu');
@@ -117,7 +117,7 @@ describe('Commerce application workspace', () => {
 
     const studio = await screen.findByRole('dialog', { name: '築店 · 东方策展' });
     const frame = within(studio).getByTitle('築店东方策展原版方案');
-    expect(frame.getAttribute('src')).toBe('http://localhost:4174/design-references/admin/kaidian/dist/index.html');
+    expect(frame.getAttribute('src')).toBe('http://localhost:4174/design-references/admin/kaidian/dist/index.html?release=20260828-2');
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin');
     expect(frame.getAttribute('referrerpolicy')).toBe('no-referrer');
     expect(frame.getAttribute('allow')).toBe('clipboard-write');
