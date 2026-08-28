@@ -66,7 +66,7 @@ export class WechatOperations implements OperationUsecase {
         ? await this.createSession(database, request, body, current.principal_id, current.membership_id, scene, authorization)
         : await this.createGrant(database, current.id);
       const hash = operationRequestHash(request);
-      await appendOperationAudit(this.audit, database, request, 'identity', result, current.principal_id ?? `public:${hash.slice(0, 24)}`,
+      await appendOperationAudit(this.audit, database, request, 'identity', result, current.principal_id ?? 'public:identity.wechat.session',
         current.membership_id ?? 'identity', hash);
       await completeIdempotency(database, request, 'identity', result);
       return result;

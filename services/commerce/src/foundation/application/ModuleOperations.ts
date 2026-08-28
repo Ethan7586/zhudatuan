@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { permissionDefinition } from '@shop/authz';
 import { OperationCatalog, type OperationId } from '@shop/contract';
 import { Redactor } from '@shop/telemetry';
@@ -23,6 +23,28 @@ export interface OperationLifecycle<T = unknown> {
 }
 type OperationEntry = OperationAction | OperationLifecycle;
 export type OperationActions = Readonly<Partial<Record<OperationId, OperationEntry>>>;
+
+const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
+  'identity.sessions.create': Object.freeze(['provider', 'target', 'membership']),
+  'identity.tickets.exchange': Object.freeze([]),
+  'identity.challenges.create': Object.freeze(['purpose']),
+  'identity.invitations.read': Object.freeze([]),
+  'identity.members.create': Object.freeze(['termsAccepted', 'termsHash']),
+  'identity.members.manage': Object.freeze(['action', 'status', 'departmentId']),
+  'identity.password.change': Object.freeze([]),
+  'identity.password.verify': Object.freeze([]),
+  'identity.password.reset': Object.freeze([]),
+  'identity.mobile.manage': Object.freeze([]),
+  'identity.stepup.start': Object.freeze([]),
+  'identity.stepup.complete': Object.freeze([]),
+  'identity.wechat.session': Object.freeze(['scene', 'action']),
+  'identity.wechat.bind': Object.freeze([]),
+});
+
+const IDENTITY_AUDIT_OUTPUT_FIELDS: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
+  'identity.invitations.create': Object.freeze(['code']),
+  'identity.tickets.exchange': Object.freeze(['proof']),
+});
 
 export function operationLifecycle<T>(definition: OperationLifecycle<T>): OperationLifecycle {
   return definition as OperationLifecycle;
@@ -132,18 +154,49 @@ export async function appendOperationAudit(audit: AuditSink, client: OperationDa
   result: OperationResult, actor: string, scope: string, requestHashValue: string): Promise<void> {
   const body = request.input.body && typeof request.input.body === 'object' && !Array.isArray(request.input.body)
     ? request.input.body as Record<string, unknown> : {};
-  const reason = typeof body.reason === 'string' ? body.reason.slice(0, 500) : null;
   const resource = Object.values(request.input.path)[0] ?? null;
   const operation = OperationCatalog.get(request.type);
-  const auditBody = operation.module === 'observability' ? { redacted: true } : request.input.body;
   const redactor = new Redactor();
-  const auditResult = operation.id === 'identity.invitations.create' && result.body !== null && typeof result.body === 'object' && !Array.isArray(result.body)
-    ? { ...result.body, code: '[REDACTED]' } : result.body;
+  const auditBody = operation.module === 'observability' ? { redacted: true }
+    : projectAuditBody(request.input.body, IDENTITY_AUDIT_INPUT_ALLOWLIST[operation.id]);
+  const auditResult = redactAuditFields(result.body, IDENTITY_AUDIT_OUTPUT_FIELDS[operation.id]);
+  const before = redactor.redact({ path:request.input.path, query:request.input.query, body:auditBody,
+    expectedVersion:request.input.expectedVersion ?? null });
+  const after = redactor.redact(auditResult ?? null);
+  const identitySensitive = IDENTITY_AUDIT_INPUT_ALLOWLIST[operation.id] !== undefined;
+  const auditRequestHash = identitySensitive ? digest(JSON.stringify({ operation:operation.id, before })) : requestHashValue;
+  const rawReason = typeof body.reason === 'string' ? body.reason.slice(0, 500) : null;
+  const reason = identitySensitive || rawReason === null ? null : redactor.redact(rawReason, 'reason');
+  const auditIdempotency = identitySensitive ? '[REDACTED]' : request.input.idempotency;
+  const auditTrace = identitySensitive ? `audit:${randomUUID()}` : request.access?.trace ?? requestHashValue;
   await audit.record(client, { scope, actor, actorType:request.access?.actor.target ?? 'public', action:request.type, resourceType:module,
-    resource, before:redactor.redact({ path:request.input.path, query:request.input.query, body:auditBody, expectedVersion:request.input.expectedVersion ?? null }),
-    after:redactor.redact(auditResult ?? null), evidence:{ status:result.status, idempotency:request.input.idempotency, requestHash:requestHashValue, reason,
+    resource, before, after, evidence:{ status:result.status, idempotency:auditIdempotency, requestHash:auditRequestHash, reason,
       permission:operation.permission ?? null, capabilities:request.access?.capabilities ?? [] },
-    trace:request.access?.trace ?? requestHashValue });
+    trace:auditTrace });
+}
+
+function projectAuditBody(value: unknown, allowlist: readonly string[] | undefined): unknown {
+  if (allowlist === undefined) return value;
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return { redacted:true };
+  const record = value as Record<string, unknown>;
+  return Object.fromEntries([
+    ...allowlist.filter((key) => Object.hasOwn(record, key)).map((key) => [key, auditScalar(record[key])] as const),
+    ['redacted', true] as const,
+  ]);
+}
+
+function auditScalar(value: unknown): unknown {
+  return value === null || ['string', 'number', 'boolean'].includes(typeof value) ? value : '[REDACTED]';
+}
+
+function redactAuditFields(value: unknown, fields: readonly string[] | undefined): unknown {
+  if (fields === undefined || value === null || typeof value !== 'object') return value;
+  const names = new Set(fields);
+  if (Array.isArray(value)) return value.map((item) => redactAuditFields(item, fields));
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => [
+    key,
+    names.has(key) ? '[REDACTED]' : redactAuditFields(item, fields),
+  ]));
 }
 
 export function rowResult<T extends QueryResultRow>(result: QueryResult<T>, status = 200): OperationResult {
@@ -181,7 +234,8 @@ export function operationRequestHash(request: OperationRequest): string {
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
 
 function idempotencyReplayResponse(request: OperationRequest, result: OperationResult): OperationResult {
-  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange') {
+  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange'
+    || request.type === 'identity.invitations.create') {
     return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME' } };
   }
   return result;
