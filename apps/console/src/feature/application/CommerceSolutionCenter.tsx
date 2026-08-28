@@ -20,7 +20,7 @@ export const commerceSolutions: readonly CommerceSolution[] = Object.freeze([
     description: '为品牌型商城打造的克制、精准、现代零售工作室。',
     fit: '通用品牌、企业商城、长期经营',
     dna: Object.freeze(['暮色紫', '奶白画布', '完整经营闭环']),
-    path: '/design-references/admin/first-design/index.html?screen=editor',
+    path: '/design-references/admin/first-design/preview.html?release=20260828-2',
     previewLabel: '築店静序原版方案',
   },
   {
@@ -31,7 +31,7 @@ export const commerceSolutions: readonly CommerceSolution[] = Object.freeze([
     description: '以主理人视角组织内容、商品与会员关系的东方美学商城。',
     fit: '生活方式、精品零售、内容型品牌',
     dna: Object.freeze(['东方叙事', '画廊编排', '私域经营']),
-    path: '/design-references/admin/kaidian/dist/index.html',
+    path: '/design-references/admin/kaidian/dist/index.html?release=20260828-2',
     previewLabel: '築店东方策展原版方案',
   },
   {
