@@ -16,9 +16,6 @@ describe('purchase API runtime', () => {
     const pool = (state: typeof healthy) => ({ query: async (sql: string, values: readonly unknown[]) => {
       expect(sql).toContain("to_regprocedure('benefit.purchase_consume(text,text,text,text,text,bigint)')");
       expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
-      expect(sql).toContain("namespace.nspname='finance' and procedure.proname='post'");
-      expect(sql).toContain("has_function_privilege(current_user,procedure.oid,'EXECUTE')");
-      expect(sql).not.toContain("has_function_privilege(current_user,\n        'finance.post");
       expect(sql).toContain("not has_table_privilege(current_user,'payment.refund','INSERT,UPDATE,DELETE')");
       expect(sql).toContain("not has_table_privilege(current_user,'payment.recoverycase','INSERT,UPDATE,DELETE')");
       expect(sql).toContain("not has_table_privilege(current_user,'ordering.orderrecord','UPDATE')");
@@ -27,8 +24,6 @@ describe('purchase API runtime', () => {
       expect(sql).toContain("not has_table_privilege(current_user,'payment.intent','UPDATE')");
       expect(sql).toContain("not has_column_privilege(current_user,'payment.intent','amount_minor','UPDATE')");
       expect(sql).toContain("not has_table_privilege(current_user,'pricing.quote','UPDATE')");
-      expect(sql).toContain("not has_column_privilege(current_user,'inventory.stockitem','scope_id','UPDATE')");
-      expect(sql).not.toContain("has_column_privilege(current_user,'inventory.stockitem','mall_id'");
       expect(values).toContain(PURCHASE_SCHEMA_VERSION);
       expect(values).toContain(PURCHASE_SCHEMA_CHECKSUM);
       return result([state]);

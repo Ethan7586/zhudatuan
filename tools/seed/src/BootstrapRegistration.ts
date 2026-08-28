@@ -43,7 +43,7 @@ try {
   const existing = await database.query<ExistingInvitation>(
     `select id,organization_id,label,destination_hash,token_hash,expires_at,
     created_by,role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash
-    from member.invite where id=$1`,
+    from member.invite where id=$1 for update`,
     [REGISTRATION_INVITATION_ID]
   );
   if (existing.rows[0]) {
@@ -182,8 +182,8 @@ async function insertAuditRecord(database: Client, exported: RegistrationInvitat
     previous_hash,record_hash,recorded_at
   ) values('audit:zhudatuan:registration-invite:v1',$1,$2,'owner','identity.registration.invitation.bootstrapped',
     'member.invite',$3,null,$4,jsonb_build_object(
-      'bootstrap','zhudatuan-registration-v1','policy',$5::text,'termsHash',$6::text,'maxUses',1,'expiresAt',$7::text,
-      'tokenFingerprint',$8::text,'secretExportedOnce',true,'confirmation',$9::text
+      'bootstrap','zhudatuan-registration-v1','policy',$5,'termsHash',$6,'maxUses',1,'expiresAt',$7::text,
+      'tokenFingerprint',$8,'secretExportedOnce',true,'confirmation',$9::text
     ),'bootstrap:zhudatuan-registration-v1',$10,$11,$12)`,
     [
       REGISTRATION_ORGANIZATION_ID,

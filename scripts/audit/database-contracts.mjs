@@ -13,18 +13,9 @@ const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
 const SANDBOX_CATALOG = join(ROOT, 'tools', 'seed', 'src', 'SandboxCatalogDatabase.sql');
-const REGISTRATION_BOUNDARY_RECONCILE = join(
-  ROOT,
-  'infrastructure',
-  'zhudatuan',
-  'aliyun',
-  'postgres-reconcile-registration-boundary.sql',
-);
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
-const REGISTRATION_BOOTSTRAP_REPAIR = '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql';
-const REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION = /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000' and version<>'20260829040000'\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
   [INVITATION_SCOPE,/\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
   ['20260821069000_add_store_management.sql',/\n  select id into membership from access\.membership[\s\S]*?STORE_CREATE_SCOPE_UNRESOLVED'; end if;\n/],
@@ -110,7 +101,6 @@ const REPAIR_FILES = [
   '20260828170000_zhudatuan_registration_baseline.sql',
   '20260828173000_zhudatuan_web_business_access.sql',
   '20260828180000_zhudatuan_purchase_access.sql',
-  '20260828183000_zhudatuan_runtime_readiness_repair.sql',
 ];
 
 const mode = process.argv[2];
@@ -257,6 +247,12 @@ function omitExactEnvironmentAssertion(source,assertion,file) {
   return source.replace(assertion,'\n');
 }
 
+function omitExactEnvironmentAssertion(source,assertion,file) {
+  const matches=source.match(new RegExp(assertion.source,'g'));
+  if (matches?.length!==1) throw new Error(`MIGRATION_ENVIRONMENT_ASSERTION_DRIFT:${file}`);
+  return source.replace(assertion,'\n');
+}
+
 async function execute(database,sql,label) {
   try { await database.exec(sql); }
   catch (error) { throw new Error(`${label}: ${error instanceof Error ? error.message : String(error)}`,{cause:error}); }
@@ -373,6 +369,34 @@ async function reconcileRegistrationReplayBoundary(database) {
   }
 }
 
+async function installRegistrationReplayBoundary(database) {
+  const sentinel='registration-fresh-replay-sentinel-not-for-production';
+  await execute(database, `create extension if not exists pgcrypto;
+    create schema deployment;
+    revoke all on schema deployment from public;
+    create table deployment.boundary(
+      id text primary key,database_name text not null,sentinel_hash char(64) not null check(sentinel_hash~'^[0-9a-f]{64}$'),
+      created_at timestamptz not null default clock_timestamp()
+    );
+    insert into deployment.boundary(id,database_name,sentinel_hash)
+    values('zhudatuan-registration-v1',current_database(),encode(public.digest('${sentinel}','sha256'),'hex'));
+    create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment,public as $function$
+      select exists(select 1 from deployment.boundary
+        where id='zhudatuan-registration-v1' and database_name=current_database()
+          and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+    $function$;
+    create or replace function deployment.is_independent_registration_database()
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment as $function$
+      select exists(select 1 from deployment.boundary
+        where id='zhudatuan-registration-v1' and database_name=current_database())
+    $function$;
+    revoke all on deployment.boundary from public;
+    revoke all on function deployment.registration_bootstrap_boundary(text) from public;
+    revoke all on function deployment.is_independent_registration_database() from public;
+  `,'registration replay boundary');
+}
+
 async function stageFreshReplaySecrets(database) {
   await execute(
     database,
@@ -422,7 +446,6 @@ async function verifyTarget(database) {
   await verifyRuntimeSchemaVisibility(database);
   await verifyAuditImmutability(database);
   await verifyZhudatuanRegistrationBaseline(database);
-  await verifyZhudatuanRuntimeReadinessRepair(database);
   await verifyZhudatuanWebBusinessAccess(database);
   await verifyZhudatuanPurchaseAccess(database);
   await verifySandboxCatalogBootstrap(database);
@@ -432,30 +455,6 @@ async function verifyTarget(database) {
   // registration replay uses the canonical database name and sentinel, so it
   // can exercise the real direct-login one-shot boundaries before close.
   if (mode === '--registration-fresh') await verifySandboxMemberBootstraps(database);
-}
-
-async function verifyZhudatuanRuntimeReadinessRepair(database) {
-  const contract = await database.query(`select checksum from runtime.schemaversion
-    where version='20260821032000'`);
-  if (contract.rows[0]?.checksum!=='83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a') {
-    throw new Error(`ZHUDATUAN_RUNTIME_CONTRACT_CHECKSUM_INVALID:${JSON.stringify(contract.rows)}`);
-  }
-  const expectations = [
-    ['zhudatuanidentityapi',['20260821032000','20260821054000','20260828170000']],
-    ['zhudatuanidentityjob',['20260821032000','20260821054000','20260828170000']],
-    ['zhudatuanbootstrap',['20260828170000']],
-  ];
-  for (const [role,versions] of expectations) {
-    await database.exec(`begin; set local role ${role};`);
-    try {
-      const visible = await database.query('select array_agg(version order by version) versions from runtime.schemaversion');
-      if (JSON.stringify(visible.rows[0]?.versions)!==JSON.stringify(versions)) {
-        throw new Error(`ZHUDATUAN_SCHEMA_VERSION_RLS_INVALID:${role}:${JSON.stringify(visible.rows[0])}`);
-      }
-    } finally {
-      await database.exec('rollback');
-    }
-  }
 }
 
 async function verifySandboxMemberBootstraps(database) {
@@ -700,11 +699,6 @@ async function verifyZhudatuanRegistrationBaseline(database) {
   if (JSON.stringify(afterReplay)!==JSON.stringify(beforeReplay)) {
     throw new Error(`ZHUDATUAN_REGISTRATION_BASELINE_NOT_IDEMPOTENT:${JSON.stringify({ beforeReplay,afterReplay })}`);
   }
-  // The historical baseline intentionally recreates its original policies.
-  // Restore the immutable forward repair before any current-head ACL checks.
-  await execute(database,
-    await readFile(join(MIGRATIONS,'20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql'),'utf8'),
-    'idempotent zhudatuan registration bootstrap repair replay');
 }
 
 async function verifyPhoneAssuranceRevocation(database) {
@@ -749,29 +743,6 @@ async function zhudatuanRegistrationFingerprint(database) {
       where membership.organization_id in('tenant-smart-wing','enterprise-demo','mall-demo')
         and (membership.status in('active','invited') or profile.status='active' or principal.status='active')) unexpired_legacy_assignments`);
   return result.rows[0];
-}
-
-async function verifyRuntimeSchemaVisibility(database) {
-  const expectations = new Map([
-    ['zhudatuanidentityapi', ['20260821032000', '20260821054000', '20260828170000', '20260829060000']],
-    ['zhudatuanidentityjob', ['20260821032000', '20260821054000', '20260828170000']],
-    ['zhudatuanwebapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
-    ['zhudatuanpurchaseapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
-  ]);
-  for (const [role, expectedVersions] of expectations) {
-    await database.exec(`begin; set local role ${role};`);
-    try {
-      const visible = await database.query('select version,checksum from runtime.schemaversion order by version');
-      const versions = visible.rows.map((row) => row.version);
-      const contract = visible.rows.find((row) => row.version === '20260821032000');
-      if (JSON.stringify(versions) !== JSON.stringify(expectedVersions)
-        || contract?.checksum !== 'd7e499c9530d8c7ab46cfb4bc30b4ad17cd39a9c16b9d444ac4a1927f25eae79') {
-        throw new Error(`RUNTIME_SCHEMA_VISIBILITY_INVALID:${role}:${JSON.stringify(visible.rows)}`);
-      }
-    } finally {
-      await database.exec('rollback');
-    }
-  }
 }
 
 async function verifyExtensionLifecycle(database) {

@@ -25,7 +25,7 @@ const forbiddenOperations = [
 ];
 
 const [caddy, deliverySource, service, environment, configSource, buildSource, operationsSource,
-  webBusinessOperationIds, purchaseMain, purchaseReady, migrationSource, repairMigrationSource, runtimeSource, migrationRunnerSource,
+  webBusinessOperationIds, purchaseMain, purchaseReady, migrationSource, runtimeSource, migrationRunnerSource,
   receiptSchemaSource, legacyStorefrontDeploy] = await Promise.all([
   read('infrastructure/zhudatuan/aliyun/Caddyfile'),
   read('infrastructure/zhudatuan/aliyun/delivery.yml'),
@@ -38,7 +38,6 @@ const [caddy, deliverySource, service, environment, configSource, buildSource, o
   read('services/commerce/src/entry/PurchaseApiMain.ts'),
   read('services/commerce/src/entry/PurchaseApiReadyMain.ts'),
   read('database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql'),
-  read('database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql'),
   read('services/commerce/src/bootstrap/PurchaseApiRuntime.ts'),
   read('services/commerce/src/foundation/infrastructure/RegistrationMigrationRunner.ts'),
   read('infrastructure/zhudatuan/aliyun/purchase-e2e-receipt.schema.json'),
@@ -209,7 +208,8 @@ for (const token of [
 }
 const migrationMarker = migrationSource.match(/values\('20260828180000','([a-f0-9]{64})'\)/)?.[1];
 const runtimeMarker = runtimeSource.match(/PURCHASE_SCHEMA_CHECKSUM = '([a-f0-9]{64})'/)?.[1];
-if (!migrationMarker || migrationMarker === '0'.repeat(64) || migrationMarker !== runtimeMarker) {
+const runnerMarker = migrationRunnerSource.match(/REGISTRATION_TARGET_CHECKSUM = '([a-f0-9]{64})'/)?.[1];
+if (!migrationMarker || migrationMarker === '0'.repeat(64) || migrationMarker !== runtimeMarker || migrationMarker !== runnerMarker) {
   throw new Error('PURCHASE_SCHEMA_MARKER_DRIFT');
 }
 const normalizedMigrationDigest = createHash('sha256')
@@ -221,19 +221,8 @@ if (normalizedMigrationDigest !== migrationMarker) {
 if (receiptSchema.properties?.schemaChecksum?.const !== migrationMarker) {
   throw new Error('PURCHASE_RECEIPT_SCHEMA_MARKER_DRIFT');
 }
-const repairMarker = repairMigrationSource.match(/values\('20260828183000','([a-f0-9]{64})'\)/)?.[1];
-const runnerMarker = migrationRunnerSource.match(/REGISTRATION_TARGET_CHECKSUM = '([a-f0-9]{64})'/)?.[1];
-if (!repairMarker || repairMarker === '0'.repeat(64) || repairMarker !== runnerMarker) {
-  throw new Error('REGISTRATION_REPAIR_SCHEMA_MARKER_DRIFT');
-}
-const normalizedRepairDigest = createHash('sha256')
-  .update(repairMigrationSource.replaceAll(repairMarker, '0'.repeat(64)))
-  .digest('hex');
-if (normalizedRepairDigest !== repairMarker) {
-  throw new Error('REGISTRATION_REPAIR_NORMALIZED_DIGEST_DRIFT');
-}
-if (!migrationRunnerSource.includes("REGISTRATION_TARGET_VERSION = '20260828183000'")
-  || !migrationRunnerSource.includes("name='20260828183000_zhudatuan_runtime_readiness_repair.sql'")) {
+if (!migrationRunnerSource.includes("REGISTRATION_TARGET_VERSION = '20260828180000'")
+  || !migrationRunnerSource.includes("name='20260828180000_zhudatuan_purchase_access.sql'")) {
   throw new Error('PURCHASE_REGISTRATION_MIGRATION_TARGET_INVALID');
 }
 for (const token of ['purchaseApiEnvironment', 'purchaseApiPort', '/health/ready', 'ZHUDATUAN_PURCHASE_API_READY']) {

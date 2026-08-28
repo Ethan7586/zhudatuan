@@ -29,6 +29,10 @@ export class RouteRegistry {
     if (new Set(expectedOperations).size !== expectedOperations.length) throw new Error('ROUTE_EXPECTATION_DUPLICATE');
   }
 
+  constructor(private readonly expectedOperations: readonly OperationId[] = OperationCatalog.all().map((operation) => operation.id)) {
+    if (new Set(expectedOperations).size !== expectedOperations.length) throw new Error('ROUTE_EXPECTATION_DUPLICATE');
+  }
+
   register(definition: RouteDefinition): void {
     if (this.frozen) throw new Error('ROUTE_REGISTRY_FROZEN');
     if (!this.expectedOperations.includes(definition.operation)) throw new Error(`ROUTE_OPERATION_FORBIDDEN:${definition.operation}`);

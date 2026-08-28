@@ -18,43 +18,6 @@ where not exists(select 1 from pg_roles where rolname=:'role_name') \gexec
 SQL
 }
 
-create_compatibility_role() {
-  role="$1"
-  psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 \
-    --set role_name="$role" <<'SQL'
-select format('create role %I nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls',
-  :'role_name')
-where not exists(select 1 from pg_roles where rolname=:'role_name') \gexec
-SQL
-}
-
-# Historical migrations revoke Supabase's built-in ACL roles. The isolated
-# PostgreSQL runtime never logs in as these roles, but PostgreSQL still
-# requires every role named by GRANT/REVOKE to exist during a fresh replay.
-create_compatibility_role anon
-create_compatibility_role authenticated
-create_compatibility_role service_role
-
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 <<'SQL'
-do $compatibility_roles$
-declare role_name text;
-begin
-  foreach role_name in array array['anon','authenticated','service_role'] loop
-    if exists(select 1 from pg_roles where rolname=role_name
-      and (rolcanlogin or rolsuper or rolcreatedb or rolcreaterole or rolinherit or rolreplication or rolbypassrls)) then
-      raise exception 'SUPABASE_ACL_COMPATIBILITY_ROLE_UNSAFE:%',role_name;
-    end if;
-    if exists(select 1 from pg_auth_members membership
-      join pg_roles granted on granted.oid=membership.roleid
-      join pg_roles member on member.oid=membership.member
-      where granted.rolname=role_name or member.rolname=role_name) then
-      raise exception 'SUPABASE_ACL_COMPATIBILITY_ROLE_MEMBERSHIP_FORBIDDEN:%',role_name;
-    end if;
-  end loop;
-end
-$compatibility_roles$;
-SQL
-
 # The four historical roles are required only so the immutable migration
 # history can create/revoke its legacy grants. Runtime connections never use
 # them after the registration baseline is reached.
@@ -110,11 +73,6 @@ $function$;
 revoke all on function deployment.registration_bootstrap_boundary(text) from public;
 revoke all on function deployment.is_independent_registration_database() from public;
 grant usage on schema deployment to zhudatuanbootstrap,shopmigration;
--- bootstrap_zhudatuan_owner is SECURITY DEFINER owned by shopmigration. Its
--- nested boundary call is privilege-checked as the definer, while the boundary
--- itself still requires session_user=zhudatuanbootstrap. Granting EXECUTE to
--- shopmigration therefore enables only the canonical bootstrap call chain; a
--- direct shopmigration session continues to receive false.
-grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration;
+grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap;
 grant execute on function deployment.is_independent_registration_database() to shopmigration;
 SQL

@@ -8,12 +8,11 @@ import {
   sandboxWelfareBootstrapSummary,
 } from './SandboxWelfareBootstrapPlan';
 
-const databasePassword = 'test-only-sandbox-welfare-database-password';
 const base = Object.freeze({
   APP_ENV: 'test',
   ZHUDATUAN_SANDBOX_WELFARE_CONFIRM: SANDBOX_WELFARE_CONFIRMATION,
   ZHUDATUAN_SANDBOX_WELFARE_DATABASE_URL:
-    `postgresql://zhudatuansandboxbootstrap:${databasePassword}@127.0.0.1:55432/zhudatuan_registration`,
+    'postgresql://zhudatuansandboxbootstrap:one-shot-sandbox-password@127.0.0.1:55432/zhudatuan_registration',
   ZHUDATUAN_SANDBOX_WELFARE_DATABASE_NAME: 'zhudatuan_registration',
   ZHUDATUAN_SANDBOX_WELFARE_SENTINEL: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ',
   ZHUDATUAN_SANDBOX_WELFARE_MEMBERSHIP: 'membership:sandbox:one',

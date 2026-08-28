@@ -80,9 +80,7 @@ export class DispatchNotification {
       const completed = await this.repository.completeChallengeAttempt(id, attempt.sequence, receipt.provider, receipt.externalId);
       if (completed.rowCount !== 1) throw new Error('IDENTITY_NOTIFICATION_DELIVERY_STATE_LOST');
     } catch (cause) {
-      const code = deliveryError(cause);
-      if (definitiveProviderRejection(code)) await this.repository.failChallengeAttempt(id, attempt.sequence, code);
-      else await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, code);
+      await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, deliveryError(cause));
     }
   }
 
