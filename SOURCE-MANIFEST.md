@@ -7,7 +7,7 @@
 | 目標                                                     | 來源                                                           | 選用原因                                                                                  |
 | -------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `apps/storefront-web`                                    | `../archives/smart-wing/apps/storefront-web`                   | 使用者確認的消費 Web、Laptop 與 Desktop 1920 VI／UI／UE                                   |
-| `apps/auth-web`                                          | `../archives/smart-wing-20260826/Shop1/apps/auth-web`          | 使用者確認的 3003 登入 VI 母版；Console 已接 Canonical Session，消費身份仍在相容軌道 |
+| `apps/auth-web`                                          | `../archives/smart-wing-20260826/Shop1/apps/auth-web`          | 使用者確認的 3003 登入 VI 母版；Console 登入與員工註冊接 Canonical Identity，視覺保持鎖定 |
 | `apps/console`                                           | `../archives/smart-wing-20260826/Shop/smart-wing/apps/console` | 使用者確認的 4173 新版後臺                                                                |
 | `services/commerce`、`packages/@shop`、核心 DB           | `../archives/smart-wing-20260826/Shop/smart-wing`              | 與指定 Console 的 217-operation 合同、SDK、權限及後續 Migration 相容                      |
 | `services/commerce-api`、`packages/@smart-wing`、相容 DB | `../archives/smart-wing`                                       | 指定 Storefront 目前直接依賴的 REST／RPC API 閉包                                         |
@@ -20,7 +20,7 @@
 | 域名                     | 唯一正式入口                                                                         | 批准標準                                   | 當前驗收邊界                                                                                                |
 | ------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
 | `zhudatuan.com`          | `apps/storefront-web/app/page.tsx` → `src/StorefrontRoot.tsx` → `StorefrontWebFrame` | 原 `/laptop-web` 的 27 吋／Laptop 組件標準 | VI、型別、51 個 test files／278 tests、production build 已通過；正式資料仍受 Compatibility API 狀態限制     |
-| `accounts.zhudatuan.com` | `apps/auth-web/src/App.tsx` → `src/screens/LoginPage.tsx`                            | 3003 三段式登入、企微藍／微信綠            | Console 密碼登入已接 Canonical PKCE、一次性 Ticket 與 API Host-only Cookie；多身份選擇由服務端權威確認；OTP、QR、SSO、Step-Up 繼續 fail-closed |
+| `accounts.zhudatuan.com` | `apps/auth-web/src/App.tsx` → `src/screens/LoginPage.tsx`                            | 3003 三段式登入、企微藍／微信綠            | Console 密碼登入使用 PKCE／一次性 Ticket；員工註冊使用邀請、短信 Challenge、版本化條款並只建立 Storefront 身份 |
 | `console.zhudatuan.com`  | `apps/console/src/main.tsx` → `ConsoleRouter.tsx`                                    | 4173 `admin-web-v1`                        | 非財務 150/150 檔與批准快照一致；本地演示仍使用 4311 Fixture，不等於正式 API 驗收                           |
 
 以下入口明確不得再被構建或部署：
@@ -66,7 +66,7 @@
 
 1. 部署 Compatibility Runtime 前，先套用 `20260828060000_auth_membership_selection_boundary.sql`，並以真資料庫驗證雙 Membership 帳號回 409 且不簽發 Cookie。
 2. 部署相容商城媒體寫回前，套用 `database/storefront-compatibility/supabase/migrations/20260828061000_catalog_media_domain_boundary.sql`，並先確認對象已存在於 `media.zhudatuan.com`；Migration 不會擅自改寫舊資料 URL。Canonical 資料庫的對應變更須由其後端工作流另行審批，不能混入本次 UI 基線。
-3. 建立明確的 Auth Adapter，統一 Compatibility 的 `storefront|admin` Session 與 Canonical 的 `console` Session。現在消費 Web 的登入閉環可驗證，但 Console 的 Canonical `target=console` 真登入尚未閉合，不能宣稱三端正式登入完成。
+3. 建立明確的 Storefront Auth Adapter，讓 Canonical `storefront` 身份可被現有消費 Web 正式 Session 識別。Console 的 Canonical `target=console` 登入已接通；員工自助註冊只建檔，不會越權授予 Console 身份。
 4. 將消費端商品、購物車、訂單、支付與 Session 逐步切換到 Canonical Operation，或由 Owner 明確批准 Compatibility 軌道的暫時上線範圍。
 5. 候選切流前必須由官方 Caddy 執行 `fmt`、`adapt --validate` 與 `validate`，並確認 3000／3001 不暴露於公網安全組；`API_ALLOWED_ORIGINS` 必須包含 `https://console.zhudatuan.com`。
 6. 在雲端預發布環境完成 Compatibility Database、Canonical RDS／Redis 與完整瀏覽器 E2E。僅展示 UI 時必須標記為 `visual preview`；不得把 HTTP 200、TLS 或 Fixture 綠燈寫成前後端正式通過。

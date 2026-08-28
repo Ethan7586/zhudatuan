@@ -86,7 +86,7 @@
       "disabledUntilBackendExists": ["otp-login", "work-weixin-qr", "wechat-qr", "enterprise-sso", "step-up"],
       "lockedFiles": {
         "apps/auth-web/src/App.tsx": "5f158b34867a6eea9f06906413c590c024cff2949900946c5bf0cc59a00fe58a",
-        "apps/auth-web/src/screens/LoginPage.tsx": "bce69caf9b4d0f1c3ed0f2e8bb8c94cd3791120238b0fe502715af37c00cd1ad",
+        "apps/auth-web/src/screens/LoginPage.tsx": "7934c5b414f6233f5b41abaa2f07720eeb039920fa2a6977cc4cedd0f87ee9d1",
         "apps/auth-web/src/context/MallContext.tsx": "f7413e2e5e39a9a888ba1aab4ac742c6adbc52b6d37749cc130c1f256e639559",
         "apps/auth-web/src/services/auth.ts": "613239172484080f4043772799b3b2cba4d75fc8b5c690151e9c02164e2485aa",
         "apps/auth-web/src/services/canonicalIdentity.ts": "e0d8031ae54d7f05f98479dc46e2729d17ba0f3efbde0fa8e54ed04e3a39cfed",

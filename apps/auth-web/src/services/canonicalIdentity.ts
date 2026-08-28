@@ -37,43 +37,9 @@ const TicketExchangeSchema = z.strictObject({
   expiresIn: z.number().int().positive(),
 });
 
-const LoginChallengeSchema = z.strictObject({
-  id: z.string().min(1),
-  purpose: z.literal('login'),
-  expires_at: z.iso.datetime(),
-});
-
-const PasswordResetChallengeSchema = z.strictObject({
-  id: z.string().min(1),
-  purpose: z.literal('password_reset'),
-  expires_at: z.iso.datetime(),
-});
-
 export type CanonicalConsoleLoginResult =
   | Readonly<{ kind: 'selection'; context: PreAuthContext }>
   | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
-
-export interface CanonicalLoginChallenge {
-  readonly challengeId: string;
-  readonly expiresAt: string;
-}
-
-export interface CanonicalPasswordResetChallenge {
-  readonly challengeId: string;
-  readonly expiresAt: string;
-}
-
-type LoginCredential =
-  | Readonly<{ provider: 'password'; subject: string; password: string }>
-  | Readonly<{ provider: 'phone_otp'; subject: string; challenge: string; code: string }>;
-
-export async function createCanonicalLoginChallenge(phone: string, signal?: AbortSignal): Promise<CanonicalLoginChallenge> {
-  const output = LoginChallengeSchema.parse(await identityRequest('/api/v1/identity/challenges', {
-    purpose: 'login',
-    destination: canonicalMobile(phone),
-  }, signal));
-  return Object.freeze({ challengeId: output.id, expiresAt: output.expires_at });
-}
 
 export async function loginCanonicalConsole(
   subject: string,
@@ -81,66 +47,11 @@ export async function loginCanonicalConsole(
   membership?: string,
   signal?: AbortSignal,
 ): Promise<CanonicalConsoleLoginResult> {
-  return loginCanonicalConsoleWithCredential(
-    { provider: 'password', subject: canonicalPasswordSubject(subject), password }, membership, signal,
-  );
-}
-
-export async function createCanonicalPasswordResetChallenge(
-  phone: string,
-  signal?: AbortSignal,
-): Promise<CanonicalPasswordResetChallenge> {
-  const output = PasswordResetChallengeSchema.parse(await identityRequest('/api/v1/identity/challenges', {
-    purpose: 'password_reset',
-    destination: canonicalMobile(phone),
-  }, signal, { credentials: 'omit', action: '密码找回' }));
-  return Object.freeze({ challengeId: output.id, expiresAt: output.expires_at });
-}
-
-export async function resetCanonicalPassword(
-  challenge: string,
-  code: string,
-  newPassword: string,
-  signal?: AbortSignal,
-): Promise<void> {
-  const normalizedChallenge = challenge.trim();
-  const normalizedCode = code.trim();
-  if (!/^challenge:[A-Za-z0-9:-]{16,128}$/.test(normalizedChallenge)) throw new Error('请先获取短信验证码');
-  if (!/^\d{6}$/.test(normalizedCode)) throw new Error('请输入 6 位短信验证码');
-  await identityRequest('/api/v1/identity/password/reset', {
-    challenge: normalizedChallenge,
-    code: normalizedCode,
-    newPassword,
-  }, signal, { credentials: 'omit', action: '密码重置' });
-}
-
-export async function loginCanonicalConsoleWithOtp(
-  phone: string,
-  challenge: string,
-  code: string,
-  membership?: string,
-  signal?: AbortSignal,
-): Promise<CanonicalConsoleLoginResult> {
-  const normalizedChallenge = challenge.trim();
-  const normalizedCode = code.trim();
-  if (!/^challenge:[A-Za-z0-9:-]{16,128}$/.test(normalizedChallenge)) throw new Error('请先获取短信验证码');
-  if (!/^\d{6}$/.test(normalizedCode)) throw new Error('请输入 6 位短信验证码');
-  return loginCanonicalConsoleWithCredential({
-    provider: 'phone_otp',
-    subject: canonicalMobile(phone),
-    challenge: normalizedChallenge,
-    code: normalizedCode,
-  }, membership, signal);
-}
-
-async function loginCanonicalConsoleWithCredential(
-  credential: LoginCredential,
-  membership?: string,
-  signal?: AbortSignal,
-): Promise<CanonicalConsoleLoginResult> {
   const authorization = await beginAuthorization();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
-    ...credential,
+    provider: 'password',
+    subject: subject.trim(),
+    password,
     target: 'console',
     ...(membership === undefined ? {} : { membership }),
     authorization: authorization.request,
@@ -148,8 +59,8 @@ async function loginCanonicalConsoleWithCredential(
 
   if ('memberships' in output) {
     const context: PreAuthContext = {
-      identifier: credential.subject,
-      loginMethod: credential.provider === 'phone_otp' ? 'otp' : 'password',
+      identifier: subject.trim(),
+      loginMethod: 'password',
       memberships: output.memberships.map(consoleMembership),
     };
     return Object.freeze({
@@ -169,19 +80,6 @@ async function loginCanonicalConsoleWithCredential(
   return Object.freeze({ kind: 'authenticated', membership: output.membership, redirectUrl });
 }
 
-function canonicalMobile(value: string): string {
-  const mobile = value.trim().replace(/[\s()-]/g, '');
-  if (/^1[3-9]\d{9}$/.test(mobile)) return `+86${mobile}`;
-  if (/^\+861[3-9]\d{9}$/.test(mobile)) return mobile;
-  throw new Error('请输入有效的手机号');
-}
-
-function canonicalPasswordSubject(value: string): string {
-  const subject = value.trim();
-  const compact = subject.replace(/[\s()-]/g, '');
-  return /^(?:\+86)?1[3-9]\d{9}$/.test(compact) ? canonicalMobile(compact) : subject;
-}
-
 function consoleMembership(value: z.infer<typeof MembershipSelectionSchema>['memberships'][number]): Membership {
   if (value.client !== 'console') throw new Error('后台登录返回了错误的会员入口');
   return {
@@ -189,7 +87,7 @@ function consoleMembership(value: z.infer<typeof MembershipSelectionSchema>['mem
     target: 'admin',
     status: 'active',
     enterpriseName: '已授权企业',
-    storeName: '主打团运营后台',
+    storeName: '筑大团运营后台',
     roleName: '运营会员',
     dataScope: '按权限系统授权范围',
     subjectScope: '企业',
@@ -197,17 +95,10 @@ function consoleMembership(value: z.infer<typeof MembershipSelectionSchema>['mem
   };
 }
 
-async function identityRequest(
-  path: string,
-  body: Readonly<Record<string, unknown>>,
-  signal?: AbortSignal,
-  options: Readonly<{ credentials?: RequestCredentials; action?: string }> = {},
-): Promise<unknown> {
-  const credentials = options.credentials ?? 'include';
-  const csrf = credentials === 'include' ? csrfToken() : null;
+async function identityRequest(path: string, body: Readonly<Record<string, unknown>>, signal?: AbortSignal): Promise<unknown> {
   const response = await fetch(new URL(path, apiOrigin()), {
     method: 'POST',
-    credentials,
+    credentials: 'include',
     headers: {
       'content-type': 'application/json',
       'idempotency-key': crypto.randomUUID(),
@@ -215,25 +106,13 @@ async function identityRequest(
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': deviceId(),
       'x-request-id': crypto.randomUUID(),
-      ...(csrf === null ? {} : { 'x-csrf-token': csrf }),
     },
     body: JSON.stringify(body),
     signal,
   });
   const payload = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(identityError(payload, response.status, options.action ?? '登录'));
+  if (!response.ok) throw new Error(identityError(payload, response.status));
   return payload;
-}
-
-function csrfToken(): string | null {
-  if (typeof document === 'undefined') return null;
-  const item = document.cookie.split(';').map((part) => part.trim()).find((part) => part.startsWith('shop_csrf='));
-  if (!item) return null;
-  try {
-    return decodeURIComponent(item.slice('shop_csrf='.length));
-  } catch {
-    return null;
-  }
 }
 
 async function beginAuthorization(): Promise<Readonly<{
@@ -303,7 +182,7 @@ function base64url(value: Uint8Array): string {
   return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 }
 
-function identityError(value: unknown, status: number, action: string): string {
+function identityError(value: unknown, status: number): string {
   const code = value !== null && typeof value === 'object' && !Array.isArray(value) && typeof Reflect.get(value, 'code') === 'string'
     ? String(Reflect.get(value, 'code'))
     : `HTTP_${status}`;
@@ -314,8 +193,5 @@ function identityError(value: unknown, status: number, action: string): string {
     RISK_REVIEW_REQUIRED: '本次登录需要人工安全复核',
     AUTHENTICATION_REQUIRED: '登录会话未能建立，请重新登录',
     AUTH_TICKET_EXCHANGE_REJECTED: '一次性登录授权无效或已经使用',
-    CHALLENGE_INVALID: '验证码错误或已经失效',
-    CHALLENGE_PRINCIPAL_MISSING: '该手机号没有可重置的账号',
-    PASSWORD_POLICY_REJECTED: '密码须为 12–128 位，并同时包含大小写字母、数字和符号',
-  }[code] ?? `统一身份服务暂时无法完成${action}（${code}）`;
+  }[code] ?? `统一身份服务暂时无法完成登录（${code}）`;
 }

@@ -1,5 +1,4 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
-import { transportInteger } from '@shop/contract/client';
 import { z } from 'zod';
 
 const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
@@ -11,7 +10,6 @@ const InvitationSchema = z.strictObject({
   privacy_title: z.string().min(1),
   privacy_body: z.string().min(1),
   terms_hash: z.string().regex(/^[a-f0-9]{64}$/i),
-  target_client: z.enum(['storefront', 'operator']),
   effective_at: z.iso.datetime(),
   expires_at: z.iso.datetime(),
 });
@@ -29,7 +27,7 @@ const MembershipSchema = z.strictObject({
   client: z.literal('storefront'),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
-  access_version: transportInteger.pipe(z.number().positive()),
+  access_version: z.number().int().positive(),
   joined_at: z.iso.datetime(),
   left_at: z.iso.datetime().nullable(),
 });
@@ -40,7 +38,6 @@ export interface CanonicalInvitation {
   readonly privacyTitle: string;
   readonly privacyBody: string;
   readonly termsHash: string;
-  readonly target: 'storefront' | 'console';
   readonly effectiveAt: string;
   readonly expiresAt: string;
 }
@@ -83,46 +80,38 @@ export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortS
     privacyTitle: output.privacy_title,
     privacyBody: output.privacy_body,
     termsHash: output.terms_hash,
-    target: output.target_client === 'operator' ? 'console' : 'storefront',
     effectiveAt: output.effective_at,
     expiresAt: output.expires_at,
   });
 }
 
-export async function createCanonicalRegistrationChallenge(destination: string, inviteCode: string, signal?: AbortSignal): Promise<CanonicalRegistrationChallenge> {
-  const output = ChallengeSchema.parse(
-    await identityRequest(
-      '/api/v1/identity/challenges',
-      {
-        destination: requiredMobile(destination),
-        invite: requiredText(inviteCode, '请输入有效的邀请码'),
-        purpose: 'registration',
-      },
-      signal
-    )
-  );
+export async function createCanonicalRegistrationChallenge(
+  destination: string,
+  signal?: AbortSignal,
+): Promise<CanonicalRegistrationChallenge> {
+  const output = ChallengeSchema.parse(await identityRequest('/api/v1/identity/challenges', {
+    destination: requiredMobile(destination),
+    purpose: 'registration',
+  }, signal));
   return Object.freeze({ challengeId: output.id, purpose: output.purpose, expiresAt: output.expires_at });
 }
 
-export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
+export async function createCanonicalMember(
+  input: CanonicalMemberRegistrationInput,
+  signal?: AbortSignal,
+): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
-  const output = MembershipSchema.parse(
-    await identityRequest(
-      '/api/v1/identity/members',
-      {
-        subject: requiredMobile(input.subject),
-        password: requiredPassword(input.password),
-        displayName: requiredText(input.displayName, '请输入姓名'),
-        invite: requiredText(input.inviteCode, '请输入有效的邀请码'),
-        challenge: requiredText(input.challengeId, '请先获取验证码'),
-        code: requiredText(input.code, '请输入验证码'),
-        termsAccepted: true,
-        termsHash: requiredText(input.termsHash, '注册条款版本无效'),
-        ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
-      },
-      signal
-    )
-  );
+  const output = MembershipSchema.parse(await identityRequest('/api/v1/identity/members', {
+    subject: requiredMobile(input.subject),
+    password: requiredPassword(input.password),
+    displayName: requiredText(input.displayName, '请输入姓名'),
+    invite: requiredText(input.inviteCode, '请输入有效的邀请码'),
+    challenge: requiredText(input.challengeId, '请先获取验证码'),
+    code: requiredText(input.code, '请输入验证码'),
+    termsAccepted: true,
+    termsHash: requiredText(input.termsHash, '注册条款版本无效'),
+    ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
+  }, signal));
   return Object.freeze({
     membership: output.id,
     member: output.member_id,
@@ -214,18 +203,18 @@ function requiredMobile(value: string): string {
 }
 
 function registrationError(value: unknown, status: number): string {
-  const code = value !== null && typeof value === 'object' && !Array.isArray(value) && typeof Reflect.get(value, 'code') === 'string' ? String(Reflect.get(value, 'code')) : `HTTP_${status}`;
-  return (
-    {
-      INVITE_INVALID: '邀请码无效、已过期或已被使用',
-      RESOURCE_NOT_FOUND: '邀请码无效、已过期或已被使用',
-      CHALLENGE_INVALID: '验证码不正确、已过期或已经使用',
-      RATE_LIMITED: '验证码请求过多，请稍后再试',
-      RISK_REVIEW_REQUIRED: '本次注册需要人工安全复核',
-      RISK_DENIED: '本次注册未通过安全检查',
-      IDENTITY_SUBJECT_EXISTS: '该手机号已注册，请直接登录或找回密码',
-      PASSWORD_POLICY_REJECTED: '密码须为 12–128 位，并同时包含大小写字母、数字和符号',
-      TERMS_ACCEPTANCE_REQUIRED: '注册条款已更新，请重新阅读并同意',
-    }[code] ?? `统一身份服务暂时无法完成注册（${code}）`
-  );
+  const code = value !== null && typeof value === 'object' && !Array.isArray(value) && typeof Reflect.get(value, 'code') === 'string'
+    ? String(Reflect.get(value, 'code'))
+    : `HTTP_${status}`;
+  return {
+    INVITE_INVALID: '邀请码无效、已过期或已被使用',
+    RESOURCE_NOT_FOUND: '邀请码无效、已过期或已被使用',
+    CHALLENGE_INVALID: '验证码不正确、已过期或已经使用',
+    RATE_LIMITED: '验证码请求过多，请稍后再试',
+    RISK_REVIEW_REQUIRED: '本次注册需要人工安全复核',
+    RISK_DENIED: '本次注册未通过安全检查',
+    IDENTITY_SUBJECT_EXISTS: '该手机号已注册，请直接登录或找回密码',
+    PASSWORD_POLICY_REJECTED: '密码须为 12–128 位，并同时包含大小写字母、数字和符号',
+    TERMS_ACCEPTANCE_REQUIRED: '注册条款已更新，请重新阅读并同意',
+  }[code] ?? `统一身份服务暂时无法完成注册（${code}）`;
 }

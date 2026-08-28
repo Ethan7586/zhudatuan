@@ -22,11 +22,6 @@ export const SessionSchema = z.object({
     level: z.number().int().nonnegative(),
     verified: z.string().min(1).optional(),
   }),
-  security: z.object({
-    hasLocalCredential: z.boolean(),
-    phoneMasked: z.string().min(1).nullable(),
-    passwordChangedAt: z.string().min(1).nullable(),
-  }).optional(),
   csrf: z.string().min(16).optional(),
   target: z.string().min(1),
   syncedAt: z.string().min(1),

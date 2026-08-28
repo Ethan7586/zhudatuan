@@ -25,15 +25,13 @@ export function authTarget(value: string): AuthTarget {
 
 export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,
   digest: (id: string, code: string) => string, principal?: string,
-  expected: Readonly<{ purpose?: string; destinationHash?: string; sessionHash?: string }> = {}): Promise<{ principal_id: string | null }> {
+  expected: Readonly<{ purpose?: string; destinationHash?: string }> = {}): Promise<{ principal_id: string | null }> {
   const result = await database.query<{ principal_id: string | null }>(`update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
-    where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp()
+    where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp() and attempts<10
       and ($3::text is null or principal_id=$3)
       and ($4::text is null or purpose=$4)
       and ($5::text is null or destination_hash=$5)
-      and ($6::text is null or session_hash=$6)
-    returning principal_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null,
-    expected.destinationHash ?? null, expected.sessionHash ?? null]);
+    returning principal_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null, expected.destinationHash ?? null]);
   if (!result.rows[0]) {
     await database.query('update identity.challenge set attempts=attempts+1 where id=$1 and consumed_at is null', [challenge]);
     reject(400, 'CHALLENGE_INVALID');

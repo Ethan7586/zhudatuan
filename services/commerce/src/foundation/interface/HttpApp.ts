@@ -7,6 +7,17 @@ import type { OperationMetrics } from '../telemetry/OperationMetrics';
 import { ErrorMapper } from './ErrorMapper';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
+const ORIGIN_BOUND_PUBLIC_WRITES = new Set([
+  'identity.sessions.create',
+  'identity.tickets.exchange',
+  'identity.challenges.create',
+  'identity.invitations.read',
+  'identity.members.create',
+]);
+const CSRF_EXEMPT_PUBLIC_WRITES = new Set([
+  'identity.sessions.create',
+  'identity.tickets.exchange',
+]);
 
 export class HttpApp {
   private readonly origins: ReadonlySet<string>;
@@ -92,6 +103,22 @@ function preflight(request: Request, requestId: string, origin: string | null): 
   const method = request.headers.get('access-control-request-method');
   if (!method || !['GET','POST','PUT','PATCH','DELETE'].includes(method)) return secure(405, { code: 'METHOD_NOT_ALLOWED', requestId }, requestId, origin);
   return secure(204, undefined, requestId, origin, { 'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-    'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-contract-version,x-csrf-token,x-device-id,x-request-id,x-trace-id,x-client-version,x-scope-hint',
+    'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-contract-version,x-csrf-token,x-device-id,x-request-id,x-trace-id,x-client-version,x-scope-hint',
     'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
+}
+
+function assertCsrf(request: Request, origin: string | null, operation: string): void {
+  if (['GET','HEAD','OPTIONS'].includes(request.method)) return;
+  if (ORIGIN_BOUND_PUBLIC_WRITES.has(operation) && !origin) throw new Error('ORIGIN_REQUIRED');
+  if (CSRF_EXEMPT_PUBLIC_WRITES.has(operation)) return;
+  const cookie = request.headers.get('cookie');
+  if (!cookie?.split(';').some((part) => part.trim().startsWith('shop_session='))) return;
+  if (!origin) throw new Error('ORIGIN_REQUIRED');
+  const expected = cookieValue(cookie, 'shop_csrf');
+  if (!expected || request.headers.get('x-csrf-token') !== expected) throw new Error('CSRF_TOKEN_INVALID');
+}
+
+function cookieValue(cookie: string, name: string): string | null {
+  for (const item of cookie.split(';')) { const [key, ...rest] = item.trim().split('='); if (key === name) return decodeURIComponent(rest.join('=')); }
+  return null;
 }

@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCanonicalMember, createCanonicalRegistrationChallenge, resolveCanonicalInvite } from './canonicalRegistration';
+import {
+  createCanonicalMember,
+  createCanonicalRegistrationChallenge,
+  resolveCanonicalInvite,
+} from './canonicalRegistration';
 
 const TERMS_HASH = 'a'.repeat(64);
 
@@ -26,12 +30,11 @@ describe('canonical registration', () => {
     const result = await resolveCanonicalInvite('  invitation-secret  ');
 
     expect(result).toEqual({
-      termsTitle: '主打团用户服务协议',
+      termsTitle: '筑大团用户服务协议',
       termsBody: '服务协议正文',
-      privacyTitle: '主打团隐私政策',
+      privacyTitle: '筑大团隐私政策',
       privacyBody: '隐私政策正文',
       termsHash: TERMS_HASH,
-      target: 'console',
       effectiveAt: '2026-08-28T00:00:00.000Z',
       expiresAt: '2026-09-28T00:00:00.000Z',
     });
@@ -43,27 +46,15 @@ describe('canonical registration', () => {
     expectCanonicalHeaders(init?.headers);
   });
 
-  it('keeps a storefront invitation distinct from an operator invitation', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...invitation(), target_client: 'storefront' }));
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(resolveCanonicalInvite('storefront-invitation')).resolves.toMatchObject({ target: 'storefront' });
-  });
-
   it('creates a registration-only challenge with stable device metadata', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(
-      jsonResponse(
-        {
-          id: 'challenge:registration-one',
-          purpose: 'registration',
-          expires_at: '2026-08-28T01:10:00.000Z',
-        },
-        202
-      )
-    );
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      id: 'challenge:registration-one',
+      purpose: 'registration',
+      expires_at: '2026-08-28T01:10:00.000Z',
+    }, 202));
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await createCanonicalRegistrationChallenge('  13800138000  ', '  invitation-secret  ');
+    const result = await createCanonicalRegistrationChallenge('  13800138000  ');
 
     expect(result).toEqual({
       challengeId: 'challenge:registration-one',
@@ -72,7 +63,7 @@ describe('canonical registration', () => {
     });
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
-    expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', invite: 'invitation-secret', purpose: 'registration' });
+    expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', purpose: 'registration' });
     expectCanonicalHeaders(init?.headers);
   });
 
@@ -116,40 +107,20 @@ describe('canonical registration', () => {
     expectCanonicalHeaders(init?.headers);
   });
 
-  it('normalizes a PostgreSQL bigint access version in the registration receipt', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...membership(), access_version: '7' }, 201));
+  it('fails closed before the network when current terms were not accepted', async () => {
+    const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await createCanonicalMember({
-      subject: '+8613800138000',
+    await expect(createCanonicalMember({
+      subject: '13800138000',
       password: 'SecurePassword1!',
       displayName: 'Ethan',
       inviteCode: 'invitation-secret',
       challengeId: 'challenge:registration-one',
       code: '483921',
-      termsAccepted: true,
+      termsAccepted: false,
       termsHash: TERMS_HASH,
-    });
-
-    expect(result.accessVersion).toBe(7);
-  });
-
-  it('fails closed before the network when current terms were not accepted', async () => {
-    const fetchMock = vi.fn<typeof fetch>();
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(
-      createCanonicalMember({
-        subject: '13800138000',
-        password: 'SecurePassword1!',
-        displayName: 'Ethan',
-        inviteCode: 'invitation-secret',
-        challengeId: 'challenge:registration-one',
-        code: '483921',
-        termsAccepted: false,
-        termsHash: TERMS_HASH,
-      })
-    ).rejects.toThrow('请先阅读并同意当前注册条款与隐私政策');
+    })).rejects.toThrow('请先阅读并同意当前注册条款与隐私政策');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -164,7 +135,7 @@ describe('canonical registration', () => {
     const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(createCanonicalRegistrationChallenge('not-a-mobile', 'invitation-secret')).rejects.toThrow('请输入有效的手机号');
+    await expect(createCanonicalRegistrationChallenge('not-a-mobile')).rejects.toThrow('请输入有效的手机号');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -172,18 +143,16 @@ describe('canonical registration', () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ code: 'IDENTITY_SUBJECT_EXISTS' }, 409));
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(
-      createCanonicalMember({
-        subject: '13800138000',
-        password: 'SecurePassword1!',
-        displayName: 'Ethan',
-        inviteCode: 'invitation-secret',
-        challengeId: 'challenge:registration-one',
-        code: '483921',
-        termsAccepted: true,
-        termsHash: TERMS_HASH,
-      })
-    ).rejects.toThrow('该手机号已注册，请直接登录或找回密码');
+    await expect(createCanonicalMember({
+      subject: '13800138000',
+      password: 'SecurePassword1!',
+      displayName: 'Ethan',
+      inviteCode: 'invitation-secret',
+      challengeId: 'challenge:registration-one',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    })).rejects.toThrow('该手机号已注册，请直接登录或找回密码');
   });
 });
 
@@ -200,12 +169,11 @@ function expectCanonicalHeaders(headers: HeadersInit | undefined): void {
 
 function invitation(): Readonly<Record<string, unknown>> {
   return {
-    terms_title: '主打团用户服务协议',
+    terms_title: '筑大团用户服务协议',
     terms_body: '服务协议正文',
-    privacy_title: '主打团隐私政策',
+    privacy_title: '筑大团隐私政策',
     privacy_body: '隐私政策正文',
     terms_hash: TERMS_HASH,
-    target_client: 'operator',
     effective_at: '2026-08-28T00:00:00.000Z',
     expires_at: '2026-09-28T00:00:00.000Z',
   };

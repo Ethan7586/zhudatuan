@@ -34,29 +34,6 @@ describe('identity credential idempotency', () => {
     await expect(harness.operations.invoke(request)).resolves.toEqual(harness.persisted());
     expect(harness.executions()).toBe(1);
   });
-
-  it('persists a secret-free one-time replay for an administrator invitation', async () => {
-    const secret = 'one-time-administrator-invitation';
-    const result: OperationResult = {
-      status: 201,
-      body: { id: 'invitation:one', target: 'console', code: secret },
-    };
-    const harness = identityOperationHarness('identity.invitations.create', result);
-    const request = identityRequest('identity.invitations.create');
-
-    await expect(harness.operations.invoke(request)).resolves.toEqual(result);
-    expect(harness.persisted()).toEqual({
-      status: 409,
-      body: {
-        code: 'IDEMPOTENCY_KEY_REUSED',
-        message: 'IDENTITY_INVITATION_RESPONSE_ONE_TIME',
-      },
-    });
-    expect(JSON.stringify(harness.persisted())).not.toContain(secret);
-
-    await expect(harness.operations.invoke(request)).resolves.toEqual(harness.persisted());
-    expect(harness.executions()).toBe(1);
-  });
 });
 
 function identityOperationHarness(
@@ -103,7 +80,7 @@ function identityOperationHarness(
   return Object.freeze({ operations, persisted: () => replay, executions: () => executions });
 }
 
-function identityRequest(type: 'identity.sessions.create' | 'identity.tickets.exchange' | 'identity.invitations.create'): OperationRequest {
+function identityRequest(type: 'identity.sessions.create' | 'identity.tickets.exchange'): OperationRequest {
   return {
     type,
     access: null,

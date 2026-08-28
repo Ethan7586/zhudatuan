@@ -13,8 +13,8 @@ function routes(operation = 'identity.sessions.create'): RouteRegistry {
   } as unknown as RouteRegistry;
 }
 
-describe('HttpApp request dispatch', () => {
-  it('invokes a route without a contract-version header', async () => {
+describe('HttpApp contract handshake', () => {
+  it('returns upgrade required before invoking a route with a missing contract version', async () => {
     const response = await new HttpApp(routes(), ['https://shop.example']).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', origin: 'https://shop.example' },
@@ -35,7 +35,7 @@ describe('HttpApp request dispatch', () => {
     expect(response.headers.get('access-control-allow-credentials')).toBe('true');
   });
 
-  it('allows an authenticated API cookie without a CSRF token', async () => {
+  it('rejects a stale authenticated API cookie on public registration without its matching CSRF token', async () => {
     const response = await new HttpApp(routes('identity.members.create'), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/members', {
       method: 'POST',
       headers: {
@@ -46,30 +46,18 @@ describe('HttpApp request dispatch', () => {
       },
       body: '{}',
     }));
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
   });
 
-  it('allows canonical public registration without a browser origin', async () => {
+  it('rejects canonical public registration without an approved browser origin', async () => {
     const response = await new HttpApp(routes('identity.members.create'), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/members', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
       body: '{}',
     }));
-    expect(response.status).toBe(200);
-  });
-
-  it('allows authorization-context headers in an approved-origin preflight', async () => {
-    const response = await new HttpApp(routes(), ['https://shop.example']).handle(new Request('https://api.example/api/v1/finance/settlements/one/decide', {
-      method: 'OPTIONS',
-      headers: {
-        origin: 'https://shop.example',
-        'access-control-request-method': 'POST',
-        'access-control-request-headers': 'x-access-version,x-action-proof,if-match,idempotency-key',
-      },
-    }));
-    expect(response.status).toBe(204);
-    expect(response.headers.get('access-control-allow-headers')).toContain('x-access-version');
-    expect(response.headers.get('access-control-allow-headers')).toContain('x-action-proof');
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'ORIGIN_REQUIRED' });
   });
 
   it('ends a request when its total deadline is exhausted', async () => {

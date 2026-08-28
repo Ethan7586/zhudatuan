@@ -249,26 +249,10 @@ function idempotencyBody(request: OperationRequest): unknown {
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
 
 function idempotencyReplayResponse(request: OperationRequest, result: OperationResult): OperationResult {
-  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange'
-    || request.type === 'access.ownership.transfers.preview'
-    || request.type === 'access.ownership.transfers.accept.preview'
-    || request.type === 'access.ownership.transfers.cancel.preview') {
+  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange') {
     return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME' } };
   }
-  if (request.type === 'identity.invitations.create') {
-    return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_INVITATION_RESPONSE_ONE_TIME' } };
-  }
-  if (request.type === 'identity.stepup.complete' && containsActionProof(result.body)) {
-    return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'ACTION_PROOF_ONE_TIME_RESPONSE' } };
-  }
   return result;
-}
-
-function containsActionProof(body: unknown): boolean {
-  if (body === null || typeof body !== 'object' || Array.isArray(body)) return false;
-  const actionProof = Reflect.get(body, 'actionProof');
-  return actionProof !== null && typeof actionProof === 'object' && !Array.isArray(actionProof)
-    && typeof Reflect.get(actionProof, 'proof') === 'string';
 }
 
 function projection(value: unknown): readonly string[] {

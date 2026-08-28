@@ -15,20 +15,13 @@ import {
   resolveAdminLoginOrigin,
   resolveStorefrontLoginOrigin,
 } from '../services/auth';
-import {
-  createCanonicalLoginChallenge,
-  createCanonicalPasswordResetChallenge,
-  loginCanonicalConsole,
-  loginCanonicalConsoleWithOtp,
-  resetCanonicalPassword,
-} from '../services/canonicalIdentity';
+import { loginCanonicalConsole } from '../services/canonicalIdentity';
 import {
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
   resolveCanonicalInvite,
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
-import { registrationPresentation } from './registrationPresentation';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
@@ -46,7 +39,8 @@ function maskMobile(value: string): string {
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
-  const isCanonicalConsoleRequest = true;
+  const isCanonicalConsoleRequest = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('client') === 'console';
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
@@ -113,11 +107,22 @@ export const LoginPage: React.FC = () => {
     return () => window.clearInterval(timer);
   }, [loginOtpSeconds]);
 
+  useEffect(() => {
+    if (registrationCodeSeconds <= 0) return;
+    const timer = window.setInterval(() => {
+      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [registrationCodeSeconds]);
+
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
-    if (val.trim() !== loginOtp.challengeMobile) {
-      setLoginOtp({ code: '', challengeId: '', challengeMobile: '' });
-      setLoginOtpSeconds(0);
+    setFormError('');
+    setFormNotice('');
+    setFieldErrors((prev) => ({ ...prev, identifier: '' }));
+    const lock = getLockoutState(val.trim());
+    if (lock.isLocked) {
+      setLockoutSeconds(lock.remainingSeconds);
     }
     setFormError('');
     setFormNotice('');
@@ -160,26 +165,6 @@ export const LoginPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSendLoginCode = async () => {
-    if (!/^1[3-9]\d{9}$/.test(identifier.trim())) {
-      setFieldErrors((current) => ({ ...current, identifier: '请输入有效的已绑定手机号' }));
-      return;
-    }
-    setLoginOtpSending(true);
-    setFormError('');
-    setFormNotice('');
-    try {
-      const challenge = await createCanonicalLoginChallenge(identifier);
-      setLoginOtp({ code: '', challengeId: challenge.challengeId, challengeMobile: identifier.trim() });
-      setLoginOtpSeconds(60);
-      setFormNotice(`如果该手机号已绑定账号，验证码将发送至 ${maskMobile(identifier)}。`);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : '验证码请求失败');
-    } finally {
-      setLoginOtpSending(false);
-    }
-  };
-
   const updateRegistration = (field: keyof typeof registration, value: string) => {
     setRegistration((current) => {
       if (field === 'mobile') {
@@ -216,7 +201,7 @@ export const LoginPage: React.FC = () => {
       const invitation = await resolveCanonicalInvite(registration.inviteCode);
       setRegistrationInvite(invitation);
       setRegistrationTermsAccepted(false);
-      setRegistrationNotice(registrationPresentation(invitation.target).resolvedNotice);
+      setRegistrationNotice('企业邀请已验证。请核对本次注册适用的服务协议与隐私政策。');
     } catch (error) {
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(false);
@@ -235,7 +220,7 @@ export const LoginPage: React.FC = () => {
     setFormError('');
     setRegistrationNotice('');
     try {
-      const challenge = await createCanonicalRegistrationChallenge(registration.mobile, registration.inviteCode);
+      const challenge = await createCanonicalRegistrationChallenge(registration.mobile);
       const seconds = Math.max(1, Math.floor((new Date(challenge.expiresAt).getTime() - Date.now()) / 1000));
       setRegistration((current) => ({
         ...current,
@@ -281,7 +266,9 @@ export const LoginPage: React.FC = () => {
       setRegistrationTermsAccepted(false);
       setRegistrationCodeSeconds(0);
       setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
-      setFormNotice(registrationCopy.successNotice);
+      setFormNotice(isCanonicalConsoleRequest
+        ? '员工商城账号已创建。该账号只具备消费商城身份；进入运营后台仍需管理员另行授予权限。'
+        : '员工商城账号已创建。消费商城会话接通前不会自动登录，也不会重复创建账号。');
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '注册失败');
     } finally {
@@ -337,15 +324,23 @@ export const LoginPage: React.FC = () => {
 
     try {
       if (isCanonicalConsoleRequest) {
-        const result = activeTab === 'otp'
-          ? await loginCanonicalConsoleWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
-          : await loginCanonicalConsole(identifier, password);
+        const result = await loginCanonicalConsole(identifier, password);
         if (result.kind === 'authenticated') {
           window.location.replace(result.redirectUrl);
           return;
         }
         setPreAuthContext(result.context);
         setStage(2);
+        return;
+      }
+
+      const context: PreAuthContext = await loginWithPassword(identifier, password);
+
+      // 如果需要重置密码
+      if (context.requiresPasswordReset) {
+        setPreAuthContext(context);
+        setShowForcePasswordModal(true);
+        setLoading(false);
         return;
       }
 
@@ -506,9 +501,7 @@ export const LoginPage: React.FC = () => {
       setLoading(true);
       setFormError('');
       try {
-        const result = preAuthContext?.loginMethod === 'otp'
-          ? await loginCanonicalConsoleWithOtp(identifier, loginOtp.challengeId, loginOtp.code, mem.id)
-          : await loginCanonicalConsole(identifier, password, mem.id);
+        const result = await loginCanonicalConsole(identifier, password, mem.id);
         if (result.kind !== 'authenticated') throw new Error('服务端未确认所选后台身份');
         window.location.replace(result.redirectUrl);
       } catch (error: any) {
@@ -895,7 +888,7 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
-                {formNotice && (
+                {formNotice && lockoutSeconds === 0 && (
                   <div className="mb-5 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800" role="status">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                     <p className="flex-1">{formNotice}</p>
@@ -1236,8 +1229,8 @@ export const LoginPage: React.FC = () => {
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">Member Registration</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-950">{registrationCopy.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{registrationCopy.description}</p>
+                <h3 className="mt-1 text-2xl font-bold text-slate-950">注册员工会员</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-500">手机号验证后建立普通员工会员；管理员与 Owner 不开放自助注册。</p>
               </div>
               <button type="button" onClick={closeRegistration} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
                 <X className="h-5 w-5" />
@@ -1371,9 +1364,9 @@ export const LoginPage: React.FC = () => {
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
             >
               {registrationBusy === 'submit' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
-              {registrationCopy.submitLabel}
+              创建普通员工会员账号
             </button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">{registrationCopy.footer}</p>
+            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">密码、邀请码和验证码不会写入浏览器长期存储。自助注册只开通消费商城，后台权限须由管理员另行授予。</p>
           </form>
         </div>
       )}
