@@ -43,7 +43,7 @@ try {
   const existing = await database.query<ExistingInvitation>(
     `select id,organization_id,label,destination_hash,token_hash,expires_at,
     created_by,role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash
-    from member.invite where id=$1 for update`,
+    from member.invite where id=$1`,
     [REGISTRATION_INVITATION_ID]
   );
   if (existing.rows[0]) {

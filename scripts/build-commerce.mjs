@@ -21,6 +21,7 @@ await build({
     LocalKmsMain: 'tools/localkms/src/Main.ts',
     InternalRuntimeMain: 'tools/localinfra/src/Run.ts',
     InternalRuntimeReadyMain: 'tools/localinfra/src/RegistrationReady.ts',
+    BootstrapRegistration: 'tools/seed/src/BootstrapRegistration.ts',
     BootstrapOwner: 'tools/seed/src/BootstrapOwner.ts',
   },
   format: 'esm',
