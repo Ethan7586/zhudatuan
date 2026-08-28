@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
+import { transportInteger } from '@shop/contract/client';
 import { z } from 'zod';
 
 const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
@@ -28,7 +29,7 @@ const MembershipSchema = z.strictObject({
   client: z.literal('storefront'),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
-  access_version: z.number().int().positive(),
+  access_version: transportInteger.pipe(z.number().positive()),
   joined_at: z.iso.datetime(),
   left_at: z.iso.datetime().nullable(),
 });

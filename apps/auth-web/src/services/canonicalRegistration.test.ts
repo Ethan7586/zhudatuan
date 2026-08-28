@@ -119,6 +119,16 @@ describe('canonical registration', () => {
     expectCanonicalHeaders(init?.headers);
   });
 
+  it.each([0, -1, '1.5', String(Number.MAX_SAFE_INTEGER + 1)])(
+    'rejects an invalid access version returned by the identity service: %s',
+    async (accessVersion) => {
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...membership(), access_version: accessVersion }, 201));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await expect(createCanonicalMember(registrationInput())).rejects.toThrow();
+    },
+  );
+
   it('fails closed before the network when current terms were not accepted', async () => {
     const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);
@@ -199,10 +209,23 @@ function membership(): Readonly<Record<string, unknown>> {
     client: 'storefront',
     employee_no: null,
     status: 'active',
-    access_version: 1,
+    access_version: '1',
     joined_at: '2026-08-28T01:00:00.000Z',
     left_at: null,
   };
+}
+
+function registrationInput() {
+  return {
+    subject: '+8613800138000',
+    password: 'SecurePassword1!',
+    displayName: 'Ethan',
+    inviteCode: 'invitation-secret',
+    challengeId: 'challenge:registration-one',
+    code: '483921',
+    termsAccepted: true,
+    termsHash: TERMS_HASH,
+  } as const;
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
