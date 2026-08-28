@@ -78,6 +78,7 @@ const REPAIR_FILES = [
   '20260828170000_zhudatuan_registration_baseline.sql',
   '20260828173000_zhudatuan_web_business_access.sql',
   '20260828180000_zhudatuan_purchase_access.sql',
+  '20260828183000_zhudatuan_runtime_readiness_repair.sql',
 ];
 
 const mode = process.argv[2];
@@ -97,7 +98,9 @@ if (mode === '--check-inventory') {
 const database = await openDatabase();
 try {
   await execute(database, `
-    create role anon nologin; create role authenticated nologin; create role service_role nologin;
+    create role anon nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role authenticated nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
   `, 'database role bootstrap');
   if (mode === '--registration-fresh') await installRegistrationReplayBoundary(database);
   if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
@@ -280,6 +283,7 @@ async function verifyTarget(database) {
   await verifyRls(database);
   await verifyAuditImmutability(database);
   await verifyZhudatuanRegistrationBaseline(database);
+  await verifyZhudatuanRuntimeReadinessRepair(database);
   await verifyZhudatuanWebBusinessAccess(database);
   await verifyZhudatuanPurchaseAccess(database);
   await verifySandboxCatalogBootstrap(database);
@@ -289,6 +293,30 @@ async function verifyTarget(database) {
   // registration replay uses the canonical database name and sentinel, so it
   // can exercise the real direct-login one-shot boundaries before close.
   if (mode === '--registration-fresh') await verifySandboxMemberBootstraps(database);
+}
+
+async function verifyZhudatuanRuntimeReadinessRepair(database) {
+  const contract = await database.query(`select checksum from runtime.schemaversion
+    where version='20260821032000'`);
+  if (contract.rows[0]?.checksum!=='83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a') {
+    throw new Error(`ZHUDATUAN_RUNTIME_CONTRACT_CHECKSUM_INVALID:${JSON.stringify(contract.rows)}`);
+  }
+  const expectations = [
+    ['zhudatuanidentityapi',['20260821032000','20260821054000','20260828170000']],
+    ['zhudatuanidentityjob',['20260821032000','20260821054000','20260828170000']],
+    ['zhudatuanbootstrap',['20260828170000']],
+  ];
+  for (const [role,versions] of expectations) {
+    await database.exec(`begin; set local role ${role};`);
+    try {
+      const visible = await database.query('select array_agg(version order by version) versions from runtime.schemaversion');
+      if (JSON.stringify(visible.rows[0]?.versions)!==JSON.stringify(versions)) {
+        throw new Error(`ZHUDATUAN_SCHEMA_VERSION_RLS_INVALID:${role}:${JSON.stringify(visible.rows[0])}`);
+      }
+    } finally {
+      await database.exec('rollback');
+    }
+  }
 }
 
 async function verifySandboxMemberBootstraps(database) {

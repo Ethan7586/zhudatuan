@@ -24,6 +24,8 @@ describe('purchase API runtime', () => {
       expect(sql).toContain("not has_table_privilege(current_user,'payment.intent','UPDATE')");
       expect(sql).toContain("not has_column_privilege(current_user,'payment.intent','amount_minor','UPDATE')");
       expect(sql).toContain("not has_table_privilege(current_user,'pricing.quote','UPDATE')");
+      expect(sql).toContain("not has_column_privilege(current_user,'inventory.stockitem','scope_id','UPDATE')");
+      expect(sql).not.toContain("has_column_privilege(current_user,'inventory.stockitem','mall_id'");
       expect(values).toContain(PURCHASE_SCHEMA_VERSION);
       expect(values).toContain(PURCHASE_SCHEMA_CHECKSUM);
       return result([state]);

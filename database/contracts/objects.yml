@@ -21005,3 +21005,15 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.schemaversion.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql
+  - id: runtime.schemaversion.zhudatuanidentityjob
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql
+  - id: runtime.schemaversion.zhudatuanbootstrap
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql
