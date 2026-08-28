@@ -80,7 +80,9 @@ export class DispatchNotification {
       const completed = await this.repository.completeChallengeAttempt(id, attempt.sequence, receipt.provider, receipt.externalId);
       if (completed.rowCount !== 1) throw new Error('IDENTITY_NOTIFICATION_DELIVERY_STATE_LOST');
     } catch (cause) {
-      await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, deliveryError(cause));
+      const code = deliveryError(cause);
+      if (definitiveProviderRejection(code)) await this.repository.failChallengeAttempt(id, attempt.sequence, code);
+      else await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, code);
     }
   }
 
@@ -107,4 +109,7 @@ function digest(value: string): string { return createHash('sha256').update(valu
 function deliveryError(value: unknown): string {
   const message = value instanceof Error ? value.message : 'NOTIFICATION_DELIVERY_FAILED';
   return message.replace(/[^A-Z0-9_.:-]/gi, '').slice(0, 200) || 'NOTIFICATION_DELIVERY_FAILED';
+}
+function definitiveProviderRejection(code: string): boolean {
+  return code === 'ALIYUN_SMS_REJECTED' || code.startsWith('ALIYUN_SMS_ISV.');
 }

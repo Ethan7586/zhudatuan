@@ -51,15 +51,27 @@ describe('identity challenge notification delivery safety', () => {
     expect(repository.fail).not.toHaveBeenCalled();
   });
 
-  it('records a pre-send decrypt failure as failed and allows the job to retry', async () => {
+  it('records a definitive Aliyun rejection with its sanitized provider code', async () => {
     const repository = repositoryWith({ sequence: 4, state: 'sending', dispatch: true });
+    const decrypt = vi.fn(async (key: string) => key === 'identity/challenge' ? '123456' : '+8613800138000');
+    const send = vi.fn(async () => { throw new Error('ALIYUN_SMS_ISV.SMS_SIGNATURE_ILLEGAL'); });
+    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient,
+      new DeliveryRegistry([{ id: 'sms', send }]));
+
+    await expect(command.challenge(challenge)).resolves.toBeUndefined();
+    expect(repository.fail).toHaveBeenCalledExactlyOnceWith(challenge, 4, 'ALIYUN_SMS_ISV.SMS_SIGNATURE_ILLEGAL');
+    expect(repository.ambiguous).not.toHaveBeenCalled();
+  });
+
+  it('records a pre-send decrypt failure as failed and allows the job to retry', async () => {
+    const repository = repositoryWith({ sequence: 5, state: 'sending', dispatch: true });
     const decrypt = vi.fn(async () => { throw new Error('KMS_DECRYPT_FAILED'); });
     const send = vi.fn(async () => ({ provider: 'aliyun', externalId: 'sms:4' }));
     const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient,
       new DeliveryRegistry([{ id: 'sms', send }]));
 
     await expect(command.challenge(challenge)).rejects.toThrow('KMS_DECRYPT_FAILED');
-    expect(repository.fail).toHaveBeenCalledExactlyOnceWith(challenge, 4, 'KMS_DECRYPT_FAILED');
+    expect(repository.fail).toHaveBeenCalledExactlyOnceWith(challenge, 5, 'KMS_DECRYPT_FAILED');
     expect(send).not.toHaveBeenCalled();
   });
 });
