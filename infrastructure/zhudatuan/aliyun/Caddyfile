@@ -137,7 +137,7 @@ labs.zhudatuan.com {
 	encode gzip
 
 	header {
-		Content-Security-Policy "frame-ancestors 'self'; form-action 'none'; base-uri 'self'; object-src 'none'"
+		Content-Security-Policy "frame-ancestors 'self' https://console.zhudatuan.com; form-action 'none'; base-uri 'self'; object-src 'none'"
 		Referrer-Policy "no-referrer"
 		X-Content-Type-Options "nosniff"
 		X-Robots-Tag "noindex, nofollow, noarchive"
@@ -151,13 +151,13 @@ labs.zhudatuan.com {
 
 	@consoleReferences path /design-references/* /demo/*
 	handle @consoleReferences {
+		header Cache-Control "no-store"
 		root * /opt/zhudatuan/current/apps/console/dist
 		file_server
 	}
 
 	handle {
-		reverse_proxy localhost:3000 {
-			header_up X-Real-IP {client_ip}
-		}
+		header Cache-Control "no-store"
+		respond "Not Found" 404
 	}
 }
