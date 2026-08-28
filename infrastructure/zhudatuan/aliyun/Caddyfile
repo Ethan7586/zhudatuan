@@ -341,10 +341,14 @@ labs.zhudatuan.com {
 
 	header {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		Content-Security-Policy "frame-ancestors 'self' https://console.zhudatuan.com; form-action 'none'; base-uri 'self'; object-src 'none'"
 =======
 		Content-Security-Policy "frame-ancestors 'self'; form-action 'none'; base-uri 'self'; object-src 'none'"
 >>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
+=======
+		Content-Security-Policy "frame-ancestors 'self' https://console.zhudatuan.com; form-action 'none'; base-uri 'self'; object-src 'none'"
+>>>>>>> 35c5cb62 (fix: publish the three approved building solutions)
 		Referrer-Policy "no-referrer"
 		X-Content-Type-Options "nosniff"
 		X-Robots-Tag "noindex, nofollow, noarchive"
@@ -359,14 +363,19 @@ labs.zhudatuan.com {
 	@consoleReferences path /design-references/* /demo/*
 	handle @consoleReferences {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		header Cache-Control "no-store"
 =======
 >>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
+=======
+		header Cache-Control "no-store"
+>>>>>>> 35c5cb62 (fix: publish the three approved building solutions)
 		root * /opt/zhudatuan/current/apps/console/dist
 		file_server
 	}
 
 	handle {
+<<<<<<< HEAD
 <<<<<<< HEAD
 		header Cache-Control "no-store"
 		respond "Not Found" 404
@@ -375,5 +384,9 @@ labs.zhudatuan.com {
 			header_up X-Real-IP {client_ip}
 		}
 >>>>>>> e29ce3d6 (fix: lock owner-approved zhudatuan UI baseline)
+=======
+		header Cache-Control "no-store"
+		respond "Not Found" 404
+>>>>>>> 35c5cb62 (fix: publish the three approved building solutions)
 	}
 }
