@@ -80,4 +80,19 @@ describe('authorization policy', () => {
     expect(decide(access, 'access.ownership.accept', { kind: 'self', id: 'principal:other', path: [] },
       { expectedAccessVersion: 3, now, stepupAt: now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
   });
+
+  it('keeps distributor grants effective above the tenant boundary without leaking across distributors', () => {
+    const now = new Date('2026-08-21T00:00:00.000Z');
+    const distributor: MembershipAccess = { ...membership, grants: [{ scope: { kind: 'distributor', id: 'distributor-d', path: [] }, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
+    const under = (owner: string, tenant: string): Scope => ({ kind: 'mall', id: 'mall-a', tenant, path: [{ kind: 'platform', id: 'organization-platform-root' }, { kind: 'distributor', id: owner }, { kind: 'tenant', id: tenant }] });
+
+    expect(decide(distributor, 'order.read', under('distributor-d', 'tenant-a'), { expectedAccessVersion: 3, now }).allowed).toBe(true);
+    expect(decide(distributor, 'order.read', under('distributor-other', 'tenant-b'), { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
+  });
+
+  it('denies a cross-kind identifier collision inside the same tenant', () => {
+    const now = new Date('2026-08-21T00:00:00.000Z');
+    const collision: MembershipAccess = { ...membership, grants: [{ scope: { kind: 'mall', id: 'x', tenant: 'tenant-a', path: [] }, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
+    expect(decide(collision, 'order.read', { kind: 'department', id: 'x', tenant: 'tenant-a', path: [] }, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
+  });
 });

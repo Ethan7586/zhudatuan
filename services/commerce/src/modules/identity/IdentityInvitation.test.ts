@@ -41,7 +41,7 @@ describe('operator invitation security boundary', () => {
   });
 
   it('rejects a non-owner even when a stale grant still advertises the permission and capability', async () => {
-    const harness = invitationHarness();
+    const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({ actor: 'principal:legacy-manager', membership: 'membership:legacy-manager' });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(createRequest(access));
@@ -51,7 +51,7 @@ describe('operator invitation security boundary', () => {
   });
 
   it('keeps full-runtime operator invitation creation exact-owner-only', async () => {
-    const harness = invitationHarness();
+    const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({ actor: 'principal:tenant-manager', membership: 'membership:tenant-manager' });
 
     const response = await identityOperations(context(harness.pool)).invoke(createRequest(access, 'operator'));
@@ -143,7 +143,7 @@ describe('operator invitation security boundary', () => {
   });
 
   it('keeps full-runtime operator invitation revoke exact-owner-only', async () => {
-    const harness = invitationHarness();
+    const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({
       actor: 'principal:tenant-manager', membership: 'membership:tenant-manager',
       capabilities: ['identity.invitations.revoke'],
@@ -154,6 +154,16 @@ describe('operator invitation security boundary', () => {
     const updated = harness.queries.find(({ text }) => text.includes("update member.invite set status='disabled'"));
     expect(updated?.text).toContain("target_client<>'operator' or $4::boolean");
     expect(updated?.values[3]).toBe(false);
+  });
+
+  it('lets a transferred owner mint operator invitations without matching any fixed principal string', async () => {
+    const harness = invitationHarness({ exactOwner: true });
+    const access = managerAccess({ actor: 'principal:successor-owner', membership: 'membership:successor-owner' });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(createRequest(access));
+
+    expect(response).toMatchObject({ status: 201, body: { target_client: 'operator' } });
+    expect(harness.queries.some(({ text }) => text.includes('access.zhudatuan_invitation_owner'))).toBe(true);
   });
 });
 
@@ -211,6 +221,7 @@ function invitationHarness(options: Readonly<{
   revokeRows?: readonly Record<string, unknown>[];
   currentRows?: readonly Record<string, unknown>[];
   roleRows?: readonly Record<string, unknown>[];
+  exactOwner?: boolean;
 }> = {}): Readonly<{
   pool: DatabasePool;
   queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
@@ -222,6 +233,9 @@ function invitationHarness(options: Readonly<{
       queries.push({ text, values });
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
       if (text.startsWith('select request_hash,state,response')) return result([{ request_hash: requestHash, state: 'started', response: null }]);
+      if (text.includes('access.zhudatuan_invitation_owner') || text.includes('access.zhudatuan_owner_context')) {
+        return result([{ exact_owner: options.exactOwner !== false }]);
+      }
       if (text.includes('select storefront.id')) return result([{ id: 'mall-zhudatuan' }]);
       if (text.includes('select role.id')) return result(options.roleRows ?? [{ id: String(values[0]) }]);
       if (text.includes('select id,terms_hash from identity.registrationpolicy')) {

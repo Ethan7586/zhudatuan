@@ -113,7 +113,7 @@ describe('Owner transfer command chain', () => {
         expect(request.headers.get('x-access-version')).toBe('11');
         expect(request.headers.get('x-csrf-token')).toBe('csrf-token-from-session');
         expect(await request.json()).toEqual({ mobile: '+8613800138000', challenge: 'challenge:mobile', code: '654321' });
-        return HttpResponse.json({ id: 'member:owner', mobile_masked: '+86****7586', version: 2 });
+        return HttpResponse.json({ id: 'member:owner', mobile_masked: '+86****8000', version: 2 });
       }),
     );
 

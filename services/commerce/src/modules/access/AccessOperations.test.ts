@@ -4,6 +4,7 @@ import { Container } from '../../bootstrap/Container';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import type { OperationRequest } from '../../foundation/application/OperationHandler';
+import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
 import type { AccessContext } from '../../foundation/security/AccessContext';
 import { accessOperations } from './AccessOperations';
@@ -70,6 +71,7 @@ function context(pool: DatabasePool): ModuleContext {
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
+  container.bind(IDENTITY_SECURITY_KEYS, { identity: 'identity-key', session: 'session-key' });
   return { container } as unknown as ModuleContext;
 }
 

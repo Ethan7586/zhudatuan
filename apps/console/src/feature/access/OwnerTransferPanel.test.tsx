@@ -177,7 +177,7 @@ describe('Owner transfer panel', () => {
         calls.push('mobile.manage');
         expect(request.headers.get('x-csrf-token')).toBe('csrf-token-from-session');
         expect(await request.json()).toEqual({ mobile: '+8613800138000', challenge: 'challenge:mobile', code: '654321' });
-        return HttpResponse.json({ id: 'member:owner', display_name: '当前 Owner', mobile_masked: '+86****7586', version: 2 });
+        return HttpResponse.json({ id: 'member:owner', display_name: '当前 Owner', mobile_masked: '+86****8000', version: 2 });
       }),
     );
     renderPanel(ownerContext);
@@ -185,9 +185,9 @@ describe('Owner transfer panel', () => {
     expect(await screen.findByRole('heading', { name: '先绑定 Canonical 安全手机号' })).toBeTruthy();
     await user.type(screen.getByLabelText('当前账户密码'), 'current-owner-password');
     await user.click(screen.getByRole('button', { name: '验证当前密码' }));
-    await user.type(await screen.findByLabelText('中国大陆手机号'), '134 2432 7586');
+    await user.type(await screen.findByLabelText('中国大陆手机号'), '138 0013 8000');
     await user.click(screen.getByRole('button', { name: '获取绑定验证码' }));
-    expect(await screen.findByText(/\+86 134\*\*\*\*7586/)).toBeTruthy();
+    expect(await screen.findByText(/\+86 138\*\*\*\*8000/)).toBeTruthy();
     await user.type(screen.getByLabelText('6 位手机验证码'), '654321');
     await user.click(screen.getByRole('button', { name: '验证并绑定手机号' }));
 

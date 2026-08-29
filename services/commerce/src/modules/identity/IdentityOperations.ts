@@ -2,7 +2,7 @@ import { createHash, createHmac, randomBytes, randomInt, randomUUID } from 'node
 import type { OperationId } from '@shop/contract';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions } from '../../foundation/application/ModuleOperations';
+import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions, type OperationDatabase } from '../../foundation/application/ModuleOperations';
 import { bodyRecord, integerField, textField } from '../../foundation/interface/Validation';
 import type { OperationRequest, OperationUsecase } from '../../foundation/application/OperationHandler';
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
@@ -325,7 +325,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         return rowResult(result);
       },
       'identity.invitations.create': async (request, database) => {
-        const access = requireInvitationManager(request, registrationOnly);
+        const { access, exactOwner } = await requireInvitationManager(request, database, registrationOnly);
         const body = bodyRecord(request);
         const label = textField(body, 'label', 80);
         const requestedTarget = body.targetClient;
@@ -334,7 +334,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         }
         const targetClient = registrationOnly ? 'operator' : requestedTarget ?? 'storefront';
         if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
-        if (targetClient === 'operator' && !isZhudatuanInvitationOwner(access)) reject(403, 'PERMISSION_DENIED');
+        if (targetClient === 'operator' && !exactOwner) reject(403, 'PERMISSION_DENIED');
         const maxUses = integerField(body, 'maxUses', 1);
         const expiresAt = inviteExpiry(body.expiresAt);
         if (label.length < 2 || maxUses > 500 || (targetClient === 'operator' && maxUses !== 1)) throw new Error('INVALID_INVITATION_INPUT');
@@ -381,12 +381,11 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         return { status: 201, body: { ...saved, code }, headers: { etag: '"0"' } };
       },
       'identity.invitations.revoke': async (request, database) => {
-        const access = requireInvitationManager(request, registrationOnly);
+        const { access, exactOwner } = await requireInvitationManager(request, database, registrationOnly);
         const body = bodyRecord(request);
         const reason = textField(body, 'reason', 1000);
         if (reason.length < 4) throw new Error('CHANGE_REASON_REQUIRED');
         const id = request.input.path.invitationid!;
-        const exactOwner = isZhudatuanInvitationOwner(access);
         const result = await database.query(
           `update member.invite set status='disabled',version=version+1
         where id=$1 and access.scope_allowed(organization_id)
@@ -819,25 +818,23 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
   return new ModuleOperations('identity', pool, audit, selected, ownedOperations);
 }
 
-function requireInvitationManager(request: OperationRequest, exactOwner = false) {
+async function requireInvitationManager(request: OperationRequest, database: OperationDatabase, registrationOnly: boolean) {
   const access = requireAccess(request);
   const permission = access.membership.grants.some((grant) => grant.permissions.includes('identity.invitation.manage'));
   if (access.actor.target !== 'console' || !access.capabilities.includes(request.type) || !permission) {
     reject(403, 'PERMISSION_DENIED');
   }
-  if (exactOwner && !isZhudatuanInvitationOwner(access)) reject(403, 'PERMISSION_DENIED');
-  return access;
+  const exactOwner = await zhudatuanInvitationOwner(database, registrationOnly);
+  if (registrationOnly && !exactOwner) reject(403, 'PERMISSION_DENIED');
+  return { access, exactOwner };
 }
 
-function isZhudatuanInvitationOwner(access: NonNullable<OperationRequest['access']>): boolean {
-  return !(
-    access.actor.id !== 'principal:zhudatuan:owner:ethan:v1'
-    || access.actor.membership !== 'membership-platform-owner-ethan-v1'
-    || access.membership.id !== 'membership-platform-owner-ethan-v1'
-    || access.scope.kind !== 'tenant'
-    || access.scope.id !== 'tenant-zhudatuan'
-    || access.scope.tenant !== 'tenant-zhudatuan'
-  );
+// Owner 身份由数据库单例在同一事务内判定，而非比对固定的 principal/membership 字符串，
+// 因此 Owner 转让后新任 Owner 立即生效、旧 Owner 立即失权。
+async function zhudatuanInvitationOwner(database: OperationDatabase, registrationOnly: boolean): Promise<boolean> {
+  const probe = registrationOnly ? 'access.zhudatuan_invitation_owner()' : 'access.zhudatuan_owner_context()';
+  const result = await database.query<{ exact_owner: boolean }>(`select ${probe} exact_owner`);
+  return result.rows[0]?.exact_owner === true;
 }
 
 async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {

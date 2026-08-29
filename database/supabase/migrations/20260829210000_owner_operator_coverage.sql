@@ -54,8 +54,12 @@ begin
 end
 $catalog_guard$;
 
--- The platform Owner is an exact projection of the current Operator contract:
--- no stale grants, no missing grants and no deny overlay.
+-- The platform Owner is an exact projection of every non-public operation, which
+-- is the same surface capability.membership_operations exposes to a console
+-- session.  Restricting the projection to audience='operator' would strip the
+-- member-audience console reads (catalog listings, inventory availability,
+-- orders, voucher bindings) that the registration baseline asserts the Owner
+-- must retain.  No stale grants, no missing grants and no deny overlay.
 delete from access.rolepermission mapping
 where mapping.role_id='role-platform-owner-v2'
   and (
@@ -67,7 +71,7 @@ where mapping.role_id='role-platform-owner-v2'
         on capability.id=operation.capability_id and capability.status='active'
       join access.permission permission
         on permission.code=operation.permission_code and permission.status='active'
-      where operation.audience='operator'
+      where operation.audience<>'public'
         and permission.id=mapping.permission_id
     )
   );
@@ -79,7 +83,7 @@ join capability.capability capability
   on capability.id=operation.capability_id and capability.status='active'
 join access.permission permission
   on permission.code=operation.permission_code and permission.status='active'
-where operation.audience='operator'
+where operation.audience<>'public'
 on conflict do nothing;
 
 -- Every Operator capability has a non-expiring platform-root entitlement.
@@ -100,7 +104,7 @@ select
 from capability.operation operation
 join capability.capability capability
   on capability.id=operation.capability_id and capability.status='active'
-where operation.audience='operator'
+where operation.audience<>'public'
 on conflict(scope_id,capability_id,effective_at) do update
 set state='enabled',quota=null,expires_at=null,version=capability.entitlement.version+1
 where capability.entitlement.state<>'enabled'
@@ -142,7 +146,7 @@ begin
         on capability.id=operation.capability_id and capability.status='active'
       join access.permission permission
         on permission.code=operation.permission_code and permission.status='active'
-      where operation.audience='operator'
+      where operation.audience<>'public'
     ), actual(code) as (
       select permission.code
       from access.rolepermission mapping
@@ -164,7 +168,7 @@ begin
     from capability.operation operation
     join capability.capability capability
       on capability.id=operation.capability_id and capability.status='active'
-    where operation.audience='operator'
+    where operation.audience<>'public'
     except
     select entitlement.capability_id
     from capability.entitlement entitlement
@@ -192,7 +196,7 @@ begin
             on capability.id=operation.capability_id and capability.status='active'
           join access.permission permission
             on permission.code=operation.permission_code and permission.status='active'
-          where operation.audience='operator'
+          where operation.audience<>'public'
         )
         select 1 from owner
         cross join lateral access.resolve_membership(owner.membership_id) resolved
@@ -208,7 +212,7 @@ begin
             on capability.id=operation.capability_id and capability.status='active'
           join access.permission permission
             on permission.code=operation.permission_code and permission.status='active'
-          where operation.audience='operator'
+          where operation.audience<>'public'
         )
         select operation_id from expected
         except

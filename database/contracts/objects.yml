@@ -1,11 +1,21 @@
 version: 1
 objects:
+  - id: access.ensure_imported_membership
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: access
   - id: access.membership_version
     kind: function
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: access.protect_owner_transfer_snapshot
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: access
   - id: access.resolve_membership
     kind: function
     owner: access
@@ -63,6 +73,11 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
     operationalOwner: access
+  - id: access.zhudatuan_protected_identity
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: access
   - id: audit.reject_mutation
     kind: function
     owner: audit
@@ -79,6 +94,21 @@ objects:
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: identity.ensure_imported_principal
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: identity
+  - id: identity.purge_expired_job_records
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: identity
+  - id: member.ensure_imported_profile
+    kind: function
+    owner: member
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: member
   - id: member.protect_zhudatuan_invite_update
     kind: function
     owner: member
@@ -336,6 +366,13 @@ objects:
     role: shopapp
     objectType: function
     target: access.zhudatuan_owner_context()
+    privilege: execute
+  - id: shopapp:function:access.zhudatuan_protected_identity(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopapp
+    objectType: function
     privilege: execute
   - id: shopapp:function:audit.scope_allowed(text):execute
     kind: grant
@@ -8401,6 +8438,20 @@ objects:
     objectType: view
     target: benefit.balance
     privilege: select
+  - id: shopjob:function:access.ensure_imported_membership(text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
+  - id: shopjob:function:access.zhudatuan_protected_identity(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
   - id: shopjob:function:channel.build_private_statement(text,jsonb):execute
     kind: grant
     owner: channel
@@ -8528,6 +8579,27 @@ objects:
     role: shopjob
     objectType: function
     target: finance.resource_scope(text)
+    privilege: execute
+  - id: shopjob:function:identity.ensure_imported_principal(text):execute
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
+  - id: shopjob:function:identity.purge_expired_job_records():execute
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
+  - id: shopjob:function:member.ensure_imported_profile(text,text,text):execute
+    kind: grant
+    owner: member
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
     privilege: execute
   - id: shopjob:function:reporting.cockpit(text):execute
     kind: grant
@@ -8849,102 +8921,6 @@ objects:
     objectType: table
     target: access.decisionaudit
     privilege: update
-  - id: shopjob:table:access.membership:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: delete
-  - id: shopjob:table:access.membership:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: insert
-  - id: shopjob:table:access.membership:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: select
-  - id: shopjob:table:access.membership:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: update
-  - id: shopjob:table:access.membershipoverride:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: delete
-  - id: shopjob:table:access.membershipoverride:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: insert
-  - id: shopjob:table:access.membershipoverride:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: select
-  - id: shopjob:table:access.membershipoverride:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: update
-  - id: shopjob:table:access.membershiprole:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: delete
-  - id: shopjob:table:access.membershiprole:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: insert
-  - id: shopjob:table:access.membershiprole:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: select
-  - id: shopjob:table:access.membershiprole:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: update
   - id: shopjob:table:access.permission:delete
     kind: grant
     owner: access
@@ -9040,38 +9016,6 @@ objects:
     role: shopjob
     objectType: table
     target: access.rolepermission
-    privilege: update
-  - id: shopjob:table:access.scopegrant:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
-    privilege: delete
-  - id: shopjob:table:access.scopegrant:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
-    privilege: insert
-  - id: shopjob:table:access.scopegrant:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
-    privilege: select
-  - id: shopjob:table:access.scopegrant:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
     privilege: update
   - id: shopjob:table:audit.accessrecord:delete
     kind: grant
@@ -11681,38 +11625,6 @@ objects:
     objectType: table
     target: fulfillment.returnrecord
     privilege: update
-  - id: shopjob:table:identity.assurance:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: delete
-  - id: shopjob:table:identity.assurance:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: insert
-  - id: shopjob:table:identity.assurance:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: select
-  - id: shopjob:table:identity.assurance:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: update
   - id: shopjob:table:identity.authticket:delete
     kind: grant
     owner: identity
@@ -11745,22 +11657,6 @@ objects:
     objectType: table
     target: identity.authticket
     privilege: update
-  - id: shopjob:table:identity.challenge:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challenge
-    privilege: delete
-  - id: shopjob:table:identity.challenge:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challenge
-    privilege: insert
   - id: shopjob:table:identity.challenge:select
     kind: grant
     owner: identity
@@ -11769,14 +11665,6 @@ objects:
     objectType: table
     target: identity.challenge
     privilege: select
-  - id: shopjob:table:identity.challenge:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challenge
-    privilege: update
   - id: shopjob:table:identity.challengedelivery:delete
     kind: grant
     owner: identity
@@ -11809,22 +11697,6 @@ objects:
     objectType: table
     target: identity.challengedelivery
     privilege: update
-  - id: shopjob:table:identity.challengesecret:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challengesecret
-    privilege: delete
-  - id: shopjob:table:identity.challengesecret:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challengesecret
-    privilege: insert
   - id: shopjob:table:identity.challengesecret:select
     kind: grant
     owner: identity
@@ -11833,46 +11705,6 @@ objects:
     objectType: table
     target: identity.challengesecret
     privilege: select
-  - id: shopjob:table:identity.challengesecret:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challengesecret
-    privilege: update
-  - id: shopjob:table:identity.credential:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: delete
-  - id: shopjob:table:identity.credential:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: insert
-  - id: shopjob:table:identity.credential:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: select
-  - id: shopjob:table:identity.credential:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: update
   - id: shopjob:table:identity.federatedidentity:delete
     kind: grant
     owner: identity
@@ -11937,38 +11769,6 @@ objects:
     objectType: table
     target: identity.loginattempt
     privilege: update
-  - id: shopjob:table:identity.principal:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: delete
-  - id: shopjob:table:identity.principal:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: insert
-  - id: shopjob:table:identity.principal:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: select
-  - id: shopjob:table:identity.principal:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: update
   - id: shopjob:table:identity.registrationpolicy:delete
     kind: grant
     owner: identity
@@ -12000,38 +11800,6 @@ objects:
     role: shopjob
     objectType: table
     target: identity.registrationpolicy
-    privilege: update
-  - id: shopjob:table:identity.session:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
-    privilege: delete
-  - id: shopjob:table:identity.session:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
-    privilege: insert
-  - id: shopjob:table:identity.session:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
-    privilege: select
-  - id: shopjob:table:identity.session:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
     privilege: update
   - id: shopjob:table:identity.wechatgrant:delete
     kind: grant
@@ -12832,38 +12600,6 @@ objects:
     role: shopjob
     objectType: table
     target: member.invite
-    privilege: update
-  - id: shopjob:table:member.profile:delete
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
-    privilege: delete
-  - id: shopjob:table:member.profile:insert
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
-    privilege: insert
-  - id: shopjob:table:member.profile:select
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
-    privilege: select
-  - id: shopjob:table:member.profile:update
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
     privilege: update
   - id: shopjob:table:notification.announcement:delete
     kind: grant
@@ -16621,23 +16357,11 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.membership.jobscope
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: access.membershipoverride.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.membershipoverride.jobscope
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: access.membershiprole.appscope
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.membershiprole.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
@@ -16666,10 +16390,6 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: access.scopegrant.appscope
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.scopegrant.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
@@ -17365,10 +17085,6 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.assurance.jobscope
-    kind: policy
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: identity.authticket.appscope
     kind: policy
     owner: identity
@@ -17405,10 +17121,6 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.credential.jobscope
-    kind: policy
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: identity.federatedidentity.appscope
     kind: policy
     owner: identity
@@ -17429,10 +17141,6 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.principal.jobscope
-    kind: policy
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: identity.registrationpolicy.appscope
     kind: policy
     owner: identity
@@ -17442,10 +17150,6 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: identity.session.appscope
-    kind: policy
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.session.jobscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
@@ -17645,10 +17349,10 @@ objects:
     kind: policy
     owner: member
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: member.profile.jobscope
+  - id: member.profile.shopjob_member_status
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
   - id: notification.announcement.appscope
     kind: policy
     owner: notification
@@ -18669,10 +18373,6 @@ objects:
     kind: schema
     owner: checkout
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
-  - id: deployment
-    kind: schema
-    owner: deployment
-    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: experience
     kind: schema
     owner: experience
@@ -19981,6 +19681,10 @@ objects:
     owner: voucher
     source: database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql
     rls: true
+  - id: access.ownertransfer.owner_transfer_snapshot
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
   - id: access.role.protect_zhudatuan_pending_operator_role
     kind: trigger
     owner: access
@@ -21241,36 +20945,6 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: identity
-  - id: deployment.bootstrap_zhudatuan_owner
-    kind: function
-    owner: deployment
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    operationalOwner: deployment
-  - id: deployment.bootstrap_zhudatuan_owner_legacy_v1
-    kind: function
-    owner: deployment
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    operationalOwner: deployment
-  - id: deployment.sandbox_catalog_bootstrap_boundary
-    kind: function
-    owner: deployment
-    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
-    operationalOwner: deployment
-  - id: deployment.sandbox_member_qualification_bootstrap
-    kind: function
-    owner: deployment
-    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
-    operationalOwner: deployment
-  - id: deployment.sandbox_member_welfare_bootstrap
-    kind: function
-    owner: deployment
-    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
-    operationalOwner: deployment
-  - id: deployment.zhudatuan_owner_bootstrap_state
-    kind: function
-    owner: deployment
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    operationalOwner: deployment
   - id: shopapp:function:access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text):execute
     kind: grant
     owner: access

@@ -898,7 +898,7 @@ async function verifyOwnerOperatorCoverage(database) {
         on capability.id=operation.capability_id and capability.status='active'
       join access.permission permission
         on permission.code=operation.permission_code and permission.status='active'
-      where operation.audience='operator'
+      where operation.audience<>'public'
     ), actual(code) as (
       select permission.code
       from access.rolepermission mapping
@@ -913,7 +913,7 @@ async function verifyOwnerOperatorCoverage(database) {
       from capability.operation operation
       join capability.capability capability
         on capability.id=operation.capability_id and capability.status='active'
-      where operation.audience='operator'
+      where operation.audience<>'public'
     ), permanent_entitlement(capability_id) as (
       select entitlement.capability_id
       from capability.entitlement entitlement
@@ -1182,7 +1182,9 @@ async function verifyPlatformOwnerTransfer(database) {
           from member.profile where id=$1`,[legacyTombstone.rows[0].member_id]);
         if (rollback.rows[0]?.restored!==true) throw new Error('PLATFORM_OWNER_MALFORMED_TOMBSTONE_PARTIAL_WRITE');
       }
-      await database.exec(`reset role; set local session authorization zhudatuanbootstrap;`);
+      // set local 只有在显式事务中才会在结束时归还权限；否则会话身份被永久降级为
+      // zhudatuanbootstrap，后续以超级用户身份读取 runtime.outbox 会被 ACL 拒绝。
+      await database.exec(`begin; reset role; set local session authorization zhudatuanbootstrap;`);
       const pendingBootstrapState=await database.query(
         `select * from deployment.zhudatuan_owner_bootstrap_state($1)`,
         ['registration-fresh-replay-sentinel-not-for-production'],
@@ -1196,7 +1198,7 @@ async function verifyPlatformOwnerTransfer(database) {
         'registration-fresh-replay-sentinel-not-for-production','6'.repeat(64),bootstrapSecret,
         '7'.repeat(64),'bootstrap:owner-transfer-contract',
       ]);
-      await database.exec('reset session authorization');
+      await database.exec('commit; reset session authorization; reset role;');
       if (activated.rows[0]?.state!=='created') throw new Error('PLATFORM_OWNER_BOOTSTRAP_ACTIVATION_INVALID');
       const audit=await database.query(`select count(*)::integer count from runtime.outbox
         where event_type='access.owner.bootstrapped' and aggregate_id='membership-platform-owner-ethan-v1'`);
