@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, type ReactNode } from 'react';
 import { Button } from './Button';
 
 export type AccessDeniedKind = 'forbidden' | 'unauthenticated';
@@ -34,6 +34,7 @@ export function ContextualAccessDenied(props: AccessDeniedProps) {
 }
 
 export function AccessDenied({ kind = 'forbidden', resourceLabel, detail, actions }: AccessDeniedProps) {
+  const containerRef = useRef<HTMLElement>(null);
   const titleId = useId();
   const descriptionId = useId();
   const unauthenticated = kind === 'unauthenticated';
@@ -50,8 +51,20 @@ export function AccessDenied({ kind = 'forbidden', resourceLabel, detail, action
   const normalizedDetail = detail?.trim();
   const hasActions = actions?.onSwitchScope !== undefined || actions?.onReturnToWorkspace !== undefined || actions?.onRelogin !== undefined;
 
+  useEffect(() => {
+    containerRef.current?.focus();
+  }, []);
+
   return (
-    <section className="swaccessdenied" role="region" aria-labelledby={titleId} aria-describedby={descriptionId}>
+    <section
+      ref={containerRef}
+      className="swaccessdenied"
+      role="region"
+      tabIndex={-1}
+      aria-live="polite"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+    >
       <span className="swaccessdeniedlabel">访问受限</span>
       <div className="swaccessdeniedvisual" aria-hidden="true">
         <svg viewBox="0 0 96 96" focusable="false">
@@ -69,7 +82,7 @@ export function AccessDenied({ kind = 'forbidden', resourceLabel, detail, action
         <p>{guidance}</p>
       </div>
       {hasActions ? (
-        <div className="swaccessdeniedactions" aria-label="访问受限操作">
+        <div className="swaccessdeniedactions" role="group" aria-label="访问受限操作">
           {unauthenticated ? (
             <>
               {actions?.onRelogin === undefined ? null : (

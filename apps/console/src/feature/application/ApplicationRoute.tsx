@@ -1,5 +1,5 @@
 import { Button, ResourcePanel, ResourceState } from '@shop/design';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -130,18 +130,56 @@ export function Component() {
   const scopeName = context.scope.name ?? context.scope.id;
 
   if (condition === 'unauthenticated' || condition === 'denied') {
-    return (
-      <div className="commerceworkspace" data-mode={presentation.mode}>
-        <ResourceState
-          condition={condition}
-          resourceLabel={presentation.title}
-          {...(error === undefined ? {} : { error })}
-          retry={() => {
-            void query.refetch();
-          }}
-        >
-          <span />
-        </ResourceState>
+    return <div className="commerceworkspace" data-mode={presentation.mode}>
+      <ResourceState condition={condition} resourceLabel={presentation.title}
+        {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+        <span />
+      </ResourceState>
+    </div>;
+  }
+
+  return <div className="commerceworkspace" data-mode={presentation.mode}>
+    <ResourcePanel title={presentation.title} eyebrow={presentation.eyebrow} description={presentation.description}
+      condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}
+      actions={<><Button onPress={() => { closeRecord(); setFlowOpen(false); setSolutionOpen(true); }}>建店方案（3 套）</Button>
+        <Button onPress={() => { void query.refetch(); }}>刷新数据</Button>
+        <Button tone="primary" onPress={() => { closeRecord(); setSolutionOpen(false); setFlowOpen(true); }}>{presentation.primaryAction}</Button></>}>
+      <div className="commercecontent">
+        <section className="commerceownership" role="note"><span aria-hidden="true">域</span><div>
+          <strong>{presentation.ownership}：{scopeName}</strong><p>{presentation.ownershipDetail}</p>
+        </div><button className="commercevitheme" type="button" onClick={() => setSolutionOpen(true)}>
+          预览方案 · {commerceSolutionName(selectedSolution)} <i aria-hidden="true">›</i></button></section>
+        <section className="commercesummary" aria-label="商城与应用读模型摘要">
+          {summary.map((metric) => <article key={metric.label} className={`is-${metric.tone}`}>
+            <span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.hint}</small>
+          </article>)}
+        </section>
+        <section className="commerceboundarybanner" role="note"><span aria-hidden="true">!</span><div>
+          <strong>{presentation.mode === 'management' ? '建店提交等待 mall.bootstrap' : '高风险写操作继续关闭'}</strong>
+          <p>{boundaryMessage(presentation.mode)}</p>
+        </div><button type="button" onClick={() => setFlowOpen(true)}>查看安全流程</button></section>
+        <ol className="commerceflow" aria-label={`${presentation.title}业务闭环`}>
+          {flow.map((step, index) => <li key={step.label}><span>{index + 1}</span><div><strong>{step.label}</strong><small>{step.detail}</small></div></li>)}
+        </ol>
+        <section className="commerceboard" aria-labelledby="commerceboardtitle">
+          <nav className="commercetabs" aria-label="商城与应用状态视图">
+            {views.map((candidate) => <button key={candidate.key} type="button" aria-pressed={candidate.key === view}
+              onClick={() => selectView(candidate.key)}>{candidate.label}</button>)}
+          </nav>
+          <div className="commercefilterbar"><div><strong id="commerceboardtitle">商城应用清单</strong>
+            <span>应用、绑定、草稿、校验与发布状态来自同一权威读模型</span></div>
+            <label className="commercesearch"><span className="sr-only">搜索商城应用</span><input type="search" value={search.get('q') ?? ''}
+              onChange={(event) => updateQuery(event.target.value)} placeholder="搜索名称、代码、商城或域名" /></label></div>
+          <p className="commercefiltermeta">当前页筛选 · 显示 {rows.length} / {data?.items.length ?? 0} 条 · 不推断未返回的商城总量</p>
+          {data !== undefined && data.items.length === 0 ? <section className="commerceempty" role="status"><strong>当前范围暂无商城应用</strong>
+            <p>{presentation.mode === 'management' ? '可先查看六步建店流程；待 mall.bootstrap 补齐后再正式创建。' : '切换数据范围或刷新后再查看。'}</p></section> : null}
+          {data !== undefined && data.items.length > 0 && rows.length === 0 ? <section className="commerceempty" role="status"><strong>当前页没有匹配记录</strong>
+            <p>调整状态视图或搜索词即可恢复列表。</p><button type="button" onClick={() => clearFilters(search, setSearch)}>清除筛选</button></section> : null}
+          {rows.length > 0 ? <ApplicationTable rows={rows} mode={presentation.mode} onOpen={openRecord} /> : null}
+          <footer className="commercepagination"><span>服务端返回 {data?.count ?? 0} 条 · 游标分页</span>
+            <Button onPress={() => { if (data?.nextCursor !== undefined) setSearch(pageCursor(search, data.nextCursor)); }}
+              isDisabled={data?.nextCursor === undefined}>下一页</Button></footer>
+        </section>
       </div>
     );
   }
