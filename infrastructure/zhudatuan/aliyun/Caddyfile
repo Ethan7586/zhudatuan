@@ -83,7 +83,8 @@ console.zhudatuan.com {
 		respond "Not Found" 404
 	}
 
-	handle_path /referral-preview-api/* {
+	@referralPreviewApi path /api/v1/identity/session /api/v1/members/me /api/v1/referral/*
+	handle @referralPreviewApi {
 		header Cache-Control "no-store"
 		reverse_proxy 127.0.0.1:4312
 	}
