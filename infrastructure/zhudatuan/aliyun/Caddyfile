@@ -83,6 +83,19 @@ console.zhudatuan.com {
 		respond "Not Found" 404
 	}
 
+	handle_path /referral-preview-api/* {
+		header Cache-Control "no-store"
+		reverse_proxy 127.0.0.1:4312
+	}
+
+	handle_path /referral-preview/* {
+		header Cache-Control "no-store"
+		header X-Robots-Tag "noindex, nofollow, noarchive"
+		root * /srv/zhudatuan-display/referral-current/apps/console/dist
+		try_files {path} /index.html
+		file_server
+	}
+
 	handle {
 		root * /opt/zhudatuan/current/apps/console/dist
 		try_files {path} /index.html

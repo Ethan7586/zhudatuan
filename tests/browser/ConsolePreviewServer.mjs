@@ -5,17 +5,34 @@ import { cockpit, consoleSession, controlHealth } from './Fixtures.ts';
 import { financePreviewOverview, financeReconciliationPreviewPage, FinancePreviewQueryError } from './FinancePreviewFixtures.ts';
 import { orderPreviewPage, OrderPreviewQueryError } from './OrderPreviewFixtures.ts';
 import { productPreviewPage, ProductPreviewQueryError } from './ProductPreviewFixtures.ts';
+import { referralPreviewBindings, referralPreviewCommissions, referralPreviewMembers, referralPreviewProducts, referralPreviewSetting } from './ReferralPreviewFixtures.ts';
 import { voucherPreviewPage } from './VoucherPreviewFixtures.ts';
 
 const port = Number(process.env.CONSOLE_PREVIEW_API_PORT ?? 4311);
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' });
-const previewSession = Object.freeze({ ...consoleSession, scope: previewScope, scopes: [previewScope] });
+const referralScope = Object.freeze({ kind: 'mall', id: 'mall:console', name: '主打团示例商城' });
+const referralReads = Object.freeze([
+  'referral.settings.read', 'referral.products.read', 'referral.members.read',
+  'referral.bindings.read', 'referral.commissions.read',
+]);
+const previewSession = Object.freeze({
+  ...consoleSession,
+  scope: previewScope,
+  scopes: [previewScope, referralScope],
+  permissions: [...consoleSession.permissions, ...referralReads],
+  capabilities: [...consoleSession.capabilities, ...referralReads],
+  assurance: { level: 2, verified: 'local-preview' },
+});
 
 const server = createServer((request, response) => {
   setCors(request, response);
   if (request.method === 'OPTIONS') {
     response.writeHead(204);
     response.end();
+    return;
+  }
+  if (request.method !== 'GET') {
+    send(response, { code: 'DISPLAY_ONLY', message: '分销展示环境禁止写入。' }, 503);
     return;
   }
 
@@ -31,6 +48,28 @@ const server = createServer((request, response) => {
       }
       throw cause;
     }
+    return;
+  }
+  if (route === 'GET /api/v1/referral/settings') {
+    send(response, referralPreviewSetting);
+    return;
+  }
+  if (route === 'GET /api/v1/referral/products') {
+    send(response, page(referralPreviewProducts));
+    return;
+  }
+  if (route === 'GET /api/v1/referral/members') {
+    const state = url.searchParams.get('state');
+    send(response, page(state === null ? referralPreviewMembers : referralPreviewMembers.filter((item) => item.state === state)));
+    return;
+  }
+  if (route === 'GET /api/v1/referral/bindings') {
+    send(response, page(referralPreviewBindings));
+    return;
+  }
+  if (route === 'GET /api/v1/referral/commissions') {
+    const state = url.searchParams.get('state');
+    send(response, page(state === null ? referralPreviewCommissions : referralPreviewCommissions.filter((item) => item.state === state)));
     return;
   }
   if (route === 'GET /api/v1/orders') {
@@ -105,6 +144,10 @@ server.listen(port, '127.0.0.1', () => {
 function send(response, body, status = 200) {
   response.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
   response.end(JSON.stringify(body));
+}
+
+function page(items) {
+  return { items, count: items.length };
 }
 
 function setCors(request, response) {

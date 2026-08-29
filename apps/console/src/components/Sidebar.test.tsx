@@ -33,6 +33,16 @@ describe('Sidebar commerce navigation', () => {
     const target = screen.getByRole('button', { name: expected });
     expect(target.getAttribute('title')).toBe(expected);
   });
+
+  it('opens the referral workspace independently from B2B channels', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    renderSidebar('mall', false, onNavigate);
+
+    await user.click(screen.getByRole('button', { name: '分销返佣系统' }));
+    expect(onNavigate).toHaveBeenCalledWith('referral/settings');
+    expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
+  });
 });
 
 function renderSidebar(kind: ConsoleScope['kind'], collapsed: boolean, onNavigate: (suffix: string) => void) {
