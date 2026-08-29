@@ -44,6 +44,34 @@ describe('Finance reconciliation workspace', () => {
     expect(requests[0]?.searchParams.get('limit')).toBe('50');
   });
 
+  it('renders the calm access boundary instead of a finance load failure on 403', async () => {
+    server.use(http.get('*/api/v1/finance/reconciliations', () => HttpResponse.json({ code: 'FINANCE_READ_DENIED', requestId: 'request:denied' }, { status: 403 })));
+    renderRoute('/finance', previewContext);
+
+    const boundary = await screen.findByRole('region', { name: '暂无访问权限' });
+    expect(within(boundary).getByText('当前账号无法查看「财务与对账系统」。')).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '支付对账批次' })).toBeNull();
+    expect(screen.queryByText('对账数据读取失败')).toBeNull();
+  });
+
+  it('fails closed when cached finance data loses access during refresh', async () => {
+    let attempts = 0;
+    server.use(
+      http.get('*/api/v1/finance/reconciliations', () => {
+        attempts += 1;
+        return attempts === 1 ? HttpResponse.json(previewPage()) : HttpResponse.json({ code: 'FINANCE_READ_DENIED', requestId: 'request:revoked' }, { status: 403 });
+      })
+    );
+    const user = userEvent.setup();
+    renderRoute('/finance', previewContext);
+    expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: '刷新财务数据' }));
+    expect(await screen.findByRole('region', { name: '暂无访问权限' })).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '支付对账批次' })).toBeNull();
+    expect(screen.queryByText('RCN-20260824-WECHAT-001')).toBeNull();
+  });
+
   it('keeps checkbox selection separate from the URL-backed review drawer and fails every final action closed', async () => {
     const user = userEvent.setup();
     renderRoute('/finance?campaign=keep', previewContext);

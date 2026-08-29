@@ -1,3 +1,4 @@
+import { ApiError } from '@shop/sdk';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { appConfig } from '../../shared/config/AppConfig';
 import { ReferralBindingPageSchema, ReferralCommissionPageSchema, ReferralMemberPageSchema, ReferralProductPageSchema, ReferralSettingSchema, type ReferralRecord, type ReferralRecordPage, type ReferralView } from './ReferralSchema';
@@ -106,7 +107,10 @@ async function readJson(path: `/api/v1/${string}`, query: Readonly<Record<string
     signal,
     headers: { accept: 'application/json', 'x-client-version': appConfig.clientVersion },
   });
-  if (!response.ok) throw new Error(`REFERRAL_PREVIEW_READ_FAILED_${response.status}`);
+  if (!response.ok) {
+    const requestId = response.headers.get('x-request-id')?.trim() || `referral-read:${response.status}`;
+    throw ApiError.from(response.status, await response.text(), requestId);
+  }
   return response.json();
 }
 

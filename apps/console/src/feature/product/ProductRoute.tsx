@@ -150,6 +150,23 @@ export function Component() {
     });
   const canPrevious = page === 2 || (page > 2 && cursorTrail.current.has(page - 1));
 
+  if (condition === 'unauthenticated' || condition === 'denied') {
+    return (
+      <section className="productpage">
+        <ResourceState
+          condition={condition}
+          resourceLabel="商品治理台"
+          {...(error === undefined ? {} : { error })}
+          retry={() => {
+            void query.refetch();
+          }}
+        >
+          <span />
+        </ResourceState>
+      </section>
+    );
+  }
+
   return (
     <section className="productpage" data-drawer={selectedListing === undefined ? 'closed' : 'open'}>
       <ProductCatalogHeader
@@ -172,6 +189,7 @@ export function Component() {
       </section>
       <ResourceState
         condition={condition}
+        resourceLabel="商品治理台"
         {...(error === undefined ? {} : { error })}
         retry={() => {
           void query.refetch();
