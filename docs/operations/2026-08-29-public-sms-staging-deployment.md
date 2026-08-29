@@ -8,7 +8,7 @@ Owner 明確批准：修改預發布部署配置、補上 JobsMain，將當前 `
 
 ## 結論
 
-本輪完成了乾淨 Release 基線、`identity-sms`／`full` 兩套顯式隔離配置及前端 staging Origin 邊界，但**沒有執行新的公網切換或資料 Migration**。`full` 已配置為由 `JobsMain.js` 進入 bundle 內最新 `FullJobsMain.ts`，同時保持 `deployable: false`；獨立 staging RDS、Redis、Secret Catalog、KMS、Object Store 及完整 Provider 配置缺一即失敗關閉。
+本輪完成了乾淨 Release 基線、`identity-sms`／`full` 兩套顯式隔離配置及前端 staging Origin 邊界，並把一份 **inactive 候選包**上傳到 ECS；**沒有建立 `current`、安裝服務、開放 listener、執行 Migration、切換公網流量或修改正式資料**。`full` 已配置為由 `JobsMain.js` 進入 bundle 內最新 `FullJobsMain.ts`，同時保持 `deployable: false`；獨立 staging RDS、Redis、Secret Catalog、KMS、Object Store 及完整 Provider 配置缺一即失敗關閉。
 
 不得將本輪標記為「完整 JobsMain＋RDS／Redis 預發布已部署」。
 
@@ -17,6 +17,16 @@ Owner 明確批准：修改預發布部署配置、補上 JobsMain，將當前 `
 - 乾淨基線：`origin/main` `13781f10e8f98e9d1ecf8d543c88398c1de5c108`。
 - 本機原工作樹 HEAD `01f1ed4` 落後遠端 15 個提交且含 303 個未提交項，未作部署輸入。
 - 本輪使用獨立分支 `codex/staging-sms-20260829`，沒有覆蓋或清理原工作樹。
+
+## Inactive 候選包
+
+- 候選提交：`048b6ca5875e2883d3066acd6c28fce381d61745`。
+- 遠端目錄：`/opt/zhudatuan-staging-full/releases/048b6ca5875e2883d3066acd6c28fce381d61745`。
+- 遠端封存：`/opt/zhudatuan-staging-full/releases/048b6ca5875e2883d3066acd6c28fce381d61745.tar.gz`。
+- SHA-256：`20c695cc387929823dd1bee8ae237033f033d08ea5901945e7991f016443dea4`；共 313 個 tar 條目，2,456,220 bytes。
+- 白名單含 Auth／Console build、指定 Commerce entrypoints、migrations 與 full staging 配置；已確認不含 `.env`、`node_modules`、`LocalObjectsMain.js`、正式 Owner bootstrap 或 `BootstrapRegistration.js`。
+- 遠端校驗後 `/opt/zhudatuan-staging-full/current` 仍不存在，staging unit 為 `not-found`，4431／55442／8643／8644 均無 listener。
+- 正式 `/opt/zhudatuan/current` 仍指向 `13781f10e8f98e9d1ecf8d543c88398c1de5c108-login-acl-20260829`，`zhudatuan-api.service` 仍為 active。
 
 ## 已完成準備
 
@@ -72,4 +82,4 @@ Owner 明確批准：修改預發布部署配置、補上 JobsMain，將當前 `
 
 ## 回退
 
-本輪未修改 ECS、Cloudflare、阿里雲資源、資料庫或正式流量，因此不需要雲端回退。刪除本地 staging 分支／worktree 即可撤回本輪準備；不得刪除現有 ECS Release 或資料卷。
+本輪只在 ECS 新增上述 inactive release 目錄與 tar 封存；未修改 Cloudflare、阿里雲資源、資料庫、服務配置或正式流量，因此不需要運行態回退。若 Owner 決定撤回，僅需另行確認後刪除這兩個精確候選路徑；不得刪除現有 ECS Release、`current` 或資料卷。本地分支／worktree 保留作審計與後續 provision 輸入。
