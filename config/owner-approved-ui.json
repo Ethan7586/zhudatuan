@@ -31,7 +31,7 @@
     ],
     "requiredValidation": ["caddy validate --adapter caddyfile", "multi-membership discovery returns 409 without Set-Cookie"],
     "lockedFiles": {
-      "infrastructure/zhudatuan/aliyun/Caddyfile": "5ab08591e5c1ecb9aad2eddfbb897f5bc20a291c5cd1d0d67cdafa7086e6bb67",
+      "infrastructure/zhudatuan/aliyun/Caddyfile": "9aa092c78dc8d416a33255cfbfe9b058bb852c602a5b78853b54062c939182e1",
       "infrastructure/zhudatuan/aliyun/delivery.yml": "07e39327c184a7206d26e0ebabcc1ac3e8bcab34c27fab78b31d0e6612ba8ba9",
       "infrastructure/zhudatuan/aliyun/ecosystem.config.cjs": "ab916885ef29faadd7ec0e15c34b6c9ecfb69c514e883addeffdeaccd7104141"
     }
@@ -127,11 +127,11 @@
         "apps/console/src/main.tsx": "9e59f3b4abf5f8b359b42cd3c6e9c09dcda7decdaf36b1e0f19c5b427d27eac9",
         "apps/console/index.html": "354111187c3d27e8d775d1f2263fedb8ac8709ad98a9a9e4ca5957e614139686",
         "apps/console/vite.config.ts": "d890d9ad2ed61972a1070a6194ac3976697ec01cf761d6faaf416c2a11ad7440",
-        "apps/console/src/route/ConsoleRouter.tsx": "8d90b7af76563d5a49ee527288b45ad2a27f2c61edcc720aa0ac8abf0f708f33",
-        "apps/console/src/shell/ScopeShell.tsx": "348fa812ec078767a160e21e874d9bcdd308d002dc80f82e255780db285fae27",
+        "apps/console/src/route/ConsoleRouter.tsx": "9305c63627884a1ba74230fcdac8e18384a1f05d1c59a26444c8867482b48800",
+        "apps/console/src/shell/ScopeShell.tsx": "fd2a8aed685fd06c246b43773984c6a1c5e4f88611d2e8432c7c8b2002aa6ab6",
         "apps/console/src/entity/session/ConsoleSession.ts": "3c01753c53f62aad962045c0f58136366123e41c1194c7f91c8eeb16ef34870f",
         "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
-        "apps/console/src/components/Sidebar.tsx": "5052da5087da512e5c4ecf14869f94bedb87c1e7cc100d523402c1ccb1d2fe96",
+        "apps/console/src/components/Sidebar.tsx": "310a7ead92009e0924ebb8646468db6d5db4479de9db456d5bfed2f9bec6ca7e",
         "apps/console/src/feature/cockpit/CockpitRoute.tsx": "9a0699f178f45ebd21c6130bb3d9dffd872a907cde2f01c75cea13770b6147e6",
         "apps/console/src/feature/application/CommerceSolutionCenter.tsx": "eafc31af52cc747470d448c4e2f7b45566d5396ba4ee2d2336d9dcfb05791f78",
         "apps/console/src/smart-wing-vi.css": "847cdcf3dbbedd6b7a7cf7f7bbe1a8cc1ae08682ab4963fd8989f9da26a8495e",
