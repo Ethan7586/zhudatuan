@@ -4,9 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
-import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
-import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
-import { FinanceAuthorityTab } from './FinanceAuthorityTabs';
 import { FinanceColumnSettings } from './FinanceColumnSettings';
 import { FinanceFilters } from './FinanceFilters';
 import { FinanceHeader, type FinanceHeaderAction } from './FinanceHeader';
@@ -77,29 +74,25 @@ export function Component() {
   const overviewPreview = previewContext && overviewQuery.data?.preview?.source === 'local-preview' ? overviewQuery.data.preview : undefined;
   const statusSummary = overviewPreview ?? (previewEnabled ? page?.preview : undefined);
   const selectedId = search.get('selected') ?? undefined;
-  const selectedRow = page?.items.find((row) => row.id === selectedId && row.items.some((item) => item.state === 'difference' || item.state === 'resolutionpending'));
-  const reconciliationCondition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
-    hasData: page !== undefined, empty: page?.items.length === 0, stale: query.isStale });
-  const overviewCondition = queryCondition({ pending: overviewQuery.isPending, fetching: overviewQuery.isFetching,
-    error: overviewQuery.error, hasData: overviewQuery.data !== undefined, empty: false, stale: overviewQuery.isStale });
-  const accessCondition = [reconciliationCondition, overviewCondition]
-    .find((condition) => condition === 'unauthenticated' || condition === 'denied');
-  const accessError = reconciliationCondition === accessCondition ? safeQueryError(query.error)
-    : overviewCondition === accessCondition ? safeQueryError(overviewQuery.error) : undefined;
-
-  useEffect(() => {
-    searchRef.current = new URLSearchParams(searchKey);
-  }, [searchKey]);
-
-  const updateSearch = useCallback(
-    (mutate: (next: URLSearchParams) => void, replace = false) => {
-      const next = new URLSearchParams(searchRef.current);
-      mutate(next);
-      searchRef.current = next;
-      setSearch(next, { replace });
-    },
-    [setSearch]
-  );
+  const selectedRow = page?.items.find((row) => row.id === selectedId);
+  const reconciliationCondition = queryCondition({
+    pending: query.isPending,
+    fetching: query.isFetching,
+    error: query.error,
+    hasData: page !== undefined,
+    empty: page?.items.length === 0,
+    stale: query.isStale,
+  });
+  const overviewCondition = queryCondition({
+    pending: overviewQuery.isPending,
+    fetching: overviewQuery.isFetching,
+    error: overviewQuery.error,
+    hasData: overviewQuery.data !== undefined,
+    empty: false,
+    stale: overviewQuery.isStale,
+  });
+  const accessCondition = [reconciliationCondition, overviewCondition].find((condition) => condition === 'unauthenticated' || condition === 'denied');
+  const accessError = reconciliationCondition === accessCondition ? safeQueryError(query.error) : overviewCondition === accessCondition ? safeQueryError(overviewQuery.error) : undefined;
 
   useEffect(() => {
     const scopeChanged = previousScope.current !== scopeKey;
@@ -176,10 +169,13 @@ export function Component() {
     });
 
   if (accessCondition !== undefined) {
-    return <section className="financeworkspace" aria-label="财务与对账系统">
-      <ResourceState condition={accessCondition} resourceLabel="财务与对账系统"
-        {...(accessError === undefined ? {} : { error: accessError })}><span /></ResourceState>
-    </section>;
+    return (
+      <section className="financeworkspace" aria-label="财务与对账系统">
+        <ResourceState condition={accessCondition} resourceLabel="财务与对账系统" {...(accessError === undefined ? {} : { error: accessError })}>
+          <span />
+        </ResourceState>
+      </section>
+    );
   }
 
   return (

@@ -88,7 +88,7 @@ export function ScopeShell() {
     search.set('period', period);
     navigateAfterCancel(`${location.pathname}?${search.toString()}${location.hash}`);
   };
-  const controlContext = activeModule?.id === 'control';
+  const controlContext = workstation?.key === 'control';
   const showScopePicker = () => {
     const picker = document.querySelector<HTMLSelectElement>('#consolescope');
     picker?.focus();

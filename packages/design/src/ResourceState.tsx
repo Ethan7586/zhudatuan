@@ -40,8 +40,8 @@ export function ResourceState({ condition, error, retry, resourceLabel, children
     );
   }
   const message = error ?? 'UNKNOWN_RESOURCE_ERROR';
-  if (condition === 'unauthenticated') return <ContextualAccessDenied kind="unauthenticated" {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
-  if (condition === 'denied') return <ContextualAccessDenied {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
+  if (condition === 'unauthenticated') return <ContextualAccessDenied kind="unauthenticated" {...(resourceLabel === undefined ? {} : { resourceLabel })} {...(error === undefined ? {} : { detail: error })} />;
+  if (condition === 'denied') return <ContextualAccessDenied {...(resourceLabel === undefined ? {} : { resourceLabel })} {...(error === undefined ? {} : { detail: error })} />;
   if (condition === 'notfound') return <ErrorView title="资源不存在" message={message} />;
   if (condition === 'conflict') return <ErrorView title="数据已被其他操作更新" message={message} {...(retry === undefined ? {} : { retry })} />;
   if (condition === 'ratelimited') return <ErrorView title="请求过于频繁" message={message} {...(retry === undefined ? {} : { retry })} />;

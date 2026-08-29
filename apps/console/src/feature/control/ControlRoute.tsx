@@ -23,8 +23,8 @@ export function Component() {
   const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: query.data !== undefined, empty: false, stale: query.isStale });
   return (
-    <section className="controlpage" aria-label="主打团中控台">
-      <ResourceState condition={condition} resourceLabel="主打团中控台" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+    <section className="controlpage" aria-label="智慧翼中控台">
+      <ResourceState condition={condition} resourceLabel="智慧翼中控台" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
         {query.data === undefined ? <span /> : <ControlContent data={query.data} refreshing={query.isFetching} onRefresh={() => { void query.refetch(); }} />}
       </ResourceState>
     </section>

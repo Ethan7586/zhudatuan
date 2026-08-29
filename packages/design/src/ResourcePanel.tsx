@@ -19,7 +19,7 @@ const sourceLabels: Record<ResourceCondition, string> = {
   refreshing: '正在刷新',
   stale: '数据已过期',
   unauthenticated: '登录失效',
-  denied: '没有权限',
+  denied: '访问受限',
   notfound: '资源不存在',
   conflict: '数据冲突',
   ratelimited: '请求受限',
@@ -44,7 +44,7 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
           {sourceLabels[condition]}
         </span>
       </header>
-      {actions === undefined || accessBlocked ? null : (
+      {actions === undefined ? null : (
         <div className="resourceactions" role="group" aria-label={`${title}操作`}>
           {actions}
         </div>
