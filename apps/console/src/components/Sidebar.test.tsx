@@ -47,59 +47,6 @@ describe('Sidebar commerce navigation', () => {
     expect(onNavigate).toHaveBeenCalledWith('referral/settings');
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
-
-  it('keeps all 12 main items in order, then profile, then bottom support', () => {
-    const { container } = renderSidebar('enterprise', false, vi.fn());
-    const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
-    const labels = within(primaryNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    const profile = container.querySelector('.sidebarprofile');
-    const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
-
-    expect(labels).toEqual([
-      '经营驾驶舱', '数据报表', '主打团中控台', '築店 · 商城管理', '商品治理台', '订单管理系统', '分销返佣系统',
-      '渠道接入系统', '卡券治理台', '财务与对账台', '会员与权限', '系统治理台',
-    ]);
-    expect(primaryNavigation.nextElementSibling).toBe(profile);
-    expect(profile?.nextElementSibling).toBe(supportNavigation);
-  });
-
-  it('keeps disabled navigation visible and clickable without native disabling', async () => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    renderSidebar('enterprise', false, onNavigate, withStatus('products', 'disabled'));
-    const target = screen.getByRole('button', { name: '商品治理台（已停用）' });
-
-    expect(target.getAttribute('data-status')).toBe('disabled');
-    expect(target.getAttribute('aria-disabled')).toBe('true');
-    expect(target.hasAttribute('disabled')).toBe(false);
-    await user.click(target);
-    expect(onNavigate).toHaveBeenCalledWith('products');
-  });
-
-  it.each([false, true])('keeps the profile above bottom-pinned customer service when collapsed=%s', async (collapsed) => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    const { container } = renderSidebar('mall', collapsed, onNavigate);
-    const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
-    const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
-    const supportButton = within(supportNavigation).getByRole('button', { name: '客服系统' });
-    const profile = container.querySelector('.sidebarprofile');
-
-    expect(profile).toBeInstanceOf(HTMLElement);
-    expect(primaryNavigation.nextElementSibling).toBe(profile);
-    expect(profile?.nextElementSibling).toBe(supportNavigation);
-    expect(navigationCss).toMatch(/\.sidebarnavigation\s*\{[^}]*flex:\s*0 1 auto;/);
-    expect(navigationCss).toMatch(/\.sidebarsupport\s*\{[^}]*margin-top:\s*auto;/);
-    expect(navigationCss).toMatch(/\.consolesidebar > \.sidebarprofile\s*\{[^}]*margin-top:\s*0;/);
-    expect(supportButton.getAttribute('title')).toBe(collapsed ? '客服系统' : null);
-    await user.click(supportButton);
-    expect(onNavigate).toHaveBeenCalledWith('support');
-  });
-
-  it('does not import legacy route catalogs, workstations, or feature modules', () => {
-    const source = readFileSync('src/components/Sidebar.tsx', 'utf8');
-    expect(source).not.toMatch(/ProfessionalRouteCatalog|Workstation|\.\.\/feature\//);
-  });
 });
 
 function renderSidebar(

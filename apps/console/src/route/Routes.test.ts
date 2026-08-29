@@ -19,7 +19,7 @@ describe('Console route manifest', () => {
 
   it('publishes every Batch 6 professional deep link without pretending blocked writes exist', () => {
     expect(professionalRoutes.map(({ featureKey }) => featureKey)).toEqual([
-      'applications', 'vouchers', 'reports', 'support', 'referralhome', 'referralsettings', 'referralproducts', 'referralreview',
+      'applications', 'vouchers', 'reports', 'support', 'referralsettings', 'referralproducts', 'referralreview',
       'referralbindings', 'referralwithdrawals', 'referralpromotion', 'channels', 'imports', 'entries', 'statements',
       'reconciliations', 'settlements', 'withdrawals', 'invoices', 'access', 'members', 'qualification',
       'notification', 'productdetail', 'orderdetail',
@@ -29,7 +29,7 @@ describe('Console route manifest', () => {
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/imports/voucher/job%3A1')?.operations)
       .toContain('voucher.imports.read');
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/referral/withdrawals')?.operation)
-      .toBe('referral.commissions.read');
+      .toBeNull();
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/products/product%3A1')?.blocker)
       .toContain('catalog.product.detail.read');
   });

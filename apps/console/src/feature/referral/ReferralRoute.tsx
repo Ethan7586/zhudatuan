@@ -145,6 +145,10 @@ export function Component() {
 
   return (
     <div className="referralworkspace" data-view={view}>
+      <section className="referralpreviewnotice" role="note">
+        <strong>阿里云只读演示</strong>
+        <span>当前页面使用隔离示例数据；不会写入真实订单、佣金、提现或会员资料。</span>
+      </section>
       <PagedResource
         title={meta.title}
         eyebrow="REFERRAL OPERATIONS"

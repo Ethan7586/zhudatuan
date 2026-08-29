@@ -1,14 +1,6 @@
-import { createFetchReferralBindingsRead, createFetchReferralCommissionsRead, createFetchReferralMembersRead, createFetchReferralProductsRead, createFetchReferralSettingsRead } from '@shop/sdk/referral';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { consoleRequest } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
 import { ReferralBindingPageSchema, ReferralCommissionPageSchema, ReferralMemberPageSchema, ReferralProductPageSchema, ReferralSettingSchema, type ReferralRecord, type ReferralRecordPage, type ReferralView } from './ReferralSchema';
-
-const settingsRead = createFetchReferralSettingsRead(appConfig.apiBaseUrl);
-const productsRead = createFetchReferralProductsRead(appConfig.apiBaseUrl);
-const membersRead = createFetchReferralMembersRead(appConfig.apiBaseUrl);
-const bindingsRead = createFetchReferralBindingsRead(appConfig.apiBaseUrl);
-const commissionsRead = createFetchReferralCommissionsRead(appConfig.apiBaseUrl);
 
 export const referralKey = (context: ConsoleContext, view: ReferralView, cursor?: string) =>
   Object.freeze(['console', context.scope.kind, context.scope.id, context.session.accessVersion, referralOperation(view), view, cursor ?? null, 50] as const);
@@ -22,10 +14,9 @@ export function referralOperation(view: ReferralView): string {
 }
 
 export async function readReferral(context: ConsoleContext, view: ReferralView, cursor: string | undefined, signal: AbortSignal): Promise<ReferralRecordPage> {
-  const request = consoleRequest(context.scope, signal, context.session.accessVersion);
   const pageQuery = { limit: 50, ...(cursor === undefined ? {} : { cursor }) };
   if (view === 'settings') {
-    const setting = ReferralSettingSchema.parse(await settingsRead({}, request));
+    const setting = ReferralSettingSchema.parse(await readJson('/api/v1/referral/settings', undefined, signal));
     return single({
       id: setting.id,
       primary: setting.enabled ? '分销返佣已开启' : '分销返佣已关闭',
@@ -41,7 +32,7 @@ export async function readReferral(context: ConsoleContext, view: ReferralView, 
     });
   }
   if (view === 'products') {
-    const page = ReferralProductPageSchema.parse(await productsRead({ query: pageQuery }, request));
+    const page = ReferralProductPageSchema.parse(await readJson('/api/v1/referral/products', pageQuery, signal));
     return mapPage(page, (row) => ({
       id: row.id,
       primary: row.title,
@@ -57,7 +48,7 @@ export async function readReferral(context: ConsoleContext, view: ReferralView, 
     }));
   }
   if (view === 'review') {
-    const page = ReferralMemberPageSchema.parse(await membersRead({ query: { ...pageQuery, state: 'pending' } }, request));
+    const page = ReferralMemberPageSchema.parse(await readJson('/api/v1/referral/members', { ...pageQuery, state: 'pending' }, signal));
     return mapPage({ ...page, items: page.items.filter((row) => row.state === 'pending') }, (row) => ({
       id: row.id,
       primary: row.display_name,
@@ -73,7 +64,7 @@ export async function readReferral(context: ConsoleContext, view: ReferralView, 
     }));
   }
   if (view === 'bindings') {
-    const page = ReferralBindingPageSchema.parse(await bindingsRead({ query: pageQuery }, request));
+    const page = ReferralBindingPageSchema.parse(await readJson('/api/v1/referral/bindings', pageQuery, signal));
     return mapPage(page, (row) => ({
       id: row.id,
       primary: row.customer_display_name,
@@ -89,7 +80,7 @@ export async function readReferral(context: ConsoleContext, view: ReferralView, 
     }));
   }
   const commissionQuery = { ...pageQuery, ...(view === 'withdrawals' ? { state: 'settled' } : {}) };
-  const page = ReferralCommissionPageSchema.parse(await commissionsRead({ query: commissionQuery }, request));
+  const page = ReferralCommissionPageSchema.parse(await readJson('/api/v1/referral/commissions', commissionQuery, signal));
   const source = view === 'withdrawals' ? page.items.filter((row) => row.state === 'settled') : page.items;
   return mapPage({ ...page, items: source }, (row) => ({
     id: row.id,
@@ -104,6 +95,19 @@ export async function readReferral(context: ConsoleContext, view: ReferralView, 
     occurredAt: row.settled_at ?? row.eligible_at ?? row.created_at,
     version: row.version,
   }));
+}
+
+async function readJson(path: `/api/v1/${string}`, query: Readonly<Record<string, string | number>> | undefined, signal: AbortSignal): Promise<unknown> {
+  const url = new URL(`${appConfig.apiBaseUrl}${path}`);
+  for (const [key, value] of Object.entries(query ?? {})) url.searchParams.set(key, String(value));
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    signal,
+    headers: { accept: 'application/json', 'x-client-version': appConfig.clientVersion },
+  });
+  if (!response.ok) throw new Error(`REFERRAL_PREVIEW_READ_FAILED_${response.status}`);
+  return response.json();
 }
 
 function mapPage<T>(page: Readonly<{ items: readonly T[]; count: number; nextCursor?: string | undefined }>, map: (item: T) => ReferralRecord): ReferralRecordPage {

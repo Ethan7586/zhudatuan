@@ -15,6 +15,21 @@ export interface SidebarProps {
 
 export function Sidebar({ active, collapsed, displayName, roleLabel, mainItems, bottomItems, onNavigate, onToggle }: SidebarProps) {
 
+const navigationTargets: readonly NavigationTarget[] = Object.freeze([
+  { key: 'cockpit', activeKey: 'cockpit', label: '经营驾驶舱', icon: 'trend', source: 'workstation' },
+  { key: 'control', activeKey: 'control', label: '智慧翼中控台', icon: 'control', source: 'workstation' },
+  { key: 'applications', activeKey: 'applications', label: '築店 · 商城与应用', icon: 'building', source: 'professional' },
+  { key: 'products', activeKey: 'products', label: '商品治理台', icon: 'products', source: 'workstation' },
+  { key: 'orders', activeKey: 'orders', label: '订单管理系统', icon: 'orders', source: 'workstation' },
+  { key: 'referralsettings', activeKey: 'referral', label: '分销返佣系统', icon: 'channel', source: 'professional' },
+  { key: 'channels', activeKey: 'channels', label: '渠道接入系统', icon: 'channel', source: 'professional' },
+  { key: 'vouchers', activeKey: 'vouchers', label: '卡券治理台', icon: 'voucher', source: 'professional' },
+  { key: 'finance', activeKey: 'finance', label: '财务与对账台', icon: 'finance', source: 'workstation' },
+  { key: 'access', activeKey: 'access', label: '会员与权限', icon: 'members', source: 'professional' },
+  { key: 'qualification', activeKey: 'qualification', label: '系统治理台', icon: 'system', source: 'professional' },
+]);
+
+export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, professionalRoutes, workstations, onNavigate, onToggle }: SidebarProps) {
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">

@@ -15,6 +15,10 @@ import { appConfig } from '../shared/config/AppConfig';
 import { scopePath } from '../shared/url/ScopePath';
 
 const scopeLabels = Object.freeze({ platform: '平台', distributor: '分销', tenant: '租户', enterprise: '集团', mall: '商城' });
+const financeProfessionalFeatures = new Set(['entries', 'statements', 'reconciliations', 'settlements', 'withdrawals', 'invoices']);
+const accessProfessionalFeatures = new Set(['access', 'members']);
+const governanceProfessionalFeatures = new Set(['qualification', 'notification']);
+const referralProfessionalFeatures = new Set(['referralsettings', 'referralproducts', 'referralreview', 'referralbindings', 'referralwithdrawals', 'referralpromotion']);
 
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
@@ -25,17 +29,20 @@ export function ScopeShell() {
   const queryClient = useQueryClient();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const handle = deepestConsoleRouteHandle(matches);
-  const activeModule = handle === undefined ? undefined : consoleModuleById.get(handle.moduleId);
-  const presentation = handle === undefined
-    ? undefined
-    : resolveConsoleRoutePresentation(handle.presentation, context.scope.kind);
-  const routeTitle = presentation?.title ?? '页面不存在';
-  const routeSummary = presentation?.summary ?? '该地址不属于 Console 路由清单';
-  const activeRoute = activeModule?.id;
-  const navigationItems = selectConsoleNavigationItems(consoleModules, context.scope.kind);
-  const mainNavigationItems = navigationItems.filter(({ placement }) => placement === 'main');
-  const bottomNavigationItems = navigationItems.filter(({ placement }) => placement === 'bottom');
+  const workstation = workstationFromPath(location.pathname);
+  const professional = professionalRouteFromPath(location.pathname);
+  const commercePresentation = professional?.featureKey === 'applications'
+    ? applicationScopePresentation(context.scope.kind)
+    : undefined;
+  const routeTitle = commercePresentation?.title ?? professional?.title ?? workstation?.title ?? '页面不存在';
+  const routeSummary = commercePresentation?.description ?? professional?.summary ?? workstation?.summary ?? '该地址不属于 Console 路由清单';
+  const activeRoute = professional?.featureKey === 'productdetail' ? 'products'
+    : professional?.featureKey === 'orderdetail' ? 'orders'
+      : professional !== undefined && financeProfessionalFeatures.has(professional.featureKey) ? 'finance'
+        : professional !== undefined && accessProfessionalFeatures.has(professional.featureKey) ? 'access'
+          : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
+            : professional !== undefined && referralProfessionalFeatures.has(professional.featureKey) ? 'referral'
+              : professional?.featureKey ?? workstation?.key;
   const logout = useMutation({
     mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
       accessVersion: context.session.accessVersion,
