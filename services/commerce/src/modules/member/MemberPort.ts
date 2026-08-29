@@ -80,10 +80,7 @@ export class MemberPort {
   }
 
   async ensureImported(database: OperationDatabase, input: MemberProfile): Promise<void> {
-    await database.query(`insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
-      values($1,$2,$3,$4,clock_timestamp(),clock_timestamp()) on conflict(id) do update set
-      display_name=excluded.display_name,updated_at=clock_timestamp(),version=member.profile.version+1`,
-    [input.member, input.principal, input.display, input.status]);
+    await database.query('select member.ensure_imported_profile($1,$2,$3)', [input.member, input.principal, input.display]);
   }
 
   async changeMobile(database: OperationDatabase, principal: string, ciphertext: string, fingerprint: string, masked: string): Promise<Readonly<Record<string, unknown>>> {

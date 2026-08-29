@@ -9,13 +9,13 @@ objects:
   - id: access.resolve_membership
     kind: function
     owner: access
-    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resolve_scope
     kind: function
     owner: access
-    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resource_scope
@@ -203,7 +203,7 @@ objects:
   - id: identity.resolve_session
     kind: function
     owner: identity
-    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: notification.resource_scope
@@ -292,7 +292,7 @@ objects:
   - id: shopapp:function:access.resolve_membership(text):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     role: shopapp
     objectType: function
     target: access.resolve_membership(text)
@@ -300,7 +300,7 @@ objects:
   - id: shopapp:function:access.resolve_scope(text,text,text):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     role: shopapp
     objectType: function
     target: access.resolve_scope(text,text,text)
@@ -508,7 +508,7 @@ objects:
   - id: shopapp:function:identity.resolve_session(text):execute
     kind: grant
     owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     role: shopapp
     objectType: function
     target: identity.resolve_session(text)
@@ -18669,6 +18669,10 @@ objects:
     kind: schema
     owner: checkout
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
+  - id: deployment
+    kind: schema
+    owner: deployment
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: experience
     kind: schema
     owner: experience
@@ -21172,3 +21176,357 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql
+  - id: access.cancel_owner_transfer
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.change_zhudatuan_owner_mobile
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.commit_owner_transfer
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.create_owner_transfer
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.enforce_platform_owner_operator_coverage
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.enforce_platform_owner_singleton
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.expire_owner_transfers
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.protect_zhudatuan_owner
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.protect_zhudatuan_registration_access_write
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.protect_platform_owner_lifecycle
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.zhudatuan_invitation_owner
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.zhudatuan_owner_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: identity.rotate_zhudatuan_owner_password
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: identity
+  - id: deployment.bootstrap_zhudatuan_owner
+    kind: function
+    owner: deployment
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: deployment
+  - id: deployment.bootstrap_zhudatuan_owner_legacy_v1
+    kind: function
+    owner: deployment
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: deployment
+  - id: deployment.sandbox_catalog_bootstrap_boundary
+    kind: function
+    owner: deployment
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: deployment
+  - id: deployment.sandbox_member_qualification_bootstrap
+    kind: function
+    owner: deployment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: deployment
+  - id: deployment.sandbox_member_welfare_bootstrap
+    kind: function
+    owner: deployment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: deployment
+  - id: deployment.zhudatuan_owner_bootstrap_state
+    kind: function
+    owner: deployment
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: deployment
+  - id: shopapp:function:access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text)
+    privilege: execute
+  - id: shopapp:function:access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint)
+    privilege: execute
+  - id: shopapp:function:access.create_owner_transfer(text,text,text,text,bigint,bigint):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.create_owner_transfer(text,text,text,text,bigint,bigint)
+    privilege: execute
+  - id: shopapp:function:access.expire_owner_transfers():execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.expire_owner_transfers()
+    privilege: execute
+  - id: shopapp:function:access.zhudatuan_owner_context():execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.zhudatuan_owner_context()
+    privilege: execute
+  - id: shopapp:function:identity.rotate_zhudatuan_owner_password(text,text,text,text,text):execute
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: identity.rotate_zhudatuan_owner_password(text,text,text,text,text)
+    privilege: execute
+  - id: access.owneractionproof.owneractionproof_shopapp
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: access.ownertransfer.ownertransfer_shopapp
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: access.platformowner.platformowner_identityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: access.platformowner.platformowner_shopapp
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: member.invite.zhudatuanidentityapiinsert
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: access.owneractionproof
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    rls: true
+  - id: access.ownertransfer
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    rls: true
+  - id: access.platformowner
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    rls: true
+  - id: access.membership.platform_owner_singleton_membership
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membership.protect_zhudatuan_owner_membership
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membership.protect_zhudatuan_registration_membership_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershipoverride.platform_owner_singleton_override
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershipoverride.protect_zhudatuan_owner_membershipoverride
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: identity.principal.platform_owner_singleton_principal
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: identity.principal.protect_zhudatuan_owner_principal
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: identity.credential.protect_zhudatuan_owner_credential
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: member.profile.platform_owner_singleton_profile
+    kind: trigger
+    owner: member
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: member.profile.protect_zhudatuan_owner_profile
+    kind: trigger
+    owner: member
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershiprole.platform_owner_singleton_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershiprole.protect_zhudatuan_owner_membershiprole
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershiprole.protect_zhudatuan_registration_membershiprole_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.permission.platform_owner_operator_coverage_permission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.platformowner.platform_owner_singleton_owner
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.platformowner.platform_owner_lifecycle
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.role.platform_owner_operator_coverage_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.role.protect_zhudatuan_owner_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.role.platform_owner_singleton_role_definition
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.rolepermission.platform_owner_operator_coverage_rolepermission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.rolepermission.protect_zhudatuan_owner_rolepermission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.scopegrant.platform_owner_singleton_scope
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_zhudatuan_owner_scopegrant
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_zhudatuan_registration_scopegrant_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: capability.capability.platform_owner_operator_coverage_capability
+    kind: trigger
+    owner: capability
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: capability
+  - id: capability.entitlement.platform_owner_operator_coverage_entitlement
+    kind: trigger
+    owner: capability
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: capability
+  - id: capability.operation.platform_owner_operator_coverage_operation
+    kind: trigger
+    owner: capability
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+  - id: shopapp:table:access.owneractionproof:insert
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: table
+    target: access.owneractionproof
+    privilege: insert
+  - id: shopapp:table:access.ownertransfer:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: table
+    target: access.ownertransfer
+    privilege: select
+  - id: shopapp:table:access.platformowner:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: table
+    target: access.platformowner
+    privilege: select
+  - id: identity.challenge.session_hash
+    kind: column
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: identity
+  - id: identity.challenge.identity_challenge_secure_session_bound
+    kind: constraint
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: identity

@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, randomInt, randomUUID } from 'node:crypto';
+import { createHash, createHmac, randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { OperationId } from '@shop/contract';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
@@ -8,6 +8,7 @@ import type { OperationRequest, OperationUsecase } from '../../foundation/applic
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { RISK_GATE } from '../../foundation/security/RiskGate';
+import { StepupPolicy } from '../../foundation/security/StepupPolicy';
 import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { PasswordPolicy } from './domain/policy/PasswordPolicy';
 import { bindWechat, publishIdentityEvent, tokenHash } from './IdentityPersistence';
@@ -37,6 +38,7 @@ export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.password.change',
   'identity.password.verify',
   'identity.password.reset',
+  'identity.mobile.challenge',
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
@@ -69,8 +71,10 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
   const kms = context.container.get(KMS_CLIENT);
   const risk = context.container.get(RISK_GATE);
   const passwords = new PasswordPolicy();
+  const stepup = new StepupPolicy();
   const tickets = new PgAuthTicket(new ReturnTargetSigner(context.container.get(RETURN_TARGETS), keys.session));
   const digest = (value: string) => createHmac('sha256', keys.identity).update(value.trim().toLowerCase()).digest('hex');
+  const sessionDigest = (value: string) => createHash('sha256').update(value).digest('hex');
   const codeDigest = (challenge: string, code: string) => createHmac('sha256', keys.session).update(`${challenge}:${code}`).digest('hex');
   const actions: OperationActions = {
       'identity.sessions.create': operationLifecycle({
@@ -267,7 +271,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           const requestedDestination = textField(body, 'destination').trim();
           const purpose = textField(body, 'purpose');
           if (registrationOnly && purpose !== 'registration') reject(400, 'CHALLENGE_PURPOSE_INVALID');
-          if (!['registration', 'password_reset', 'phone_change', 'stepup', 'wechat_bind'].includes(purpose)) throw new Error('CHALLENGE_PURPOSE_INVALID');
+          if (!['registration', 'password_reset', 'wechat_bind'].includes(purpose)) throw new Error('CHALLENGE_PURPOSE_INVALID');
           const destination = purpose === 'registration' ? canonicalMobile(requestedDestination)
             : purpose === 'password_reset' ? canonicalIdentitySubject(requestedDestination) : requestedDestination;
           const destinationHash = digest(destination);
@@ -289,7 +293,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
             [peer, `network:${purpose}`],
             [device, `device:${purpose}`],
           ]);
-          let principal = typeof body.principal === 'string' ? body.principal : null;
+          let principal: string | null = null;
           if (purpose === 'password_reset') {
             const credential = await database.query<{ principal_id: string }>(
               `select principal_id from identity.credential
@@ -573,9 +577,20 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           return { access, currentPassword, hash };
         },
         execute: async (_request, database, { access, currentPassword, hash }) => {
+          await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
           const credential = await database.query<{ id: string; secret_hash: string }>(`select id,secret_hash from identity.credential where principal_id=$1 and provider='password' and status='active' for update`, [access.actor.id]);
           const found = credential.rows[0];
           if (!found || !(await passwords.verify(currentPassword, found.secret_hash))) throw new Error('CREDENTIAL_INVALID');
+          const evidenceHash = sessionDigest(access.actor.session);
+          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+            values($1,$2,'password',2,$3,clock_timestamp(),clock_timestamp()+interval '10 minutes')`,
+          [`assurance:${randomUUID()}`, access.actor.id, evidenceHash]);
+          const ownerRotation = await database.query<{ result: Readonly<Record<string, unknown>> | null }>(
+            `select identity.rotate_zhudatuan_owner_password($1,$2,null::text,$3,'credential_changed') result`,
+            [access.actor.id, access.actor.session, hash]
+          );
+          const ownerResult = ownerRotation.rows[0]?.result;
+          if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0) };
           await database.query('update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where id=$1', [found.id, hash]);
           const result = await database.query('update identity.principal set credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1 returning credential_version,version', [access.actor.id]);
           await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='credential_changed' where principal_id=$1 and id<>$2 and revoked_at is null", [access.actor.id, access.actor.session]);
@@ -595,7 +610,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         await database.query(
           `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
         values($1,$2,'password',2,$3,$4::timestamptz,$4::timestamptz+interval '10 minutes')`,
-          [`assurance:${randomUUID()}`, access.actor.id, digest(access.actor.session), verifiedAt]
+          [`assurance:${randomUUID()}`, access.actor.id, sessionDigest(access.actor.session), verifiedAt]
         );
         await database.query(
           `update identity.session set assurance_level=greatest(assurance_level,2),last_seen_at=clock_timestamp()
@@ -617,10 +632,59 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
             { purpose: 'password_reset' });
           const principal = consumed.principal_id;
           if (!principal) reject(400, 'CHALLENGE_PRINCIPAL_MISSING');
+          const ownerRotation = await database.query<{ result: Readonly<Record<string, unknown>> | null }>(
+            `select identity.rotate_zhudatuan_owner_password($1,null::text,$2,$3,'credential_reset') result`,
+            [principal, challenge, hash]
+          );
+          const ownerResult = ownerRotation.rows[0]?.result;
+          if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0) };
           await database.query("update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where principal_id=$1 and provider='password' and status='active'", [principal, hash]);
           const result = await database.query('update identity.principal set credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1 returning credential_version,version', [principal]);
           await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='credential_reset' where principal_id=$1 and revoked_at is null", [principal]);
           return rowResult(result);
+        },
+      }),
+      'identity.mobile.challenge': operationLifecycle({
+        prepare: async (request) => {
+          const access = requireAccess(request);
+          const body = bodyRecord(request);
+          const id = `challenge:${randomUUID()}`;
+          const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+          const mobile = canonicalMobile(textField(body, 'destination', 32));
+          const destinationHash = digest(mobile);
+          const device = digest(request.input.headers['x-device-id'] ?? 'unknown');
+          const peer = digest(request.input.headers['x-peer-address'] ?? 'unknown');
+          await assertPublicRisk(risk, request, destinationHash, device);
+          const [envelope, recipient] = await Promise.all([
+            kms.encrypt('identity/challenge', code, { challenge: id, purpose: 'phone_change' }),
+            kms.encrypt('identity/destination', mobile, { challenge: id, purpose: 'phone_change' }),
+          ]);
+          return { access, id, code, destinationHash, device, peer, envelope, recipient };
+        },
+        execute: async (request, database, prepared) => {
+          const { access, id, code, destinationHash, device, peer, envelope, recipient } = prepared;
+          await consumeChallengeRate(database, [
+            [destinationHash, 'phone_change'],
+            [peer, 'network:phone_change'],
+            [device, 'device:phone_change'],
+          ]);
+          const result = await database.query(
+            `with challenge as (
+          insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at)
+          values($1,$2,'phone_change',$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
+        ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
+          values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
+            [id, access.actor.id, destinationHash, codeDigest(id, code), sessionDigest(access.actor.session),
+              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+          );
+          await database.query(
+            `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+          values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+            [`job:notify:${id}`, access.scope.id, id]
+          );
+          await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!,
+            { challenge: id, destination: destinationHash, purpose: 'phone_change' });
+          return rowResult(result, 202);
         },
       }),
       'identity.mobile.manage': operationLifecycle({
@@ -632,8 +696,41 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           return { access, body, mobile, envelope };
         },
         execute: async (_request, database, { access, body, mobile, envelope }) => {
+          await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
+          const profile = await database.query<{ mobile_ciphertext: string | null }>(
+            `select mobile_ciphertext from member.profile where principal_id=$1 and status='active' for update`,
+            [access.actor.id]
+          );
+          const current = profile.rows[0];
+          if (!current) reject(404, 'RESOURCE_NOT_FOUND');
+          if (current.mobile_ciphertext === null) {
+            const passwordEvidence = await database.query(
+              `select 1 from identity.assurance where principal_id=$1 and method='password' and level=2
+              and evidence_hash=$2 and verified_at>=clock_timestamp()-interval '10 minutes'
+              and expires_at>clock_timestamp() limit 1`,
+              [access.actor.id, sessionDigest(access.actor.session)]
+            );
+            if (!passwordEvidence.rows[0]) reject(403, 'MOBILE_ENROLLMENT_PASSWORD_REQUIRED');
+          } else if (!stepup.accepts(true, access.assurance, new Date())) {
+            reject(403, 'MOBILE_CHANGE_STEP_UP_REQUIRED');
+          }
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, access.actor.id,
-            { purpose: 'phone_change', destinationHash: digest(mobile) });
+            { purpose: 'phone_change', destinationHash: digest(mobile), sessionHash: sessionDigest(access.actor.session) });
+          const owner = await database.query<{ exact_owner: boolean }>(
+            `select access.zhudatuan_owner_context() exact_owner`
+          );
+          if (owner.rows[0]?.exact_owner === true) {
+            const changed = await database.query<{ profile: Readonly<Record<string, unknown>> }>(
+              `select access.change_zhudatuan_owner_mobile($1,$2,$3,$4,$5,$6,$7,$8,$9) profile`,
+              [access.actor.id, access.actor.session, textField(body, 'challenge'), envelope.ciphertext,
+                digest(mobile), envelope.fingerprint, maskMobile(mobile), sessionDigest(access.actor.session),
+                sessionDigest(access.actor.session)]
+            );
+            const result = changed.rows[0]?.profile;
+            if (!result) throw new Error('MEMBER_PROFILE_NOT_FOUND');
+            return { status: 200, body: result, headers: { ...sessionCookies('', '', 0),
+              etag: `\"${String(result.version)}\"` } };
+          }
           const credential = await database.query<{ id: string }>(`select id from identity.credential where principal_id=$1 and provider='password' and status='active' for update`, [access.actor.id]);
           if (!credential.rows[0]) throw new Error('CREDENTIAL_NOT_FOUND');
           await database.query(`update identity.credential set subject_hash=$2,rotated_at=clock_timestamp() where id=$1`, [credential.rows[0].id, digest(mobile)]);
@@ -644,8 +741,8 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
             values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
           [`assurance:${randomUUID()}`, access.actor.id, digest(mobile)]);
           await database.query(`update identity.principal set credential_version=credential_version+1,version=version+1,updated_at=clock_timestamp() where id=$1`, [access.actor.id]);
-          await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='mobile_changed' where principal_id=$1 and id<>$2 and revoked_at is null", [access.actor.id, access.actor.session]);
-          return { status: 200, body: result, headers: { etag: `\"${String(result.version)}\"` } };
+          await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='mobile_changed' where principal_id=$1 and revoked_at is null", [access.actor.id]);
+          return { status: 200, body: result, headers: { ...sessionCookies('', '', 0), etag: `\"${String(result.version)}\"` } };
         },
       }),
       'identity.stepup.start': operationLifecycle({
@@ -653,22 +750,18 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           const access = requireAccess(request);
           const id = `challenge:${randomUUID()}`;
           const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-          const requested = bodyRecord(request).destination;
-          const destination = typeof requested === 'string' && requested.trim().length > 0 ? requested.trim() : null;
-          return { access, id, code, destination };
+          if (Object.hasOwn(bodyRecord(request), 'destination')) reject(400, 'STEP_UP_DESTINATION_FORBIDDEN');
+          return { access, id, code };
         },
-        execute: async (request, database, { access, id, code, destination: requestedDestination }) => {
-          let destination = requestedDestination;
-          if (destination === null) {
-            const profile = await database.query<{ mobile_ciphertext: string | null }>(
-              `select mobile_ciphertext from member.profile
+        execute: async (request, database, { access, id, code }) => {
+          const profile = await database.query<{ mobile_ciphertext: string | null }>(
+            `select mobile_ciphertext from member.profile
             where principal_id=$1 and status='active'`,
-              [access.actor.id]
-            );
-            const ciphertext = profile.rows[0]?.mobile_ciphertext;
-            if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
-            destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
-          }
+            [access.actor.id]
+          );
+          const ciphertext = profile.rows[0]?.mobile_ciphertext;
+          if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
+          const destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
           const [envelope, recipient] = await Promise.all([kms.encrypt('identity/challenge', code, { challenge: id, purpose: 'stepup' }), kms.encrypt('identity/destination', destination, { challenge: id, purpose: 'stepup' })]);
           await consumeChallengeRate(database, [
             [digest(`${access.actor.id}:${destination}`), 'stepup'],
@@ -676,11 +769,12 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
             [digest(request.input.headers['x-device-id'] ?? 'unknown'), 'device:stepup'],
           ]);
           const result = await database.query(
-            `with challenge as (insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,attempts,expires_at,created_at)
-        values($1,$2,'stepup',$3,$4,0,clock_timestamp()+interval '5 minutes',clock_timestamp()) returning id,purpose,expires_at),
+            `with challenge as (insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at)
+        values($1,$2,'stepup',$3,$4,$5,0,clock_timestamp()+interval '5 minutes',clock_timestamp()) returning id,purpose,expires_at),
         secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
-          values($1,$5,$6,$7,$8,clock_timestamp())) select * from challenge`,
-            [id, access.actor.id, digest(destination), codeDigest(id, code), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+          values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
+            [id, access.actor.id, digest(destination), codeDigest(id, code), sessionDigest(access.actor.session),
+              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
@@ -695,12 +789,19 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         const access = requireAccess(request);
         const body = bodyRecord(request);
         const challenge = textField(body, 'challenge');
-        await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, access.actor.id, { purpose: 'stepup' });
+        const profile = await database.query<{ mobile_ciphertext: string | null }>(
+          `select mobile_ciphertext from member.profile where principal_id=$1 and status='active'`, [access.actor.id]
+        );
+        const ciphertext = profile.rows[0]?.mobile_ciphertext;
+        if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
+        const destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
+        await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, access.actor.id,
+          { purpose: 'stepup', destinationHash: digest(destination), sessionHash: sessionDigest(access.actor.session) });
         const assurance = `assurance:${randomUUID()}`;
         await database.query(
           `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
         values($1,$2,'otp',3,$3,clock_timestamp(),clock_timestamp()+interval '15 minutes')`,
-          [assurance, access.actor.id, digest(challenge)]
+          [assurance, access.actor.id, sessionDigest(access.actor.session)]
         );
         const result = await database.query(
           `update identity.session set assurance_level=3,last_seen_at=clock_timestamp()

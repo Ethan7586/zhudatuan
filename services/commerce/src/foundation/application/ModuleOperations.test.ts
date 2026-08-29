@@ -70,6 +70,23 @@ describe('ModuleOperations lifecycle', () => {
     expect(facts[0]?.trace).toMatch(/^audit:[0-9a-f-]{36}$/);
   });
 
+  it('never records the destination of an authenticated mobile challenge', async () => {
+    let fact: Readonly<{ before?: unknown; evidence?: unknown }> | undefined;
+    const audit: AuditSink = { record: async (_database, input) => { fact = input; }, access: async () => undefined };
+    const request = { type:'identity.mobile.challenge', access:null, input:{ path:{}, query:{}, headers:{},
+      body:{ destination:'+8613800138000' }, rawBody:'', deadline:Date.now()+1_000,
+      signal:new AbortController().signal, idempotency:'private-mobile-challenge' } } satisfies OperationRequest;
+
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
+      'identity', { status:202, body:{ id:'challenge:one' } }, 'principal:one', 'self:principal:one', 'raw-mobile-hash');
+
+    expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
+    const serialized = JSON.stringify(fact);
+    for (const secret of ['+8613800138000', 'private-mobile-challenge', 'raw-mobile-hash']) {
+      expect(serialized).not.toContain(secret);
+    }
+  });
+
   it('removes ticket exchange credentials and signed return proofs from audit facts', async () => {
     let fact: Readonly<{ before: unknown; after: unknown; evidence: unknown; trace: string }> | undefined;
     const audit: AuditSink = { record: async (_database, input) => { fact = input; }, access: async () => undefined };

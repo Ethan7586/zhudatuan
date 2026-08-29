@@ -44,4 +44,40 @@ describe('authorization policy', () => {
     const expired: MembershipAccess = { ...membership, grants: [{ scope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: '2026-08-20T23:59:59.000Z' }] };
     expect(decide(expired, 'order.read', scope, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'PERMISSION_MISSING' });
   });
+
+  it('fails closed for missing tenant context and anchors platform grants to the canonical hierarchy', () => {
+    const now = new Date('2026-08-21T00:00:00.000Z');
+    const resource: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [
+      { kind: 'platform', id: 'organization-platform-root' }, { kind: 'tenant', id: 'tenant-a' },
+    ] };
+    const accessFor = (grantScope: Scope): MembershipAccess => ({ ...membership, grants: [{
+      scope: grantScope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null,
+    }] });
+
+    expect(decide(accessFor({ kind: 'mall', id: 'mall-a', path: [] }), 'order.read', resource,
+      { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
+    expect(decide(accessFor({ kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [] }), 'order.read',
+      { kind: resource.kind, id: resource.id, path: resource.path }, { expectedAccessVersion: 3, now }))
+      .toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
+    expect(decide(accessFor({ kind: 'platform', id: 'unrelated-platform', path: [] }), 'order.read', resource,
+      { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
+    expect(decide(accessFor({ kind: 'platform', id: 'organization-platform-root', path: [] }), 'order.read', resource,
+      { expectedAccessVersion: 3, now }).allowed).toBe(true);
+  });
+
+  it('authorizes ownership commands only through the caller self grant and fresh Step-Up', () => {
+    const now = new Date('2026-08-21T00:00:00.000Z');
+    const ownerSelf: Scope = { kind: 'self', id: 'principal:owner', path: [] };
+    const access: MembershipAccess = { ...membership, grants: [{ scope: ownerSelf,
+      permissions: ['access.ownership.read', 'access.ownership.transfer', 'access.ownership.accept'],
+      effective: '2026-01-01T00:00:00.000Z', expires: null }] };
+
+    expect(decide(access, 'access.ownership.read', ownerSelf, { expectedAccessVersion: 3, now }).allowed).toBe(true);
+    expect(decide(access, 'access.ownership.transfer', ownerSelf, { expectedAccessVersion: 3, now }))
+      .toMatchObject({ allowed: false, reason: 'STEPUP_REQUIRED' });
+    expect(decide(access, 'access.ownership.transfer', ownerSelf, { expectedAccessVersion: 3, now,
+      stepupAt: new Date('2026-08-20T23:59:00.000Z') }).allowed).toBe(true);
+    expect(decide(access, 'access.ownership.accept', { kind: 'self', id: 'principal:other', path: [] },
+      { expectedAccessVersion: 3, now, stepupAt: now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
+  });
 });

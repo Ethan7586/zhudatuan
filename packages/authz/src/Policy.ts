@@ -57,11 +57,12 @@ function isEffective(grant: ScopeGrant, now: Date): boolean {
 }
 
 function contains(grant: Scope, resource: Scope): boolean {
-  if (grant.kind === 'platform') return true;
   if (grant.kind === 'self') return resource.kind === 'self' && grant.id === resource.id;
   if (grant.kind === 'owner') return resource.kind === 'owner' && grant.id === resource.id;
-  if (grant.tenant !== undefined && resource.tenant !== grant.tenant) return false;
-  return grant.id === resource.id || resource.path.some((ancestor) => ancestor.kind === grant.kind && ancestor.id === grant.id);
+  if (grant.kind !== 'platform'
+    && (grant.tenant === undefined || resource.tenant === undefined || resource.tenant !== grant.tenant)) return false;
+  return (grant.kind === resource.kind && grant.id === resource.id)
+    || resource.path.some((ancestor) => ancestor.kind === grant.kind && ancestor.id === grant.id);
 }
 
 function freshStepup(context: Pick<DecisionContext, 'now' | 'stepupAt' | 'stepupSeconds'>): boolean {

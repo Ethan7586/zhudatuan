@@ -1,4 +1,4 @@
-const SENSITIVE_KEY = /(authorization|cookie|token|secret|password|credential|cardcode|address|mobile|phone|email|privatekey|apikey|csrf|nonce|challenge|callback|invite)/i;
+const SENSITIVE_KEY = /(authorization|cookie|token|secret|password|credential|proof|cardcode|address|mobile|phone|email|privatekey|apikey|csrf|nonce|challenge|callback|invite)/i;
 const BEARER = /Bearer\s+[A-Za-z0-9._~+/-]+=*/gi;
 const MOBILE = /(?:\+?86)?1[3-9]\d{9}/g;
 const EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;

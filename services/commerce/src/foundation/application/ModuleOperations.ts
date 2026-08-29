@@ -36,6 +36,7 @@ const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, reado
   'identity.password.change': Object.freeze([]),
   'identity.password.verify': Object.freeze([]),
   'identity.password.reset': Object.freeze([]),
+  'identity.mobile.challenge': Object.freeze([]),
   'identity.mobile.manage': Object.freeze([]),
   'identity.stepup.start': Object.freeze([]),
   'identity.stepup.complete': Object.freeze([]),
@@ -44,6 +45,9 @@ const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, reado
 });
 
 const IDENTITY_AUDIT_OUTPUT_FIELDS: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
+  'access.ownership.transfers.preview': Object.freeze(['proof']),
+  'access.ownership.transfers.accept.preview': Object.freeze(['proof']),
+  'access.ownership.transfers.cancel.preview': Object.freeze(['proof']),
   'identity.invitations.create': Object.freeze(['code']),
   'identity.tickets.exchange': Object.freeze(['proof']),
 });
@@ -246,7 +250,10 @@ function digest(value: string): string { return createHash('sha256').update(valu
 
 function idempotencyReplayResponse(request: OperationRequest, result: OperationResult): OperationResult {
   if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange'
-    || request.type === 'identity.invitations.create') {
+    || request.type === 'identity.invitations.create'
+    || request.type === 'access.ownership.transfers.preview'
+    || request.type === 'access.ownership.transfers.accept.preview'
+    || request.type === 'access.ownership.transfers.cancel.preview') {
     return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME' } };
   }
   return result;

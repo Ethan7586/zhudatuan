@@ -41,6 +41,23 @@ describe('registration access membership', () => {
     const operatorRole = query.mock.calls.find(([sql], index) => index > 2 && sql.includes('insert into access.membershiprole'));
     expect(operatorRole?.[1]).toEqual(['membership:operator', 'role-zhudatuan-pending-operator']);
   });
+
+  it('derives caller and candidate mobile readiness and executable enrollment capabilities from authority', async () => {
+    const query = vi.fn<(text: string, values?: readonly unknown[]) => Promise<QueryResult>>(async (text: string) =>
+      result(text.includes('from access.platformowner owner') ? [{ state: 'active', version: 1, mobileReady: false,
+        owner: null, candidates: [], formerOwnerRoles: [], pending: null }] : []));
+    const port = new AccessPort();
+
+    await port.ownership({ query } as unknown as OperationDatabase, 'membership:candidate');
+
+    const ownership = query.mock.calls.find(([sql]) => sql.includes('from access.platformowner owner'))?.[0] ?? '';
+    expect(ownership).toContain('caller_profile.mobile_ciphertext is not null');
+    expect(ownership).toContain("'mobileReady',profile.mobile_ciphertext is not null");
+    expect(ownership).toContain("('identity.mobile.challenge')");
+    expect(ownership).toContain('capability.membership_operations(candidate.id)');
+    expect(query.mock.calls[0]?.[0]).toContain('zhudatuan:platform-owner-transfer:v1');
+    expect(query.mock.calls[1]?.[0]).toContain('access.expire_owner_transfers()');
+  });
 });
 
 function result(rows: readonly Record<string, unknown>[]): QueryResult {

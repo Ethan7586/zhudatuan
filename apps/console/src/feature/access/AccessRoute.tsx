@@ -7,6 +7,9 @@ import { PagedResource } from '../../shared/ui/PagedResource';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { accessKey, readAccess } from './AccessQuery';
 import type { AccessMembership } from './AccessSchema';
+import { OwnerTransferPanel } from './OwnerTransferPanel';
+import './owner-transfer.css';
+import './owner-transfer-dialog.css';
 
 const columns: readonly DataColumn<AccessMembership>[] = [
   { key: 'membership', label: '成员关系', render: (row) => row.id },
@@ -23,9 +26,11 @@ export function Component() {
   const data = query.data; const error = safeQueryError(query.error);
   const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
-  return <PagedResource title="权限中心" eyebrow="SMART WING ACCESS" description="成员角色、显式拒绝、Scope Grant 和 Access Version 来自 access.center.read。"
-    condition={state} {...(error === undefined ? {} : { error })} rows={data?.items ?? []} columns={columns} rowKey={(row) => row.id}
-    count={data?.count ?? 0} {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
-    boundary={{ title: '授权变更保持关闭', message: '角色与 Scope 变更缺 Preview、Step-up、expectedVersion 和重读回执时不执行。' }}
-    retry={() => { void query.refetch(); }} next={(next) => setSearch(pageCursor(search, next))} />;
+  return <div className="accessstack"><OwnerTransferPanel context={context} />
+    <PagedResource title="权限中心" eyebrow="SMART WING ACCESS" description="成员角色、显式拒绝、Scope Grant 和 Access Version 来自 access.center.read。"
+      condition={state} {...(error === undefined ? {} : { error })} rows={data?.items ?? []} columns={columns} rowKey={(row) => row.id}
+      count={data?.count ?? 0} {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
+      boundary={{ title: '其他授权变更保持关闭', message: '通用角色与 Scope 变更缺完整 Preview、Step-up、expectedVersion 和重读回执时不执行。Owner 转让使用上方独立安全流程。' }}
+      retry={() => { void query.refetch(); }} next={(next) => setSearch(pageCursor(search, next))} />
+  </div>;
 }

@@ -250,6 +250,18 @@ operations:
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
+  - id: identity.mobile.challenge
+    owner: identity
+    method: POST
+    path: /api/v1/identity/mobile/challenges
+    audience: member
+    permission: identity.mobile.manage
+    idempotent: false
+    schema: structural
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.mobile.manage
     owner: identity
     method: PUT
@@ -358,6 +370,104 @@ operations:
     path: /api/v1/access/memberships/{membershipid}/scopes
     audience: operator
     permission: access.scope.manage
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.read
+    owner: access
+    method: GET
+    path: /api/v1/access/ownership
+    audience: operator
+    permission: access.ownership.read
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.preview
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/preview
+    audience: operator
+    permission: access.ownership.transfer
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.create
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers
+    audience: operator
+    permission: access.ownership.transfer
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.accept.preview
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/accept/preview
+    audience: operator
+    permission: access.ownership.accept
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.accept
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/accept
+    audience: operator
+    permission: access.ownership.accept
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.cancel
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/cancel
+    audience: operator
+    permission: access.ownership.transfer
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.cancel.preview
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/cancel/preview
+    audience: operator
+    permission: access.ownership.transfer
     idempotent: true
     schema: structural
     requirements:
