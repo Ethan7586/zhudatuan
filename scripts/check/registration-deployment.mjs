@@ -136,6 +136,11 @@ for (const token of [
   "function.provolatile='s'",
   "session_user\\s*=\\s*'zhudatuanbootstrap'",
   "cross join lateral aclexplode",
+  "encode(pg_catalog.sha256(pg_catalog.convert_to(p_sentinel,'UTF8')),'hex')",
+  "set search_path=pg_catalog,deployment as $function$",
+  "has_schema_privilege('zhudatuanregistrationboundary','public','USAGE')",
+  "has_schema_privilege('zhudatuanregistrationboundary','public','CREATE')",
+  'ZHUDATUAN_REGISTRATION_BOUNDARY_PUBLIC_FUNCTION_ACL_INVALID',
   "grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration;",
   "grant execute on function deployment.is_independent_registration_database() to shopmigration;",
   'create or replace function deployment.runtime_database_boundary()',
@@ -148,6 +153,30 @@ for (const token of [
 ]) {
   if (!reconciliationSource.includes(token)) {
     throw new Error(`REGISTRATION_BOUNDARY_RECONCILIATION_GUARD_MISSING:${token}`);
+  }
+}
+const initBootstrapBoundary = postgresInitSource.match(
+  /create or replace function deployment\.registration_bootstrap_boundary\(p_sentinel text\)[\s\S]*?\$function\$;/,
+)?.[0]??'';
+const reconciledBootstrapBoundary = reconciliationSource.match(
+  /set local role zhudatuanregistrationboundary;\s*(create or replace function deployment\.registration_bootstrap_boundary\(p_sentinel text\)[\s\S]*?\$function\$;)/,
+)?.[1]??'';
+for (const [label,source] of [
+  ['init',initBootstrapBoundary],
+  ['reconciliation',reconciledBootstrapBoundary],
+]) {
+  if (!source.includes("set search_path=pg_catalog,deployment as $function$")
+    || !source.includes("encode(pg_catalog.sha256(pg_catalog.convert_to(p_sentinel,'UTF8')),'hex')")
+    || /\bpublic\s*\./i.test(source)) {
+    throw new Error(`REGISTRATION_BOOTSTRAP_PUBLIC_SCHEMA_DEPENDENCY:${label}`);
+  }
+}
+for (const forbidden of [
+  'grant usage on schema public to %I',
+  'grant execute on function public.digest(text,text) to %I',
+]) {
+  if (reconciliationSource.includes(forbidden)) {
+    throw new Error(`REGISTRATION_BOUNDARY_PUBLIC_PRIVILEGE_GRANT_FORBIDDEN:${forbidden}`);
   }
 }
 for (const token of [
@@ -167,6 +196,12 @@ for (const token of [
   'ZHUDATUAN_REGISTRATION_BOUNDARY_RECONCILE_AUTHORITY_INVALID',
   'set session authorization rds_boundary_admin',
   'RDS-like registration boundary idempotent reconciliation',
+  'REGISTRATION_BOUNDARY_FIRST_PASS_CANONICAL_INVALID',
+  'REGISTRATION_BOUNDARY_LEGACY_UPGRADE_FIXTURE_INVALID',
+  'boundary_public_usage:false',
+  'boundary_digest_execute:false',
+  "['public-digest','select public.digest",
+  'legacy-upgrade=1',
   'owner_memberships:0',
 ]) {
   if (!databaseAuditSource.includes(token)) {

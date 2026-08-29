@@ -125,7 +125,8 @@ begin
       or (select count(*) from deployment.boundary)<>1
       or not exists(select 1 from deployment.boundary
         where id='zhudatuan-registration-v1' and database_name=current_database()
-          and sentinel_hash=encode(public.digest(current_setting('zhudatuan.init.sentinel'),'sha256'),'hex'))
+          and sentinel_hash=encode(pg_catalog.sha256(
+            pg_catalog.convert_to(current_setting('zhudatuan.init.sentinel'),'UTF8')),'hex'))
       or to_regprocedure('deployment.registration_bootstrap_boundary(text)') is null
       or to_regprocedure('deployment.is_independent_registration_database()') is null
       or (select pg_get_userbyid(proowner) from pg_proc
@@ -212,17 +213,18 @@ revoke all on deployment.boundary from public,shopapp,shopjob,shopread,
   zhudatuanidentityapi,zhudatuanidentityjob,zhudatuanbootstrap,zhudatuanwebapi,
   zhudatuanpurchaseapi,zhudatuansandboxbootstrap;
 insert into deployment.boundary(id,database_name,sentinel_hash)
-values('zhudatuan-registration-v1',current_database(),encode(public.digest(:'database_sentinel','sha256'),'hex'))
+values('zhudatuan-registration-v1',current_database(),
+  encode(pg_catalog.sha256(pg_catalog.convert_to(:'database_sentinel','UTF8')),'hex'))
 on conflict(id) do nothing;
 
 create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
 returns boolean language sql stable security definer
-set search_path=pg_catalog,deployment,public as $function$
+set search_path=pg_catalog,deployment as $function$
   select current_database()='zhudatuan_registration'
     and session_user='zhudatuanbootstrap'
     and exists(select 1 from deployment.boundary
       where id='zhudatuan-registration-v1' and database_name=current_database()
-        and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+        and sentinel_hash=encode(pg_catalog.sha256(pg_catalog.convert_to(p_sentinel,'UTF8')),'hex'))
 $function$;
 create or replace function deployment.is_independent_registration_database()
 returns boolean language sql stable security definer
@@ -266,7 +268,8 @@ begin
     or (select count(*) from deployment.boundary)<>1
     or not exists(select 1 from deployment.boundary
       where id='zhudatuan-registration-v1' and database_name=current_database()
-        and sentinel_hash=encode(public.digest(current_setting('zhudatuan.init.sentinel'),'sha256'),'hex')) then
+        and sentinel_hash=encode(pg_catalog.sha256(
+          pg_catalog.convert_to(current_setting('zhudatuan.init.sentinel'),'UTF8')),'hex')) then
     raise exception 'ZHUDATUAN_RDS_INIT_FINAL_DATABASE_BOUNDARY_INVALID';
   end if;
   if exists(select 1 from pg_roles where rolname=any(project_roles)

@@ -43,9 +43,7 @@ begin
       and function.prosecdef
       and function.provolatile='s'
       and function.prorettype='boolean'::regtype
-      and coalesce(array_length(function.proconfig,1),0)=1
-      and exists(select 1 from unnest(function.proconfig) setting
-        where regexp_replace(setting,'\s','','g')='search_path=pg_catalog,deployment,public')) then
+      and coalesce(array_length(function.proconfig,1),0)=1) then
     raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_BOUNDARY_CONTRACT_INVALID';
   end if;
   select function.proowner,lower(pg_get_functiondef(function.oid))
@@ -54,7 +52,19 @@ begin
   if bootstrap_definition !~ $pattern$session_user\s*=\s*'zhudatuanbootstrap'$pattern$
     or bootstrap_definition !~ $pattern$current_database\(\)\s*=\s*'zhudatuan_registration'$pattern$
     or bootstrap_definition !~ $pattern$id\s*=\s*'zhudatuan-registration-v1'$pattern$
-    or bootstrap_definition !~ $pattern$sentinel_hash\s*=\s*encode\s*\(\s*public\.digest$pattern$ then
+    or not (
+      (
+        bootstrap_definition ~ $pattern$sentinel_hash\s*=\s*encode\s*\(\s*public\.digest$pattern$
+        and exists(select 1 from pg_proc function where function.oid=bootstrap_boundary
+          and exists(select 1 from unnest(function.proconfig) setting
+            where regexp_replace(setting,'\s','','g')='search_path=pg_catalog,deployment,public'))
+      ) or (
+        bootstrap_definition ~ $pattern$sentinel_hash\s*=\s*encode\s*\(\s*pg_catalog\.sha256\s*\(\s*pg_catalog\.convert_to\s*\(\s*p_sentinel$pattern$
+        and exists(select 1 from pg_proc function where function.oid=bootstrap_boundary
+          and exists(select 1 from unnest(function.proconfig) setting
+            where regexp_replace(setting,'\s','','g')='search_path=pg_catalog,deployment'))
+      )
+    ) then
     raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_BOUNDARY_DEFINITION_DRIFT';
   end if;
 
@@ -192,6 +202,15 @@ create policy zhudatuanregistrationboundary_runtime_guard on runtime.schemaversi
 
 grant usage on schema deployment to shopjob,zhudatuanidentityapi,zhudatuanidentityjob;
 set local role zhudatuanregistrationboundary;
+create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
+returns boolean language sql stable security definer
+set search_path=pg_catalog,deployment as $function$
+  select current_database()='zhudatuan_registration'
+    and session_user='zhudatuanbootstrap'
+    and exists(select 1 from deployment.boundary
+      where id='zhudatuan-registration-v1' and database_name=current_database()
+        and sentinel_hash=encode(pg_catalog.sha256(pg_catalog.convert_to(p_sentinel,'UTF8')),'hex'))
+$function$;
 create or replace function deployment.runtime_database_boundary()
 returns table(
   active_platform_owner_count integer,
@@ -295,6 +314,7 @@ declare
   bootstrap_boundary oid := to_regprocedure('deployment.registration_bootstrap_boundary(text)');
   migration_boundary oid := to_regprocedure('deployment.is_independent_registration_database()');
   runtime_boundary oid := to_regprocedure('deployment.runtime_database_boundary()');
+  unexpected_public_functions text;
 begin
   if boundary_owner is null or not exists(select 1 from pg_roles where oid=boundary_owner
     and not rolcanlogin and not rolsuper and not rolcreatedb and not rolcreaterole
@@ -307,7 +327,7 @@ begin
       and function.prorettype='boolean'::regtype
       and coalesce(array_length(function.proconfig,1),0)=1
       and exists(select 1 from unnest(function.proconfig) setting
-        where regexp_replace(setting,'\s','','g')='search_path=pg_catalog,deployment,public'))
+        where regexp_replace(setting,'\s','','g')='search_path=pg_catalog,deployment'))
     or not exists(select 1 from pg_proc function where function.oid=migration_boundary
       and function.proowner=boundary_owner and function.prosecdef and function.provolatile='s'
       and function.prorettype='boolean'::regtype
@@ -325,6 +345,8 @@ begin
   end if;
   if not has_schema_privilege('zhudatuanregistrationboundary','deployment','USAGE')
     or has_schema_privilege('zhudatuanregistrationboundary','deployment','CREATE')
+    or has_schema_privilege('zhudatuanregistrationboundary','public','USAGE')
+    or has_schema_privilege('zhudatuanregistrationboundary','public','CREATE')
     or not has_schema_privilege('zhudatuanregistrationboundary','access','USAGE')
     or not has_schema_privilege('zhudatuanregistrationboundary','runtime','USAGE')
     or not has_table_privilege('zhudatuanregistrationboundary','access.role','SELECT')
@@ -335,6 +357,14 @@ begin
     or not has_column_privilege('zhudatuanregistrationboundary','deployment.boundary','database_name','SELECT')
     or not has_column_privilege('zhudatuanregistrationboundary','deployment.boundary','sentinel_hash','SELECT') then
     raise exception 'ZHUDATUAN_REGISTRATION_BOUNDARY_OWNER_PRIVILEGE_INVALID';
+  end if;
+  select string_agg(function.oid::regprocedure::text,',' order by function.oid::regprocedure::text)
+  into unexpected_public_functions
+  from pg_proc function
+    join pg_namespace namespace on namespace.oid=function.pronamespace and namespace.nspname='public'
+    where has_function_privilege(boundary_owner,function.oid,'EXECUTE');
+  if unexpected_public_functions is not null then
+    raise exception 'ZHUDATUAN_REGISTRATION_BOUNDARY_PUBLIC_FUNCTION_ACL_INVALID:%',unexpected_public_functions;
   end if;
   if not has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE')
     or not has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE')

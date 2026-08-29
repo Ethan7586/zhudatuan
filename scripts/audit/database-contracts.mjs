@@ -121,7 +121,7 @@ if (mode === '--registration-boundary-postgres') {
   } finally {
     await database.close();
   }
-  console.log('registration boundary PostgreSQL replay passed: rds-like-deny=1 rds-like-allow=2');
+  console.log('registration boundary PostgreSQL replay passed: rds-like-deny=1 rds-like-allow=2 legacy-upgrade=1');
   process.exit(0);
 }
 
@@ -323,6 +323,10 @@ async function verifyRegistrationBoundaryOnPostgres(database) {
     create role service_role nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
     create role zhudatuanregistrationboundary nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
     grant pg_rds_superuser to rds_boundary_admin;
+    grant usage on schema public to rds_boundary_admin;
+    grant execute on function public.digest(text,text) to rds_boundary_admin;
+    revoke all on schema public from public,anon,authenticated,service_role;
+    revoke execute on all functions in schema public from public,anon,authenticated,service_role;
     alter database zhudatuan_registration owner to shopmigration;
     create schema deployment authorization rds_boundary_admin;
     create schema access authorization rds_boundary_admin;
@@ -435,6 +439,45 @@ async function verifyRegistrationBoundaryOnPostgres(database) {
     if (boundaryMemberships!==0) {
       throw new Error(`REGISTRATION_BOUNDARY_POSTGRES_MEMBERSHIP_LEAK:${JSON.stringify({label,boundaryMemberships})}`);
     }
+    if (label==='RDS-like registration boundary reconciliation') {
+      const canonicalBoundaryState = (await database.query(`select
+        (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+          where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+        position('pg_catalog.sha256' in pg_get_functiondef('deployment.registration_bootstrap_boundary(text)'::regprocedure))>0 catalog_body,
+        position('public.digest' in pg_get_functiondef('deployment.registration_bootstrap_boundary(text)'::regprocedure))=0 public_digest_absent,
+        exists(select 1 from pg_proc function
+          cross join lateral unnest(function.proconfig) setting
+          where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure
+            and regexp_replace(setting,'\\s','','g')='search_path=pg_catalog,deployment') canonical_search_path`)).rows[0];
+      if (JSON.stringify(canonicalBoundaryState)!==JSON.stringify({
+        bootstrap_owner:'zhudatuanregistrationboundary',catalog_body:true,
+        public_digest_absent:true,canonical_search_path:true,
+      })) throw new Error(`REGISTRATION_BOUNDARY_FIRST_PASS_CANONICAL_INVALID:${JSON.stringify(canonicalBoundaryState)}`);
+      // Reproduce the exact upgrade state that exposed the staging failure:
+      // the inert role already owns the legacy definer, while revoked PUBLIC
+      // ACLs make public.digest unusable to that owner.  The idempotent pass
+      // must still rewrite the body without granting any public privilege.
+      await execute(database, `
+        create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
+        returns boolean language sql stable security definer set search_path=pg_catalog,deployment,public as $function$
+          select current_database()='zhudatuan_registration'
+            and session_user='zhudatuanbootstrap'
+            and exists(select 1 from deployment.boundary
+              where id='zhudatuan-registration-v1' and database_name=current_database()
+                and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+        $function$;
+      `,'RDS-like legacy boundary-owned bootstrap fixture');
+      const legacyBoundaryState = (await database.query(`select
+        (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+          where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+        has_schema_privilege('zhudatuanregistrationboundary','public','USAGE') boundary_public_usage,
+        has_function_privilege('zhudatuanregistrationboundary','public.digest(text,text)','EXECUTE') boundary_digest_execute,
+        position('public.digest' in pg_get_functiondef('deployment.registration_bootstrap_boundary(text)'::regprocedure))>0 legacy_body`)).rows[0];
+      if (JSON.stringify(legacyBoundaryState)!==JSON.stringify({
+        bootstrap_owner:'zhudatuanregistrationboundary',boundary_public_usage:false,
+        boundary_digest_execute:false,legacy_body:true,
+      })) throw new Error(`REGISTRATION_BOUNDARY_LEGACY_UPGRADE_FIXTURE_INVALID:${JSON.stringify(legacyBoundaryState)}`);
+    }
   }
   const finalState = (await database.query(`select
     (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
@@ -453,14 +496,38 @@ async function verifyRegistrationBoundaryOnPostgres(database) {
     (select count(*)::integer from pg_auth_members membership join pg_roles owner
       on owner.oid in(membership.roleid,membership.member)
       where owner.rolname='zhudatuanregistrationboundary') owner_memberships,
+    has_schema_privilege('zhudatuanregistrationboundary','public','USAGE') boundary_public_usage,
+    (select count(*)::integer from pg_proc function
+      join pg_namespace namespace on namespace.oid=function.pronamespace and namespace.nspname='public'
+      where has_function_privilege('zhudatuanregistrationboundary',function.oid,'EXECUTE')) boundary_public_execute_count,
     (select not rolcanlogin and not rolsuper and not rolcreatedb and not rolcreaterole and not rolinherit
       and not rolreplication and not rolbypassrls from pg_roles
       where rolname='zhudatuanregistrationboundary') owner_restricted`)).rows[0];
   if (JSON.stringify(finalState)!==JSON.stringify({
     bootstrap_owner:'zhudatuanregistrationboundary',migration_owner:'zhudatuanregistrationboundary',
     runtime_owner:'zhudatuanregistrationboundary',definer_allowed:true,runtime_execute_count:3,
-    denied_execute_count:0,owner_memberships:0,owner_restricted:true,
+    denied_execute_count:0,owner_memberships:0,boundary_public_usage:false,boundary_public_execute_count:0,
+    owner_restricted:true,
   })) throw new Error(`REGISTRATION_BOUNDARY_POSTGRES_FINAL_STATE_INVALID:${JSON.stringify(finalState)}`);
+
+  await database.exec('set session authorization registration_boundary_outsider');
+  try {
+    for (const [label,sql] of [
+      ['bootstrap','select deployment.registration_bootstrap_boundary(\'rds-like-replay-sentinel\')'],
+      ['public-digest','select public.digest(\'rds-like-replay-sentinel\',\'sha256\')'],
+    ]) {
+      let denied = false;
+      try {
+        await database.query(sql);
+      } catch (error) {
+        if (!String(error instanceof Error?error.message:error).includes('permission denied')) throw error;
+        denied = true;
+      }
+      if (!denied) throw new Error(`REGISTRATION_BOUNDARY_OUTSIDER_UNEXPECTEDLY_ALLOWED:${label}`);
+    }
+  } finally {
+    await database.exec('reset session authorization');
+  }
 
   const healthyBoundary = {
     active_platform_owner_count:1,migration_head_valid:true,retired_roles_valid:true,runtime_roles_valid:true,
