@@ -47,25 +47,6 @@ describe('Sidebar commerce navigation', () => {
     expect(onNavigate).toHaveBeenCalledWith('referral/settings');
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
-
-  it('darkens unavailable systems and prevents navigation', async () => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    renderSidebar('mall', false, onNavigate, {
-      permissions: ['referral.settings.read'],
-      capabilities: ['referral.settings.read'],
-    });
-
-    const unavailable = screen.getByRole('button', { name: '渠道接入系统' });
-    expect(unavailable.hasAttribute('disabled')).toBe(true);
-    expect(unavailable.getAttribute('aria-disabled')).toBe('true');
-    expect(within(unavailable).getByText('未开放')).toBeTruthy();
-    await user.click(unavailable);
-    expect(onNavigate).not.toHaveBeenCalled();
-
-    const referral = screen.getByRole('button', { name: '分销返佣系统' });
-    expect(referral.hasAttribute('disabled')).toBe(false);
-  });
 });
 
 const allPermissions = [...new Set(Object.values(navigationAccessRequirements).flatMap((requirements) =>

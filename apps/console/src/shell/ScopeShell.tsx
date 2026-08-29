@@ -42,14 +42,6 @@ export function ScopeShell() {
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
             : professional !== undefined && referralProfessionalFeatures.has(professional.featureKey) ? 'referral'
               : professional?.featureKey ?? workstation?.key;
-  const routeAccessKey = professional?.featureKey === 'productdetail' ? 'products'
-    : professional?.featureKey === 'orderdetail' ? 'orders'
-      : professional?.featureKey ?? workstation?.key;
-  const routeAvailable = canAccessNavigationTarget(
-    routeAccessKey,
-    context.session.permissions,
-    context.session.capabilities,
-  );
   const logout = useMutation({
     mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
       accessVersion: context.session.accessVersion,

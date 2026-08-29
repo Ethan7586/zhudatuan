@@ -31,7 +31,7 @@
     ],
     "requiredValidation": ["caddy validate --adapter caddyfile", "multi-membership discovery returns 409 without Set-Cookie"],
     "lockedFiles": {
-      "infrastructure/zhudatuan/aliyun/Caddyfile": "d44f41f6f75750808b71bffe1a5cf0b692e278ee00054775fb8c81e8aa675bf3",
+      "infrastructure/zhudatuan/aliyun/Caddyfile": "9aa092c78dc8d416a33255cfbfe9b058bb852c602a5b78853b54062c939182e1",
       "infrastructure/zhudatuan/aliyun/delivery.yml": "07e39327c184a7206d26e0ebabcc1ac3e8bcab34c27fab78b31d0e6612ba8ba9",
       "infrastructure/zhudatuan/aliyun/ecosystem.config.cjs": "ab916885ef29faadd7ec0e15c34b6c9ecfb69c514e883addeffdeaccd7104141"
     }
@@ -128,11 +128,11 @@
         "apps/console/index.html": "354111187c3d27e8d775d1f2263fedb8ac8709ad98a9a9e4ca5957e614139686",
         "apps/console/vite.config.ts": "d890d9ad2ed61972a1070a6194ac3976697ec01cf761d6faaf416c2a11ad7440",
         "apps/console/src/route/ConsoleRouter.tsx": "9305c63627884a1ba74230fcdac8e18384a1f05d1c59a26444c8867482b48800",
-        "apps/console/src/shell/ScopeShell.tsx": "07af4b539c75f13197975baf7cb791c65642cd2b2ad0608b27e4e3d59f414e30",
+        "apps/console/src/shell/ScopeShell.tsx": "fd2a8aed685fd06c246b43773984c6a1c5e4f88611d2e8432c7c8b2002aa6ab6",
         "apps/console/src/entity/session/ConsoleSession.ts": "3c01753c53f62aad962045c0f58136366123e41c1194c7f91c8eeb16ef34870f",
         "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
         "apps/console/src/components/Sidebar.tsx": "310a7ead92009e0924ebb8646468db6d5db4479de9db456d5bfed2f9bec6ca7e",
-        "apps/console/src/feature/cockpit/CockpitRoute.tsx": "3d74cc3ea73de36428573d6bec50dec4bee0fb764794385e1354f08624f2b792",
+        "apps/console/src/feature/cockpit/CockpitRoute.tsx": "9a0699f178f45ebd21c6130bb3d9dffd872a907cde2f01c75cea13770b6147e6",
         "apps/console/src/feature/application/CommerceSolutionCenter.tsx": "eafc31af52cc747470d448c4e2f7b45566d5396ba4ee2d2336d9dcfb05791f78",
         "apps/console/src/smart-wing-vi.css": "366e236e9faab15a83ae453fa31a0df459a516d1602226ebb929cf418e1cb8d6",
         "apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084",

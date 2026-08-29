@@ -16,6 +16,8 @@ const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefine
 
 const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
 
+const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
+
 export const consoleRouter = createBrowserRouter([
   {
     path: '/',
