@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, type ReactNode } from 'react';
 import { Button } from './Button';
 
 export type AccessDeniedKind = 'forbidden' | 'unauthenticated';
@@ -32,7 +32,7 @@ export function ContextualAccessDenied(props: AccessDeniedProps) {
   return <AccessDenied {...props} {...(props.actions === undefined && actions !== undefined ? { actions } : {})} />;
 }
 
-export function AccessDenied({ kind = 'forbidden', resourceLabel, actions }: AccessDeniedProps) {
+export function AccessDenied({ kind = 'forbidden', resourceLabel, detail, actions }: AccessDeniedProps) {
   const containerRef = useRef<HTMLElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -79,6 +79,10 @@ export function AccessDenied({ kind = 'forbidden', resourceLabel, actions }: Acc
     : `当前登录状态已过期，无法继续查看「${resourceLabel}」。`;
   const hasActions = actions?.onReturnToWorkspace !== undefined || actions?.onRelogin !== undefined;
 
+  useEffect(() => {
+    containerRef.current?.focus();
+  }, []);
+
   return (
     <section
       ref={containerRef}
@@ -89,7 +93,7 @@ export function AccessDenied({ kind = 'forbidden', resourceLabel, actions }: Acc
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <span className="swaccessdeniedlabel">{unauthenticated ? '身份验证' : '权限保护'}</span>
+      <span className="swaccessdeniedlabel">访问受限</span>
       <div className="swaccessdeniedvisual" aria-hidden="true">
         <svg viewBox="0 0 96 96" focusable="false">
           <path className="swaccessdeniedshield" d="M48 12 76 23v22c0 19-11 33-28 41C31 78 20 64 20 45V23L48 12Z" />
