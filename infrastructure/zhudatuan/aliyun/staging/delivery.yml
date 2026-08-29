@@ -1,74 +1,220 @@
-version: 1
+version: 2
 owner: zhudatuan
 environment: staging
 sourceOfTruth: config/owner-approved-ui.json
-scope: identity-registration-and-sms-only
-isolation:
-  releaseBase: /opt/zhudatuan-staging/releases
-  releaseRoot: /opt/zhudatuan-staging/current
-  sharedRoot: /opt/zhudatuan-staging/shared
-  logRoot: /var/log/zhudatuan-staging
-  productionTrafficPercent: 0
-  productionDataAccess: forbidden
-runtime:
-  processConfig: infrastructure/zhudatuan/aliyun/staging/ecosystem.config.cjs
-  proxyConfig: infrastructure/zhudatuan/aliyun/staging/Caddyfile
-  identityApiEnvironmentFile: /opt/zhudatuan-staging/shared/identity-registration-api.env
-  identityJobsEnvironmentFile: /opt/zhudatuan-staging/shared/identity-notification-jobs.env
-  identityApiPort: 4421
+deploymentState: blocked-awaiting-external-prerequisites
+productionTrafficPercent: 0
+productionDataAccess: forbidden
+artifactInventory: infrastructure/zhudatuan/aliyun/staging/artifacts.yml
+
+profiles:
+  identity-sms:
+    selection: optional
+    scope: identity-registration-owner-invitation-and-sms-only
+    processConfig: infrastructure/zhudatuan/aliyun/staging/ecosystem.identity-sms.config.cjs
+    proxyConfig: infrastructure/zhudatuan/aliyun/staging/Caddyfile.identity-sms
+    isolation:
+      releaseRoot: /opt/zhudatuan-staging/current
+      sharedRoot: /opt/zhudatuan-staging/shared
+      logRoot: /var/log/zhudatuan-staging
+    runtime:
+      identityApi:
+        artifact: services/commerce/dist/IdentityRegistrationApiMain.js
+        readinessArtifact: services/commerce/dist/IdentityRegistrationApiReadyMain.js
+        environment: /opt/zhudatuan-staging/shared/identity-registration-api.env
+        process: zhudatuan-staging-identity-api
+        profile: registration-only
+        port: 4421
+      jobs:
+        artifact: services/commerce/dist/IdentityNotificationJobsOnlyMain.js
+        readinessArtifact: services/commerce/dist/IdentityNotificationJobsReadyMain.js
+        environment: /opt/zhudatuan-staging/shared/identity-notification-jobs.env
+        process: zhudatuan-staging-identity-notification-jobs
+        profile: identity-notification-only
+    dependencies:
+      redis: unused
+      fullJobsSecrets: forbidden
+
+  full:
+    selection: owner-approved-target
+    scope: identity-registration-owner-invitation-and-full-jobs
+    deployable: false
+    processConfig: infrastructure/zhudatuan/aliyun/staging/ecosystem.full.config.cjs
+    proxyConfig: infrastructure/zhudatuan/aliyun/staging/Caddyfile.full
+    isolation:
+      releaseRoot: /opt/zhudatuan-staging-full/current
+      sharedRoot: /opt/zhudatuan-staging-full/shared
+      logRoot: /var/log/zhudatuan-staging-full
+    runtime:
+      internalRuntime:
+        artifact: services/commerce/dist/InternalRuntimeMain.js
+        readinessArtifact: services/commerce/dist/InternalRuntimeReadyMain.js
+        childArtifacts:
+          - services/commerce/dist/LocalSecretsMain.js
+          - services/commerce/dist/LocalKmsMain.js
+        service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-internal-runtime.service
+        environment: /opt/zhudatuan-staging-full/shared/full-internal-runtime.env
+        profile: registration-only
+        capability: secret-store-and-kms-only
+        secretStorePort: 8643
+        kmsPort: 8644
+      identityApi:
+        artifact: services/commerce/dist/IdentityRegistrationApiMain.js
+        readinessArtifact: services/commerce/dist/IdentityRegistrationApiReadyMain.js
+        environment: /opt/zhudatuan-staging-full/shared/full-identity-registration-api.env
+        process: zhudatuan-staging-full-identity-api
+        profile: registration-only
+        port: 4431
+      jobs:
+        artifact: services/commerce/dist/JobsMain.js
+        implementationSource: services/commerce/src/entry/FullJobsMain.ts
+        environment: /opt/zhudatuan-staging-full/shared/full-jobs.env
+        process: zhudatuan-staging-full-jobs
+        profile: full
+        readiness: process-startup-and-runtime-compatibility-only
+    dependencies:
+      database:
+        kind: isolated-staging-rds-postgresql
+        databaseName: zhudatuan_registration
+        requiredRoles: [zhudatuanidentityapi, shopjob, shopmigration, zhudatuanbootstrap]
+        apiConnectionRef: zhudatuan/staging/full/database/identity-api
+        jobsConnectionRef: zhudatuan/staging/full/database/jobs
+        migrationConnectionRef: zhudatuan/staging/full/database/migration
+        productionEndpointReuse: forbidden
+      redis:
+        kind: isolated-staging-redis
+        connectionRef: zhudatuan/staging/full/redis/jobs
+        dedicatedInstanceOrVpcBoundary: required
+        productionEndpointReuse: forbidden
+      secretStore:
+        implementation: dedicated-internal-runtime
+        endpoint: https://127.0.0.1:8643
+        namespace: zhudatuan/staging/full
+        bearerMode: one-shared-full-staging-runtime-token
+        consumers: [identityApi, fullJobs, migration, stagingOwnerBootstrap]
+        catalogFile: /opt/zhudatuan-staging-full/shared/full-secrets.json
+        catalogKeys:
+          - zhudatuan/staging/full/database/identity-api
+          - zhudatuan/staging/full/database/jobs
+          - zhudatuan/staging/full/database/migration
+          - zhudatuan/staging/full/redis/jobs
+          - zhudatuan/staging/full/identity/session
+          - zhudatuan/staging/full/identity/index
+          - zhudatuan/staging/full/extensions/manifest
+          - zhudatuan/staging/full/wechat/applications
+          - zhudatuan/staging/full/payment/wechat
+          - zhudatuan/staging/full/invoice/provider
+          - zhudatuan/staging/full/payout/provider
+          - zhudatuan/staging/full/notification/providers
+          - zhudatuan/staging/full/objects/jobs
+          - zhudatuan/staging/full/migration/distributor
+          - zhudatuan/staging/full/migration/identity
+          - zhudatuan/staging/full/migration/partner
+          - zhudatuan/staging/full/migration/voucher
+          - zhudatuan/staging/full/registration/owner/password
+          - zhudatuan/staging/full/registration/owner/bootstrap-receipt
+        catalogEvidence: required-before-start
+      kms:
+        implementation: dedicated-internal-runtime
+        endpoint: https://127.0.0.1:8644
+        bearerMode: one-shared-full-staging-runtime-token
+        consumers: [identityApi, fullJobs, migration]
+        secretStoreAndKmsTokensMustDiffer: true
+        masterKeyEvidence: required-before-start
+        keyEvidence: required-before-start
+      aliyunSms:
+        configurationRef: zhudatuan/staging/full/notification/providers
+        credentialMode: ram-role
+        approvedSignTemplateAndCarrierFiling: required
+      objectStore:
+        implementation: external-staging-provider
+        providedByInternalRuntime: false
+        endpointAndTokenRef: required
+        productionBucketReuse: forbidden
+      externalProviders:
+        wechatApplications: required
+        wechatPayment: required
+        invoice: required
+        payout: required
+        notification: required
+        extensionManifest: required
+
 routes:
-  accounts:
-    hostEnv: ZHUDATUAN_STAGING_ACCOUNTS_HOST
-    workspace: apps/auth-web
-    artifact: apps/auth-web/dist
-    server: caddy-static
-    buildEnvironment:
-      apiOriginHostEnv: ZHUDATUAN_STAGING_API_HOST
-      adminOriginHostEnv: ZHUDATUAN_STAGING_CONSOLE_HOST
-  console:
-    hostEnv: ZHUDATUAN_STAGING_CONSOLE_HOST
-    workspace: apps/console
-    artifact: apps/console/dist
-    server: caddy-static
-    buildEnvironment:
-      apiOriginHostEnv: ZHUDATUAN_STAGING_API_HOST
-      authOriginHostEnv: ZHUDATUAN_STAGING_ACCOUNTS_HOST
-  identityApi:
-    hostEnv: ZHUDATUAN_STAGING_API_HOST
-    workspace: services/commerce
-    artifact: services/commerce/dist/IdentityRegistrationApiMain.js
-    readinessArtifact: services/commerce/dist/IdentityRegistrationApiReadyMain.js
-    process: zhudatuan-staging-identity-api
-    profile: registration-only
-    port: 4421
-    allowedMethods: [GET, POST, DELETE, OPTIONS]
-    allowedPathPrefix: /api/v1/identity/
-workers:
-  identityNotification:
-    workspace: services/commerce
-    artifact: services/commerce/dist/IdentityNotificationJobsOnlyMain.js
-    readinessArtifact: services/commerce/dist/IdentityNotificationJobsReadyMain.js
-    process: zhudatuan-staging-identity-notification-jobs
-    profile: identity-notification-only
-  fullJobsMain: forbidden
-dependencies:
-  database:
-    apiConnectionRefEnv: DATABASE_API_CONNECTION_REF
-    jobsConnectionRefEnv: DATABASE_JOB_CONNECTION_REF
-    isolatedRoles: [zhudatuanidentityapi, zhudatuanidentityjob]
-  secretStore:
-    endpointEnv: SECRET_STORE_ENDPOINT
-    separateBearerPerWorkload: true
-  kms:
-    endpointEnv: KMS_ENDPOINT
-    separateBearerPerWorkload: true
-  aliyunSms:
-    configurationRefEnv: IDENTITY_NOTIFICATION_CONFIG_REF
-    credentialMode: ram-role
-  redis: unused
-guards:
+  identity-sms:
+    accountsHostEnv: ZHUDATUAN_STAGING_ACCOUNTS_HOST
+    consoleHostEnv: ZHUDATUAN_STAGING_CONSOLE_HOST
+    apiHostEnv: ZHUDATUAN_STAGING_API_HOST
+    upstream: 127.0.0.1:4421
+  full:
+    accountsHostEnv: ZHUDATUAN_STAGING_FULL_ACCOUNTS_HOST
+    consoleHostEnv: ZHUDATUAN_STAGING_FULL_CONSOLE_HOST
+    apiHostEnv: ZHUDATUAN_STAGING_FULL_API_HOST
+    upstream: 127.0.0.1:4431
+  publicIdentityAllowlist:
+    - { method: GET, path: /health/live }
+    - { method: GET, path: /health/ready }
+    - { method: GET, path: /health/startup }
+    - { method: POST, path: /api/v1/identity/invitations }
+    - { method: DELETE, pathRegex: '^/api/v1/identity/invitations/[^/]+$' }
+    - { method: POST, path: /api/v1/identity/invitations/resolve }
+    - { method: POST, path: /api/v1/identity/challenges }
+    - { method: POST, path: /api/v1/identity/members }
+    - { method: POST, path: /api/v1/identity/sessions }
+    - { method: POST, path: /api/v1/identity/tickets/exchange }
+    - { method: GET, path: /api/v1/identity/session }
+    - { method: DELETE, path: /api/v1/identity/session }
+  invitationPreflightAllowlist:
+    - { method: OPTIONS, path: /api/v1/identity/invitations }
+    - { method: OPTIONS, pathRegex: '^/api/v1/identity/invitations/[^/]+$' }
+  invitationAuthorization:
+    create: authenticated-operator-policy
+    revoke: authenticated-operator-policy
+    wildcardDelete: forbidden
+
+oneShots:
+  executionOrder:
+    - migration
+    - registrationBoundaryReconcile
+    - stagingOwnerBootstrap
+  migration:
+    artifact: services/commerce/dist/MigrationMain.js
+    environmentExample: infrastructure/zhudatuan/aliyun/staging/full-migration.env.example
+    runMode: one-shot-before-runtime
+    snapshotAndRestoreEvidence: required
+  registrationBoundaryReconcile:
+    artifact: infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql
+    databaseRole: rds-bootstrap-administrator
+    runMode: reviewed-stdin-only
+  stagingOwnerBootstrap:
+    artifact: services/commerce/dist/BootstrapStagingOwner.js
+    environmentExample: infrastructure/zhudatuan/aliyun/staging/full-owner-bootstrap.env.example
+    databaseRole: zhudatuanbootstrap
+    publicRuntimeRole: forbidden
+  registrationBootstrap:
+    state: forbidden
+    reason: authenticated-owner-invitation-api-replaces-static-registration-invitation-bootstrap
+
+prerequisites:
+  externalResourcesVerified: false
+  rds:
+    privateEndpointOnly: true
+    snapshotPitrAndRestoreDrillEvidence: required
+    migrationRoleIsNotRuntimeRole: true
+  loopbackProxy:
+    databaseListener: 127.0.0.1:55442
+    databaseUpstream: isolated-staging-rds-private-endpoint-only
+    requiredFor: [stagingOwnerBootstrap]
+    productionUpstream: forbidden
+  internalRuntime:
+    secretStoreListener: https://127.0.0.1:8643
+    kmsListener: https://127.0.0.1:8644
+    catalogAndMasterIsolation: required
+    formalRuntimePorts: [8543, 8544]
+    formalRuntimeAccess: forbidden
+    startBefore: [migration, stagingOwnerBootstrap, identityApi, fullJobs]
   edgeAccessRequired: true
   robotsIndexing: disabled
-  migrationsMustTargetIsolatedDatabase: true
   secretValuesInRepository: forbidden
-  unrelatedCommerceDependencies: forbidden
+  cleanReleaseDigests: required
+  caddyValidation: required
+  envValidation: required

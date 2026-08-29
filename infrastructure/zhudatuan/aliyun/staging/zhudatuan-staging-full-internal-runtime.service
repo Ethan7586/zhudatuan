@@ -1,0 +1,53 @@
+[Unit]
+Description=Zhudatuan full staging isolated Secret Store and KMS
+After=network-online.target
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/InternalRuntimeMain.js
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/InternalRuntimeReadyMain.js
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/LocalSecretsMain.js
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/LocalKmsMain.js
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/full-internal-runtime.env
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/full-secrets.json
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/tls/internal.key
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/tls/internal.crt
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+WorkingDirectory=/opt/zhudatuan-staging-full/current
+Environment=NODE_ENV=production
+Environment=APP_ENV=production
+Environment=LOCAL_RUNTIME_PROFILE=registration-only
+EnvironmentFile=/opt/zhudatuan-staging-full/shared/full-internal-runtime.env
+ExecStart=/usr/bin/node services/commerce/dist/InternalRuntimeMain.js
+ExecStartPost=/usr/bin/node services/commerce/dist/InternalRuntimeReadyMain.js
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=45
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadOnlyPaths=/opt/zhudatuan-staging-full/current /opt/zhudatuan-staging-full/shared
+InaccessiblePaths=-/opt/zhudatuan -/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+[Install]
+WantedBy=multi-user.target

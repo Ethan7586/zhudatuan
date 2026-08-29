@@ -14,7 +14,10 @@ describe('MemberPort invitation constraints', () => {
     expect(sql).toContain('(invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)');
     expect(sql).toContain('policy.terms_hash=invite.terms_hash');
     expect(sql).toContain("invite.role_id='role-zhudatuan-storefront-member'");
-    expect(sql).toContain("organization.kind='mall' and organization.status='active'");
+    expect(sql).toContain("invite.target_client='operator'");
+    expect(sql).toContain("pendingpermission.role_id=invite.role_id");
+    expect(sql).toContain("organization.status='active'");
+    expect(sql).toContain("organization.kind='mall'");
     expect(values).toEqual(['invite-hash', 'destination-hash']);
   });
 
@@ -38,16 +41,21 @@ describe('MemberPort invitation constraints', () => {
     expect(sql).toContain('invite.use_count<invite.max_uses');
     expect(sql).toContain('policy.retired_at is null or policy.retired_at>clock_timestamp()');
     expect(sql).toContain('policy.terms_hash=invite.terms_hash');
+    expect(sql).toContain('invite.target_client');
     expect(values).toEqual(['invite-hash']);
   });
 
   it('consumes an invitation only after effective time and only for its allowed destination', async () => {
-    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{ organization_id: 'mall-zhudatuan', role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64) }]));
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{
+      organization_id: 'mall-zhudatuan', role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64),
+      target_client: 'storefront', storefront_organization_id: null,
+    }]));
     const port = new MemberPort();
 
     await expect(port.consumeInvite({ query } as unknown as OperationDatabase, 'invite-hash', 'destination-hash')).resolves.toMatchObject({
       organization_id: 'mall-zhudatuan',
       role_id: 'role-zhudatuan-storefront-member',
+      target_client: 'storefront',
     });
 
     const [sql, values = []] = query.mock.calls[0]!;

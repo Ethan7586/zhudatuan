@@ -1,0 +1,69 @@
+version: 1
+profile: full
+state: inventory-only-not-provisioning-evidence
+buildCommand: npm run build:commerce
+digestPolicy: sha256-required-from-clean-release-before-copy
+
+releaseArtifacts:
+  - id: internalRuntime
+    artifact: services/commerce/dist/InternalRuntimeMain.js
+    source: tools/localinfra/src/Run.ts
+    capability: secret-store-and-kms-only
+  - id: internalRuntimeReadiness
+    artifact: services/commerce/dist/InternalRuntimeReadyMain.js
+    source: tools/localinfra/src/RegistrationReady.ts
+  - id: internalSecretStore
+    artifact: services/commerce/dist/LocalSecretsMain.js
+    source: tools/localsecrets/src/Main.ts
+  - id: internalKms
+    artifact: services/commerce/dist/LocalKmsMain.js
+    source: tools/localkms/src/Main.ts
+  - id: identityApi
+    artifact: services/commerce/dist/IdentityRegistrationApiMain.js
+    source: services/commerce/src/entry/IdentityRegistrationApiMain.ts
+  - id: identityApiReadiness
+    artifact: services/commerce/dist/IdentityRegistrationApiReadyMain.js
+    source: services/commerce/src/entry/IdentityRegistrationApiReadyMain.ts
+  - id: fullJobs
+    artifact: services/commerce/dist/JobsMain.js
+    source: services/commerce/src/entry/JobsMain.ts
+    bundledImplementation: services/commerce/src/entry/FullJobsMain.ts
+    requiredMarker: JOB_RUNTIME_CATALOG_DRIFT
+  - id: migration
+    artifact: services/commerce/dist/MigrationMain.js
+    source: services/commerce/src/entry/MigrationMain.ts
+  - id: stagingOwnerBootstrap
+    artifact: services/commerce/dist/BootstrapStagingOwner.js
+    source: tools/seed/src/BootstrapStagingOwner.ts
+  - id: migrations
+    artifact: database/supabase/migrations
+    kind: immutable-directory
+  - id: authWeb
+    artifact: apps/auth-web/dist
+    kind: static-directory
+  - id: console
+    artifact: apps/console/dist
+    kind: static-directory
+
+deploymentArtifacts:
+  - infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql
+  - infrastructure/zhudatuan/aliyun/staging/ecosystem.full.config.cjs
+  - infrastructure/zhudatuan/aliyun/staging/Caddyfile.full
+  - infrastructure/zhudatuan/aliyun/staging/full-identity-registration-api.env.example
+  - infrastructure/zhudatuan/aliyun/staging/full-jobs.env.example
+  - infrastructure/zhudatuan/aliyun/staging/full-internal-runtime.env.example
+  - infrastructure/zhudatuan/aliyun/staging/full-migration.env.example
+  - infrastructure/zhudatuan/aliyun/staging/full-owner-bootstrap.env.example
+  - infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-internal-runtime.service
+
+explicitExclusions:
+  - artifact: services/commerce/dist/RegistrationMigrationMain.js
+    reason: registration-only runner pins non-staging paths and references; full uses MigrationMain.js
+  - artifact: services/commerce/dist/FullJobsMain.js
+    reason: no standalone build artifact; FullJobsMain.ts is bundled into JobsMain.js
+  - artifact: services/commerce/dist/BootstrapOwner.js
+    reason: formal acceptance bootstrap is forbidden; full staging uses BootstrapStagingOwner.js
+  - artifact: services/commerce/dist/BootstrapRegistration.js
+    reason: authenticated Owner invitation API replaces static registration invitation bootstrap
+  - artifact: services/commerce/dist/LocalObjectsMain.js
+    reason: registration-only InternalRuntime bundles Secret Store and KMS only; full Object Store remains an external blocked dependency

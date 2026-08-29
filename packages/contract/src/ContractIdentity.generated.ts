@@ -1,3 +1,3 @@
 // Generated from the canonical operation and event definitions. Do not edit.
 export const CONTRACT_VERSION = '1.0.0' as const;
-export const CONTRACT_CHECKSUM = '83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a' as const;
+export const CONTRACT_CHECKSUM = 'be18d064ea1e22097c2e11b82fb2408a94f4734d8c9fafbfab7e81d1ae01308e' as const;

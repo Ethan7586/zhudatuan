@@ -13,6 +13,7 @@ const InvitationSchema = z.strictObject({
   privacy_title: z.string().min(1),
   privacy_body: z.string().min(1),
   terms_hash: z.string().regex(/^[a-f0-9]{64}$/i),
+  target_client: z.enum(['storefront', 'operator']),
   effective_at: z.iso.datetime(),
   expires_at: z.iso.datetime(),
 });
@@ -27,7 +28,7 @@ const MembershipSchema = z.strictObject({
   id: z.string().min(1),
   member_id: z.string().min(1),
   organization_id: z.string().min(1),
-  client: z.literal('storefront'),
+  client: z.enum(['storefront', 'operator']),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
   access_version: transportInteger.pipe(z.number().positive()),
@@ -41,6 +42,7 @@ export interface CanonicalInvitation {
   readonly privacyTitle: string;
   readonly privacyBody: string;
   readonly termsHash: string;
+  readonly target: 'storefront' | 'console';
   readonly effectiveAt: string;
   readonly expiresAt: string;
 }
@@ -67,7 +69,7 @@ export interface CanonicalRegisteredMember {
   readonly membership: string;
   readonly member: string;
   readonly organization: string;
-  readonly target: 'storefront';
+  readonly target: 'storefront' | 'console';
   readonly status: 'active';
   readonly accessVersion: number;
   readonly employeeNo: string | null;
@@ -85,9 +87,14 @@ export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortS
     privacyTitle: output.privacy_title,
     privacyBody: output.privacy_body,
     termsHash: output.terms_hash,
+    target: output.target_client === 'operator' ? 'console' : 'storefront',
     effectiveAt: output.effective_at,
     expiresAt: output.expires_at,
   });
+}
+
+export function clearCanonicalInvitation(): void {
+  activeInvitation = null;
 }
 
 export async function createCanonicalRegistrationChallenge(
@@ -113,7 +120,7 @@ export async function createCanonicalMember(
   signal?: AbortSignal,
 ): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
-  const output = MembershipSchema.parse(await identityRequest('/api/v1/identity/members', {
+  const response = await identityRequest('/api/v1/identity/members', {
     subject: requiredMobile(input.subject),
     password: requiredPassword(input.password),
     displayName: requiredText(input.displayName, '请输入姓名'),
@@ -123,12 +130,14 @@ export async function createCanonicalMember(
     termsAccepted: true,
     termsHash: requiredText(input.termsHash, '注册条款版本无效'),
     ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
-  }, signal));
+  }, signal);
+  clearCanonicalInvitation();
+  const output = MembershipSchema.parse(response);
   return Object.freeze({
     membership: output.id,
     member: output.member_id,
     organization: output.organization_id,
-    target: output.client,
+    target: output.client === 'operator' ? 'console' : 'storefront',
     status: output.status,
     accessVersion: output.access_version,
     employeeNo: output.employee_no,

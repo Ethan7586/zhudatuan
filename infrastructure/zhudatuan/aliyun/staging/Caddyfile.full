@@ -1,4 +1,4 @@
-{$ZHUDATUAN_STAGING_ACCOUNTS_HOST} {
+{$ZHUDATUAN_STAGING_FULL_ACCOUNTS_HOST} {
 	encode gzip zstd
 
 	header {
@@ -16,13 +16,13 @@
 	}
 
 	handle {
-		root * /opt/zhudatuan-staging/current/apps/auth-web/dist
+		root * /opt/zhudatuan-staging-full/current/apps/auth-web/dist
 		try_files {path} /index.html
 		file_server
 	}
 }
 
-{$ZHUDATUAN_STAGING_CONSOLE_HOST} {
+{$ZHUDATUAN_STAGING_FULL_CONSOLE_HOST} {
 	encode gzip zstd
 
 	header {
@@ -40,13 +40,13 @@
 	}
 
 	handle {
-		root * /opt/zhudatuan-staging/current/apps/console/dist
+		root * /opt/zhudatuan-staging-full/current/apps/console/dist
 		try_files {path} /index.html
 		file_server
 	}
 }
 
-{$ZHUDATUAN_STAGING_API_HOST} {
+{$ZHUDATUAN_STAGING_FULL_API_HOST} {
 	encode gzip zstd
 
 	header {
@@ -62,15 +62,23 @@
 		path /health/live /health/ready /health/startup
 	}
 	handle @identityHealth {
-		reverse_proxy 127.0.0.1:4421
+		reverse_proxy 127.0.0.1:4431
 	}
 
 	@identityPreflight {
 		method OPTIONS
-		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations /api/v1/identity/invitations/resolve /api/v1/identity/members
 	}
 	handle @identityPreflight {
-		reverse_proxy 127.0.0.1:4421
+		reverse_proxy 127.0.0.1:4431
+	}
+
+	@identityInvitationItemPreflight {
+		method OPTIONS
+		path_regexp invitationItemPreflight ^/api/v1/identity/invitations/[^/]+$
+	}
+	handle @identityInvitationItemPreflight {
+		reverse_proxy 127.0.0.1:4431
 	}
 
 	@identityPost {
@@ -78,7 +86,15 @@
 		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
 	}
 	handle @identityPost {
-		reverse_proxy 127.0.0.1:4421
+		reverse_proxy 127.0.0.1:4431
+	}
+
+	@identityInvitationCreate {
+		method POST
+		path /api/v1/identity/invitations
+	}
+	handle @identityInvitationCreate {
+		reverse_proxy 127.0.0.1:4431
 	}
 
 	@identitySessionRead {
@@ -86,7 +102,7 @@
 		path /api/v1/identity/session
 	}
 	handle @identitySessionRead {
-		reverse_proxy 127.0.0.1:4421
+		reverse_proxy 127.0.0.1:4431
 	}
 
 	@identitySessionDelete {
@@ -94,7 +110,15 @@
 		path /api/v1/identity/session
 	}
 	handle @identitySessionDelete {
-		reverse_proxy 127.0.0.1:4421
+		reverse_proxy 127.0.0.1:4431
+	}
+
+	@identityInvitationRevoke {
+		method DELETE
+		path_regexp invitationRevoke ^/api/v1/identity/invitations/[^/]+$
+	}
+	handle @identityInvitationRevoke {
+		reverse_proxy 127.0.0.1:4431
 	}
 
 	handle {

@@ -33,6 +33,36 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: access
+  - id: access.protect_zhudatuan_pending_operator_role
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.protect_zhudatuan_owner
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.protect_scopegrant_deny_runtime
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.protect_zhudatuan_registration_access_write
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.zhudatuan_invitation_owner
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.zhudatuan_owner_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
   - id: audit.reject_mutation
     kind: function
     owner: audit
@@ -49,6 +79,11 @@ objects:
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: member.protect_zhudatuan_invite_update
+    kind: function
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: identity
   - id: channel.accept_webhook
     kind: function
     owner: channel
@@ -293,6 +328,14 @@ objects:
     role: shopapp
     objectType: function
     target: access.scope_object(text)
+    privilege: execute
+  - id: shopapp:function:access.zhudatuan_owner_context():execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    role: shopapp
+    objectType: function
+    target: access.zhudatuan_owner_context()
     privilege: execute
   - id: shopapp:function:audit.scope_allowed(text):execute
     kind: grant
@@ -19934,6 +19977,86 @@ objects:
     owner: voucher
     source: database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql
     rls: true
+  - id: access.role.protect_zhudatuan_pending_operator_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.rolepermission.protect_zhudatuan_pending_operator_permission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.membership.protect_zhudatuan_registration_membership_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.membershiprole.protect_zhudatuan_registration_membershiprole_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_zhudatuan_registration_scopegrant_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_scopegrant_deny_runtime
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: member.invite.protect_zhudatuan_invite_update
+    kind: trigger
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: identity
+  - id: access.role.protect_zhudatuan_owner_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.rolepermission.protect_zhudatuan_owner_rolepermission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.membership.protect_zhudatuan_owner_membership
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.membershiprole.protect_zhudatuan_owner_membershiprole
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_zhudatuan_owner_scopegrant
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.membershipoverride.protect_zhudatuan_owner_membershipoverride
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: identity.principal.protect_zhudatuan_owner_principal
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: identity
+  - id: identity.credential.protect_zhudatuan_owner_credential
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: identity
+  - id: member.profile.protect_zhudatuan_owner_profile
+    kind: trigger
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: identity
   - id: audit.accessrecord.immutable
     kind: trigger
     owner: audit
@@ -20009,7 +20132,11 @@ objects:
   - id: access.membership.zhudatuanidentityapi
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.membership.zhudatuanidentityapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
   - id: access.membershipoverride.zhudatuanidentityapi
     kind: policy
     owner: access
@@ -20021,7 +20148,11 @@ objects:
   - id: access.membershiprole.zhudatuanidentityapi
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.membershiprole.zhudatuanidentityapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
   - id: access.permission.zhudatuanbootstrap
     kind: policy
     owner: access
@@ -20049,7 +20180,11 @@ objects:
   - id: access.scopegrant.zhudatuanidentityapi
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.scopegrant.zhudatuanidentityapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
   - id: audit.accessrecord.zhudatuanbootstrap
     kind: policy
     owner: audit
@@ -20173,7 +20308,15 @@ objects:
   - id: member.invite.zhudatuanidentityapi
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: member.invite.zhudatuanidentityapiinsert
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: member.invite.zhudatuanidentityapiupdate
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
   - id: member.profile.zhudatuanidentityapi
     kind: policy
     owner: member

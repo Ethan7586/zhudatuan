@@ -29,6 +29,8 @@ const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, reado
   'identity.tickets.exchange': Object.freeze([]),
   'identity.challenges.create': Object.freeze(['purpose']),
   'identity.invitations.read': Object.freeze([]),
+  'identity.invitations.create': Object.freeze(['label', 'targetClient', 'maxUses', 'expiresAt', 'storefrontOrganization']),
+  'identity.invitations.revoke': Object.freeze([]),
   'identity.members.create': Object.freeze(['termsAccepted', 'termsHash']),
   'identity.members.manage': Object.freeze(['action', 'status', 'departmentId']),
   'identity.password.change': Object.freeze([]),
@@ -226,9 +228,18 @@ export function operationRequestHash(request: OperationRequest): string {
     type: request.type,
     path: request.input.path,
     query: request.input.query,
-    body: request.input.body,
+    body: idempotencyBody(request),
     expectedVersion: request.input.expectedVersion ?? null,
   }));
+}
+
+function idempotencyBody(request: OperationRequest): unknown {
+  if (request.type !== 'identity.invitations.create'
+    || request.input.body === null
+    || typeof request.input.body !== 'object'
+    || Array.isArray(request.input.body)) return request.input.body;
+  const { destination: _destination, ...nonSensitiveBody } = request.input.body as Record<string, unknown>;
+  return { ...nonSensitiveBody, destination: '[SENSITIVE]' };
 }
 
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }

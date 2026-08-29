@@ -21,28 +21,18 @@ const runtime = Object.freeze({
   merge_logs: true,
 });
 
-const isolatedNode = (environment, environmentFile, entrypoint) => [
-  '-i',
-  'PATH=/usr/bin:/bin',
-  'NODE_ENV=production',
-  ...environment,
-  '/usr/bin/node',
-  `--env-file=${environmentFile}`,
-  entrypoint,
-];
+const isolatedNode = (environment, environmentFile, entrypoint) => ['-i', 'PATH=/usr/bin:/bin', 'NODE_ENV=production', ...environment, '/usr/bin/node', `--env-file=${environmentFile}`, entrypoint];
 
 module.exports = {
   apps: [
     {
       ...runtime,
       name: 'zhudatuan-staging-identity-api',
-      args: isolatedNode([
-        'APP_ENV=test',
-        'AUTH_MODE=membership',
-        'IDENTITY_REGISTRATION_API_PROFILE=registration-only',
-        'API_PORT=4421',
-        'API_BIND_HOST=127.0.0.1',
-      ], apiEnvironmentFile, 'services/commerce/dist/IdentityRegistrationApiMain.js'),
+      args: isolatedNode(
+        ['APP_ENV=test', 'AUTH_MODE=membership', 'IDENTITY_REGISTRATION_API_PROFILE=registration-only', 'API_PORT=4421', 'API_BIND_HOST=127.0.0.1'],
+        apiEnvironmentFile,
+        'services/commerce/dist/IdentityRegistrationApiMain.js'
+      ),
       kill_timeout: 45_000,
       error_file: `${logRoot}/identity-api-error.log`,
       out_file: `${logRoot}/identity-api-out.log`,
@@ -50,10 +40,7 @@ module.exports = {
     {
       ...runtime,
       name: 'zhudatuan-staging-identity-notification-jobs',
-      args: isolatedNode([
-        'APP_ENV=production',
-        'JOB_RUNTIME_PROFILE=identity-notification-only',
-      ], jobsEnvironmentFile, 'services/commerce/dist/IdentityNotificationJobsOnlyMain.js'),
+      args: isolatedNode(['APP_ENV=production', 'JOB_RUNTIME_PROFILE=identity-notification-only'], jobsEnvironmentFile, 'services/commerce/dist/IdentityNotificationJobsOnlyMain.js'),
       kill_timeout: 45_000,
       error_file: `${logRoot}/identity-notification-jobs-error.log`,
       out_file: `${logRoot}/identity-notification-jobs-out.log`,

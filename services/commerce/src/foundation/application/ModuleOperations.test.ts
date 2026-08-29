@@ -1,11 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
-import { appendOperationAudit, ModuleOperations, operationLifecycle } from './ModuleOperations';
+import { appendOperationAudit, ModuleOperations, operationLifecycle, operationRequestHash } from './ModuleOperations';
 import type { OperationRequest } from './OperationHandler';
 import type { DatabasePool } from '../persistence/Pool';
 import type { AuditSink } from './AuditSink';
 
 describe('ModuleOperations lifecycle', () => {
+  it('does not persist an enumerable phone fingerprint for invitation idempotency', () => {
+    const request = (destination: string, label = '普通管理员邀请'): OperationRequest => ({
+      type:'identity.invitations.create', access:null,
+      input:{ path:{}, query:{}, headers:{}, body:{ label, destination, targetClient:'operator' }, rawBody:'',
+        deadline:Date.now()+1_000, signal:new AbortController().signal, idempotency:'invitation-private' },
+    });
+    expect(operationRequestHash(request('+8613800138000'))).toBe(operationRequestHash(request('+8613900139000')));
+    expect(operationRequestHash(request('+8613800138000', '另一个邀请')))
+      .not.toBe(operationRequestHash(request('+8613800138000')));
+  });
+
   it('keeps client error payloads in telemetry and out of audit facts', async () => {
     let before: unknown;
     const audit: AuditSink = { record: async (_database, input) => { before = input.before; }, access: async () => undefined };
@@ -25,7 +36,7 @@ describe('ModuleOperations lifecycle', () => {
       signal:new AbortController().signal, idempotency:'invitation' } } satisfies OperationRequest;
     await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
       'identity', { status:201, body:{ id:'invitation:1', code:'one-time-code' } }, 'actor', 'scope', 'hash');
-    expect(fact?.before).toEqual({ path:{}, query:{}, body:{ address:'[REDACTED]', password:'[REDACTED]' }, expectedVersion:null });
+    expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
     expect(fact?.after).toEqual({ id:'invitation:1', code:'[REDACTED]' });
   });
 

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  clearCanonicalInvitation,
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
   resolveCanonicalInvite,
@@ -18,6 +19,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  clearCanonicalInvitation();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -36,6 +38,7 @@ describe('canonical registration', () => {
       privacyTitle: '筑大团隐私政策',
       privacyBody: '隐私政策正文',
       termsHash: TERMS_HASH,
+      target: 'storefront',
       effectiveAt: '2026-08-28T00:00:00.000Z',
       expiresAt: '2026-09-28T00:00:00.000Z',
     });
@@ -45,6 +48,13 @@ describe('canonical registration', () => {
     expect(init).toMatchObject({ method: 'POST', credentials: 'omit' });
     expect(JSON.parse(String(init?.body))).toEqual({ invite: 'invitation-secret' });
     expectCanonicalHeaders(init?.headers);
+  });
+
+  it('maps an operator invitation to the canonical Console target', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...invitation(), target_client: 'operator' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveCanonicalInvite('operator-invitation')).resolves.toMatchObject({ target: 'console' });
   });
 
   it('creates a registration-only challenge with stable device metadata', async () => {
@@ -69,6 +79,30 @@ describe('canonical registration', () => {
     expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
     expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', purpose: 'registration', invite: 'invitation-secret' });
     expectCanonicalHeaders(init?.headers);
+  });
+
+  it('forgets the plaintext invitation when the registration flow is cleared', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(invitation()));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await resolveCanonicalInvite('invitation-secret');
+    clearCanonicalInvitation();
+
+    await expect(createCanonicalRegistrationChallenge('13800138000')).rejects.toThrow('请先验证有效的企业邀请码');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('forgets the plaintext invitation after successful registration', async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(invitation()))
+      .mockResolvedValueOnce(jsonResponse(membership(), 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await resolveCanonicalInvite('invitation-secret');
+    await createCanonicalMember(registrationInput());
+
+    await expect(createCanonicalRegistrationChallenge('13800138000')).rejects.toThrow('请先验证有效的企业邀请码');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('will not request an SMS challenge until the invitation has been resolved successfully', async () => {
@@ -132,6 +166,17 @@ describe('canonical registration', () => {
       termsHash: TERMS_HASH,
     });
     expectCanonicalHeaders(init?.headers);
+  });
+
+  it('accepts the operator membership returned after a phone-bound administrator registration', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      ...membership(), id: 'membership:operator-one', organization_id: 'tenant-zhudatuan', client: 'operator',
+    }, 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember(registrationInput())).resolves.toMatchObject({
+      membership: 'membership:operator-one', organization: 'tenant-zhudatuan', target: 'console', status: 'active',
+    });
   });
 
   it.each([0, -1, '1.5', String(Number.MAX_SAFE_INTEGER + 1)])(
@@ -211,6 +256,7 @@ function invitation(): Readonly<Record<string, unknown>> {
     privacy_title: '筑大团隐私政策',
     privacy_body: '隐私政策正文',
     terms_hash: TERMS_HASH,
+    target_client: 'storefront',
     effective_at: '2026-08-28T00:00:00.000Z',
     expires_at: '2026-09-28T00:00:00.000Z',
   };

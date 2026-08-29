@@ -23,6 +23,7 @@ await build({
     InternalRuntimeReadyMain: 'tools/localinfra/src/RegistrationReady.ts',
     BootstrapRegistration: 'tools/seed/src/BootstrapRegistration.ts',
     BootstrapOwner: 'tools/seed/src/BootstrapOwner.ts',
+    BootstrapStagingOwner: 'tools/seed/src/BootstrapStagingOwner.ts',
   },
   format: 'esm',
   outdir: 'services/commerce/dist',

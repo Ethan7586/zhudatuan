@@ -14,11 +14,13 @@ import {
 } from '../services/auth';
 import { loginCanonicalConsole, loginCanonicalStorefront } from '../services/canonicalIdentity';
 import {
+  clearCanonicalInvitation,
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
   resolveCanonicalInvite,
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
+import { registrationPresentation } from './registrationPresentation';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
@@ -69,6 +71,7 @@ export const LoginPage: React.FC = () => {
   const [registrationCodeSeconds, setRegistrationCodeSeconds] = useState(0);
   const [registrationNotice, setRegistrationNotice] = useState('');
   const [formNotice, setFormNotice] = useState('');
+  const [postRegistrationTarget, setPostRegistrationTarget] = useState<CanonicalInvitation['target'] | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
   const [resetForm, setResetForm] = useState({ mobile: '', code: '', challengeId: '', password: '', confirm: '' });
 
@@ -77,6 +80,11 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    clearCanonicalInvitation();
+    return clearCanonicalInvitation;
+  }, []);
 
   // 倒计时状态
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
@@ -90,6 +98,9 @@ export const LoginPage: React.FC = () => {
   // 首次登录修改密码
   const [showForcePasswordModal, setShowForcePasswordModal] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
+  const registrationCopy = registrationPresentation(registrationInvite?.target);
+  const loginTargetsConsole = postRegistrationTarget === 'console'
+    || (postRegistrationTarget === null && isCanonicalConsoleRequest);
 
   // 处理 lockout 倒计时
   useEffect(() => {
@@ -118,6 +129,7 @@ export const LoginPage: React.FC = () => {
 
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
+    setPostRegistrationTarget(null);
     setFormError('');
     setFormNotice('');
     setFieldErrors((prev) => ({ ...prev, identifier: '' }));
@@ -165,6 +177,7 @@ export const LoginPage: React.FC = () => {
       return { ...current, [field]: value };
     });
     if (field === 'inviteCode') {
+      clearCanonicalInvitation();
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(false);
     }
@@ -174,6 +187,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const closeRegistration = () => {
+    clearCanonicalInvitation();
     setRegistrationOpen(false);
     setRegistrationInvite(null);
     setRegistrationTermsAccepted(false);
@@ -193,7 +207,7 @@ export const LoginPage: React.FC = () => {
       const invitation = await resolveCanonicalInvite(registration.inviteCode);
       setRegistrationInvite(invitation);
       setRegistrationTermsAccepted(false);
-      setRegistrationNotice('企业邀请已验证。请核对本次注册适用的服务协议与隐私政策。');
+      setRegistrationNotice(registrationPresentation(invitation.target).resolvedNotice);
     } catch (error) {
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(false);
@@ -240,7 +254,7 @@ export const LoginPage: React.FC = () => {
     setRegistrationBusy('submit');
     setFormError('');
     try {
-      await createCanonicalMember({
+      const created = await createCanonicalMember({
         subject: registration.mobile,
         password: registration.password,
         displayName: registration.displayName,
@@ -252,15 +266,14 @@ export const LoginPage: React.FC = () => {
       });
       setIdentifier(registration.mobile.trim());
       setPassword('');
+      setPostRegistrationTarget(created.target);
       setRegistrationOpen(false);
       setRegistrationNotice('');
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(false);
       setRegistrationCodeSeconds(0);
       setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
-      setFormNotice(isCanonicalConsoleRequest
-        ? '员工商城账号已创建。该账号只具备消费商城身份；进入运营后台仍需管理员另行授予权限。'
-        : '员工商城账号已创建。消费商城会话接通前不会自动登录，也不会重复创建账号。');
+      setFormNotice(registrationPresentation(created.target).successNotice);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '注册失败');
     } finally {
@@ -295,7 +308,7 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 
     try {
-      if (isCanonicalConsoleRequest) {
+      if (loginTargetsConsole) {
         const result = await loginCanonicalConsole(identifier, password);
         if (result.kind === 'authenticated') {
           window.location.replace(result.redirectUrl);
@@ -894,6 +907,7 @@ export const LoginPage: React.FC = () => {
                               type="button"
                               onClick={() => {
                                 setRegistrationOpen(true);
+                                setPostRegistrationTarget(null);
                                 setFormError('');
                                 setFormNotice('');
                                 setRegistrationNotice('');
@@ -904,7 +918,7 @@ export const LoginPage: React.FC = () => {
                               新用户注册
                             </button>
                           </div>
-                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建员工商城账号</p>
+                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建对应的商城或后台身份</p>
 
                           <button
                             type="submit"
@@ -918,7 +932,7 @@ export const LoginPage: React.FC = () => {
                               </>
                             ) : (
                               <>
-                                登录
+                                {postRegistrationTarget === 'console' ? '登录并进入运营后台' : '登录'}
                                 <ArrowRight className="w-4 h-4" />
                               </>
                             )}
@@ -1066,8 +1080,8 @@ export const LoginPage: React.FC = () => {
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">Member Registration</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-950">注册员工会员</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">手机号验证后建立普通员工会员；管理员与 Owner 不开放自助注册。</p>
+                <h3 className="mt-1 text-2xl font-bold text-slate-950">{registrationCopy.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-500">{registrationCopy.description}</p>
               </div>
               <button type="button" onClick={closeRegistration} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
                 <X className="h-5 w-5" />
@@ -1201,9 +1215,9 @@ export const LoginPage: React.FC = () => {
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
             >
               {registrationBusy === 'submit' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
-              创建普通员工会员账号
+              {registrationCopy.submitLabel}
             </button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">密码、邀请码和验证码不会写入浏览器长期存储。自助注册只开通消费商城，后台权限须由管理员另行授予。</p>
+            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">{registrationCopy.footer}</p>
           </form>
         </div>
       )}

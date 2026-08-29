@@ -43,9 +43,14 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const membership = request.input.path.membershipid!;
       const kind = textField(body, 'kind');
       const scope = textField(body, 'scope');
-      const effect = body.effect === 'deny' ? 'deny' : 'allow';
-      const contained = await database.query(`select 1 from access.scopegrant grant where grant.membership_id=$1 and grant.effect='allow'
+      if (body.effect === 'deny') throw new Error('SCOPE_DENY_UNSUPPORTED');
+      if (body.effect !== undefined && body.effect !== 'allow') throw new Error('VALIDATION_FAILED:effect');
+      const effect = 'allow';
+      const contained = await database.query(`select 1 from access.scopegrant grant
+        join access.membership membership on membership.id=grant.membership_id and membership.status='active'
+        where grant.membership_id=$1 and grant.effect='allow'
         and grant.scope_id=$2 and grant.scope_kind=$3 and grant.effective_at<=clock_timestamp()
+        and grant.access_version>0 and grant.access_version<=membership.access_version
         and (grant.expires_at is null or grant.expires_at>clock_timestamp())`, [access.membership.id, scope, kind]);
       if (!contained.rows[0]) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
       const result = await database.query(`with changed as (

@@ -11,12 +11,17 @@ import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/P
 import { RISK_GATE } from '../../foundation/security/RiskGate';
 import { WECHAT_IDENTITY } from './application/port/WechatIdentity';
 import { identityOperations, identityRegistrationOperations } from './IdentityOperations';
+import { authTarget } from './IdentitySecurity';
 import { RETURN_TARGETS } from './infrastructure/ReturnTargetCatalog';
 
 const IDENTITY_KEY = 'identity-key';
 const SUBJECT = '+8613800138000';
 
 describe('canonical member registration security boundary', () => {
+  it('routes an active operator membership to the canonical Console login target', () => {
+    expect(authTarget('operator')).toBe('console');
+  });
+
   it('binds a registration challenge to both the registration purpose and the normalized subject digest', async () => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false });
     const result = await identityOperations(context(harness.pool)).invoke(registrationRequest('registration:challenge-binding'));
@@ -96,6 +101,24 @@ describe('canonical member registration security boundary', () => {
     expect(assurance?.text).toContain("'phone_otp',2");
     expect(assurance?.values[2]).toBe(subjectDigest(SUBJECT));
   });
+
+  it('turns an operator invitation into separate storefront and pending-operator memberships', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, inviteAccepted: true, operatorInvite: true });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(registrationRequest('registration:operator-complete'));
+
+    expect(response).toMatchObject({ status: 201, body: { client: 'operator' } });
+    const memberships = harness.queries.filter(({ text }) => text.includes('insert into access.membership('));
+    expect(memberships).toHaveLength(2);
+    expect(memberships[0]?.text).toContain("'storefront'");
+    expect(memberships[0]?.values).toContain('mall-zhudatuan');
+    expect(memberships[1]?.text).toContain("'operator'");
+    expect(memberships[1]?.values).toContain('tenant-zhudatuan');
+    const roles = harness.queries.filter(({ text }) => text.includes('insert into access.membershiprole'));
+    expect(roles[0]?.values).toContain('role-zhudatuan-storefront-member');
+    expect(roles[1]?.values).toContain('role-zhudatuan-pending-operator');
+  });
 });
 
 function registrationRequest(idempotency: string): OperationRequest {
@@ -141,7 +164,7 @@ function challengeRequest(body: Readonly<Record<string, unknown>>): OperationReq
   };
 }
 
-function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subjectExists: boolean; inviteAccepted?: boolean }>): Readonly<{
+function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subjectExists: boolean; inviteAccepted?: boolean; operatorInvite?: boolean }>): Readonly<{
   pool: DatabasePool;
   queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
 }> {
@@ -161,10 +184,18 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result(input.challengeAccepted ? [{ principal_id: null }] : []);
       }
       if (text.includes('with candidate as materialized') && text.includes('update member.invite')) {
-        return result(input.inviteAccepted ? [{ organization_id: 'mall-zhudatuan', role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64) }] : []);
+        return result(input.inviteAccepted ? [input.operatorInvite ? {
+          organization_id: 'tenant-zhudatuan', role_id: 'role-zhudatuan-pending-operator', terms_hash: 'f'.repeat(64),
+          target_client: 'operator', storefront_organization_id: 'mall-zhudatuan',
+        } : {
+          organization_id: 'mall-zhudatuan', role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64),
+          target_client: 'storefront', storefront_organization_id: null,
+        }] : []);
       }
       if (text.includes('select kind from organization.organization')) return result([{ kind: 'mall' }]);
-      if (text.includes('insert into access.membership') && text.includes('returning *')) return result([{ id: String(values[0]), client: 'storefront' }]);
+      if (text.includes('insert into access.membership(') && text.includes('returning *')) {
+        return result([{ id: String(values[0]), client: text.includes("'operator'") ? 'operator' : 'storefront' }]);
+      }
       return result([]);
     },
     release: () => undefined,

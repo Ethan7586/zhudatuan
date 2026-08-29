@@ -4,7 +4,7 @@ import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions } from '../../foundation/application/ModuleOperations';
 import { bodyRecord, integerField, textField } from '../../foundation/interface/Validation';
-import type { OperationUsecase } from '../../foundation/application/OperationHandler';
+import type { OperationRequest, OperationUsecase } from '../../foundation/application/OperationHandler';
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { RISK_GATE } from '../../foundation/security/RiskGate';
@@ -49,6 +49,8 @@ export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
   'identity.session.delete',
   'identity.challenges.create',
   'identity.invitations.read',
+  'identity.invitations.create',
+  'identity.invitations.revoke',
   'identity.members.create',
 ] as const satisfies readonly OperationId[]);
 
@@ -319,15 +321,42 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         return rowResult(result);
       },
       'identity.invitations.create': async (request, database) => {
-        const access = requireAccess(request);
+        const access = requireInvitationManager(request, registrationOnly);
         const body = bodyRecord(request);
         const label = textField(body, 'label', 80);
+        const requestedTarget = body.targetClient;
+        if (requestedTarget !== undefined && requestedTarget !== 'storefront' && requestedTarget !== 'operator') {
+          throw new Error('INVALID_INVITATION_INPUT');
+        }
+        const targetClient = registrationOnly ? 'operator' : requestedTarget ?? 'storefront';
+        if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
+        if (targetClient === 'operator' && !isZhudatuanInvitationOwner(access)) reject(403, 'PERMISSION_DENIED');
         const maxUses = integerField(body, 'maxUses', 1);
         const expiresAt = inviteExpiry(body.expiresAt);
-        if (label.length < 2 || maxUses > 500) throw new Error('INVALID_INVITATION_INPUT');
-        const role = await database.query<{ id: string }>(`select role.id from access.role role where role.id='role-employee'
-        and role.status='active' and access.scope_allowed(role.scope_id)`);
-        if (!role.rows[0]) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
+        if (label.length < 2 || maxUses > 500 || (targetClient === 'operator' && maxUses !== 1)) throw new Error('INVALID_INVITATION_INPUT');
+        if (targetClient === 'operator' && (access.scope.kind !== 'tenant' || access.scope.id !== access.scope.tenant)) {
+          throw new Error('INVITATION_SCOPE_INVALID');
+        }
+        if (targetClient === 'storefront' && access.scope.kind !== 'mall') throw new Error('INVITATION_SCOPE_INVALID');
+        const destinationHash = targetClient === 'operator'
+          ? digest(canonicalMobile(textField(body, 'destination', 32)))
+          : null;
+        const requestedStorefront = typeof body.storefrontOrganization === 'string' && body.storefrontOrganization.trim().length > 0
+          ? body.storefrontOrganization.trim()
+          : null;
+        const storefronts = targetClient === 'operator'
+          ? await database.query<{ id: string }>(`select storefront.id from organization.organization storefront
+            join organization.unitclosure closure on closure.descendant_id=storefront.id
+            where closure.ancestor_id=$1 and storefront.kind='mall' and storefront.status='active'
+              and ($2::text is null or storefront.id=$2) order by storefront.id limit 2`, [access.scope.id, requestedStorefront])
+          : { rows: [] };
+        if (targetClient === 'operator' && storefronts.rows.length !== 1) throw new Error('STOREFRONT_SCOPE_REQUIRED');
+        const roleId = targetClient === 'operator' ? 'role-zhudatuan-pending-operator' : 'role-zhudatuan-storefront-member';
+        const role = await database.query<{ id: string }>(`select role.id from access.role role where role.id=$1
+        and role.status='active' and role.scope_id=$2
+        and ($1<>'role-zhudatuan-pending-operator' or not exists(
+          select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))`, [roleId, access.scope.id]);
+        if (role.rows[0]?.id !== roleId) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
         const policy = await database.query<{ id: string; terms_hash: string }>(`select id,terms_hash from identity.registrationpolicy
         where effective_at<=clock_timestamp() and (retired_at is null or retired_at>clock_timestamp()) order by version desc limit 1`);
         if (!policy.rows[0]) throw new Error('INVITE_INVALID');
@@ -335,35 +364,45 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         const code = randomBytes(24).toString('base64url');
         const result = await database.query(
           `insert into member.invite(id,organization_id,label,destination_hash,token_hash,expires_at,created_by,
-        role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash,version)
-        values($1,$2,$3,$4,$5,$6,$7,$8,null,$9,0,clock_timestamp(),'active',clock_timestamp(),$10,$11,0)
-        returning id,label,'storefront' target,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, access.scope.id, label, digest(id), digest(code), expiresAt, access.membership.id, role.rows[0].id, maxUses, policy.rows[0].id, policy.rows[0].terms_hash]
+        role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash,version,
+        target_client,storefront_organization_id)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,clock_timestamp(),'active',clock_timestamp(),$11,$12,0,$13,$14)
+        returning id,label,target_client,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
+          [id, access.scope.id, label, destinationHash ?? digest(id), digest(code), expiresAt, access.membership.id,
+            role.rows[0].id, destinationHash, maxUses, policy.rows[0].id, policy.rows[0].terms_hash,
+            targetClient, storefronts.rows[0]?.id ?? null]
         );
         const saved = result.rows[0];
         if (!saved) throw new Error('INVITE_INVALID');
         return { status: 201, body: { ...saved, code }, headers: { etag: '"0"' } };
       },
       'identity.invitations.revoke': async (request, database) => {
-        requireAccess(request);
+        const access = requireInvitationManager(request, registrationOnly);
         const body = bodyRecord(request);
         const reason = textField(body, 'reason', 1000);
         if (reason.length < 4) throw new Error('CHANGE_REASON_REQUIRED');
         const id = request.input.path.invitationid!;
+        const exactOwner = isZhudatuanInvitationOwner(access);
         const result = await database.query(
           `update member.invite set status='disabled',version=version+1
-        where id=$1 and access.scope_allowed(organization_id) and status='active' and ($2::bigint is null or version=$2)
-        returning id,label,'storefront' target,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, request.input.expectedVersion ?? null]
+        where id=$1 and access.scope_allowed(organization_id)
+          and (not $3::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
+          and (target_client<>'operator' or $4::boolean)
+          and status='active' and ($2::bigint is null or version=$2)
+        returning id,label,target_client,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
+          [id, request.input.expectedVersion ?? null, registrationOnly, exactOwner]
         );
         if (result.rows[0]) return rowResult(result);
         const current = await database.query<{ status: string; version: number }>(
           `select status,version from member.invite
-        where id=$1 and access.scope_allowed(organization_id)`,
-          [id]
+        where id=$1 and access.scope_allowed(organization_id)
+          and (not $2::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
+          and (target_client<>'operator' or $3::boolean)`,
+          [id, registrationOnly, exactOwner]
         );
         if (!current.rows[0]) throw new Error('INVITATION_NOT_FOUND');
         if (request.input.expectedVersion !== undefined && current.rows[0].version !== request.input.expectedVersion) throw new Error('VERSION_CONFLICT');
+        if (current.rows[0].status === 'active') throw new Error('VERSION_CONFLICT');
         return { status: 200, body: { id, status: current.rows[0].status, version: current.rows[0].version }, headers: { etag: `"${String(current.rows[0].version)}"` } };
       },
       'identity.members.create': operationLifecycle({
@@ -385,12 +424,14 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
             assurance: `assurance:${randomUUID()}`,
             member: `member:${randomUUID()}`,
             membership: `membership:${randomUUID()}`,
+            storefrontMembership: `membership:${randomUUID()}`,
             credential: `credential:${randomUUID()}`,
             scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`] as const,
+            operatorScopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`] as const,
           };
         },
         execute: async (request, database, prepared) => {
-          const { body, subject, password, principal, member, membership, credential, scopes, mobile, assurance } = prepared;
+          const { body, subject, password, principal, member, membership, storefrontMembership, credential, scopes, operatorScopes, mobile, assurance } = prepared;
           const subjectHash = digest(subject);
           const subjectHashes = identitySubjectVariants(subject).map(digest);
           await database.query('select pg_advisory_xact_lock(hashtext($1))', [subjectHash]);
@@ -417,11 +458,33 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
             values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
           [assurance, principal, subjectHash]);
-          const scopeKind = await organizationPort.kind(database, organization);
-          const result = await accessPort.createRegistration(database, { membership, member, principal, organization, role: invitation.role_id, scopeKind, scopes });
-          if (typeof body.wechatToken === 'string') await bindWechat(database, tokenHash(body.wechatToken), principal, membership);
+          const result = invitation.target_client === 'operator'
+            ? await accessPort.createOperatorRegistration(database, {
+              operatorMembership: membership,
+              storefrontMembership,
+              member,
+              principal,
+              operatorOrganization: organization,
+              storefrontOrganization: invitation.storefront_organization_id!,
+              operatorRole: invitation.role_id,
+              storefrontRole: 'role-zhudatuan-storefront-member',
+              storefrontScopes: scopes,
+              operatorScopes,
+            })
+            : await accessPort.createRegistration(database, {
+              membership,
+              member,
+              principal,
+              organization,
+              role: invitation.role_id,
+              scopeKind: await organizationPort.kind(database, organization),
+              scopes,
+            });
+          const storefrontBinding = invitation.target_client === 'operator' ? storefrontMembership : membership;
+          if (typeof body.wechatToken === 'string') await bindWechat(database, tokenHash(body.wechatToken), principal, storefrontBinding);
           await publishIdentityEvent(database, 'identity.member.registered', principal, organization, request.input.idempotency!,
-            { principal, member, membership, assurance: { method: 'phone_otp', level: 2, expiresInDays: 365 } });
+            { principal, member, membership, storefrontMembership: storefrontBinding, targetClient: invitation.target_client,
+              assurance: { method: 'phone_otp', level: 2, expiresInDays: 365 } });
           return { status: 201, body: result };
         },
       }),
@@ -653,6 +716,27 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
     return [operationId, action];
   })) as OperationActions;
   return new ModuleOperations('identity', pool, audit, selected, ownedOperations);
+}
+
+function requireInvitationManager(request: OperationRequest, exactOwner = false) {
+  const access = requireAccess(request);
+  const permission = access.membership.grants.some((grant) => grant.permissions.includes('identity.invitation.manage'));
+  if (access.actor.target !== 'console' || !access.capabilities.includes(request.type) || !permission) {
+    reject(403, 'PERMISSION_DENIED');
+  }
+  if (exactOwner && !isZhudatuanInvitationOwner(access)) reject(403, 'PERMISSION_DENIED');
+  return access;
+}
+
+function isZhudatuanInvitationOwner(access: NonNullable<OperationRequest['access']>): boolean {
+  return !(
+    access.actor.id !== 'principal:zhudatuan:owner:ethan:v1'
+    || access.actor.membership !== 'membership-platform-owner-ethan-v1'
+    || access.membership.id !== 'membership-platform-owner-ethan-v1'
+    || access.scope.kind !== 'tenant'
+    || access.scope.id !== 'tenant-zhudatuan'
+    || access.scope.tenant !== 'tenant-zhudatuan'
+  );
 }
 
 async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {

@@ -24,6 +24,10 @@ const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
 const REGISTRATION_BOOTSTRAP_REPAIR = '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql';
 const REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION = /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000' and version<>'20260829040000'\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
+const IDENTITY_LOGIN_ACL_REPAIR = '20260829054500_zhudatuan_identity_login_acl_repair.sql';
+const IDENTITY_LOGIN_ACL_REPLAY_FUTURE_HEAD_ASSERTION = /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260829040000' and version<>'20260829054500'\) then\n    raise exception 'ZHUDATUAN_IDENTITY_LOGIN_ACL_FUTURE_HEAD_INVALID';\n  end if;/;
+const OPERATOR_INVITATION_REGISTRATION = '20260829060000_zhudatuan_operator_invitation_registration.sql';
+const OPERATOR_INVITATION_CONTRACT = join(ROOT,'database','supabase','tests','zhudatuan_operator_invitation_registration_contract.sql');
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
   [INVITATION_SCOPE,/\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
   ['20260821069000_add_store_management.sql',/\n  select id into membership from access\.membership[\s\S]*?STORE_CREATE_SCOPE_UNRESOLVED'; end if;\n/],
@@ -90,6 +94,7 @@ const REPAIR_FILES = [
   '20260828183000_zhudatuan_runtime_readiness_repair.sql',
   '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
   '20260829054500_zhudatuan_identity_login_acl_repair.sql',
+  '20260829060000_zhudatuan_operator_invitation_registration.sql',
 ];
 
 const mode = process.argv[2];
@@ -332,6 +337,7 @@ async function verifyTarget(database) {
   await verifyRls(database);
   await verifyAuditImmutability(database);
   await verifyZhudatuanRegistrationBaseline(database);
+  await execute(database,await readFile(OPERATOR_INVITATION_CONTRACT,'utf8'),'zhudatuan operator invitation registration contract');
   await verifyZhudatuanRuntimeReadinessRepair(database);
   await verifyZhudatuanBootstrapRuntimeRepair(database);
   await verifyZhudatuanWebBusinessAccess(database);
@@ -687,9 +693,13 @@ async function verifyZhudatuanRegistrationBaseline(database) {
   await execute(database,
     omitExactEnvironmentAssertion(bootstrapRepair,REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION,REGISTRATION_BOOTSTRAP_REPAIR),
     'idempotent zhudatuan registration bootstrap repair replay');
+  const identityLoginAclRepair = await readFile(join(MIGRATIONS,IDENTITY_LOGIN_ACL_REPAIR),'utf8');
   await execute(database,
-    await readFile(join(MIGRATIONS,'20260829054500_zhudatuan_identity_login_acl_repair.sql'),'utf8'),
+    omitExactEnvironmentAssertion(identityLoginAclRepair,IDENTITY_LOGIN_ACL_REPLAY_FUTURE_HEAD_ASSERTION,IDENTITY_LOGIN_ACL_REPAIR),
     'idempotent zhudatuan identity login ACL repair replay');
+  await execute(database,
+    await readFile(join(MIGRATIONS,OPERATOR_INVITATION_REGISTRATION),'utf8'),
+    'idempotent zhudatuan operator invitation registration replay');
 }
 
 async function verifyPhoneAssuranceRevocation(database) {

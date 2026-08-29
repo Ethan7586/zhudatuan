@@ -4,6 +4,8 @@ export interface MemberInvite {
   readonly organization_id: string;
   readonly role_id: string;
   readonly terms_hash: string;
+  readonly target_client: 'storefront' | 'operator';
+  readonly storefront_organization_id: string | null;
 }
 
 export interface MemberProfile {
@@ -24,14 +26,13 @@ export class MemberPort {
   }
 
   invite(database: OperationDatabase, token: string) {
-    return database.query(`select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,invite.effective_at,invite.expires_at
+    return database.query(`select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,invite.target_client,invite.effective_at,invite.expires_at
       from member.invite invite join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
       join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
       where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
         and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
+        and ${registrationInviteBoundary()}
         and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
         and policy.terms_hash=invite.terms_hash`, [token]);
   }
@@ -44,8 +45,7 @@ export class MemberPort {
       where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
         and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
         and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
+        and ${registrationInviteBoundary()}
         and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
         and policy.terms_hash=invite.terms_hash`, [token, destinationHash]);
     if (!result.rows[0]) throw new Error('INVITE_INVALID');
@@ -53,22 +53,21 @@ export class MemberPort {
 
   async consumeInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<MemberInvite> {
     const result = await database.query<MemberInvite>(`with candidate as materialized(
-      select invite.id,invite.organization_id,invite.role_id,invite.terms_hash from member.invite invite
+      select invite.id,invite.organization_id,invite.role_id,invite.terms_hash,invite.target_client,invite.storefront_organization_id from member.invite invite
       join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
       join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
       where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
         and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
         and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
+        and ${registrationInviteBoundary()}
         and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
         and policy.terms_hash=invite.terms_hash for update of invite
     ), consumed as(update member.invite invite set use_count=invite.use_count+1,
       accepted_at=case when invite.use_count+1=invite.max_uses then clock_timestamp() else invite.accepted_at end,version=invite.version+1
       from candidate where invite.id=candidate.id
-      returning candidate.organization_id,candidate.role_id,candidate.terms_hash)
-      select organization_id,role_id,terms_hash from consumed`, [token, destinationHash]);
+      returning candidate.organization_id,candidate.role_id,candidate.terms_hash,candidate.target_client,candidate.storefront_organization_id)
+      select organization_id,role_id,terms_hash,target_client,storefront_organization_id from consumed`, [token, destinationHash]);
     const invitation = result.rows[0];
     if (!invitation) throw new Error('INVITE_INVALID');
     return invitation;
@@ -95,6 +94,20 @@ export class MemberPort {
     if (!row) throw new Error('MEMBER_PROFILE_NOT_FOUND');
     return row;
   }
+}
+
+function registrationInviteBoundary(): string {
+  return `(role.status='active' and organization.status='active' and (
+    (invite.target_client='storefront' and invite.role_id='role-zhudatuan-storefront-member'
+      and invite.storefront_organization_id is null and organization.kind='mall')
+    or (invite.target_client='operator' and invite.role_id='role-zhudatuan-pending-operator'
+      and invite.storefront_organization_id is not null and invite.max_uses=1
+      and invite.allowed_destination_hash is not null and organization.kind='tenant'
+      and not exists(select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=invite.role_id)
+      and exists(select 1 from organization.organization storefront
+        join organization.unitclosure closure on closure.descendant_id=storefront.id
+        where storefront.id=invite.storefront_organization_id and storefront.kind='mall' and storefront.status='active'
+          and closure.ancestor_id=invite.organization_id))))`;
 }
 
 export const memberPort = new MemberPort();
