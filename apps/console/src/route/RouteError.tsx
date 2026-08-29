@@ -9,12 +9,14 @@ export function RouteError() {
   const unauthenticated = status === 401;
   const denied = status === 403;
   const missing = status === 404;
+  const detail = routeErrorDetail(error);
   if (unauthenticated || denied) {
     return (
       <main className="routeerror">
         <AccessDenied
           kind={unauthenticated ? 'unauthenticated' : 'forbidden'}
           {...(denied ? { resourceLabel: '当前数据范围' } : {})}
+          {...(detail === undefined ? {} : { detail })}
           actions={{
             onReturnToWorkspace: () => window.location.assign(new URL(import.meta.env.BASE_URL, window.location.origin).toString()),
             onRelogin: () => window.location.assign(`${appConfig.authBaseUrl}/login?client=console`),
@@ -38,4 +40,10 @@ export function routeErrorStatus(error: unknown): number {
   if (isRouteErrorResponse(error)) return error.status;
   if (error instanceof ApiError) return error.status;
   return 500;
+}
+
+function routeErrorDetail(error: unknown): string | undefined {
+  if (isRouteErrorResponse(error)) return typeof error.data === 'string' ? error.data : undefined;
+  if (error instanceof ApiError) return `${error.code} · 请求 ${error.requestId}`;
+  return undefined;
 }

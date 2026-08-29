@@ -1,4 +1,4 @@
-import { AccessDeniedActionsProvider, ContextualAccessDenied } from '@shop/design';
+import { AccessDeniedActionsProvider } from '@shop/design';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';

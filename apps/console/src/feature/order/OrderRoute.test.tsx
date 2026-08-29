@@ -288,8 +288,8 @@ describe('Order route', () => {
     server.use(http.get('*/api/v1/orders', () => HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:failed' }, { status: 403 })));
     renderRoute();
 
-    const boundary = await screen.findByRole('region', { name: '需要访问权限' });
-    expect(within(boundary).getByText('当前账号尚未开通「订单管理系统」。')).toBeTruthy();
+    const boundary = await screen.findByRole('region', { name: '暂无访问权限' });
+    expect(within(boundary).getByText('当前账号无法查看「订单管理系统」。')).toBeTruthy();
     expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
     expect(within(boundary).queryByRole('button', { name: '重试' })).toBeNull();
   });
@@ -307,7 +307,7 @@ describe('Order route', () => {
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '刷新数据' }));
-    expect(await screen.findByRole('region', { name: '需要访问权限' })).toBeTruthy();
+    expect(await screen.findByRole('region', { name: '暂无访问权限' })).toBeTruthy();
     expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
     expect(screen.queryByText(order.order_number)).toBeNull();
   });
