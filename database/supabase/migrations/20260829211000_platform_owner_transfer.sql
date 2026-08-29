@@ -351,8 +351,26 @@ set search_path=access,member,organization,pg_temp as $function$
             and (
               (role.id='role:self' and scopegrant.scope_kind in('self','owner'))
               or (role.id='role-platform-owner-v2'
-                and exists(select 1 from access.platformowner owner where owner.singleton=true
-                  and owner.state='active' and owner.membership_id=membership.id)
+                and (
+                  exists(select 1 from access.platformowner owner where owner.singleton=true
+                    and owner.state='active' and owner.membership_id=membership.id)
+                  -- The compatibility bootstrap validates effective console access inside the
+                  -- legacy function, immediately before this migration's wrapper can activate
+                  -- the singleton. Expose the sole in-transaction Owner assignment only to the
+                  -- dedicated bootstrap login; rollback removes it if activation does not finish.
+                  or (
+                    session_user='zhudatuanbootstrap'
+                    and exists(select 1 from access.platformowner owner
+                      where owner.singleton=true and owner.state='bootstrap_pending'
+                        and owner.membership_id is null)
+                    and membership.id='membership-platform-owner-ethan-v1'
+                    and (select count(*) from access.membershiprole ownerassignment
+                      where ownerassignment.role_id='role-platform-owner-v2'
+                        and ownerassignment.effective_at<=clock_timestamp()
+                        and (ownerassignment.expires_at is null
+                          or ownerassignment.expires_at>clock_timestamp()))=1
+                  )
+                )
                 and scopegrant.scope_kind='platform' and scopegrant.scope_id='organization-platform-root')
               or (role.id in('role-platform-owner-v2','role-platform-owner-successor-v1')
                 and scopegrant.scope_kind='self'
@@ -1236,8 +1254,6 @@ begin
             and session.revoked_at is null and session.expires_at>clock_timestamp())
           and not exists(select 1 from identity.challenge challenge where challenge.principal_id=profile.principal_id
             and challenge.consumed_at is null and challenge.expires_at>clock_timestamp())
-          and not exists(select 1 from identity.assurance assurance where assurance.principal_id=profile.principal_id
-            and (assurance.expires_at is null or assurance.expires_at>clock_timestamp()))
           and not exists(select 1 from access.ownertransfer transfer
             where transfer.source_membership_id=membership.id or transfer.target_membership_id=membership.id)
       )
@@ -1255,8 +1271,9 @@ begin
           or (credential.provider='password' and credential.subject_hash=p_subject_hash))
     then raise exception 'OWNER_BOOTSTRAP_CONFLICT'; end if;
 
-    -- Preserve the historical primary keys and rows.  Only the exact disabled/suspended
-    -- projection above can be rehydrated, and every prior authentication path remains revoked.
+    -- Preserve the historical primary keys and rows. Only the exact disabled/suspended
+    -- projection above can be rehydrated. A stale assurance is inert while its principal is
+    -- disabled and has no live credential/session; expire it before re-enabling the identity.
     activated_at:=clock_timestamp();
     update identity.session set revoked_at=coalesce(revoked_at,activated_at),
       revoked_reason=coalesce(revoked_reason,'owner_legacy_rehydrated')
@@ -1481,6 +1498,8 @@ begin
           and activeoverride.effective_at<=clock_timestamp()
           and (activeoverride.expires_at is null or activeoverride.expires_at>clock_timestamp()));
   elsif ownerrow.state='bootstrap_pending' then
+    -- A disabled legacy principal may retain inert assurance evidence from the historical
+    -- backfill. The wrapper expires it before re-enabling any authentication path.
     recoverable_legacy_tombstone:=exists(
       select 1 from access.membership membership
       join member.profile profile on profile.id=membership.member_id and profile.status='disabled'
@@ -1528,8 +1547,6 @@ begin
           and session.revoked_at is null and session.expires_at>clock_timestamp())
         and not exists(select 1 from identity.challenge challenge where challenge.principal_id=profile.principal_id
           and challenge.consumed_at is null and challenge.expires_at>clock_timestamp())
-        and not exists(select 1 from identity.assurance assurance where assurance.principal_id=profile.principal_id
-          and (assurance.expires_at is null or assurance.expires_at>clock_timestamp()))
         and not exists(select 1 from access.ownertransfer transfer
           where transfer.source_membership_id=membership.id or transfer.target_membership_id=membership.id)
     )

@@ -169,14 +169,19 @@ try {
       break;
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
+    if (name === OWNER_OPERATOR_COVERAGE) await replayZhudatuanRegistrationBaseline(database);
     const source = await readFile(join(MIGRATIONS,name),'utf8');
     const omission=REGISTRATION_ASSERTION_OMISSIONS.get(name);
     const sql = mode==='--registration-fresh' && omission
-      ? omitExactEnvironmentAssertion(source,omission,name)
+      ? omitExactReplayFragment(source,omission,name)
       : source;
     await execute(database, sql, `migration ${name}`);
     await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0,14),name]);
     applied += 1;
+    if (name === OPERATOR_INVITATION_REGISTRATION) {
+      await execute(database,await readFile(OPERATOR_INVITATION_CONTRACT,'utf8'),
+        'zhudatuan operator invitation registration contract');
+    }
   }
   if (mode !== '--inventory-cutover-unsafe') {
     if (mode === '--registration-fresh' || mode === '--owner-transfer') await reconcileRegistrationReplayBoundary(database);
@@ -249,15 +254,35 @@ function duplicateVersions(files) {
   return new Map([...versions].filter(([,names])=>names.length>1));
 }
 
-function omitExactEnvironmentAssertion(source,assertion,file) {
-  const matches=source.match(new RegExp(assertion.source,'g'));
-  if (matches?.length!==1) throw new Error(`MIGRATION_ENVIRONMENT_ASSERTION_DRIFT:${file}`);
-  return source.replace(assertion,'\n');
+function omitExactReplayFragment(source,fragment,file) {
+  const matches=source.match(new RegExp(fragment.source,'g'));
+  if (matches?.length!==1) throw new Error(`MIGRATION_REPLAY_FRAGMENT_DRIFT:${file}`);
+  return source.replace(fragment,'\n');
 }
 
 async function execute(database,sql,label) {
   try { await database.exec(sql); }
   catch (error) { throw new Error(`${label}: ${error instanceof Error ? error.message : String(error)}`,{cause:error}); }
+}
+
+async function useRegistrationBootstrapSession(database) {
+  await database.exec('reset role; set session authorization zhudatuanbootstrap;');
+  const identity=await database.query('select current_user,session_user');
+  if (identity.rows[0]?.current_user!=='zhudatuanbootstrap'
+    || identity.rows[0]?.session_user!=='zhudatuanbootstrap') {
+    throw new Error(`REGISTRATION_BOOTSTRAP_SESSION_INVALID:${JSON.stringify(identity.rows[0]??null)}`);
+  }
+}
+
+async function restoreRegistrationReplaySuperuser(database) {
+  // PGlite 0.4 does not restore the authenticated user for RESET SESSION AUTHORIZATION
+  // after SET LOCAL. The replay always starts as this in-memory postgres superuser, so
+  // restore it explicitly and fail closed if a future runtime changes that behavior.
+  await database.exec('set session authorization postgres; reset role;');
+  const identity=await database.query('select current_user,session_user');
+  if (identity.rows[0]?.current_user!=='postgres' || identity.rows[0]?.session_user!=='postgres') {
+    throw new Error(`REGISTRATION_REPLAY_SUPERUSER_RESTORE_INVALID:${JSON.stringify(identity.rows[0]??null)}`);
+  }
 }
 
 async function seedBootstrapPrecondition(database) {
@@ -846,7 +871,6 @@ async function verifyTarget(database) {
   await verifyRls(database);
   await verifyAuditImmutability(database);
   await verifyZhudatuanRegistrationBaseline(database);
-  await execute(database,await readFile(OPERATOR_INVITATION_CONTRACT,'utf8'),'zhudatuan operator invitation registration contract');
   await verifyZhudatuanRuntimeReadinessRepair(database);
   await verifyZhudatuanBootstrapRuntimeRepair(database);
   await verifyZhudatuanWebBusinessAccess(database);
@@ -856,6 +880,17 @@ async function verifyTarget(database) {
     await reconcileRegistrationReplayBoundary(database);
   }
   await verifyOwnerOperatorCoverage(database);
+  const ownerVerificationBoundary=await database.query(`select
+    exists(select 1 from access.platformowner where singleton=true and state='bootstrap_pending') owner_pending,
+    to_regprocedure('deployment.registration_bootstrap_boundary(text)') is not null boundary_present`);
+  if (ownerVerificationBoundary.rows[0]?.owner_pending
+    && !ownerVerificationBoundary.rows[0]?.boundary_present) {
+    // The registration boundary is environment-owned rather than a migration object. Generic
+    // schema replays verify that absence first, then install the disposable fixture here so the
+    // pending -> active -> transfer contract still receives full coverage.
+    await installRegistrationReplayBoundary(database);
+    await reconcileRegistrationReplayBoundary(database);
+  }
   await verifyPlatformOwnerTransfer(database);
   await verifySandboxCatalogBootstrap(database);
   await verifyExperiencePublication(database);
@@ -1085,6 +1120,8 @@ async function verifyPlatformOwnerTransfer(database) {
         'protect_zhudatuan_owner_profile')
       and trigger.tgfoid='access.protect_zhudatuan_owner()'::regprocedure) owner_protection_triggers,
     has_function_privilege('zhudatuanbootstrap','deployment.zhudatuan_owner_bootstrap_state(text)','EXECUTE') bootstrap_state_execute,
+    has_function_privilege('zhudatuanbootstrap','access.resolve_membership(text)','EXECUTE') bootstrap_resolve_execute,
+    has_function_privilege('zhudatuanbootstrap','capability.membership_operations(text)','EXECUTE') bootstrap_operations_execute,
     has_schema_privilege('zhudatuanbootstrap','deployment','USAGE') bootstrap_schema_usage,
     has_schema_privilege('shopapp','deployment','USAGE') app_bootstrap_schema_usage,
     has_function_privilege('shopapp','deployment.zhudatuan_owner_bootstrap_state(text)','EXECUTE') app_bootstrap_state_execute,
@@ -1108,6 +1145,7 @@ async function verifyPlatformOwnerTransfer(database) {
     || !catalogRow.create_execute || !catalogRow.accept_execute || !catalogRow.cancel_execute || !catalogRow.mobile_execute
     || !catalogRow.password_execute || !catalogRow.bootstrap_activation_absent
     || catalogRow.owner_protection_triggers!==9 || !catalogRow.bootstrap_state_execute
+    || catalogRow.bootstrap_resolve_execute || catalogRow.bootstrap_operations_execute
     || !catalogRow.bootstrap_schema_usage || catalogRow.app_bootstrap_schema_usage
     || catalogRow.app_bootstrap_state_execute || catalogRow.migration_bootstrap_state_execute
     || catalogRow.bootstrap_owner_read
@@ -1161,7 +1199,7 @@ async function verifyPlatformOwnerTransfer(database) {
         await database.query(`update member.profile
           set mobile_ciphertext='stale-legacy-mobile',mobile_token=repeat('a',64) where id=$1`,
         [legacyTombstone.rows[0].member_id]);
-        await database.exec('set local session authorization zhudatuanbootstrap;');
+        await useRegistrationBootstrapSession(database);
         const malformedState=await database.query(`select * from deployment.zhudatuan_owner_bootstrap_state($1)`,
           ['registration-fresh-replay-sentinel-not-for-production']);
         if (malformedState.rows[0]?.fixed_identity_collision!==true) {
@@ -1176,15 +1214,14 @@ async function verifyPlatformOwnerTransfer(database) {
         } catch (error) {
           malformedRejected=String(error instanceof Error?error.message:error).includes('OWNER_BOOTSTRAP_CONFLICT');
         }
-        await database.exec('rollback to savepoint malformed_legacy_tombstone; reset session authorization;');
+        await database.exec('rollback to savepoint malformed_legacy_tombstone;');
+        await restoreRegistrationReplaySuperuser(database);
         if (!malformedRejected) throw new Error('PLATFORM_OWNER_MALFORMED_TOMBSTONE_NOT_REJECTED');
         const rollback=await database.query(`select mobile_ciphertext is null and mobile_token is null restored
           from member.profile where id=$1`,[legacyTombstone.rows[0].member_id]);
         if (rollback.rows[0]?.restored!==true) throw new Error('PLATFORM_OWNER_MALFORMED_TOMBSTONE_PARTIAL_WRITE');
       }
-      // set local 只有在显式事务中才会在结束时归还权限；否则会话身份被永久降级为
-      // zhudatuanbootstrap，后续以超级用户身份读取 runtime.outbox 会被 ACL 拒绝。
-      await database.exec(`begin; reset role; set local session authorization zhudatuanbootstrap;`);
+      await useRegistrationBootstrapSession(database);
       const pendingBootstrapState=await database.query(
         `select * from deployment.zhudatuan_owner_bootstrap_state($1)`,
         ['registration-fresh-replay-sentinel-not-for-production'],
@@ -1198,7 +1235,8 @@ async function verifyPlatformOwnerTransfer(database) {
         'registration-fresh-replay-sentinel-not-for-production','6'.repeat(64),bootstrapSecret,
         '7'.repeat(64),'bootstrap:owner-transfer-contract',
       ]);
-      await database.exec('commit; reset session authorization; reset role;');
+      await database.exec('commit;');
+      await restoreRegistrationReplaySuperuser(database);
       if (activated.rows[0]?.state!=='created') throw new Error('PLATFORM_OWNER_BOOTSTRAP_ACTIVATION_INVALID');
       const audit=await database.query(`select count(*)::integer count from runtime.outbox
         where event_type='access.owner.bootstrapped' and aggregate_id='membership-platform-owner-ethan-v1'`);
@@ -1213,6 +1251,19 @@ async function verifyPlatformOwnerTransfer(database) {
           (select count(*)::integer from identity.credential credential
             where credential.principal_id=profile.principal_id and credential.provider='alias.localusername'
               and credential.status='revoked') revoked_aliases,
+          (select count(*)::integer from identity.credential credential
+            where credential.principal_id=profile.principal_id and credential.status='active') active_credentials,
+          (select count(*)::integer from identity.federatedidentity federated
+            where federated.principal_id=profile.principal_id and federated.status='active') active_federated,
+          (select count(*)::integer from identity.session session
+            where session.principal_id=profile.principal_id and session.revoked_at is null
+              and session.expires_at>clock_timestamp()) live_sessions,
+          (select count(*)::integer from identity.challenge challenge
+            where challenge.principal_id=profile.principal_id and challenge.consumed_at is null
+              and challenge.expires_at>clock_timestamp()) pending_challenges,
+          (select count(*)::integer from identity.assurance assurance
+            where assurance.principal_id=profile.principal_id
+              and (assurance.expires_at is null or assurance.expires_at>clock_timestamp())) live_assurances,
           (select count(*)::integer from access.membership sibling where sibling.member_id=membership.member_id
             and sibling.id<>membership.id and sibling.status in('active','invited')) live_siblings,
           (select count(*)::integer from access.membershiprole assignment where assignment.membership_id=membership.id
@@ -1236,12 +1287,14 @@ async function verifyPlatformOwnerTransfer(database) {
           || row.principal_id!==legacyTombstone.rows[0].principal_id
           || row.organization_id!=='tenant-zhudatuan' || row.client!=='operator' || row.status!=='active'
           || row.profile_status!=='active' || row.principal_status!=='active' || row.active_passwords!==1
-          || row.revoked_aliases!==legacyTombstone.rows[0].revoked_aliases || row.live_siblings!==0
+          || row.revoked_aliases!==legacyTombstone.rows[0].revoked_aliases || row.active_credentials!==1
+          || row.active_federated!==0 || row.live_sessions!==0 || row.pending_challenges!==0
+          || row.live_assurances!==0 || row.live_siblings!==0
           || row.active_roles!==2 || row.active_scopes!==3 || row.active_overrides!==0 || row.recovery_audits!==1) {
           throw new Error(`PLATFORM_OWNER_LEGACY_TOMBSTONE_REHYDRATION_INVALID:${JSON.stringify(row??null)}`);
         }
       }
-      await database.exec('set local session authorization zhudatuanbootstrap;');
+      await useRegistrationBootstrapSession(database);
       const activeBootstrapState=await database.query(`select * from deployment.zhudatuan_owner_bootstrap_state($1)`,
         ['registration-fresh-replay-sentinel-not-for-production']);
       const replayed=await database.query(`select deployment.bootstrap_zhudatuan_owner($1,$2,$3,$4,$5) state`,[
@@ -1249,7 +1302,7 @@ async function verifyPlatformOwnerTransfer(database) {
         `scrypt$v1$32768$8$1$${'C'.repeat(22)}$${'D'.repeat(86)}`,
         'e'.repeat(64),'bootstrap:owner-transfer-replay',
       ]);
-      await database.exec('reset session authorization');
+      await restoreRegistrationReplaySuperuser(database);
       if (activeBootstrapState.rows[0]?.state!=='active'
         || activeBootstrapState.rows[0]?.active_owner_count!==1
         || activeBootstrapState.rows[0]?.membership_id!=='membership-platform-owner-ethan-v1'
@@ -1262,6 +1315,9 @@ async function verifyPlatformOwnerTransfer(database) {
       const credentialUnchanged=await database.query(`select count(*)::integer count from identity.credential
         where provider='password' and status='active' and subject_hash=$1`,['6'.repeat(64)]);
       if (credentialUnchanged.rows[0]?.count!==1) throw new Error('PLATFORM_OWNER_BOOTSTRAP_REPLAY_ROTATED_SECRET');
+      // The one-shot bootstrap commits independently, matching the production bootstrap process.
+      // Start a fresh transaction for the remaining transfer fixtures and their savepoints.
+      await database.exec('begin isolation level serializable;');
     }
     const owner=await database.query(`select owner.membership_id membership,owner.version,
       membership.access_version,profile.principal_id principal from access.platformowner owner
@@ -2545,7 +2601,6 @@ async function verifySandboxCatalogBootstrap(database) {
 }
 
 async function verifyZhudatuanRegistrationBaseline(database) {
-  const beforeReplay = await zhudatuanRegistrationFingerprint(database);
   const baseline = await database.query(`select
     (select count(*)::integer from organization.organization
       where id in('tenant-zhudatuan','enterprise-zhudatuan','mall-zhudatuan') and status='active') organizations,
@@ -2578,7 +2633,18 @@ async function verifyZhudatuanRegistrationBaseline(database) {
     throw new Error(`ZHUDATUAN_REGISTRATION_BASELINE_INVALID:${JSON.stringify(row)}`);
   }
   await verifyPhoneAssuranceRevocation(database);
-  await execute(database, await readFile(join(MIGRATIONS,'20260828170000_zhudatuan_registration_baseline.sql'),'utf8'),
+}
+
+async function replayZhudatuanRegistrationBaseline(database) {
+  const beforeReplay = await zhudatuanRegistrationFingerprint(database);
+  const registrationBaseline = await readFile(
+    join(MIGRATIONS,'20260828170000_zhudatuan_registration_baseline.sql'),
+    'utf8',
+  );
+  // Exercise the historical baseline and its forward repairs before the Owner migrations
+  // supersede several of their functions. This preserves full idempotency coverage without
+  // allowing older CREATE OR REPLACE statements to regress the current schema head.
+  await execute(database, registrationBaseline,
     'idempotent zhudatuan registration baseline replay');
   const afterReplay = await zhudatuanRegistrationFingerprint(database);
   if (JSON.stringify(afterReplay)!==JSON.stringify(beforeReplay)) {
@@ -2588,14 +2654,14 @@ async function verifyZhudatuanRegistrationBaseline(database) {
   // Restore the immutable forward repair before any current-head ACL checks.
   const bootstrapRepair = await readFile(join(MIGRATIONS,REGISTRATION_BOOTSTRAP_REPAIR),'utf8');
   await execute(database,
-    omitExactEnvironmentAssertion(bootstrapRepair,REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION,REGISTRATION_BOOTSTRAP_REPAIR),
+    omitExactReplayFragment(bootstrapRepair,REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION,REGISTRATION_BOOTSTRAP_REPAIR),
     'idempotent zhudatuan registration bootstrap repair replay');
   const identityLoginAclRepair = await readFile(
     join(MIGRATIONS,IDENTITY_LOGIN_ACL_REPAIR),
     'utf8',
   );
   await execute(database,
-    omitExactEnvironmentAssertion(
+    omitExactReplayFragment(
       identityLoginAclRepair,
       IDENTITY_LOGIN_ACL_REPLAY_FUTURE_HEAD_ASSERTION,
       IDENTITY_LOGIN_ACL_REPAIR,
@@ -2607,7 +2673,7 @@ async function verifyZhudatuanRegistrationBaseline(database) {
       'utf8',
     );
     await execute(database,
-      omitExactEnvironmentAssertion(
+      omitExactReplayFragment(
         operatorInvitationRegistration,
         OPERATOR_INVITATION_REPLAY_FUTURE_HEAD_ASSERTION,
         OPERATOR_INVITATION_REGISTRATION,
