@@ -6,9 +6,19 @@ import {
   matchEvidence,
   valueAt,
 } from './readiness-common.mjs';
+import {
+  KNOWN_PRODUCTION_INSTANCE_ID,
+  KNOWN_STAGING_CANDIDATE_CURRENT_NAME,
+  KNOWN_STAGING_CANDIDATE_INSTANCE_ID,
+  KNOWN_STAGING_CANDIDATE_TARGET_NAME,
+  KNOWN_STAGING_CANDIDATE_ZONE,
+} from './readiness-contract.mjs';
 
 const METADATA_HOST = '100.100.100.200';
-const PRODUCTION_INSTANCE_IDS = new Set(['i-2zeewhay0farxq8lucrd']);
+const STAGING_INSTANCE_NAMES = new Set([
+  KNOWN_STAGING_CANDIDATE_CURRENT_NAME,
+  KNOWN_STAGING_CANDIDATE_TARGET_NAME,
+]);
 
 export async function verifyLiveCloudHost(evidence, observed) {
   const missing = [];
@@ -18,11 +28,12 @@ export async function verifyLiveCloudHost(evidence, observed) {
     });
     if (!token || token.length > 2048) throw new Error('IMDSV2_TOKEN_INVALID');
     const get = (path, optional = false) => metadata(token, path, optional);
-    const [instanceId, instanceName, region, ownerAccountId, vpcId, vSwitchId, privateAddress, roleListing,
+    const [instanceId, instanceName, region, zone, ownerAccountId, vpcId, vSwitchId, privateAddress, roleListing,
       publicAddress, elasticAddress] = await Promise.all([
       get('instance-id'),
       get('instance/instance-name'),
       get('region-id'),
+      get('zone-id'),
       get('owner-account-id'),
       get('vpc-id'),
       get('vswitch-id'),
@@ -33,8 +44,9 @@ export async function verifyLiveCloudHost(evidence, observed) {
     ]);
     const roles = roleListing.split(/\r?\n/u).map((value) => value.trim()).filter(Boolean);
     const publicAddresses = [...new Set([publicAddress, elasticAddress].filter(Boolean))];
-    if (!safeCloudId(instanceId, 'i-') || PRODUCTION_INSTANCE_IDS.has(instanceId)
-      || !safeName(instanceName) || region !== 'cn-beijing' || !/^\d{4,32}$/u.test(ownerAccountId)
+    if (!safeCloudId(instanceId, 'i-') || instanceId !== KNOWN_STAGING_CANDIDATE_INSTANCE_ID
+      || !STAGING_INSTANCE_NAMES.has(instanceName) || region !== 'cn-beijing' || zone !== KNOWN_STAGING_CANDIDATE_ZONE
+      || !/^\d{4,32}$/u.test(ownerAccountId)
       || !safeCloudId(vpcId, 'vpc-') || !safeCloudId(vSwitchId, 'vsw-')
       || !privateIpv4(privateAddress) || roles.length !== 1 || !safeName(roles[0])
       || publicAddresses.length !== 1 || !ipv4(publicAddresses[0])
@@ -42,11 +54,10 @@ export async function verifyLiveCloudHost(evidence, observed) {
       throw new Error('CLOUD_HOST_IDENTITY_INVALID');
     }
     const publicIpv4 = publicAddresses[0];
-    const preexistingInstanceIds = [valueAt(evidence, 'network.preexistingEcsInstanceIdA'),
-      valueAt(evidence, 'network.preexistingEcsInstanceIdB')];
-    if (preexistingInstanceIds.includes(instanceId)) throw new Error('PREEXISTING_ECS_FORBIDDEN');
     matchEvidence(evidence, 'cloudIdentity.region', region, missing, observed);
     matchEvidence(evidence, 'cloudIdentity.accountId', ownerAccountId, missing, observed);
+    matchEvidence(evidence, 'network.stagingCandidateEcsInstanceId', instanceId, missing, observed);
+    matchEvidence(evidence, 'network.stagingCandidateZone', zone, missing, observed);
     matchEvidence(evidence, 'network.ecsInstanceId', instanceId, missing, observed);
     matchEvidence(evidence, 'network.vpcId', vpcId, missing, observed);
     matchEvidence(evidence, 'network.vSwitchId', vSwitchId, missing, observed);
@@ -54,17 +65,17 @@ export async function verifyLiveCloudHost(evidence, observed) {
     matchEvidence(evidence, 'network.publicAddressFingerprint', digest(publicIpv4), missing, observed);
     matchEvidence(evidence, 'network.dedicatedStagingHostSha256', digest(canonical({
       instanceId, instanceName, ownerAccountId, privateAddress, publicAddress: publicIpv4,
-      ramRoleName: roles[0], region, vpcId, vSwitchId,
+      ramRoleName: roles[0], region, vpcId, vSwitchId, zone,
     })), missing, observed);
   } catch {
     missing.push('live:aliyun-imdsv2:dedicated-staging-host');
   }
-  if (PRODUCTION_INSTANCE_IDS.has(valueAt(evidence, 'network.ecsInstanceId'))) {
+  if (valueAt(evidence, 'network.ecsInstanceId') === KNOWN_PRODUCTION_INSTANCE_ID) {
     missing.push('live:network.ecsInstanceId:production-forbidden');
   }
-  if ([valueAt(evidence, 'network.preexistingEcsInstanceIdA'),
-    valueAt(evidence, 'network.preexistingEcsInstanceIdB')].includes(valueAt(evidence, 'network.ecsInstanceId'))) {
-    missing.push('live:network.ecsInstanceId:preexisting-forbidden');
+  if (valueAt(evidence, 'network.ecsInstanceId') !== KNOWN_STAGING_CANDIDATE_INSTANCE_ID
+    || valueAt(evidence, 'network.stagingCandidateEcsInstanceId') !== KNOWN_STAGING_CANDIDATE_INSTANCE_ID) {
+    missing.push('live:network.ecsInstanceId:staging-target-mismatch');
   }
   return [...new Set(missing)];
 }

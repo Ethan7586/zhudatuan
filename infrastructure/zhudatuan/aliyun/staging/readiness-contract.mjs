@@ -1,6 +1,11 @@
 import { canonical, digest, publicStagingHost, record, sameStrings, valueAt } from './readiness-common.mjs';
 
-const KNOWN_PRODUCTION_INSTANCE_ID = 'i-2zeewhay0farxq8lucrd';
+export const KNOWN_PRODUCTION_INSTANCE_ID = 'i-2zeewhay0farxq8lucrd';
+export const KNOWN_STAGING_CANDIDATE_INSTANCE_ID = 'i-2zeewhay0farxq8lucrc';
+export const KNOWN_PRODUCTION_INSTANCE_NAME = '福福网全域系统';
+export const KNOWN_STAGING_CANDIDATE_CURRENT_NAME = '福福网-staging';
+export const KNOWN_STAGING_CANDIDATE_TARGET_NAME = '福福网 staging';
+export const KNOWN_STAGING_CANDIDATE_ZONE = 'cn-beijing-f';
 
 const verificationClass = Object.freeze({
   P00: 'manual-attestation', P01: 'live', P02: 'manual-attestation', P03: 'manual-attestation',
@@ -12,8 +17,10 @@ export const gates = Object.freeze({
   P00: ['cloudIdentity.region', 'cloudIdentity.accountId', 'cloudIdentity.principalFingerprint', 'cloudIdentity.sessionExpiresAt'],
   P01: ['candidate.commit', 'candidate.archiveSha256', 'candidate.inventorySha256', 'candidate.treeState'],
   P02: ['ownerIntegration.commit', 'ownerIntegration.migrationInventorySha256', 'ownerIntegration.invariantTestSha256', 'ownerIntegration.tenantBoundaryTestSha256'],
-  P03: ['cloudIdentity.inventorySha256', 'network.preexistingEcsInstanceIdA',
-    'network.preexistingEcsInstanceIdB', 'network.existingHostExclusionSha256'],
+  P03: ['cloudIdentity.inventorySha256', 'network.productionEcsInstanceId',
+    'network.productionEcsCurrentName', 'network.stagingCandidateEcsInstanceId',
+    'network.stagingCandidateCurrentName', 'network.stagingCandidateTargetName',
+    'network.stagingCandidateZone', 'network.existingHostInventorySha256'],
   P04: ['approval.approvedAt', 'approval.specificationSha256', 'approval.costEstimateSha256'],
   P05: ['cloudIdentity.resourceGroupId', 'network.ecsInstanceId', 'network.dedicatedStagingHostSha256',
     'network.vpcId', 'network.vSwitchId', 'network.securityGroupId', 'network.ecsRamRoleName',
@@ -78,30 +85,54 @@ export function validateEvidence(evidence) {
   ]);
   const actual = new Set(leafPaths(evidence));
   if (!sameStrings([...actual], [...expected])) fail('EVIDENCE_SCHEMA_INVALID');
-  try { assertPreexistingEcsBoundary(evidence); }
-  catch (cause) { fail(cause instanceof Error ? cause.message : 'EVIDENCE_PREEXISTING_ECS_INVENTORY_INVALID'); }
+  try { assertEcsTargetBoundary(evidence); }
+  catch (cause) { fail(cause instanceof Error ? cause.message : 'EVIDENCE_ECS_TARGET_INVENTORY_INVALID'); }
   rejectSensitiveContent(evidence);
 }
 
-export function assertPreexistingEcsBoundary(evidence) {
-  const ids = [valueAt(evidence, 'network.preexistingEcsInstanceIdA'),
-    valueAt(evidence, 'network.preexistingEcsInstanceIdB')];
-  const completeIds = ids.filter((value) => typeof value === 'string' && value !== 'pending');
-  if (completeIds.length === 0) return;
-  if (completeIds.length !== 2 || !ids.every((value) => /^i-[A-Za-z0-9-]{6,126}$/u.test(value))
-    || new Set(ids).size !== 2 || !ids.includes(KNOWN_PRODUCTION_INSTANCE_ID)) {
-    throw new Error('EVIDENCE_PREEXISTING_ECS_INVENTORY_INVALID');
+export function assertEcsTargetBoundary(evidence) {
+  const inventory = Object.freeze({
+    region: 'cn-beijing',
+    production: Object.freeze({
+      instanceId: valueAt(evidence, 'network.productionEcsInstanceId'),
+      instanceName: valueAt(evidence, 'network.productionEcsCurrentName'),
+    }),
+    stagingCandidate: Object.freeze({
+      instanceId: valueAt(evidence, 'network.stagingCandidateEcsInstanceId'),
+      currentName: valueAt(evidence, 'network.stagingCandidateCurrentName'),
+      targetName: valueAt(evidence, 'network.stagingCandidateTargetName'),
+      zone: valueAt(evidence, 'network.stagingCandidateZone'),
+    }),
+  });
+  const observed = [
+    inventory.production.instanceId,
+    inventory.production.instanceName,
+    inventory.stagingCandidate.instanceId,
+    inventory.stagingCandidate.currentName,
+    inventory.stagingCandidate.targetName,
+    inventory.stagingCandidate.zone,
+  ];
+  if (observed.every((value) => value === 'pending')) return;
+  if (inventory.production.instanceId !== KNOWN_PRODUCTION_INSTANCE_ID
+    || inventory.production.instanceName !== KNOWN_PRODUCTION_INSTANCE_NAME
+    || inventory.stagingCandidate.instanceId !== KNOWN_STAGING_CANDIDATE_INSTANCE_ID
+    || inventory.stagingCandidate.currentName !== KNOWN_STAGING_CANDIDATE_CURRENT_NAME
+    || inventory.stagingCandidate.targetName !== KNOWN_STAGING_CANDIDATE_TARGET_NAME
+    || inventory.stagingCandidate.zone !== KNOWN_STAGING_CANDIDATE_ZONE) {
+    throw new Error('EVIDENCE_ECS_TARGET_INVENTORY_INVALID');
   }
-  const sorted = [...ids].sort();
-  if (ids[0] !== sorted[0] || ids[1] !== sorted[1]) throw new Error('EVIDENCE_PREEXISTING_ECS_INVENTORY_ORDER_INVALID');
-  const expectedDigest = digest(canonical({ region: 'cn-beijing', preexistingEcsInstanceIds: sorted }));
-  const recordedDigest = valueAt(evidence, 'network.existingHostExclusionSha256');
+  const recordedDigest = valueAt(evidence, 'network.existingHostInventorySha256');
+  const expectedDigest = digest(canonical(inventory));
   if (recordedDigest !== 'pending' && recordedDigest !== expectedDigest) {
-    throw new Error('EVIDENCE_PREEXISTING_ECS_INVENTORY_DIGEST_INVALID');
+    throw new Error('EVIDENCE_ECS_TARGET_INVENTORY_DIGEST_INVALID');
   }
   const candidate = valueAt(evidence, 'network.ecsInstanceId');
-  if (typeof candidate === 'string' && candidate !== 'pending' && ids.includes(candidate)) {
-    throw new Error('EVIDENCE_PREEXISTING_ECS_SELECTED_AS_STAGING');
+  if (candidate === KNOWN_PRODUCTION_INSTANCE_ID) {
+    throw new Error('EVIDENCE_PRODUCTION_ECS_SELECTED_AS_STAGING');
+  }
+  if (typeof candidate === 'string' && candidate !== 'pending'
+    && candidate !== KNOWN_STAGING_CANDIDATE_INSTANCE_ID) {
+    throw new Error('EVIDENCE_STAGING_ECS_TARGET_MISMATCH');
   }
 }
 
@@ -112,6 +143,9 @@ function leafPaths(value, prefix = '') {
 
 function complete(value, path) {
   if (value === undefined || value === null || value === '' || value === 'pending') return false;
+  if (path === 'network.productionEcsCurrentName') return value === KNOWN_PRODUCTION_INSTANCE_NAME;
+  if (path === 'network.stagingCandidateCurrentName') return value === KNOWN_STAGING_CANDIDATE_CURRENT_NAME;
+  if (path === 'network.stagingCandidateTargetName') return value === KNOWN_STAGING_CANDIDATE_TARGET_NAME;
   if (path.endsWith('Sha256') || path.endsWith('Fingerprint') || path.endsWith('.commit')) return /^[a-f0-9]{64}$/.test(value) || (path.endsWith('.commit') && /^[a-f0-9]{40}$/.test(value));
   if (path.endsWith('At') || path.endsWith('ExpiresAt')) return typeof value === 'string' && Number.isFinite(Date.parse(value));
   if (path.endsWith('Absent') || path.endsWith('Enabled') || path.endsWith('Protection')) return value === true;

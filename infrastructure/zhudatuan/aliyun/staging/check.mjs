@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
 import { canonical, digest } from './readiness-common.mjs';
-import { assertPreexistingEcsBoundary, gates, validateEvidence, verifyGate } from './readiness-contract.mjs';
+import { assertEcsTargetBoundary, gates, validateEvidence, verifyGate } from './readiness-contract.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const repository = resolve(directory, '../../../..');
@@ -306,12 +306,14 @@ assert.ok(!artifacts.deploymentArtifacts.includes('infrastructure/zhudatuan/aliy
 for (const token of [
   '本文件不授權建立或修改任何雲資源',
   'i-2zeewhay0farxq8lucrd',
-  '北京現確認共有 2 台 ECS',
-  '未來改名為「福福網」',
-  '它不得被標記或使用為 staging',
+  'i-2zeewhay0farxq8lucrc',
+  'cn-beijing-f',
+  '最終顯示名為「福福網 staging」',
+  '不授權備份、登入、快照、改名、改網路／RAM role 或部署',
+  '目前沒有建立或修改它們的授權',
   'Secret Store / local envelope KMS boundary',
   '改為阿里雲託管 KMS／Secrets Manager',
-  '登入後的北京售賣頁即時報價',
+  '登入後的北京控制台即時資料',
 ]) assert.ok(files['STAGING-INFRASTRUCTURE-SPEC-20260829.md'].includes(token), `infrastructure approval boundary missing: ${token}`);
 const costApproval = parseYaml(files['staging-cost-approval.example.yml']);
 assert.equal(costApproval.state, 'pending-user-approval');
@@ -336,9 +338,13 @@ assert.equal(readinessEvidence.profile, 'full');
 assert.equal(readinessEvidence.productionTrafficPercent, 0);
 assert.equal(readinessEvidence.productionDataAccess, 'forbidden');
 assert.equal(readinessEvidence.ownerIntegration.tenantBoundaryTestSha256, 'pending');
-assert.equal(readinessEvidence.network.preexistingEcsInstanceIdA, 'pending');
-assert.equal(readinessEvidence.network.preexistingEcsInstanceIdB, 'pending');
-assert.equal(readinessEvidence.network.existingHostExclusionSha256, 'pending');
+assert.equal(readinessEvidence.network.productionEcsInstanceId, 'i-2zeewhay0farxq8lucrd');
+assert.equal(readinessEvidence.network.productionEcsCurrentName, '福福网全域系统');
+assert.equal(readinessEvidence.network.stagingCandidateEcsInstanceId, 'i-2zeewhay0farxq8lucrc');
+assert.equal(readinessEvidence.network.stagingCandidateCurrentName, '福福网-staging');
+assert.equal(readinessEvidence.network.stagingCandidateTargetName, '福福网 staging');
+assert.equal(readinessEvidence.network.stagingCandidateZone, 'cn-beijing-f');
+assert.equal(readinessEvidence.network.existingHostInventorySha256, 'pending');
 assert.equal(readinessEvidence.network.dedicatedStagingHostSha256, 'pending');
 assert.equal(readinessEvidence.network.publicAddressFingerprint, 'pending');
 assert.equal(readinessEvidence.hostConfiguration.hostToolchainSha256, 'pending');
@@ -362,11 +368,20 @@ for (const paths of Object.values(gates)) {
 }
 for (const gate of Object.keys(gates)) completeEvidenceFixture.checks[gate] = 'verified';
 validateEvidence(completeEvidenceFixture);
-const preexistingEcsCandidateFixture = structuredClone(completeEvidenceFixture);
-preexistingEcsCandidateFixture.network.ecsInstanceId = preexistingEcsCandidateFixture.network.preexistingEcsInstanceIdB;
-assert.throws(() => assertPreexistingEcsBoundary(preexistingEcsCandidateFixture),
-  /EVIDENCE_PREEXISTING_ECS_SELECTED_AS_STAGING/u,
-  'neither Beijing ECS present before provisioning may become the staging candidate');
+for (const gate of Object.keys(gates)) {
+  assert.deepEqual(verifyGate(completeEvidenceFixture, gate).missing, [],
+    `complete evidence fixture must satisfy ${gate}`);
+}
+const productionEcsCandidateFixture = structuredClone(completeEvidenceFixture);
+productionEcsCandidateFixture.network.ecsInstanceId = productionEcsCandidateFixture.network.productionEcsInstanceId;
+assert.throws(() => assertEcsTargetBoundary(productionEcsCandidateFixture),
+  /EVIDENCE_PRODUCTION_ECS_SELECTED_AS_STAGING/u,
+  'the production instance must remain forbidden even though its ID differs only in the last character');
+const wrongStagingEcsCandidateFixture = structuredClone(completeEvidenceFixture);
+wrongStagingEcsCandidateFixture.network.ecsInstanceId = 'i-unapproved-staging-candidate';
+assert.throws(() => assertEcsTargetBoundary(wrongStagingEcsCandidateFixture),
+  /EVIDENCE_STAGING_ECS_TARGET_MISMATCH/u,
+  'P05 must use the exact Owner-confirmed staging candidate');
 const missingPriorFieldFixture = structuredClone(completeEvidenceFixture);
 missingPriorFieldFixture.candidate.commit = 'pending';
 assert.ok(verifyGate(missingPriorFieldFixture, 'P05').missing.includes('candidate.commit:prerequisite'),
@@ -411,10 +426,11 @@ for (const token of [
   'verifyLiveCloudHost',
   "'/latest/api/token'",
   "'x-aliyun-ecs-metadata-token'",
-  'PRODUCTION_INSTANCE_IDS',
-  'preexistingEcsInstanceIdA',
-  'preexistingEcsInstanceIdB',
-  'PREEXISTING_ECS_FORBIDDEN',
+  'KNOWN_PRODUCTION_INSTANCE_ID',
+  'KNOWN_STAGING_CANDIDATE_INSTANCE_ID',
+  'stagingCandidateEcsInstanceId',
+  'staging-target-mismatch',
+  "get('zone-id')",
   'verifyLiveHostToolchain',
   'verifyInstalledFullUnits',
   'NeedDaemonReload',
@@ -1032,11 +1048,21 @@ function setEvidenceValue(evidence, path, value) {
 function fixtureValue(path) {
   if (path === 'cloudIdentity.region') return 'cn-beijing';
   if (path === 'candidate.treeState') return 'clean';
-  if (path === 'network.preexistingEcsInstanceIdA') return 'i-2zeewhay0farxq8lucrd';
-  if (path === 'network.preexistingEcsInstanceIdB') return 'i-preexisting-second-20260829';
-  if (path === 'network.existingHostExclusionSha256') return digest(canonical({
+  if (path === 'network.productionEcsInstanceId') return 'i-2zeewhay0farxq8lucrd';
+  if (path === 'network.productionEcsCurrentName') return '福福网全域系统';
+  if (path === 'network.stagingCandidateEcsInstanceId' || path === 'network.ecsInstanceId') return 'i-2zeewhay0farxq8lucrc';
+  if (path === 'network.stagingCandidateCurrentName') return '福福网-staging';
+  if (path === 'network.stagingCandidateTargetName') return '福福网 staging';
+  if (path === 'network.stagingCandidateZone') return 'cn-beijing-f';
+  if (path === 'network.existingHostInventorySha256') return digest(canonical({
     region: 'cn-beijing',
-    preexistingEcsInstanceIds: ['i-2zeewhay0farxq8lucrd', 'i-preexisting-second-20260829'].sort(),
+    production: { instanceId: 'i-2zeewhay0farxq8lucrd', instanceName: '福福网全域系统' },
+    stagingCandidate: {
+      instanceId: 'i-2zeewhay0farxq8lucrc',
+      currentName: '福福网-staging',
+      targetName: '福福网 staging',
+      zone: 'cn-beijing-f',
+    },
   }));
   if (path.endsWith('Host')) return 'test.staging.example.invalid';
   if (path.endsWith('Absent') || path.endsWith('Enabled') || path.endsWith('Protection')) return true;

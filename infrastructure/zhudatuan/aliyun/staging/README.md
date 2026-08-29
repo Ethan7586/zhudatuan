@@ -9,6 +9,8 @@
 
 目前 `full` 是 `gated-not-yet-verified` 的 fail-closed 合同，授權狀態為 `readiness-gates-required`。獨立 RDS、Redis、Secret Catalog、KMS、完整 Provider 配置、DNS／TLS 與 Edge Access 的實際證據未完成前，不得跨 gate 啟動、不得稱為已接通。逐項操作、停止條件與證據格式見 `PREPARE.md` 及 `readiness.evidence.example.yml`。
 
+已鎖定的唯一 staging ECS 候選是北京 F 區、運行中的 `i-2zeewhay0farxq8lucrc`，控制台當前顯示名「福福網-staging」，Owner 指定的最終顯示名「福福網 staging」。正式 ECS `i-2zeewhay0farxq8lucrd`（「福福網全域系統」）正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久禁止觸碰。兩個 ID 只差最後一個字符；任何動作前必須核對完整 ID。候選身份已確認不等於批准備份、登入、改名、改網路／RAM role 或部署；初次備份／快照及後續每項寫操作都須遵循 P03–P05 的獨立批准門禁。
+
 ## 公網路由邊界
 
 兩個 profile 都只把身份 API 的精確 method/path 放到公網。Owner 邀請新增路由如下：
@@ -39,7 +41,7 @@
 
 在 Full 的 readiness gates 授權啟動前，必須把以下證據放進受控 Release 記錄，而不是只提供口頭名稱；不要手改靜態 YAML 來假裝已通過：
 
-1. 全新且獨立的 staging ECS、resource group、VPC/vSwitch、安全組與 RAM role；任何承載 `*.zhudatuan.com` 正式站點的既有 ECS 都是禁止目標。
+1. 只復用已鎖定的 `i-2zeewhay0farxq8lucrc`，不得另選或建立其他 ECS。P03 先只讀盤點其磁碟、資源組、VPC/vSwitch、安全組、公網入口、RAM role 與承載內容；P04 批准拓撲／成本後，仍須先為備份／快照取得當次批准並驗證可恢復，再逐項批准改名、網路／RAM role、登入和部署。`network.stagingCandidateEcsInstanceId` 與 P05 的 `network.ecsInstanceId` 必須都精確等於該完整 ID；正式機 `i-2zeewhay0farxq8lucrd` 永久拒絕。
 2. 隔離 RDS PostgreSQL 的私網 endpoint、database identity、snapshot、PITR 與還原演練證據。
 3. DB 角色矩陣固定為：3 個 runtime LOGIN（`zhudatuanidentityapi`、`zhudatuanidentityjob`、`shopjob`）、7 個初始化後必須退役的歷史／一次性 LOGIN（`shopapp`、`shopmigration`、`shopread`、`zhudatuanbootstrap`、`zhudatuanwebapi`、`zhudatuanpurchaseapi`、`zhudatuansandboxbootstrap`），以及 4 個永久 `NOLOGIN` boundary role（`anon`、`authenticated`、`service_role`、`zhudatuanregistrationboundary`）。Retirement 事務必須對所有退役角色執行 `NOLOGIN PASSWORD NULL` 並撤銷 membership；live gate 以 `NOLOGIN`、membership／ACL 為零及 SQL digest 收據證明邊界，因 PostgreSQL 的 `pg_roles.rolpassword` 對非超級使用者固定遮罩，不能拿它作 password-null 證據。`shopmigration` 只保留不可登入的 database ownership。
 4. 獨立 staging Redis 或等價 VPC／ACL 硬邊界，`zhudatuan-staging/full/redis/jobs` 絕不能解析到正式 Redis。
@@ -137,10 +139,10 @@ unset -f install_new_root_secret
 
 以下 Host 必須是隔離 Full Host；Auth／Console 的 API Origin 必須與 Caddy profile 一致：
 
-2026-08-29 的只讀審計顯示品牌 staging DNS 仍未就緒。只有 P05 建立並核對**全新獨立 ECS** 後，才可用該 ECS 的新公網 IPv4 產生三個臨時 `sslip.io` Host；禁止填入既有正式 ECS 的地址。三個 Host 必須只解析到同一個新地址，P10 會把解析結果與 P05 的 `network.publicAddressFingerprint` 比對。這只是臨時解析，不是品牌 staging DNS；Caddy ACME／HTTPS 成功前不得開始公網驗收。
+2026-08-29 的只讀審計顯示品牌 staging DNS 仍未就緒。只有候選 `i-2zeewhay0farxq8lucrc` 完成只讀盤點、備份驗證及 P05 當次網路／部署批准，並由 IMDSv2 核對完整 ID 後，才可用其已批准的 staging 公網 IPv4 產生三個臨時 `sslip.io` Host；禁止填入正式 ECS `i-2zeewhay0farxq8lucrd` 的地址。三個 Host 必須只解析到同一個已核對地址，P10 會把解析結果與 P05 的 `network.publicAddressFingerprint` 比對。這只是臨時解析，不是品牌 staging DNS；Caddy ACME／HTTPS 成功前不得開始公網驗收。
 
 ```bash
-staging_public_ipv4='<P05 核對的新 ECS 公網 IPv4>'
+staging_public_ipv4='<P05 核對的 i-2zeewhay0farxq8lucrc staging 公網 IPv4>'
 [[ "$staging_public_ipv4" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || exit 1
 staging_sslip_label="${staging_public_ipv4//./-}"
 export ZHUDATUAN_STAGING_FULL_ACCOUNTS_HOST="accounts.staging.${staging_sslip_label}.sslip.io"
@@ -200,7 +202,7 @@ PG16 fixture 只建立帶唯一名稱的本機 Docker network／server／client�
 
 上述本機 fixture 驗證 SQL 交易性與錯目標零變更，但容器正向路徑使用 vanilla `postgres` superuser，不能證明阿里雲 RDS 的 pseudo-superuser 語義。P09 必須在新、已批准的 staging RDS 上以實際 init authority 連續成功執行兩次同 sentinel 初始化，第二次只能是 exact replay；把脫敏 transcript、當前 authority/DB/私網 peer、前後 role matrix 與最終 boundary membership=0 的 canonical SHA-256 寫入 `database.rdsAdminInitReplaySha256`。任何一步不成立，P09 不得 verified。
 
-P07 在新 ECS 上要求 `/usr/bin/node >= 22.22`、`systemd/systemd-analyze >= 252`、Caddy >= 2.8、PostgreSQL client tools >= 16、OpenSSL >= 3，並對候選的 9 個 unit 執行 `systemd-analyze verify`。版本與 unit digest 共同寫入 `hostConfiguration.hostToolchainSha256`；不滿足即停止。
+P07 只可在已完成備份驗證並獲得主機登入當次批准的 `i-2zeewhay0farxq8lucrc` 上核對 `/usr/bin/node >= 22.22`、`systemd/systemd-analyze >= 252`、Caddy >= 2.8、PostgreSQL client tools >= 16、OpenSSL >= 3，並對候選的 9 個 unit 執行 `systemd-analyze verify`。版本與 unit digest 共同寫入 `hostConfiguration.hostToolchainSha256`；IMDSv2 ID 不一致或版本不滿足即停止。
 
 所有檔案與外部前置證據備妥後，先顯式啟動 PostgreSQL TLS proxy 與 staging 專用 Internal Runtime。Full 的九個 unit 均由 systemd 擁有，不得用 PM2 啟動：
 
@@ -242,7 +244,7 @@ systemctl is-active caddy.service
 curl --fail --silent http://127.0.0.1:4431/health/ready
 ```
 
-Installer 只在 P05 的全新獨立 ECS 上使用：它以 IMDSv2 精確比對批准的 instance/VPC/vSwitch/public IP，拒絕正式 Host、`import`、symlink、非 distro Caddy unit、額外 drop-in，以及任何既非發行版原始配置也非本工具管理版本的 active Caddyfile。覆蓋前先把 active Caddyfile／既有受控 drop-in 依 SHA-256 存入 root-only `shared/caddy-backups`，再原子安裝候選；它本身不 daemon-reload、reload、restart 或切流量。P10 會再次核對 active Caddyfile、drop-in、root-only `full-caddy.env`、systemd effective properties與候選 Release 完全一致，且 `NeedDaemonReload=no`。
+Installer 只在已完成備份驗證且取得部署當次批准的 `i-2zeewhay0farxq8lucrc` 上使用：它以 IMDSv2 精確比對批准的完整 instance ID、`cn-beijing-f`、VPC/vSwitch/public IP，並硬拒正式機 `i-2zeewhay0farxq8lucrd`、其他 Host、`import`、symlink、非 distro Caddy unit、額外 drop-in，以及任何既非發行版原始配置也非本工具管理版本的 active Caddyfile。覆蓋前先把 active Caddyfile／既有受控 drop-in 依 SHA-256 存入 root-only `shared/caddy-backups`，再原子安裝候選；它本身不 daemon-reload、reload、restart 或切流量。P10 會再次核對 active Caddyfile、drop-in、root-only `full-caddy.env`、systemd effective properties 與候選 Release 完全一致，且 `NeedDaemonReload=no`。
 
 P11 Owner 邀請／短信 E2E 通過後，本候選仍**不得啟動 Full Jobs**。目前缺少無副作用的 `FullJobsPreflightMain` 與 audited sandbox provider adapters；unit 以 `ExecCondition=/usr/bin/false` 固定 fail closed，且沒有 `[Install]`。任意手填的 `providerSandboxSha256` 或其他 64 位摘要都不能解除此阻斷。完成獨立設計、測試與批准前，驗收結論最多是「Owner 公網邀請＋短信鏈路通」，不可稱 Full ready。
 

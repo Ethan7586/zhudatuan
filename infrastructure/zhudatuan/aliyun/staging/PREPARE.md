@@ -11,9 +11,9 @@
 | P00 | 用戶              | 可用 MFA 登入阿里雲，地域為 `cn-beijing`，可看到 CloudSSO／RAM、ECS、VPC、RDS、Tair、短信控制台                   | 停止，不建立資源                              |
 | P01 | Codex             | clean candidate 可重建；單元、部署合同、環境驗證、制品 SHA-256 全通過                                             | 修代碼，禁止部署                              |
 | P02 | Codex＋Owner 任務 | Owner 全域功能／轉讓的 commit、migration 順序、唯一 Owner 不變式與回歸測試已核對                                  | 不整合、不跑 migration                        |
-| P03 | 用戶＋Codex       | 只讀盤點既有資源並記錄不合格主機排除證據；無雲端寫入                                                             | 保持只讀，禁止沿用正式主機                    |
-| P04 | 用戶              | 明確批准獨立 ECS／RDS／Tair、resource group／VPC 的地域、規格、付費模式與預估成本                                  | 不購買資源                                    |
-| P05 | 用戶              | 只在 staging resource group 手動建立獨立 ECS、RDS PostgreSQL、Tair、VPC/vSwitch/安全組與 ECS RAM role             | 立即停止並釋放誤建資源                        |
+| P03 | 用戶＋Codex       | 只讀盤點已鎖定候選 `i-2zeewhay0farxq8lucrc` 並永久排除正式機 `i-2zeewhay0farxq8lucrd`；無雲端寫入                  | 保持只讀，禁止登入或沿用正式主機              |
+| P04 | 用戶              | 明確批准復用候選 ECS 的隔離／硬化規格、新 RDS／Tair、resource group／VPC 的地域、付費模式、預估成本與硬上限          | 不備份、不修改、不購買資源                    |
+| P05 | 用戶              | 逐項取得當次授權：先建立並驗證候選備份，再按批准改名／硬化；另行建立隔離 RDS PostgreSQL、Tair 及 staging 網路資源    | 立即停止；不得把某一步批准擴張到其他寫操作    |
 | P06 | Codex＋用戶       | RDS TLS、白名單、刪除保護、備份/PITR/還原與 exact 私網 IP；Tair TLS、ACL、AOF、備份均有證據                       | 不安裝 runtime Secret                         |
 | P07 | Codex＋用戶       | 控制面預建 safe `zhudatuanregistrationboundary` 並證明精確暫時 SET edge；role matrix、Secret、TLS、proxy 文件通過檢查 | 不啟服務                                  |
 | P08 | 用戶＋Codex       | ECS runtime role 僅有 `dysms:SendSms`；簽名、模板、報備可用；IMDSv2 身份核對完成                                  | 不發短信                                      |
@@ -45,19 +45,22 @@ Codex 發到部署任務的每條操作消息必須包含：當前 ID、唯一�
 
 ### P03：只讀盤點
 
-使用 CloudSSO 的一小時 session；不建立 RAM user／AccessKey，不附 `Aliyun*FullAccess`。只讀盤點記錄 account、地域與既有資源摘要。任何承載 `*.zhudatuan.com` 正式站點、未綁 staging resource group 或需覆蓋既有 Caddy 的 ECS，必須寫入 `existingHostExclusionSha256` 並排除；不得查看後再順手修改。
+使用 CloudSSO 的一小時 session；不建立 RAM user／AccessKey，不附 `Aliyun*FullAccess`。只讀盤點記錄 account、地域與既有資源摘要。正式機與唯一 staging 候選的權威字段及 canonical 摘要必須寫入 `network.productionEcs*`、`network.stagingCandidateEcs*` 與 `network.existingHostInventorySha256`；任何承載 `*.zhudatuan.com` 正式站點的 ECS 都必須排除，不得查看後再順手修改。
 
-目前已排除承載福利商城全域正式系統的 `i-2zeewhay0farxq8lucrd`；北京第二台「小服務器」尚未鎖定身份。P03 下一個且唯一允許的人工動作，是從北京 ECS 列表只讀記錄第二台的實例 ID、當前名稱與狀態，再逐項核對磁碟、網路、公網入口、RAM role 及當前承載內容。兩台部署前既有 ECS 的精確 ID 必須按字典序填入 `network.preexistingEcsInstanceIdA/B`，Codex 以 `{region:'cn-beijing',preexistingEcsInstanceIds:[...sortedIds]}` 的 canonical SHA-256 填入 `existingHostExclusionSha256`；P05 候選若等於其中任一 ID，evidence 與 IMDSv2 live gate 都會拒絕。直到第二台 ID 完成只讀鎖定，P03/P05 均不得標為 verified。Owner 希望它未來改名為「福福網」，但那是「精確鎖定 → 備份並驗證 → 當次批准 → 改名」的獨立寫入流程；P03 不得登入、快照、備份、改名或把它視為 staging。
+北京兩台 ECS 已精確區分：隔離 staging 候選是 `i-2zeewhay0farxq8lucrc`，位於 `cn-beijing-f`、運行中，當前顯示名「福福網-staging」；正式機是 `i-2zeewhay0farxq8lucrd`，顯示名「福福網全域系統」，正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久禁止觸碰。兩個 ID 只差最後一個字符，任何動作前都必須核對完整 ID，不得只憑名稱、前綴或截斷值選擇實例。
+
+P03 只可繼續盤點候選的磁碟、資源組、VPC/vSwitch、安全組、公網入口、RAM role、規格與當前承載內容；不得登入、快照、備份、改名或執行任何寫操作。盤點記錄必須以 `network.productionEcsInstanceId`／`network.productionEcsCurrentName` 綁定正式機，以 `network.stagingCandidateEcsInstanceId`／`network.stagingCandidateCurrentName`／`network.stagingCandidateTargetName`／`network.stagingCandidateZone` 綁定候選，並把完整 canonical inventory 摘要寫入 `network.existingHostInventorySha256`；後續 P05/P07 的 `network.ecsInstanceId` 必須精確等於 `i-2zeewhay0farxq8lucrc`，IMDSv2 live gate 也必須返回同一完整值。身份鎖定不等於部署授權：初次備份／快照須另取該動作批准；備份完成並驗證後，改名為 Owner 指定的「福福網 staging」、改網路／安全組／RAM role、登入及部署仍各自需要當次批准。
 
 ### P04–P06：付費資源及硬化
 
-只有 `STAGING-INFRASTRUCTURE-SPEC-20260829.md` 與填妥的 `staging-cost-approval.example.yml`（北京售賣頁即時報價）得到 Ethan 對**具體規格與硬上限**的明確批准後，才由用戶在控制台手動建立資源。P04 前不建立、訂閱或修改任何雲資源；這可避免 provision API 使用廣域 Resource 所帶來的跨地域誤建風險。
+只有 `STAGING-INFRASTRUCTURE-SPEC-20260829.md` 與填妥的 `staging-cost-approval.example.yml`（北京控制台即時成本資料）得到 Ethan 對**候選復用／硬化規格、新 RDS/Tair 規格與成本硬上限**的明確批准後，才可進入 P05。P04 前不登入主機、不建立備份／快照、不改名／網路／RAM role、不部署，也不建立或訂閱 RDS/Tair；這可避免把成本批准誤當成寫入授權，或由 provision API 的廣域 Resource 造成跨地域誤建。
 
 先把 template 複製成不進 git 的批准文件，另存已脫敏北京報價、批准規格與獨立 Ethan 批准收據三個只讀文件，再執行 `node infrastructure/zhudatuan/aliyun/staging/validate-cost-approval.mjs --file <approved-yaml> --quote-evidence <redacted-quote-file> --specification <spec-file> --approval-receipt <receipt-file>`。驗證器會實際讀取三份 evidence bytes 並重算 YAML 內三個 SHA-256，且拒絕 symlink、可被 group/world 寫入或重複使用的 evidence 文件；同時拒絕 extra key、過期／超過 24 小時的報價、未批准狀態、錯誤 72/730 小時計算、短信／流量 cap 算術及低於 72 小時估算的 hard cap。其輸出的 `costEstimateSha256` 才可填入 P04 evidence。這能證明批准 YAML 綁定指定 bytes，但仍須人工核對報價文件確實源自登入後的北京售賣頁，且不替代 Ethan 在獨立 task 中的明確批准。
 
-- ECS：全新 staging resource group、專用 VPC/vSwitch/安全組與 RAM role；不得承載或匯入任何正式域名／Caddy route，不得沿用既有正式 ECS。
+- ECS：只復用 `i-2zeewhay0farxq8lucrc`，不得另選其他 ECS。先獲得候選備份／快照的當次批准並驗證可恢復，再逐項批准資源組、專用 VPC/vSwitch、安全組、RAM role、改名、登入及部署；不得承載或匯入任何正式域名／Caddy route。若只讀盤點顯示它無法安全隔離，立即停止並重新審批。
 - RDS：PostgreSQL、私網 endpoint、同 VPC、無公網地址、只允許 staging ECS 私網來源；開 TLS、刪除保護、備份/PITR，完成一次還原演練。
 - Tair：同 VPC、無公網地址、密碼驗證、TLS、AOF、備份；只允許 staging ECS。
+- 當前只確認候選 ECS 身份；尚未授權建立 RDS/Tair，也未授權任何 ECS、網路、RAM 或部署寫操作。P05 的每項批准只覆蓋消息中列出的精確動作。
 - 建立後只保留 exact RDS/Tair ARN 的配置權限，撤銷暫時的 provisioner assignment。
 
 ### P07：主機私有配置
@@ -88,7 +91,7 @@ ECS runtime role 僅附以下動作，不建立長期 AccessKey：
 }
 ```
 
-短信產品不支援把 IAM 權限限制到特定簽名、模板或手機號，因此簽名／模板／報備要另以控制台證據核對。既有 ECS role 只能增加這個精確 policy，不能直接替換 role。
+短信產品不支援把 IAM 權限限制到特定簽名、模板或手機號，因此簽名／模板／報備要另以控制台證據核對。候選 ECS 的既有 RAM role 必須先只讀盤點；備份驗證與當次批准後，也只能增加這個精確 policy，不能直接替換 role。
 
 ### P09–P10：啟動順序
 
@@ -100,7 +103,7 @@ ECS runtime role 僅附以下動作，不建立長期 AccessKey：
 6. Retirement 事務必須對 7 個退役角色執行 `NOLOGIN PASSWORD NULL` 並撤銷所有相關 membership；live gate 證明它們 `NOLOGIN`、membership／ACL 為零，password-null 則由原子 SQL 與 digest 收據綁定（`pg_roles.rolpassword` 對非超級使用者固定遮罩，不能作 live 證據）。只有 3 個 runtime 角色可登入，4 個 compatibility/boundary 角色永久 `NOLOGIN`，`shopmigration` 僅保留 inert database ownership。再刪除 `full-migration.env`、`full-owner-bootstrap.env`、`rds-init.env`、`database-retire.env`，切換 runtime catalog/policy；驗證四個 env 均不存在，並以 `database.roleMatrixSha256` 與 `hostConfiguration.runtimeBoundarySha256` 記錄 P09 邊界。
 7. P10 顯式 `systemctl start` Identity API 與 Identity OTP Jobs；每條 runtime 啟動鏈都必須重新通過 live DB boundary，不依賴重啟後會消失的一次性 unit active 狀態。
    `registration-only` 在 `bootstrap_pending` 期間同樣禁止對外；DB oracle 必須回報恰好一個 `active` platform Owner，且四個 one-shot env 均不存在，否則 service 不啟動／不 ready。
-8. 只在全新獨立 ECS 執行 `install-caddy-candidate.sh --dedicated-staging-host`；腳本先用 IMDSv2 綁定 P05，且只接受發行版原始或本工具管理的 Caddyfile，覆蓋前建立 SHA-256 命名的 root-only 恢復副本。另一步重新核對備份後，才可 `systemctl daemon-reload`、`restart caddy`。P10 核對 active Caddyfile、唯一受控 drop-in、root-only Host env、DNS 與 P05 新公網地址 fingerprint；Full Jobs 必須保持 inactive 且不得 enable。
+8. 只在已完成備份驗證並獲得部署當次批准的 `i-2zeewhay0farxq8lucrc` 執行 `install-caddy-candidate.sh --dedicated-staging-host`；腳本先用 IMDSv2 精確綁定 P05 的完整 instance ID，任何返回 `i-2zeewhay0farxq8lucrd` 或其他 ID 的情況立即停止。它只接受發行版原始或本工具管理的 Caddyfile，覆蓋前建立 SHA-256 命名的 root-only 恢復副本。另一步重新核對備份並取得服務操作批准後，才可 `systemctl daemon-reload`、`restart caddy`。P10 核對 active Caddyfile、唯一受控 drop-in、root-only Host env、DNS 與 P05 已核對公網地址 fingerprint；Full Jobs 必須保持 inactive 且不得 enable。
 9. 先驗本機健康與 Internal Runtime 權限探針，再驗公網 allowlist；未列出的 API 必須 404。P10 以 `runtime.systemdStateSha256`、`runtime.caddyValidationSha256`、`runtime.dnsResolutionSha256` 與 `runtime.internalAccessProbeSha256` 記錄結果。
 
 任何一項失敗即停止；禁止跳過失敗 gate，禁止用正式資料／正式 endpoint 臨時頂替。

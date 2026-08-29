@@ -25,9 +25,13 @@ cloudIdentity:
   resourceGroupId: pending
 
 network:
-  preexistingEcsInstanceIdA: pending
-  preexistingEcsInstanceIdB: pending
-  existingHostExclusionSha256: pending
+  productionEcsInstanceId: i-2zeewhay0farxq8lucrd
+  productionEcsCurrentName: 福福网全域系统
+  stagingCandidateEcsInstanceId: i-2zeewhay0farxq8lucrc
+  stagingCandidateCurrentName: 福福网-staging
+  stagingCandidateTargetName: 福福网 staging
+  stagingCandidateZone: cn-beijing-f
+  existingHostInventorySha256: pending
   ecsInstanceId: pending
   dedicatedStagingHostSha256: pending
   vpcId: pending
