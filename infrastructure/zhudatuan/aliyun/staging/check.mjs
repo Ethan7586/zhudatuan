@@ -308,7 +308,7 @@ for (const token of [
   'i-2zeewhay0farxq8lucrd',
   'i-2zeewhay0farxq8lucrc',
   'cn-beijing-f',
-  '最終顯示名為「福福網 staging」',
+  '最終顯示名為「福福网 staging」',
   '不授權備份、登入、快照、改名、改網路／RAM role 或部署',
   '目前沒有建立或修改它們的授權',
   'Secret Store / local envelope KMS boundary',

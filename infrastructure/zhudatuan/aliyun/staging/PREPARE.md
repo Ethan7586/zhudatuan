@@ -48,9 +48,9 @@ Codex 發到部署任務的每條操作消息必須包含：當前 ID、唯一�
 
 使用 CloudSSO 的一小時 session；不建立 RAM user／AccessKey，不附 `Aliyun*FullAccess`。只讀盤點記錄 account、地域與既有資源摘要。正式機與唯一 staging 候選的權威字段及 canonical 摘要必須寫入 `network.productionEcs*`、`network.stagingCandidateEcs*` 與 `network.existingHostInventorySha256`；任何承載 `*.zhudatuan.com` 正式站點的 ECS 都必須排除，不得查看後再順手修改。
 
-北京兩台 ECS 已精確區分：隔離 staging 候選是 `i-2zeewhay0farxq8lucrc`，位於 `cn-beijing-f`、運行中，當前顯示名「福福網-staging」；正式機是 `i-2zeewhay0farxq8lucrd`，顯示名「福福網全域系統」，正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久禁止觸碰。兩個 ID 只差最後一個字符，任何動作前都必須核對完整 ID，不得只憑名稱、前綴或截斷值選擇實例。
+北京兩台 ECS 已精確區分：隔離 staging 候選是 `i-2zeewhay0farxq8lucrc`，位於 `cn-beijing-f`、運行中，當前顯示名「福福网-staging」；正式機是 `i-2zeewhay0farxq8lucrd`，顯示名「福福网全域系统」，正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久禁止觸碰。兩個 ID 只差最後一個字符，任何動作前都必須核對完整 ID，不得只憑名稱、前綴或截斷值選擇實例。
 
-P03 只可繼續盤點候選的磁碟、資源組、VPC/vSwitch、安全組、公網入口、RAM role、規格與當前承載內容；不得登入、快照、備份、改名或執行任何寫操作。盤點記錄必須以 `network.productionEcsInstanceId`／`network.productionEcsCurrentName` 綁定正式機，以 `network.stagingCandidateEcsInstanceId`／`network.stagingCandidateCurrentName`／`network.stagingCandidateTargetName`／`network.stagingCandidateZone` 綁定候選，並把完整 canonical inventory 摘要寫入 `network.existingHostInventorySha256`；後續 P05/P07 的 `network.ecsInstanceId` 必須精確等於 `i-2zeewhay0farxq8lucrc`，IMDSv2 live gate 也必須返回同一完整值。身份鎖定不等於部署授權：初次備份／快照須另取該動作批准；備份完成並驗證後，改名為 Owner 指定的「福福網 staging」、改網路／安全組／RAM role、登入及部署仍各自需要當次批准。
+P03 只可繼續盤點候選的磁碟、資源組、VPC/vSwitch、安全組、公網入口、RAM role、規格與當前承載內容；不得登入、快照、備份、改名或執行任何寫操作。盤點記錄必須以 `network.productionEcsInstanceId`／`network.productionEcsCurrentName` 綁定正式機，以 `network.stagingCandidateEcsInstanceId`／`network.stagingCandidateCurrentName`／`network.stagingCandidateTargetName`／`network.stagingCandidateZone` 綁定候選，並把完整 canonical inventory 摘要寫入 `network.existingHostInventorySha256`；後續 P05/P07 的 `network.ecsInstanceId` 必須精確等於 `i-2zeewhay0farxq8lucrc`，IMDSv2 live gate 也必須返回同一完整值。身份鎖定不等於部署授權：初次備份／快照須另取該動作批准；備份完成並驗證後，改名為 Owner 指定的「福福网 staging」、改網路／安全組／RAM role、登入及部署仍各自需要當次批准。
 
 ### P04–P06：付費資源及硬化
 

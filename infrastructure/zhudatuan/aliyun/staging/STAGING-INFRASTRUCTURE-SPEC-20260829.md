@@ -9,8 +9,8 @@
 - 北京 RDS PostgreSQL：0 個實例。
 - 北京 Tair：0 個實例。
 - KMS 目前只確認產品總覽可見，未確認實例、密鑰或憑據已配置。
-- 正式 ECS `i-2zeewhay0farxq8lucrd`（顯示名「福福網全域系統」）正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久排除出 staging；不得登入、快照、安裝、上傳、改名、改 RAM role／網路／安全組或 Caddy。
-- 隔離 staging 候選已精確鎖定為 ECS `i-2zeewhay0farxq8lucrc`，位於 `cn-beijing-f`、運行中，控制台當前顯示名為「福福網-staging」；Owner 指定的最終顯示名為「福福網 staging」。這只確認目標身份，不授權備份、登入、快照、改名、改網路／RAM role 或部署。P03 仍須完成磁碟、網路、公網入口、RAM role 與當前承載內容的只讀盤點；初次備份／快照須先取得該動作的明確批准，完成並驗證備份後，其餘每項寫操作仍須取得當次批准。
+- 正式 ECS `i-2zeewhay0farxq8lucrd`（顯示名「福福网全域系统」）正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久排除出 staging；不得登入、快照、安裝、上傳、改名、改 RAM role／網路／安全組或 Caddy。
+- 隔離 staging 候選已精確鎖定為 ECS `i-2zeewhay0farxq8lucrc`，位於 `cn-beijing-f`、運行中，控制台當前顯示名為「福福网-staging」；Owner 指定的最終顯示名為「福福网 staging」。這只確認目標身份，不授權備份、登入、快照、改名、改網路／RAM role 或部署。P03 仍須完成磁碟、網路、公網入口、RAM role 與當前承載內容的只讀盤點；初次備份／快照須先取得該動作的明確批准，完成並驗證備份後，其餘每項寫操作仍須取得當次批准。
 - 兩個實例 ID 只有最後一個字符不同：staging 為 `...lucrc`，正式為 `...lucrd`。任何控制台或主機動作前都必須核對完整 ID；不能以顯示名、前綴或肉眼省略值選擇目標。
 - RAM 角色 `zhudatuan-identity-notification` 只確認列表可見；尚未審閱有效策略，不能推定可用或可修改。
 
@@ -84,4 +84,4 @@ ECS、RDS、Tair 的實例與存儲單價會隨地域、規格和優惠變動，
 
 ## 批准後的唯一下一步
 
-P03 先完成候選 ECS 的只讀盤點。Ethan 明確批准**具體復用／硬化規格、控制台總價與成本硬上限**後，P05 仍須逐項取得當次寫操作授權：先獲准建立候選 ECS 的備份／快照並驗證可恢復，再分別批准改名為「福福網 staging」、資源組／VPC／vSwitch／安全組／RAM role 調整、建立新 RDS/Tair，以及主機登入與部署；前一步批准不自動涵蓋後一步。本次不新建 ECS，且本文件本身沒有授權建立 RDS/Tair 或修改任何資源。任何頁面若顯示不同地域、正式資源組、正式 ECS `i-2zeewhay0farxq8lucrd` 或非本文件規格，立即停止，不提交訂單或變更。
+P03 先完成候選 ECS 的只讀盤點。Ethan 明確批准**具體復用／硬化規格、控制台總價與成本硬上限**後，P05 仍須逐項取得當次寫操作授權：先獲准建立候選 ECS 的備份／快照並驗證可恢復，再分別批准改名為「福福网 staging」、資源組／VPC／vSwitch／安全組／RAM role 調整、建立新 RDS/Tair，以及主機登入與部署；前一步批准不自動涵蓋後一步。本次不新建 ECS，且本文件本身沒有授權建立 RDS/Tair 或修改任何資源。任何頁面若顯示不同地域、正式資源組、正式 ECS `i-2zeewhay0farxq8lucrd` 或非本文件規格，立即停止，不提交訂單或變更。

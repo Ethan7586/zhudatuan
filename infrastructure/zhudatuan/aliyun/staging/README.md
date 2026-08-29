@@ -9,7 +9,7 @@
 
 目前 `full` 是 `gated-not-yet-verified` 的 fail-closed 合同，授權狀態為 `readiness-gates-required`。獨立 RDS、Redis、Secret Catalog、KMS、完整 Provider 配置、DNS／TLS 與 Edge Access 的實際證據未完成前，不得跨 gate 啟動、不得稱為已接通。逐項操作、停止條件與證據格式見 `PREPARE.md` 及 `readiness.evidence.example.yml`。
 
-已鎖定的唯一 staging ECS 候選是北京 F 區、運行中的 `i-2zeewhay0farxq8lucrc`，控制台當前顯示名「福福網-staging」，Owner 指定的最終顯示名「福福網 staging」。正式 ECS `i-2zeewhay0farxq8lucrd`（「福福網全域系統」）正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久禁止觸碰。兩個 ID 只差最後一個字符；任何動作前必須核對完整 ID。候選身份已確認不等於批准備份、登入、改名、改網路／RAM role 或部署；初次備份／快照及後續每項寫操作都須遵循 P03–P05 的獨立批准門禁。
+已鎖定的唯一 staging ECS 候選是北京 F 區、運行中的 `i-2zeewhay0farxq8lucrc`，控制台當前顯示名「福福网-staging」，Owner 指定的最終顯示名「福福网 staging」。正式 ECS `i-2zeewhay0farxq8lucrd`（「福福网全域系统」）正在承載 `accounts.zhudatuan.com`、`console.zhudatuan.com`、`api.zhudatuan.com`，永久禁止觸碰。兩個 ID 只差最後一個字符；任何動作前必須核對完整 ID。候選身份已確認不等於批准備份、登入、改名、改網路／RAM role 或部署；初次備份／快照及後續每項寫操作都須遵循 P03–P05 的獨立批准門禁。
 
 ## 公網路由邊界
 
