@@ -338,6 +338,11 @@ assert.equal(readinessEvidence.profile, 'full');
 assert.equal(readinessEvidence.productionTrafficPercent, 0);
 assert.equal(readinessEvidence.productionDataAccess, 'forbidden');
 assert.equal(readinessEvidence.ownerIntegration.tenantBoundaryTestSha256, 'pending');
+assert.equal(readinessEvidence.ownerIntegration.invitationOwnershipTransferTestSha256, 'pending');
+for (const token of ['invitationOwnershipTransferTestSha256', 'access.zhudatuan_owner_context()',
+  '不得使用固定 Ethan principal／membership']) {
+  assert.ok(files['PREPARE.md'].includes(token), `Owner invitation transfer gate missing: ${token}`);
+}
 assert.equal(readinessEvidence.network.productionEcsInstanceId, 'i-2zeewhay0farxq8lucrd');
 assert.equal(readinessEvidence.network.productionEcsCurrentName, '福福网全域系统');
 assert.equal(readinessEvidence.network.stagingCandidateEcsInstanceId, 'i-2zeewhay0farxq8lucrc');

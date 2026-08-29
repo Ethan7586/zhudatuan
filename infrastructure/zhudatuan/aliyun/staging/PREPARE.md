@@ -41,6 +41,7 @@ Codex 發到部署任務的每條操作消息必須包含：當前 ID、唯一�
 - 核對 Owner 任務產出的 commit；不得直接複製未提交工作樹。
 - 明確記錄所有 migration 版本及 checksum，重跑必須一致。
 - `ownerIntegration.tenantBoundaryTestSha256` 必須綁定 Policy 在 tenant 缺失時 fail closed，以及主打團 global Owner／租戶 Owner 的跨租戶正反樣本；只有角色名稱或單一 happy path 不算通過。
+- `ownerIntegration.invitationOwnershipTransferTestSha256` 必須同時綁定應用層與真 PostgreSQL 證據：完成 Owner 轉讓後，新 Owner 可建立並撤銷 operator invitation，舊 Owner 對兩項操作均為 403；Owner 判定必須在同一事務查 `access.zhudatuan_owner_context()`，不得使用固定 Ethan principal／membership、request body 或前端狀態。
 - P01、P02 都通過前，P03 只能做只讀盤點。
 
 ### P03：只讀盤點

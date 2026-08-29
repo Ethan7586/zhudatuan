@@ -16,7 +16,8 @@ const verificationClass = Object.freeze({
 export const gates = Object.freeze({
   P00: ['cloudIdentity.region', 'cloudIdentity.accountId', 'cloudIdentity.principalFingerprint', 'cloudIdentity.sessionExpiresAt'],
   P01: ['candidate.commit', 'candidate.archiveSha256', 'candidate.inventorySha256', 'candidate.treeState'],
-  P02: ['ownerIntegration.commit', 'ownerIntegration.migrationInventorySha256', 'ownerIntegration.invariantTestSha256', 'ownerIntegration.tenantBoundaryTestSha256'],
+  P02: ['ownerIntegration.commit', 'ownerIntegration.migrationInventorySha256', 'ownerIntegration.invariantTestSha256',
+    'ownerIntegration.tenantBoundaryTestSha256', 'ownerIntegration.invitationOwnershipTransferTestSha256'],
   P03: ['cloudIdentity.inventorySha256', 'network.productionEcsInstanceId',
     'network.productionEcsCurrentName', 'network.stagingCandidateEcsInstanceId',
     'network.stagingCandidateCurrentName', 'network.stagingCandidateTargetName',

@@ -15,6 +15,7 @@ ownerIntegration:
   migrationInventorySha256: pending
   invariantTestSha256: pending
   tenantBoundaryTestSha256: pending
+  invitationOwnershipTransferTestSha256: pending
 
 cloudIdentity:
   region: cn-beijing
