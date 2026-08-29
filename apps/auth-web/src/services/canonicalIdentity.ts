@@ -2,6 +2,7 @@ import { CONTRACT_VERSION } from '@shop/contract/version';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
 import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './auth';
+import { resolveBuildTimeOrigin } from './originPolicy';
 
 const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
@@ -163,8 +164,8 @@ function approvedDestination(value: z.infer<typeof TicketExchangeSchema>['return
     ? import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined)
     : import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
   const approvedOrigin = target === 'console'
-    ? resolveAdminLoginOrigin(configured, import.meta.env.DEV)
-    : resolveStorefrontLoginOrigin(configured, import.meta.env.DEV);
+    ? resolveAdminLoginOrigin(configured, import.meta.env.DEV, import.meta.env.VITE_AUTH_STAGING_ADMIN_ORIGIN)
+    : resolveStorefrontLoginOrigin(configured, import.meta.env.DEV, import.meta.env.VITE_AUTH_STAGING_STOREFRONT_ORIGIN);
   if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
     throw new Error(target === 'console' ? '登录回跳地址不在后台允许清单' : '登录回跳地址不在商城允许清单');
   }
@@ -172,13 +173,14 @@ function approvedDestination(value: z.infer<typeof TicketExchangeSchema>['return
 }
 
 function apiOrigin(): string {
-  const configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  const parsed = new URL(configured);
-  const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN) || parsed.username || parsed.password || parsed.hash) {
-    throw new Error('统一身份 API 不在允许清单');
-  }
-  return parsed.origin;
+  return resolveBuildTimeOrigin({
+    configuredOrigin: import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : undefined),
+    canonicalOrigin: CANONICAL_API_ORIGIN,
+    stagingOrigin: import.meta.env.VITE_AUTH_STAGING_API_ORIGIN,
+    allowLocalDevelopment: import.meta.env.DEV,
+    invalidMessage: '统一身份 API 配置无效',
+    deniedMessage: '统一身份 API 不在允许清单',
+  });
 }
 
 function clientVersion(): string {

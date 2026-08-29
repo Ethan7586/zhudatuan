@@ -18,6 +18,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -76,6 +77,20 @@ describe('canonical registration', () => {
 
     await expect(resolveCanonicalInvite('invalid-invitation')).rejects.toThrow('邀请码无效、已过期或已被使用');
     await expect(createCanonicalRegistrationChallenge('13800138000')).rejects.toThrow('请先验证有效的企业邀请码');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses an explicitly allowlisted staging API origin and rejects an unpaired one', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(invitation()));
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.staging.example');
+    vi.stubEnv('VITE_AUTH_STAGING_API_ORIGIN', 'https://api.staging.example');
+
+    await resolveCanonicalInvite('staging-invitation');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.staging.example/api/v1/identity/invitations/resolve');
+
+    vi.stubEnv('VITE_AUTH_STAGING_API_ORIGIN', '');
+    await expect(resolveCanonicalInvite('unpaired-invitation')).rejects.toThrow('统一身份 API 不在允许清单');
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

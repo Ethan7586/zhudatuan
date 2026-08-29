@@ -1,6 +1,7 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { transportInteger } from '@shop/contract/client';
 import { z } from 'zod';
+import { resolveBuildTimeOrigin } from './originPolicy';
 
 const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
@@ -159,13 +160,14 @@ async function identityRequest(path: string, body: Readonly<Record<string, unkno
 }
 
 function apiOrigin(): string {
-  const configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
-  const parsed = new URL(configured);
-  const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN) || parsed.username || parsed.password || parsed.hash) {
-    throw new Error('统一身份 API 不在允许清单');
-  }
-  return parsed.origin;
+  return resolveBuildTimeOrigin({
+    configuredOrigin: import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : undefined),
+    canonicalOrigin: CANONICAL_API_ORIGIN,
+    stagingOrigin: import.meta.env.VITE_AUTH_STAGING_API_ORIGIN,
+    allowLocalDevelopment: import.meta.env.DEV,
+    invalidMessage: '统一身份 API 配置无效',
+    deniedMessage: '统一身份 API 不在允许清单',
+  });
 }
 
 function clientVersion(): string {

@@ -31,13 +31,16 @@ describe('public test authentication fixtures', () => {
   it('only permits the canonical admin origin plus explicit local development', () => {
     expect(resolveAdminLoginOrigin()).toBe('https://console.zhudatuan.com');
     expect(resolveAdminLoginOrigin('http://127.0.0.1:4173', true)).toBe('http://127.0.0.1:4173');
+    expect(resolveAdminLoginOrigin('https://console.staging.example', false, 'https://console.staging.example')).toBe('https://console.staging.example');
     expect(() => resolveAdminLoginOrigin('https://example.com')).toThrow('不在允许清单');
+    expect(() => resolveAdminLoginOrigin('https://console.staging.example', false, 'http://console.staging.example')).toThrow('配置无效');
     expect(() => resolveAdminLoginOrigin('http://127.0.0.1:3001')).toThrow('不在允许清单');
   });
 
   it('only permits the canonical storefront origin plus explicit local development', () => {
     expect(resolveStorefrontLoginOrigin()).toBe('https://zhudatuan.com');
     expect(resolveStorefrontLoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
+    expect(resolveStorefrontLoginOrigin('https://store.staging.example', false, 'https://store.staging.example')).toBe('https://store.staging.example');
     expect(() => resolveStorefrontLoginOrigin('https://example.com')).toThrow('不在允许清单');
     expect(() => resolveStorefrontLoginOrigin('http://127.0.0.1:3000')).toThrow('不在允许清单');
   });

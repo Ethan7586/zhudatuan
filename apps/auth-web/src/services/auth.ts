@@ -5,6 +5,7 @@
  */
 
 import { Membership, PreAuthContext, LockoutState } from '../types';
+import { resolveBuildTimeOrigin } from './originPolicy';
 
 // 内存中维护的登录失败记录（模拟服务端 Redis / DB 锁定策略）
 interface FailureRecord {
@@ -20,29 +21,24 @@ const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
 // 模拟审计日志
 const auditLogs: Array<{ timestamp: string; identifier: string; reason: string }> = [];
 
-function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string, allowLocalDevelopment: boolean): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(configuredOrigin?.trim() || canonicalOrigin);
-  } catch {
-    throw new Error(`${targetLabel}登录目标配置无效，已停止提交账号凭证`);
-  }
-
-  const isCanonical = parsed.origin === canonicalOrigin;
-  const isLocalDevelopment = allowLocalDevelopment && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!isCanonical && !isLocalDevelopment) || parsed.username || parsed.password) {
-    throw new Error(`${targetLabel}登录目标不在允许清单，已停止提交账号凭证`);
-  }
-
-  return parsed.origin;
+function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string,
+  allowLocalDevelopment: boolean, stagingOrigin?: string): string {
+  return resolveBuildTimeOrigin({
+    configuredOrigin,
+    canonicalOrigin,
+    stagingOrigin,
+    allowLocalDevelopment,
+    invalidMessage: `${targetLabel}登录目标配置无效，已停止提交账号凭证`,
+    deniedMessage: `${targetLabel}登录目标不在允许清单，已停止提交账号凭证`,
+  });
 }
 
-export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_ORIGIN, '后台', allowLocalDevelopment);
+export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false, stagingOrigin?: string): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_ORIGIN, '后台', allowLocalDevelopment, stagingOrigin);
 }
 
-export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_STOREFRONT_ORIGIN, '商城', allowLocalDevelopment);
+export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false, stagingOrigin?: string): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_STOREFRONT_ORIGIN, '商城', allowLocalDevelopment, stagingOrigin);
 }
 
 export function buildCredentialLoginAction(targetOrigin: string): string {
