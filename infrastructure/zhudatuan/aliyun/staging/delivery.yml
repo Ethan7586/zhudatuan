@@ -2,7 +2,7 @@ version: 2
 owner: zhudatuan
 environment: staging
 sourceOfTruth: config/owner-approved-ui.json
-deploymentState: blocked-awaiting-external-prerequisites
+deploymentState: gated-not-yet-verified
 productionTrafficPercent: 0
 productionDataAccess: forbidden
 artifactInventory: infrastructure/zhudatuan/aliyun/staging/artifacts.yml
@@ -38,9 +38,15 @@ profiles:
   full:
     selection: owner-approved-target
     scope: identity-registration-owner-invitation-and-full-jobs
-    deployable: false
-    processConfig: infrastructure/zhudatuan/aliyun/staging/ecosystem.full.config.cjs
+    authorization: readiness-gates-required
+    processManager: systemd
+    pm2:
+      state: forbidden
+      guard: infrastructure/zhudatuan/aliyun/staging/ecosystem.full.config.cjs
     proxyConfig: infrastructure/zhudatuan/aliyun/staging/Caddyfile.full
+    proxyEnvironmentExample: infrastructure/zhudatuan/aliyun/staging/full-caddy.env.example
+    proxySystemdDropIn: infrastructure/zhudatuan/aliyun/staging/caddy-zhudatuan-staging-full.conf
+    proxyInstaller: infrastructure/zhudatuan/aliyun/staging/install-caddy-candidate.sh
     isolation:
       releaseRoot: /opt/zhudatuan-staging-full/current
       sharedRoot: /opt/zhudatuan-staging-full/shared
@@ -52,32 +58,61 @@ profiles:
         childArtifacts:
           - services/commerce/dist/LocalSecretsMain.js
           - services/commerce/dist/LocalKmsMain.js
+          - services/commerce/dist/LocalObjectsMain.js
         service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-internal-runtime.service
+        activationGate: P09
         environment: /opt/zhudatuan-staging-full/shared/full-internal-runtime.env
-        profile: registration-only
-        capability: secret-store-and-kms-only
+        profile: full-staging
+        capability: secret-store-kms-and-object-store
         secretStorePort: 8643
         kmsPort: 8644
+        objectStorePort: 8645
+      postgresTlsProxy:
+        artifact: services/commerce/dist/PostgresTlsProxyMain.js
+        service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-postgres-proxy.service
+        activationGate: P09
+        environment: /opt/zhudatuan-staging-full/shared/full-postgres-proxy.env
+        listener: 127.0.0.1:55442
+        upstreamTls: ca-and-hostname-verified
       identityApi:
         artifact: services/commerce/dist/IdentityRegistrationApiMain.js
         readinessArtifact: services/commerce/dist/IdentityRegistrationApiReadyMain.js
         environment: /opt/zhudatuan-staging-full/shared/full-identity-registration-api.env
-        process: zhudatuan-staging-full-identity-api
+        service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-identity-api.service
         profile: registration-only
         port: 4431
+        activationGate: P10
+        activeOwnerGate: exactly-one-active-platform-owner
+        bootstrapPendingPublicReadiness: forbidden
+      identityNotificationJobs:
+        artifact: services/commerce/dist/IdentityNotificationJobsOnlyMain.js
+        readinessArtifact: services/commerce/dist/IdentityNotificationJobsReadyMain.js
+        environment: /opt/zhudatuan-staging-full/shared/full-identity-notification-jobs.env
+        service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-identity-notification-jobs.service
+        profile: identity-notification-only
+        activationGate: P10
+        activeOwnerGate: exactly-one-active-platform-owner
       jobs:
         artifact: services/commerce/dist/JobsMain.js
         implementationSource: services/commerce/src/entry/FullJobsMain.ts
         environment: /opt/zhudatuan-staging-full/shared/full-jobs.env
-        process: zhudatuan-staging-full-jobs
+        service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-jobs.service
         profile: full
         readiness: process-startup-and-runtime-compatibility-only
+        activationGate: blocked-provider-sandbox-not-integrated
+        activationMode: forbidden
+        enable: forbidden
+        activeOwnerGate: exactly-one-active-platform-owner
+        providerPreflight: not-integrated
     dependencies:
       database:
         kind: isolated-staging-rds-postgresql
         databaseName: zhudatuan_registration
-        requiredRoles: [zhudatuanidentityapi, shopjob, shopmigration, zhudatuanbootstrap]
+        runtimeLoginRoles: [zhudatuanidentityapi, zhudatuanidentityjob, shopjob]
+        retiredLoginRoles: [shopapp, shopmigration, shopread, zhudatuanbootstrap, zhudatuanwebapi, zhudatuanpurchaseapi, zhudatuansandboxbootstrap]
+        noLoginBoundaryRoles: [anon, authenticated, service_role, zhudatuanregistrationboundary]
         apiConnectionRef: zhudatuan/staging/full/database/identity-api
+        identityNotificationJobsConnectionRef: zhudatuan/staging/full/database/identity-notification-jobs
         jobsConnectionRef: zhudatuan/staging/full/database/jobs
         migrationConnectionRef: zhudatuan/staging/full/database/migration
         productionEndpointReuse: forbidden
@@ -88,15 +123,25 @@ profiles:
         productionEndpointReuse: forbidden
       secretStore:
         implementation: dedicated-internal-runtime
+        managedAliyunSecretsManager: not-integrated
         endpoint: https://127.0.0.1:8643
         namespace: zhudatuan/staging/full
-        bearerMode: one-shared-full-staging-runtime-token
-        consumers: [identityApi, fullJobs, migration, stagingOwnerBootstrap]
+        bearerMode: exact-ref-per-workload-policy
+        policyFile: /opt/zhudatuan-staging-full/shared/full-internal-access.json
+        bootstrapPolicyExample: infrastructure/zhudatuan/aliyun/staging/full-internal-access.bootstrap.example.json
+        runtimePolicyExample: infrastructure/zhudatuan/aliyun/staging/full-internal-access.example.json
+        consumers: [identityApi, identityNotificationJobs, fullJobs, migration, stagingOwnerBootstrap]
         catalogFile: /opt/zhudatuan-staging-full/shared/full-secrets.json
-        catalogKeys:
-          - zhudatuan/staging/full/database/identity-api
-          - zhudatuan/staging/full/database/jobs
+        bootstrapCatalogKeys:
           - zhudatuan/staging/full/database/migration
+          - zhudatuan/staging/full/identity/index
+          - zhudatuan/staging/full/objects/jobs
+          - zhudatuan/staging/full/registration/owner/password
+          - zhudatuan/staging/full/registration/owner/bootstrap-receipt
+        runtimeCatalogKeys:
+          - zhudatuan/staging/full/database/identity-api
+          - zhudatuan/staging/full/database/identity-notification-jobs
+          - zhudatuan/staging/full/database/jobs
           - zhudatuan/staging/full/redis/jobs
           - zhudatuan/staging/full/identity/session
           - zhudatuan/staging/full/identity/index
@@ -106,20 +151,17 @@ profiles:
           - zhudatuan/staging/full/invoice/provider
           - zhudatuan/staging/full/payout/provider
           - zhudatuan/staging/full/notification/providers
+          - zhudatuan/staging/full/notification/identity-sms
           - zhudatuan/staging/full/objects/jobs
-          - zhudatuan/staging/full/migration/distributor
-          - zhudatuan/staging/full/migration/identity
-          - zhudatuan/staging/full/migration/partner
-          - zhudatuan/staging/full/migration/voucher
-          - zhudatuan/staging/full/registration/owner/password
-          - zhudatuan/staging/full/registration/owner/bootstrap-receipt
         catalogEvidence: required-before-start
+        oneShotRemovalBeforePublicRuntime: required
       kms:
         implementation: dedicated-internal-runtime
+        managedAliyunKms: not-integrated
         endpoint: https://127.0.0.1:8644
-        bearerMode: one-shared-full-staging-runtime-token
-        consumers: [identityApi, fullJobs, migration]
-        secretStoreAndKmsTokensMustDiffer: true
+        bearerMode: exact-key-ref-per-workload-policy
+        consumers: [identityApi, identityNotificationJobs, fullJobs, migration]
+        allWorkloadAndServiceTokensMustDiffer: true
         masterKeyEvidence: required-before-start
         keyEvidence: required-before-start
       aliyunSms:
@@ -127,10 +169,13 @@ profiles:
         credentialMode: ram-role
         approvedSignTemplateAndCarrierFiling: required
       objectStore:
-        implementation: external-staging-provider
-        providedByInternalRuntime: false
-        endpointAndTokenRef: required
-        productionBucketReuse: forbidden
+        implementation: dedicated-internal-runtime
+        providedByInternalRuntime: true
+        endpoint: https://127.0.0.1:8645
+        tokenRef: zhudatuan/staging/full/objects/jobs
+        dataDirectory: /var/lib/zhudatuan-staging-full/objects
+        availability: single-host-staging-only
+        productionObjectStoreReuse: forbidden
       externalProviders:
         wechatApplications: required
         wechatPayment: required
@@ -173,11 +218,28 @@ routes:
 
 oneShots:
   executionOrder:
+    - rdsInitialization
     - migration
     - registrationBoundaryReconcile
     - stagingOwnerBootstrap
+    - databasePrincipalRetirement
+  cutoverBeforeP10:
+    requiredAbsent:
+      - /opt/zhudatuan-staging-full/shared/full-migration.env
+      - /opt/zhudatuan-staging-full/shared/full-owner-bootstrap.env
+      - /run/zhudatuan-staging-full/rds-init.env
+      - /run/zhudatuan-staging-full/database-retire.env
+    oneShotLoginPasswordAndMembershipRetired: required
+  rdsInitialization:
+    artifact: infrastructure/zhudatuan/aliyun/postgres-init-registration.sh
+    service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-rds-init.service
+    environmentExample: infrastructure/zhudatuan/aliyun/staging/full-rds-init.env.example
+    environment: /run/zhudatuan-staging-full/rds-init.env
+    databaseRole: rds-bootstrap-administrator
+    runMode: manual-one-shot-before-migration
   migration:
     artifact: services/commerce/dist/MigrationMain.js
+    service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-migration.service
     environmentExample: infrastructure/zhudatuan/aliyun/staging/full-migration.env.example
     runMode: one-shot-before-runtime
     snapshotAndRestoreEvidence: required
@@ -187,15 +249,24 @@ oneShots:
     runMode: reviewed-stdin-only
   stagingOwnerBootstrap:
     artifact: services/commerce/dist/BootstrapStagingOwner.js
+    service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-owner-bootstrap.service
     environmentExample: infrastructure/zhudatuan/aliyun/staging/full-owner-bootstrap.env.example
     databaseRole: zhudatuanbootstrap
     publicRuntimeRole: forbidden
+  databasePrincipalRetirement:
+    artifact: infrastructure/zhudatuan/aliyun/postgres-retire-registration-bootstrap.sql
+    service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-database-retire.service
+    environmentExample: infrastructure/zhudatuan/aliyun/staging/full-database-retire.env.example
+    environment: /run/zhudatuan-staging-full/database-retire.env
+    databaseRole: rds-bootstrap-administrator
+    retainedOwnership: shopmigration-nologin-database-owner
+    runMode: manual-one-shot-after-owner-bootstrap-before-public-runtime
   registrationBootstrap:
     state: forbidden
     reason: authenticated-owner-invitation-api-replaces-static-registration-invitation-bootstrap
 
 prerequisites:
-  externalResourcesVerified: false
+  externalResourcesEvidence: required
   rds:
     privateEndpointOnly: true
     snapshotPitrAndRestoreDrillEvidence: required
@@ -203,11 +274,15 @@ prerequisites:
   loopbackProxy:
     databaseListener: 127.0.0.1:55442
     databaseUpstream: isolated-staging-rds-private-endpoint-only
-    requiredFor: [stagingOwnerBootstrap]
+    artifact: services/commerce/dist/PostgresTlsProxyMain.js
+    service: infrastructure/zhudatuan/aliyun/staging/zhudatuan-staging-full-postgres-proxy.service
+    upstreamTls: ca-and-hostname-verified
+    requiredFor: [rdsInitialization, identityApi, identityNotificationJobs, fullJobs, migration, stagingOwnerBootstrap, databasePrincipalRetirement]
     productionUpstream: forbidden
   internalRuntime:
     secretStoreListener: https://127.0.0.1:8643
     kmsListener: https://127.0.0.1:8644
+    objectStoreListener: https://127.0.0.1:8645
     catalogAndMasterIsolation: required
     formalRuntimePorts: [8543, 8544]
     formalRuntimeAccess: forbidden
@@ -218,3 +293,6 @@ prerequisites:
   cleanReleaseDigests: required
   caddyValidation: required
   envValidation: required
+  readinessRunbook: infrastructure/zhudatuan/aliyun/staging/PREPARE.md
+  readinessEvidence: /opt/zhudatuan-staging-full/shared/evidence/readiness.yml
+  readinessGates: [P00, P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12]

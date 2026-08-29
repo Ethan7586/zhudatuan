@@ -37,7 +37,8 @@ export function stagingOwnerBootstrapEnvironment(source: NodeJS.ProcessEnv): Sta
   let databaseUrl: URL;
   try { databaseUrl = new URL(connectionString); }
   catch { throw new Error('STAGING_OWNER_BOOTSTRAP_DATABASE_URL_INVALID'); }
-  if (!['postgres:', 'postgresql:'].includes(databaseUrl.protocol) || databaseUrl.hash || databaseUrl.search
+  if (!['postgres:', 'postgresql:'].includes(databaseUrl.protocol) || databaseUrl.hash
+    || databaseUrl.searchParams.size !== 1 || databaseUrl.searchParams.get('sslmode') !== 'disable'
     || databaseUrl.hostname !== STAGING_DATABASE_HOST || databaseUrl.port !== STAGING_DATABASE_PORT
     || decodeURIComponent(databaseUrl.pathname.slice(1)) !== STAGING_DATABASE
     || decodeURIComponent(databaseUrl.username) !== STAGING_DATABASE_ROLE || databaseUrl.password.length < 16) {

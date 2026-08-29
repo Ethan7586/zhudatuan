@@ -6,7 +6,7 @@ import { parse } from 'yaml';
 const root = resolve(import.meta.dirname, '../..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 
-const [deliverySource, buildSource, packageSource, serviceSource, environmentSource, bootstrapSource, predecessorMigrationSource, migrationSource, runnerSource, postgresInitSource, reconciliationSource] = await Promise.all([
+const [deliverySource, buildSource, packageSource, serviceSource, environmentSource, bootstrapSource, predecessorMigrationSource, migrationSource, runnerSource, postgresInitSource, reconciliationSource, databaseAuditSource,postgresInitFixtureSource] = await Promise.all([
   read('infrastructure/zhudatuan/aliyun/delivery.yml'),
   read('scripts/build-commerce.mjs'),
   read('package.json'),
@@ -18,6 +18,8 @@ const [deliverySource, buildSource, packageSource, serviceSource, environmentSou
   read('services/commerce/src/foundation/infrastructure/RegistrationMigrationRunner.ts'),
   read('infrastructure/zhudatuan/aliyun/postgres-init-registration.sh'),
   read('infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql'),
+  read('scripts/audit/database-contracts.mjs'),
+  read('scripts/audit/postgres-init-registration.pg16-fixture.mjs'),
 ]);
 
 const delivery = parse(deliverySource);
@@ -80,24 +82,95 @@ if (!environmentSource.includes('ZHUDATUAN_REGISTRATION_BOOTSTRAP_OUTPUT=/opt/zh
 if (/\bfor\s+update\b/i.test(bootstrapSource)) {
   throw new Error('REGISTRATION_BOOTSTRAP_DIRECT_UPDATE_PRIVILEGE_FORBIDDEN');
 }
-if (!postgresInitSource.includes('grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration;')) {
-  throw new Error('REGISTRATION_BOOTSTRAP_DEFINER_BOUNDARY_GRANT_MISSING');
+for (const token of [
+  '\\getenv expected_server_addr ZHUDATUAN_EXPECTED_RDS_SERVER_ADDR',
+  '\\getenv database_sentinel ZHUDATUAN_DATABASE_SENTINEL',
+  '\\getenv shopmigration_password SHOPMIGRATION_PASSWORD',
+  'ZHUDATUAN_RDS_INIT_POSTGRES_VERSION_INVALID',
+  'ZHUDATUAN_RDS_INIT_SERVER_ADDRESS_INVALID',
+  'ZHUDATUAN_RDS_INIT_PRISTINE_TARGET_REQUIRED',
+  'ZHUDATUAN_RDS_INIT_EXISTING_TARGET_INVALID',
+  'set local role zhudatuanregistrationboundary;',
+  'alter role anon nologin password null noinherit;',
+  'on conflict(id) do nothing;',
+  'grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration;',
+  'ZHUDATUAN_RDS_INIT_BOUNDARY_MEMBERSHIP_REMAINS',
+]) {
+  if (!postgresInitSource.includes(token)) {
+    throw new Error(`REGISTRATION_BOOTSTRAP_DEFINER_BOUNDARY_MISSING:${token}`);
+  }
+}
+if ((postgresInitSource.match(/\bexec \/usr\/bin\/psql\b/g)??[]).length!==1
+  || /--set[^\n]*(?:password|sentinel)/i.test(postgresInitSource)
+  || /on conflict\s*\([^)]*\)\s*do update/i.test(postgresInitSource)
+  || /alter role[^;\n]*nosuperuser/i.test(postgresInitSource)) {
+  throw new Error('REGISTRATION_RDS_INIT_TRANSACTION_OR_SECRET_BOUNDARY_INVALID');
+}
+const targetGuardEnd = postgresInitSource.indexOf('$target_guard$;');
+for (const token of ['create extension if not exists pgcrypto','create role anon','alter database %I owner to shopmigration','create schema if not exists deployment']) {
+  if (targetGuardEnd<0 || postgresInitSource.indexOf(token)<=targetGuardEnd) {
+    throw new Error(`REGISTRATION_RDS_INIT_DDL_PRECEDES_TARGET_GUARD:${token}`);
+  }
+}
+for (const forbidden of [
+  'create_compatibility_role zhudatuanregistrationboundary',
+  'alter function deployment.registration_bootstrap_boundary(text) owner to zhudatuanregistrationboundary;',
+  'alter function deployment.is_independent_registration_database() owner to zhudatuanregistrationboundary;',
+]) {
+  if (postgresInitSource.includes(forbidden)) throw new Error(`REGISTRATION_BOOTSTRAP_PREMATURE_BOUNDARY_OWNER:${forbidden}`);
 }
 for (const token of [
   "current_database()<>'zhudatuan_registration'",
-  "not coalesce((select rolsuper from pg_roles where rolname=current_user),false)",
-  "owner.rolsuper",
+  "to_regrole('pg_rds_superuser')",
+  "pg_has_role(authority,rds_superuser,'MEMBER')",
+  "boundary_owner_name constant text := 'zhudatuanregistrationboundary'",
+  'ZHUDATUAN_REGISTRATION_BOUNDARY_OWNER_MISSING',
+  "alter role %I nologin password null noinherit",
+  'create role %I nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls',
+  "member=boundary_owner",
+  "roleid=boundary_owner",
+  "alter function deployment.registration_bootstrap_boundary(text) owner to %I",
+  "alter function deployment.is_independent_registration_database() owner to %I",
+  'ZHUDATUAN_REGISTRATION_BOUNDARY_OWNER_FINAL_STATE_INVALID',
   "function.prosecdef",
   "function.provolatile='s'",
   "session_user\\s*=\\s*'zhudatuanbootstrap'",
   "cross join lateral aclexplode",
   "grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration;",
   "grant execute on function deployment.is_independent_registration_database() to shopmigration;",
+  'create or replace function deployment.runtime_database_boundary()',
+  'set local role zhudatuanregistrationboundary;',
+  'reset role;',
+  'grant execute on function deployment.runtime_database_boundary()',
+  'ZHUDATUAN_RUNTIME_DATABASE_BOUNDARY_ACL_DRIFT',
   "ZHUDATUAN_REGISTRATION_BOOTSTRAP_BOUNDARY_ACL_DRIFT",
   "ZHUDATUAN_REGISTRATION_MIGRATION_BOUNDARY_ACL_DRIFT",
 ]) {
   if (!reconciliationSource.includes(token)) {
     throw new Error(`REGISTRATION_BOUNDARY_RECONCILIATION_GUARD_MISSING:${token}`);
+  }
+}
+for (const token of [
+  'positive=2','wrong-address=1','nonempty=1','wrong-sentinel=1','zero-mutation=3',
+  'assertSnapshot(pristine','assertSnapshot(nonempty','assertSnapshot(initialized',
+  "proof!=='t|shopmigration|0|1|14'",'POSTGRES_INIT_FIXTURE_SECRET_OUTPUT',
+]) {
+  if (!postgresInitFixtureSource.includes(token)) {
+    throw new Error(`REGISTRATION_RDS_INIT_PG16_FIXTURE_GUARD_MISSING:${token}`);
+  }
+}
+for (const token of [
+  "mode === '--registration-boundary-postgres'",
+  "current_setting('allow_system_table_mods')",
+  'local-disposable-fixture',
+  'set session authorization registration_boundary_outsider',
+  'ZHUDATUAN_REGISTRATION_BOUNDARY_RECONCILE_AUTHORITY_INVALID',
+  'set session authorization rds_boundary_admin',
+  'RDS-like registration boundary idempotent reconciliation',
+  'owner_memberships:0',
+]) {
+  if (!databaseAuditSource.includes(token)) {
+    throw new Error(`REGISTRATION_BOUNDARY_POSTGRES_REPLAY_GUARD_MISSING:${token}`);
   }
 }
 

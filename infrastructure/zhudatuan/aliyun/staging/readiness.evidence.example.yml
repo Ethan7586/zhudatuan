@@ -1,0 +1,131 @@
+version: 1
+profile: full
+environment: staging
+productionTrafficPercent: 0
+productionDataAccess: forbidden
+
+candidate:
+  commit: pending
+  archiveSha256: pending
+  inventorySha256: pending
+  treeState: pending
+
+ownerIntegration:
+  commit: pending
+  migrationInventorySha256: pending
+  invariantTestSha256: pending
+  tenantBoundaryTestSha256: pending
+
+cloudIdentity:
+  region: cn-beijing
+  accountId: pending
+  principalFingerprint: pending
+  sessionExpiresAt: pending
+  inventorySha256: pending
+  resourceGroupId: pending
+
+network:
+  preexistingEcsInstanceIdA: pending
+  preexistingEcsInstanceIdB: pending
+  existingHostExclusionSha256: pending
+  ecsInstanceId: pending
+  dedicatedStagingHostSha256: pending
+  vpcId: pending
+  vSwitchId: pending
+  securityGroupId: pending
+  ecsRamRoleName: pending
+  publicAddressFingerprint: pending
+
+approval:
+  approvedAt: pending
+  specificationSha256: pending
+  costEstimateSha256: pending
+
+rds:
+  instanceId: pending
+  privateEndpointFingerprint: pending
+  tlsCertificateFingerprint: pending
+  publicEndpointAbsent: pending
+  deletionProtection: pending
+  backupPolicySha256: pending
+  restoreDrillSha256: pending
+
+tair:
+  instanceId: pending
+  privateEndpointFingerprint: pending
+  tlsCertificateFingerprint: pending
+  publicEndpointAbsent: pending
+  aofEnabled: pending
+  backupPolicySha256: pending
+
+hostConfiguration:
+  environmentInventorySha256: pending
+  secretCatalogKeySetSha256: pending
+  internalTlsCertificateFingerprint: pending
+  kmsMasterKeyFingerprint: pending
+  rdsCaFingerprint: pending
+  fileModeAuditSha256: pending
+  hostToolchainSha256: pending
+  runtimeBoundarySha256: pending
+
+sms:
+  runtimeRoleName: pending
+  policyDocumentSha256: pending
+  signNameFingerprint: pending
+  templateCodeFingerprint: pending
+  filingEvidenceSha256: pending
+  imdsv2PrincipalFingerprint: pending
+
+database:
+  rdsAdminInitReplaySha256: pending
+  migrationReceiptSha256: pending
+  boundaryReceiptSha256: pending
+  ownerBootstrapReceiptSha256: pending
+  roleMatrixSha256: pending
+  runtimeCompatibilitySha256: pending
+
+runtime:
+  accountsHost: pending
+  consoleHost: pending
+  apiHost: pending
+  listenerInventorySha256: pending
+  systemdStateSha256: pending
+  internalAccessProbeSha256: pending
+  caddyValidationSha256: pending
+  dnsResolutionSha256: pending
+  publicNegativeRouteSha256: pending
+
+ownerInvitationE2e:
+  invitationIdSha256: pending
+  smsBizIdSha256: pending
+  deliveredAt: pending
+  membershipIdSha256: pending
+  zeroPermissionAssertionSha256: pending
+  replayDenialSha256: pending
+  crossScopeDenialSha256: pending
+  auditEventSha256: pending
+
+fullJobs:
+  databaseSchemaSha256: pending
+  redisPingSha256: pending
+  catalogSha256: pending
+  extensionInventorySha256: pending
+  objectRoundTripSha256: pending
+  schedulerOutboxSha256: pending
+  providerSandboxSha256: pending
+  systemdStateSha256: pending
+
+checks:
+  P00: pending
+  P01: pending
+  P02: pending
+  P03: pending
+  P04: pending
+  P05: pending
+  P06: pending
+  P07: pending
+  P08: pending
+  P09: pending
+  P10: pending
+  P11: pending
+  P12: pending

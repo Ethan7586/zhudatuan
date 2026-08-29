@@ -13,7 +13,7 @@ const databasePassword = 'test-only-staging-owner-database-password';
 const valid = Object.freeze({
   APP_ENV: 'staging',
   ZHUDATUAN_OWNER_BOOTSTRAP_CONFIRM: STAGING_OWNER_BOOTSTRAP_CONFIRMATION,
-  ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: `postgresql://zhudatuanbootstrap:${databasePassword}@127.0.0.1:55442/zhudatuan_registration`,
+  ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: `postgresql://zhudatuanbootstrap:${databasePassword}@127.0.0.1:55442/zhudatuan_registration?sslmode=disable`,
   ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_NAME: 'zhudatuan_registration',
   ZHUDATUAN_OWNER_BOOTSTRAP_SENTINEL: 'staging_database_boundary_sentinel_abcdefghijklmnop',
   ZHUDATUAN_OWNER_BOOTSTRAP_ACTOR: 'owner:staging:Ethan',
@@ -29,12 +29,15 @@ describe('staging owner bootstrap plan', () => {
     const environment = stagingOwnerBootstrapEnvironment({ ...valid });
     assert.equal(environment.expectedDatabase, 'zhudatuan_registration');
     assert.equal(environment.actor, 'owner:staging:Ethan');
-    assert.match(environment.connectionString, /@127\.0\.0\.1:55442\/zhudatuan_registration$/);
+    assert.match(environment.connectionString, /@127\.0\.0\.1:55442\/zhudatuan_registration\?sslmode=disable$/);
     assert.throws(() => stagingOwnerBootstrapEnvironment({ ...valid, APP_ENV: 'production' }), /STAGING_ENV_REQUIRED/);
     assert.throws(() => stagingOwnerBootstrapEnvironment({ ...valid,
       ZHUDATUAN_OWNER_BOOTSTRAP_CONFIRM: 'CREATE_ONE_ZHUDATUAN_CONSOLE_OWNER_ETHAN' }), /CONFIRMATION_REQUIRED/);
     assert.throws(() => stagingOwnerBootstrapEnvironment({ ...valid,
-      ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: `postgresql://zhudatuanbootstrap:${databasePassword}@127.0.0.1:55432/zhudatuan_registration` }),
+      ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: `postgresql://zhudatuanbootstrap:${databasePassword}@127.0.0.1:55432/zhudatuan_registration?sslmode=disable` }),
+    /DATABASE_ENDPOINT_INVALID/);
+    assert.throws(() => stagingOwnerBootstrapEnvironment({ ...valid,
+      ZHUDATUAN_OWNER_BOOTSTRAP_DATABASE_URL: `postgresql://zhudatuanbootstrap:${databasePassword}@127.0.0.1:55442/zhudatuan_registration` }),
     /DATABASE_ENDPOINT_INVALID/);
     assert.throws(() => stagingOwnerBootstrapEnvironment({ ...valid,
       ZHUDATUAN_OWNER_PASSWORD_REF: 'zhudatuan/registration/owner/password' }), /PASSWORD_REF_INVALID/);

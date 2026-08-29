@@ -1,0 +1,64 @@
+[Unit]
+Description=Zhudatuan full staging one-shot RDS registration boundary initialization
+Wants=network-online.target
+Requires=zhudatuan-staging-full-postgres-proxy.service
+After=network-online.target zhudatuan-staging-full-postgres-proxy.service
+Before=zhudatuan-staging-full-migration.service
+ConditionPathExists=/opt/zhudatuan-staging-full/current/infrastructure/zhudatuan/aliyun/postgres-init-registration.sh
+ConditionPathExists=/run/zhudatuan-staging-full/rds-init.env
+ConditionPathExists=/usr/bin/psql
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+DynamicUser=yes
+User=zdt-stg-full-rdsinit
+WorkingDirectory=/opt/zhudatuan-staging-full/current
+# Root must create this ephemeral file as root:root 0600. systemd reads it
+# before dropping privileges; the dynamic service identity cannot read it.
+EnvironmentFile=/run/zhudatuan-staging-full/rds-init.env
+UnsetEnvironment=PGSERVICE PGSERVICEFILE PGOPTIONS PSQLRC
+ExecStartPre=/usr/bin/pg_isready --host=127.0.0.1 --port=55442 --dbname=zhudatuan_registration --timeout=5
+ExecStart=/usr/bin/env PGHOST=127.0.0.1 PGHOSTADDR=127.0.0.1 PGPORT=55442 \
+  PGDATABASE=zhudatuan_registration POSTGRES_DB=zhudatuan_registration PGSSLMODE=disable \
+  PGCONNECT_TIMEOUT=5 PGPASSFILE=/dev/null PGAPPNAME=zhudatuan-staging-full-rds-init \
+  /bin/sh infrastructure/zhudatuan/aliyun/postgres-init-registration.sh
+TimeoutStartSec=300
+RuntimeDirectory=zdt-stg-full-rdsinit
+RuntimeDirectoryMode=0700
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=zhudatuan-staging-full-rds-init
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateIPC=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+DevicePolicy=closed
+KeyringMode=private
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SocketBindDeny=any
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadOnlyPaths=/opt/zhudatuan-staging-full/current
+InaccessiblePaths=-/opt/zhudatuan-staging-full/shared -/opt/zhudatuan -/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+# Manual one-shot only; there is intentionally no [Install] section.

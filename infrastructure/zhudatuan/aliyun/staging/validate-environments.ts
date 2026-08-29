@@ -3,11 +3,14 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { identityRegistrationApiEnvironment, localIdentityInfrastructureEnvironment, migrationEnvironment, validateJobsEnvironment, type EnvironmentSource } from '@shop/config/server';
+import { identityRegistrationApiEnvironment, localInfrastructureEnvironment, migrationEnvironment, validateJobsEnvironment, type EnvironmentSource } from '@shop/config/server';
+import { postgresTlsProxyConfiguration } from '../../../../tools/localinfra/src/PostgresTlsProxy';
+import { parseFullStagingWorkloadAccessPolicy } from '../../../../tools/localinfra/src/WorkloadAccessPolicy';
 import { stagingOwnerBootstrapEnvironment } from '../../../../tools/seed/src/StagingOwnerBootstrapPlan';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const environment = (name: string): Record<string, string> => parseEnvironment(readFileSync(resolve(directory, name), 'utf8'));
+const json = (name: string): Record<string, unknown> => JSON.parse(readFileSync(resolve(directory, name), 'utf8')) as Record<string, unknown>;
 
 const identityApi = {
   ...environment('identity-registration-api.env.example'),
@@ -35,19 +38,33 @@ const fullJobs = {
   APP_ENV: 'production',
   JOB_RUNTIME_PROFILE: 'full',
 };
+const fullIdentityJobs = {
+  ...environment('full-identity-notification-jobs.env.example'),
+  APP_ENV: 'production',
+  JOB_RUNTIME_PROFILE: 'identity-notification-only',
+};
 const internalRuntime = {
   ...environment('full-internal-runtime.env.example'),
   APP_ENV: 'production',
-  LOCAL_RUNTIME_PROFILE: 'registration-only',
+  LOCAL_RUNTIME_PROFILE: 'full-staging',
 };
+const postgresProxy = environment('full-postgres-proxy.env.example');
 const migration = environment('full-migration.env.example');
 const owner = environment('full-owner-bootstrap.env.example');
+const bootstrapAccess = json('full-internal-access.bootstrap.example.json');
+const runtimeAccess = json('full-internal-access.example.json');
+const bootstrapSecrets = json('full-secrets.bootstrap.example.json');
+const runtimeSecrets = json('full-secrets.example.json');
 
 identityRegistrationApiEnvironment(identityApi);
 validateJobsEnvironment(identityJobs);
 identityRegistrationApiEnvironment(fullApi);
 validateJobsEnvironment(fullJobs);
-localIdentityInfrastructureEnvironment(internalRuntime);
+validateJobsEnvironment(fullIdentityJobs);
+localInfrastructureEnvironment(internalRuntime);
+parseFullStagingWorkloadAccessPolicy(bootstrapAccess);
+parseFullStagingWorkloadAccessPolicy(runtimeAccess);
+postgresTlsProxyConfiguration(postgresProxy);
 migrationEnvironment(migration);
 stagingOwnerBootstrapEnvironment(owner);
 
@@ -119,10 +136,16 @@ assertMissingFails(
   validateJobsEnvironment
 );
 assertMissingFails(
-  internalRuntime,
-  ['APP_ENV', 'LOCAL_TLS_KEY_FILE', 'LOCAL_TLS_CERT_FILE', 'LOCAL_SECRETS_FILE', 'LOCAL_KMS_MASTER_KEY', 'LOCAL_SECRET_STORE_BEARER_TOKEN', 'LOCAL_KMS_BEARER_TOKEN'],
-  localIdentityInfrastructureEnvironment
+  fullIdentityJobs,
+  ['APP_ENV', 'JOB_RUNTIME_PROFILE', 'SERVICE_VERSION', 'DATABASE_JOB_CONNECTION_REF', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN', 'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'IDENTITY_NOTIFICATION_CONFIG_REF', 'JOB_WORKER_ID'],
+  validateJobsEnvironment
 );
+assertMissingFails(
+  internalRuntime,
+  ['APP_ENV', 'LOCAL_TLS_KEY_FILE', 'LOCAL_TLS_CERT_FILE', 'LOCAL_SECRETS_FILE', 'LOCAL_KMS_MASTER_KEY', 'LOCAL_WORKLOAD_ACCESS_POLICY_FILE', 'LOCAL_OBJECTS_PORT', 'LOCAL_OBJECTS_DIRECTORY', 'LOCAL_OBJECTS_TOKEN'],
+  localInfrastructureEnvironment
+);
+assertMissingFails(postgresProxy, ['ZHUDATUAN_POSTGRES_PROXY_UPSTREAM_HOST', 'ZHUDATUAN_POSTGRES_PROXY_UPSTREAM_PORT', 'ZHUDATUAN_POSTGRES_PROXY_CA_FILE'], postgresTlsProxyConfiguration);
 assertMissingFails(
   migration,
   [
@@ -160,14 +183,33 @@ assertMissingFails(
 
 assert.throws(() => validateJobsEnvironment({ ...fullJobs, IDENTITY_NOTIFICATION_CONFIG_REF: 'forbidden/in/full' }), /JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:IDENTITY_NOTIFICATION_CONFIG_REF/);
 assert.throws(() => validateJobsEnvironment({ ...identityJobs, REDIS_CONNECTION_REF: 'forbidden/in/identity' }), /JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:REDIS_CONNECTION_REF/);
-assert.equal(fullApi.SECRET_STORE_BEARER_TOKEN, internalRuntime.LOCAL_SECRET_STORE_BEARER_TOKEN);
-assert.equal(fullJobs.SECRET_STORE_BEARER_TOKEN, internalRuntime.LOCAL_SECRET_STORE_BEARER_TOKEN);
-assert.equal(migration.SECRET_STORE_BEARER_TOKEN, internalRuntime.LOCAL_SECRET_STORE_BEARER_TOKEN);
-assert.equal(owner.SECRET_STORE_BEARER_TOKEN, internalRuntime.LOCAL_SECRET_STORE_BEARER_TOKEN);
-assert.equal(fullApi.KMS_BEARER_TOKEN, internalRuntime.LOCAL_KMS_BEARER_TOKEN);
-assert.equal(fullJobs.KMS_BEARER_TOKEN, internalRuntime.LOCAL_KMS_BEARER_TOKEN);
-assert.equal(migration.KMS_BEARER_TOKEN, internalRuntime.LOCAL_KMS_BEARER_TOKEN);
-assert.notEqual(internalRuntime.LOCAL_SECRET_STORE_BEARER_TOKEN, internalRuntime.LOCAL_KMS_BEARER_TOKEN);
+const runtimeSecretGrants = runtimeAccess.secretStore as Record<string, { bearerToken: string; resources: string[] }>;
+const runtimeKmsGrants = runtimeAccess.kms as Record<string, { bearerToken: string; resources: string[] }>;
+const bootstrapSecretGrants = bootstrapAccess.secretStore as Record<string, { bearerToken: string; resources: string[] }>;
+const bootstrapKmsGrants = bootstrapAccess.kms as Record<string, { bearerToken: string; resources: string[] }>;
+assert.equal(fullApi.SECRET_STORE_BEARER_TOKEN, runtimeSecretGrants['identity-registration-api']?.bearerToken);
+assert.equal(fullApi.KMS_BEARER_TOKEN, runtimeKmsGrants['identity-registration-api']?.bearerToken);
+assert.equal(fullIdentityJobs.SECRET_STORE_BEARER_TOKEN, runtimeSecretGrants['identity-notification-jobs']?.bearerToken);
+assert.equal(fullIdentityJobs.KMS_BEARER_TOKEN, runtimeKmsGrants['identity-notification-jobs']?.bearerToken);
+assert.equal(fullJobs.SECRET_STORE_BEARER_TOKEN, runtimeSecretGrants['full-jobs']?.bearerToken);
+assert.equal(fullJobs.KMS_BEARER_TOKEN, runtimeKmsGrants['full-jobs']?.bearerToken);
+assert.equal(migration.SECRET_STORE_BEARER_TOKEN, bootstrapSecretGrants.migration?.bearerToken);
+assert.equal(migration.KMS_BEARER_TOKEN, bootstrapKmsGrants.migration?.bearerToken);
+assert.equal(owner.SECRET_STORE_BEARER_TOKEN, bootstrapSecretGrants['owner-bootstrap']?.bearerToken);
+const allInternalTokens = [
+  ...Object.values(runtimeSecretGrants), ...Object.values(runtimeKmsGrants),
+  ...Object.values(bootstrapSecretGrants), ...Object.values(bootstrapKmsGrants),
+].map(({ bearerToken }) => bearerToken);
+assert.equal(new Set(allInternalTokens).size, allInternalTokens.length);
+assert.ok(!allInternalTokens.includes(internalRuntime.LOCAL_OBJECTS_TOKEN));
+assert.equal(runtimeSecrets['zhudatuan/staging/full/objects/jobs'], internalRuntime.LOCAL_OBJECTS_TOKEN);
+assert.deepEqual(Object.keys(runtimeSecrets).sort(), [...new Set(Object.values(runtimeSecretGrants).flatMap(({ resources }) => resources))].sort());
+assert.deepEqual(Object.keys(bootstrapSecrets).sort(), [...new Set([
+  ...Object.values(bootstrapSecretGrants).flatMap(({ resources }) => resources),
+  'zhudatuan/staging/full/objects/jobs',
+])].sort());
+assert.equal(bootstrapSecrets['zhudatuan/staging/full/objects/jobs'], internalRuntime.LOCAL_OBJECTS_TOKEN);
+assert.equal(fullJobs.OBJECT_STORE_ENDPOINT, 'https://127.0.0.1:8645');
 
 process.stdout.write('Both staging profile environment validators passed and fail closed on missing required values.\n');
 

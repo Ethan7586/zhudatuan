@@ -1,8 +1,10 @@
 import { COMMERCE_EVENTS, CONTRACT_CHECKSUM, OperationCatalog } from '@shop/contract';
 import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import { JOB_CATALOG } from '../app/jobs';
+import type { CacheState } from '../foundation/cache/Cache';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import type { ExtensionRegistry } from './ExtensionRegistry';
+import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
 
 interface DatabaseCompatibility {
   readonly writable: boolean;
@@ -18,11 +20,13 @@ export interface RuntimeCompatibilityState {
   readonly contract: Readonly<{ checksum: string; matches: boolean }>;
   readonly schema: Readonly<{ version: string; matches: boolean }>;
   readonly registries: Readonly<{ operations: number; events: number; jobs: number }>;
+  readonly cache: CacheState;
   readonly database: DatabaseCompatibility;
   readonly extensions: Awaited<ReturnType<ExtensionRegistry['healthAll']>>;
 }
 
-export async function runtimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs' = 'api'): Promise<RuntimeCompatibilityState> {
+export async function runtimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs' = 'api',
+  cache: CacheState = Object.freeze({ available: false, reason: 'CACHE_STATE_UNAVAILABLE' })): Promise<RuntimeCompatibilityState> {
   const statement = 'select not pg_is_in_recovery() writable,'
     + 'exists(select 1 from runtime.schemaversion where version=$1) schema,'
     + 'exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,'
@@ -50,23 +54,28 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     jobs: JOB_CATALOG.length,
   });
   const healthy = database.writable
+    && database.schema
     && database.contract
     && database.operations === registries.operations
     && database.capabilities === registries.operations
     && database.events === registries.events
+    && (workload !== 'jobs' || cache.available)
     && health.every(({ state }) => state === 'healthy');
   return Object.freeze({
     healthy,
     contract: Object.freeze({ checksum: CONTRACT_CHECKSUM, matches: database.contract }),
     schema: Object.freeze({ version: TARGET_SCHEMA_HEAD, matches: database.schema }),
     registries,
+    cache: Object.freeze({ ...cache }),
     database,
     extensions: health,
   });
 }
 
-export async function assertRuntimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs'): Promise<RuntimeCompatibilityState> {
-  const state = await runtimeCompatibility(pool, extensions, workload);
+export async function assertRuntimeCompatibility(pool: DatabasePool, extensions: ExtensionRegistry, workload: 'api' | 'jobs',
+  cache?: CacheState): Promise<RuntimeCompatibilityState> {
+  const state = await runtimeCompatibility(pool, extensions, workload, cache);
   if (!state.healthy) throw new Error('RUNTIME_COMPATIBILITY_FAILED:' + JSON.stringify(state));
+  if (workload === 'jobs') await assertLiveDatabaseBoundary(pool, 'shopjob');
   return state;
 }

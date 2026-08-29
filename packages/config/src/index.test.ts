@@ -1,11 +1,12 @@
 import { readFile } from 'node:fs/promises';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { clientEnvironment } from './ClientEnvironment';
 import { miniappEnvironment } from './MiniappEnvironment';
 import { API_ENVIRONMENT_KEYS, IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS, JOBS_ENVIRONMENT_KEYS, LOCAL_ENVIRONMENT_KEYS, REGISTRATION_MIGRATION_ENVIRONMENT_KEYS, WechatApplicationCatalog, apiBindHost, apiReturnTargets, bearerToken, identityRegistrationApiEnvironment, integerValue, isPrivateIpv4Host, jobRuntimeProfile, localIdentityInfrastructureEnvironment, localInfrastructureEnvironment, localSeedEnvironment, registrationMigrationEnvironment, requiredValue, validateApiEnvironment, validateJobsEnvironment } from './ServerEnvironment';
 
 const secretStoreBearerToken = 's'.repeat(43);
 const kmsBearerToken = 'k'.repeat(43);
+const objectsBearerToken = 'o'.repeat(43);
 
 describe('runtime configuration schema', () => {
   it('keeps the private CA trust path in every registration-only HTTPS client env', async () => {
@@ -103,19 +104,56 @@ describe('runtime configuration schema', () => {
     expect(localInfrastructureEnvironment(infrastructure).objectsPort).toBe(8445);
     expect(() => localInfrastructureEnvironment({ ...infrastructure, LOCAL_KMS_BEARER_TOKEN: secretStoreBearerToken }))
       .toThrow('LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
-    expect(localIdentityInfrastructureEnvironment({
+    const registrationOnly = {
       APP_ENV: 'production', LOCAL_RUNTIME_PROFILE: 'registration-only',
       LOCAL_TLS_KEY_FILE: infrastructure.LOCAL_TLS_KEY_FILE, LOCAL_TLS_CERT_FILE: infrastructure.LOCAL_TLS_CERT_FILE,
       LOCAL_SECRETS_FILE: infrastructure.LOCAL_SECRETS_FILE, LOCAL_SECRETS_PORT: infrastructure.LOCAL_SECRETS_PORT,
       LOCAL_KMS_PORT: infrastructure.LOCAL_KMS_PORT, LOCAL_KMS_MASTER_KEY: infrastructure.LOCAL_KMS_MASTER_KEY,
       LOCAL_SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken, LOCAL_KMS_BEARER_TOKEN: kmsBearerToken,
-    }).secretStoreBearerToken).toBe(secretStoreBearerToken);
+    };
+    expect(localIdentityInfrastructureEnvironment(registrationOnly).secretStoreBearerToken).toBe(secretStoreBearerToken);
+    expect(() => localIdentityInfrastructureEnvironment({ ...registrationOnly, LOCAL_OBJECTS_PORT: '8645' }))
+      .toThrow('IDENTITY_INTERNAL_RUNTIME_KEY_FORBIDDEN:LOCAL_OBJECTS_PORT');
     expect(() => localIdentityInfrastructureEnvironment({
       APP_ENV: 'production', LOCAL_RUNTIME_PROFILE: 'registration-only',
       LOCAL_TLS_KEY_FILE: infrastructure.LOCAL_TLS_KEY_FILE, LOCAL_TLS_CERT_FILE: infrastructure.LOCAL_TLS_CERT_FILE,
       LOCAL_SECRETS_FILE: infrastructure.LOCAL_SECRETS_FILE, LOCAL_SECRET_STORE_BEARER_TOKEN: 'short',
       LOCAL_KMS_MASTER_KEY: infrastructure.LOCAL_KMS_MASTER_KEY, LOCAL_KMS_BEARER_TOKEN: kmsBearerToken,
     })).toThrow('LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
+    const fullStaging = {
+      LOCAL_KMS_MASTER_KEY: infrastructure.LOCAL_KMS_MASTER_KEY,
+      APP_ENV: 'production', LOCAL_RUNTIME_PROFILE: 'full-staging',
+      LOCAL_TLS_KEY_FILE: '/opt/zhudatuan-staging-full/shared/tls/internal.key',
+      LOCAL_TLS_CERT_FILE: '/opt/zhudatuan-staging-full/shared/tls/internal.crt',
+      LOCAL_SECRETS_FILE: '/opt/zhudatuan-staging-full/shared/full-secrets.json',
+      LOCAL_SECRETS_PORT: '8643', LOCAL_KMS_PORT: '8644',
+      LOCAL_WORKLOAD_ACCESS_POLICY_FILE: '/opt/zhudatuan-staging-full/shared/full-internal-access.json',
+      NODE_EXTRA_CA_CERTS: '/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt',
+      LOCAL_OBJECTS_PORT: '8645', LOCAL_OBJECTS_DIRECTORY: '/var/lib/zhudatuan-staging-full/objects',
+      LOCAL_OBJECTS_TOKEN: objectsBearerToken,
+    };
+    expect(localInfrastructureEnvironment(fullStaging).objectsPort).toBe(8645);
+    expect(localIdentityInfrastructureEnvironment(fullStaging).secretsPort).toBe(8643);
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, APP_ENV: 'test' }))
+      .toThrow('FULL_STAGING_INTERNAL_RUNTIME_PRODUCTION_REQUIRED');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, LOCAL_OBJECTS_PORT: '8445' }))
+      .toThrow('FULL_STAGING_OBJECTS_PORT_INVALID');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, LOCAL_OBJECTS_DIRECTORY: '/private/objects' }))
+      .toThrow('FULL_STAGING_OBJECTS_DIRECTORY_INVALID');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, LOCAL_SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken }))
+      .toThrow('FULL_STAGING_INTERNAL_RUNTIME_KEY_FORBIDDEN:LOCAL_SECRET_STORE_BEARER_TOKEN');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, LOCAL_SECRETS_PORT: '8443' }))
+      .toThrow('FULL_STAGING_SECRETS_PORT_INVALID');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, LOCAL_KMS_PORT: '8444' }))
+      .toThrow('FULL_STAGING_KMS_PORT_INVALID');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, LOCAL_SECRETS_FILE: '/opt/zhudatuan/shared/secrets.json' }))
+      .toThrow('FULL_STAGING_SECRETS_FILE_INVALID');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, LOCAL_WORKLOAD_ACCESS_POLICY_FILE: '/opt/zhudatuan/shared/access.json' }))
+      .toThrow('FULL_STAGING_WORKLOAD_ACCESS_POLICY_FILE_INVALID');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, NODE_EXTRA_CA_CERTS: '/opt/zhudatuan/shared/tls/ca.crt' }))
+      .toThrow('FULL_STAGING_CA_FILE_INVALID');
+    expect(() => localInfrastructureEnvironment({ ...fullStaging, REDIS_PASSWORD: 'not-owned-here' }))
+      .toThrow('FULL_STAGING_INTERNAL_RUNTIME_KEY_FORBIDDEN:REDIS_PASSWORD');
     const seed = {
       SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443', LOCAL_ADMIN_DATABASE_CONNECTION_REF: 'shop/local/database/admin',
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
@@ -127,6 +165,39 @@ describe('runtime configuration schema', () => {
     expect(localSeedEnvironment(seed).adminDatabaseConnectionRef).toBe('shop/local/database/admin');
     expect(localSeedEnvironment(seed).migrationDatabaseConnectionRef).toBe('shop/local/database/migration');
     expect(() => localSeedEnvironment({ ...seed, KMS_ENDPOINT: 'http://127.0.0.1:8444' })).toThrow('KMS_ENDPOINT_INVALID');
+  });
+
+  it('requires the internal-runtime systemd credential paths in a live full-staging process', () => {
+    const credentials = '/run/credentials/zhudatuan-staging-full-internal-runtime.service';
+    const live = {
+      APP_ENV: 'production', LOCAL_RUNTIME_PROFILE: 'full-staging',
+      LOCAL_TLS_KEY_FILE: `${credentials}/internal-tls-key`,
+      LOCAL_TLS_CERT_FILE: `${credentials}/internal-tls-certificate`,
+      LOCAL_SECRETS_FILE: `${credentials}/secrets-catalog`,
+      LOCAL_SECRETS_PORT: '8643', LOCAL_KMS_PORT: '8644', LOCAL_KMS_MASTER_KEY: 'local-master',
+      LOCAL_WORKLOAD_ACCESS_POLICY_FILE: `${credentials}/workload-access-policy`,
+      NODE_EXTRA_CA_CERTS: `${credentials}/internal-ca-certificate`,
+      LOCAL_OBJECTS_PORT: '8645', LOCAL_OBJECTS_DIRECTORY: '/var/lib/zhudatuan-staging-full/objects',
+      LOCAL_OBJECTS_TOKEN: objectsBearerToken,
+    };
+    try {
+      for (const [key, value] of Object.entries(live)) vi.stubEnv(key, value);
+      expect(localInfrastructureEnvironment().secretsFile).toBe(`${credentials}/secrets-catalog`);
+      expect(localIdentityInfrastructureEnvironment().tlsKeyFile).toBe(`${credentials}/internal-tls-key`);
+      for (const [key, sourcePath, code] of [
+        ['LOCAL_TLS_KEY_FILE', '/opt/zhudatuan-staging-full/shared/tls/internal.key', 'FULL_STAGING_TLS_KEY_FILE_INVALID'],
+        ['LOCAL_TLS_CERT_FILE', '/opt/zhudatuan-staging-full/shared/tls/internal.crt', 'FULL_STAGING_TLS_CERTIFICATE_FILE_INVALID'],
+        ['LOCAL_SECRETS_FILE', '/opt/zhudatuan-staging-full/shared/full-secrets.json', 'FULL_STAGING_SECRETS_FILE_INVALID'],
+        ['LOCAL_WORKLOAD_ACCESS_POLICY_FILE', '/opt/zhudatuan-staging-full/shared/full-internal-access.json', 'FULL_STAGING_WORKLOAD_ACCESS_POLICY_FILE_INVALID'],
+        ['NODE_EXTRA_CA_CERTS', '/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt', 'FULL_STAGING_CA_FILE_INVALID'],
+      ] as const) {
+        vi.stubEnv(key, sourcePath);
+        expect(() => localInfrastructureEnvironment()).toThrow(code);
+        vi.stubEnv(key, live[key]);
+      }
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('normalizes required values and rejects blank secrets', () => {

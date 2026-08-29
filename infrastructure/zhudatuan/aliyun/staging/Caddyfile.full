@@ -1,3 +1,4 @@
+# Managed by the Zhudatuan isolated full-staging deployment.
 {$ZHUDATUAN_STAGING_FULL_ACCOUNTS_HOST} {
 	encode gzip zstd
 

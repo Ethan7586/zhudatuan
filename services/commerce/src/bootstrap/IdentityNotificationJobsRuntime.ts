@@ -11,6 +11,7 @@ import { AliyunSmsChannel } from '../modules/notification/infrastructure/adapter
 import { parseIdentityNotificationConfiguration } from '../modules/notification/infrastructure/adapter/IdentityNotificationConfiguration';
 import { PgNotificationRepository } from '../modules/notification/infrastructure/persistence/PgNotificationRepository';
 import { IdentityNotificationJobProcessor, type IdentityChallengeDispatcher } from '../modules/notification/interface/job/NotificationJob';
+import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
 
 export interface IdentityNotificationJobsRuntime {
   readonly job: Job<void>;
@@ -88,4 +89,5 @@ export async function assertIdentityNotificationRuntimeCompatibility(pool: Datab
     || !state.challenge || !state.challenge_secret || !state.challenge_delivery) {
     throw new Error('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
   }
+  await assertLiveDatabaseBoundary(pool, 'zhudatuanidentityjob');
 }

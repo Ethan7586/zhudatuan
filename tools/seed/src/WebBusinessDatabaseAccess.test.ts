@@ -79,13 +79,16 @@ test('migration contains fail-closed assertions for privileged and prohibited do
   assert.doesNotMatch(migration, /insert into (?:catalog|pricing|inventory|experience)\./i);
 });
 
-test('database init preprovisions both login roles without embedding credentials in migration', () => {
-  assert.match(databaseInit, /create_role zhudatuanwebapi "\$ZHUDATUAN_WEB_API_PASSWORD"/);
-  assert.match(databaseInit, /create_role zhudatuansandboxbootstrap "\$ZHUDATUAN_SANDBOX_BOOTSTRAP_PASSWORD"/);
-  assert.match(databaseInit, /create role %I login password %L nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls/);
+test('database init preprovisions both login roles without putting credentials in argv or migration', () => {
+  assert.match(databaseInit, /\\getenv web_api_password ZHUDATUAN_WEB_API_PASSWORD/);
+  assert.match(databaseInit, /\\getenv sandbox_bootstrap_password ZHUDATUAN_SANDBOX_BOOTSTRAP_PASSWORD/);
+  assert.match(databaseInit, /create role zhudatuanwebapi login password %L noinherit',:'web_api_password'/);
+  assert.match(databaseInit, /create role zhudatuansandboxbootstrap login password %L noinherit',:'sandbox_bootstrap_password'/);
+  assert.match(databaseInit, /ZHUDATUAN_RDS_INIT_ROLE_ATTRIBUTE_INVALID/);
+  assert.doesNotMatch(databaseInit, /--set|--variable|-v[= ]/);
   assert.match(databaseInit,
-    /revoke all on deployment\.boundary[\s\S]+zhudatuanwebapi,zhudatuanpurchaseapi,zhudatuansandboxbootstrap/);
-  assert.match(databaseInit, /grant select\(id,database_name,sentinel_hash\) on deployment\.boundary to shopmigration/);
+    /revoke all on deployment\.boundary[\s\S]+zhudatuanwebapi,\s*zhudatuanpurchaseapi,zhudatuansandboxbootstrap/);
+  assert.match(databaseInit, /grant execute on function deployment\.is_independent_registration_database\(\) to shopmigration/);
   assert.doesNotMatch(databaseInit, /grant (?:select|insert|update|delete)[^;]*deployment\.boundary to (?:zhudatuanwebapi|zhudatuansandboxbootstrap)/i);
   assert.match(databaseEnvironment, /^ZHUDATUAN_WEB_API_PASSWORD=/m);
   assert.match(databaseEnvironment, /^ZHUDATUAN_SANDBOX_BOOTSTRAP_PASSWORD=/m);
