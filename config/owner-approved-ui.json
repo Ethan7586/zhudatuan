@@ -31,7 +31,7 @@
     ],
     "requiredValidation": ["caddy validate --adapter caddyfile", "multi-membership discovery returns 409 without Set-Cookie"],
     "lockedFiles": {
-      "infrastructure/zhudatuan/aliyun/Caddyfile": "9aa092c78dc8d416a33255cfbfe9b058bb852c602a5b78853b54062c939182e1",
+      "infrastructure/zhudatuan/aliyun/Caddyfile": "424351bfcced50f7a00044350d6bcda3defcd1bd93756ead311eeaa8e05c7a98",
       "infrastructure/zhudatuan/aliyun/delivery.yml": "07e39327c184a7206d26e0ebabcc1ac3e8bcab34c27fab78b31d0e6612ba8ba9",
       "infrastructure/zhudatuan/aliyun/ecosystem.config.cjs": "ab916885ef29faadd7ec0e15c34b6c9ecfb69c514e883addeffdeaccd7104141"
     }
