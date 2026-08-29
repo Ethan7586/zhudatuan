@@ -37,6 +37,30 @@ describe('Commerce application workspace', () => {
     expect(writes).toHaveLength(0);
   });
 
+  it('hides cached records and an open drawer when access is revoked', async () => {
+    const user = userEvent.setup();
+    const { client } = renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    await screen.findByRole('table', { name: '应用治理列表' });
+    await user.click(screen.getByRole('button', { name: '查看鸿泰惠民通摘要' }));
+    expect(await screen.findByRole('dialog', { name: '鸿泰惠民通' })).toBeTruthy();
+
+    server.use(http.get('*/api/v1/experiences/applications', () => HttpResponse.json(
+      { code: 'APPLICATION_READ_DENIED', requestId: 'request:revoked' },
+      { status: 403 },
+    )));
+    await client.invalidateQueries();
+
+    const access = await screen.findByRole('region', { name: '暂无访问权限' });
+    await waitFor(() => expect(document.activeElement).toBe(access));
+    expect(within(access).getByText('当前账号无法查看「应用治理」。')).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('table', { name: '应用治理列表' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 1, name: '应用治理' })).toBeNull();
+    expect(screen.queryByText('平台治理视角：智慧翼平台')).toBeNull();
+    expect(screen.queryByRole('button', { name: '刷新数据' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '创建商城' })).toBeNull();
+  });
+
   it('shows the enterprise six-step bootstrap as a safe non-mutating preview', async () => {
     const user = userEvent.setup();
     renderRoute('/applications', scope('enterprise', 'enterprise:hongtai', '鸿泰集团'));
@@ -157,9 +181,10 @@ function LocationProbe() {
 function renderRoute(entry: string, activeScope: ConsoleScope) {
   const context = contextFor(activeScope);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<MemoryRouter initialEntries={[entry]}><QueryClientProvider client={client}>
+  const rendered = render(<MemoryRouter initialEntries={[entry]}><QueryClientProvider client={client}>
     <ConsoleContextProvider value={context}><LocationProbe /><Component /></ConsoleContextProvider>
   </QueryClientProvider></MemoryRouter>);
+  return { ...rendered, client };
 }
 
 function scope(kind: ConsoleScope['kind'], id: string, name: string): ConsoleScope {

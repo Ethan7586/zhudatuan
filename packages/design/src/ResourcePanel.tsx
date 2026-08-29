@@ -30,6 +30,7 @@ const sourceLabels: Record<ResourceCondition, string> = {
 
 export function ResourcePanel({ title, description, condition, children, eyebrow, actions, error, retry }: ResourcePanelProps) {
   const titleId = useId();
+  const accessBlocked = condition === 'unauthenticated' || condition === 'denied';
   return (
     <section className="resourcepanel" aria-labelledby={titleId}>
       <header className="resourceheading">
@@ -43,7 +44,7 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
           {sourceLabels[condition]}
         </span>
       </header>
-      {actions === undefined ? null : (
+      {actions === undefined || accessBlocked ? null : (
         <div className="resourceactions" role="group" aria-label={`${title}操作`}>
           {actions}
         </div>

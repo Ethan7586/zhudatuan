@@ -33,11 +33,11 @@ export function safeQueryError(error: Error | null): string | undefined {
 }
 
 function errorCondition(error: Error): ResourceCondition {
-  if (!online()) return 'offline';
   const api = apiError(error);
+  if (api?.status === 401) return 'unauthenticated';
+  if (api?.status === 403) return 'denied';
+  if (!online()) return 'offline';
   if (api === null) return 'failure';
-  if (api.status === 401) return 'unauthenticated';
-  if (api.status === 403) return 'denied';
   if (api.status === 404) return 'notfound';
   if (api.status === 409 || api.status === 412) return 'conflict';
   if (api.status === 429) return 'ratelimited';
