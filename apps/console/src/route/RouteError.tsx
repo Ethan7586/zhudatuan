@@ -1,18 +1,49 @@
-import { ResourcePanel } from '@shop/design';
+import { AccessDenied, ResourcePanel } from '@shop/design';
+import { ApiError } from '@shop/sdk';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
+import { appConfig } from '../shared/config/AppConfig';
 
 export function RouteError() {
   const error = useRouteError();
-  const status = isRouteErrorResponse(error) ? error.status : 500;
-  const denied = status === 401 || status === 403;
+  const status = routeErrorStatus(error);
+  const unauthenticated = status === 401;
+  const denied = status === 403;
   const missing = status === 404;
-  const condition = denied ? 'denied' : missing ? 'notfound' : 'failure';
-  const message = denied ? '当前会话未获得该数据范围。' : missing ? '该地址不存在或已被移除。' : '页面读取失败，请稍后重试。';
+  const detail = routeErrorDetail(error);
+  if (unauthenticated || denied) {
+    return (
+      <main className="routeerror">
+        <AccessDenied
+          kind={unauthenticated ? 'unauthenticated' : 'forbidden'}
+          {...(denied ? { resourceLabel: '当前数据范围' } : {})}
+          {...(detail === undefined ? {} : { detail })}
+          actions={{
+            onReturnToWorkspace: () => window.location.assign(new URL(import.meta.env.BASE_URL, window.location.origin).toString()),
+            onRelogin: () => window.location.assign(`${appConfig.authBaseUrl}/login?client=console`),
+          }}
+        />
+      </main>
+    );
+  }
+  const condition = missing ? 'notfound' : 'failure';
+  const message = missing ? '该地址不存在或已被移除。' : '页面读取失败，请稍后重试。';
   return (
     <main className="routeerror">
-      <ResourcePanel title={denied ? '访问受限' : missing ? '页面不存在' : '控制台不可用'} condition={condition} error={message}>
+      <ResourcePanel title={missing ? '页面不存在' : '控制台不可用'} condition={condition} error={message}>
         <span />
       </ResourcePanel>
     </main>
   );
+}
+
+export function routeErrorStatus(error: unknown): number {
+  if (isRouteErrorResponse(error)) return error.status;
+  if (error instanceof ApiError) return error.status;
+  return 500;
+}
+
+function routeErrorDetail(error: unknown): string | undefined {
+  if (isRouteErrorResponse(error)) return typeof error.data === 'string' ? error.data : undefined;
+  if (error instanceof ApiError) return `${error.code} · 请求 ${error.requestId}`;
+  return undefined;
 }

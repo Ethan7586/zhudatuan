@@ -1,8 +1,9 @@
+import { ResourceState } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Button, Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
@@ -38,7 +39,16 @@ export function OrderDrawer({
     queryFn: ({ signal }) => readOrderDetail(context, orderId, signal),
     enabled: orderId !== '',
   });
-  const order = query.data;
+  const detailCondition = queryCondition({
+    pending: query.isPending,
+    fetching: query.isFetching,
+    error: query.error,
+    hasData: query.data !== undefined,
+    empty: query.data === undefined && !query.isPending && query.error === null,
+    stale: query.isStale,
+  });
+  const accessBlocked = detailCondition === 'unauthenticated' || detailCondition === 'denied';
+  const order = accessBlocked ? undefined : query.data;
   const preview = order === undefined ? undefined : previewRecord(order, previewEnabled);
   const error = safeQueryError(query.error);
 
@@ -115,7 +125,11 @@ export function OrderDrawer({
                   正在读取订单权威快照…
                 </p>
               ) : null}
-              {query.isError ? (
+              {accessBlocked ? (
+                <ResourceState condition={detailCondition} resourceLabel="订单详情" {...(error === undefined ? {} : { error })}>
+                  <span />
+                </ResourceState>
+              ) : query.isError ? (
                 <section className="orderdrawererror" role="alert">
                   <strong>订单详情读取失败</strong>
                   <p>{error}</p>

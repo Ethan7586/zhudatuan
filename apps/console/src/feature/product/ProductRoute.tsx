@@ -172,6 +172,7 @@ export function Component() {
       </section>
       <ResourceState
         condition={condition}
+        resourceLabel="商品治理台"
         {...(error === undefined ? {} : { error })}
         retry={() => {
           void query.refetch();

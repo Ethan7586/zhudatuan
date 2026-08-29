@@ -1,8 +1,9 @@
+import { ResourceState } from '@shop/design';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { formatOrderTime } from './OrderPresentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey } from './OrderDetailQuery';
@@ -50,6 +51,14 @@ export function Component() {
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<OrderColumnKey>>(() => new Set(defaultOrderColumns));
   const previewPage = previewEnabled && page?.preview?.source === 'local-preview' ? page.preview : undefined;
   const error = safeQueryError(query.error);
+  const listCondition = queryCondition({
+    pending: query.isPending,
+    fetching: query.isFetching,
+    error: query.error,
+    hasData: page !== undefined,
+    empty: page?.items.length === 0,
+    stale: query.isStale,
+  });
 
   useEffect(() => {
     if (previewEnabled || !previewOnlySearchKeys.some((key) => search.has(key))) return;
@@ -133,6 +142,16 @@ export function Component() {
       else pageIds.forEach((id) => next.add(id));
       return { boundary: selectionBoundary, ids: next };
     });
+
+  if (listCondition === 'unauthenticated' || listCondition === 'denied') {
+    return (
+      <section className="orderworkspace" aria-label="订单管理系统">
+        <ResourceState condition={listCondition} resourceLabel="订单管理系统" {...(error === undefined ? {} : { error })}>
+          <span />
+        </ResourceState>
+      </section>
+    );
+  }
 
   return (
     <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
