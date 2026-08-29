@@ -1,4 +1,4 @@
-import { Button, ResourcePanel } from '@shop/design';
+import { Button, ResourcePanel, ResourceState } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -79,6 +79,15 @@ export function Component() {
   }, [updateSearch]);
   const closeRecord = useCallback(() => updateSearch((next) => next.delete('selected')), [updateSearch]);
   const scopeName = context.scope.name ?? context.scope.id;
+
+  if (condition === 'unauthenticated' || condition === 'denied') {
+    return <div className="commerceworkspace" data-mode={presentation.mode}>
+      <ResourceState condition={condition} resourceLabel={presentation.title}
+        {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+        <span />
+      </ResourceState>
+    </div>;
+  }
 
   return <div className="commerceworkspace" data-mode={presentation.mode}>
     <ResourcePanel title={presentation.title} eyebrow={presentation.eyebrow} description={presentation.description}

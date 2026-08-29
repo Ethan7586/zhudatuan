@@ -24,7 +24,7 @@ export function Component() {
     hasData: query.data !== undefined, empty: false, stale: query.isStale });
   return (
     <section className="controlpage" aria-label="智慧翼中控台">
-      <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+      <ResourceState condition={condition} resourceLabel="智慧翼中控台" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
         {query.data === undefined ? <span /> : <ControlContent data={query.data} refreshing={query.isFetching} onRefresh={() => { void query.refetch(); }} />}
       </ResourceState>
     </section>
