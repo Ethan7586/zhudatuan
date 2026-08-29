@@ -2333,7 +2333,7 @@ operations:
     owner: finance
     method: POST
     path: /api/v1/invoices/requests
-    audience: member
+    audience: operator
     permission: invoice.request.create
     idempotent: false
     schema: structural

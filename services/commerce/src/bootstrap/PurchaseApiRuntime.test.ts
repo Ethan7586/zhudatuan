@@ -14,6 +14,7 @@ describe('purchase API runtime', () => {
       schema: true, contract: true, purchase: true, relations: true, functions: true, selected_writes: true, forbidden_privileges: true,
     };
     const pool = (state: typeof healthy) => ({ query: async (sql: string, values: readonly unknown[]) => {
+      expect(sql).toContain("to_regprocedure('access.resolve_scope(text,text,text,text)')");
       expect(sql).toContain("to_regprocedure('benefit.purchase_consume(text,text,text,text,text,bigint)')");
       expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
       expect(sql).toContain("namespace.nspname='finance' and procedure.proname='post'");

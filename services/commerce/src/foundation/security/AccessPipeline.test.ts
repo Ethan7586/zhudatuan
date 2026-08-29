@@ -71,6 +71,28 @@ describe('AccessPipeline audience boundary', () => {
     expect(fixture.decisions).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'allow', reason: 'POLICY_ALLOWED' }));
   });
 
+  it('authorizes invoice request creation at the operator organization scope', async () => {
+    const mall: Scope = Object.freeze({ kind: 'mall', id: 'mall:one', tenant: 'tenant:one', path: [] });
+    const fixture = accessFixture('console', 'invoice.requests.create', 'invoice.request.create', mall);
+
+    await expect(fixture.pipeline.authorize({}, 'invoice.requests.create', 'invoice.request.create')).resolves.toMatchObject({
+      actor: { target: 'console' },
+      scope: mall,
+    });
+    expect(fixture.membership).toHaveBeenCalledWith('membership:one');
+    expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'invoice.requests.create' }));
+  });
+
+  it('rejects invoice request creation from a storefront before resolving membership', async () => {
+    const mall: Scope = Object.freeze({ kind: 'mall', id: 'mall:one', tenant: 'tenant:one', path: [] });
+    const fixture = accessFixture('storefront', 'invoice.requests.create', 'invoice.request.create', mall);
+
+    await expect(fixture.pipeline.authorize({}, 'invoice.requests.create', 'invoice.request.create'))
+      .rejects.toMatchObject({ code: 'PERMISSION_DENIED', details: { reason: 'AUDIENCE_TARGET_MISMATCH' } });
+    expect(fixture.membership).not.toHaveBeenCalled();
+    expect(fixture.risk).not.toHaveBeenCalled();
+  });
+
   it('keeps storefront member operations authorized through the normal policy pipeline', async () => {
     const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER);
 
@@ -80,6 +102,14 @@ describe('AccessPipeline audience boundary', () => {
     });
     expect(fixture.membership).toHaveBeenCalledWith('membership:one');
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
+  });
+
+  it('keeps a path resource and scope hint separate for canonical scope resolution', async () => {
+    const fixture = accessFixture('console', 'order.orders.read', 'order.read', PLATFORM);
+
+    await expect(fixture.pipeline.authorize({ 'x-scope-hint': 'mall:hint' }, 'order.orders.read', 'order.read', 'order:one'))
+      .resolves.toMatchObject({ scope: PLATFORM });
+    expect(fixture.scopeResolver).toHaveBeenCalledWith(fixture.actor, 'order.orders.read', 'order:one', 'mall:hint');
   });
 });
 
@@ -95,15 +125,16 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
   const membership = vi.fn(async () => membershipAccess);
   const risk = vi.fn(async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) as const);
   const decisions = vi.fn(async () => undefined);
+  const scopeResolver = vi.fn(async () => scope);
   const pipeline = new AccessPipeline(
     { resolve: vi.fn(async () => actor) },
     { resolve: membership },
     { resolve: vi.fn(async () => actor.accessVersion) },
-    { resolve: vi.fn(async () => scope) },
+    { resolve: scopeResolver },
     { resolve: vi.fn(async () => [operation]) },
     { now: () => NOW },
     { evaluate: risk },
     { append: decisions }
   );
-  return { pipeline, membership, risk, decisions };
+  return { pipeline, actor, membership, risk, decisions, scopeResolver };
 }

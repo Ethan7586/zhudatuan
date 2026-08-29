@@ -61,7 +61,7 @@ export function createFetchInvoiceRequestsCreate(baseUrl: string): OperationMeth
 }
 
 function bindRequestsCreate(client: OperationExecutor): OperationMethod<"invoice.requests.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.create","method":"POST","path":"/api/v1/invoices/requests","audience":"member","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.create","method":"POST","path":"/api/v1/invoices/requests","audience":"operator","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchInvoiceRequestsRead(baseUrl: string): OperationMethod<"invoice.requests.read"> {

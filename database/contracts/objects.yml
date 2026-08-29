@@ -25,7 +25,7 @@ objects:
   - id: access.resolve_scope
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resource_scope
@@ -334,6 +334,14 @@ objects:
     role: shopapp
     objectType: function
     target: access.resolve_scope(text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.resolve_scope(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_scope(text,text,text,text)
     privilege: execute
   - id: shopapp:function:access.resource_scope(text,text,text):execute
     kind: grant

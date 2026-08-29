@@ -17482,7 +17482,7 @@
         "tags": [
           "finance"
         ],
-        "x-audience": "member",
+        "x-audience": "operator",
         "x-expected-version": "optional",
         "x-idempotency": "required",
         "x-idempotent": false,

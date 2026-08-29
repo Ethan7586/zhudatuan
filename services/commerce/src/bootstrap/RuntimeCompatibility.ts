@@ -10,6 +10,7 @@ interface DatabaseCompatibility {
   readonly writable: boolean;
   readonly schema: boolean;
   readonly contract: boolean;
+  readonly scope_resolver: boolean;
   readonly operations: number;
   readonly capabilities: number;
   readonly events: number;
@@ -30,6 +31,7 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
   const statement = 'select not pg_is_in_recovery() writable,'
     + 'exists(select 1 from runtime.schemaversion where version=$1) schema,'
     + 'exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,'
+    + "to_regprocedure('access.resolve_scope(text,text,text,text)') is not null scope_resolver,"
     + '(select count(*)::integer from runtime.operation) operations,'
     + '(select count(*)::integer from capability.operation) capabilities,'
     + '(select count(*)::integer from runtime.event) events';
@@ -56,6 +58,7 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
   const healthy = database.writable
     && database.schema
     && database.contract
+    && database.scope_resolver
     && database.operations === registries.operations
     && database.capabilities === registries.operations
     && database.events === registries.events

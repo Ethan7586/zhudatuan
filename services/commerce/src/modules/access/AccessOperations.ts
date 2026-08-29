@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { checkScope, SCOPE_KINDS, type Scope } from '@shop/authz';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, rowResult, type OperationDatabase } from '../../foundation/application/ModuleOperations';
@@ -18,10 +19,12 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const page = queryPage(request, 500);
       const result = await database.query(`select membership.id,membership.status,membership.access_version,
         coalesce(jsonb_agg(distinct jsonb_build_object('role',role.id,'name',role.name)) filter(where role.id is not null),'[]') roles,
-        coalesce(jsonb_agg(distinct jsonb_build_object('id',grant.id,'kind',grant.scope_kind,'scope',grant.scope_id,'effect',grant.effect,'expires',grant.expires_at)) filter(where grant.id is not null),'[]') scopes
+        coalesce(jsonb_agg(distinct jsonb_build_object('id',scopegrant.id,'kind',scopegrant.scope_kind,'scope',scopegrant.scope_id,'effect',scopegrant.effect,'expires',scopegrant.expires_at)) filter(where scopegrant.id is not null),'[]') scopes
         from access.membership membership left join access.membershiprole assignment on assignment.membership_id=membership.id
-        left join access.role role on role.id=assignment.role_id left join access.scopegrant grant on grant.membership_id=membership.id
-        where membership.organization_id=$1 and ($2::text is null or membership.id>$2)
+        left join access.role role on role.id=assignment.role_id left join access.scopegrant scopegrant on scopegrant.membership_id=membership.id
+        where exists(select 1 from organization.unitclosure boundary
+          where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
+        and ($2::text is null or membership.id>$2)
         group by membership.id order by membership.id limit $3`, [access.scope.id, page.id, page.fetch]);
       return keysetResult(result, page, 'id');
     },
@@ -35,9 +38,13 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
           insert into access.role(id,scope_id,name,status,version) values($1,$2,$3,'active',0)
           on conflict(id) do update set name=excluded.name,status='active',version=access.role.version+1
           where access.role.scope_id=$2 and ($5::bigint is null or access.role.version=$5) returning *
-        ), removed as (delete from access.rolepermission where role_id=$1), added as (
+        ), removed as (delete from access.rolepermission mapping using target
+          where mapping.role_id=target.id returning mapping.role_id), ready as (
+          select distinct target.id from target left join removed on removed.role_id=target.id
+        ), added as (
           insert into access.rolepermission(role_id,permission_id,effect)
-          select $1,permission.id,'allow' from access.permission permission where permission.code=any($4::text[]) returning role_id
+          select ready.id,permission.id,'allow' from ready cross join access.permission permission
+          where permission.code=any($4::text[]) returning role_id
         ) select * from target`, [role, access.scope.id, textField(body, 'name'), permissions, request.input.expectedVersion ?? null]);
       if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
       return rowResult(result);
@@ -51,19 +58,25 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       if (body.effect === 'deny') throw new Error('SCOPE_DENY_UNSUPPORTED');
       if (body.effect !== undefined && body.effect !== 'allow') throw new Error('VALIDATION_FAILED:effect');
       const effect = 'allow';
-      const contained = await database.query(`select 1 from access.scopegrant grant
-        join access.membership membership on membership.id=grant.membership_id and membership.status='active'
-        where grant.membership_id=$1 and grant.effect='allow'
-        and grant.scope_id=$2 and grant.scope_kind=$3 and grant.effective_at<=clock_timestamp()
-        and grant.access_version>0 and grant.access_version<=membership.access_version
-        and (grant.expires_at is null or grant.expires_at>clock_timestamp())`, [access.membership.id, scope, kind]);
-      if (!contained.rows[0]) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
+      const resolved = await database.query<{ scope: unknown; target_membership_scope: unknown }>(`select access.scope_object($1) scope,
+        access.scope_object(target.organization_id) target_membership_scope
+        from access.membership target where target.id=$2 and target.status='active'
+        for update of target`, [scope, membership]);
+      const targetScope = canonicalScope(resolved.rows[0]?.scope);
+      const targetMembershipScope = canonicalScope(resolved.rows[0]?.target_membership_scope);
+      const scopeDecision = targetScope === null ? null
+        : checkScope(access.membership, 'access.scope.manage', targetScope, new Date());
+      if (targetScope === null || targetMembershipScope === null || kind !== targetScope.kind
+        || access.scope.kind !== targetScope.kind || access.scope.id !== targetScope.id
+        || scopeDecision === null || 'reason' in scopeDecision
+        || !scopesAreRelated(targetScope, targetMembershipScope)) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
       const result = await database.query(`with changed as (
           insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,expires_at,access_version)
           values($1,$2,$3,$4,$5,$6,clock_timestamp(),$7,(select access_version+1 from access.membership where id=$2))
           on conflict(membership_id,scope_kind,scope_id,effect,effective_at) do nothing returning *
         ), raised as (update access.membership set access_version=access_version+1 where id=$2 returning access_version)
-        select changed.*,raised.access_version from changed cross join raised`, [`scope:${randomUUID()}`, membership, kind, scope, `${access.scope.id}/${scope}`, effect, body.expiresAt ?? null]);
+        select changed.*,raised.access_version from changed cross join raised`, [`scope:${randomUUID()}`, membership, targetScope.kind,
+        targetScope.id, canonicalScopePath(targetScope), effect, body.expiresAt ?? null]);
       return rowResult(result, 200);
     },
     'access.ownership.read': async (request, database) => {
@@ -132,6 +145,41 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       return { status: 200, body: cancelled, headers: { etag: `"${String(cancelled.version)}"` } };
     },
   });
+}
+
+function canonicalScope(value: unknown): Scope | null {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
+  const candidate = value as Readonly<Record<string, unknown>>;
+  if (typeof candidate.kind !== 'string' || !(SCOPE_KINDS as readonly string[]).includes(candidate.kind)
+    || typeof candidate.id !== 'string' || candidate.id.length === 0
+    || (candidate.tenant !== undefined && typeof candidate.tenant !== 'string')
+    || !Array.isArray(candidate.path)) return null;
+  const path = candidate.path.map((item) => {
+    if (item === null || typeof item !== 'object' || Array.isArray(item)) return null;
+    const ancestor = item as Readonly<Record<string, unknown>>;
+    if (typeof ancestor.kind !== 'string' || !(SCOPE_KINDS as readonly string[]).includes(ancestor.kind)
+      || typeof ancestor.id !== 'string' || ancestor.id.length === 0) return null;
+    return { kind: ancestor.kind as Scope['kind'], id: ancestor.id };
+  });
+  if (path.some((ancestor) => ancestor === null)) return null;
+  return {
+    kind: candidate.kind as Scope['kind'], id: candidate.id,
+    ...(candidate.tenant === undefined ? {} : { tenant: candidate.tenant as string }),
+    path: path as Scope['path'],
+  };
+}
+
+function scopesAreRelated(left: Scope, right: Scope): boolean {
+  return scopeContains(left, right) || scopeContains(right, left);
+}
+
+function scopeContains(ancestor: Scope, descendant: Scope): boolean {
+  return (ancestor.kind === descendant.kind && ancestor.id === descendant.id)
+    || descendant.path.some((candidate) => candidate.kind === ancestor.kind && candidate.id === ancestor.id);
+}
+
+function canonicalScopePath(scope: Scope): string {
+  return [...scope.path.map((ancestor) => ancestor.id), scope.id].join('/');
 }
 
 function transferInput(request: OperationRequest): OwnershipTransferInput {

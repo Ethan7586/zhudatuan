@@ -62,10 +62,11 @@ export class PgAccessVersionResolver implements AccessVersionResolver {
 
 export class PgScopeResolver implements ScopeResolver {
   constructor(private readonly pool: DatabasePool) {}
-  async resolve(actor: Actor, operation: string, resource?: string): Promise<Scope> {
-    const result = await this.pool.query<ScopeRow>('select scope from access.resolve_scope($1,$2,$3)', [actor.membership, operation, resource ?? null]);
+  async resolve(actor: Actor, operation: string, resource?: string, scopeHint?: string): Promise<Scope> {
+    const result = await this.pool.query<ScopeRow>('select scope from access.resolve_scope($1,$2,$3,$4)',
+      [actor.membership, operation, resource ?? null, scopeHint ?? null]);
     const row = result.rows[0];
-    if (!row) throw new Error('SCOPE_DENIED');
+    if (!row?.scope) throw new Error('SCOPE_DENIED');
     return row.scope;
   }
 }

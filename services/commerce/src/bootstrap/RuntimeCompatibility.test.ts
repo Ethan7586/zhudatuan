@@ -27,6 +27,7 @@ describe('runtime compatibility', () => {
       writable: true,
       schema: true,
       contract: true,
+      scope_resolver: true,
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
@@ -41,6 +42,7 @@ describe('runtime compatibility', () => {
       writable: true,
       schema: true,
       contract: true,
+      scope_resolver: true,
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
@@ -53,6 +55,7 @@ describe('runtime compatibility', () => {
       writable: true,
       schema: false,
       contract: true,
+      scope_resolver: true,
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
@@ -65,6 +68,7 @@ describe('runtime compatibility', () => {
       writable: true,
       schema: true,
       contract: true,
+      scope_resolver: true,
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
@@ -77,11 +81,25 @@ describe('runtime compatibility', () => {
       .resolves.toMatchObject({ healthy: true });
   });
 
+  it('fails closed when the four-argument scope resolver is missing', async () => {
+    const state = await runtimeCompatibility(pool({
+      writable: true,
+      schema: true,
+      contract: true,
+      scope_resolver: false,
+      operations: OperationCatalog.all().length,
+      capabilities: OperationCatalog.all().length,
+      events: COMMERCE_EVENTS.length,
+    }), extensions());
+    expect(state.healthy).toBe(false);
+  });
+
   it('requires the retired database boundary before full Jobs can start', async () => {
     const database = pool({
       writable: true,
       schema: true,
       contract: true,
+      scope_resolver: true,
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
@@ -92,6 +110,7 @@ describe('runtime compatibility', () => {
       writable: true,
       schema: true,
       contract: true,
+      scope_resolver: true,
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,

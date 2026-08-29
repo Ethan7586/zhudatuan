@@ -749,7 +749,7 @@ capabilities:
     kind: operation
     owner: finance
     permission: invoice.request.create
-    audience: member
+    audience: operator
   - code: invoice.requests.read
     kind: operation
     owner: finance

@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { LOCAL_ENVIRONMENT_KEYS, bearerToken } from '@shop/config/server';
+import { localBootstrapPassword } from './LocalPassword';
 
 const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -124,7 +125,7 @@ async function loadOrCreateSecrets(): Promise<PreparedSecrets> {
     'local/postgres/jobs-password': postgresJobs,
     'local/postgres/migration-password': postgresMigration,
     'local/redis/password': redisPassword,
-    'local/ethan/password': secret(18),
+    'local/ethan/password': localBootstrapPassword(),
     'shop/local/database/admin': postgresUrl('shopadmin', postgresAdmin),
     'shop/local/database/api': postgresUrl('shopapp', postgresApi),
     'shop/local/database/jobs': postgresUrl('shopjob', postgresJobs),

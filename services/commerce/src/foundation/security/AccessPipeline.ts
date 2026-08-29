@@ -48,7 +48,7 @@ export class AccessPipeline {
       if (accessVersion !== actor.accessVersion) throw new DomainError('MEMBERSHIP_INACTIVE', { reason: 'ACCESS_VERSION_STALE' });
       const scopeHint = headers['x-scope-hint'];
       if (scopeHint !== undefined && (!scopeHint || scopeHint.length > 255)) throw new DomainError('SCOPE_DENIED');
-      scope = await this.scopes.resolve(actor, operation, resource ?? scopeHint);
+      scope = await this.scopes.resolve(actor, operation, resource, scopeHint);
       const scopeDecision = checkScope(membership, permission, scope, now);
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
       const capabilities = await this.capabilities.resolve(membership.id);

@@ -30,6 +30,7 @@ interface CompatibilityRow {
   readonly registration: boolean;
   readonly operator_invitation: boolean;
   readonly relations: boolean;
+  readonly functions: boolean;
 }
 
 export interface IdentityRegistrationApiRuntime {
@@ -108,6 +109,7 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
       and checksum='5cf87482ba3d0db32500809d28a77973ac285657aeb9c14612ba3dc525a2965e') registration,
     exists(select 1 from runtime.schemaversion where version='20260829060000'
       and checksum='b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a') operator_invitation,
+    to_regprocedure('access.resolve_scope(text,text,text,text)') is not null functions,
     array_position(array[
       to_regclass('runtime.idempotency'),to_regclass('runtime.job'),to_regclass('runtime.outbox'),
       to_regclass('identity.principal'),to_regclass('identity.credential'),to_regclass('identity.session'),
@@ -118,7 +120,7 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
     ],null) is null relations`, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanidentityapi' || !state.writable || !state.schema || !state.contract
-    || !state.registration || !state.operator_invitation || !state.relations) {
+    || !state.registration || !state.operator_invitation || !state.relations || !state.functions) {
     throw new Error(`IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
   return Object.freeze(state);

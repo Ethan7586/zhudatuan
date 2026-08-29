@@ -11,6 +11,7 @@ const ROOT = repositoryRoot;
 const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
+const CONTRACT_IDENTITY = join(ROOT, 'packages', 'contract', 'src', 'ContractIdentity.generated.ts');
 const SANDBOX_CATALOG = join(ROOT, 'tools', 'seed', 'src', 'SandboxCatalogDatabase.sql');
 const REGISTRATION_BOUNDARY_RECONCILE = join(
   ROOT,
@@ -31,6 +32,11 @@ const OPERATOR_INVITATION_REGISTRATION = '20260829060000_zhudatuan_operator_invi
 const OPERATOR_INVITATION_REPLAY_FUTURE_HEAD_ASSERTION = /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260829054500' and version<>'20260829060000'\) then\n    raise exception 'ZHUDATUAN_OPERATOR_INVITATION_FUTURE_HEAD_INVALID';\n  end if;/;
 const OWNER_OPERATOR_COVERAGE = '20260829210000_owner_operator_coverage.sql';
 const PLATFORM_OWNER_TRANSFER = '20260829211000_platform_owner_transfer.sql';
+const CONTRACT_IDENTITY_CHECKSUM_REPAIR = '20260829213000_reconcile_contract_identity_checksum.sql';
+const OWNER_PERSONAL_SCOPE_AND_INVOICE_SCOPE = '20260829214000_owner_personal_scope_and_invoice_scope.sql';
+const INVOICE_REQUEST_OPERATOR_BOUNDARY = '20260829215000_restore_invoice_request_operator_boundary.sql';
+const OWNER_CAPABILITY_EXACTNESS = '20260829216000_owner_capability_exactness.sql';
+const SCOPE_HINT_RESOURCE_PRECEDENCE = '20260829217000_scope_hint_resource_precedence.sql';
 const OWNER_OPERATOR_COVERAGE_BOUNDARY_GUARD = /do \$boundary_guard\$[\s\S]*?\n\$boundary_guard\$;/;
 const OWNER_OPERATOR_COVERAGE_OPTIONAL_STAGING_ASSERTION = /\n  if exists\(select 1 from runtime\.schemaversion\n    where version='20260829060000'\n      and checksum<>'b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a'\) then\n    raise exception 'OWNER_OPERATOR_COVERAGE_OPTIONAL_PREDECESSOR_INVALID';\n  end if;\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260829054500'\n      and version not in\('20260829060000','20260829210000'\)\) then\n    raise exception 'OWNER_OPERATOR_COVERAGE_FUTURE_HEAD_INVALID';\n  end if;/;
 const OWNER_RUNTIME_BOUNDARY_HARDENING = '20260829212000_owner_runtime_boundary_hardening.sql';
@@ -104,6 +110,11 @@ const REPAIR_FILES = [
   OWNER_OPERATOR_COVERAGE,
   PLATFORM_OWNER_TRANSFER,
   OWNER_RUNTIME_BOUNDARY_HARDENING,
+  CONTRACT_IDENTITY_CHECKSUM_REPAIR,
+  OWNER_PERSONAL_SCOPE_AND_INVOICE_SCOPE,
+  INVOICE_REQUEST_OPERATOR_BOUNDARY,
+  OWNER_CAPABILITY_EXACTNESS,
+  SCOPE_HINT_RESOURCE_PRECEDENCE,
 ];
 
 const mode = process.argv[2];
@@ -902,10 +913,18 @@ async function verifyTarget(database) {
 }
 
 async function verifyZhudatuanRuntimeReadinessRepair(database) {
+  const identity = await readFile(CONTRACT_IDENTITY,'utf8');
+  const expectedChecksum = /export const CONTRACT_CHECKSUM = '([0-9a-f]{64})' as const;/.exec(identity)?.[1];
+  if (!expectedChecksum) throw new Error('GENERATED_CONTRACT_CHECKSUM_INVALID');
   const contract = await database.query(`select checksum from runtime.schemaversion
     where version='20260821032000'`);
-  if (contract.rows[0]?.checksum!=='83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a') {
-    throw new Error(`ZHUDATUAN_RUNTIME_CONTRACT_CHECKSUM_INVALID:${JSON.stringify(contract.rows)}`);
+  if (contract.rows[0]?.checksum!==expectedChecksum) {
+    throw new Error(`ZHUDATUAN_RUNTIME_CONTRACT_CHECKSUM_INVALID:${JSON.stringify({ expectedChecksum, rows:contract.rows })}`);
+  }
+  const repair = await database.query(`select checksum from runtime.schemaversion
+    where version='20260829213000'`);
+  if (repair.rows[0]?.checksum!=='7250097cd72cfd86ac5dc381c84656245578b169b18fb7eec5044840b79dfce4') {
+    throw new Error(`ZHUDATUAN_CONTRACT_IDENTITY_REPAIR_INVALID:${JSON.stringify(repair.rows)}`);
   }
   const expectations = [
     ['zhudatuanidentityapi',['20260821032000','20260821054000','20260828170000']],
@@ -988,6 +1007,10 @@ async function verifyOwnerOperatorCoverage(database) {
         select capability_id from operator_capability
         except select capability_id from permanent_entitlement
       ) drift) missing_entitlements,
+      (select count(*)::integer from (
+        select capability_id from permanent_entitlement
+        except select capability_id from operator_capability
+      ) drift) extra_entitlements,
       (select count(*)::integer from pg_trigger trigger
         join pg_class relation on relation.oid=trigger.tgrelid
         join pg_namespace namespace on namespace.oid=relation.relnamespace
@@ -998,14 +1021,20 @@ async function verifyOwnerOperatorCoverage(database) {
             'capability.capability','capability.entitlement','capability.operation')) deferred_guards,
       exists(select 1 from runtime.schemaversion where version='20260829210000'
         and checksum='7a5e2d2cb2e3682674a3d8a7ac52177ba0f6ee93588bd9a7f489d4c405a4d222') schema_current,
+      exists(select 1 from runtime.schemaversion where version='20260829216000'
+        and checksum='da02c3f15cd8fb8914a0d8a055ee6b23bf9f563c434ff72044aea8f07e23868b') exactness_schema_current,
+      exists(select 1 from runtime.schemaversion where version='20260829217000'
+        and checksum='e7e652071e27c4aa355dc86bc7917ab82a56d4bebc0d4c71803e7d19d1f68d97') scope_resolver_schema_current,
       has_function_privilege('shopapp','access.enforce_platform_owner_operator_coverage()','EXECUTE') app_execute,
       has_function_privilege('shopjob','access.enforce_platform_owner_operator_coverage()','EXECUTE') job_execute`);
   const row = coverage.rows[0];
   if (!row || row.operator_permissions<1 || row.owner_allows!==row.operator_permissions
     || row.missing_permissions!==0 || row.extra_permissions!==0 || row.owner_denies!==0
     || row.invitation_operator_operations<1 || row.invitation_owner_allows!==1
-    || row.invalid_operator_catalog!==0 || row.missing_entitlements!==0
+    || row.invalid_operator_catalog!==0 || row.missing_entitlements!==0 || row.extra_entitlements!==0
     || row.deferred_guards!==6 || row.schema_current!==true
+    || row.exactness_schema_current!==true
+    || row.scope_resolver_schema_current!==true
     || row.app_execute!==false || row.job_execute!==false) {
     throw new Error(`OWNER_OPERATOR_COVERAGE_INVALID:${JSON.stringify(row??null)}`);
   }
@@ -1065,6 +1094,17 @@ async function verifyOwnerOperatorCoverage(database) {
       and effective_at='1970-01-01T00:00:00Z' and expires_at is null
       and capability_id=(select operation.capability_id from capability.operation operation
         where operation.audience='operator' order by operation.capability_id limit 1)`,
+  'PLATFORM_OWNER_OPERATOR_ENTITLEMENT_DRIFT');
+  await expectOwnerCoverageFailure(database, `insert into capability.entitlement(
+      id,scope_id,capability_id,state,quota,effective_at,expires_at,version)
+    select 'contract:owner-extra-entitlement:'||operation.capability_id,
+      'organization-platform-root',operation.capability_id,'enabled',null,
+      '1970-01-01T00:00:00Z',null,0
+    from capability.operation operation
+    join capability.capability capability
+      on capability.id=operation.capability_id and capability.status='active'
+    where operation.audience='public'
+    order by operation.capability_id limit 1`,
   'PLATFORM_OWNER_OPERATOR_ENTITLEMENT_DRIFT');
   await expectOwnerCoverageFailure(database, `update capability.operation set permission_code=null
     where operation_id=(select operation_id from capability.operation
@@ -1320,11 +1360,21 @@ async function verifyPlatformOwnerTransfer(database) {
       await database.exec('begin isolation level serializable;');
     }
     const owner=await database.query(`select owner.membership_id membership,owner.version,
-      membership.access_version,profile.principal_id principal from access.platformowner owner
+      membership.access_version,membership.member_id member,profile.principal_id principal from access.platformowner owner
       join access.membership membership on membership.id=owner.membership_id
       join member.profile profile on profile.id=membership.member_id where owner.singleton=true and owner.state='active'`);
     let source=owner.rows[0];
     if (!source) throw new Error('PLATFORM_OWNER_TRANSFER_SOURCE_MISSING');
+    const sourcePersonalScope=await database.query(`select coalesce(bool_or(
+      grantrow->'scope'->>'kind'='owner' and grantrow->'scope'->>'id'=$2
+        and (grantrow->'permissions')?'member.profile.read'
+        and (grantrow->'permissions')?'member.address.read'
+        and (grantrow->'permissions')?'member.address.manage'),false) allowed
+      from access.resolve_membership($1) resolved
+      cross join lateral jsonb_array_elements(resolved.grants) grantrow`,[source.membership,source.member]);
+    if (sourcePersonalScope.rows[0]?.allowed!==true) {
+      throw new Error(`PLATFORM_OWNER_PERSONAL_SCOPE_INVALID:${JSON.stringify(sourcePersonalScope.rows[0]??null)}`);
+    }
     await verifyOperatorRegistrationSubjectBoundary(database,source.membership);
     const mobileState=await database.query(`select profile.mobile_ciphertext is not null
         and profile.mobile_token is not null mobile_ready,principal.credential_version
@@ -1897,7 +1947,14 @@ async function verifyPlatformOwnerTransfer(database) {
       (select access_version::integer from access.membership where id=$1) source_version,
       (select access_version::integer from access.membership where id='membership:owner-transfer-target') target_version,
       (select revoked_reason from identity.session where id='session:owner-transfer-source') source_revoked_reason,
-      (select revoked_reason from identity.session where id='session:owner-transfer-target-accept') target_revoked_reason
+      (select revoked_reason from identity.session where id='session:owner-transfer-target-accept') target_revoked_reason,
+      coalesce((select bool_or(grantrow->'scope'->>'kind'='owner'
+          and grantrow->'scope'->>'id'=membership.member_id
+          and (grantrow->'permissions')?'member.profile.read')
+        from access.membership membership
+        cross join lateral access.resolve_membership(membership.id) resolved
+        cross join lateral jsonb_array_elements(resolved.grants) grantrow
+        where membership.id='membership:owner-transfer-target'),false) personal_scope
       from access.platformowner owner where owner.singleton=true`,[source.membership]);
     const acceptedRow=accepted.rows[0];
     if (!acceptedRow || acceptedRow.owner!=='membership:owner-transfer-target' || acceptedRow.owner_count!==1
@@ -1905,7 +1962,7 @@ async function verifyPlatformOwnerTransfer(database) {
       || JSON.stringify(acceptedRow.source_roles)!==JSON.stringify(['role:owner-transfer-test-admin','role:self'])
       || acceptedRow.source_version!==Number(source.access_version)+1 || acceptedRow.target_version!==targetVersionForAccept+1
       || acceptedRow.source_revoked_reason!=='owner_transferred' || acceptedRow.target_revoked_reason!=='owner_acquired'
-      || !acceptedRow.overrides_cleared || !acceptedRow.full_operator) {
+      || !acceptedRow.overrides_cleared || !acceptedRow.full_operator || !acceptedRow.personal_scope) {
       throw new Error(`PLATFORM_OWNER_TRANSFER_ACCEPT_INVALID:${JSON.stringify(acceptedRow??null)}`);
     }
     await expectOwnerTransferRejection(database,`select access.commit_owner_transfer('owner-transfer:accepted',
@@ -1987,6 +2044,13 @@ async function verifyPlatformOwnerTransfer(database) {
         where id='membership:owner-transfer-target-storefront') storefront,
       (select revoked_reason from identity.session where id='session:owner-transfer-remove-source') source_revoked_reason,
       (select revoked_reason from identity.session where id='session:owner-transfer-remove-target-accept') target_revoked_reason,
+      coalesce((select bool_or(grantrow->'scope'->>'kind'='owner'
+          and grantrow->'scope'->>'id'=membership.member_id
+          and (grantrow->'permissions')?'member.profile.read')
+        from access.membership membership
+        cross join lateral access.resolve_membership(membership.id) resolved
+        cross join lateral jsonb_array_elements(resolved.grants) grantrow
+        where membership.id='membership:owner-transfer-expiry'),false) personal_scope,
       not exists(select binding.operation_id from capability.operation binding where binding.audience='operator'
         except select operation_id from capability.membership_operations('membership:owner-transfer-expiry')) full_operator
       from access.platformowner owner where owner.singleton=true`);
@@ -2000,7 +2064,7 @@ async function verifyPlatformOwnerTransfer(database) {
       || JSON.stringify(removedRow.target_scopes)!==JSON.stringify(['platform','self','tenant'])
       || JSON.stringify(removedRow.storefront)!==JSON.stringify({status:'active',version:4})
       || removedRow.source_revoked_reason!=='owner_transferred' || removedRow.target_revoked_reason!=='owner_acquired'
-      || !removedRow.full_operator) {
+      || !removedRow.full_operator || !removedRow.personal_scope) {
       throw new Error(`PLATFORM_OWNER_TRANSFER_REMOVE_ACCEPT_INVALID:${JSON.stringify(removedRow??null)}`);
     }
 

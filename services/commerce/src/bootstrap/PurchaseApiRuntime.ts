@@ -138,6 +138,7 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
     array_position(array[
       to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text)'),
+      to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('capability.membership_operations(text)'),to_regprocedure('access.purchase_session_context(text,text,boolean)'),
       to_regprocedure('access.purchase_member_scope(text,text)'),to_regprocedure('benefit.purchase_available(text,text,text[])'),
       to_regprocedure('benefit.purchase_reserve(text,text,text,text,text[],bigint[])'),

@@ -23,14 +23,14 @@ export class WebBusinessScopeResolver implements ScopeResolver {
     this.canonical = new PgScopeResolver(pool);
   }
 
-  async resolve(actor: Actor, operation: string, resource?: string): Promise<Scope> {
+  async resolve(actor: Actor, operation: string, resource?: string, scopeHint?: string): Promise<Scope> {
     if (MEMBER_OWNED_OPERATIONS.has(operation)) {
       return this.sessionScope(actor, 'access.web_member_scope($1,$2)', 'owner');
     }
     if (actor.target === 'storefront' && STOREFRONT_MALL_OPERATIONS.has(operation)) {
       return this.sessionScope(actor, 'access.web_storefront_scope($1,$2)', 'mall');
     }
-    return this.canonical.resolve(actor, operation, resource);
+    return this.canonical.resolve(actor, operation, resource, scopeHint);
   }
 
   private async sessionScope(actor: Actor, expression: string, kind: Scope['kind']): Promise<Scope> {
