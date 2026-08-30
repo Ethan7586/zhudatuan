@@ -8,6 +8,8 @@ import { createIdentityRegistrationApiRuntime } from '../bootstrap/IdentityRegis
 import { listen } from '../foundation/interface/NodeServer';
 import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity/IdentityOperations';
 import { IdentityRegistrationModule } from '../modules/identity/IdentityRegistrationModule';
+import { IdentityOperatorMemberModule } from '../modules/member/IdentityOperatorMemberModule';
+import { MEMBER_OPERATOR_READ_OPERATION_IDS } from '../modules/member/MemberReadOperations';
 import { IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS } from '../modules/runtime/IdentityRegistrationRuntimeOperations';
 import { IdentityRegistrationRuntimeModule } from '../modules/runtime/IdentityRegistrationRuntimeModule';
 
@@ -16,9 +18,10 @@ const runtime = await createIdentityRegistrationApiRuntime(environment);
 const operationIds = Object.freeze([
   ...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,
   ...IDENTITY_REGISTRATION_OPERATION_IDS,
+  ...MEMBER_OPERATOR_READ_OPERATION_IDS,
 ]);
 const bootstrapped = await bootstrapApi({
-  modules: [IdentityRegistrationRuntimeModule, IdentityRegistrationModule],
+  modules: [IdentityRegistrationRuntimeModule, IdentityRegistrationModule, IdentityOperatorMemberModule],
   operationIds,
   extensions: runtime.extensions,
   configure: runtime.configure,

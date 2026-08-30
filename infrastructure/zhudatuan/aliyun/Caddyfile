@@ -138,7 +138,7 @@ api.zhudatuan.com {
 
 	@registrationPreflight {
 		method OPTIONS
-		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations /api/v1/identity/invitations/* /api/v1/identity/invitations/resolve /api/v1/identity/members /api/v1/members
 	}
 	handle @registrationPreflight {
 		reverse_proxy 127.0.0.1:4321 {
@@ -148,7 +148,7 @@ api.zhudatuan.com {
 
 	@registrationPost {
 		method POST
-		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/challenges /api/v1/identity/invitations /api/v1/identity/invitations/resolve /api/v1/identity/members
 	}
 	handle @registrationPost {
 		reverse_proxy 127.0.0.1:4321 {
@@ -171,6 +171,26 @@ api.zhudatuan.com {
 		path /api/v1/identity/session
 	}
 	handle @registrationSessionDelete {
+		reverse_proxy 127.0.0.1:4321 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@registrationInvitationDelete {
+		method DELETE
+		path /api/v1/identity/invitations/*
+	}
+	handle @registrationInvitationDelete {
+		reverse_proxy 127.0.0.1:4321 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@registrationOperatorRead {
+		method GET
+		path /api/v1/members
+	}
+	handle @registrationOperatorRead {
 		reverse_proxy 127.0.0.1:4321 {
 			header_up X-Real-IP {client_ip}
 		}

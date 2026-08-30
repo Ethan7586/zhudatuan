@@ -14,13 +14,16 @@ import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity/IdentityOperations';
 import { IdentityRegistrationModule } from '../modules/identity/IdentityRegistrationModule';
+import { IdentityOperatorMemberModule } from '../modules/member/IdentityOperatorMemberModule';
+import { MEMBER_OPERATOR_READ_OPERATION_IDS } from '../modules/member/MemberReadOperations';
 import { RETURN_TARGETS } from '../modules/identity/infrastructure/ReturnTargetCatalog';
 import { IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS } from '../modules/runtime/IdentityRegistrationRuntimeOperations';
 import { IdentityRegistrationRuntimeModule } from '../modules/runtime/IdentityRegistrationRuntimeModule';
 
 describe('identity registration API entrypoint', () => {
-  it('exposes only health, login, logout, invitation, OTP, and registration operations', () => {
-    expect([...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS, ...IDENTITY_REGISTRATION_OPERATION_IDS]).toEqual([
+  it('exposes only health, identity control, and the Owner member list', () => {
+    expect([...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS, ...IDENTITY_REGISTRATION_OPERATION_IDS,
+      ...MEMBER_OPERATOR_READ_OPERATION_IDS]).toEqual([
       'runtime.health.live',
       'runtime.health.ready',
       'runtime.health.startup',
@@ -33,15 +36,17 @@ describe('identity registration API entrypoint', () => {
       'identity.invitations.create',
       'identity.invitations.revoke',
       'identity.members.create',
+      'member.members.read',
     ]);
   });
 
   it('freezes a route registry containing only the approved operation set', async () => {
-    const operationIds = [...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS, ...IDENTITY_REGISTRATION_OPERATION_IDS];
+    const operationIds = [...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS, ...IDENTITY_REGISTRATION_OPERATION_IDS,
+      ...MEMBER_OPERATOR_READ_OPERATION_IDS];
     const pool = { workload: () => pool } as unknown as DatabasePool;
     const extensions = new ExtensionRegistry({ verify: async () => false });
     const bootstrapped = await bootstrapApi({
-      modules: [IdentityRegistrationRuntimeModule, IdentityRegistrationModule],
+      modules: [IdentityRegistrationRuntimeModule, IdentityRegistrationModule, IdentityOperatorMemberModule],
       operationIds,
       extensions,
       allowedOrigins: ['https://accounts.zhudatuan.com'],
@@ -63,6 +68,7 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')?.operation).toBe('identity.sessions.create');
     expect(bootstrapped.routes.match('GET', '/api/v1/identity/sessions')).toBeNull();
+    expect(bootstrapped.routes.match('GET', '/api/v1/members')?.operation).toBe('member.members.read');
   });
 
   it('has no static dependency path to full Commerce, payment, providers, finance, WeChat, object storage, or cache', () => {
