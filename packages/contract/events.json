@@ -31,6 +31,26 @@
       "version": 1
     },
     {
+      "module": "access",
+      "type": "access.owner.transfer.initiated",
+      "version": 1
+    },
+    {
+      "module": "access",
+      "type": "access.owner.bootstrapped",
+      "version": 1
+    },
+    {
+      "module": "access",
+      "type": "access.owner.transferred",
+      "version": 1
+    },
+    {
+      "module": "access",
+      "type": "access.owner.transfer.cancelled",
+      "version": 1
+    },
+    {
       "module": "catalog",
       "type": "catalog.listing.published",
       "version": 1

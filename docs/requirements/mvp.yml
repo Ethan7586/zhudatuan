@@ -31,6 +31,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -151,6 +152,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -298,6 +300,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -410,6 +413,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -535,6 +539,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -661,6 +666,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -788,6 +794,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -924,6 +931,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1074,6 +1082,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1197,6 +1206,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1341,12 +1351,20 @@ requirements:
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.ownership.read
+      - access.ownership.transfers.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -1487,6 +1505,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1599,6 +1618,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1724,6 +1744,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1849,6 +1870,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1979,6 +2001,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2114,6 +2137,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2263,6 +2287,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2388,6 +2413,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2533,12 +2559,20 @@ requirements:
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.ownership.read
+      - access.ownership.transfers.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -2681,6 +2715,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete

@@ -1,0 +1,157 @@
+.ownertransferdialog,
+.ownertransfercommand,
+.ownertransferreceipt {
+  display: grid;
+  gap: 16px;
+}
+
+.ownertransfercommand label {
+  display: grid;
+  gap: 7px;
+  color: var(--sw-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ownertransfercommand :where(select, textarea, input[type='text'], input[type='password'], input[type='tel'], input[inputmode='numeric']) {
+  width: 100%;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--sw-text);
+  padding: 11px 12px;
+  font: inherit;
+  font-weight: 500;
+}
+
+.ownertransfercommand textarea {
+  resize: vertical;
+}
+
+.ownertransfercommand fieldset {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--sw-border);
+  border-radius: 12px;
+  margin: 0;
+  padding: 13px 14px;
+}
+
+.ownertransfercommand legend {
+  color: var(--sw-text-secondary);
+  padding: 0 5px;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.ownertransfercommand fieldset label,
+.ownertransferconfirm {
+  display: flex;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 9px;
+}
+
+.ownertransfercommand fieldset input,
+.ownertransferconfirm input {
+  width: auto;
+  margin: 0;
+}
+
+.ownertransfercommand footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--sw-border);
+  padding-top: 15px;
+}
+
+.ownermobileenrollment {
+  display: grid;
+  gap: 16px;
+}
+
+.ownermobileenrollment h3,
+.ownermobileenrollment p {
+  margin: 0;
+}
+
+.ownermobileenrollment h3 {
+  margin-top: 4px;
+  color: var(--sw-brand-ink);
+  font-size: 18px;
+}
+
+.ownermobileeyebrow {
+  color: var(--sw-brand);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.ownermobileenrollment small {
+  color: var(--sw-muted);
+  line-height: 1.5;
+}
+
+.ownermobilerelogin {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  border: 1px solid rgb(22 163 74 / 24%);
+  border-radius: 12px;
+  background: var(--sw-success-surface);
+  padding: 16px;
+}
+
+.ownermobilerelogin strong {
+  color: var(--sw-success-strong);
+}
+
+.ownermobilerelogin p {
+  color: var(--sw-text-secondary);
+  line-height: 1.6;
+}
+
+.ownertransfererror {
+  border: 1px solid #f0b5b5;
+  border-radius: 10px;
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+  margin: 0;
+  padding: 11px 13px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.ownertransferpreview {
+  border: 1px solid rgb(31 94 255 / 22%);
+  border-radius: 14px;
+  background: #f6f9ff;
+  padding: 16px;
+}
+
+.ownertransferpreview h3 {
+  color: var(--sw-brand-ink);
+  margin: 0 0 11px;
+  font-size: 16px;
+}
+
+.ownertransferpreview p {
+  margin-top: 13px;
+  color: var(--sw-muted);
+  font-size: 12px;
+}
+
+.ownertransferreceipt {
+  justify-items: start;
+}
+
+.ownertransferreceipt strong {
+  color: var(--sw-success-strong);
+  font-size: 18px;
+}
+
+.ownertransferreceipt p {
+  color: var(--sw-text-secondary);
+  line-height: 1.6;
+}

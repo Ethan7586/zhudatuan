@@ -25,6 +25,7 @@ describe('web business API runtime', () => {
       expect(sql).toContain("not has_schema_privilege(current_user,'payment','USAGE')");
       expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
       expect(sql).toContain("to_regprocedure('access.web_storefront_scope(text,text)')");
+      expect(sql).toContain("to_regprocedure('access.resolve_scope(text,text,text,text)')");
       expect(sql).toContain("to_regprocedure('access.web_risk_scope_allowed(text)')");
       expect(sql).toContain("to_regprocedure('benefit.web_account_balance(text,text)')");
       expect(sql).toContain("to_regprocedure('benefit.web_ledger(text,text)')");

@@ -97,7 +97,9 @@ test('web ledger remains session-bound and does not widen the 4322 finance bound
 });
 
 test('purchase role is preprovisioned as an isolated login and cannot join either side of a role grant', () => {
-  assert.match(databaseInit, /create_role zhudatuanpurchaseapi "\$ZHUDATUAN_PURCHASE_API_PASSWORD"/);
+  assert.match(databaseInit, /\\getenv purchase_api_password ZHUDATUAN_PURCHASE_API_PASSWORD/);
+  assert.match(databaseInit, /create role zhudatuanpurchaseapi login password %L noinherit',:'purchase_api_password'/);
+  assert.match(databaseInit, /ZHUDATUAN_RDS_INIT_ROLE_ATTRIBUTE_INVALID/);
   assert.match(databaseEnvironment, /^ZHUDATUAN_PURCHASE_API_PASSWORD=/m);
   assert.match(databaseInit, /revoke all on deployment\.boundary[\s\S]+zhudatuanpurchaseapi/);
   assert.match(migration180, /membership\.member=\(select oid from pg_roles where rolname='zhudatuanpurchaseapi'\)[\s\S]+membership\.roleid=\(select oid from pg_roles where rolname='zhudatuanpurchaseapi'\)/);

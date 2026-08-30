@@ -1,0 +1,201 @@
+.accessstack {
+  display: grid;
+  gap: 18px;
+}
+
+.ownertransferpanel {
+  overflow: hidden;
+  border: 1px solid var(--vi-line, var(--sw-border));
+  border-radius: var(--vi-radius-card, var(--sw-radius-lg));
+  background: var(--sw-surface);
+  box-shadow: var(--vi-shadow-card, var(--sw-shadow-card));
+}
+
+.ownertransferheader {
+  display: flex;
+  min-height: 108px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--sw-border);
+  background:
+    radial-gradient(circle at 90% 0%, rgb(31 94 255 / 10%), transparent 15rem),
+    linear-gradient(135deg, #f7faff, #fff 62%);
+  padding: 20px 24px;
+}
+
+.ownertransferheader p,
+.ownertransferheader h2,
+.ownertransferheader span,
+.ownercard p,
+.ownertransferboundary p,
+.ownertransferpreview p,
+.ownertransferreceipt p {
+  margin: 0;
+}
+
+.ownertransferheader p {
+  color: var(--sw-brand);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .095em;
+}
+
+.ownertransferheader h2 {
+  margin-top: 4px;
+  color: var(--sw-brand-ink);
+  font-size: 22px;
+  letter-spacing: -.025em;
+}
+
+.ownertransferheader span {
+  display: block;
+  margin-top: 5px;
+  color: var(--sw-muted);
+  font-size: 14px;
+}
+
+.ownertransferbody {
+  display: grid;
+  gap: 16px;
+  padding: 20px 24px 24px;
+}
+
+.ownertransfergrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ownercard {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--sw-border);
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 18px;
+}
+
+.ownercardcurrent {
+  border-color: rgb(31 94 255 / 24%);
+  background: linear-gradient(145deg, #f7faff, #edf4ff);
+}
+
+.ownercard > span,
+.ownercard > small {
+  overflow-wrap: anywhere;
+  color: var(--sw-muted);
+  font-size: 12px;
+}
+
+.ownercard > strong {
+  color: var(--sw-brand-ink);
+  font-size: 18px;
+}
+
+.ownercard dl,
+.ownertransferpreview dl {
+  display: grid;
+  gap: 7px;
+  margin: 6px 0 0;
+}
+
+.ownercard dl > div,
+.ownertransferpreview dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--sw-text-secondary);
+  font-size: 13px;
+}
+
+.ownercard dt,
+.ownercard dd,
+.ownertransferpreview dt,
+.ownertransferpreview dd {
+  margin: 0;
+}
+
+.ownercard dd,
+.ownertransferpreview dd {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.ownertransferactions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ownertransfernotice,
+.ownertransferloading,
+.ownertransferchallenge {
+  border-radius: 10px;
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.ownertransferloading {
+  margin: 20px 24px;
+}
+
+.ownertransferboundary {
+  border: 1px solid #f0d59c;
+  border-radius: 12px;
+  background: var(--sw-warning-surface);
+  margin: 16px 24px;
+  padding: 13px 15px;
+}
+
+.ownertransferbody > .ownertransferboundary,
+.ownertransfercommand > .ownertransferboundary {
+  margin: 0;
+}
+
+.ownertransferboundary strong {
+  color: var(--sw-warning-strong);
+  font-size: 14px;
+}
+
+.ownertransferboundary p {
+  margin-top: 4px;
+  color: #7c5a19;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ownertransferboundarydanger {
+  border-color: #f0b5b5;
+  background: var(--sw-danger-surface);
+}
+
+.ownertransferboundarydanger strong,
+.ownertransferboundarydanger p {
+  color: var(--sw-danger-strong);
+}
+
+@media (max-width: 48rem) {
+  .ownertransferheader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ownertransfergrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ownertransferheader,
+  .ownertransferbody {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .ownertransferboundary {
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+}

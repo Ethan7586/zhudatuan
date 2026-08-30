@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "phase": "runtime",
+  "secretStore": {
+    "identity-registration-api": {
+      "bearerToken": "REPLACE_FULL_API_SECRET_BEARER_TOKEN_000000000000000001",
+      "resources": [
+        "zhudatuan/staging/full/database/identity-api",
+        "zhudatuan/staging/full/identity/index",
+        "zhudatuan/staging/full/identity/session"
+      ]
+    },
+    "identity-notification-jobs": {
+      "bearerToken": "REPLACE_FULL_IDENTITY_JOBS_SECRET_BEARER_TOKEN_000000002",
+      "resources": [
+        "zhudatuan/staging/full/database/identity-notification-jobs",
+        "zhudatuan/staging/full/notification/identity-sms"
+      ]
+    },
+    "full-jobs": {
+      "bearerToken": "REPLACE_FULL_JOBS_SECRET_BEARER_TOKEN_00000000000000003",
+      "resources": [
+        "zhudatuan/staging/full/database/jobs",
+        "zhudatuan/staging/full/extensions/manifest",
+        "zhudatuan/staging/full/invoice/provider",
+        "zhudatuan/staging/full/notification/providers",
+        "zhudatuan/staging/full/objects/jobs",
+        "zhudatuan/staging/full/payment/wechat",
+        "zhudatuan/staging/full/payout/provider",
+        "zhudatuan/staging/full/redis/jobs",
+        "zhudatuan/staging/full/wechat/applications"
+      ]
+    }
+  },
+  "kms": {
+    "identity-registration-api": {
+      "bearerToken": "REPLACE_FULL_API_KMS_BEARER_TOKEN_000000000000000000004",
+      "resources": [
+        "identity/challenge",
+        "identity/destination",
+        "identity/mobile"
+      ]
+    },
+    "identity-notification-jobs": {
+      "bearerToken": "REPLACE_FULL_IDENTITY_JOBS_KMS_BEARER_TOKEN_00000000005",
+      "resources": [
+        "identity/challenge",
+        "identity/destination",
+        "identity/mobile"
+      ]
+    },
+    "full-jobs": {
+      "bearerToken": "REPLACE_FULL_JOBS_KMS_BEARER_TOKEN_0000000000000000006",
+      "resources": [
+        "audit/archive",
+        "identity/challenge",
+        "identity/destination",
+        "notification/recipient",
+        "pii/invoice",
+        "voucher/code"
+      ]
+    }
+  }
+}

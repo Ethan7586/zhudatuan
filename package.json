@@ -26,6 +26,7 @@
     "bootstrap:registration:test": "node --import tsx tools/seed/src/BootstrapRegistration.ts",
     "bootstrap:registration:production": "node services/commerce/dist/BootstrapRegistration.js",
     "bootstrap:owner:production": "node services/commerce/dist/BootstrapOwner.js",
+    "bootstrap:owner:staging": "node services/commerce/dist/BootstrapStagingOwner.js",
     "local:verify": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Verify.ts",
     "local:otp": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/CopyRegistrationOtp.ts",
     "dev:api": "npm run build:commerce && node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs services/commerce/dist/ApiMain.js",

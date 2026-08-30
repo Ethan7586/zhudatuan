@@ -21,6 +21,7 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.password.change",
   "identity.password.verify",
   "identity.password.reset",
+  "identity.mobile.challenge",
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
@@ -45,6 +46,7 @@ export interface IdentityOperations {
   readonly passwordChange: OperationMethod<"identity.password.change">;
   readonly passwordVerify: OperationMethod<"identity.password.verify">;
   readonly passwordReset: OperationMethod<"identity.password.reset">;
+  readonly mobileChallenge: OperationMethod<"identity.mobile.challenge">;
   readonly mobileManage: OperationMethod<"identity.mobile.manage">;
   readonly stepupStart: OperationMethod<"identity.stepup.start">;
   readonly stepupComplete: OperationMethod<"identity.stepup.complete">;
@@ -74,6 +76,7 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     passwordChange: bindPasswordChange(client),
     passwordVerify: bindPasswordVerify(client),
     passwordReset: bindPasswordReset(client),
+    mobileChallenge: bindMobileChallenge(client),
     mobileManage: bindMobileManage(client),
     stepupStart: bindStepupStart(client),
     stepupComplete: bindStepupComplete(client),
@@ -208,6 +211,14 @@ export function createFetchIdentityPasswordReset(baseUrl: string): OperationMeth
 
 function bindPasswordReset(client: OperationExecutor): OperationMethod<"identity.password.reset"> {
   return bindOperation(client, defineStructuralOperation({"id":"identity.password.reset","method":"POST","path":"/api/v1/identity/password/reset","audience":"public","idempotent":false,"pathKeys":[]}));
+}
+
+export function createFetchIdentityMobileChallenge(baseUrl: string): OperationMethod<"identity.mobile.challenge"> {
+  return bindMobileChallenge(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindMobileChallenge(client: OperationExecutor): OperationMethod<"identity.mobile.challenge"> {
+  return bindOperation(client, defineStructuralOperation({"id":"identity.mobile.challenge","method":"POST","path":"/api/v1/identity/mobile/challenges","audience":"member","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchIdentityMobileManage(baseUrl: string): OperationMethod<"identity.mobile.manage"> {

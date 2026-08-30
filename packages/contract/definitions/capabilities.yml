@@ -85,6 +85,11 @@ capabilities:
     owner: identity
     permission: null
     audience: public
+  - code: identity.mobile.challenge
+    kind: operation
+    owner: identity
+    permission: identity.mobile.manage
+    audience: member
   - code: identity.mobile.manage
     kind: operation
     owner: identity
@@ -119,6 +124,41 @@ capabilities:
     kind: operation
     owner: access
     permission: access.scope.manage
+    audience: operator
+  - code: access.ownership.read
+    kind: operation
+    owner: access
+    permission: access.ownership.read
+    audience: operator
+  - code: access.ownership.transfers.preview
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
+    audience: operator
+  - code: access.ownership.transfers.create
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
+    audience: operator
+  - code: access.ownership.transfers.accept.preview
+    kind: operation
+    owner: access
+    permission: access.ownership.accept
+    audience: operator
+  - code: access.ownership.transfers.accept
+    kind: operation
+    owner: access
+    permission: access.ownership.accept
+    audience: operator
+  - code: access.ownership.transfers.cancel
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
+    audience: operator
+  - code: access.ownership.transfers.cancel.preview
+    kind: operation
+    owner: access
+    permission: access.ownership.transfer
     audience: operator
   - code: capability.assignments.read
     kind: operation
@@ -809,7 +849,7 @@ capabilities:
     kind: operation
     owner: finance
     permission: invoice.request.create
-    audience: member
+    audience: operator
   - code: invoice.requests.read
     kind: operation
     owner: finance

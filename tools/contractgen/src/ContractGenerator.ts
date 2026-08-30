@@ -37,6 +37,7 @@ validateCapabilityAudiences(operations, capabilities);
 validateErrors(errors);
 const check = process.argv.includes('--check');
 const contractSdkOnly = process.argv.includes('--scope=contract-sdk');
+const databaseOnly = process.argv.includes('--scope=database');
 const permissionMetadata = new Map(PERMISSION_CATALOG.map(({ code, risk, stepup, scopes }) => [code, { risk, stepup, scopes }]));
 const openapi = buildOpenapi(operations, permissionMetadata);
 const eventArtifact = stable({ version: 1, events: events.map((item) => ({ type: item.id, version: item.version, module: item.owner })) });
@@ -44,19 +45,23 @@ const permissionArtifact = PERMISSION_CATALOG.map(({ code, category, risk, stepu
 const errorArtifact = errors.map(({ code, status }) => ({ code, status }));
 const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
-await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
-await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
-await emit(resolve(root, 'packages/contract/src/operations/CommerceOperations.ts'), operationSource(operations, permissionMetadata));
-await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
-await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
-await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
-await emit(resolve(root, 'packages/contract/src/ContractIdentity.generated.ts'), contractIdentitySource(contractChecksum));
-await emit(resolve(root, 'packages/contract/src/ErrorContract.generated.ts'), errorSource(errors));
-await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.generated.ts'), sdkSource(operations));
-for (const [domain, source] of sdkDomainSources(operations)) {
-  await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
+if (databaseOnly) {
+  await emitDatabaseArtifact(contractChecksum);
+} else {
+  await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
+  await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
+  await emit(resolve(root, 'packages/contract/src/operations/CommerceOperations.ts'), operationSource(operations, permissionMetadata));
+  await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
+  await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
+  await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
+  await emit(resolve(root, 'packages/contract/src/ContractIdentity.generated.ts'), contractIdentitySource(contractChecksum));
+  await emit(resolve(root, 'packages/contract/src/ErrorContract.generated.ts'), errorSource(errors));
+  await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.generated.ts'), sdkSource(operations));
+  for (const [domain, source] of sdkDomainSources(operations)) {
+    await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
+  }
+  if (!contractSdkOnly) await emitLegacyArtifacts(contractChecksum);
 }
-if (!contractSdkOnly) await emitLegacyArtifacts(contractChecksum);
 
 async function catalog<T>(name: string, key: string): Promise<readonly T[]> {
   const payload = parse(await readFile(resolve(definitions, name), 'utf8')) as Record<string, unknown>;
@@ -145,6 +150,10 @@ async function emitLegacyArtifacts(contractChecksum: string): Promise<void> {
   await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), hardenedControllerSource(operations));
   await emit(resolve(root, 'services/commerce/src/app/events.ts'), eventRegistrySource(events));
 
+  await emitDatabaseArtifact(contractChecksum);
+}
+
+async function emitDatabaseArtifact(contractChecksum: string): Promise<void> {
   const template = await readFile(resolve(root, 'database/contracts/publish.template.sql'), 'utf8');
   const operationRows = operations.map((item) => sqlRow([item.id, item.owner, item.method, item.path, '1.0.0'])).join(',\n');
   const eventRows = events.map((item) => sqlRow([item.id, item.version, item.owner, item.schema])).join(',\n');
