@@ -137,7 +137,12 @@ const server = createServer((request, response) => {
   const result = responses.get(route);
 
   if (result === undefined) {
-    send(response, errorContract(request, 'PREVIEW_OPERATION_FORBIDDEN', '当前预览账号尚未开通此页面。'), 403);
+    send(response, {
+      code: 'PREVIEW_OPERATION_FORBIDDEN',
+      method: request.method,
+      path: url.pathname,
+      requestId: request.headers['x-trace-id'] ?? 'referral-preview',
+    }, 403);
     return;
   }
 
