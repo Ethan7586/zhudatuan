@@ -43,8 +43,9 @@ describe('Console route manifest', () => {
   it('normalizes the server access version before it enters RequestContext and Query keys', () => {
     const session = SessionSchema.parse({ actor: 'actor:1', membership: 'membership:1', accessVersion: '7', permissions: [], capabilities: [],
       target: 'console', scope: { kind: 'enterprise', id: 'group:1' }, scopes: [{ kind: 'enterprise', id: 'group:1' }],
-      assurance: { level: 1 }, syncedAt: '2026-08-26T00:00:00Z' });
+      assurance: { level: 1 }, csrf: 'csrf-token-from-api-session', syncedAt: '2026-08-26T00:00:00Z' });
     expect(session.accessVersion).toBe(7);
+    expect(session.csrf).toBe('csrf-token-from-api-session');
   });
 
   it('preserves server filters when advancing a cursor page', () => {
