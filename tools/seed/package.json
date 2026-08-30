@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "npm run typecheck",
+    "test": "node --import tsx --test src/LocalRegistrationOtp.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

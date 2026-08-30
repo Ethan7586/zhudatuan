@@ -13,9 +13,9 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const page = queryPage(request, 500);
       const result = await database.query(`select membership.id,membership.status,membership.access_version,
         coalesce(jsonb_agg(distinct jsonb_build_object('role',role.id,'name',role.name)) filter(where role.id is not null),'[]') roles,
-        coalesce(jsonb_agg(distinct jsonb_build_object('id',grant.id,'kind',grant.scope_kind,'scope',grant.scope_id,'effect',grant.effect,'expires',grant.expires_at)) filter(where grant.id is not null),'[]') scopes
+        coalesce(jsonb_agg(distinct jsonb_build_object('id',scopegrant.id,'kind',scopegrant.scope_kind,'scope',scopegrant.scope_id,'effect',scopegrant.effect,'expires',scopegrant.expires_at)) filter(where scopegrant.id is not null),'[]') scopes
         from access.membership membership left join access.membershiprole assignment on assignment.membership_id=membership.id
-        left join access.role role on role.id=assignment.role_id left join access.scopegrant grant on grant.membership_id=membership.id
+        left join access.role role on role.id=assignment.role_id left join access.scopegrant scopegrant on scopegrant.membership_id=membership.id
         where membership.organization_id=$1 and ($2::text is null or membership.id>$2)
         group by membership.id order by membership.id limit $3`, [access.scope.id, page.id, page.fetch]);
       return keysetResult(result, page, 'id');

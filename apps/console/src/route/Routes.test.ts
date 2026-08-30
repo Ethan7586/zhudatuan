@@ -19,7 +19,8 @@ describe('Console route manifest', () => {
 
   it('publishes every Batch 6 professional deep link without pretending blocked writes exist', () => {
     expect(professionalRoutes.map(({ featureKey }) => featureKey)).toEqual([
-      'applications', 'vouchers', 'reports', 'support', 'channels', 'imports', 'entries', 'statements',
+      'applications', 'vouchers', 'reports', 'support', 'referralsettings', 'referralproducts', 'referralreview',
+      'referralbindings', 'referralwithdrawals', 'referralpromotion', 'channels', 'imports', 'entries', 'statements',
       'reconciliations', 'settlements', 'withdrawals', 'invoices', 'access', 'members', 'qualification',
       'notification', 'productdetail', 'orderdetail',
     ]);
@@ -27,6 +28,8 @@ describe('Console route manifest', () => {
       .toBe('finance.settlements.read');
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/imports/voucher/job%3A1')?.operations)
       .toContain('voucher.imports.read');
+    expect(professionalRouteFromPath('/scopes/mall/mall%3A1/referral/withdrawals')?.operation)
+      .toBe('referral.commissions.read');
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/products/product%3A1')?.blocker)
       .toContain('catalog.product.detail.read');
   });
@@ -43,8 +46,9 @@ describe('Console route manifest', () => {
   it('normalizes the server access version before it enters RequestContext and Query keys', () => {
     const session = SessionSchema.parse({ actor: 'actor:1', membership: 'membership:1', accessVersion: '7', permissions: [], capabilities: [],
       target: 'console', scope: { kind: 'enterprise', id: 'group:1' }, scopes: [{ kind: 'enterprise', id: 'group:1' }],
-      assurance: { level: 1 }, syncedAt: '2026-08-26T00:00:00Z' });
+      assurance: { level: 1 }, csrf: 'csrf-token-from-api-session', syncedAt: '2026-08-26T00:00:00Z' });
     expect(session.accessVersion).toBe(7);
+    expect(session.csrf).toBe('csrf-token-from-api-session');
   });
 
   it('preserves server filters when advancing a cursor page', () => {

@@ -6,6 +6,7 @@ export interface OperationDefinition {
   readonly audience: 'public' | 'member' | 'operator' | 'provider';
   readonly permission?: string;
   readonly idempotent: boolean;
+  readonly expectedVersion?: 'none' | 'optional' | 'required';
   readonly schema: 'exact' | 'structural';
   readonly requirements: readonly string[];
   readonly sdk: string;
@@ -43,7 +44,7 @@ export function buildOpenapi(
       'x-audience': operation.audience,
       'x-idempotency': operation.method === 'GET' || operation.audience === 'provider' ? 'none' : 'required',
       'x-idempotent': operation.idempotent,
-      'x-expected-version': operation.method === 'GET' ? 'none' : 'optional',
+      'x-expected-version': versionPolicy(operation),
       'x-permission': operation.permission ?? null,
       'x-requirements': operation.requirements,
       'x-risk': metadata?.risk ?? 'low',
@@ -87,11 +88,15 @@ export function operationSource(
     item.id, item.method, item.path, item.owner, item.audience, item.permission ?? null,
     item.idempotent,
     item.method === 'GET' || item.audience === 'provider' ? 'none' : 'required',
-    item.method === 'GET' ? 'none' : 'optional',
+    versionPolicy(item),
     metadata?.risk ?? 'low', metadata?.stepup ?? false, metadata?.scopes ?? [], item.schema, item.requirements,
   ])},`;
   }).join('\n');
   return `// Generated from definitions/operations.yml. Do not edit.\nimport { operation, type HttpMethod, type OperationAudience, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';\n\ntype Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];\n\nconst rows = [\n${rows}\n] as const satisfies readonly Row[];\n\nexport const COMMERCE_OPERATIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], risk: row[9], stepup: row[10], scopeKinds: row[11], schema: row[12], requirements: row[13] })));\n`;
+}
+
+function versionPolicy(operation: OperationDefinition): 'none' | 'optional' | 'required' {
+  return operation.expectedVersion ?? (operation.method === 'GET' ? 'none' : 'optional');
 }
 
 export function schemaSource(values: readonly OperationDefinition[]): string {

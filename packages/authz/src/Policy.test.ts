@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { checkAssurance, checkScope, decide, precheck, SCOPE_KINDS, type MembershipAccess, type Scope } from './index';
 
-const scope: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [{ kind: 'tenant', id: 'tenant-a' }, { kind: 'enterprise', id: 'enterprise-a' }] };
+const scope: Scope = {
+  kind: 'mall',
+  id: 'mall-a',
+  tenant: 'tenant-a',
+  path: [
+    { kind: 'tenant', id: 'tenant-a' },
+    { kind: 'enterprise', id: 'enterprise-a' },
+  ],
+};
 const membership: MembershipAccess = { id: 'membership-a', active: true, accessVersion: 3, denies: [], grants: [{ scope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
 
 describe('authorization policy', () => {
@@ -31,11 +39,18 @@ describe('authorization policy', () => {
 
   it('enforces tenant boundaries and delegation expiry for every hierarchical anchor', () => {
     const now = new Date('2026-08-21T00:00:00.000Z');
-    const resource: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [
-      { kind: 'platform', id: 'platform-a' }, { kind: 'distributor', id: 'distributor-a' },
-      { kind: 'tenant', id: 'tenant-a' }, { kind: 'enterprise', id: 'enterprise-a' },
-    ] };
-    for (const grantScope of [resource, ...resource.path.map((item) => ({ ...item, tenant: item.kind === 'platform' ? undefined : 'tenant-a', path: [] } as Scope))]) {
+    const resource: Scope = {
+      kind: 'mall',
+      id: 'mall-a',
+      tenant: 'tenant-a',
+      path: [
+        { kind: 'platform', id: 'platform-a' },
+        { kind: 'distributor', id: 'distributor-a' },
+        { kind: 'tenant', id: 'tenant-a' },
+        { kind: 'enterprise', id: 'enterprise-a' },
+      ],
+    };
+    for (const grantScope of [resource, ...resource.path.map((item) => ({ ...item, tenant: item.kind === 'platform' ? undefined : 'tenant-a', path: [] }) as Scope)]) {
       const access: MembershipAccess = { ...membership, grants: [{ scope: grantScope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
       expect(decide(access, 'order.read', resource, { expectedAccessVersion: 3, now }).allowed).toBe(true);
     }
@@ -43,5 +58,29 @@ describe('authorization policy', () => {
     expect(decide(crossTenant, 'order.read', resource, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
     const expired: MembershipAccess = { ...membership, grants: [{ scope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: '2026-08-20T23:59:59.000Z' }] };
     expect(decide(expired, 'order.read', scope, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'PERMISSION_MISSING' });
+  });
+
+  it('keeps distributor grants effective above the tenant boundary without leaking across distributors', () => {
+    const now = new Date('2026-08-21T00:00:00.000Z');
+    const distributor: MembershipAccess = { ...membership, grants: [{ scope: { kind: 'distributor', id: 'distributor-d', path: [] }, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
+    const under = (owner: string, tenant: string): Scope => ({
+      kind: 'mall',
+      id: 'mall-a',
+      tenant,
+      path: [
+        { kind: 'platform', id: 'organization-platform-root' },
+        { kind: 'distributor', id: owner },
+        { kind: 'tenant', id: tenant },
+      ],
+    });
+
+    expect(decide(distributor, 'order.read', under('distributor-d', 'tenant-a'), { expectedAccessVersion: 3, now }).allowed).toBe(true);
+    expect(decide(distributor, 'order.read', under('distributor-other', 'tenant-b'), { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
+  });
+
+  it('denies a cross-kind identifier collision inside the same tenant', () => {
+    const now = new Date('2026-08-21T00:00:00.000Z');
+    const collision: MembershipAccess = { ...membership, grants: [{ scope: { kind: 'mall', id: 'x', tenant: 'tenant-a', path: [] }, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
+    expect(decide(collision, 'order.read', { kind: 'department', id: 'x', tenant: 'tenant-a', path: [] }, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
   });
 });

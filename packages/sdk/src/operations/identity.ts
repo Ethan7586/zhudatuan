@@ -17,6 +17,7 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.invitations.revoke",
   "identity.members.create",
   "identity.members.manage",
+  "identity.members.reset",
   "identity.password.change",
   "identity.password.verify",
   "identity.password.reset",
@@ -40,6 +41,7 @@ export interface IdentityOperations {
   readonly invitationsRevoke: OperationMethod<"identity.invitations.revoke">;
   readonly membersCreate: OperationMethod<"identity.members.create">;
   readonly membersManage: OperationMethod<"identity.members.manage">;
+  readonly membersReset: OperationMethod<"identity.members.reset">;
   readonly passwordChange: OperationMethod<"identity.password.change">;
   readonly passwordVerify: OperationMethod<"identity.password.verify">;
   readonly passwordReset: OperationMethod<"identity.password.reset">;
@@ -68,6 +70,7 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     invitationsRevoke: bindInvitationsRevoke(client),
     membersCreate: bindMembersCreate(client),
     membersManage: bindMembersManage(client),
+    membersReset: bindMembersReset(client),
     passwordChange: bindPasswordChange(client),
     passwordVerify: bindPasswordVerify(client),
     passwordReset: bindPasswordReset(client),
@@ -173,6 +176,14 @@ export function createFetchIdentityMembersManage(baseUrl: string): OperationMeth
 
 function bindMembersManage(client: OperationExecutor): OperationMethod<"identity.members.manage"> {
   return bindOperation(client, defineStructuralOperation({"id":"identity.members.manage","method":"PUT","path":"/api/v1/identity/members/{membershipid}","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
+}
+
+export function createFetchIdentityMembersReset(baseUrl: string): OperationMethod<"identity.members.reset"> {
+  return bindMembersReset(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindMembersReset(client: OperationExecutor): OperationMethod<"identity.members.reset"> {
+  return bindOperation(client, defineStructuralOperation({"id":"identity.members.reset","method":"PUT","path":"/api/v1/identity/members/{membershipid}/registration","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
 }
 
 export function createFetchIdentityPasswordChange(baseUrl: string): OperationMethod<"identity.password.change"> {

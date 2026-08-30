@@ -21,6 +21,7 @@ insert into access.rolepermission(role_id,permission_id,effect)
 select 'role:self',permission.id,'allow' from access.permission permission where permission.code in(
   'identity.session.read','identity.session.manage','identity.credential.manage','identity.mobile.manage','identity.assurance.manage',
   'cart.read','cart.manage','checkout.create','order.create','order.read','order.aftersale.read','order.aftersale.apply',
+  'referral.self.read','referral.self.manage','referral.withdrawals.create',
   'payment.create','verification.issue','benefit.read','invoice.profile.manage','invoice.profile.read','invoice.request.create','invoice.request.read','invoice.request.cancel',
   'support.case.create','support.case.read','support.message.send','support.message.read','notification.read','notification.preference.manage','notification.endpoint.manage')
   or permission.code='observability.clienterror.create'

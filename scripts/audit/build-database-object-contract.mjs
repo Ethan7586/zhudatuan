@@ -6,7 +6,8 @@ import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 const root = repositoryRoot;
 const directory = join(root, 'database', 'supabase', 'migrations');
 const files = (await readdir(directory))
-  .filter((name) => name >= '20260821011000_create_domain_schemas.sql' && name.startsWith('20260821'))
+  .filter((name) => name >= '20260821011000_create_domain_schemas.sql'
+    && (name.startsWith('20260821') || name.startsWith('20260828') || name.startsWith('20260829') || name.startsWith('20260830')))
   .sort();
 const droppedTables = new Set([
   'runtime.distributorcontactstage',
@@ -21,6 +22,7 @@ const postDefaultTables = new Set();
 const removedDefaultPolicies = new Set();
 const removedJobPolicies = new Set();
 const revokedTableGrants = new Set();
+const revokedSchemaTableGrants = new Set();
 
 function add(id, kind, source, extra = {}) {
   const key = `${kind}:${id}`;
@@ -82,7 +84,7 @@ const callerMap = {
 
 for (const file of files) {
   const sql = await readFile(join(directory, file), 'utf8');
-  for (const match of sql.matchAll(/create schema if not exists\s+([a-z][a-z0-9]*)/gi)) add(match[1], 'schema', file);
+  for (const match of sql.matchAll(/create schema(?: if not exists)?\s+([a-z][a-z0-9]*)/gi)) add(match[1], 'schema', file);
   for (const match of sql.matchAll(/create table\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)(?:\s*\(|\s+partition\s+of)/gi)) {
     const id = `${match[1]}.${match[2]}`;
     if (!droppedTables.has(id)) {
@@ -140,23 +142,46 @@ for (const file of files) {
     if (statement.action==='drop' && statement.name.toLowerCase()==='appscope') removedDefaultPolicies.add(statement.table);
     if (statement.action==='drop' && statement.name.toLowerCase()==='jobscope') removedJobPolicies.add(statement.table);
   }
-  for (const match of sql.matchAll(/grant\s+([a-z,\s]+?)\s+on\s+(schema|function)?\s*([\s\S]*?)\s+to\s+([a-z0-9_,\s]+);/gi)) {
-    const privileges = match[1].split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
-    const declaredType = (match[2] ?? 'table').toLowerCase();
-    const targets = splitTopLevel(match[3]);
-    const roles = match[4].split(',').map((value) => value.trim()).filter(Boolean);
-    for (const role of roles) for (const target of targets) for (const privilege of privileges) {
-      const canonical = target.replace(/\s+/g, '').replaceAll('timestamptz','timestampwithtimezone');
-      const type = declaredType === 'table' && seen.has(`view:${canonical}`) ? 'view' : declaredType;
-      add(`${role}:${type}:${canonical}:${privilege}`, 'grant', file, { role, objectType: type, target: canonical, privilege });
+  const grantStatements = [
+    ...[...sql.matchAll(/grant\s+([a-z,\s]+?)\s+on\s+(schema|function|table)?\s*([\s\S]*?)\s+to\s+([a-z0-9_,\s]+);/gi)]
+      .map((match) => ({ index: match.index, action: 'grant', match })),
+    ...[...sql.matchAll(/revoke\s+([a-z,\s]+?)\s+on\s+(?:table\s+)?([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)(?:\s*,\s*[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*))*)\s+from\s+([a-z0-9_,\s]+);/gi)]
+      .map((match) => ({ index: match.index, action: 'revoke-table', match })),
+    ...[...sql.matchAll(/revoke\s+([a-z,\s]+?)\s+on\s+all\s+tables\s+in\s+schema\s+([a-z][a-z0-9]*)\s+from\s+([a-z0-9_,\s]+);/gi)]
+      .map((match) => ({ index: match.index, action: 'revoke-schema', match })),
+  ].sort((left, right) => left.index - right.index);
+  for (const statement of grantStatements) {
+    const { match } = statement;
+    if (statement.action === 'grant') {
+      const privileges = match[1].split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
+      const declaredType = (match[2] ?? 'table').toLowerCase();
+      const targets = splitTopLevel(match[3]);
+      const roles = match[4].split(',').map((value) => value.trim()).filter(Boolean);
+      for (const role of roles) for (const target of targets) for (const privilege of privileges) {
+        const canonical = target.replace(/\s+/g, '').replaceAll('timestamptz','timestampwithtimezone');
+        const type = declaredType === 'table' && seen.has(`view:${canonical}`) ? 'view' : declaredType;
+        const id = `${role}:${type}:${canonical}:${privilege}`;
+        revokedTableGrants.delete(id);
+        add(id, 'grant', file, { role, objectType: type, target: canonical, privilege });
+      }
+      continue;
     }
-  }
-  for (const match of sql.matchAll(/revoke\s+([a-z,\s]+?)\s+on\s+([a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*)(?:\s*,\s*[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*))*)\s+from\s+([a-z0-9_,\s]+);/gi)) {
     const declared=match[1].split(',').map((value)=>value.trim().toLowerCase()).filter(Boolean);
     const privileges=declared.includes('all') ? ['select','insert','update','delete'] : declared;
-    const targets=match[2].split(',').map((value)=>value.trim()); const roles=match[3].split(',').map((value)=>value.trim()).filter(Boolean);
-    for (const role of roles) for (const target of targets) for (const privilege of privileges) {
-      const id=`${role}:table:${target}:${privilege}`; revokedTableGrants.add(id); remove(id,'grant');
+    if (statement.action === 'revoke-table') {
+      const targets=match[2].split(',').map((value)=>value.trim()); const roles=match[3].split(',').map((value)=>value.trim()).filter(Boolean);
+      for (const role of roles) for (const target of targets) for (const privilege of privileges) {
+        const id=`${role}:table:${target}:${privilege}`; revokedTableGrants.add(id); remove(id,'grant');
+      }
+      continue;
+    }
+    const schema=match[2]; const roles=match[3].split(',').map((value)=>value.trim()).filter(Boolean);
+    for (const role of roles) for (const privilege of privileges) {
+      revokedSchemaTableGrants.add(`${role}:${schema}:${privilege}`);
+      for (const item of [...objects]) {
+        if (item.kind==='grant' && item.objectType==='table' && item.role===role
+          && item.privilege===privilege && item.target.startsWith(`${schema}.`)) remove(item.id,'grant');
+      }
     }
   }
 }
@@ -175,8 +200,10 @@ for (const schema of objects.filter((item) => item.kind === 'schema')) {
     { role, objectType: 'schema', target: schema.id, privilege: 'usage' });
 }
 for (const table of objects.filter((item) => item.kind === 'table')) {
+  if (postDefaultTables.has(table.id)) continue;
   for (const role of accessRoles) for (const privilege of ['select', 'insert', 'update', 'delete']) {
-    const id=`${role}:table:${table.id}:${privilege}`; if (revokedTableGrants.has(id)) continue;
+    const id=`${role}:table:${table.id}:${privilege}`;
+    if (revokedTableGrants.has(id) || revokedSchemaTableGrants.has(`${role}:${table.id.split('.')[0]}:${privilege}`)) continue;
     add(id, 'grant', '20260821030000_revoke_public_access.sql',
       { role, objectType: 'table', target: table.id, privilege });
   }
@@ -187,6 +214,11 @@ for (const table of objects.filter((item) => item.kind === 'table')) {
     add(`${table.id}.appscope`, 'policy', '20260821030000_revoke_public_access.sql');
   }
   if (!postDefaultTables.has(table.id) && !removedJobPolicies.has(table.id)) add(`${table.id}.jobscope`, 'policy', '20260821030000_revoke_public_access.sql');
+}
+
+for (const table of objects.filter((item) => item.kind === 'table' && item.id.startsWith('referral.'))) {
+  add(`${table.id}.appscope`, 'policy', '20260829105000_create_referral_foundation.sql');
+  add(`${table.id}.jobscope`, 'policy', '20260829105000_create_referral_foundation.sql');
 }
 
 objects.sort((left, right) => left.kind.localeCompare(right.kind) || left.id.localeCompare(right.id));

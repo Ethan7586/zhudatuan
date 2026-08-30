@@ -33,6 +33,30 @@ describe('Sidebar commerce navigation', () => {
     const target = screen.getByRole('button', { name: expected });
     expect(target.getAttribute('title')).toBe(expected);
   });
+
+  it('opens the referral workspace independently from B2B channels', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    renderSidebar('mall', false, onNavigate);
+
+    await user.click(screen.getByRole('button', { name: '分销返佣系统' }));
+    expect(onNavigate).toHaveBeenCalledWith('referral/settings');
+    expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
+  });
+
+  it('pins customer service above the profile and keeps a collapsed label', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    const { container } = renderSidebar('mall', true, onNavigate);
+    const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
+    const supportButton = within(supportNavigation).getByRole('button', { name: '客服系统' });
+    const profile = container.querySelector('.sidebarprofile');
+
+    expect(supportButton.getAttribute('title')).toBe('客服系统');
+    expect(supportNavigation.nextElementSibling).toBe(profile);
+    await user.click(supportButton);
+    expect(onNavigate).toHaveBeenCalledWith('support');
+  });
 });
 
 function renderSidebar(kind: ConsoleScope['kind'], collapsed: boolean, onNavigate: (suffix: string) => void) {

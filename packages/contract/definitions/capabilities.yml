@@ -65,6 +65,11 @@ capabilities:
     owner: identity
     permission: member.manage
     audience: operator
+  - code: identity.members.reset
+    kind: operation
+    owner: identity
+    permission: identity.registration.reset
+    audience: operator
   - code: identity.password.change
     kind: operation
     owner: identity
@@ -305,6 +310,81 @@ capabilities:
     owner: marketing
     permission: marketing.read
     audience: operator
+  - code: referral.settings.read
+    kind: operation
+    owner: referral
+    permission: referral.settings.read
+    audience: operator
+  - code: referral.settings.manage
+    kind: operation
+    owner: referral
+    permission: referral.settings.manage
+    audience: operator
+  - code: referral.products.read
+    kind: operation
+    owner: referral
+    permission: referral.products.read
+    audience: operator
+  - code: referral.products.manage
+    kind: operation
+    owner: referral
+    permission: referral.products.manage
+    audience: operator
+  - code: referral.members.read
+    kind: operation
+    owner: referral
+    permission: referral.members.read
+    audience: operator
+  - code: referral.members.apply
+    kind: operation
+    owner: referral
+    permission: referral.self.manage
+    audience: member
+  - code: referral.members.approve
+    kind: operation
+    owner: referral
+    permission: referral.members.approve
+    audience: operator
+  - code: referral.members.disqualify
+    kind: operation
+    owner: referral
+    permission: referral.members.disqualify
+    audience: operator
+  - code: referral.bindings.read
+    kind: operation
+    owner: referral
+    permission: referral.bindings.read
+    audience: operator
+  - code: referral.bindings.create
+    kind: operation
+    owner: referral
+    permission: referral.self.manage
+    audience: member
+  - code: referral.commissions.read
+    kind: operation
+    owner: referral
+    permission: referral.commissions.read
+    audience: operator
+  - code: referral.earnings.read
+    kind: operation
+    owner: referral
+    permission: referral.self.read
+    audience: member
+  - code: referral.links.read
+    kind: operation
+    owner: referral
+    permission: referral.self.read
+    audience: member
+  - code: referral.withdrawals.read
+    kind: operation
+    owner: referral
+    permission: referral.self.read
+    audience: member
+  - code: referral.withdrawals.create
+    kind: operation
+    owner: referral
+    permission: referral.withdrawals.create
+    audience: member
   - code: reporting.dashboard.read
     kind: operation
     owner: reporting
@@ -695,6 +775,21 @@ capabilities:
     owner: finance
     permission: finance.policy.manage
     audience: operator
+  - code: finance.policies.preview
+    kind: operation
+    owner: finance
+    permission: finance.policy.manage
+    audience: operator
+  - code: finance.policies.read
+    kind: operation
+    owner: finance
+    permission: finance.policy.read
+    audience: operator
+  - code: finance.audit.read
+    kind: operation
+    owner: finance
+    permission: audit.read
+    audience: operator
   - code: invoice.profiles.manage
     kind: operation
     owner: finance
@@ -705,6 +800,11 @@ capabilities:
     owner: finance
     permission: invoice.profile.read
     audience: member
+  - code: invoice.operatorprofiles.read
+    kind: operation
+    owner: finance
+    permission: invoice.profile.read
+    audience: operator
   - code: invoice.requests.create
     kind: operation
     owner: finance

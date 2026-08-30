@@ -104,6 +104,36 @@ api.zhudatuan.com {
 		X-Frame-Options "DENY"
 	}
 
+	@consoleSupportPreflight {
+		method OPTIONS
+		path /api/v1/support/cases /api/v1/support/cases/*/messages
+	}
+	handle @consoleSupportPreflight {
+		reverse_proxy 127.0.0.1:4324 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@consoleSupportRead {
+		method GET
+		path /api/v1/support/cases /api/v1/support/cases/*/messages
+	}
+	handle @consoleSupportRead {
+		reverse_proxy 127.0.0.1:4324 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@consoleSupportSend {
+		method POST
+		path /api/v1/support/cases/*/messages
+	}
+	handle @consoleSupportSend {
+		reverse_proxy 127.0.0.1:4324 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	reverse_proxy localhost:3001 {
 		header_up X-Real-IP {client_ip}
 	}

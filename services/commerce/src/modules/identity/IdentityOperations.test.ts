@@ -1,0 +1,213 @@
+import { createHash } from 'node:crypto';
+import { canonicalFinancialActionRequest } from '@shop/contract';
+import type { PoolClient, QueryResult } from 'pg';
+import { describe, expect, it } from 'vitest';
+import { Container } from '../../bootstrap/Container';
+import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
+import { AUDIT_SINK } from '../../foundation/application/AuditSink';
+import type { OperationRequest } from '../../foundation/application/OperationHandler';
+import { KMS_CLIENT, type KmsClient } from '../../foundation/infrastructure/KmsClient';
+import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
+import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
+import { RISK_GATE } from '../../foundation/security/RiskGate';
+import { WECHAT_IDENTITY } from './application/port/WechatIdentity';
+import { identityOperations } from './IdentityOperations';
+import { RETURN_TARGETS } from './infrastructure/ReturnTargetCatalog';
+
+describe('identity financial action proof issuance', () => {
+  it('binds the proof to the assurance created for this exact session and the canonical request hash', async () => {
+    let storedHash = '';
+    let assuranceId = '';
+    let assuranceSession = '';
+    let issueValues: readonly unknown[] | undefined;
+    let persisted = '';
+    const client = {
+      query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('insert into runtime.idempotency')) storedHash = String(values[3]);
+        if (text.startsWith('select request_hash,state,response')) {
+          return { rows: [{ request_hash: storedHash, state: 'started', response: null }], rowCount: 1 } as unknown as QueryResult;
+        }
+        if (text.includes('update identity.challenge set consumed_at')) {
+          return { rows: [{ principal_id: 'actor:one' }], rowCount: 1 } as unknown as QueryResult;
+        }
+        if (text.includes('insert into identity.assurance')) {
+          assuranceId = String(values[0]);
+          assuranceSession = String(values[2]);
+        }
+        if (text.includes('update identity.session set assurance_level=3')) {
+          return { rows: [{ id: 'session:one', assurance_level: 3 }], rowCount: 1 } as unknown as QueryResult;
+        }
+        if (text.includes('access.issue_action_proof')) {
+          issueValues = values;
+          return {
+            rows: [{ scope_id: 'organization:one', resource_id: 'settlement:one', expires_at: new Date('2026-08-28T04:00:00Z') }],
+            rowCount: 1,
+          } as unknown as QueryResult;
+        }
+        if (text.includes("update runtime.idempotency set state='completed'")) persisted = String(values[3]);
+        return { rows: [], rowCount: 0 } as unknown as QueryResult;
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = {
+      connect: async () => client,
+      query: async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult,
+      workload: () => pool,
+      end: async () => undefined,
+    };
+    const target = {
+      path: { settlementid: 'settlement:one' },
+      query: { view: 'full' },
+      body: { decision: 'approved', reason: 'verified' },
+    };
+    const requestHash = createHash('sha256')
+      .update(canonicalFinancialActionRequest({ operation: 'finance.settlements.decide', ...target }))
+      .digest('hex');
+    const operations = identityOperations(context(pool));
+
+    const result = await operations.invoke({
+      type: 'identity.stepup.complete',
+      access: access(),
+      input: {
+        path: {},
+        query: {},
+        headers: {},
+        body: {
+          challenge: 'challenge:one',
+          code: '123456',
+          action: {
+            operation: 'finance.settlements.decide',
+            resource: 'settlement:one',
+            idempotencyKey: 'decision:one',
+            expectedVersion: 7,
+            requestHash,
+            request: target,
+          },
+        },
+        rawBody: '',
+        deadline: Date.now() + 1_000,
+        signal: new AbortController().signal,
+        idempotency: 'stepup:one',
+      },
+    });
+
+    expect(result).toMatchObject({ status: 200, body: { actionProof: { requestHash } } });
+    expect(assuranceId).toMatch(/^assurance:/);
+    expect(assuranceSession).toBe('session:one');
+    expect(issueValues).toEqual([expect.stringMatching(/^[0-9a-f]{64}$/), 'actor:one', 'session:one', 'membership:one', assuranceId, 'finance.settlements.decide', 'settlement:one', 'decision:one', 7, requestHash]);
+    expect(persisted).not.toContain(String((result.body as { actionProof: { proof: string } }).actionProof.proof));
+  });
+});
+
+describe('administrator invitation issuance', () => {
+  it('binds a new code to the tenant pending role and a separate storefront role', async () => {
+    let requestHash = '';
+    let invitationSql = '';
+    let invitationValues: readonly unknown[] = [];
+    const client = {
+      query: async (text: string, values: readonly unknown[] = []) => {
+        if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+        if (text.startsWith('select request_hash,state,response')) {
+          return result([{ request_hash: requestHash, state: 'started', response: null }]);
+        }
+        if (text.includes('select pending.id operator_role')) {
+          return result([{ operator_role: 'role-console-pending-v1:tenant:one', storefront_role: 'role:self' }]);
+        }
+        if (text.includes('from identity.registrationpolicy')) {
+          return result([{ id: 'registration:v1', terms_hash: 'f'.repeat(64) }]);
+        }
+        if (text.includes('insert into member.invite')) {
+          invitationSql = text;
+          invitationValues = values;
+          return result([
+            {
+              id: 'invite:one',
+              label: '普通管理员邀请',
+              target: 'console',
+              max_uses: 1,
+              use_count: 0,
+              starts_at: new Date().toISOString(),
+              expires_at: new Date(Date.now() + 86_400_000).toISOString(),
+              status: 'active',
+              created_at: new Date().toISOString(),
+              version: '0',
+            },
+          ]);
+        }
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = {
+      connect: async () => client,
+      query: async () => result([]),
+      workload: () => pool,
+      end: async () => undefined,
+    };
+
+    const response = await identityOperations(context(pool)).invoke({
+      type: 'identity.invitations.create',
+      access: { ...access(), scope: { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', path: [] } },
+      input: {
+        path: {},
+        query: {},
+        headers: {},
+        body: { label: '普通管理员邀请', maxUses: 1, expiresAt: new Date(Date.now() + 86_400_000).toISOString() },
+        rawBody: '',
+        deadline: Date.now() + 1_000,
+        signal: new AbortController().signal,
+        idempotency: 'invitation:one',
+      },
+    });
+
+    expect(response).toMatchObject({ status: 201, body: { target: 'console', code: expect.stringMatching(/^[A-Za-z0-9_-]{32}$/) } });
+    expect(invitationSql).toContain('storefront_role_id,target_client');
+    expect(invitationValues[7]).toBe('role-console-pending-v1:tenant:one');
+    expect(invitationValues[8]).toBe('role:self');
+  });
+});
+
+function context(pool: DatabasePool): ModuleContext {
+  const container = new Container();
+  container.bind(DATABASE_POOL, pool);
+  container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
+  container.bind(SECURITY_KEYS, { identity: 'identity-key', quote: 'quote-key', session: 'session-key' });
+  container.bind(KMS_CLIENT, {} as KmsClient);
+  container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
+  container.bind(WECHAT_IDENTITY, {
+    application: () => ({ applicationHash: 'application' }),
+    authorize: () => 'https://example.test',
+    exchange: async () => ({ subject: 'subject' }),
+  });
+  container.bind(RETURN_TARGETS, {
+    console: 'https://console.example.test',
+    storefront: 'https://storefront.example.test',
+    store: 'https://store.example.test',
+    supplier: 'https://supplier.example.test',
+  });
+  return { container } as unknown as ModuleContext;
+}
+
+function access(): NonNullable<OperationRequest['access']> {
+  return {
+    actor: {
+      id: 'actor:one',
+      session: 'session:one',
+      membership: 'membership:one',
+      credentialVersion: 1,
+      accessVersion: 1,
+      target: 'console',
+      assurance: { level: 1 },
+    },
+    membership: { id: 'membership:one', active: true, accessVersion: 1, denies: [], grants: [] },
+    scope: { kind: 'platform', id: 'organization:one', path: [] },
+    accessVersion: 1,
+    capabilities: ['identity.stepup.complete'],
+    assurance: { level: 1 },
+    trace: 'trace:one',
+  };
+}
+
+function result(rows: readonly Record<string, unknown>[]): QueryResult {
+  return { rows, rowCount: rows.length } as unknown as QueryResult;
+}

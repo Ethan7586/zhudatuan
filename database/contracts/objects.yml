@@ -1,11 +1,31 @@
 version: 1
 objects:
+  - id: access.consume_action_proof
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: access
+  - id: access.issue_action_proof
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: access
   - id: access.membership_version
     kind: function
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: access.protect_root_owner_membership
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: access
+  - id: access.protect_root_owner_role
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: access
   - id: access.resolve_membership
     kind: function
     owner: access
@@ -135,6 +155,61 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
     operationalOwner: finance
+  - id: finance.account_role
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.apply_settlement_adjustment_facts
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.assert_configurable_policy
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.assert_configurable_policy_conflict
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.assert_expected_version
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: finance
+  - id: finance.assert_posted_journal_balanced
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.capture_subledger
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.classify_subledger
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.configurable_policy_receipt
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.correct
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.decide_reconciliation_repair
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
   - id: finance.enforce_balanced_journal
     kind: function
     owner: finance
@@ -145,25 +220,170 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
     operationalOwner: finance
+  - id: finance.freeze_settlement_facts
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.guard_policy_preview_consumption
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.guard_reconciliation_repair
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.guard_repair_journal_write
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.ledger_id
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.manage_configurable_policy
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.mark_partner_settlement_split_paid
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.mark_platform_settlement_split_paid
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.period_control
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.policy_preview_receipt
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
   - id: finance.post
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
+    operationalOwner: finance
+  - id: finance.preview_configurable_policy
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.preview_reconciliation_repair
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.read_reconciliation_repair
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.reconciliation_repair_receipt
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.reconciliation_repair_snapshot
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.refresh_trial_balance
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.reject_final_statement_mutation
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     operationalOwner: finance
   - id: finance.reject_ledger_mutation
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+  - id: finance.reject_policy_revision_mutation
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.reject_reconciliation_repair_fact_mutation
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.require_policy_action_proof
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.require_repair_action_proof
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
   - id: finance.resource_scope
     kind: function
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+  - id: finance.reverse
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.reverse_reconciliation_repair
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.subledger_consistent
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.submit_reconciliation_repair
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.trial_balance_hash
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.validate_reconciliation_statement
+    kind: function
+    owner: finance
+    source: database/supabase/migrations/20260828091000_finance_reconciliation_integrity.sql
+    operationalOwner: finance
   - id: identity.notification_recipient
     kind: function
     owner: identity
     source: database/supabase/migrations/20260821047000_notification_lifecycle.sql
+    operationalOwner: identity
+  - id: identity.protect_root_owner_credential
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: identity
+  - id: identity.protect_root_owner_principal
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
     operationalOwner: identity
   - id: identity.resolve_session
     kind: function
@@ -171,17 +391,187 @@ objects:
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: invoice.assert_consumed_financial_proof
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.assert_issue_snapshot
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.cancel_request
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.claim_issue
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.create_red_request
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.create_request
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.decide_request
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.fail_issue
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.finalize_issue
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.guard_document_fact
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.guard_profile_owner
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.guard_request_create
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.guard_request_fact
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.guard_snapshot_fact
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.guard_status_fact
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.record_failed_issue
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.register_issue_artifact
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.release_issue_claim
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.seal_request
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.validate_rendered_line
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.validate_request_line
+    kind: function
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: member.protect_root_owner_profile
+    kind: function
+    owner: member
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: member
   - id: notification.resource_scope
     kind: function
     owner: notification
     source: database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: notification
+  - id: payment.reject_provider_effect_mutation
+    kind: function
+    owner: payment
+    source: database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql
+    operationalOwner: payment
   - id: payment.webhook_scope
     kind: function
     owner: payment
     source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
     callers:
       - services/commerce/src/modules/payment/PaymentWebhook.ts
+  - id: referral.apply_commission_reversal
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.attach_withdrawal_claims
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.bind_first_touch
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.guard_withdrawal_reversal
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.has_pending_reversal
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.protect_withdrawal_claim_identity
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.reject_commissionmovement_mutation
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.reject_recoverymovement_mutation
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.sync_withdrawal_claim_state
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.validate_recoverymovement
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.validate_withdrawal_claim
+    kind: function
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
   - id: reporting.cockpit
     kind: function
     owner: reporting
@@ -225,6 +615,16 @@ objects:
     source: database/supabase/migrations/20260821012000_create_runtime_control.sql
     callers:
       - services/commerce/src/foundation/application/JobRunner.ts
+  - id: runtime.reject_financial_inbox_fact_mutation
+    kind: function
+    owner: runtime
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: runtime
+  - id: runtime.reject_financial_outbox_fact_mutation
+    kind: function
+    owner: runtime
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: runtime
   - id: runtime.release_lease
     kind: function
     owner: runtime
@@ -240,6 +640,22 @@ objects:
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+  - id: shopapp:function:access.consume_action_proof(text,text,text,text,text,text,text,text,bigint,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    role: shopapp
+    objectType: function
+    target: access.consume_action_proof(text,text,text,text,text,text,text,text,bigint,text)
+    privilege: execute
+  - id: shopapp:function:access.issue_action_proof(text,text,text,text,text,text,text,text,bigint,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    role: shopapp
+    objectType: function
+    target: access.issue_action_proof(text,text,text,text,text,text,text,text,bigint,text)
+    privilege: execute
   - id: shopapp:function:access.membership_version(text):execute
     kind: grant
     owner: access
@@ -424,6 +840,38 @@ objects:
     objectType: function
     target: finance.account_id(text,text,text)
     privilege: execute
+  - id: shopapp:function:finance.account_role(text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.account_role(text,text)
+    privilege: execute
+  - id: shopapp:function:finance.apply_settlement_adjustment_facts(text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.apply_settlement_adjustment_facts(text)
+    privilege: execute
+  - id: shopapp:function:finance.assert_expected_version(text,text,text,bigint):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    role: shopapp
+    objectType: function
+    target: finance.assert_expected_version(text,text,text,bigint)
+    privilege: execute
+  - id: shopapp:function:finance.decide_reconciliation_repair(text,text,text,text,bigint,text,text,jsonb,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    role: shopapp
+    objectType: function
+    target: finance.decide_reconciliation_repair(text,text,text,text,bigint,text,text,jsonb,text)
+    privilege: execute
   - id: shopapp:function:finance.ensure_account(text,text,text,text):execute
     kind: grant
     owner: finance
@@ -431,6 +879,38 @@ objects:
     role: shopapp
     objectType: function
     target: finance.ensure_account(text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:finance.ledger_id(text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.ledger_id(text,text)
+    privilege: execute
+  - id: shopapp:function:finance.manage_configurable_policy(text,text,text,text,bigint,text,text,text,jsonb,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    role: shopapp
+    objectType: function
+    target: finance.manage_configurable_policy(text,text,text,text,bigint,text,text,text,jsonb,text)
+    privilege: execute
+  - id: shopapp:function:finance.mark_platform_settlement_split_paid(text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.mark_platform_settlement_split_paid(text)
+    privilege: execute
+  - id: shopapp:function:finance.period_control(text,text,text,timestampwithtimezone):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.period_control(text,text,text,timestampwithtimezone)
     privilege: execute
   - id: shopapp:function:finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone):execute
     kind: grant
@@ -440,6 +920,38 @@ objects:
     objectType: function
     target: finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone)
     privilege: execute
+  - id: shopapp:function:finance.preview_configurable_policy(text,text,text,text,bigint,text,text,jsonb,text,date,date):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    role: shopapp
+    objectType: function
+    target: finance.preview_configurable_policy(text,text,text,text,bigint,text,text,jsonb,text,date,date)
+    privilege: execute
+  - id: shopapp:function:finance.preview_reconciliation_repair(text,text,text,text,text,bigint,bigint,text,jsonb):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    role: shopapp
+    objectType: function
+    target: finance.preview_reconciliation_repair(text,text,text,text,text,bigint,bigint,text,jsonb)
+    privilege: execute
+  - id: shopapp:function:finance.read_reconciliation_repair(text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    role: shopapp
+    objectType: function
+    target: finance.read_reconciliation_repair(text,text)
+    privilege: execute
+  - id: shopapp:function:finance.refresh_trial_balance(text,text,text,boolean):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.refresh_trial_balance(text,text,text,boolean)
+    privilege: execute
   - id: shopapp:function:finance.resource_scope(text):execute
     kind: grant
     owner: finance
@@ -447,6 +959,46 @@ objects:
     role: shopapp
     objectType: function
     target: finance.resource_scope(text)
+    privilege: execute
+  - id: shopapp:function:finance.reverse_reconciliation_repair(text,text,text,text,bigint,text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    role: shopapp
+    objectType: function
+    target: finance.reverse_reconciliation_repair(text,text,text,text,bigint,text,text)
+    privilege: execute
+  - id: shopapp:function:finance.reverse(text,text,text,text,text,timestampwithtimezone):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.reverse(text,text,text,text,text,timestampwithtimezone)
+    privilege: execute
+  - id: shopapp:function:finance.subledger_consistent(text,text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.subledger_consistent(text,text,text)
+    privilege: execute
+  - id: shopapp:function:finance.submit_reconciliation_repair(text,text,text,text,bigint,text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    role: shopapp
+    objectType: function
+    target: finance.submit_reconciliation_repair(text,text,text,text,bigint,text,text)
+    privilege: execute
+  - id: shopapp:function:finance.trial_balance_hash(text,text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: function
+    target: finance.trial_balance_hash(text,text,text)
     privilege: execute
   - id: shopapp:function:identity.notification_recipient(text):execute
     kind: grant
@@ -464,6 +1016,38 @@ objects:
     objectType: function
     target: identity.resolve_session(text)
     privilege: execute
+  - id: shopapp:function:invoice.cancel_request(text,bigint):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopapp
+    objectType: function
+    target: invoice.cancel_request(text,bigint)
+    privilege: execute
+  - id: shopapp:function:invoice.create_red_request(text,text,text,jsonb,bigint):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopapp
+    objectType: function
+    target: invoice.create_red_request(text,text,text,jsonb,bigint)
+    privilege: execute
+  - id: shopapp:function:invoice.create_request(text,text,text,bigint,text[],text,jsonb,bigint):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopapp
+    objectType: function
+    target: invoice.create_request(text,text,text,bigint,text[],text,jsonb,bigint)
+    privilege: execute
+  - id: shopapp:function:invoice.decide_request(text,text,text,jsonb,bigint):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopapp
+    objectType: function
+    target: invoice.decide_request(text,text,text,jsonb,bigint)
+    privilege: execute
   - id: shopapp:function:payment.webhook_scope(text,text):execute
     kind: grant
     owner: payment
@@ -471,6 +1055,30 @@ objects:
     role: shopapp
     objectType: function
     target: payment.webhook_scope(text,text)
+    privilege: execute
+  - id: shopapp:function:referral.attach_withdrawal_claims(text,text,text[]):execute
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: function
+    target: referral.attach_withdrawal_claims(text,text,text[])
+    privilege: execute
+  - id: shopapp:function:referral.bind_first_touch(text,text,text,text,timestampwithtimezone):execute
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: function
+    target: referral.bind_first_touch(text,text,text,text,timestampwithtimezone)
+    privilege: execute
+  - id: shopapp:function:referral.has_pending_reversal(text,text):execute
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: function
+    target: referral.has_pending_reversal(text,text)
     privilege: execute
   - id: shopapp:function:reporting.cockpit(text):execute
     kind: grant
@@ -687,6 +1295,14 @@ objects:
     role: shopapp
     objectType: schema
     target: qualification
+    privilege: usage
+  - id: shopapp:schema:referral:usage
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: schema
+    target: referral
     privilege: usage
   - id: shopapp:schema:reporting:usage
     kind: grant
@@ -2872,22 +3488,6 @@ objects:
     objectType: table
     target: extension.manifest
     privilege: select
-  - id: shopapp:table:finance.account:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.account
-    privilege: delete
-  - id: shopapp:table:finance.account:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.account
-    privilege: insert
   - id: shopapp:table:finance.account:select
     kind: grant
     owner: finance
@@ -2896,22 +3496,14 @@ objects:
     objectType: table
     target: finance.account
     privilege: select
-  - id: shopapp:table:finance.account:update
+  - id: shopapp:table:finance.accountingeventrule:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopapp
     objectType: table
-    target: finance.account
-    privilege: update
-  - id: shopapp:table:finance.backfill:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.backfill
-    privilege: delete
+    target: finance.accountingeventrule
+    privilege: select
   - id: shopapp:table:finance.backfill:insert
     kind: grant
     owner: finance
@@ -2936,22 +3528,6 @@ objects:
     objectType: table
     target: finance.backfill
     privilege: update
-  - id: shopapp:table:finance.entry:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.entry
-    privilege: delete
-  - id: shopapp:table:finance.entry:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.entry
-    privilege: insert
   - id: shopapp:table:finance.entry:select
     kind: grant
     owner: finance
@@ -2960,22 +3536,6 @@ objects:
     objectType: table
     target: finance.entry
     privilege: select
-  - id: shopapp:table:finance.entry:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.entry
-    privilege: update
-  - id: shopapp:table:finance.hold:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.hold
-    privilege: delete
   - id: shopapp:table:finance.hold:insert
     kind: grant
     owner: finance
@@ -3000,22 +3560,6 @@ objects:
     objectType: table
     target: finance.hold
     privilege: update
-  - id: shopapp:table:finance.journal:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.journal
-    privilege: delete
-  - id: shopapp:table:finance.journal:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.journal
-    privilege: insert
   - id: shopapp:table:finance.journal:select
     kind: grant
     owner: finance
@@ -3024,30 +3568,14 @@ objects:
     objectType: table
     target: finance.journal
     privilege: select
-  - id: shopapp:table:finance.journal:update
+  - id: shopapp:table:finance.ledger:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopapp
     objectType: table
-    target: finance.journal
-    privilege: update
-  - id: shopapp:table:finance.period:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.period
-    privilege: delete
-  - id: shopapp:table:finance.period:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.period
-    privilege: insert
+    target: finance.ledger
+    privilege: select
   - id: shopapp:table:finance.period:select
     kind: grant
     owner: finance
@@ -3056,22 +3584,6 @@ objects:
     objectType: table
     target: finance.period
     privilege: select
-  - id: shopapp:table:finance.period:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.period
-    privilege: update
-  - id: shopapp:table:finance.periodclose:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.periodclose
-    privilege: delete
   - id: shopapp:table:finance.periodclose:insert
     kind: grant
     owner: finance
@@ -3096,22 +3608,6 @@ objects:
     objectType: table
     target: finance.periodclose
     privilege: update
-  - id: shopapp:table:finance.policy:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.policy
-    privilege: delete
-  - id: shopapp:table:finance.policy:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.policy
-    privilege: insert
   - id: shopapp:table:finance.policy:select
     kind: grant
     owner: finance
@@ -3120,22 +3616,14 @@ objects:
     objectType: table
     target: finance.policy
     privilege: select
-  - id: shopapp:table:finance.policy:update
+  - id: shopapp:table:finance.policyrevision:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
     role: shopapp
     objectType: table
-    target: finance.policy
-    privilege: update
-  - id: shopapp:table:finance.reconciliation:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.reconciliation
-    privilege: delete
+    target: finance.policyrevision
+    privilege: select
   - id: shopapp:table:finance.reconciliation:insert
     kind: grant
     owner: finance
@@ -3160,14 +3648,6 @@ objects:
     objectType: table
     target: finance.reconciliation
     privilege: update
-  - id: shopapp:table:finance.reconciliationitem:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.reconciliationitem
-    privilege: delete
   - id: shopapp:table:finance.reconciliationitem:insert
     kind: grant
     owner: finance
@@ -3192,14 +3672,6 @@ objects:
     objectType: table
     target: finance.reconciliationitem
     privilege: update
-  - id: shopapp:table:finance.settlement:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.settlement
-    privilege: delete
   - id: shopapp:table:finance.settlement:insert
     kind: grant
     owner: finance
@@ -3224,14 +3696,6 @@ objects:
     objectType: table
     target: finance.settlement
     privilege: update
-  - id: shopapp:table:finance.settlementadjustment:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.settlementadjustment
-    privilege: delete
   - id: shopapp:table:finance.settlementadjustment:insert
     kind: grant
     owner: finance
@@ -3256,22 +3720,6 @@ objects:
     objectType: table
     target: finance.settlementadjustment
     privilege: update
-  - id: shopapp:table:finance.settlementline:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.settlementline
-    privilege: delete
-  - id: shopapp:table:finance.settlementline:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.settlementline
-    privilege: insert
   - id: shopapp:table:finance.settlementline:select
     kind: grant
     owner: finance
@@ -3280,30 +3728,6 @@ objects:
     objectType: table
     target: finance.settlementline
     privilege: select
-  - id: shopapp:table:finance.settlementline:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.settlementline
-    privilege: update
-  - id: shopapp:table:finance.split:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.split
-    privilege: delete
-  - id: shopapp:table:finance.split:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.split
-    privilege: insert
   - id: shopapp:table:finance.split:select
     kind: grant
     owner: finance
@@ -3312,30 +3736,6 @@ objects:
     objectType: table
     target: finance.split
     privilege: select
-  - id: shopapp:table:finance.split:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.split
-    privilege: update
-  - id: shopapp:table:finance.statement:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.statement
-    privilege: delete
-  - id: shopapp:table:finance.statement:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: finance.statement
-    privilege: insert
   - id: shopapp:table:finance.statement:select
     kind: grant
     owner: finance
@@ -3344,22 +3744,14 @@ objects:
     objectType: table
     target: finance.statement
     privilege: select
-  - id: shopapp:table:finance.statement:update
+  - id: shopapp:table:finance.statementaccount:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopapp
     objectType: table
-    target: finance.statement
-    privilege: update
-  - id: shopapp:table:finance.statementline:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: finance.statementline
-    privilege: delete
+    target: finance.statementaccount
+    privilege: select
   - id: shopapp:table:finance.statementline:insert
     kind: grant
     owner: finance
@@ -3384,14 +3776,22 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: update
-  - id: shopapp:table:finance.withdrawal:delete
+  - id: shopapp:table:finance.subledger:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopapp
     objectType: table
-    target: finance.withdrawal
-    privilege: delete
+    target: finance.subledger
+    privilege: select
+  - id: shopapp:table:finance.subledgerentry:select
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopapp
+    objectType: table
+    target: finance.subledgerentry
+    privilege: select
   - id: shopapp:table:finance.withdrawal:insert
     kind: grant
     owner: finance
@@ -4248,22 +4648,6 @@ objects:
     objectType: table
     target: inventory.syncstate
     privilege: update
-  - id: shopapp:table:invoice.document:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.document
-    privilege: delete
-  - id: shopapp:table:invoice.document:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.document
-    privilege: insert
   - id: shopapp:table:invoice.document:select
     kind: grant
     owner: invoice
@@ -4272,30 +4656,6 @@ objects:
     objectType: table
     target: invoice.document
     privilege: select
-  - id: shopapp:table:invoice.document:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.document
-    privilege: update
-  - id: shopapp:table:invoice.line:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.line
-    privilege: delete
-  - id: shopapp:table:invoice.line:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.line
-    privilege: insert
   - id: shopapp:table:invoice.line:select
     kind: grant
     owner: invoice
@@ -4304,22 +4664,6 @@ objects:
     objectType: table
     target: invoice.line
     privilege: select
-  - id: shopapp:table:invoice.line:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.line
-    privilege: update
-  - id: shopapp:table:invoice.profile:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.profile
-    privilege: delete
   - id: shopapp:table:invoice.profile:insert
     kind: grant
     owner: invoice
@@ -4344,22 +4688,6 @@ objects:
     objectType: table
     target: invoice.profile
     privilege: update
-  - id: shopapp:table:invoice.request:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.request
-    privilege: delete
-  - id: shopapp:table:invoice.request:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.request
-    privilege: insert
   - id: shopapp:table:invoice.request:select
     kind: grant
     owner: invoice
@@ -4368,30 +4696,6 @@ objects:
     objectType: table
     target: invoice.request
     privilege: select
-  - id: shopapp:table:invoice.request:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.request
-    privilege: update
-  - id: shopapp:table:invoice.requestline:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: invoice.requestline
-    privilege: delete
-  - id: shopapp:table:invoice.requestline:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: invoice.requestline
-    privilege: insert
   - id: shopapp:table:invoice.requestline:select
     kind: grant
     owner: invoice
@@ -4400,30 +4704,6 @@ objects:
     objectType: table
     target: invoice.requestline
     privilege: select
-  - id: shopapp:table:invoice.requestline:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: invoice.requestline
-    privilege: update
-  - id: shopapp:table:invoice.requestprofile:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: invoice.requestprofile
-    privilege: delete
-  - id: shopapp:table:invoice.requestprofile:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: invoice.requestprofile
-    privilege: insert
   - id: shopapp:table:invoice.requestprofile:select
     kind: grant
     owner: invoice
@@ -4432,30 +4712,6 @@ objects:
     objectType: table
     target: invoice.requestprofile
     privilege: select
-  - id: shopapp:table:invoice.requestprofile:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopapp
-    objectType: table
-    target: invoice.requestprofile
-    privilege: update
-  - id: shopapp:table:invoice.statusevent:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.statusevent
-    privilege: delete
-  - id: shopapp:table:invoice.statusevent:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.statusevent
-    privilege: insert
   - id: shopapp:table:invoice.statusevent:select
     kind: grant
     owner: invoice
@@ -4464,14 +4720,6 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: select
-  - id: shopapp:table:invoice.statusevent:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: invoice.statusevent
-    privilege: update
   - id: shopapp:table:marketing.campaign:delete
     kind: grant
     owner: marketing
@@ -6456,6 +6704,142 @@ objects:
     objectType: table
     target: qualification.tag
     privilege: update
+  - id: shopapp:table:referral.binding:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.binding
+    privilege: insert
+  - id: shopapp:table:referral.binding:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.binding
+    privilege: select
+  - id: shopapp:table:referral.binding:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.binding
+    privilege: update
+  - id: shopapp:table:referral.commission:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.commission
+    privilege: select
+  - id: shopapp:table:referral.commissionmovement:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.commissionmovement
+    privilege: select
+  - id: shopapp:table:referral.member:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.member
+    privilege: insert
+  - id: shopapp:table:referral.member:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.member
+    privilege: select
+  - id: shopapp:table:referral.member:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.member
+    privilege: update
+  - id: shopapp:table:referral.product:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.product
+    privilege: insert
+  - id: shopapp:table:referral.product:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.product
+    privilege: select
+  - id: shopapp:table:referral.product:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.product
+    privilege: update
+  - id: shopapp:table:referral.recoverymovement:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.recoverymovement
+    privilege: select
+  - id: shopapp:table:referral.setting:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.setting
+    privilege: insert
+  - id: shopapp:table:referral.setting:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.setting
+    privilege: select
+  - id: shopapp:table:referral.setting:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.setting
+    privilege: update
+  - id: shopapp:table:referral.withdrawalclaim:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.withdrawalclaim
+    privilege: insert
+  - id: shopapp:table:referral.withdrawalclaim:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopapp
+    objectType: table
+    target: referral.withdrawalclaim
+    privilege: select
   - id: shopapp:table:reporting.export:delete
     kind: grant
     owner: reporting
@@ -8456,6 +8840,14 @@ objects:
     objectType: function
     target: finance.account_id(text,text,text)
     privilege: execute
+  - id: shopjob:function:finance.account_role(text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.account_role(text,text)
+    privilege: execute
   - id: shopjob:function:finance.ensure_account(text,text,text,text):execute
     kind: grant
     owner: finance
@@ -8463,6 +8855,38 @@ objects:
     role: shopjob
     objectType: function
     target: finance.ensure_account(text,text,text,text)
+    privilege: execute
+  - id: shopjob:function:finance.freeze_settlement_facts(text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.freeze_settlement_facts(text)
+    privilege: execute
+  - id: shopjob:function:finance.ledger_id(text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.ledger_id(text,text)
+    privilege: execute
+  - id: shopjob:function:finance.mark_partner_settlement_split_paid(text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.mark_partner_settlement_split_paid(text)
+    privilege: execute
+  - id: shopjob:function:finance.period_control(text,text,text,timestampwithtimezone):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.period_control(text,text,text,timestampwithtimezone)
     privilege: execute
   - id: shopjob:function:finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone):execute
     kind: grant
@@ -8472,6 +8896,14 @@ objects:
     objectType: function
     target: finance.post(text,text,text,text,text,text,text,text,text,bigint,timestampwithtimezone)
     privilege: execute
+  - id: shopjob:function:finance.refresh_trial_balance(text,text,text,boolean):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.refresh_trial_balance(text,text,text,boolean)
+    privilege: execute
   - id: shopjob:function:finance.resource_scope(text):execute
     kind: grant
     owner: finance
@@ -8479,6 +8911,86 @@ objects:
     role: shopjob
     objectType: function
     target: finance.resource_scope(text)
+    privilege: execute
+  - id: shopjob:function:finance.reverse(text,text,text,text,text,timestampwithtimezone):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.reverse(text,text,text,text,text,timestampwithtimezone)
+    privilege: execute
+  - id: shopjob:function:finance.subledger_consistent(text,text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.subledger_consistent(text,text,text)
+    privilege: execute
+  - id: shopjob:function:finance.trial_balance_hash(text,text,text):execute
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: function
+    target: finance.trial_balance_hash(text,text,text)
+    privilege: execute
+  - id: shopjob:function:invoice.claim_issue(text):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopjob
+    objectType: function
+    target: invoice.claim_issue(text)
+    privilege: execute
+  - id: shopjob:function:invoice.fail_issue(text,text,text):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopjob
+    objectType: function
+    target: invoice.fail_issue(text,text,text)
+    privilege: execute
+  - id: shopjob:function:invoice.finalize_issue(text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopjob
+    objectType: function
+    target: invoice.finalize_issue(text,text,text,text,text,text,text)
+    privilege: execute
+  - id: shopjob:function:invoice.register_issue_artifact(text,text,text,text,text,text):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopjob
+    objectType: function
+    target: invoice.register_issue_artifact(text,text,text,text,text,text)
+    privilege: execute
+  - id: shopjob:function:invoice.release_issue_claim(text,text):execute
+    kind: grant
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    role: shopjob
+    objectType: function
+    target: invoice.release_issue_claim(text,text)
+    privilege: execute
+  - id: shopjob:function:referral.bind_first_touch(text,text,text,text,timestampwithtimezone):execute
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: function
+    target: referral.bind_first_touch(text,text,text,text,timestampwithtimezone)
+    privilege: execute
+  - id: shopjob:function:referral.has_pending_reversal(text,text):execute
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: function
+    target: referral.has_pending_reversal(text,text)
     privilege: execute
   - id: shopjob:function:reporting.cockpit(text):execute
     kind: grant
@@ -8719,6 +9231,14 @@ objects:
     role: shopjob
     objectType: schema
     target: qualification
+    privilege: usage
+  - id: shopjob:schema:referral:usage
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: schema
+    target: referral
     privilege: usage
   - id: shopjob:schema:reporting:usage
     kind: grant
@@ -10960,22 +11480,6 @@ objects:
     objectType: table
     target: extension.manifest
     privilege: select
-  - id: shopjob:table:finance.account:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.account
-    privilege: delete
-  - id: shopjob:table:finance.account:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.account
-    privilege: insert
   - id: shopjob:table:finance.account:select
     kind: grant
     owner: finance
@@ -10984,22 +11488,14 @@ objects:
     objectType: table
     target: finance.account
     privilege: select
-  - id: shopjob:table:finance.account:update
+  - id: shopjob:table:finance.accountingeventrule:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopjob
     objectType: table
-    target: finance.account
-    privilege: update
-  - id: shopjob:table:finance.backfill:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.backfill
-    privilege: delete
+    target: finance.accountingeventrule
+    privilege: select
   - id: shopjob:table:finance.backfill:insert
     kind: grant
     owner: finance
@@ -11024,22 +11520,6 @@ objects:
     objectType: table
     target: finance.backfill
     privilege: update
-  - id: shopjob:table:finance.entry:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.entry
-    privilege: delete
-  - id: shopjob:table:finance.entry:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.entry
-    privilege: insert
   - id: shopjob:table:finance.entry:select
     kind: grant
     owner: finance
@@ -11048,22 +11528,6 @@ objects:
     objectType: table
     target: finance.entry
     privilege: select
-  - id: shopjob:table:finance.entry:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.entry
-    privilege: update
-  - id: shopjob:table:finance.hold:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.hold
-    privilege: delete
   - id: shopjob:table:finance.hold:insert
     kind: grant
     owner: finance
@@ -11088,22 +11552,6 @@ objects:
     objectType: table
     target: finance.hold
     privilege: update
-  - id: shopjob:table:finance.journal:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.journal
-    privilege: delete
-  - id: shopjob:table:finance.journal:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.journal
-    privilege: insert
   - id: shopjob:table:finance.journal:select
     kind: grant
     owner: finance
@@ -11112,30 +11560,14 @@ objects:
     objectType: table
     target: finance.journal
     privilege: select
-  - id: shopjob:table:finance.journal:update
+  - id: shopjob:table:finance.ledger:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopjob
     objectType: table
-    target: finance.journal
-    privilege: update
-  - id: shopjob:table:finance.period:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.period
-    privilege: delete
-  - id: shopjob:table:finance.period:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.period
-    privilege: insert
+    target: finance.ledger
+    privilege: select
   - id: shopjob:table:finance.period:select
     kind: grant
     owner: finance
@@ -11144,22 +11576,6 @@ objects:
     objectType: table
     target: finance.period
     privilege: select
-  - id: shopjob:table:finance.period:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.period
-    privilege: update
-  - id: shopjob:table:finance.periodclose:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.periodclose
-    privilege: delete
   - id: shopjob:table:finance.periodclose:insert
     kind: grant
     owner: finance
@@ -11184,22 +11600,6 @@ objects:
     objectType: table
     target: finance.periodclose
     privilege: update
-  - id: shopjob:table:finance.policy:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.policy
-    privilege: delete
-  - id: shopjob:table:finance.policy:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.policy
-    privilege: insert
   - id: shopjob:table:finance.policy:select
     kind: grant
     owner: finance
@@ -11208,22 +11608,6 @@ objects:
     objectType: table
     target: finance.policy
     privilege: select
-  - id: shopjob:table:finance.policy:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.policy
-    privilege: update
-  - id: shopjob:table:finance.reconciliation:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.reconciliation
-    privilege: delete
   - id: shopjob:table:finance.reconciliation:insert
     kind: grant
     owner: finance
@@ -11248,14 +11632,6 @@ objects:
     objectType: table
     target: finance.reconciliation
     privilege: update
-  - id: shopjob:table:finance.reconciliationitem:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.reconciliationitem
-    privilege: delete
   - id: shopjob:table:finance.reconciliationitem:insert
     kind: grant
     owner: finance
@@ -11280,14 +11656,6 @@ objects:
     objectType: table
     target: finance.reconciliationitem
     privilege: update
-  - id: shopjob:table:finance.settlement:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.settlement
-    privilege: delete
   - id: shopjob:table:finance.settlement:insert
     kind: grant
     owner: finance
@@ -11312,14 +11680,6 @@ objects:
     objectType: table
     target: finance.settlement
     privilege: update
-  - id: shopjob:table:finance.settlementadjustment:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.settlementadjustment
-    privilege: delete
   - id: shopjob:table:finance.settlementadjustment:insert
     kind: grant
     owner: finance
@@ -11344,22 +11704,6 @@ objects:
     objectType: table
     target: finance.settlementadjustment
     privilege: update
-  - id: shopjob:table:finance.settlementline:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.settlementline
-    privilege: delete
-  - id: shopjob:table:finance.settlementline:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.settlementline
-    privilege: insert
   - id: shopjob:table:finance.settlementline:select
     kind: grant
     owner: finance
@@ -11368,30 +11712,6 @@ objects:
     objectType: table
     target: finance.settlementline
     privilege: select
-  - id: shopjob:table:finance.settlementline:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.settlementline
-    privilege: update
-  - id: shopjob:table:finance.split:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.split
-    privilege: delete
-  - id: shopjob:table:finance.split:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.split
-    privilege: insert
   - id: shopjob:table:finance.split:select
     kind: grant
     owner: finance
@@ -11400,30 +11720,6 @@ objects:
     objectType: table
     target: finance.split
     privilege: select
-  - id: shopjob:table:finance.split:update
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.split
-    privilege: update
-  - id: shopjob:table:finance.statement:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.statement
-    privilege: delete
-  - id: shopjob:table:finance.statement:insert
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: finance.statement
-    privilege: insert
   - id: shopjob:table:finance.statement:select
     kind: grant
     owner: finance
@@ -11432,22 +11728,14 @@ objects:
     objectType: table
     target: finance.statement
     privilege: select
-  - id: shopjob:table:finance.statement:update
+  - id: shopjob:table:finance.statementaccount:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopjob
     objectType: table
-    target: finance.statement
-    privilege: update
-  - id: shopjob:table:finance.statementline:delete
-    kind: grant
-    owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: finance.statementline
-    privilege: delete
+    target: finance.statementaccount
+    privilege: select
   - id: shopjob:table:finance.statementline:insert
     kind: grant
     owner: finance
@@ -11472,14 +11760,22 @@ objects:
     objectType: table
     target: finance.statementline
     privilege: update
-  - id: shopjob:table:finance.withdrawal:delete
+  - id: shopjob:table:finance.subledger:select
     kind: grant
     owner: finance
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     role: shopjob
     objectType: table
-    target: finance.withdrawal
-    privilege: delete
+    target: finance.subledger
+    privilege: select
+  - id: shopjob:table:finance.subledgerentry:select
+    kind: grant
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    role: shopjob
+    objectType: table
+    target: finance.subledgerentry
+    privilege: select
   - id: shopjob:table:finance.withdrawal:insert
     kind: grant
     owner: finance
@@ -12368,22 +12664,6 @@ objects:
     objectType: table
     target: inventory.syncstate
     privilege: update
-  - id: shopjob:table:invoice.document:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.document
-    privilege: delete
-  - id: shopjob:table:invoice.document:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.document
-    privilege: insert
   - id: shopjob:table:invoice.document:select
     kind: grant
     owner: invoice
@@ -12392,30 +12672,6 @@ objects:
     objectType: table
     target: invoice.document
     privilege: select
-  - id: shopjob:table:invoice.document:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.document
-    privilege: update
-  - id: shopjob:table:invoice.line:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.line
-    privilege: delete
-  - id: shopjob:table:invoice.line:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.line
-    privilege: insert
   - id: shopjob:table:invoice.line:select
     kind: grant
     owner: invoice
@@ -12424,22 +12680,6 @@ objects:
     objectType: table
     target: invoice.line
     privilege: select
-  - id: shopjob:table:invoice.line:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.line
-    privilege: update
-  - id: shopjob:table:invoice.profile:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.profile
-    privilege: delete
   - id: shopjob:table:invoice.profile:insert
     kind: grant
     owner: invoice
@@ -12464,22 +12704,6 @@ objects:
     objectType: table
     target: invoice.profile
     privilege: update
-  - id: shopjob:table:invoice.request:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.request
-    privilege: delete
-  - id: shopjob:table:invoice.request:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.request
-    privilege: insert
   - id: shopjob:table:invoice.request:select
     kind: grant
     owner: invoice
@@ -12488,30 +12712,6 @@ objects:
     objectType: table
     target: invoice.request
     privilege: select
-  - id: shopjob:table:invoice.request:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.request
-    privilege: update
-  - id: shopjob:table:invoice.requestline:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: invoice.requestline
-    privilege: delete
-  - id: shopjob:table:invoice.requestline:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: invoice.requestline
-    privilege: insert
   - id: shopjob:table:invoice.requestline:select
     kind: grant
     owner: invoice
@@ -12520,30 +12720,6 @@ objects:
     objectType: table
     target: invoice.requestline
     privilege: select
-  - id: shopjob:table:invoice.requestline:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: invoice.requestline
-    privilege: update
-  - id: shopjob:table:invoice.requestprofile:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: invoice.requestprofile
-    privilege: delete
-  - id: shopjob:table:invoice.requestprofile:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: invoice.requestprofile
-    privilege: insert
   - id: shopjob:table:invoice.requestprofile:select
     kind: grant
     owner: invoice
@@ -12552,30 +12728,6 @@ objects:
     objectType: table
     target: invoice.requestprofile
     privilege: select
-  - id: shopjob:table:invoice.requestprofile:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-    role: shopjob
-    objectType: table
-    target: invoice.requestprofile
-    privilege: update
-  - id: shopjob:table:invoice.statusevent:delete
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.statusevent
-    privilege: delete
-  - id: shopjob:table:invoice.statusevent:insert
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.statusevent
-    privilege: insert
   - id: shopjob:table:invoice.statusevent:select
     kind: grant
     owner: invoice
@@ -12584,14 +12736,6 @@ objects:
     objectType: table
     target: invoice.statusevent
     privilege: select
-  - id: shopjob:table:invoice.statusevent:update
-    kind: grant
-    owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: invoice.statusevent
-    privilege: update
   - id: shopjob:table:marketing.campaign:delete
     kind: grant
     owner: marketing
@@ -14608,6 +14752,166 @@ objects:
     objectType: table
     target: qualification.tag
     privilege: update
+  - id: shopjob:table:referral.binding:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.binding
+    privilege: insert
+  - id: shopjob:table:referral.binding:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.binding
+    privilege: select
+  - id: shopjob:table:referral.binding:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.binding
+    privilege: update
+  - id: shopjob:table:referral.commission:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.commission
+    privilege: insert
+  - id: shopjob:table:referral.commission:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.commission
+    privilege: select
+  - id: shopjob:table:referral.commission:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.commission
+    privilege: update
+  - id: shopjob:table:referral.commissionmovement:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.commissionmovement
+    privilege: insert
+  - id: shopjob:table:referral.commissionmovement:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.commissionmovement
+    privilege: select
+  - id: shopjob:table:referral.member:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.member
+    privilege: insert
+  - id: shopjob:table:referral.member:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.member
+    privilege: select
+  - id: shopjob:table:referral.member:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.member
+    privilege: update
+  - id: shopjob:table:referral.product:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.product
+    privilege: insert
+  - id: shopjob:table:referral.product:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.product
+    privilege: select
+  - id: shopjob:table:referral.product:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.product
+    privilege: update
+  - id: shopjob:table:referral.recoverymovement:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.recoverymovement
+    privilege: insert
+  - id: shopjob:table:referral.recoverymovement:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.recoverymovement
+    privilege: select
+  - id: shopjob:table:referral.setting:insert
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.setting
+    privilege: insert
+  - id: shopjob:table:referral.setting:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.setting
+    privilege: select
+  - id: shopjob:table:referral.setting:update
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.setting
+    privilege: update
+  - id: shopjob:table:referral.withdrawalclaim:select
+    kind: grant
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    role: shopjob
+    objectType: table
+    target: referral.withdrawalclaim
+    privilege: select
   - id: shopjob:table:reporting.export:delete
     kind: grant
     owner: reporting
@@ -17144,14 +17448,22 @@ objects:
     kind: policy
     owner: extension
     source: database/supabase/migrations/20260821051000_extension_lifecycle.sql
-  - id: finance.account.appscope
+  - id: finance.account.appread
     kind: policy
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: finance.account.jobscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: finance.accountingeventrule.appread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+  - id: finance.accountingeventrule.jobread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
   - id: finance.backfill.appscope
     kind: policy
     owner: finance
@@ -17160,10 +17472,10 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-  - id: finance.entry.appscope
+  - id: finance.entry.appread
     kind: policy
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: finance.entry.jobscope
     kind: policy
     owner: finance
@@ -17176,14 +17488,22 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
-  - id: finance.journal.appscope
+  - id: finance.journal.appread
     kind: policy
     owner: finance
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: finance.journal.jobscope
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: finance.ledger.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+  - id: finance.ledger.jobscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
   - id: finance.period.appscope
     kind: policy
     owner: finance
@@ -17208,6 +17528,10 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: finance.policyrevision.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
   - id: finance.reconciliation.appscope
     kind: policy
     owner: finance
@@ -17264,6 +17588,14 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: finance.statementaccount.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+  - id: finance.statementaccount.jobscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
   - id: finance.statementline.appscope
     kind: policy
     owner: finance
@@ -17272,6 +17604,22 @@ objects:
     kind: policy
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+  - id: finance.subledger.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+  - id: finance.subledger.jobscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+  - id: finance.subledgerentry.appscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+  - id: finance.subledgerentry.jobscope
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
   - id: finance.withdrawal.appscope
     kind: policy
     owner: finance
@@ -17492,10 +17840,10 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: invoice.document.appscope
+  - id: invoice.document.appread
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: invoice.document.jobscope
     kind: policy
     owner: invoice
@@ -17503,7 +17851,7 @@ objects:
   - id: invoice.line.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: invoice.line.jobscope
     kind: policy
     owner: invoice
@@ -17511,7 +17859,7 @@ objects:
   - id: invoice.profile.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: invoice.profile.jobscope
     kind: policy
     owner: invoice
@@ -17519,7 +17867,7 @@ objects:
   - id: invoice.request.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: invoice.request.jobscope
     kind: policy
     owner: invoice
@@ -17543,7 +17891,7 @@ objects:
   - id: invoice.statusevent.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
   - id: invoice.statusevent.jobscope
     kind: policy
     owner: invoice
@@ -18048,6 +18396,70 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: referral.binding.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.binding.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.commission.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.commission.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.commissionmovement.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.commissionmovement.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.member.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.member.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.product.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.product.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.recoverymovement.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.recoverymovement.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.setting.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.setting.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.withdrawalclaim.appscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+  - id: referral.withdrawalclaim.jobscope
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
   - id: reporting.export.appscope
     kind: policy
     owner: reporting
@@ -18588,6 +19000,122 @@ objects:
     kind: policy
     owner: voucher
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: access.decisionaudit.consoledecision
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: access.membership.consoleself
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.accessrecord.consoleauditaccessinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.accessrecord.consoleauditaccessselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.archiveref.consoleauditarchiveselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.record.consoleauditrecordinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.record.consoleauditrecordselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.recorddefault.consoleauditdefaultinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.recorddefault.consoleauditdefaultselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: organization.unitclosure.consoleclosure
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.case.consoleriskcasinsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.decision.consoleriskdecisioninsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.decision.consoleriskdecisionselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.listentry.consolerisklistselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.policy.consoleriskpolicyselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.policyversion.consoleriskversionselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.signal.consolerisksignalselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: runtime.idempotency.consoleidempotency
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: runtime.operation.consoleoperationselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: runtime.outbox.consoleoutboxinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: runtime.schemaversion.consoleschemaversionselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.conversation.consolesupportconversationselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.conversation.consolesupportconversationupdate
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.evidence.consolesupportevidenceselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.history.consolesupporthistoryinsert
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.message.consolesupportmessageinsert
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.message.consolesupportmessageselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.ticket.consolesupportticketselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.ticket.consolesupportticketupdate
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: access
     kind: schema
     owner: access
@@ -18684,6 +19212,10 @@ objects:
     kind: schema
     owner: qualification
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
+  - id: referral
+    kind: schema
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
   - id: reporting
     kind: schema
     owner: reporting
@@ -18708,6 +19240,11 @@ objects:
     kind: schema
     owner: voucher
     source: database/supabase/migrations/20260821011000_create_domain_schemas.sql
+  - id: access.actionproof
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    rls: true
   - id: access.decisionaudit
     kind: table
     owner: access
@@ -18732,6 +19269,16 @@ objects:
     kind: table
     owner: access
     source: database/supabase/migrations/20260821013000_create_identity_access.sql
+    rls: true
+  - id: access.policyactionauthorization
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    rls: true
+  - id: access.repairactionauthorization
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
     rls: true
   - id: access.role
     kind: table
@@ -19063,6 +19610,11 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+  - id: finance.accountingeventrule
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    rls: true
   - id: finance.backfill
     kind: table
     owner: finance
@@ -19083,6 +19635,11 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+  - id: finance.ledger
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    rls: true
   - id: finance.period
     kind: table
     owner: finance
@@ -19098,6 +19655,16 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+  - id: finance.policypreview
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    rls: true
+  - id: finance.policyrevision
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    rls: true
   - id: finance.reconciliation
     kind: table
     owner: finance
@@ -19107,6 +19674,26 @@ objects:
     kind: table
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    rls: true
+  - id: finance.reconciliationrepair
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    rls: true
+  - id: finance.reconciliationrepairauthorization
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    rls: true
+  - id: finance.reconciliationrepaireffect
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    rls: true
+  - id: finance.reconciliationrepairline
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
     rls: true
   - id: finance.settlement
     kind: table
@@ -19133,10 +19720,25 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
     rls: true
+  - id: finance.statementaccount
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    rls: true
   - id: finance.statementline
     kind: table
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    rls: true
+  - id: finance.subledger
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    rls: true
+  - id: finance.subledgerentry
+    kind: table
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     rls: true
   - id: finance.withdrawal
     kind: table
@@ -19282,6 +19884,11 @@ objects:
     kind: table
     owner: invoice
     source: database/supabase/migrations/20260821022000_create_finance_channel.sql
+    rls: true
+  - id: invoice.issueartifact
+    kind: table
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
     rls: true
   - id: invoice.line
     kind: table
@@ -19628,6 +20235,46 @@ objects:
     owner: qualification
     source: database/supabase/migrations/20260821016000_create_qualification.sql
     rls: true
+  - id: referral.binding
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
+  - id: referral.commission
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
+  - id: referral.commissionmovement
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
+  - id: referral.member
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
+  - id: referral.product
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
+  - id: referral.recoverymovement
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
+  - id: referral.setting
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
+  - id: referral.withdrawalclaim
+    kind: table
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    rls: true
   - id: reporting.export
     kind: table
     owner: reporting
@@ -19928,6 +20575,16 @@ objects:
     owner: voucher
     source: database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql
     rls: true
+  - id: access.membership.protect_root_owner
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: access
+  - id: access.membershiprole.protect_root_owner
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: access
   - id: audit.accessrecord.immutable
     kind: trigger
     owner: audit
@@ -19948,10 +20605,20 @@ objects:
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+  - id: finance.accountingeventrule.finance_accountingeventrule_immutable
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
   - id: finance.entry.finance_entry_immutable
     kind: trigger
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    operationalOwner: finance
+  - id: finance.entry.finance_entry_posted_balance
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
     operationalOwner: finance
   - id: finance.journal.finance_journal_balance
     kind: trigger
@@ -19963,21 +20630,216 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+  - id: finance.journal.finance_journal_posted_balance
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.journal.finance_repair_journal_write
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.policypreview.finance_policypreview_guard
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.policyrevision.finance_policyrevision_immutable
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql
+    operationalOwner: finance
+  - id: finance.reconciliation.finance_reconciliation_statement_contract
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828091000_finance_reconciliation_integrity.sql
+    operationalOwner: finance
+  - id: finance.reconciliationrepair.finance_reconciliationrepair_guard
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.reconciliationrepaireffect.finance_reconciliationrepaireffect_immutable
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
+  - id: finance.reconciliationrepairline.finance_reconciliationrepairline_immutable
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql
+    operationalOwner: finance
   - id: finance.settlementline.finance_settlementline_immutable
     kind: trigger
     owner: finance
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: finance
+  - id: finance.statement.finance_statement_immutable
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.statementaccount.finance_statementaccount_final_immutable
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.subledgerentry.finance_subledgerentry_immutable
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260828093000_finance_accounting_integrity.sql
+    operationalOwner: finance
+  - id: finance.withdrawal.finance_withdrawal_referral_claim_state
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: finance
+  - id: finance.withdrawal.finance_withdrawal_referral_reversal_guard
+    kind: trigger
+    owner: finance
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: finance
+  - id: identity.credential.protect_root_owner
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: identity
+  - id: identity.principal.protect_root_owner
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: identity
+  - id: invoice.document.invoice_document_immutable
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.line.invoice_line_snapshot_guard
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.line.invoice_line_z_integrity
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.profile.invoice_profile_owner_immutable
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.request.invoice_request_create_guard
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.request.invoice_request_fact_immutable
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.request.invoice_request_failed_audit
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
   - id: invoice.requestline.invoice_requestline_immutable
     kind: trigger
     owner: invoice
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
+    operationalOwner: invoice
+  - id: invoice.requestline.invoice_requestline_snapshot_guard
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.requestline.invoice_requestline_z_integrity
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
     operationalOwner: invoice
   - id: invoice.requestprofile.invoice_requestprofile_immutable
     kind: trigger
     owner: invoice
     source: database/supabase/migrations/20260821043000_finance_lifecycle.sql
     operationalOwner: invoice
+  - id: invoice.requestprofile.invoice_requestprofile_snapshot_guard
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: invoice.statusevent.invoice_statusevent_immutable
+    kind: trigger
+    owner: invoice
+    source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
+    operationalOwner: invoice
+  - id: member.profile.protect_root_owner
+    kind: trigger
+    owner: member
+    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    operationalOwner: member
+  - id: payment.attempt.payment_attempt_provider_effect_immutable
+    kind: trigger
+    owner: payment
+    source: database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql
+    operationalOwner: payment
+  - id: payment.capture.payment_capture_provider_effect_immutable
+    kind: trigger
+    owner: payment
+    source: database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql
+    operationalOwner: payment
+  - id: payment.observation.payment_observation_provider_effect_immutable
+    kind: trigger
+    owner: payment
+    source: database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql
+    operationalOwner: payment
+  - id: payment.providerattempt.payment_providerattempt_provider_effect_immutable
+    kind: trigger
+    owner: payment
+    source: database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql
+    operationalOwner: payment
+  - id: referral.commissionmovement.referral_commissionmovement_apply
+    kind: trigger
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.commissionmovement.referral_commissionmovement_immutable
+    kind: trigger
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.recoverymovement.referral_recoverymovement_immutable
+    kind: trigger
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.recoverymovement.referral_recoverymovement_validate
+    kind: trigger
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.withdrawalclaim.referral_withdrawalclaim_identity
+    kind: trigger
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: referral.withdrawalclaim.referral_withdrawalclaim_validate
+    kind: trigger
+    owner: referral
+    source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
+    operationalOwner: referral
+  - id: runtime.inbox.runtime_financial_inbox_fact_immutable
+    kind: trigger
+    owner: runtime
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: runtime
+  - id: runtime.outbox.runtime_financial_outbox_fact_immutable
+    kind: trigger
+    owner: runtime
+    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: runtime
   - id: support.history.support_history_immutable
     kind: trigger
     owner: support

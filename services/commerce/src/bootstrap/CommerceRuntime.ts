@@ -3,6 +3,7 @@ import type { Telemetry } from '@shop/telemetry';
 import type { OperationId } from '@shop/contract';
 import { apiReturnTargets, WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { PgActionProofVerifier } from '../foundation/security/ActionProof';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
@@ -119,6 +120,8 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     new SystemClock(),
     risk,
     new PgDecisionSink(pool),
+    undefined,
+    new PgActionProofVerifier(pool),
   );
   const handlers = new Map<OperationId, OperationHandler>();
   return {

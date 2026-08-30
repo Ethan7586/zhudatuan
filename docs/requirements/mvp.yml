@@ -169,6 +169,21 @@ requirements:
       - pricing.offers.read
       - inventory.availability.read
       - marketing.campaigns.read
+      - referral.settings.read
+      - referral.settings.manage
+      - referral.products.read
+      - referral.products.manage
+      - referral.members.read
+      - referral.members.apply
+      - referral.members.approve
+      - referral.members.disqualify
+      - referral.bindings.read
+      - referral.bindings.create
+      - referral.commissions.read
+      - referral.earnings.read
+      - referral.links.read
+      - referral.withdrawals.read
+      - referral.withdrawals.create
       - cart.current.read
       - cart.items.put
       - cart.items.batch
@@ -216,6 +231,7 @@ requirements:
       - order
       - payment
       - pricing
+      - referral
       - runtime
       - verification
       - voucher
@@ -240,6 +256,7 @@ requirements:
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
+      - services/commerce/src/modules/referral
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -947,6 +964,11 @@ requirements:
       - finance.statements.export
       - finance.reconciliations.manage
       - finance.reconciliations.read
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.submit
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.reverse
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -960,8 +982,12 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
+      - invoice.operatorprofiles.read
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -1311,6 +1337,7 @@ requirements:
       - identity.invitations.revoke
       - identity.members.create
       - identity.members.manage
+      - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
@@ -2127,6 +2154,11 @@ requirements:
       - finance.statements.export
       - finance.reconciliations.manage
       - finance.reconciliations.read
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.submit
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.reverse
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -2140,8 +2172,12 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
+      - invoice.operatorprofiles.read
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -2493,6 +2529,7 @@ requirements:
       - identity.invitations.revoke
       - identity.members.create
       - identity.members.manage
+      - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset

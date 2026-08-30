@@ -1,7 +1,17 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { expectWcagAA } from './Accessibility';
 import { consoleSession } from './Fixtures';
-import { financePreviewOverview, financePreviewReconciliations, financeReconciliationPreviewPage, type FinanceReconciliationPreviewPage, type FinanceReconciliationRecord } from './FinancePreviewFixtures';
+import {
+  financeAuditPreviewPage,
+  financePolicyPreviewPage,
+  financePreviewEntriesPage,
+  financePreviewOverview,
+  financePreviewReconciliations,
+  financePreviewSettlementsPage,
+  financeReconciliationPreviewPage,
+  type FinanceReconciliationPreviewPage,
+  type FinanceReconciliationRecord,
+} from './FinancePreviewFixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
@@ -9,11 +19,11 @@ const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: Object.freeze([previewScope]),
-  permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliations.read']),
-  capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read']),
+  permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
+  capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policies.read', 'finance.audit.read']),
   assurance: Object.freeze({ level: 3, verified: 'step-up' }),
 });
-const financeConsoleOrigin = process.env.FINANCE_CONSOLE_ORIGIN ?? 'http://127.0.0.1:4173';
+const financeConsoleOrigin = process.env.FINANCE_CONSOLE_ORIGIN ?? 'http://127.0.0.1:4183';
 const financeUrl = `${financeConsoleOrigin}/scopes/platform/platform%3Apreview/finance`;
 const differenceReconciliation = financePreviewReconciliations[0]!;
 
@@ -68,7 +78,7 @@ test('Console 财务工作台呈现参考页头、状态、页签与服务端对
   await startPreview.getByRole('button', { name: '我知道了' }).click();
   await expect(startPreview).toBeHidden();
 
-  await expectWcagAA(page);
+  await expectFinanceWcagAA(page);
   expectFinanceReadsOnly(api);
 });
 
@@ -124,6 +134,12 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
   await page.goto(financeUrl);
 
   const table = page.getByRole('table', { name: '支付对账批次' });
+  const balancedRow = table.getByRole('row', { name: /RCN-20260824-ALIPAY-001/ });
+  await expect(balancedRow.getByRole('button', { name: '无差异' })).toBeDisabled();
+  await balancedRow.getByText('RCN-20260824-ALIPAY-001', { exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '差异处理 · 复核预览' })).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.has('selected')).toBe(false);
+
   const differenceRow = table.getByRole('row', { name: /RCN-20260824-WECHAT-001/ });
   const checkbox = differenceRow.getByRole('checkbox', { name: '选择对账批次 RCN-20260824-WECHAT-001' });
   await checkbox.check();
@@ -139,7 +155,7 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
   await expect.poll(() => drawer.evaluate((element) => element.contains(document.activeElement))).toBe(true);
   await expect(drawer.getByRole('heading', { name: '差异处理 · 复核预览' })).toBeVisible();
   await expect(drawer.getByText('DIFF-20260824-0001', { exact: true })).toBeVisible();
-  await expect(drawer.getByText('服务端预览', { exact: true })).toBeVisible();
+  await expect(drawer.getByText('本地安全预览', { exact: true })).toBeVisible();
   await expect(drawer.getByText('待提交复核', { exact: true })).toBeVisible();
   await expect(drawer.getByText(/版本 v7 · 预览有效至/)).toBeVisible();
   await expect(drawer.getByText('本方案将重放缺失记账事件；不修改或删除原支付、渠道账单及历史账本。', { exact: true })).toBeVisible();
@@ -161,7 +177,7 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
   await drawer.getByRole('button', { name: '提交财务复核' }).click();
   await expect(drawer.getByRole('status')).toHaveText('提交已安全拦截：尚未闭合二次验证、proof、幂等与权威回读。');
   expectNoWrites(api);
-  await expectWcagAA(page);
+  await expectFinanceWcagAA(page);
 
   await page.keyboard.press('Escape');
   await expect(drawer).toBeHidden();
@@ -180,33 +196,127 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
   expectFinanceReadsOnly(api);
 });
 
-test('Console 财务无权威读合同的页签诚实显示不可用', async ({ page }) => {
+test('Console 退款、规则与审计页签读取各自权威合同且全程只读', async ({ page }) => {
   const api = consoleFinanceApi(page);
   await api.install();
   await page.goto(financeUrl);
   await expect(page.getByRole('table', { name: '支付对账批次' })).toBeVisible();
 
   const tabs = page.getByRole('navigation', { name: '财务工作台' });
-  const unavailableTabs = [
-    ['退款对账', 'refunds', '现有 reconciliation read 没有退款类型筛选或退款专用权威读模型。'],
-    ['对账规则', 'rules', '当前只有高风险策略写 Operation，没有可验证的规则读取合同。'],
-    ['审计记录', 'audit', '当前没有财务审计记录的独立 read Operation。'],
-  ] as const;
-  for (const [label, key, detail] of unavailableTabs) {
-    await tabs.getByRole('button', { name: label }).click();
-    await expect.poll(() => new URL(page.url()).searchParams.get('tab')).toBe(key);
-    await expect(tabs.getByRole('button', { name: label })).toHaveAttribute('aria-current', 'page');
-    const unavailable = page.locator('.financeunavailabletab');
-    await expect(unavailable).toHaveAttribute('role', 'status');
-    await expect(unavailable.getByText('CAPABILITY UNAVAILABLE', { exact: true })).toBeVisible();
-    await expect(unavailable.getByRole('heading', { name: label })).toBeVisible();
-    await expect(unavailable.getByText(detail, { exact: false })).toBeVisible();
-    await expect(unavailable.getByText(/不会用演示数据替代生产事实/)).toBeVisible();
-    await expect(page.getByRole('table', { name: '支付对账批次' })).toHaveCount(0);
-  }
+  await tabs.getByRole('button', { name: '退款对账' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('tab')).toBe('refunds');
+  const refundTable = page.getByRole('table', { name: '退款对账批次' });
+  await expect(refundTable).toBeVisible();
+  await expect(refundTable.locator('tbody tr')).toHaveCount(1);
+  await expect(refundTable.getByText('RCN-20260824-WECHAT-REFUND-001', { exact: true })).toBeVisible();
+  expect(lastFinanceQuery(api).get('kind')).toBe('refund');
+
+  await page.goto(`${financeUrl}?tab=rules&limit=20&cursor=start`);
+  await expect(tabs.getByRole('button', { name: '对账规则' })).toHaveAttribute('aria-current', 'page');
+  const policies = page.getByRole('table', { name: '对账规则' });
+  await expect(policies).toBeVisible();
+  await expect(policies.locator('tbody tr')).toHaveCount(3);
+  await expect(policies.getByText('finance.policy.reconciliation.wechat.payment', { exact: true })).toBeVisible();
+  await expect(policies.getByText(/"matchMode":"one-to-one"/)).toBeVisible();
+  await expect(policies.getByText('v3', { exact: true })).toBeVisible();
+  await expect(policies.getByRole('button', { name: /编辑规则 .*（未启用）/ })).toHaveCount(3);
+  for (const button of await policies.getByRole('button', { name: /编辑规则 .*（未启用）/ }).all()) await expect(button).toBeDisabled();
+  await expect(page.getByText(/LOCAL PREVIEW FIXTURE/)).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('limit')).toBe('20');
+  expect(new URL(page.url()).searchParams.get('cursor')).toBe('start');
+  const policyCall = financeCalls(api)
+    .filter((call) => call.path === '/api/v1/finance/policies')
+    .at(-1);
+  expect(policyCall).toBeDefined();
+  expect(new URLSearchParams(policyCall?.query).get('limit')).toBe('20');
+  expect(new URLSearchParams(policyCall?.query).get('cursor')).toBe('start');
+
+  const ruleKinds = page.getByRole('navigation', { name: '财务规则类型' });
+  await ruleKinds.getByRole('button', { name: '税务规则' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('ruleKind')).toBe('tax');
+  const taxRules = page.getByRole('table', { name: '税务规则' });
+  await expect(taxRules.locator('tbody tr')).toHaveCount(3);
+  await expect(taxRules.getByText('中国标准商品增值税', { exact: true })).toBeVisible();
+  await expect(taxRules.getByText('13%', { exact: true })).toBeVisible();
+  await taxRules.getByRole('button', { name: '编辑' }).first().click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('mode')).toBe('edit');
+  const editor = page.getByRole('dialog', { name: '财务规则配置' });
+  await editor.getByLabel('规则名称').fill('中国标准商品增值税（本地新版本）');
+  await editor.getByRole('button', { name: '保存本地草稿' }).click();
+  await expect(editor.getByText(/中国标准商品增值税（本地新版本）/)).toBeVisible();
+  await expect.poll(() => new URL(page.url()).searchParams.get('mode')).toBe('view');
+  await editor.getByRole('button', { name: '关闭财务规则配置' }).click();
+
+  await ruleKinds.getByRole('button', { name: '字段定义' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('ruleKind')).toBe('fields');
+  const fields = page.getByRole('table', { name: '字段定义' });
+  await expect(fields.locator('tbody tr')).toHaveCount(7);
+  await expect(fields.getByText('免税原因', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '新增字段定义' }).click();
+  const fieldEditor = page.getByRole('dialog', { name: '财务规则配置' });
+  await fieldEditor.getByLabel('字段代码').fill('payable.approval_note');
+  await fieldEditor.getByLabel('显示名称').fill('应付审批备注');
+  await fieldEditor.getByLabel('适用对象').selectOption('accounts_payable');
+  await fieldEditor.getByLabel('数据类型').selectOption('text');
+  await fieldEditor.getByRole('button', { name: '保存本地草稿' }).click();
+  await expect(fieldEditor.getByText(/payable.approval_note/)).toBeVisible();
+  await fieldEditor.getByRole('button', { name: '关闭财务规则配置' }).click();
+  await expect(fields.locator('tbody tr')).toHaveCount(8);
+  const newField = fields.getByRole('row', { name: /应付审批备注/ });
+  await newField.getByRole('button', { name: '编辑' }).click();
+  await fieldEditor.getByLabel('显示名称').fill('应付审批说明');
+  await fieldEditor.getByRole('button', { name: '保存本地草稿' }).click();
+  await expect(fieldEditor.getByText(/应付审批说明/)).toBeVisible();
+  await fieldEditor.getByRole('button', { name: '关闭财务规则配置' }).click();
+
+  await tabs.getByRole('button', { name: '审计记录' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('tab')).toBe('audit');
+  await expect(tabs.getByRole('button', { name: '审计记录' })).toHaveAttribute('aria-current', 'page');
+  const audits = page.getByRole('table', { name: '审计记录' });
+  await expect(audits).toBeVisible();
+  await expect(audits.locator('tbody tr')).toHaveCount(3);
+  await expect(audits.getByText('finance.reconciliations.approve', { exact: true })).toBeVisible();
+  await expect(audits.getByText(/member · actor:finance:reviewer/)).toBeVisible();
+  await expect(audits.getByText('4'.repeat(64), { exact: true })).toBeVisible();
+  await expect(audits.getByText(/"fourEyes":true/)).toBeVisible();
+  await expect(audits.getByRole('button', { name: /审计记录 .* 不可变/ })).toHaveCount(3);
+  for (const button of await audits.getByRole('button', { name: /审计记录 .* 不可变/ }).all()) await expect(button).toBeDisabled();
+  await expectFinanceWcagAA(page);
 
   await tabs.getByRole('button', { name: '支付对账' }).click();
   await expect(page.getByRole('table', { name: '支付对账批次' })).toBeVisible();
+  expectFinanceReadsOnly(api);
+});
+
+test('Console 财务结算与分录页签读取 authoritative-shaped preview 合同', async ({ page }) => {
+  const api = consoleFinanceApi(page);
+  await api.install();
+  await page.goto(financeUrl);
+  const tabs = page.getByRole('navigation', { name: '财务工作台' });
+  await expect(page.getByRole('table', { name: '支付对账批次' })).toBeVisible();
+
+  await tabs.getByRole('button', { name: '结算单' }).click();
+  await expect(page).toHaveURL(/\/finance\/settlements$/);
+  await expect(tabs.getByRole('button', { name: '结算单' })).toHaveAttribute('aria-current', 'page');
+  const settlements = page.getByRole('table', { name: '结算' });
+  await expect(settlements).toBeVisible();
+  await expect(settlements.locator('tbody tr')).toHaveCount(1);
+  await expect(settlements.getByText('partner:mall:huimin · 2026-08-24', { exact: true })).toBeVisible();
+  await expect(settlements.getByText('¥426.00', { exact: true })).toBeVisible();
+
+  await tabs.getByRole('button', { name: '账本分录' }).click();
+  await expect(page).toHaveURL(/\/finance\/entries$/);
+  await expect(tabs.getByRole('button', { name: '账本分录' })).toHaveAttribute('aria-current', 'page');
+  const entries = page.getByRole('table', { name: '财务分录' });
+  await expect(entries).toBeVisible();
+  await expect(entries.locator('tbody tr')).toHaveCount(2);
+  await expect(entries.getByText('cash.wechat', { exact: true })).toBeVisible();
+  await expect(entries.getByText('payment:PAY-20260824-0119', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/资金写操作保持关闭/)).toBeVisible();
+  await expect(page.getByText(/CONTRACT_RESPONSE_INVALID/)).toHaveCount(0);
+
+  expect(financeCalls(api).filter((call) => call.path === '/api/v1/finance/settlements').length).toBeGreaterThan(0);
+  expect(financeCalls(api).filter((call) => call.path === '/api/v1/finance/entries').length).toBeGreaterThan(0);
   expectFinanceReadsOnly(api);
 });
 
@@ -245,7 +355,11 @@ function consoleFinanceApi(page: Page, reconciliations: (call: OperationCall) =>
     .get('/api/v1/identity/session', previewSession)
     .get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' })
     .get('/api/v1/finance/overview', financePreviewOverview)
-    .get('/api/v1/finance/reconciliations', reconciliations);
+    .get('/api/v1/finance/reconciliations', reconciliations)
+    .get('/api/v1/finance/entries', financePreviewEntriesPage)
+    .get('/api/v1/finance/settlements', financePreviewSettlementsPage)
+    .get('/api/v1/finance/policies', (call) => financePolicyPreviewPage(new URLSearchParams(call.query)))
+    .get('/api/v1/finance/audits', (call) => financeAuditPreviewPage(new URLSearchParams(call.query)));
 }
 
 function financeCalls(api: OperationMock): readonly OperationCall[] {
@@ -265,9 +379,8 @@ function lastFinanceQuery(api: OperationMock): URLSearchParams {
 function expectFinanceReadsOnly(api: OperationMock): void {
   const calls = financeCalls(api);
   expect(calls.length).toBeGreaterThan(0);
-  expect(reconciliationCalls(api).length).toBeGreaterThan(0);
   expect(new Set(calls.map((call) => call.method))).toEqual(new Set(['GET']));
-  expect(calls.every((call) => ['/api/v1/finance/overview', '/api/v1/finance/reconciliations'].includes(call.path))).toBe(true);
+  expect(calls.every((call) => ['/api/v1/finance/overview', '/api/v1/finance/reconciliations', '/api/v1/finance/entries', '/api/v1/finance/settlements', '/api/v1/finance/policies', '/api/v1/finance/audits'].includes(call.path))).toBe(true);
   expect(calls.every((call) => call.headers['x-scope-hint'] === 'platform:preview')).toBe(true);
   expect(calls.every((call) => call.headers['x-access-version'] === '1')).toBe(true);
   expectNoWrites(api);
@@ -276,6 +389,23 @@ function expectFinanceReadsOnly(api: OperationMock): void {
 
 function expectNoWrites(api: OperationMock): void {
   expect(api.calls.filter((call) => call.method !== 'GET')).toEqual([]);
+}
+
+async function expectFinanceWcagAA(page: Page): Promise<void> {
+  const builder = new AxeBuilder({ page }).include('.financeworkspace').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']);
+  if (await page.locator('.financedrawer').isVisible()) builder.include('.financedrawer');
+  const result = await builder.analyze();
+  expect(result.violations, describeViolations(result.violations)).toEqual([]);
+}
+
+function describeViolations(
+  violations: readonly {
+    id: string;
+    impact?: string | null;
+    nodes: readonly { target: readonly string[] }[];
+  }[]
+): string {
+  return violations.map((violation) => `${violation.impact ?? 'unknown'} ${violation.id}: ${violation.nodes.map((node) => node.target.join(' ')).join(', ')}`).join('\n');
 }
 
 const financePaginationRows: readonly FinanceReconciliationRecord[] = Object.freeze(

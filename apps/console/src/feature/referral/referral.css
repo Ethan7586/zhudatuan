@@ -1,0 +1,136 @@
+.referralworkspace {
+  min-width: 0;
+}
+
+.referralworkspace .resourceactions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.referraltabs {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: var(--sw-space-0-5);
+  overflow-x: auto;
+  padding-bottom: 0.125rem;
+}
+
+.referraltabs button {
+  min-height: 2.25rem;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-1-5);
+  font: inherit;
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.referraltabs button:hover {
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text);
+}
+
+.referraltabs button[aria-current='page'] {
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+}
+
+.referralstate {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-1);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 750;
+}
+
+.referralstate[data-state='active'],
+.referralstate[data-state='settled'] {
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+
+.referralstate[data-state='pending'],
+.referralstate[data-state='settling'] {
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+
+.referralstate[data-state='reversed'],
+.referralstate[data-state='disqualified'],
+.referralstate[data-state='expired'] {
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+
+.referralreviewactions {
+  display: inline-flex;
+  gap: var(--sw-space-1);
+}
+
+.referralreviewactions button {
+  min-height: 1.875rem;
+  border: 0.0625rem solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-1);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.referralreviewactions button:first-child {
+  border-color: var(--sw-success);
+  color: var(--sw-success-strong);
+}
+
+.referralreviewactions button:disabled {
+  border-color: var(--sw-border);
+  color: var(--sw-disabled);
+  cursor: not-allowed;
+}
+
+.referralactionmessage {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+  margin: var(--sw-space-2) 0 0;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  padding: var(--sw-space-1-5);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.referralactionmessage.iserror {
+  border-color: var(--sw-danger);
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+
+.referralactionmessage.issuccess {
+  border-color: var(--sw-success);
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+
+@media (max-width: 720px) {
+  .referralworkspace .resourceactions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .referraltabs {
+    width: 100%;
+  }
+}

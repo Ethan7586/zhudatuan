@@ -16,6 +16,7 @@ const scopeLabels = Object.freeze({ platform: '平台', distributor: '分销', t
 const financeProfessionalFeatures = new Set(['entries', 'statements', 'reconciliations', 'settlements', 'withdrawals', 'invoices']);
 const accessProfessionalFeatures = new Set(['access', 'members']);
 const governanceProfessionalFeatures = new Set(['qualification', 'notification']);
+const referralProfessionalFeatures = new Set(['referralsettings', 'referralproducts', 'referralreview', 'referralbindings', 'referralwithdrawals', 'referralpromotion']);
 
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
@@ -37,9 +38,13 @@ export function ScopeShell() {
       : professional !== undefined && financeProfessionalFeatures.has(professional.featureKey) ? 'finance'
         : professional !== undefined && accessProfessionalFeatures.has(professional.featureKey) ? 'access'
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
-            : professional?.featureKey ?? workstation?.key;
+            : professional !== undefined && referralProfessionalFeatures.has(professional.featureKey) ? 'referral'
+              : professional?.featureKey ?? workstation?.key;
   const logout = useMutation({
-    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, { accessVersion: context.session.accessVersion })),
+    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
+      accessVersion: context.session.accessVersion,
+      ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+    })),
     onSuccess: () => {
       queryClient.clear();
       window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
@@ -63,7 +68,10 @@ export function ScopeShell() {
   };
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
-    navigateAfterCancel(scopePath(context.scope, suffix));
+    const targetScope = suffix.startsWith('referral/') && context.scope.kind !== 'mall'
+      ? context.scopes.find((scope) => scope.kind === 'mall') ?? context.scope
+      : context.scope;
+    navigateAfterCancel(scopePath(targetScope, suffix));
   };
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);

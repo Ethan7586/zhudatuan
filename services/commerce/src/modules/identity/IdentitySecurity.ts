@@ -3,6 +3,8 @@ import { reject, type OperationDatabase } from '../../foundation/application/Mod
 import type { OperationUsecase } from '../../foundation/application/OperationHandler';
 import type { RiskGate } from '../../foundation/security/RiskGate';
 
+export const MAX_LOGIN_FAILURES = 10;
+
 export async function assertPublicRisk(risk: RiskGate, request: Parameters<OperationUsecase['invoke']>[0], subject: string, client: string): Promise<void> {
   const { outcome } = await risk.evaluate({
     actor: { id: `public:${subject.slice(0, 24)}`, session: `public:${client.slice(0, 24)}`, membership: 'public', credentialVersion: 0,
@@ -50,8 +52,8 @@ export async function recordLoginFailure(database: OperationDatabase, keys: read
     values($1,$2,clock_timestamp(),1,null) on conflict(subject_hash,client_hash) do update set
       failures=case when identity.loginattempt.window_started_at<clock_timestamp()-interval '15 minutes' then 1 else identity.loginattempt.failures+1 end,
       window_started_at=case when identity.loginattempt.window_started_at<clock_timestamp()-interval '15 minutes' then clock_timestamp() else identity.loginattempt.window_started_at end,
-      locked_until=case when (case when identity.loginattempt.window_started_at<clock_timestamp()-interval '15 minutes' then 1 else identity.loginattempt.failures+1 end)>=5
-        then clock_timestamp()+interval '15 minutes' else identity.loginattempt.locked_until end`, [subject, client]);
+      locked_until=case when (case when identity.loginattempt.window_started_at<clock_timestamp()-interval '15 minutes' then 1 else identity.loginattempt.failures+1 end)>=$3
+        then clock_timestamp()+interval '15 minutes' else identity.loginattempt.locked_until end`, [subject, client, MAX_LOGIN_FAILURES]);
 }
 
 export async function consumeChallengeRate(database: OperationDatabase, keys: readonly (readonly [string, string])[]): Promise<void> {
@@ -66,10 +68,14 @@ export async function consumeChallengeRate(database: OperationDatabase, keys: re
 }
 
 export async function consumeChallenge(database: OperationDatabase, challenge: string, code: string,
-  digest: (id: string, code: string) => string, principal?: string): Promise<{ principal_id: string | null }> {
+  digest: (id: string, code: string) => string, principal?: string,
+  expected: Readonly<{ purpose?: string; destinationHash?: string }> = {}): Promise<{ principal_id: string | null }> {
   const result = await database.query<{ principal_id: string | null }>(`update identity.challenge set consumed_at=clock_timestamp(),attempts=attempts+1
     where id=$1 and code_hash=$2 and consumed_at is null and expires_at>clock_timestamp() and attempts<10
-      and ($3::text is null or principal_id=$3) returning principal_id`, [challenge, digest(challenge, code), principal ?? null]);
+      and ($3::text is null or principal_id=$3)
+      and ($4::text is null or purpose=$4)
+      and ($5::text is null or destination_hash=$5)
+    returning principal_id`, [challenge, digest(challenge, code), principal ?? null, expected.purpose ?? null, expected.destinationHash ?? null]);
   if (!result.rows[0]) {
     await database.query('update identity.challenge set attempts=least(10,attempts+1) where id=$1 and consumed_at is null', [challenge]);
     reject(400, 'CHALLENGE_INVALID');

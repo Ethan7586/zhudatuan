@@ -31,7 +31,8 @@ const navigationTargets: readonly NavigationTarget[] = Object.freeze([
   { key: 'applications', activeKey: 'applications', label: '築店 · 商城与应用', icon: 'building', source: 'professional' },
   { key: 'products', activeKey: 'products', label: '商品治理台', icon: 'products', source: 'workstation' },
   { key: 'orders', activeKey: 'orders', label: '订单管理系统', icon: 'orders', source: 'workstation' },
-  { key: 'channels', activeKey: 'channels', label: '渠道与分销系统', icon: 'channel', source: 'professional' },
+  { key: 'referralsettings', activeKey: 'referral', label: '分销返佣系统', icon: 'channel', source: 'professional' },
+  { key: 'channels', activeKey: 'channels', label: '渠道接入系统', icon: 'channel', source: 'professional' },
   { key: 'vouchers', activeKey: 'vouchers', label: '卡券治理台', icon: 'voucher', source: 'professional' },
   { key: 'finance', activeKey: 'finance', label: '财务与对账台', icon: 'finance', source: 'workstation' },
   { key: 'access', activeKey: 'access', label: '会员与权限', icon: 'members', source: 'professional' },
@@ -39,6 +40,8 @@ const navigationTargets: readonly NavigationTarget[] = Object.freeze([
 ]);
 
 export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, professionalRoutes, workstations, onNavigate, onToggle }: SidebarProps) {
+  const supportRoute = professionalRoutes.find(({ featureKey }) => featureKey === 'support');
+
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
@@ -64,6 +67,12 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
           </button>;
         })}
       </nav>
+      {supportRoute ? <nav aria-label="客服系统" className="sidebarsupport">
+        <button type="button" onClick={() => onNavigate(supportRoute.suffix)} aria-label="客服系统"
+          aria-current={active === 'support' ? 'page' : undefined} title={collapsed ? '客服系统' : undefined}>
+          <ShellIcon name="support" /><span className="sidebarlabel">客服系统</span>
+        </button>
+      </nav> : null}
       <div className="sidebarprofile">
         <span className="sidebarprofileavatar" aria-hidden="true">{avatarLetter(displayName)}</span>
         <span className="sidebarprofilecopy"><strong>{displayName}</strong><small>{roleLabel}</small></span>

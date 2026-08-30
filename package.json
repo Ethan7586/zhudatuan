@@ -24,6 +24,7 @@
     "local:migrate": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Migrate.ts",
     "local:seed": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Seed.ts",
     "local:verify": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/Verify.ts",
+    "local:otp": "node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs --import tsx tools/seed/src/CopyRegistrationOtp.ts",
     "dev:api": "npm run build:commerce && node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs services/commerce/dist/ApiMain.js",
     "dev:jobs": "npm run build:commerce && node --env-file=services/commerce/.env.local tools/localinfra/src/Launch.mjs services/commerce/dist/JobsMain.js",
     "dev:console": "npm run dev --workspace @shop/console",

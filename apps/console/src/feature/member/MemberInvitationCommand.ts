@@ -1,0 +1,22 @@
+import { createFetchIdentityInvitationsCreate } from '@shop/sdk/identity';
+import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { consoleCommand } from '../../shared/api/Client';
+import { appConfig } from '../../shared/config/AppConfig';
+import { memberInvitationCommand, MemberInvitationReceiptSchema, type MemberInvitationDraft } from './MemberInvitationSchema';
+
+const invitationsCreate = createFetchIdentityInvitationsCreate(appConfig.apiBaseUrl);
+
+export async function createMemberInvitation(context: ConsoleContext, draft: MemberInvitationDraft, signal?: AbortSignal) {
+  const csrfToken = context.session.csrf;
+  if (csrfToken === undefined) throw new Error('INVITATION_CSRF_MISSING');
+  const body = memberInvitationCommand(draft);
+  const value = await invitationsCreate(
+    { body },
+    consoleCommand(context.scope, {
+      accessVersion: context.session.accessVersion,
+      csrfToken,
+      ...(signal === undefined ? {} : { signal }),
+    })
+  );
+  return MemberInvitationReceiptSchema.parse(value);
+}

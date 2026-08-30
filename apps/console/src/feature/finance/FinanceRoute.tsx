@@ -1,26 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
+import { FinanceAuthorityTab } from './FinanceAuthorityTabs';
 import { FinanceColumnSettings } from './FinanceColumnSettings';
-import { FinanceFilters, emptyFinanceFilter } from './FinanceFilters';
+import { FinanceFilters } from './FinanceFilters';
 import { FinanceHeader, type FinanceHeaderAction } from './FinanceHeader';
 import { FinanceIcon } from './FinanceIcon';
 import { financeKey, readFinance } from './FinanceQuery';
 import { FinanceTabs } from './FinanceTabs';
 import { FinancePagination, ReconciliationTable, defaultFinanceColumns, type FinanceColumnKey } from './ReconciliationTable';
 import { ReconciliationDrawer } from './ReconciliationDrawer';
-import { financeReconciliationKey, isFinancePreviewContext, readFinanceReconciliations } from './FinanceWorkspaceQuery';
+import { financeReconciliationKey, isFinancePreviewContext, readFinanceReconciliations, type FinanceReconciliationQuery } from './FinanceWorkspaceQuery';
 import { FinanceTabSchema, type FinanceFilter, type FinanceTab } from './FinanceWorkspaceSchema';
 import './FinanceWorkspace.css';
 import './FinanceFilters.css';
 import './FinanceTable.css';
+import './FinanceAuthority.css';
+import './FinancePolicyEditor.css';
 import './FinanceDrawer.css';
 import './FinanceReview.css';
 import './FinanceResponsive.css';
-
-const previewOnlyKeys = ['q', 'reconPeriod', 'channel', 'mall', 'status', 'difference'] as const;
 
 export function Component() {
   const context = useConsoleContext();
@@ -29,18 +30,21 @@ export function Component() {
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<FinanceColumnKey>>(defaultFinanceColumns);
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [headerAction, setHeaderAction] = useState<FinanceHeaderAction>();
+  const searchRef = useRef(new URLSearchParams(search));
+  const searchKey = search.toString();
   const scopeKey = `${context.scope.kind}:${context.scope.id}`;
   const previousScope = useRef(scopeKey);
   const previewContext = isFinancePreviewContext(context);
   const tab = readTab(search);
-  const filter = readFilter(search, previewContext);
+  const filter = readFilter(search);
   const limit = readLimit(search.get('limit'));
   const cursor = search.get('cursor') ?? undefined;
-  const queryInput = { ...filter, limit, ...(cursor === undefined ? {} : { cursor }) };
+  const kind: FinanceReconciliationQuery['kind'] = tab === 'refunds' ? 'refund' : 'payment';
+  const queryInput = { ...filter, kind, limit, ...(cursor === undefined ? {} : { cursor }) };
   const query = useQuery({
     queryKey: financeReconciliationKey(context, queryInput),
     queryFn: ({ signal }) => readFinanceReconciliations(context, queryInput, signal),
-    enabled: tab === 'payments',
+    enabled: tab === 'payments' || tab === 'refunds',
   });
   const overviewQuery = useQuery({
     queryKey: financeKey(context),
@@ -51,32 +55,36 @@ export function Component() {
   const overviewPreview = previewContext && overviewQuery.data?.preview?.source === 'local-preview' ? overviewQuery.data.preview : undefined;
   const statusSummary = overviewPreview ?? (previewEnabled ? page?.preview : undefined);
   const selectedId = search.get('selected') ?? undefined;
-  const selectedRow = page?.items.find((row) => row.id === selectedId);
+  const selectedRow = page?.items.find((row) => row.id === selectedId && row.items.some((item) => item.state === 'difference' || item.state === 'resolutionpending'));
+
+  useEffect(() => {
+    searchRef.current = new URLSearchParams(searchKey);
+  }, [searchKey]);
+
+  const updateSearch = useCallback(
+    (mutate: (next: URLSearchParams) => void, replace = false) => {
+      const next = new URLSearchParams(searchRef.current);
+      mutate(next);
+      searchRef.current = next;
+      setSearch(next, { replace });
+    },
+    [setSearch]
+  );
 
   useEffect(() => {
     const scopeChanged = previousScope.current !== scopeKey;
     previousScope.current = scopeKey;
-    const hasPreviewOnly = previewOnlyKeys.some((key) => search.has(key));
-    if (!scopeChanged && (previewContext || !hasPreviewOnly)) return;
-    const next = new URLSearchParams(search);
-    if (scopeChanged) {
+    if (!scopeChanged) return;
+    updateSearch((next) => {
       next.delete('cursor');
       next.delete('selected');
-    }
-    if (!previewContext) previewOnlyKeys.forEach((key) => next.delete(key));
-    setSearch(next, { replace: true });
-  }, [previewContext, scopeKey, search, setSearch]);
+    }, true);
+  }, [scopeKey, updateSearch]);
 
-  const updateSearch = (mutate: (next: URLSearchParams) => void, replace = false) => {
-    setSearch(
-      (current) => {
-        const next = new URLSearchParams(current);
-        mutate(next);
-        return next;
-      },
-      { replace }
-    );
-  };
+  useEffect(() => {
+    if (page === undefined || selectedId === undefined || selectedRow !== undefined) return;
+    updateSearch((next) => next.delete('selected'), true);
+  }, [page, selectedId, selectedRow, updateSearch]);
   const applyFilters = (value: FinanceFilter) =>
     updateSearch((next) => {
       setValue(next, 'q', value.q);
@@ -85,6 +93,15 @@ export function Component() {
       setValue(next, 'mall', value.mall);
       setValue(next, 'status', value.status);
       setValue(next, 'difference', value.difference);
+      next.delete('cursor');
+      next.delete('selected');
+    });
+  const applyFilterPatch = (value: Partial<FinanceFilter>) =>
+    updateSearch((next) => {
+      for (const [key, parameter] of Object.entries(filterParameters) as readonly [keyof FinanceFilter, string][]) {
+        const patch = value[key];
+        if (patch !== undefined) setValue(next, parameter, patch);
+      }
       next.delete('cursor');
       next.delete('selected');
     });
@@ -146,18 +163,18 @@ export function Component() {
         }}
       />
       <FinanceTabs context={context} active={tab} />
-      {tab !== 'payments' ? (
-        <UnavailableTab tab={tab} />
+      {tab === 'rules' || tab === 'audit' ? (
+        <FinanceAuthorityTab context={context} tab={tab} queryInput={{ limit, ...(cursor === undefined ? {} : { cursor }) }} previewContext={previewContext} onLimit={setLimit} onCursor={setCursor} />
       ) : (
         <>
           <div className="financetoolbararea">
-            <FinanceFilters value={filter} previewEnabled={previewContext} facets={previewEnabled ? page?.preview?.facets : undefined} columnsOpen={columnsOpen} onApply={applyFilters} onColumns={() => setColumnsOpen((open) => !open)} />
+            <FinanceFilters value={filter} enabled facets={page?.facets ?? page?.preview?.facets} columnsOpen={columnsOpen} onApply={applyFilters} onPatch={applyFilterPatch} onColumns={() => setColumnsOpen((open) => !open)} />
             <FinanceColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
           </div>
           {!previewContext ? (
             <p className="financeproductionboundary">
               <FinanceIcon name="shield" />
-              生产范围仅展示服务端实际返回；关键词与业务筛选等待权威读合同。
+              当前结果、筛选与游标分页均来自服务端权威读模型；浏览器不重算全量状态或金额。
             </p>
           ) : null}
           {query.isPending ? (
@@ -186,7 +203,16 @@ export function Component() {
           ) : null}
           {page === undefined || page.items.length === 0 ? null : (
             <>
-              <ReconciliationTable page={page} previewEnabled={previewEnabled} visible={visibleColumns} selected={selectedRows} onToggle={toggleRow} onToggleAll={toggleAll} onOpen={openRow} />
+              <ReconciliationTable
+                caption={tab === 'refunds' ? '退款对账批次' : '支付对账批次'}
+                page={page}
+                previewEnabled={previewEnabled}
+                visible={visibleColumns}
+                selected={selectedRows}
+                onToggle={toggleRow}
+                onToggleAll={toggleAll}
+                onOpen={openRow}
+              />
               <FinancePagination page={page} previewEnabled={previewEnabled} limit={limit} onLimit={setLimit} onCursor={setCursor} />
             </>
           )}
@@ -197,29 +223,11 @@ export function Component() {
   );
 }
 
-function UnavailableTab({ tab }: Readonly<{ tab: Exclude<FinanceTab, 'payments'> }>) {
-  const detail =
-    tab === 'refunds'
-      ? ['退款对账', '现有 reconciliation read 没有退款类型筛选或退款专用权威读模型。']
-      : tab === 'rules'
-        ? ['对账规则', '当前只有高风险策略写 Operation，没有可验证的规则读取合同。']
-        : ['审计记录', '当前没有财务审计记录的独立 read Operation。'];
-  return (
-    <section className="financeunavailabletab" role="status">
-      <FinanceIcon name="shield" />
-      <p>CAPABILITY UNAVAILABLE</p>
-      <h2>{detail[0]}</h2>
-      <span>{detail[1]} 本页不会用演示数据替代生产事实。</span>
-    </section>
-  );
-}
-
 function readTab(search: URLSearchParams): FinanceTab {
   const parsed = FinanceTabSchema.safeParse(search.get('tab') ?? 'payments');
   return parsed.success ? parsed.data : 'payments';
 }
-function readFilter(search: URLSearchParams, preview: boolean): FinanceFilter {
-  if (!preview) return emptyFinanceFilter;
+function readFilter(search: URLSearchParams): FinanceFilter {
   return { q: search.get('q') ?? '', period: search.get('reconPeriod') ?? '', channel: search.get('channel') ?? '', mall: search.get('mall') ?? '', status: search.get('status') ?? '', difference: search.get('difference') ?? '' };
 }
 function readLimit(value: string | null): number {
@@ -230,3 +238,12 @@ function setValue(search: URLSearchParams, key: string, value: string) {
   if (value === '') search.delete(key);
   else search.set(key, value);
 }
+
+const filterParameters: Readonly<Record<keyof FinanceFilter, string>> = Object.freeze({
+  q: 'q',
+  period: 'reconPeriod',
+  channel: 'channel',
+  mall: 'mall',
+  status: 'status',
+  difference: 'difference',
+});
