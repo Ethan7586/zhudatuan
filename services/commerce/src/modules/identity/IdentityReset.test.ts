@@ -5,7 +5,7 @@ import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import type { OperationRequest } from '../../foundation/application/OperationHandler';
 import { KMS_CLIENT, type KmsClient } from '../../foundation/infrastructure/KmsClient';
-import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
+import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
 import { RISK_GATE } from '../../foundation/security/RiskGate';
 import { WECHAT_IDENTITY } from './application/port/WechatIdentity';
@@ -103,7 +103,7 @@ function context(pool: DatabasePool): ModuleContext {
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
-  container.bind(SECURITY_KEYS, { identity: 'identity-key', quote: 'quote-key', session: 'session-key' });
+  container.bind(IDENTITY_SECURITY_KEYS, { identity: 'identity-key', session: 'session-key' });
   container.bind(KMS_CLIENT, {} as KmsClient);
   container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
   container.bind(WECHAT_IDENTITY, { application: () => ({ applicationHash: 'application' }), authorize: () => 'https://example.test', exchange: async () => ({ subject: 'subject' }) });

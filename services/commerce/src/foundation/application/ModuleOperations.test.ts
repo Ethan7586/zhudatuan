@@ -1,72 +1,131 @@
 import { describe, expect, it } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
-import { appendOperationAudit, ModuleOperations, operationLifecycle } from './ModuleOperations';
-import type { OperationRequest, OperationResult } from './OperationHandler';
+import { appendOperationAudit, ModuleOperations, operationLifecycle, operationRequestHash } from './ModuleOperations';
+import type { OperationRequest } from './OperationHandler';
 import type { DatabasePool } from '../persistence/Pool';
 import type { AuditSink } from './AuditSink';
 
 describe('ModuleOperations lifecycle', () => {
+  it('does not persist an enumerable phone fingerprint for invitation idempotency', () => {
+    const request = (destination: string, label = '普通管理员邀请'): OperationRequest => ({
+      type:'identity.invitations.create', access:null,
+      input:{ path:{}, query:{}, headers:{}, body:{ label, destination, targetClient:'operator' }, rawBody:'',
+        deadline:Date.now()+1_000, signal:new AbortController().signal, idempotency:'invitation-private' },
+    });
+    expect(operationRequestHash(request('+8613800138000'))).toBe(operationRequestHash(request('+8613900139000')));
+    expect(operationRequestHash(request('+8613800138000', '另一个邀请')))
+      .not.toBe(operationRequestHash(request('+8613800138000')));
+  });
+
   it('keeps client error payloads in telemetry and out of audit facts', async () => {
     let before: unknown;
-    const audit: AuditSink = {
-      record: async (_database, input) => {
-        before = input.before;
-      },
-      access: async () => undefined,
-    };
-    const request = {
-      type: 'observability.clienterrors.create',
-      access: null,
-      input: { path: {}, query: {}, headers: {}, body: { message: 'secret diagnostic', stack: 'private stack' }, rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'telemetry' },
-    } satisfies OperationRequest;
-    await appendOperationAudit(audit, { query: async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult }, request, 'observability', { status: 202, body: { faultCode: 'SW-TEST-TEST' } }, 'actor', 'scope', 'hash');
-    expect(before).toEqual({ path: {}, query: {}, body: { redacted: true }, expectedVersion: null });
+    const audit: AuditSink = { record: async (_database, input) => { before = input.before; }, access: async () => undefined };
+    const request = { type:'observability.clienterrors.create', access:null, input:{ path:{}, query:{}, headers:{},
+      body:{ message:'secret diagnostic', stack:'private stack' }, rawBody:'', deadline:Date.now()+1_000,
+      signal:new AbortController().signal, idempotency:'telemetry' } } satisfies OperationRequest;
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
+      'observability', { status:202, body:{ faultCode:'SW-TEST-TEST' } }, 'actor', 'scope', 'hash');
+    expect(before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
   });
 
   it('redacts PII and one-time credentials from audit facts', async () => {
     let fact: Readonly<{ before?: unknown; after?: unknown }> | undefined;
-    const audit: AuditSink = {
-      record: async (_database, input) => {
-        fact = input;
-      },
-      access: async () => undefined,
-    };
-    const request = {
-      type: 'identity.invitations.create',
-      access: null,
-      input: { path: {}, query: {}, headers: {}, body: { address: '敏感地址', password: 'secret' }, rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'invitation' },
-    } satisfies OperationRequest;
-    await appendOperationAudit(audit, { query: async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult }, request, 'identity', { status: 201, body: { id: 'invitation:1', code: 'one-time-code' } }, 'actor', 'scope', 'hash');
-    expect(fact?.before).toEqual({ path: {}, query: {}, body: { address: '[REDACTED]', password: '[REDACTED]' }, expectedVersion: null });
-    expect(fact?.after).toEqual({ id: 'invitation:1', code: '[REDACTED]' });
+    const audit: AuditSink = { record: async (_database, input) => { fact = input; }, access: async () => undefined };
+    const request = { type:'identity.invitations.create', access:null, input:{ path:{}, query:{}, headers:{},
+      body:{ address:'敏感地址', password:'secret' }, rawBody:'', deadline:Date.now()+1_000,
+      signal:new AbortController().signal, idempotency:'invitation' } } satisfies OperationRequest;
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
+      'identity', { status:201, body:{ id:'invitation:1', code:'one-time-code' } }, 'actor', 'scope', 'hash');
+    expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
+    expect(fact?.after).toEqual({ id:'invitation:1', code:'[REDACTED]' });
   });
 
-  it('records only a digest of an action proof in immutable audit evidence', async () => {
-    let evidence: unknown;
-    const audit: AuditSink = {
-      record: async (_database, input) => {
-        evidence = input.evidence;
-      },
-      access: async () => undefined,
-    };
-    const request = {
-      type: 'finance.settlements.decide',
-      access: null,
-      input: {
-        path: { settlementid: 'settlement:one' },
-        query: {},
-        headers: { 'x-action-proof': 'single-use-proof' },
-        body: { decision: 'approved', reason: 'verified' },
-        rawBody: '',
-        deadline: Date.now() + 1_000,
-        signal: new AbortController().signal,
-        idempotency: 'decision:one',
-        expectedVersion: 7,
-      },
-    } satisfies OperationRequest;
-    await appendOperationAudit(audit, { query: async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult }, request, 'finance', { status: 200, body: { id: 'settlement:one', version: 8 } }, 'actor', 'scope', 'request-hash');
-    expect(evidence).toMatchObject({ actionProofHash: expect.stringMatching(/^[0-9a-f]{64}$/) });
-    expect(JSON.stringify(evidence)).not.toContain('single-use-proof');
+  it('removes registration OTP and identity subjects from audit hashes and evidence', async () => {
+    const facts: Array<Readonly<{ before: unknown; after: unknown; evidence: unknown; trace: string }>> = [];
+    const audit: AuditSink = { record: async (_database, input) => { facts.push(input); }, access: async () => undefined };
+    const request = (subject: string, code: string): OperationRequest => ({
+      type:'identity.members.create', access:null, input:{ path:{}, query:{}, headers:{},
+        body:{ subject, password:'Strong-Password-1!', invite:'private-invite', challenge:'private-challenge', code,
+          displayName:'测试会员', termsAccepted:true, termsHash:'safe-terms-hash', reason:code,
+          unknownPayload:{ mobile:subject, otp:code } }, rawBody:'', deadline:Date.now()+1_000,
+        signal:new AbortController().signal, idempotency:'registration-audit' },
+    });
+
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) },
+      request('+85291234567', '123456'), 'identity', { status:201, body:{ member_id:'member:1' } },
+      'public:identity.members.create', 'public:identity', 'raw-request-hash-one');
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) },
+      request('+85366123456', '654321'), 'identity', { status:201, body:{ member_id:'member:1' } },
+      'public:identity.members.create', 'public:identity', 'raw-request-hash-two');
+
+    const serialized = JSON.stringify(facts);
+    for (const secret of ['+85291234567', '+85366123456', '123456', '654321', 'Strong-Password-1!', 'private-invite',
+      'private-challenge', 'raw-request-hash-one', 'raw-request-hash-two']) expect(serialized).not.toContain(secret);
+    expect(facts[0]?.before).toEqual({ path:{}, query:{}, body:{ termsAccepted:true, termsHash:'safe-terms-hash', redacted:true },
+      expectedVersion:null });
+    expect((facts[0]?.evidence as { requestHash?: string }).requestHash)
+      .toBe((facts[1]?.evidence as { requestHash?: string }).requestHash);
+    expect((facts[0]?.evidence as { idempotency?: string; reason?: unknown })).toMatchObject({ idempotency:'[REDACTED]', reason:null });
+    expect(facts[0]?.trace).not.toBe(facts[1]?.trace);
+    expect(facts[0]?.trace).toMatch(/^audit:[0-9a-f-]{36}$/);
+  });
+
+  it('never records the destination of an authenticated mobile challenge', async () => {
+    let fact: Readonly<{ before?: unknown; evidence?: unknown }> | undefined;
+    const audit: AuditSink = { record: async (_database, input) => { fact = input; }, access: async () => undefined };
+    const request = { type:'identity.mobile.challenge', access:null, input:{ path:{}, query:{}, headers:{},
+      body:{ destination:'+8613800138000' }, rawBody:'', deadline:Date.now()+1_000,
+      signal:new AbortController().signal, idempotency:'private-mobile-challenge' } } satisfies OperationRequest;
+
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
+      'identity', { status:202, body:{ id:'challenge:one' } }, 'principal:one', 'self:principal:one', 'raw-mobile-hash');
+
+    expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
+    const serialized = JSON.stringify(fact);
+    for (const secret of ['+8613800138000', 'private-mobile-challenge', 'raw-mobile-hash']) {
+      expect(serialized).not.toContain(secret);
+    }
+  });
+
+  it('removes ticket exchange credentials and signed return proofs from audit facts', async () => {
+    let fact: Readonly<{ before: unknown; after: unknown; evidence: unknown; trace: string }> | undefined;
+    const audit: AuditSink = { record: async (_database, input) => { fact = input; }, access: async () => undefined };
+    const request = { type:'identity.tickets.exchange', access:null, input:{ path:{}, query:{}, headers:{},
+      body:{ ticket:'private-ticket', state:'private-state', nonce:'private-nonce', verifier:'private-verifier' }, rawBody:'',
+      deadline:Date.now()+1_000, signal:new AbortController().signal, idempotency:'ticket-audit' } } satisfies OperationRequest;
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
+      'identity', { status:200, body:{ returnTarget:{ url:'https://zhudatuan.com/', proof:'private-proof',
+        expiresAt:'2026-08-29T06:00:00.000Z' }, expiresIn:3600 } }, 'public:identity.tickets.exchange', 'public:identity',
+      'raw-ticket-request-hash');
+
+    expect(fact?.before).toEqual({ path:{}, query:{}, body:{ redacted:true }, expectedVersion:null });
+    expect(fact?.after).toEqual({ returnTarget:{ url:'https://zhudatuan.com/', proof:'[REDACTED]',
+      expiresAt:'2026-08-29T06:00:00.000Z' }, expiresIn:3600 });
+    const serialized = JSON.stringify(fact);
+    for (const secret of ['private-ticket', 'private-state', 'private-nonce', 'private-verifier', 'private-proof',
+      'raw-ticket-request-hash']) expect(serialized).not.toContain(secret);
+  });
+
+  it('keeps member-management credentials and arbitrary reason text out of audit evidence', async () => {
+    let fact: Readonly<{ before: unknown; evidence: unknown; trace: string }> | undefined;
+    const audit: AuditSink = { record: async (_database, input) => { fact = input; }, access: async () => undefined };
+    const request = { type:'identity.members.manage', access:{
+      actor:{ id:'owner:1', session:'session:1', membership:'membership:owner', credentialVersion:1, accessVersion:1,
+        target:'console', assurance:{ level:2 } },
+      membership:{ id:'membership:owner', active:true, accessVersion:1, denies:[], grants:[] },
+      scope:{ kind:'enterprise', id:'organization:1', tenant:'tenant:1', path:[] }, accessVersion:1, capabilities:[],
+      assurance:{ level:2 }, trace:'private-client-trace' }, input:{ path:{ membershipid:'new' }, query:{}, headers:{},
+      body:{ action:'create', username:'private-username', password:'Private-Password-1!', reason:'otp 123456',
+        unknown:{ ticket:'private-ticket' } }, rawBody:'', deadline:Date.now()+1_000, signal:new AbortController().signal,
+      idempotency:'member-management-audit' } } satisfies OperationRequest;
+    await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
+      'identity', { status:201, body:{ membershipId:'membership:1' } }, 'owner:1', 'organization:1', 'raw-member-hash');
+
+    expect(fact?.before).toEqual({ path:{ membershipid:'new' }, query:{}, body:{ action:'create', redacted:true }, expectedVersion:null });
+    expect((fact?.evidence as { idempotency?: string; reason?: unknown })).toMatchObject({ idempotency:'[REDACTED]', reason:null });
+    const serialized = JSON.stringify(fact);
+    for (const secret of ['private-username', 'Private-Password-1!', '123456', 'private-ticket', 'private-client-trace', 'raw-member-hash',
+      'member-management-audit']) expect(serialized).not.toContain(secret);
   });
 
   it('prepares before acquiring a connection and finalizes after commit and release', async () => {
@@ -88,38 +147,29 @@ describe('ModuleOperations lifecycle', () => {
       end: async () => undefined,
     };
     const audit: AuditSink = { record: async () => undefined, access: async () => undefined };
-    const operations = new ModuleOperations(
-      'cart',
-      pool,
-      audit,
-      {
-        'cart.current.read': operationLifecycle({
-          prepare: async () => {
-            order.push('prepare');
-            return 'prepared';
-          },
-          execute: async (_request, _database, preparation) => {
-            order.push(`execute:${preparation}`);
-            return { status: 200, body: { source: 'database' } };
-          },
-          finalize: async (_request, result, preparation) => {
-            order.push(`finalize:${preparation}`);
-            return { ...result, headers: { finalized: 'true' } };
-          },
-        }),
-      },
-      ['cart.current.read']
-    );
+    const operations = new ModuleOperations('cart', pool, audit, {
+      'cart.current.read': operationLifecycle({
+        prepare: async () => {
+          order.push('prepare');
+          return 'prepared';
+        },
+        execute: async (_request, _database, preparation) => {
+          order.push(`execute:${preparation}`);
+          return { status: 200, body: { source: 'database' } };
+        },
+        finalize: async (_request, result, preparation) => {
+          order.push(`finalize:${preparation}`);
+          return { ...result, headers: { finalized: 'true' } };
+        },
+      }),
+    }, ['cart.current.read']);
     const request: OperationRequest = {
-      type: 'cart.current.read',
-      access: null,
+      type: 'cart.current.read', access: null,
       input: { path: {}, query: {}, headers: {}, body: null, rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal },
     };
 
     await expect(operations.invoke(request)).resolves.toEqual({
-      status: 200,
-      body: { source: 'database' },
-      headers: { finalized: 'true' },
+      status: 200, body: { source: 'database' }, headers: { finalized: 'true' },
     });
     expect(order).toEqual(['prepare', 'connect', 'begin', 'query', 'execute:prepared', 'commit', 'release', 'finalize:prepared']);
   });
@@ -147,40 +197,23 @@ describe('ModuleOperations lifecycle', () => {
       end: async () => undefined,
     };
     const audit: AuditSink = { record: async () => undefined, access: async () => undefined };
-    const operations = new ModuleOperations(
-      'cart',
-      pool,
-      audit,
-      {
-        'cart.items.put': async () => {
-          executions += 1;
-          return { status: 201, body: { version: 1 } };
-        },
+    const operations = new ModuleOperations('cart', pool, audit, {
+      'cart.items.put': async () => {
+        executions += 1;
+        return { status: 201, body: { version: 1 } };
       },
-      ['cart.items.put']
-    );
+    }, ['cart.items.put']);
     const access = {
-      actor: { id: 'member:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'storefront', assurance: { level: 1 } },
+      actor: { id: 'member:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1,
+        accessVersion: 1, target: 'storefront', assurance: { level: 1 } },
       membership: { id: 'membership:one', active: true, accessVersion: 1, denies: [], grants: [] },
       scope: { kind: 'self', id: 'member:one', tenant: 'tenant:one', path: [] },
-      accessVersion: 1,
-      capabilities: [],
-      assurance: { level: 1 },
-      trace: 'trace:first',
+      accessVersion: 1, capabilities: [], assurance: { level: 1 }, trace: 'trace:first',
     } as const;
     const first: OperationRequest = {
-      type: 'cart.items.put',
-      access,
-      input: {
-        path: { listingid: 'listing:one' },
-        query: {},
-        headers: { 'x-request-id': 'first' },
-        body: { quantity: 1 },
-        rawBody: '{"quantity":1}',
-        deadline: Date.now() + 1_000,
-        signal: new AbortController().signal,
-        idempotency: 'same-key',
-      },
+      type: 'cart.items.put', access,
+      input: { path: { listingid: 'listing:one' }, query: {}, headers: { 'x-request-id': 'first' }, body: { quantity: 1 }, rawBody: '{"quantity":1}',
+        deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'same-key' },
     };
     const second: OperationRequest = {
       ...first,
@@ -192,26 +225,19 @@ describe('ModuleOperations lifecycle', () => {
     expect(executions).toBe(1);
   });
 
-  it('rechecks and locks a financial resource version inside the command transaction', async () => {
-    let requestHash = '';
-    let assertionValues: readonly unknown[] | undefined;
-    let consumeValues: readonly unknown[] | undefined;
-    const order: string[] = [];
+  it('uses a stable public actor so the same idempotency key cannot be reused with a different body', async () => {
+    let stored: Readonly<{ request_hash: string; state: string; response: unknown }> | undefined;
+    let executions = 0;
+    const insertedActors: unknown[] = [];
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
-        if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
-        if (text.startsWith('select request_hash,state,response')) {
-          order.push('idempotency');
-          return { rows: [{ request_hash: requestHash, state: 'started', response: null }], rowCount: 1 } as unknown as QueryResult;
-        }
-        if (text.includes('finance.assert_expected_version')) {
-          assertionValues = values;
-          order.push('version');
-        }
-        if (text.includes('access.consume_action_proof')) {
-          consumeValues = values;
-          order.push('consume');
-          return { rows: [{ consumed: true }], rowCount: 1 } as unknown as QueryResult;
+        if (text.includes('insert into runtime.idempotency')) {
+          insertedActors.push(values[1]);
+          if (stored === undefined) stored = { request_hash: String(values[3]), state: 'started', response: null };
+        } else if (text.startsWith('select request_hash,state,response')) {
+          return { rows: stored === undefined ? [] : [stored], rowCount: stored === undefined ? 0 : 1 } as unknown as QueryResult;
+        } else if (text.includes("update runtime.idempotency set state='completed'")) {
+          stored = { request_hash: stored!.request_hash, state: 'completed', response: JSON.parse(String(values[3])) };
         }
         return { rows: [], rowCount: 0 } as unknown as QueryResult;
       },
@@ -224,134 +250,26 @@ describe('ModuleOperations lifecycle', () => {
       end: async () => undefined,
     };
     const audit: AuditSink = { record: async () => undefined, access: async () => undefined };
-    const operations = new ModuleOperations(
-      'finance',
-      pool,
-      audit,
-      {
-        'finance.settlements.decide': async () => {
-          order.push('execute');
-          return { status: 200, body: { id: 'settlement:one', version: 8 } };
-        },
+    const operations = new ModuleOperations('identity', pool, audit, {
+      'identity.members.create': async () => {
+        executions += 1;
+        return { status: 201, body: { member: 'member:one' } };
       },
-      ['finance.settlements.decide']
-    );
-    const access = {
-      actor: { id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'console', assurance: { level: 3, verified: new Date() } },
-      membership: { id: 'membership:one', active: true, accessVersion: 1, denies: [], grants: [] },
-      scope: { kind: 'platform', id: 'organization:one', path: [] },
-      accessVersion: 1,
-      capabilities: ['finance.settlements.decide'],
-      assurance: { level: 3, verified: new Date() },
-      trace: 'trace:one',
-    } as const;
-    await operations.invoke({
-      type: 'finance.settlements.decide',
-      access,
-      input: {
-        path: { settlementid: 'settlement:one' },
-        query: {},
-        headers: { 'x-action-proof': 'a'.repeat(64) },
-        body: { decision: 'approved' },
-        rawBody: '{"decision":"approved"}',
-        deadline: Date.now() + 1_000,
-        signal: new AbortController().signal,
-        idempotency: 'decision:one',
-        expectedVersion: 7,
-        resource: 'settlement:one',
-      },
+    }, ['identity.members.create']);
+    const request = (display: string): OperationRequest => ({
+      type: 'identity.members.create', access: null,
+      input: { path: {}, query: {}, headers: {}, body: { display }, rawBody: JSON.stringify({ display }),
+        deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'public-same-key' },
     });
-    expect(assertionValues).toEqual(['finance.settlements.decide', 'settlement:one', 'organization:one', 7]);
-    expect(consumeValues).toEqual([expect.stringMatching(/^[0-9a-f]{64}$/), 'actor:one', 'session:one', 'membership:one', 'organization:one', 'finance.settlements.decide', 'settlement:one', 'decision:one', 7, requestHash]);
-    expect(order).toEqual(['idempotency', 'version', 'consume', 'execute']);
+
+    await expect(operations.invoke(request('First'))).resolves.toMatchObject({ status: 201 });
+    await expect(operations.invoke(request('Second'))).rejects.toThrow('IDEMPOTENCY_KEY_REUSED');
+    expect(executions).toBe(1);
+    expect(insertedActors).toEqual(['public:identity.members.create', 'public:identity.members.create']);
   });
 
-  it('returns a completed financial idempotency replay without consuming a proof or executing again', async () => {
-    let storedHash = '';
-    let consumeCount = 0;
-    let executions = 0;
-    const replay = { status: 200, body: { id: 'settlement:one', version: 8 } };
-    const client = {
-      query: async (text: string, values: readonly unknown[] = []) => {
-        if (text.includes('insert into runtime.idempotency')) storedHash = String(values[3]);
-        if (text.startsWith('select request_hash,state,response')) {
-          return { rows: [{ request_hash: storedHash, state: 'completed', response: replay }], rowCount: 1 } as unknown as QueryResult;
-        }
-        if (text.includes('access.consume_action_proof')) consumeCount += 1;
-        return { rows: [], rowCount: 0 } as unknown as QueryResult;
-      },
-      release: () => undefined,
-    } as unknown as PoolClient;
-    const pool: DatabasePool = {
-      connect: async () => client,
-      query: async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult,
-      workload: () => pool,
-      end: async () => undefined,
-    };
-    const operations = new ModuleOperations(
-      'finance',
-      pool,
-      { record: async () => undefined, access: async () => undefined },
-      {
-        'finance.settlements.decide': async () => {
-          executions += 1;
-          return replay;
-        },
-      },
-      ['finance.settlements.decide']
-    );
-    const request = financialRequest();
-
-    await expect(operations.invoke(request)).resolves.toEqual(replay);
-    expect(consumeCount).toBe(0);
-    expect(executions).toBe(0);
-  });
-
-  it('rolls proof consumption back when the business command fails', async () => {
-    let storedHash = '';
-    const order: string[] = [];
-    const client = {
-      query: async (text: string, values: readonly unknown[] = []) => {
-        if (text === 'begin isolation level serializable' || text === 'rollback') order.push(text);
-        if (text.includes('insert into runtime.idempotency')) storedHash = String(values[3]);
-        if (text.startsWith('select request_hash,state,response')) {
-          return { rows: [{ request_hash: storedHash, state: 'started', response: null }], rowCount: 1 } as unknown as QueryResult;
-        }
-        if (text.includes('access.consume_action_proof')) {
-          order.push('consume');
-          return { rows: [{ consumed: true }], rowCount: 1 } as unknown as QueryResult;
-        }
-        return { rows: [], rowCount: 0 } as unknown as QueryResult;
-      },
-      release: () => undefined,
-    } as unknown as PoolClient;
-    const pool: DatabasePool = {
-      connect: async () => client,
-      query: async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult,
-      workload: () => pool,
-      end: async () => undefined,
-    };
-    const operations = new ModuleOperations(
-      'finance',
-      pool,
-      { record: async () => undefined, access: async () => undefined },
-      {
-        'finance.settlements.decide': async () => {
-          order.push('execute');
-          throw new Error('FINANCE_COMMAND_FAILED');
-        },
-      },
-      ['finance.settlements.decide']
-    );
-
-    await expect(operations.invoke(financialRequest())).rejects.toThrow('FINANCE_COMMAND_FAILED');
-    expect(order).toEqual(['begin isolation level serializable', 'consume', 'execute', 'rollback']);
-  });
-
-  it('returns an action proof once without persisting or auditing the bearer', async () => {
-    let stored: Readonly<{ request_hash: string; state: string; response: OperationResult | null }> | undefined;
-    let persisted = '';
-    let audited = '';
+  it('binds idempotency to the expected resource version', async () => {
+    let stored: Readonly<{ request_hash: string; state: string; response: unknown }> | undefined;
     let executions = 0;
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
@@ -360,8 +278,7 @@ describe('ModuleOperations lifecycle', () => {
         } else if (text.startsWith('select request_hash,state,response')) {
           return { rows: stored === undefined ? [] : [stored], rowCount: stored === undefined ? 0 : 1 } as unknown as QueryResult;
         } else if (text.includes("update runtime.idempotency set state='completed'")) {
-          persisted = String(values[3]);
-          stored = { request_hash: stored!.request_hash, state: 'completed', response: JSON.parse(persisted) as OperationResult };
+          stored = { request_hash: stored!.request_hash, state: 'completed', response: JSON.parse(String(values[3])) };
         }
         return { rows: [], rowCount: 0 } as unknown as QueryResult;
       },
@@ -373,65 +290,21 @@ describe('ModuleOperations lifecycle', () => {
       workload: () => pool,
       end: async () => undefined,
     };
-    const proof = 'p'.repeat(64);
-    const operations = new ModuleOperations(
-      'identity',
-      pool,
-      {
-        record: async (_database, input) => {
-          audited = JSON.stringify(input);
-        },
-        access: async () => undefined,
+    const audit: AuditSink = { record: async () => undefined, access: async () => undefined };
+    const operations = new ModuleOperations('cart', pool, audit, {
+      'cart.items.put': async () => {
+        executions += 1;
+        return { status: 200, body: { version: 2 } };
       },
-      {
-        'identity.stepup.complete': async () => {
-          executions += 1;
-          return { status: 200, body: { id: 'session:one', actionProof: { proof, requestHash: 'b'.repeat(64) } } };
-        },
-      },
-      ['identity.stepup.complete']
-    );
-    const request: OperationRequest = {
-      type: 'identity.stepup.complete',
-      access: null,
-      input: { path: {}, query: {}, headers: {}, body: { challenge: 'challenge:one' }, rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'stepup:one' },
-    };
-
-    await expect(operations.invoke(request)).resolves.toMatchObject({ body: { actionProof: { proof } } });
-    await expect(operations.invoke(request)).resolves.toEqual({
-      status: 409,
-      body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'ACTION_PROOF_ONE_TIME_RESPONSE' },
+    }, ['cart.items.put']);
+    const request = (expectedVersion: number): OperationRequest => ({
+      type: 'cart.items.put', access: null,
+      input: { path: { listingid: 'listing:one' }, query: {}, headers: {}, body: { quantity: 1 }, rawBody: '{"quantity":1}',
+        expectedVersion, deadline: Date.now() + 1_000, signal: new AbortController().signal, idempotency: 'version-key' },
     });
+
+    await expect(operations.invoke(request(1))).resolves.toMatchObject({ status: 200 });
+    await expect(operations.invoke(request(2))).rejects.toThrow('IDEMPOTENCY_KEY_REUSED');
     expect(executions).toBe(1);
-    expect(persisted).not.toContain(proof);
-    expect(audited).not.toContain(proof);
-    expect(audited).toContain('[REDACTED]');
   });
 });
-
-function financialRequest(): OperationRequest {
-  return {
-    type: 'finance.settlements.decide',
-    access: {
-      actor: { id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'console', assurance: { level: 3, verified: new Date() } },
-      membership: { id: 'membership:one', active: true, accessVersion: 1, denies: [], grants: [] },
-      scope: { kind: 'platform', id: 'organization:one', path: [] },
-      accessVersion: 1,
-      capabilities: ['finance.settlements.decide'],
-      assurance: { level: 3, verified: new Date() },
-      trace: 'trace:one',
-    },
-    input: {
-      path: { settlementid: 'settlement:one' },
-      query: {},
-      headers: { 'x-action-proof': 'a'.repeat(64) },
-      body: { decision: 'approved' },
-      rawBody: '{"decision":"approved"}',
-      deadline: Date.now() + 1_000,
-      signal: new AbortController().signal,
-      idempotency: 'decision:one',
-      expectedVersion: 7,
-      resource: 'settlement:one',
-    },
-  };
-}

@@ -1,4 +1,11 @@
+import { createFetchReferralMembersApprove, createFetchReferralMembersDisqualify } from '@shop/sdk/referral';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { consoleCommand } from '../../shared/api/Client';
+import { appConfig } from '../../shared/config/AppConfig';
+import { ReferralMemberDecisionReceiptSchema } from './ReferralSchema';
+
+const membersApprove = createFetchReferralMembersApprove(appConfig.apiBaseUrl);
+const membersDisqualify = createFetchReferralMembersDisqualify(appConfig.apiBaseUrl);
 
 export type ReferralMemberDecisionKind = 'approve' | 'disqualify';
 
@@ -10,8 +17,17 @@ export interface ReferralMemberDecision {
 
 export async function decideReferralMember(context: ConsoleContext, decision: ReferralMemberDecision, signal?: AbortSignal) {
   assertDecisionAvailable(context, decision.kind);
-  void signal;
-  throw new Error('REFERRAL_PREVIEW_READ_ONLY');
+  const csrfToken = context.session.csrf;
+  if (csrfToken === undefined) throw new Error('REFERRAL_REVIEW_CSRF_MISSING');
+  const request = consoleCommand(context.scope, {
+    accessVersion: context.session.accessVersion,
+    expectedVersion: decision.version,
+    csrfToken,
+    ...(signal === undefined ? {} : { signal }),
+  });
+  const input = { body: { member: decision.memberId } };
+  const value = decision.kind === 'approve' ? await membersApprove(input, request) : await membersDisqualify(input, request);
+  return ReferralMemberDecisionReceiptSchema.parse(value);
 }
 
 function assertDecisionAvailable(context: ConsoleContext, kind: ReferralMemberDecisionKind): void {

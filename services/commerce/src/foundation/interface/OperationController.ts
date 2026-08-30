@@ -268,17 +268,17 @@ export const OPERATION_HANDLERS = token<Map<OperationId, OperationHandler>>('ope
 export const OPERATION_AUTHORIZER = token<OperationAuthorizer>('operation.authorizer');
 
 export function registerOperationRoutes(module: string, context: ModuleContext): void {
-  registerSelectedOperationRoutes(
-    OperationCatalog.all().filter((candidate) => candidate.module === module).map((operation) => operation.id),
-    context,
-  );
+  registerRoutes(OperationCatalog.all().filter((candidate) => candidate.module === module), context);
 }
 
 export function registerSelectedOperationRoutes(operationIds: readonly OperationId[], context: ModuleContext): void {
+  registerRoutes(operationIds.map((operationId) => OperationCatalog.get(operationId)), context);
+}
+
+function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, context: ModuleContext): void {
   const handlers = context.container.get(OPERATION_HANDLERS);
   const authorizer = context.container.get(OPERATION_AUTHORIZER);
-  for (const operationId of operationIds) {
-    const operation = OperationCatalog.get(operationId);
+  for (const operation of operations) {
     const handler = handlers.get(operation.id);
     if (!handler) throw new Error(`OPERATION_HANDLER_MISSING:${operation.id}`);
     context.routes.register({ operation: operation.id, handler: async (request) => {

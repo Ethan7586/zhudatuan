@@ -22,7 +22,9 @@ begin
   end if;
   if exists(select 1 from runtime.schemaversion
     where version>'20260829054500'
-      and version not in('20260829060000','20260829210000')) then
+      and version not in(
+        '20260829060000','20260829105000','20260829190000','20260829200000','20260829201000','20260829210000'
+      )) then
     raise exception 'OWNER_OPERATOR_COVERAGE_FUTURE_HEAD_INVALID';
   end if;
   if not exists(select 1 from access.role

@@ -264,6 +264,22 @@ function hardenedHandlerSource(values: readonly OperationDefinition[]): string {
 
 function hardenedControllerSource(values: readonly OperationDefinition[]): string {
   return controllerSource(values)
+    .replace(
+      'export function registerOperationRoutes(module: string, context: ModuleContext): void {',
+      `export function registerOperationRoutes(module: string, context: ModuleContext): void {
+  registerRoutes(OperationCatalog.all().filter((candidate) => candidate.module === module), context);
+}
+
+export function registerSelectedOperationRoutes(operationIds: readonly OperationId[], context: ModuleContext): void {
+  registerRoutes(operationIds.map((operationId) => OperationCatalog.get(operationId)), context);
+}
+
+function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, context: ModuleContext): void {`
+    )
+    .replace(
+      'for (const operation of OperationCatalog.all().filter((candidate) => candidate.module === module)) {',
+      'for (const operation of operations) {'
+    )
     .replace("operation.audience === 'public' ? null", "operation.audience === 'public' || operation.audience === 'provider' ? null")
     .replace('const access = operation.audience', 'const resource = operationResource(operation.id, request);\n      const access = operation.audience')
     .replace('Object.values(request.parameters)[0]);', 'resource);')

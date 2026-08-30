@@ -278,10 +278,8 @@ begin
         =(to_jsonb(old)-'credential_version'-'version'-'updated_at')
     then return new; end if;
   end if;
-  if current_database()='zhudatuan_registration' and (
-    current_user='shopmigration'
-    or coalesce((select rolsuper from pg_roles where rolname=current_user),false)
-  ) then
+  if (current_database()='zhudatuan_registration' and current_user='shopmigration')
+    or coalesce((select rolsuper from pg_roles where rolname=current_user),false) then
     if tg_op='DELETE' then return old; end if;
     return new;
   end if;

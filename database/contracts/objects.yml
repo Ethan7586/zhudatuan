@@ -1,9 +1,59 @@
 version: 1
 objects:
+  - id: identity.challenge.session_hash
+    kind: column
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: identity
+  - id: identity.challenge.identity_challenge_secure_session_bound
+    kind: constraint
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: identity
+  - id: access.cancel_owner_transfer
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.change_zhudatuan_owner_mobile
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.commit_owner_transfer
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
   - id: access.consume_action_proof
     kind: function
     owner: access
     source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    operationalOwner: access
+  - id: access.create_owner_transfer
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.enforce_platform_owner_operator_coverage
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.enforce_platform_owner_singleton
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.ensure_imported_membership
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: access
+  - id: access.expire_owner_transfers
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: access
   - id: access.issue_action_proof
     kind: function
@@ -16,6 +66,16 @@ objects:
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: access.protect_owner_transfer_snapshot
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: access
+  - id: access.protect_platform_owner_lifecycle
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
   - id: access.protect_root_owner_membership
     kind: function
     owner: access
@@ -26,16 +86,106 @@ objects:
     owner: access
     source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
     operationalOwner: access
+  - id: access.protect_scopegrant_deny_runtime
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.protect_zhudatuan_owner
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.protect_zhudatuan_pending_operator_role
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.protect_zhudatuan_registration_access_write
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.purchase_application_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_audit_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_benefit_account_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_checkout_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_fulfillment_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_intent_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_mall_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_member_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_member_mall_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_member_scope
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_order_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_quote_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_risk_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.purchase_session_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
   - id: access.resolve_membership
     kind: function
     owner: access
-    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resolve_scope
     kind: function
     owner: access
-    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    source: database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: access.resource_scope
@@ -53,6 +203,56 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: access
+  - id: access.web_audit_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_member_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_member_scope
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_order_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_risk_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_scope_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_storefront_scope
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.zhudatuan_invitation_owner
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.zhudatuan_owner_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.zhudatuan_protected_identity
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: access
   - id: audit.reject_mutation
     kind: function
     owner: audit
@@ -63,6 +263,31 @@ objects:
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+  - id: benefit.purchase_available
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
+  - id: benefit.purchase_consume
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
+  - id: benefit.purchase_reserve
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
+  - id: benefit.web_account_balance
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: benefit
+  - id: benefit.web_ledger
+    kind: function
+    owner: benefit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: benefit
   - id: capability.membership_operations
     kind: function
     owner: capability
@@ -370,6 +595,11 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260828091000_finance_reconciliation_integrity.sql
     operationalOwner: finance
+  - id: identity.ensure_imported_principal
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: identity
   - id: identity.notification_recipient
     kind: function
     owner: identity
@@ -385,12 +615,22 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
     operationalOwner: identity
+  - id: identity.purge_expired_job_records
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: identity
   - id: identity.resolve_session
     kind: function
     owner: identity
-    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     callers:
       - services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: identity.rotate_zhudatuan_owner_password
+    kind: function
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: identity
   - id: invoice.assert_consumed_financial_proof
     kind: function
     owner: invoice
@@ -496,11 +736,21 @@ objects:
     owner: invoice
     source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
     operationalOwner: invoice
+  - id: member.ensure_imported_profile
+    kind: function
+    owner: member
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: member
   - id: member.protect_root_owner_profile
     kind: function
     owner: member
     source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
     operationalOwner: member
+  - id: member.protect_zhudatuan_invite_update
+    kind: function
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: identity
   - id: notification.resource_scope
     kind: function
     owner: notification
@@ -517,6 +767,11 @@ objects:
     source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
     callers:
       - services/commerce/src/modules/payment/PaymentWebhook.ts
+  - id: pricing.purchase_quote_immutable
+    kind: function
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: pricing
   - id: referral.apply_commission_reversal
     kind: function
     owner: referral
@@ -609,6 +864,12 @@ objects:
     owner: runtime
     source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: runtime
+  - id: runtime.claim_identity_notification_job
+    kind: function
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+    callers:
+      - services/commerce/src/foundation/application/JobRunner.ts
   - id: runtime.claim_job
     kind: function
     owner: runtime
@@ -640,6 +901,30 @@ objects:
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+  - id: shopapp:function:access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text)
+    privilege: execute
+  - id: shopapp:function:access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint)
+    privilege: execute
   - id: shopapp:function:access.consume_action_proof(text,text,text,text,text,text,text,text,bigint,text):execute
     kind: grant
     owner: access
@@ -647,6 +932,22 @@ objects:
     role: shopapp
     objectType: function
     target: access.consume_action_proof(text,text,text,text,text,text,text,text,bigint,text)
+    privilege: execute
+  - id: shopapp:function:access.create_owner_transfer(text,text,text,text,bigint,bigint):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.create_owner_transfer(text,text,text,text,bigint,bigint)
+    privilege: execute
+  - id: shopapp:function:access.expire_owner_transfers():execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.expire_owner_transfers()
     privilege: execute
   - id: shopapp:function:access.issue_action_proof(text,text,text,text,text,text,text,text,bigint,text):execute
     kind: grant
@@ -667,15 +968,23 @@ objects:
   - id: shopapp:function:access.resolve_membership(text):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     role: shopapp
     objectType: function
     target: access.resolve_membership(text)
     privilege: execute
+  - id: shopapp:function:access.resolve_scope(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_scope(text,text,text,text)
+    privilege: execute
   - id: shopapp:function:access.resolve_scope(text,text,text):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     role: shopapp
     objectType: function
     target: access.resolve_scope(text,text,text)
@@ -703,6 +1012,21 @@ objects:
     role: shopapp
     objectType: function
     target: access.scope_object(text)
+    privilege: execute
+  - id: shopapp:function:access.zhudatuan_owner_context():execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: access.zhudatuan_owner_context()
+    privilege: execute
+  - id: shopapp:function:access.zhudatuan_protected_identity(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopapp
+    objectType: function
     privilege: execute
   - id: shopapp:function:audit.scope_allowed(text):execute
     kind: grant
@@ -1011,10 +1335,18 @@ objects:
   - id: shopapp:function:identity.resolve_session(text):execute
     kind: grant
     owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     role: shopapp
     objectType: function
     target: identity.resolve_session(text)
+    privilege: execute
+  - id: shopapp:function:identity.rotate_zhudatuan_owner_password(text,text,text,text,text):execute
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: function
+    target: identity.rotate_zhudatuan_owner_password(text,text,text,text,text)
     privilege: execute
   - id: shopapp:function:invoice.cancel_request(text,bigint):execute
     kind: grant
@@ -1480,6 +1812,22 @@ objects:
     objectType: table
     target: access.membershiprole
     privilege: update
+  - id: shopapp:table:access.owneractionproof:insert
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: table
+    target: access.owneractionproof
+    privilege: insert
+  - id: shopapp:table:access.ownertransfer:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: table
+    target: access.ownertransfer
+    privilege: select
   - id: shopapp:table:access.permission:delete
     kind: grant
     owner: access
@@ -1512,6 +1860,14 @@ objects:
     objectType: table
     target: access.permission
     privilege: update
+  - id: shopapp:table:access.platformowner:select
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    role: shopapp
+    objectType: table
+    target: access.platformowner
+    privilege: select
   - id: shopapp:table:access.role:delete
     kind: grant
     owner: access
@@ -8736,6 +9092,20 @@ objects:
     objectType: view
     target: benefit.balance
     privilege: select
+  - id: shopjob:function:access.ensure_imported_membership(text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
+  - id: shopjob:function:access.zhudatuan_protected_identity(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
   - id: shopjob:function:channel.build_private_statement(text,jsonb):execute
     kind: grant
     owner: channel
@@ -8936,6 +9306,20 @@ objects:
     objectType: function
     target: finance.trial_balance_hash(text,text,text)
     privilege: execute
+  - id: shopjob:function:identity.ensure_imported_principal(text):execute
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
+  - id: shopjob:function:identity.purge_expired_job_records():execute
+    kind: grant
+    owner: identity
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
+    privilege: execute
   - id: shopjob:function:invoice.claim_issue(text):execute
     kind: grant
     owner: invoice
@@ -8975,6 +9359,13 @@ objects:
     role: shopjob
     objectType: function
     target: invoice.release_issue_claim(text,text)
+    privilege: execute
+  - id: shopjob:function:member.ensure_imported_profile(text,text,text):execute
+    kind: grant
+    owner: member
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    role: shopjob
+    objectType: function
     privilege: execute
   - id: shopjob:function:referral.bind_first_touch(text,text,text,text,timestampwithtimezone):execute
     kind: grant
@@ -9320,102 +9711,6 @@ objects:
     objectType: table
     target: access.decisionaudit
     privilege: update
-  - id: shopjob:table:access.membership:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: delete
-  - id: shopjob:table:access.membership:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: insert
-  - id: shopjob:table:access.membership:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: select
-  - id: shopjob:table:access.membership:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membership
-    privilege: update
-  - id: shopjob:table:access.membershipoverride:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: delete
-  - id: shopjob:table:access.membershipoverride:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: insert
-  - id: shopjob:table:access.membershipoverride:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: select
-  - id: shopjob:table:access.membershipoverride:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershipoverride
-    privilege: update
-  - id: shopjob:table:access.membershiprole:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: delete
-  - id: shopjob:table:access.membershiprole:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: insert
-  - id: shopjob:table:access.membershiprole:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: select
-  - id: shopjob:table:access.membershiprole:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.membershiprole
-    privilege: update
   - id: shopjob:table:access.permission:delete
     kind: grant
     owner: access
@@ -9511,38 +9806,6 @@ objects:
     role: shopjob
     objectType: table
     target: access.rolepermission
-    privilege: update
-  - id: shopjob:table:access.scopegrant:delete
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
-    privilege: delete
-  - id: shopjob:table:access.scopegrant:insert
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
-    privilege: insert
-  - id: shopjob:table:access.scopegrant:select
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
-    privilege: select
-  - id: shopjob:table:access.scopegrant:update
-    kind: grant
-    owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: access.scopegrant
     privilege: update
   - id: shopjob:table:audit.accessrecord:delete
     kind: grant
@@ -11928,38 +12191,6 @@ objects:
     objectType: table
     target: fulfillment.returnrecord
     privilege: update
-  - id: shopjob:table:identity.assurance:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: delete
-  - id: shopjob:table:identity.assurance:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: insert
-  - id: shopjob:table:identity.assurance:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: select
-  - id: shopjob:table:identity.assurance:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.assurance
-    privilege: update
   - id: shopjob:table:identity.authticket:delete
     kind: grant
     owner: identity
@@ -11992,22 +12223,6 @@ objects:
     objectType: table
     target: identity.authticket
     privilege: update
-  - id: shopjob:table:identity.challenge:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challenge
-    privilege: delete
-  - id: shopjob:table:identity.challenge:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challenge
-    privilege: insert
   - id: shopjob:table:identity.challenge:select
     kind: grant
     owner: identity
@@ -12016,14 +12231,6 @@ objects:
     objectType: table
     target: identity.challenge
     privilege: select
-  - id: shopjob:table:identity.challenge:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challenge
-    privilege: update
   - id: shopjob:table:identity.challengedelivery:delete
     kind: grant
     owner: identity
@@ -12056,22 +12263,6 @@ objects:
     objectType: table
     target: identity.challengedelivery
     privilege: update
-  - id: shopjob:table:identity.challengesecret:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challengesecret
-    privilege: delete
-  - id: shopjob:table:identity.challengesecret:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challengesecret
-    privilege: insert
   - id: shopjob:table:identity.challengesecret:select
     kind: grant
     owner: identity
@@ -12080,46 +12271,6 @@ objects:
     objectType: table
     target: identity.challengesecret
     privilege: select
-  - id: shopjob:table:identity.challengesecret:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.challengesecret
-    privilege: update
-  - id: shopjob:table:identity.credential:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: delete
-  - id: shopjob:table:identity.credential:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: insert
-  - id: shopjob:table:identity.credential:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: select
-  - id: shopjob:table:identity.credential:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.credential
-    privilege: update
   - id: shopjob:table:identity.federatedidentity:delete
     kind: grant
     owner: identity
@@ -12184,38 +12335,6 @@ objects:
     objectType: table
     target: identity.loginattempt
     privilege: update
-  - id: shopjob:table:identity.principal:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: delete
-  - id: shopjob:table:identity.principal:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: insert
-  - id: shopjob:table:identity.principal:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: select
-  - id: shopjob:table:identity.principal:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.principal
-    privilege: update
   - id: shopjob:table:identity.registrationpolicy:delete
     kind: grant
     owner: identity
@@ -12247,38 +12366,6 @@ objects:
     role: shopjob
     objectType: table
     target: identity.registrationpolicy
-    privilege: update
-  - id: shopjob:table:identity.session:delete
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
-    privilege: delete
-  - id: shopjob:table:identity.session:insert
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
-    privilege: insert
-  - id: shopjob:table:identity.session:select
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
-    privilege: select
-  - id: shopjob:table:identity.session:update
-    kind: grant
-    owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: identity.session
     privilege: update
   - id: shopjob:table:identity.wechatgrant:delete
     kind: grant
@@ -12927,38 +13014,6 @@ objects:
     role: shopjob
     objectType: table
     target: member.invite
-    privilege: update
-  - id: shopjob:table:member.profile:delete
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
-    privilege: delete
-  - id: shopjob:table:member.profile:insert
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
-    privilege: insert
-  - id: shopjob:table:member.profile:select
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
-    privilege: select
-  - id: shopjob:table:member.profile:update
-    kind: grant
-    owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: member.profile
     privilege: update
   - id: shopjob:table:notification.announcement:delete
     kind: grant
@@ -16868,34 +16923,94 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821070000_repair_decision_audit_scope.sql
+  - id: access.decisionaudit.consoledecision
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: access.decisionaudit.jobscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: access.decisionaudit.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.decisionaudit.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: access.decisionaudit.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: access.decisionaudit.zhudatuanwebapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: access.decisionaudit.zhudatuanwebapiselect
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: access.membership.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.membership.jobscope
+  - id: access.membership.consoleself
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: access.membership.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
+  - id: access.membership.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.membership.zhudatuanidentityapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.membership.zhudatuanpurchaseapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: access.membership.zhudatuanwebapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: access.membershipoverride.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.membershipoverride.jobscope
+  - id: access.membershipoverride.zhudatuanidentityapi
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: access.membershiprole.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.membershiprole.jobscope
+  - id: access.membershiprole.zhudatuanbootstrap
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
+  - id: access.membershiprole.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.membershiprole.zhudatuanidentityapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.owneractionproof.owneractionproof_shopapp
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: access.ownertransfer.ownertransfer_shopapp
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
   - id: access.permission.appscope
     kind: policy
     owner: access
@@ -16904,6 +17019,22 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: access.permission.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.permission.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.platformowner.platformowner_identityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: access.platformowner.platformowner_shopapp
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
   - id: access.role.appscope
     kind: policy
     owner: access
@@ -16912,6 +17043,14 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: access.role.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
+  - id: access.role.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: access.rolepermission.appscope
     kind: policy
     owner: access
@@ -16920,14 +17059,26 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: access.rolepermission.zhudatuanbootstrap
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: access.rolepermission.zhudatuanidentityapi
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: access.scopegrant.appscope
     kind: policy
     owner: access
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.scopegrant.jobscope
+  - id: access.scopegrant.zhudatuanidentityapi
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: access.scopegrant.zhudatuanidentityapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
   - id: audit.accessrecord.appinsert
     kind: policy
     owner: audit
@@ -16936,18 +17087,78 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+  - id: audit.accessrecord.consoleauditaccessinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.accessrecord.consoleauditaccessselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: audit.accessrecord.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: audit.accessrecord.zhudatuanbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.accessrecord.zhudatuanidentityapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.accessrecord.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.accessrecord.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.accessrecord.zhudatuansandboxbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.accessrecord.zhudatuanwebapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.accessrecord.zhudatuanwebapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: audit.archiveref.appselect
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+  - id: audit.archiveref.consoleauditarchiveselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: audit.archiveref.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: audit.archiveref.zhudatuanbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.archiveref.zhudatuanidentityapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.archiveref.zhudatuanpurchaseapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.archiveref.zhudatuansandboxbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.archiveref.zhudatuanwebapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: audit.record.appinsert
     kind: policy
     owner: audit
@@ -16956,10 +17167,58 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+  - id: audit.record.consoleauditrecordinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.record.consoleauditrecordselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: audit.record.jobscope
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: audit.record.zhudatuanbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.record.zhudatuanbootstrapinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.record.zhudatuanidentityapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: audit.record.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.record.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.record.zhudatuansandboxbootstrap
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.record.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.record.zhudatuansandboxpublicationinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: audit.record.zhudatuanwebapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: audit.record.zhudatuanwebapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: audit.recorddefault.appinsert
     kind: policy
     owner: audit
@@ -16968,6 +17227,14 @@ objects:
     kind: policy
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
+  - id: audit.recorddefault.consoleauditdefaultinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: audit.recorddefault.consoleauditdefaultselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: audit.recorddefault.jobscope
     kind: policy
     owner: audit
@@ -16988,6 +17255,10 @@ objects:
     kind: policy
     owner: benefit
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: benefit.account.zhudatuanwebapi
+    kind: policy
+    owner: benefit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: benefit.action.appscope
     kind: policy
     owner: benefit
@@ -17036,6 +17307,10 @@ objects:
     kind: policy
     owner: benefit
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
+  - id: benefit.lot.zhudatuanwebapi
+    kind: policy
+    owner: benefit
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: benefit.lotmovement.appscope
     kind: policy
     owner: benefit
@@ -17084,6 +17359,10 @@ objects:
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: capability.capability.zhudatuanidentityapi
+    kind: policy
+    owner: capability
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: capability.dependency.appscope
     kind: policy
     owner: capability
@@ -17100,6 +17379,10 @@ objects:
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: capability.entitlement.zhudatuanidentityapi
+    kind: policy
+    owner: capability
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: capability.operation.appscope
     kind: policy
     owner: capability
@@ -17108,6 +17391,10 @@ objects:
     kind: policy
     owner: capability
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: capability.operation.zhudatuanidentityapi
+    kind: policy
+    owner: capability
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: cart.cart.appscope
     kind: policy
     owner: cart
@@ -17116,6 +17403,18 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: cart.cart.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: cart.cart.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: cart.cart.zhudatuanwebapi
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: cart.item.appscope
     kind: policy
     owner: cart
@@ -17124,6 +17423,14 @@ objects:
     kind: policy
     owner: cart
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: cart.item.zhudatuanpurchaseapi
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: cart.item.zhudatuanwebapi
+    kind: policy
+    owner: cart
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.availabilitycity.appscope
     kind: policy
     owner: catalog
@@ -17156,6 +17463,14 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.category.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.category.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.classificationrule.appscope
     kind: policy
     owner: catalog
@@ -17192,6 +17507,22 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.listing.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.listing.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.listing.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.listing.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.pool.appscope
     kind: policy
     owner: catalog
@@ -17200,6 +17531,14 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.pool.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.pool.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.poolbinding.appscope
     kind: policy
     owner: catalog
@@ -17208,6 +17547,14 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.poolbinding.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.poolbinding.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.poolitem.appscope
     kind: policy
     owner: catalog
@@ -17216,6 +17563,14 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.poolitem.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.poolitem.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.product.appscope
     kind: policy
     owner: catalog
@@ -17224,6 +17579,22 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.product.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.product.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.product.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.product.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.review.appscope
     kind: policy
     owner: catalog
@@ -17240,6 +17611,22 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.sku.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.sku.zhudatuansandboxbootstrap
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.sku.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: catalog.sku.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.sourcelisting.appscope
     kind: policy
     owner: catalog
@@ -17248,6 +17635,14 @@ objects:
     kind: policy
     owner: catalog
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: catalog.sourcelisting.zhudatuanpurchaseapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: catalog.sourcelisting.zhudatuanwebapi
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: catalog.suppliercategory.appscope
     kind: policy
     owner: catalog
@@ -17336,6 +17731,14 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: checkout.address.zhudatuanpurchaseapi
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.address.zhudatuanwebapi
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: checkout.evidence.appscope
     kind: policy
     owner: checkout
@@ -17344,6 +17747,14 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: checkout.evidence.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.evidence.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: checkout.session.appscope
     kind: policy
     owner: checkout
@@ -17352,6 +17763,18 @@ objects:
     kind: policy
     owner: checkout
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: checkout.session.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.session.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: checkout.session.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: checkout
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: experience.application.appscope
     kind: policy
     owner: experience
@@ -17360,6 +17783,18 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: experience.application.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.application.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.application.zhudatuanwebapi
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: experience.binding.appscope
     kind: policy
     owner: experience
@@ -17368,6 +17803,14 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: experience.binding.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.binding.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: experience.publication.appscope
     kind: policy
     owner: experience
@@ -17376,6 +17819,18 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821033000_complete_experience_publication.sql
+  - id: experience.publication.zhudatuanpurchaseapi
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.publication.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.publication.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: experience.release.appscope
     kind: policy
     owner: experience
@@ -17384,6 +17839,14 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: experience.release.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: experience.release.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: experience.version.appscope
     kind: policy
     owner: experience
@@ -17392,6 +17855,14 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: experience.version.zhudatuansandboxbootstrap
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: experience.version.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: extension.activationhistory.appinsert
     kind: policy
     owner: extension
@@ -17636,6 +18107,18 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: fulfillment.fulfillmentorder.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: fulfillment.fulfillmentorder.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: fulfillment.fulfillmentorder.zhudatuanwebapi
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: fulfillment.line.appscope
     kind: policy
     owner: fulfillment
@@ -17644,6 +18127,14 @@ objects:
     kind: policy
     owner: fulfillment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: fulfillment.line.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: fulfillment.line.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: fulfillment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: fulfillment.milestone.appscope
     kind: policy
     owner: fulfillment
@@ -17664,10 +18155,10 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.assurance.jobscope
+  - id: identity.assurance.zhudatuanidentityapi
     kind: policy
     owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.authticket.appscope
     kind: policy
     owner: identity
@@ -17676,6 +18167,10 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821035000_add_auth_ticket_exchange.sql
+  - id: identity.authticket.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.challenge.appscope
     kind: policy
     owner: identity
@@ -17684,6 +18179,14 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.challenge.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challenge.zhudatuanidentityjob
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.challengedelivery.appscope
     kind: policy
     owner: identity
@@ -17692,6 +18195,18 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.challengedelivery.zhudatuanidentityjob
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengedelivery.zhudatuanidentityjobinsert
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengedelivery.zhudatuanidentityjobupdate
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.challengesecret.appscope
     kind: policy
     owner: identity
@@ -17700,14 +18215,22 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.challengesecret.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.challengesecret.zhudatuanidentityjob
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.credential.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.credential.jobscope
+  - id: identity.credential.zhudatuanidentityapi
     kind: policy
     owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.federatedidentity.appscope
     kind: policy
     owner: identity
@@ -17716,6 +18239,10 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.federatedidentity.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.loginattempt.appscope
     kind: policy
     owner: identity
@@ -17724,14 +18251,22 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.loginattempt.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.principal.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.principal.jobscope
+  - id: identity.principal.zhudatuanbootstrapowner
     kind: policy
     owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
+  - id: identity.principal.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.registrationpolicy.appscope
     kind: policy
     owner: identity
@@ -17740,14 +18275,22 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.registrationpolicy.zhudatuanbootstrap
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: identity.registrationpolicy.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.session.appscope
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: identity.session.jobscope
+  - id: identity.session.zhudatuanidentityapi
     kind: policy
     owner: identity
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: identity.wechatgrant.appscope
     kind: policy
     owner: identity
@@ -17756,6 +18299,10 @@ objects:
     kind: policy
     owner: identity
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: identity.wechatgrant.zhudatuanidentityapi
+    kind: policy
+    owner: identity
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: inventory.command.appscope
     kind: policy
     owner: inventory
@@ -17800,6 +18347,10 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: inventory.movement.zhudatuanpurchaseapi
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: inventory.observation.appscope
     kind: policy
     owner: inventory
@@ -17816,6 +18367,22 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: inventory.reservation.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.reservation.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.reservation.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.reservation.zhudatuanwebapi
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: inventory.snapshot.appscope
     kind: policy
     owner: inventory
@@ -17832,6 +18399,26 @@ objects:
     kind: policy
     owner: inventory
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: inventory.stockitem.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.stockitem.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: inventory.stockitem.zhudatuansandboxbootstrap
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: inventory.stockitem.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: inventory.stockitem.zhudatuanwebapi
+    kind: policy
+    owner: inventory
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: inventory.syncstate.appscope
     kind: policy
     owner: inventory
@@ -17851,7 +18438,7 @@ objects:
   - id: invoice.line.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.line.jobscope
     kind: policy
     owner: invoice
@@ -17859,15 +18446,19 @@ objects:
   - id: invoice.profile.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.profile.jobscope
     kind: policy
     owner: invoice
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: invoice.profile.zhudatuanpurchaseapi
+    kind: policy
+    owner: invoice
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: invoice.request.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.request.jobscope
     kind: policy
     owner: invoice
@@ -17891,7 +18482,7 @@ objects:
   - id: invoice.statusevent.appscope
     kind: policy
     owner: invoice
-    source: database/supabase/migrations/20260828092000_finance_security_boundaries.sql
+    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.statusevent.jobscope
     kind: policy
     owner: invoice
@@ -17904,6 +18495,14 @@ objects:
     kind: policy
     owner: marketing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: marketing.campaign.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.campaign.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: marketing.redemption.appscope
     kind: policy
     owner: marketing
@@ -17912,6 +18511,18 @@ objects:
     kind: policy
     owner: marketing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: marketing.redemption.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.redemption.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: marketing.redemption.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: marketing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: member.importerror.appscope
     kind: policy
     owner: member
@@ -17940,14 +18551,46 @@ objects:
     kind: policy
     owner: member
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: member.invite.zhudatuanbootstrap
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql
+  - id: member.invite.zhudatuanbootstrapinsert
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: member.invite.zhudatuanidentityapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+  - id: member.invite.zhudatuanidentityapiinsert
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+  - id: member.invite.zhudatuanidentityapiupdate
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
   - id: member.profile.appscope
     kind: policy
     owner: member
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: member.profile.jobscope
+  - id: member.profile.shopjob_member_status
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+  - id: member.profile.zhudatuanidentityapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: member.profile.zhudatuanpurchaseapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: member.profile.zhudatuanwebapi
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: notification.announcement.appscope
     kind: policy
     owner: notification
@@ -18012,6 +18655,10 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: ordering.aftersale.zhudatuanwebapi
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: ordering.line.appscope
     kind: policy
     owner: ordering
@@ -18020,6 +18667,18 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: ordering.line.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.line.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.line.zhudatuanwebapi
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: ordering.orderrecord.appscope
     kind: policy
     owner: ordering
@@ -18028,6 +18687,22 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: ordering.orderrecord.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.orderrecord.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.orderrecord.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.orderrecord.zhudatuanwebapi
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: ordering.reminder.appscope
     kind: policy
     owner: ordering
@@ -18060,6 +18735,14 @@ objects:
     kind: policy
     owner: ordering
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: ordering.suborder.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.suborder.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: ordering
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: organization.assignment.appscope
     kind: policy
     owner: organization
@@ -18084,6 +18767,26 @@ objects:
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: organization.organization.zhudatuanbootstrap
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.organization.zhudatuanidentityapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.organization.zhudatuanpurchaseapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: organization.organization.zhudatuansandboxbootstrap
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: organization.organization.zhudatuanwebapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: organization.sourcebinding.appscope
     kind: policy
     owner: organization
@@ -18096,10 +18799,30 @@ objects:
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: organization.unitclosure.consoleclosure
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: organization.unitclosure.jobscope
     kind: policy
     owner: organization
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: organization.unitclosure.zhudatuanbootstrap
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.unitclosure.zhudatuanidentityapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: organization.unitclosure.zhudatuanpurchaseapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: organization.unitclosure.zhudatuanwebapi
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: partner.agreement.appscope
     kind: policy
     owner: partner
@@ -18164,6 +18887,14 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.allocation.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.allocation.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: payment.attempt.appscope
     kind: policy
     owner: payment
@@ -18180,6 +18911,14 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.capture.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.capture.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: payment.deadletterreview.appscope
     kind: policy
     owner: payment
@@ -18204,6 +18943,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.intent.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intent.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intent.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: payment.intenttender.appscope
     kind: policy
     owner: payment
@@ -18212,6 +18963,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821039000_checkout_atomic_order.sql
+  - id: payment.intenttender.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intenttender.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.intenttender.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: payment.observation.appscope
     kind: policy
     owner: payment
@@ -18228,6 +18991,14 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.payment.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: payment.payment.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: payment.prepay.appscope
     kind: policy
     owner: payment
@@ -18300,6 +19071,22 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: pricing.price.zhudatuanpurchaseapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.price.zhudatuansandboxbootstrap
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.price.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.price.zhudatuanwebapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: pricing.pricebook.appscope
     kind: policy
     owner: pricing
@@ -18308,6 +19095,22 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: pricing.pricebook.zhudatuanpurchaseapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.pricebook.zhudatuansandboxbootstrap
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.pricebook.zhudatuansandboxbootstrapinsert
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: pricing.pricebook.zhudatuanwebapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: pricing.quote.appscope
     kind: policy
     owner: pricing
@@ -18316,6 +19119,18 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: pricing.quote.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.quote.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: pricing.quote.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: pricing.rule.appscope
     kind: policy
     owner: pricing
@@ -18324,6 +19139,10 @@ objects:
     kind: policy
     owner: pricing
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: pricing.rule.zhudatuanpurchaseapi
+    kind: policy
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: qualification.changerequest.appscope
     kind: policy
     owner: qualification
@@ -18348,6 +19167,10 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: qualification.policy.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: qualification.policyversion.appscope
     kind: policy
     owner: qualification
@@ -18356,6 +19179,10 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: qualification.policyversion.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: qualification.profile.appscope
     kind: policy
     owner: qualification
@@ -18364,6 +19191,10 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: qualification.profile.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: qualification.purchaselimit.appscope
     kind: policy
     owner: qualification
@@ -18372,6 +19203,10 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: qualification.purchaselimit.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: qualification.resource.appscope
     kind: policy
     owner: qualification
@@ -18380,6 +19215,10 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: qualification.resource.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: qualification.subject.appscope
     kind: policy
     owner: qualification
@@ -18388,6 +19227,10 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: qualification.subject.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: qualification.tag.appscope
     kind: policy
     owner: qualification
@@ -18396,6 +19239,10 @@ objects:
     kind: policy
     owner: qualification
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: qualification.tag.zhudatuanpurchaseapi
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: referral.binding.appscope
     kind: policy
     owner: referral
@@ -18480,6 +19327,10 @@ objects:
     kind: policy
     owner: reporting
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: reporting.fact.zhudatuanwebapi
+    kind: policy
+    owner: reporting
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: reporting.financeprojection.appscope
     kind: policy
     owner: reporting
@@ -18500,6 +19351,10 @@ objects:
     kind: policy
     owner: reporting
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: reporting.metric.zhudatuanwebapi
+    kind: policy
+    owner: reporting
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: reporting.orderprojection.appscope
     kind: policy
     owner: reporting
@@ -18528,6 +19383,10 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+  - id: risk.case.consoleriskcasinsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: risk.case.jobscope
     kind: policy
     owner: risk
@@ -18540,10 +19399,22 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+  - id: risk.decision.consoleriskdecisioninsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: risk.decision.consoleriskdecisionselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: risk.decision.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: risk.decision.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: risk.listentry.appinsert
     kind: policy
     owner: risk
@@ -18556,10 +19427,26 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+  - id: risk.listentry.consolerisklistselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: risk.listentry.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: risk.listentry.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.listentry.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.listentry.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: risk.policy.appinsert
     kind: policy
     owner: risk
@@ -18572,10 +19459,26 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+  - id: risk.policy.consoleriskpolicyselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: risk.policy.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: risk.policy.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.policy.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.policy.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: risk.policyversion.appinsert
     kind: policy
     owner: risk
@@ -18588,10 +19491,26 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+  - id: risk.policyversion.consoleriskversionselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: risk.policyversion.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: risk.policyversion.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.policyversion.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.policyversion.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: risk.replay.appinsert
     kind: policy
     owner: risk
@@ -18616,10 +19535,26 @@ objects:
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821049000_risk_lifecycle.sql
+  - id: risk.signal.consolerisksignalselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: risk.signal.jobscope
     kind: policy
     owner: risk
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: risk.signal.zhudatuanidentityapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: risk.signal.zhudatuanpurchaseapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: risk.signal.zhudatuanwebapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: runtime.deadletter.appscope
     kind: policy
     owner: runtime
@@ -18628,6 +19563,10 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.deadletter.zhudatuanidentityjob
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
   - id: runtime.event.appscope
     kind: policy
     owner: runtime
@@ -18640,10 +19579,42 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.idempotency.consoleidempotency
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: runtime.idempotency.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.idempotency.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.idempotency.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.idempotency.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.idempotency.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.idempotency.zhudatuanwebapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: runtime.idempotency.zhudatuanwebapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: runtime.idempotency.zhudatuanwebapiupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: runtime.inbox.appscope
     kind: policy
     owner: runtime
@@ -18660,6 +19631,22 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.job.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.job.zhudatuanidentityjob
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.job.zhudatuanidentityjobupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.job.zhudatuanpurchaseapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: runtime.lease.appscope
     kind: policy
     owner: runtime
@@ -18672,6 +19659,10 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.operation.consoleoperationselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: runtime.operation.jobscope
     kind: policy
     owner: runtime
@@ -18680,10 +19671,26 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.outbox.consoleoutboxinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: runtime.outbox.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.outbox.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: runtime.outbox.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.outbox.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: runtime.projectionoffset.appscope
     kind: policy
     owner: runtime
@@ -18720,10 +19727,38 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.schemaversion.consoleschemaversionselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: runtime.schemaversion.jobscope
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.schemaversion.zhudatuanbootstrap
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql
+  - id: runtime.schemaversion.zhudatuanidentityapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql
+  - id: runtime.schemaversion.zhudatuanidentityjob
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql
+  - id: runtime.schemaversion.zhudatuanpurchaseapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.schemaversion.zhudatuansandboxbootstrap
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+  - id: runtime.schemaversion.zhudatuanwebapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: support.account.appscope
     kind: policy
     owner: support
@@ -18760,6 +19795,14 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.conversation.consolesupportconversationselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.conversation.consolesupportconversationupdate
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: support.conversation.jobscope
     kind: policy
     owner: support
@@ -18776,6 +19819,10 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.evidence.consolesupportevidenceselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: support.evidence.jobscope
     kind: policy
     owner: support
@@ -18784,6 +19831,10 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.history.consolesupporthistoryinsert
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: support.history.jobscope
     kind: policy
     owner: support
@@ -18792,6 +19843,14 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.message.consolesupportmessageinsert
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.message.consolesupportmessageselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: support.message.jobscope
     kind: policy
     owner: support
@@ -18808,6 +19867,14 @@ objects:
     kind: policy
     owner: support
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: support.ticket.consolesupportticketselect
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.ticket.consolesupportticketupdate
+    kind: policy
+    owner: support
+    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: support.ticket.jobscope
     kind: policy
     owner: support
@@ -19000,122 +20067,6 @@ objects:
     kind: policy
     owner: voucher
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
-  - id: access.decisionaudit.consoledecision
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: access.membership.consoleself
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: audit.accessrecord.consoleauditaccessinsert
-    kind: policy
-    owner: audit
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: audit.accessrecord.consoleauditaccessselect
-    kind: policy
-    owner: audit
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: audit.archiveref.consoleauditarchiveselect
-    kind: policy
-    owner: audit
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: audit.record.consoleauditrecordinsert
-    kind: policy
-    owner: audit
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: audit.record.consoleauditrecordselect
-    kind: policy
-    owner: audit
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: audit.recorddefault.consoleauditdefaultinsert
-    kind: policy
-    owner: audit
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: audit.recorddefault.consoleauditdefaultselect
-    kind: policy
-    owner: audit
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: organization.unitclosure.consoleclosure
-    kind: policy
-    owner: organization
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: risk.case.consoleriskcasinsert
-    kind: policy
-    owner: risk
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: risk.decision.consoleriskdecisioninsert
-    kind: policy
-    owner: risk
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: risk.decision.consoleriskdecisionselect
-    kind: policy
-    owner: risk
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: risk.listentry.consolerisklistselect
-    kind: policy
-    owner: risk
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: risk.policy.consoleriskpolicyselect
-    kind: policy
-    owner: risk
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: risk.policyversion.consoleriskversionselect
-    kind: policy
-    owner: risk
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: risk.signal.consolerisksignalselect
-    kind: policy
-    owner: risk
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: runtime.idempotency.consoleidempotency
-    kind: policy
-    owner: runtime
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: runtime.operation.consoleoperationselect
-    kind: policy
-    owner: runtime
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: runtime.outbox.consoleoutboxinsert
-    kind: policy
-    owner: runtime
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: runtime.schemaversion.consoleschemaversionselect
-    kind: policy
-    owner: runtime
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.conversation.consolesupportconversationselect
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.conversation.consolesupportconversationupdate
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.evidence.consolesupportevidenceselect
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.history.consolesupporthistoryinsert
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.message.consolesupportmessageinsert
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.message.consolesupportmessageselect
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.ticket.consolesupportticketselect
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
-  - id: support.ticket.consolesupportticketupdate
-    kind: policy
-    owner: support
-    source: database/supabase/migrations/20260830101000_console_support_boundary.sql
   - id: access
     kind: schema
     owner: access
@@ -19265,10 +20216,25 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821013000_create_identity_access.sql
     rls: true
+  - id: access.owneractionproof
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    rls: true
+  - id: access.ownertransfer
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    rls: true
   - id: access.permission
     kind: table
     owner: access
     source: database/supabase/migrations/20260821013000_create_identity_access.sql
+    rls: true
+  - id: access.platformowner
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     rls: true
   - id: access.policyactionauthorization
     kind: table
@@ -20575,15 +21541,119 @@ objects:
     owner: voucher
     source: database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql
     rls: true
-  - id: access.membership.protect_root_owner
+  - id: access.membership.platform_owner_singleton_membership
     kind: trigger
     owner: access
-    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: access
-  - id: access.membershiprole.protect_root_owner
+  - id: access.membership.protect_zhudatuan_owner_membership
     kind: trigger
     owner: access
-    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membership.protect_zhudatuan_registration_membership_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershipoverride.platform_owner_singleton_override
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershipoverride.protect_zhudatuan_owner_membershipoverride
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershiprole.platform_owner_singleton_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershiprole.protect_zhudatuan_owner_membershiprole
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.membershiprole.protect_zhudatuan_registration_membershiprole_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.ownertransfer.owner_transfer_snapshot
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+  - id: access.permission.platform_owner_operator_coverage_permission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.platformowner.platform_owner_lifecycle
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.platformowner.platform_owner_singleton_owner
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.role.platform_owner_operator_coverage_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.role.platform_owner_singleton_role_definition
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.role.protect_zhudatuan_owner_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.role.protect_zhudatuan_pending_operator_role
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.rolepermission.platform_owner_operator_coverage_rolepermission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: access
+  - id: access.rolepermission.protect_zhudatuan_owner_rolepermission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.rolepermission.protect_zhudatuan_pending_operator_permission
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.scopegrant.platform_owner_singleton_scope
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_scopegrant_deny_runtime
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_zhudatuan_owner_scopegrant
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.scopegrant.protect_zhudatuan_registration_scopegrant_write
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: access
   - id: audit.accessrecord.immutable
     kind: trigger
@@ -20605,6 +21675,20 @@ objects:
     owner: audit
     source: database/supabase/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+  - id: capability.capability.platform_owner_operator_coverage_capability
+    kind: trigger
+    owner: capability
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: capability
+  - id: capability.entitlement.platform_owner_operator_coverage_entitlement
+    kind: trigger
+    owner: capability
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
+    operationalOwner: capability
+  - id: capability.operation.platform_owner_operator_coverage_operation
+    kind: trigger
+    owner: capability
+    source: database/supabase/migrations/20260829210000_owner_operator_coverage.sql
   - id: finance.accountingeventrule.finance_accountingeventrule_immutable
     kind: trigger
     owner: finance
@@ -20700,16 +21784,21 @@ objects:
     owner: finance
     source: database/supabase/migrations/20260829105000_create_referral_foundation.sql
     operationalOwner: finance
-  - id: identity.credential.protect_root_owner
+  - id: identity.credential.protect_zhudatuan_owner_credential
     kind: trigger
     owner: identity
-    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
-    operationalOwner: identity
-  - id: identity.principal.protect_root_owner
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: identity.principal.platform_owner_singleton_principal
     kind: trigger
     owner: identity
-    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
-    operationalOwner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: identity.principal.protect_zhudatuan_owner_principal
+    kind: trigger
+    owner: identity
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
   - id: invoice.document.invoice_document_immutable
     kind: trigger
     owner: invoice
@@ -20775,11 +21864,21 @@ objects:
     owner: invoice
     source: database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql
     operationalOwner: invoice
-  - id: member.profile.protect_root_owner
+  - id: member.invite.protect_zhudatuan_invite_update
     kind: trigger
     owner: member
-    source: database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
-    operationalOwner: member
+    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    operationalOwner: identity
+  - id: member.profile.platform_owner_singleton_profile
+    kind: trigger
+    owner: member
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: member.profile.protect_zhudatuan_owner_profile
+    kind: trigger
+    owner: member
+    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
   - id: payment.attempt.payment_attempt_provider_effect_immutable
     kind: trigger
     owner: payment
@@ -20800,6 +21899,10 @@ objects:
     owner: payment
     source: database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql
     operationalOwner: payment
+  - id: pricing.quote.pricing_purchase_quote_immutable
+    kind: trigger
+    owner: pricing
+    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
   - id: referral.commissionmovement.referral_commissionmovement_apply
     kind: trigger
     owner: referral

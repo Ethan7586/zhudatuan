@@ -125,10 +125,22 @@ for (const file of files) {
     const callers = callerMap[id];
     add(id, 'function', file, callers ? { callers } : { operationalOwner: match[1] });
   }
-  for (const match of sql.matchAll(/create(?: constraint)? trigger\s+([a-z][a-z0-9_]*)[\s\S]*?\son\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)) {
-    add(`${match[2]}.${match[3]}.${match[1]}`, 'trigger', file, { operationalOwner: match[2] });
-    for (const child of partitions.get(`${match[2]}.${match[3]}`) ?? []) add(`${child}.${match[1]}`, 'trigger', file,
-      { operationalOwner: child.split('.')[0] });
+  for (const match of sql.matchAll(/alter function\s+([a-z][a-z0-9]*)\.[a-z][a-z0-9_]*\s*\([^;]*?\)\s+rename to\s+([a-z][a-z0-9_]*)/gi)) {
+    add(`${match[1]}.${match[2]}`, 'function', file, { operationalOwner: match[1] });
+  }
+  const triggerStatements = [
+    ...[...sql.matchAll(/create(?: constraint)? trigger\s+([a-z][a-z0-9_]*)[\s\S]*?\son\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)]
+      .map((match) => ({ index: match.index, action: 'create', name: match[1], table: `${match[2]}.${match[3]}` })),
+    ...[...sql.matchAll(/drop trigger(?:\s+if exists)?\s+([a-z][a-z0-9_]*)\s+on\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)]
+      .map((match) => ({ index: match.index, action: 'drop', name: match[1], table: `${match[2]}.${match[3]}` })),
+  ].sort((left, right) => left.index - right.index);
+  for (const statement of triggerStatements) {
+    const id = `${statement.table}.${statement.name}`;
+    if (statement.action === 'create') {
+      add(id, 'trigger', file, { operationalOwner: statement.table.split('.')[0] });
+      for (const child of partitions.get(statement.table) ?? []) add(`${child}.${statement.name}`, 'trigger', file,
+        { operationalOwner: child.split('.')[0] });
+    } else remove(id, 'trigger');
   }
   const policyStatements = [
     ...[...sql.matchAll(/create policy\s+([a-z][a-z0-9_]*)\s+on\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)]
@@ -220,6 +232,19 @@ for (const table of objects.filter((item) => item.kind === 'table' && item.id.st
   add(`${table.id}.appscope`, 'policy', '20260829105000_create_referral_foundation.sql');
   add(`${table.id}.jobscope`, 'policy', '20260829105000_create_referral_foundation.sql');
 }
+
+// The registration baseline creates these policies from guarded PL/pgSQL
+// table-name loops, so the static SQL matcher cannot discover them directly.
+for (const table of [
+  'access.decisionaudit', 'access.membershipoverride', 'access.permission', 'access.role', 'access.rolepermission',
+  'audit.accessrecord', 'audit.record',
+  'capability.capability', 'capability.entitlement', 'capability.operation',
+  'identity.assurance', 'identity.authticket', 'identity.challenge', 'identity.challengesecret', 'identity.credential',
+  'identity.federatedidentity', 'identity.loginattempt', 'identity.principal', 'identity.registrationpolicy',
+  'identity.session', 'identity.wechatgrant', 'member.profile', 'organization.organization', 'organization.unitclosure',
+  'risk.decision', 'risk.listentry', 'risk.policy', 'risk.policyversion', 'risk.signal',
+  'runtime.idempotency', 'runtime.job', 'runtime.outbox',
+]) add(`${table}.zhudatuanidentityapi`, 'policy', '20260828170000_zhudatuan_registration_baseline.sql');
 
 objects.sort((left, right) => left.kind.localeCompare(right.kind) || left.id.localeCompare(right.id));
 await writeFile(join(root, 'database', 'contracts', 'objects.yml'), stringify({ version: 1, objects }, { lineWidth: 0 }), 'utf8');

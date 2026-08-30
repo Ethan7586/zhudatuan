@@ -108,16 +108,16 @@ describe('Referral operator workspace', () => {
   it('fails closed outside mall scope without issuing a referral request', async () => {
     renderRoute('/scopes/enterprise/enterprise%3A1/referral/settings', enterpriseContext);
 
-    expect(await screen.findByRole('heading', { name: '无权访问' })).toBeTruthy();
-    expect(screen.getByText(/仅在商城范围可用/)).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '没有权限' })).toBeTruthy();
+    expect(screen.getByText('「分销设定」不可访问')).toBeTruthy();
     expect(requests).toHaveLength(0);
   });
 
   it('fails closed when the capability exists without the matching read permission', async () => {
     renderRoute('/scopes/mall/mall%3Aconsole/referral/settings', capabilityOnlyContext);
 
-    expect(await screen.findByRole('heading', { name: '无权访问' })).toBeTruthy();
-    expect(screen.getByText(/缺少 referral\.settings\.read 权限/)).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '没有权限' })).toBeTruthy();
+    expect(screen.getByText('「分销设定」不可访问')).toBeTruthy();
     expect(requests).toHaveLength(0);
   });
 

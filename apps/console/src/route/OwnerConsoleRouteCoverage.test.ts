@@ -18,7 +18,8 @@ const workstationOperations = Object.freeze({
   control: ['runtime.health.dependency'],
   products: ['catalog.listings.read'],
   orders: ['order.orders.read'],
-  finance: ['finance.overview.read', 'finance.reconciliations.read'],
+  finance: ['finance.overview.read', 'finance.reconciliations.read', 'finance.audit.read',
+    'finance.policies.read', 'finance.policies.preview', 'finance.policies.manage'],
 } as const satisfies Readonly<Record<WorkstationKey, readonly OperationId[]>>);
 
 const routeOperationAdditions = Object.freeze({
@@ -36,7 +37,7 @@ const routeOperationAdditions = Object.freeze({
     'identity.stepup.start',
     'identity.stepup.complete',
   ],
-  'settings/members': ['identity.invitations.create'],
+  'settings/members': ['identity.invitations.create', 'identity.members.reset'],
 } as const satisfies Readonly<Record<string, readonly OperationId[]>>);
 
 const shellOperations = Object.freeze([

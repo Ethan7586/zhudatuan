@@ -1276,6 +1276,8 @@ errors:
     status: 409
   - code: IDENTITY_SUBJECT_EXISTS
     status: 409
+  - code: IDENTITY_SUBJECT_INVALID
+    status: 400
   - code: IDENTITY_SUBJECT_REQUIRED
     status: 400
   - code: IMPORT_FILE_EMPTY
@@ -1494,6 +1496,10 @@ errors:
     status: 400
   - code: INVITATION_NOT_FOUND
     status: 404
+  - code: INVITATION_SCOPE_INVALID
+    status: 400
+  - code: INVITATION_STOREFRONT_SCOPE_REQUIRED
+    status: 400
   - code: INVITATION_TERMS_CAPABILITY_MISSING
     status: 400
   - code: INVITE_INVALID
@@ -1844,6 +1850,10 @@ errors:
     status: 409
   - code: MOBILE_ASSURANCE_REQUIRED
     status: 403
+  - code: MOBILE_CHANGE_STEP_UP_REQUIRED
+    status: 403
+  - code: MOBILE_ENROLLMENT_PASSWORD_REQUIRED
+    status: 403
   - code: MOBILE_INVALID
     status: 400
   - code: MODULE_DEPENDENCY_CYCLE
@@ -2104,6 +2114,8 @@ errors:
     status: 400
   - code: OWNER_BOOTSTRAP_PASSWORD_INVALID
     status: 400
+  - code: OWNER_BOOTSTRAP_PENDING
+    status: 409
   - code: OWNER_BOOTSTRAP_PRODUCTION_ENV_REQUIRED
     status: 400
   - code: OWNER_BOOTSTRAP_RESULT_INVALID
@@ -2126,11 +2138,19 @@ errors:
     status: 400
   - code: OWNER_ROLE_PROTECTED
     status: 500
+  - code: OWNER_TRANSFER_ALREADY_PENDING
+    status: 409
+  - code: OWNER_TRANSFER_COOLING_PERIOD
+    status: 409
   - code: OWNER_TRANSFER_CSRF_MISSING
     status: 400
   - code: OWNER_TRANSFER_PENDING_MISSING
     status: 400
   - code: OWNER_TRANSFER_PREVIEW_INVALID
+    status: 400
+  - code: OWNER_TRANSFER_ROLE_INVALID
+    status: 400
+  - code: OWNER_TRANSFER_TARGET_INVALID
     status: 400
   - code: P0_CLIENT_ENVIRONMENT_EXAMPLE_MISSING
     status: 400
@@ -3218,6 +3238,8 @@ errors:
     status: 400
   - code: SCOPE_DENIED
     status: 403
+  - code: SCOPE_DENY_UNSUPPORTED
+    status: 400
   - code: SCOPE_GRANT_EXCEEDS_ACTOR
     status: 500
   - code: SCOPE_MISMATCH
@@ -3376,6 +3398,8 @@ errors:
     status: 500
   - code: STEP_UP_CHALLENGE_INVALID
     status: 400
+  - code: STEP_UP_DESTINATION_FORBIDDEN
+    status: 400
   - code: STEP_UP_DESTINATION_MISSING
     status: 409
   - code: STEP_UP_FACTOR_NOT_CONFIGURED
@@ -3411,6 +3435,8 @@ errors:
   - code: STOREFRONT_RUNTIME_MISSING
     status: 400
   - code: STOREFRONT_SCOPE_MISSING
+    status: 400
+  - code: STOREFRONT_SCOPE_REQUIRED
     status: 400
   - code: STOREFRONT_SESSION_MISSING
     status: 401

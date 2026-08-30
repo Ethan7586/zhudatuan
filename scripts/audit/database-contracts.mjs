@@ -100,9 +100,6 @@ const REPAIR_FILES = [
   '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
   '20260829054500_zhudatuan_identity_login_acl_repair.sql',
   '20260829060000_zhudatuan_operator_invitation_registration.sql',
-  '20260829100000_tiered_admin_invitation_foundation.sql',
-  '20260829101000_reconcile_tiered_invitation_contract.sql',
-  '20260829102000_resolve_tiered_invitation_tenant_scope.sql',
   '20260829105000_create_referral_foundation.sql',
   '20260829190000_reconcile_runtime_contract_head.sql',
   '20260829200000_owner_identity_reset_foundation.sql',
@@ -139,7 +136,7 @@ try {
   await execute(
     database,
     `
-    create role anon nologin; create role authenticated nologin; create role service_role nologin;
+    create role anon nologin noinherit; create role authenticated nologin noinherit; create role service_role nologin noinherit;
   `,
     'database role bootstrap'
   );
@@ -155,6 +152,7 @@ try {
   let applied = 0;
   for (const name of migrationFiles) {
     if (name === BOOTSTRAP) await seedBootstrapPrecondition(database);
+    if (name === '20260829200000_owner_identity_reset_foundation.sql') await seedOwnerBoundaryFixture(database);
     if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
       await seedUnsafeInventoryCutover(database);
       await assertUnsafeInventoryCutoverRejected(database, await readFile(join(MIGRATIONS, name), 'utf8'));
@@ -243,6 +241,41 @@ async function seedBootstrapPrecondition(database) {
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,
     'bootstrap precondition'
   );
+}
+
+async function seedOwnerBoundaryFixture(database) {
+  await execute(database, `
+    insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
+    values('principal:zhudatuan:owner:ethan:v1','active',1,clock_timestamp(),clock_timestamp(),0)
+    on conflict(id) do update set status='active';
+    insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at)
+    values('credential:password:zhudatuan-owner-ethan:v1','principal:zhudatuan:owner:ethan:v1','password',
+      encode(digest('fresh-replay-owner','sha256'),'hex'),'fixture-owner-secret','active',clock_timestamp(),clock_timestamp())
+    on conflict(id) do update set status='active';
+    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
+    values('member:zhudatuan:owner:ethan:v1','principal:zhudatuan:owner:ethan:v1','Fresh Replay Owner','active',clock_timestamp(),clock_timestamp(),0)
+    on conflict(id) do update set status='active',principal_id=excluded.principal_id;
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
+    values('membership-platform-owner-ethan-v1','member:zhudatuan:owner:ethan:v1','tenant-zhudatuan','operator','active',1,clock_timestamp())
+    on conflict(id) do update set member_id=excluded.member_id,organization_id=excluded.organization_id,client='operator',status='active';
+    delete from access.membershiprole where membership_id='membership-platform-owner-ethan-v1'
+      and role_id in('role-platform-owner-v2','role:self');
+    insert into access.membershiprole(membership_id,role_id,effective_at) values
+      ('membership-platform-owner-ethan-v1','role-platform-owner-v2','1970-01-01T00:00:00Z'),
+      ('membership-platform-owner-ethan-v1','role:self','1970-01-01T00:00:00Z');
+    insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
+      ('scope:membership-platform-owner-ethan-v1:platform','membership-platform-owner-ethan-v1','platform','organization-platform-root','organization-platform-root','allow','1970-01-01T00:00:00Z',1),
+      ('scope:membership-platform-owner-ethan-v1:tenant','membership-platform-owner-ethan-v1','tenant','tenant-zhudatuan','tenant-zhudatuan','allow','1970-01-01T00:00:00Z',1),
+      ('scope:membership-platform-owner-ethan-v1:self','membership-platform-owner-ethan-v1','self','self:principal:zhudatuan:owner:ethan:v1','self:principal:zhudatuan:owner:ethan:v1','allow','1970-01-01T00:00:00Z',1)
+    on conflict do nothing;
+    do $$ begin
+      if not exists(select 1 from access.membership membership join access.membershiprole assignment
+        on assignment.membership_id=membership.id and assignment.role_id='role-platform-owner-v2'
+        where membership.id='membership-platform-owner-ethan-v1' and membership.status='active'
+          and assignment.effective_at<=clock_timestamp()
+          and (assignment.expires_at is null or assignment.expires_at>clock_timestamp()))
+      then raise exception 'OWNER_BOUNDARY_FIXTURE_SEED_FAILED'; end if;
+    end $$;`, 'owner boundary fixture');
 }
 
 async function stageFreshReplaySecrets(database) {

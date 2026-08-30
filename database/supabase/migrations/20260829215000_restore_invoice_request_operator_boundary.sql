@@ -45,11 +45,15 @@ $old$;
 $operator$;
 begin
   select pg_get_functiondef('access.resource_scope(text,text,text)'::regprocedure) into definition;
-  rewritten:=replace(definition,old_list,operator_list);
-  if rewritten=definition or position(old_list in rewritten)>0 or position(operator_list in rewritten)=0 then
+  if position(old_list in definition)>0 then
+    rewritten:=replace(definition,old_list,operator_list);
+    if position(old_list in rewritten)>0 or position(operator_list in rewritten)=0 then
+      raise exception 'INVOICE_REQUEST_CREATE_SCOPE_REWRITE_FAILED';
+    end if;
+    execute rewritten;
+  elsif position(operator_list in definition)=0 then
     raise exception 'INVOICE_REQUEST_CREATE_SCOPE_REWRITE_FAILED';
   end if;
-  execute rewritten;
 end
 $rewrite_invoice_create_scope$;
 

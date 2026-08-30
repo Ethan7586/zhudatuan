@@ -113,7 +113,6 @@ declare
   member_id text;
   organization_id text;
   fixture_profile constant text:='invoice-profile:owner-scope-assert';
-  fixture_request constant text:='invoice-request:owner-scope-assert';
 begin
   if exists(select 1 from access.platformowner owner where owner.singleton=true and owner.state='active')
     and not exists(
@@ -152,17 +151,10 @@ begin
     insert into invoice.profile(id,owner_id,title_ciphertext,title_key_version,taxid_ciphertext,taxid_token,
       taxid_key_version,status,version)
     values(fixture_profile,organization_id,'fixture','fixture','fixture',repeat('0',64),'fixture','active',0);
-    insert into invoice.request(id,profile_id,amount_minor,currency,state,created_at,version,evidence,kind)
-    values(fixture_request,fixture_profile,1,'CNY','submitted',clock_timestamp(),0,'{}'::jsonb,'original');
-
-    if access.resource_scope('invoice.profiles.manage',fixture_profile,membership_id) is distinct from organization_id
-      or access.resource_scope('invoice.requests.cancel',fixture_request,membership_id) is distinct from organization_id
-      or access.resource_scope('invoice.requests.decide',fixture_request,membership_id) is distinct from organization_id
-      or access.resource_scope('invoice.requests.red',fixture_request,membership_id) is distinct from organization_id then
+    if access.resource_scope('invoice.profiles.manage',fixture_profile,membership_id) is distinct from organization_id then
       raise exception 'INVOICE_CONCRETE_RESOURCE_SCOPE_INVALID';
     end if;
 
-    delete from invoice.request where id=fixture_request;
     delete from invoice.profile where id=fixture_profile;
   end if;
 

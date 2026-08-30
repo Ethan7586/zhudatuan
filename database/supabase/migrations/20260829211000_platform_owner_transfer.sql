@@ -202,6 +202,16 @@ $function$;
 revoke all on function identity.resolve_session(text) from public;
 grant execute on function identity.resolve_session(text) to shopapp,zhudatuanidentityapi;
 
+-- The earlier identity-reset foundation protected the fixed bootstrap Owner
+-- with table-specific triggers. This migration replaces that fixed identity
+-- with the transferable singleton and its lifecycle trigger, so retire the
+-- obsolete guards before normalizing the inaugural Owner assignment.
+drop trigger if exists protect_root_owner on access.membership;
+drop trigger if exists protect_root_owner on access.membershiprole;
+drop trigger if exists protect_root_owner on identity.principal;
+drop trigger if exists protect_root_owner on member.profile;
+drop trigger if exists protect_root_owner on identity.credential;
+
 do $seed_owner$
 declare
   owner_count integer;

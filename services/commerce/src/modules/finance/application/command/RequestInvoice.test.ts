@@ -12,10 +12,7 @@ describe('invoice request organization boundary', () => {
     const database: OperationDatabase = {
       query: async (text, values = []) => {
         queries.push({ text, values });
-        if (text.startsWith('select line.id')) return result([{
-          id: 'line:one', source_type: 'order', source_id: 'order:one', amount_minor: 100, tax_minor: 6,
-        }]);
-        if (text.startsWith('insert into invoice.request(')) return result([{ id: 'invoice:created', state: 'submitted' }]);
+        if (text.startsWith('select * from invoice.create_request')) return result([{ id: 'invoice:created', state: 'submitted' }]);
         return result([]);
       },
     };
@@ -24,12 +21,8 @@ describe('invoice request organization boundary', () => {
 
     await expect(operation(request(), database)).resolves.toMatchObject({ status: 201 });
 
-    expect(queries[0]?.text).toContain('settlement.scope_id=$2');
-    expect(queries[0]?.values).toEqual(['settlement:one', 'mall:one', ['line:one']]);
-    const insert = queries.find((query) => query.text.startsWith('insert into invoice.request('));
-    expect(insert?.text).toContain('profile.owner_id=$9');
-    expect(insert?.text).toContain('settlement.scope_id=$9');
-    expect(insert?.values.at(-1)).toBe('mall:one');
+    expect(queries[0]?.text).toContain('invoice.create_request');
+    expect(queries[0]?.values.slice(1, 5)).toEqual(['profile:one', 'settlement:one', 100, ['line:one']]);
   });
 
   it('fails closed when the settlement is outside the authorized organization', async () => {
@@ -37,7 +30,7 @@ describe('invoice request organization boundary', () => {
     const operation = requestInvoiceOperations(() => repository())['invoice.requests.create'];
     if (typeof operation !== 'function') throw new Error('TEST_OPERATION_MISSING');
 
-    await expect(operation(request(), database)).rejects.toThrow('INVOICE_LINES_NOT_ELIGIBLE_OR_AMOUNT_MISMATCH');
+    await expect(operation(request(), database)).rejects.toThrow('INVOICE_PROFILE_OR_SETTLEMENT_INVALID');
   });
 });
 

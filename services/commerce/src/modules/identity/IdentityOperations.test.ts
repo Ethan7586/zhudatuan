@@ -7,7 +7,7 @@ import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import type { OperationRequest } from '../../foundation/application/OperationHandler';
 import { KMS_CLIENT, type KmsClient } from '../../foundation/infrastructure/KmsClient';
-import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
+import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
 import { RISK_GATE } from '../../foundation/security/RiskGate';
 import { WECHAT_IDENTITY } from './application/port/WechatIdentity';
@@ -29,6 +29,9 @@ describe('identity financial action proof issuance', () => {
         }
         if (text.includes('update identity.challenge set consumed_at')) {
           return { rows: [{ principal_id: 'actor:one' }], rowCount: 1 } as unknown as QueryResult;
+        }
+        if (text.includes('select mobile_ciphertext from member.profile')) {
+          return { rows: [{ mobile_ciphertext: 'ciphertext:verified-mobile' }], rowCount: 1 } as unknown as QueryResult;
         }
         if (text.includes('insert into identity.assurance')) {
           assuranceId = String(values[0]);
@@ -110,9 +113,9 @@ describe('administrator invitation issuance', () => {
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
-        if (text.includes('select pending.id operator_role')) {
-          return result([{ operator_role: 'role-console-pending-v1:tenant:one', storefront_role: 'role:self' }]);
-        }
+        if (text.includes('access.zhudatuan_owner_context')) return result([{ exact_owner: true }]);
+        if (text.includes('select storefront.id')) return result([{ id: 'mall:one' }]);
+        if (text.includes('select role.id')) return result([{ id: 'role-zhudatuan-pending-operator' }]);
         if (text.includes('from identity.registrationpolicy')) {
           return result([{ id: 'registration:v1', terms_hash: 'f'.repeat(64) }]);
         }
@@ -123,7 +126,7 @@ describe('administrator invitation issuance', () => {
             {
               id: 'invite:one',
               label: '普通管理员邀请',
-              target: 'console',
+              target_client: 'operator',
               max_uses: 1,
               use_count: 0,
               starts_at: new Date().toISOString(),
@@ -147,12 +150,19 @@ describe('administrator invitation issuance', () => {
 
     const response = await identityOperations(context(pool)).invoke({
       type: 'identity.invitations.create',
-      access: { ...access(), scope: { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', path: [] } },
+      access: { ...access(),
+        scope: { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', path: [] },
+        capabilities: ['identity.invitations.create'],
+        membership: { ...access().membership, grants: [{
+          scope: { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', path: [] },
+          permissions: ['identity.invitation.manage'], effective: '2026-08-30T00:00:00Z', expires: null,
+        }] } },
       input: {
         path: {},
         query: {},
         headers: {},
-        body: { label: '普通管理员邀请', maxUses: 1, expiresAt: new Date(Date.now() + 86_400_000).toISOString() },
+        body: { label: '普通管理员邀请', targetClient: 'operator', destination: '+8613800138000',
+          storefrontOrganization: 'mall:one', maxUses: 1, expiresAt: new Date(Date.now() + 86_400_000).toISOString() },
         rawBody: '',
         deadline: Date.now() + 1_000,
         signal: new AbortController().signal,
@@ -160,10 +170,11 @@ describe('administrator invitation issuance', () => {
       },
     });
 
-    expect(response).toMatchObject({ status: 201, body: { target: 'console', code: expect.stringMatching(/^[A-Za-z0-9_-]{32}$/) } });
-    expect(invitationSql).toContain('storefront_role_id,target_client');
-    expect(invitationValues[7]).toBe('role-console-pending-v1:tenant:one');
-    expect(invitationValues[8]).toBe('role:self');
+    expect(response).toMatchObject({ status: 201, body: { target_client: 'operator', code: expect.stringMatching(/^[A-Za-z0-9_-]{32}$/) } });
+    expect(invitationSql).toContain('target_client,storefront_organization_id');
+    expect(invitationValues[7]).toBe('role-zhudatuan-pending-operator');
+    expect(invitationValues[12]).toBe('operator');
+    expect(invitationValues[13]).toBe('mall:one');
   });
 });
 
@@ -171,8 +182,8 @@ function context(pool: DatabasePool): ModuleContext {
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
-  container.bind(SECURITY_KEYS, { identity: 'identity-key', quote: 'quote-key', session: 'session-key' });
-  container.bind(KMS_CLIENT, {} as KmsClient);
+  container.bind(IDENTITY_SECURITY_KEYS, { identity: 'identity-key', session: 'session-key' });
+  container.bind(KMS_CLIENT, { decrypt: async () => '+8613800138000' } as unknown as KmsClient);
   container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
   container.bind(WECHAT_IDENTITY, {
     application: () => ({ applicationHash: 'application' }),

@@ -3,8 +3,8 @@ import type { OperationDatabase } from '../../foundation/application/ModuleOpera
 export interface MemberInvite {
   readonly organization_id: string;
   readonly role_id: string;
-  readonly terms_hash: string;
   readonly target_client: 'storefront' | 'operator';
+  readonly terms_hash: string;
   readonly storefront_organization_id: string | null;
 }
 
@@ -20,13 +20,18 @@ export interface MemberProfile {
 
 export class MemberPort {
   async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ mobileCiphertext: string | null }>> {
-    const result = await database.query<{ mobile_ciphertext: string | null }>(`select mobile_ciphertext from member.profile
-      where principal_id=$1 and status='active'`, [principal]);
+    const result = await database.query<{ mobile_ciphertext: string | null }>(
+      `select mobile_ciphertext from member.profile
+      where principal_id=$1 and status='active'`,
+      [principal]
+    );
     return { mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null };
   }
 
   invite(database: OperationDatabase, token: string) {
-    return database.query(`select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,invite.target_client,invite.effective_at,invite.expires_at
+    return database.query(
+      `select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,
+        invite.target_client,invite.effective_at,invite.expires_at
       from member.invite invite join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
       join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
@@ -34,7 +39,9 @@ export class MemberPort {
         and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
         and ${registrationInviteBoundary()}
         and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
-        and policy.terms_hash=invite.terms_hash`, [token]);
+        and policy.terms_hash=invite.terms_hash`,
+      [token]
+    );
   }
 
   async assertRegistrationInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<void> {
@@ -74,9 +81,11 @@ export class MemberPort {
   }
 
   async create(database: OperationDatabase, input: MemberProfile): Promise<void> {
-    await database.query(`insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,mobile_masked,created_at,updated_at)
-      values($1,$2,$3,$4,$5,$6,$7,clock_timestamp(),clock_timestamp())`, [input.member, input.principal, input.display,
-      input.status, input.mobileCiphertext ?? null, input.mobileFingerprint ?? null, input.mobileMasked ?? '***']);
+    await database.query(
+      `insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,mobile_masked,created_at,updated_at)
+      values($1,$2,$3,$4,$5,$6,$7,clock_timestamp(),clock_timestamp())`,
+      [input.member, input.principal, input.display, input.status, input.mobileCiphertext ?? null, input.mobileFingerprint ?? null, input.mobileMasked ?? '***']
+    );
   }
 
   async ensureImported(database: OperationDatabase, input: MemberProfile): Promise<void> {
@@ -84,27 +93,29 @@ export class MemberPort {
   }
 
   async changeMobile(database: OperationDatabase, principal: string, ciphertext: string, fingerprint: string, masked: string): Promise<Readonly<Record<string, unknown>>> {
-    const result = await database.query(`update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked=$4,
-      version=version+1,updated_at=clock_timestamp()
-      where principal_id=$1 returning id,display_name,mobile_masked,version`, [principal, ciphertext, fingerprint, masked]);
+    const result = await database.query(
+      `update member.profile set mobile_ciphertext=$2,mobile_token=$3,version=version+1,updated_at=clock_timestamp()
+      where principal_id=$1 returning id,display_name,$4::text mobile_masked,version`,
+      [principal, ciphertext, fingerprint, masked]
+    );
     const row = result.rows[0];
     if (!row) throw new Error('MEMBER_PROFILE_NOT_FOUND');
     return row;
   }
 }
 
+export const memberPort = new MemberPort();
+
 function registrationInviteBoundary(): string {
   return `(role.status='active' and organization.status='active' and (
     (invite.target_client='storefront' and invite.role_id='role-zhudatuan-storefront-member'
       and invite.storefront_organization_id is null and organization.kind='mall')
     or (invite.target_client='operator' and invite.role_id='role-zhudatuan-pending-operator'
-      and invite.storefront_organization_id is not null and invite.max_uses=1
-      and invite.allowed_destination_hash is not null and organization.kind='tenant'
-      and not exists(select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=invite.role_id)
+      and invite.storefront_organization_id is not null and organization.kind='tenant'
+      and not exists(select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id)
       and exists(select 1 from organization.organization storefront
         join organization.unitclosure closure on closure.descendant_id=storefront.id
         where storefront.id=invite.storefront_organization_id and storefront.kind='mall' and storefront.status='active'
-          and closure.ancestor_id=invite.organization_id))))`;
+          and closure.ancestor_id=organization.id))
+  ))`;
 }
-
-export const memberPort = new MemberPort();

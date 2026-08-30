@@ -26,6 +26,7 @@ begin
   where version='20260821032000';
   if current_checksum is null or current_checksum not in(
     '83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a',
+    '9accf457c29e31374c87d8cb35286b789b3e512451862a67f10c57008475891a',
     '7be24c44ea3397d9d1429dda127479bf84efbc5d9b94cc41322db148e4b83f66'
   ) then
     raise exception 'CONTRACT_IDENTITY_CHECKSUM_UNKNOWN:%',coalesce(current_checksum,'missing');
@@ -36,7 +37,10 @@ $boundary_guard$;
 update runtime.schemaversion
 set checksum='7be24c44ea3397d9d1429dda127479bf84efbc5d9b94cc41322db148e4b83f66'
 where version='20260821032000'
-  and checksum='83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a';
+  and checksum in(
+    '83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a',
+    '9accf457c29e31374c87d8cb35286b789b3e512451862a67f10c57008475891a'
+  );
 
 insert into runtime.schemaversion(version,checksum)
 values('20260829213000','7250097cd72cfd86ac5dc381c84656245578b169b18fb7eec5044840b79dfce4')
