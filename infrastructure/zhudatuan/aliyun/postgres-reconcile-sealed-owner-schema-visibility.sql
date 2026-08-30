@@ -31,6 +31,9 @@ end
 $precondition$;
 
 grant usage on schema identity,access to shopmigration;
+grant all privileges on all tables in schema identity,access to shopmigration;
+grant all privileges on all sequences in schema identity,access to shopmigration;
+grant execute on all functions in schema identity,access to shopmigration;
 revoke usage on schema deployment from shopmigration;
 
 do $assert$
@@ -42,6 +45,18 @@ begin
     or not has_schema_privilege('zhudatuanidentityapi','identity','USAGE')
     or not has_table_privilege('zhudatuanidentityapi','identity.session','INSERT') then
     raise exception 'SEALED_OWNER_SCHEMA_VISIBILITY_ACL_INVALID';
+  end if;
+  if exists(select 1 from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+      where namespace.nspname in('identity','access') and relation.relkind in('r','p','v','m','f')
+        and not has_table_privilege('shopmigration',relation.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'))
+    or exists(select 1 from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+      where namespace.nspname in('identity','access') and relation.relkind='S'
+        and not has_sequence_privilege('shopmigration',
+          quote_ident(namespace.nspname)||'.'||quote_ident(relation.relname),'USAGE,SELECT,UPDATE'))
+    or exists(select 1 from pg_proc function join pg_namespace namespace on namespace.oid=function.pronamespace
+      where namespace.nspname in('identity','access')
+        and not has_function_privilege('shopmigration',function.oid,'EXECUTE')) then
+    raise exception 'SEALED_OWNER_SCHEMA_VISIBILITY_OWNER_ACL_INVALID';
   end if;
   select * into boundary from deployment.runtime_database_boundary();
   if boundary.active_platform_owner_count<>1 or not boundary.migration_head_valid

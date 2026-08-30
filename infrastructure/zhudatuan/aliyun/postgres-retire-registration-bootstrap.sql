@@ -53,15 +53,21 @@ end
 $retire$;
 
 revoke all privileges on all tables in schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
+  shopapp,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke all privileges on all sequences in schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
+  shopapp,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke all privileges on all functions in schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
+  shopapp,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
+revoke all privileges on all tables in schema deployment from shopmigration;
+revoke all privileges on all sequences in schema deployment from shopmigration;
+revoke all privileges on all functions in schema deployment from shopmigration;
 revoke usage on schema identity,access,deployment from
   shopapp,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke usage on schema deployment from shopmigration;
 grant usage on schema identity,access to shopmigration;
+grant all privileges on all tables in schema identity,access to shopmigration;
+grant all privileges on all sequences in schema identity,access to shopmigration;
+grant execute on all functions in schema identity,access to shopmigration;
 revoke execute on function deployment.registration_bootstrap_boundary(text) from shopmigration;
 revoke execute on function deployment.is_independent_registration_database() from shopmigration;
 revoke select on deployment.boundary from shopmigration;
