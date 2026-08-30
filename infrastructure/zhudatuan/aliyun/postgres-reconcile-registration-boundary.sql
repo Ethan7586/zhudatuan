@@ -187,6 +187,11 @@ grant create on schema deployment to zhudatuanregistrationboundary;
 grant select on access.role,access.membership,access.membershiprole to zhudatuanregistrationboundary;
 grant select on runtime.schemaversion to zhudatuanregistrationboundary;
 
+-- OUT parameters define a named row shape. PostgreSQL cannot add
+-- business_roles_valid through CREATE OR REPLACE, so replace this data-free
+-- oracle transactionally after proving it has no database dependants.
+drop function if exists deployment.runtime_database_boundary();
+
 drop policy if exists zhudatuanregistrationboundary_runtime_guard on access.role;
 create policy zhudatuanregistrationboundary_runtime_guard on access.role
   for select to zhudatuanregistrationboundary using(true);
