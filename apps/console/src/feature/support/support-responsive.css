@@ -1,0 +1,30 @@
+@media (max-width: 1180px) {
+  .supportdesk { grid-template-columns: minmax(15rem, 18rem) minmax(22rem, 1fr); }
+  .supportcontext { display: none; }
+}
+
+@media (max-width: 760px) {
+  .supportworkspaceheader { align-items: flex-start; flex-direction: column; }
+  .supportworkspacestatus { width: 100%; justify-content: space-between; }
+  .supportdesk { display: flex; height: auto; min-height: 0; flex-direction: column; overflow: visible; }
+  .supportdesk[data-case-selected='false'] .supportconversation { display: none; }
+  .supportdesk[data-case-selected='true'] .supportcaserail { display: none; }
+  .supportcaserail { min-height: 38rem; border-right: 0; }
+  .supportconversation { min-height: 38rem; }
+  .supportconversationheader { padding-inline: var(--sw-space-1-5); }
+  .supportmessages { min-height: 22rem; padding: var(--sw-space-2) var(--sw-space-1-5); }
+  .supportmessage { max-width: 94%; }
+  .supportcomposer { padding-inline: var(--sw-space-1-5); }
+  .supportcomposerbar > span { display: none; }
+}
+
+@media (min-width: 761px) {
+  .supportmobileback { display: none; }
+}
+
+@media (max-width: 430px) {
+  .supportcasefilters { grid-template-columns: 1fr; }
+  .supportconversationtools > span { display: none; }
+  .supportconversationheader p { max-width: 13rem; }
+  .supportcomposeractions > span { max-width: 11rem; }
+}
