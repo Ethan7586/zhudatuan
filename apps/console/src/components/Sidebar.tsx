@@ -39,6 +39,8 @@ const navigationTargets: readonly NavigationTarget[] = Object.freeze([
 ]);
 
 export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, professionalRoutes, workstations, onNavigate, onToggle }: SidebarProps) {
+  const supportRoute = professionalRoutes.find(({ featureKey }) => featureKey === 'support');
+
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
@@ -64,6 +66,12 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
           </button>;
         })}
       </nav>
+      {supportRoute ? <nav aria-label="客服系统" className="sidebarsupport">
+        <button type="button" onClick={() => onNavigate(supportRoute.suffix)} aria-label="客服系统"
+          aria-current={active === 'support' ? 'page' : undefined} title={collapsed ? '客服系统' : undefined}>
+          <ShellIcon name="support" /><span className="sidebarlabel">客服系统</span>
+        </button>
+      </nav> : null}
       <div className="sidebarprofile">
         <span className="sidebarprofileavatar" aria-hidden="true">{avatarLetter(displayName)}</span>
         <span className="sidebarprofilecopy"><strong>{displayName}</strong><small>{roleLabel}</small></span>

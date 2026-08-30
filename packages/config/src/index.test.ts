@@ -43,6 +43,9 @@ describe('runtime configuration schema', () => {
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
     };
     expect(registrationMigrationEnvironment(environment).profile).toBe('registration-only');
+    expect(registrationMigrationEnvironment({ ...environment,
+      MIGRATION_DIRECTORY: '/opt/zhudatuan/releases/0123456789abcdef0123456789abcdef01234567-console-support/database/supabase/migrations',
+    }).directory).toContain('/opt/zhudatuan/releases/');
     expect(() => registrationMigrationEnvironment({ ...environment, APP_ENV: 'test' }))
       .toThrow('REGISTRATION_MIGRATION_PRODUCTION_ENV_REQUIRED');
     expect(() => registrationMigrationEnvironment({ ...environment, MIGRATION_DIRECTORY: '/tmp/migrations' }))

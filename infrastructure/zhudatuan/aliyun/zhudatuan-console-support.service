@@ -1,0 +1,37 @@
+[Unit]
+Description=Zhudatuan Console Support Operator API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+UMask=0027
+WorkingDirectory=/opt/zhudatuan/current
+EnvironmentFile=/opt/zhudatuan/shared/console-support.env
+Environment=NODE_ENV=production
+Environment=APP_ENV=production
+Environment=AUTH_MODE=membership
+Environment=API_PORT=4324
+Environment=API_ALLOWED_ORIGINS=https://console.zhudatuan.com
+ExecStart=/usr/bin/node --import tsx services/commerce/src/entry/ConsoleSupportMain.ts
+ExecStartPost=/usr/bin/curl --fail --silent --show-error --retry 20 --retry-connrefused --retry-delay 1 --max-time 30 http://127.0.0.1:4324/health/ready
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
