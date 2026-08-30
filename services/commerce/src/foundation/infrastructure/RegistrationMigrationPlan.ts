@@ -19,7 +19,21 @@ const OMITTED_MIGRATIONS = new Map<string, string>([
   ['20260820132000_platform_owner_reconciliation.sql', 'environment-specific Ethan platform owner reconciliation'],
 ]);
 
+const managedBackfill = (error: string): Transformation => ({
+  assertion: new RegExp(`\\n  if exists\\(select 1 from runtime\\.schemaversion(?:(?!\\n  end if;)[\\s\\S])*?raise exception '${error}';\\n  end if;\\n`),
+  reason: 'managed registration backfill preserves predecessor and state guards while later release ledger rows already exist',
+});
+
 const TRANSFORMATIONS = new Map<string, Transformation>([
+  ['20260829060000_zhudatuan_operator_invitation_registration.sql', managedBackfill('ZHUDATUAN_OPERATOR_INVITATION_FUTURE_HEAD_INVALID')],
+  ['20260829210000_owner_operator_coverage.sql', managedBackfill('OWNER_OPERATOR_COVERAGE_FUTURE_HEAD_INVALID')],
+  ['20260829211000_platform_owner_transfer.sql', managedBackfill('PLATFORM_OWNER_TRANSFER_FUTURE_HEAD_INVALID')],
+  ['20260829212000_owner_runtime_boundary_hardening.sql', managedBackfill('OWNER_RUNTIME_BOUNDARY_FUTURE_HEAD_INVALID')],
+  ['20260829213000_reconcile_contract_identity_checksum.sql', managedBackfill('CONTRACT_IDENTITY_CHECKSUM_FUTURE_HEAD_INVALID')],
+  ['20260829214000_owner_personal_scope_and_invoice_scope.sql', managedBackfill('OWNER_PERSONAL_SCOPE_FUTURE_HEAD_INVALID')],
+  ['20260829215000_restore_invoice_request_operator_boundary.sql', managedBackfill('INVOICE_REQUEST_OPERATOR_FUTURE_HEAD_INVALID')],
+  ['20260829216000_owner_capability_exactness.sql', managedBackfill('OWNER_CAPABILITY_EXACTNESS_FUTURE_HEAD_INVALID')],
+  ['20260829217000_scope_hint_resource_precedence.sql', managedBackfill('SCOPE_HINT_RESOURCE_PRECEDENCE_FUTURE_HEAD_INVALID')],
   ['20260821066000_resolve_invitation_scope.sql', {
     assertion: /\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',null,[\s\S]*?\nend \$assert\$;\n/,
     reason: 'assertion requires the omitted platform owner membership',
