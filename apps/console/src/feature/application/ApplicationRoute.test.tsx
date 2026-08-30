@@ -50,9 +50,9 @@ describe('Commerce application workspace', () => {
     )));
     await client.invalidateQueries();
 
-    const access = await screen.findByRole('region', { name: '暂无访问权限' });
+    const access = await screen.findByRole('region', { name: '需要访问权限' });
     await waitFor(() => expect(document.activeElement).toBe(access));
-    expect(within(access).getByText('当前账号无法查看「应用治理」。')).toBeTruthy();
+    expect(within(access).getByText('当前账号尚未开通「应用治理」。')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('table', { name: '应用治理列表' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: '应用治理' })).toBeNull();

@@ -48,8 +48,8 @@ describe('Finance reconciliation workspace', () => {
     server.use(http.get('*/api/v1/finance/reconciliations', () => HttpResponse.json({ code: 'FINANCE_READ_DENIED', requestId: 'request:denied' }, { status: 403 })));
     renderRoute('/finance', previewContext);
 
-    const boundary = await screen.findByRole('region', { name: '暂无访问权限' });
-    expect(within(boundary).getByText('当前账号无法查看「财务与对账系统」。')).toBeTruthy();
+    const boundary = await screen.findByRole('region', { name: '需要访问权限' });
+    expect(within(boundary).getByText('当前账号尚未开通「财务与对账系统」。')).toBeTruthy();
     expect(screen.queryByRole('table', { name: '支付对账批次' })).toBeNull();
     expect(screen.queryByText('对账数据读取失败')).toBeNull();
   });
@@ -67,7 +67,7 @@ describe('Finance reconciliation workspace', () => {
     expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '刷新财务数据' }));
-    expect(await screen.findByRole('region', { name: '暂无访问权限' })).toBeTruthy();
+    expect(await screen.findByRole('region', { name: '需要访问权限' })).toBeTruthy();
     expect(screen.queryByRole('table', { name: '支付对账批次' })).toBeNull();
     expect(screen.queryByText('RCN-20260824-WECHAT-001')).toBeNull();
   });

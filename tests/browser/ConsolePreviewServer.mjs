@@ -15,12 +15,26 @@ const referralReads = Object.freeze([
   'referral.settings.read', 'referral.products.read', 'referral.members.read',
   'referral.bindings.read', 'referral.commissions.read',
 ]);
+const previewPermissions = Object.freeze([
+  'identity.session.read', 'member.profile.read',
+  'reporting.dashboard.read', 'runtime.health.read', 'catalog.listing.read', 'order.read',
+  'finance.overview.read', 'finance.reconciliation.read', 'experience.application.read',
+  'voucher.cardlibrary.read', 'voucher.program.read', 'voucher.reserve.read', 'voucher.batch.read',
+  ...referralReads,
+]);
+const previewCapabilities = Object.freeze([
+  'identity.session.read', 'member.profile.read',
+  'reporting.dashboard.read', 'runtime.health.dependency', 'catalog.listings.read', 'order.orders.read',
+  'finance.overview.read', 'finance.reconciliations.read', 'experience.applications.read',
+  'voucher.cardlibraries.read', 'voucher.programs.read', 'voucher.reserves.read', 'voucher.batches.read',
+  ...referralReads,
+]);
 const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: [previewScope, referralScope],
-  permissions: [...consoleSession.permissions, ...referralReads],
-  capabilities: [...consoleSession.capabilities, ...referralReads],
+  permissions: previewPermissions,
+  capabilities: previewCapabilities,
   assurance: { level: 2, verified: 'local-preview' },
 });
 
@@ -32,7 +46,7 @@ const server = createServer((request, response) => {
     return;
   }
   if (request.method !== 'GET') {
-    send(response, { code: 'DISPLAY_ONLY', message: '分销展示环境禁止写入。' }, 503);
+    send(response, errorContract(request, 'DISPLAY_ONLY', '分销展示环境禁止写入。'), 503);
     return;
   }
 
@@ -123,12 +137,7 @@ const server = createServer((request, response) => {
   const result = responses.get(route);
 
   if (result === undefined) {
-    send(response, {
-      code: 'PREVIEW_OPERATION_FORBIDDEN',
-      method: request.method,
-      path: url.pathname,
-      requestId: request.headers['x-trace-id'] ?? 'referral-preview',
-    }, 403);
+    send(response, errorContract(request, 'PREVIEW_OPERATION_FORBIDDEN', '当前预览账号尚未开通此页面。'), 403);
     return;
   }
 
@@ -153,6 +162,16 @@ function send(response, body, status = 200) {
 
 function page(items) {
   return { items, count: items.length };
+}
+
+function errorContract(request, code, message) {
+  return { code, message, requestId: requestId(request), retryable: false };
+}
+
+function requestId(request) {
+  const header = request.headers['x-trace-id'];
+  const value = Array.isArray(header) ? header[0] : header;
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : 'referral-preview';
 }
 
 function setCors(request, response) {

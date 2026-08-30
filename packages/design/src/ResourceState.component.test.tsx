@@ -35,11 +35,11 @@ describe('resource state contract', () => {
   ] as const)('renders %s with the calm access boundary instead of a load failure', (condition, kind) => {
     const result = ResourceState({ condition, resourceLabel: '分销系统', error: 'PERMISSION_DETAIL', children: 'ready' });
     expect(isValidElement(result)).toBe(true);
-    if (!isValidElement<{ kind?: string; resourceLabel: string; detail: string }>(result)) throw new Error('ACCESS_DENIED_ELEMENT_REQUIRED');
+    if (!isValidElement<{ kind?: string; resourceLabel: string; detail?: string }>(result)) throw new Error('ACCESS_DENIED_ELEMENT_REQUIRED');
     expect(result.type).toBe(ContextualAccessDenied);
     expect(result.props.kind).toBe(kind);
     expect(result.props.resourceLabel).toBe('分销系统');
-    expect(result.props.detail).toBe('PERMISSION_DETAIL');
+    expect(result.props.detail).toBeUndefined();
   });
 
   it('announces loading, renders empty and preserves ready children', () => {
