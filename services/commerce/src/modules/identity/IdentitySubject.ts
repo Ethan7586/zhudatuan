@@ -13,3 +13,19 @@ export function canonicalMobile(value: string): string {
   if (!MOBILE.test(canonical)) throw new Error('MOBILE_INVALID');
   return canonical;
 }
+
+export function canonicalIdentitySubject(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  const compact = normalized.replace(/[\s()-]/g, '');
+  if (MOBILE.test(compact)) return canonicalMobile(normalized);
+  if (!normalized) throw new Error('IDENTITY_SUBJECT_INVALID');
+  return normalized;
+}
+
+export function identitySubjectVariants(value: string): readonly string[] {
+  const normalized = value.trim().toLowerCase();
+  const canonical = canonicalIdentitySubject(value);
+  const variants = new Set([canonical, normalized]);
+  if (/^\+861[3-9][0-9]{9}$/.test(canonical)) variants.add(canonical.slice(3));
+  return Object.freeze([...variants]);
+}

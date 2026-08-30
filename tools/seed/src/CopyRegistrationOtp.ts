@@ -13,7 +13,9 @@ async function main(): Promise<void> {
       mobile: process.env.LOCAL_OTP_MOBILE,
       platform: process.platform,
       secretStoreEndpoint: environment.secretStoreEndpoint,
+      secretStoreBearerToken: environment.secretStoreBearerToken,
       kmsEndpoint: environment.kmsEndpoint,
+      kmsBearerToken: environment.kmsBearerToken,
       adminDatabaseConnectionRef: environment.adminDatabaseConnectionRef,
       identityKeyRef: environment.identityKeyRef,
     },
@@ -24,7 +26,7 @@ async function main(): Promise<void> {
         await client.connect();
         return client;
       },
-      decrypt: (endpoint, keyRef, ciphertext, context) => new KmsClient(endpoint).decrypt(keyRef, ciphertext, context),
+      decrypt: (endpoint, keyRef, ciphertext, context) => new KmsClient(endpoint, environment.kmsBearerToken).decrypt(keyRef, ciphertext, context),
       copy: copyToMacClipboard,
     }
   );

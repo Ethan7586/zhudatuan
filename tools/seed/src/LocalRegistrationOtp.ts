@@ -11,7 +11,9 @@ export interface LocalRegistrationOtpInput {
   readonly mobile: string | undefined;
   readonly platform: NodeJS.Platform;
   readonly secretStoreEndpoint: string;
+  readonly secretStoreBearerToken: string;
   readonly kmsEndpoint: string;
+  readonly kmsBearerToken: string;
   readonly adminDatabaseConnectionRef: string;
   readonly identityKeyRef: string;
 }
@@ -27,7 +29,7 @@ interface Database {
 }
 
 export interface LocalRegistrationOtpDependencies {
-  readonly readSecret: (endpoint: string, reference: string) => Promise<string>;
+  readonly readSecret: (endpoint: string, bearerToken: string, reference: string) => Promise<string>;
   readonly openDatabase: (connectionString: string) => Promise<Database>;
   readonly decrypt: (endpoint: string, keyRef: string, ciphertext: string, context: Readonly<Record<string, string>>) => Promise<string>;
   readonly copy: (value: string) => Promise<void>;
@@ -39,8 +41,8 @@ export async function copyLatestLocalRegistrationOtp(
 ): Promise<void> {
   const mobile = localInput(input);
   const [connectionString, identityKey] = await Promise.all([
-    dependencies.readSecret(input.secretStoreEndpoint, input.adminDatabaseConnectionRef),
-    dependencies.readSecret(input.secretStoreEndpoint, input.identityKeyRef),
+    dependencies.readSecret(input.secretStoreEndpoint, input.secretStoreBearerToken, input.adminDatabaseConnectionRef),
+    dependencies.readSecret(input.secretStoreEndpoint, input.secretStoreBearerToken, input.identityKeyRef),
   ]);
   assertLoopbackPostgres(connectionString);
   if (identityKey.length < 32) throw new Error('LOCAL_OTP_IDENTITY_KEY_INVALID');

@@ -1,30 +1,28 @@
 import { createHash, createHmac, randomBytes, randomInt, randomUUID } from 'node:crypto';
-import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion, type OperationId } from '@shop/contract';
+import type { OperationId } from '@shop/contract';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
-import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult } from '../../foundation/application/ModuleOperations';
+import { ModuleOperations, operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions, type OperationDatabase } from '../../foundation/application/ModuleOperations';
 import { bodyRecord, integerField, textField } from '../../foundation/interface/Validation';
-import type { OperationUsecase } from '../../foundation/application/OperationHandler';
+import type { OperationRequest, OperationUsecase } from '../../foundation/application/OperationHandler';
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { RISK_GATE } from '../../foundation/security/RiskGate';
-import { SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { WECHAT_IDENTITY } from './application/port/WechatIdentity';
+import { StepupPolicy } from '../../foundation/security/StepupPolicy';
+import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { PasswordPolicy } from './domain/policy/PasswordPolicy';
 import { bindWechat, publishIdentityEvent, tokenHash } from './IdentityPersistence';
-import { WechatOperations } from './WechatOperations';
 import { AuthTransaction } from './domain/model/AuthTransaction';
 import { PgAuthTicket } from './infrastructure/PgAuthTicket';
 import { RETURN_TARGETS } from './infrastructure/ReturnTargetCatalog';
 import { ReturnTargetSigner } from './infrastructure/ReturnTargetSigner';
 import { assertLoginAllowed, assertPublicRisk, authTarget, consumeChallenge, consumeChallengeRate, recordLoginFailure, requestCookie, sessionCookies } from './IdentitySecurity';
-import { accessPort } from '../access/AccessModule';
-import { memberPort } from '../member/MemberModule';
-import { organizationPort } from '../organization/OrganizationModule';
-import { canonicalMobile } from './IdentitySubject';
-import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolveBoundMobilePrincipal, verifySmsLoginChallenge } from './SmsLogin';
+import { accessPort } from '../access/AccessPort';
+import { memberPort } from '../member/MemberPort';
+import { organizationPort } from '../organization/OrganizationPort';
+import { canonicalIdentitySubject, canonicalMobile, identitySubjectVariants } from './IdentitySubject';
 
-const CORE_OPERATIONS = [
+export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.sessions.create',
   'identity.tickets.exchange',
   'identity.session.read',
@@ -37,47 +35,64 @@ const CORE_OPERATIONS = [
   'identity.invitations.revoke',
   'identity.members.create',
   'identity.members.manage',
-  'identity.members.reset',
   'identity.password.change',
   'identity.password.verify',
   'identity.password.reset',
+  'identity.mobile.challenge',
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
-] as const satisfies readonly OperationId[];
+] as const satisfies readonly OperationId[]);
+
+export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
+  'identity.sessions.create',
+  'identity.tickets.exchange',
+  'identity.session.read',
+  'identity.session.delete',
+  'identity.challenges.create',
+  'identity.invitations.read',
+  'identity.invitations.create',
+  'identity.invitations.revoke',
+  'identity.members.create',
+] as const satisfies readonly OperationId[]);
 
 export function identityOperations(context: ModuleContext): OperationUsecase {
+  return identityCoreOperations(context, IDENTITY_CORE_OPERATION_IDS, false);
+}
+
+export function identityRegistrationOperations(context: ModuleContext): OperationUsecase {
+  return identityCoreOperations(context, IDENTITY_REGISTRATION_OPERATION_IDS, true);
+}
+
+export function identityCoreOperations(context: ModuleContext, ownedOperations: readonly OperationId[], registrationOnly = false): OperationUsecase {
   const pool = context.container.get(DATABASE_POOL);
   const audit = context.container.get(AUDIT_SINK);
-  const keys = context.container.get(SECURITY_KEYS);
+  const keys = context.container.get(IDENTITY_SECURITY_KEYS);
   const kms = context.container.get(KMS_CLIENT);
   const risk = context.container.get(RISK_GATE);
   const passwords = new PasswordPolicy();
+  const stepup = new StepupPolicy();
   const tickets = new PgAuthTicket(new ReturnTargetSigner(context.container.get(RETURN_TARGETS), keys.session));
   const digest = (value: string) => createHmac('sha256', keys.identity).update(value.trim().toLowerCase()).digest('hex');
+  const sessionDigest = (value: string) => createHash('sha256').update(value).digest('hex');
   const codeDigest = (challenge: string, code: string) => createHmac('sha256', keys.session).update(`${challenge}:${code}`).digest('hex');
-  const core = new ModuleOperations(
-    'identity',
-    pool,
-    audit,
-    {
+  const actions: OperationActions = {
       'identity.sessions.create': operationLifecycle({
         prepare: async (request) => {
           const body = bodyRecord(request);
           const authorization = AuthTransaction.start(body.authorization);
-          const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
-          if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
-          const normalizedSubject = provider === 'phone_otp' ? canonicalMobile(textField(body, 'subject', 32)) : textField(body, 'subject');
-          const subject = digest(normalizedSubject);
+          const subjects = identitySubjectVariants(textField(body, 'subject'));
+          const subjectHashes = subjects.map(digest);
+          const subject = subjectHashes[0]!;
           const peer = digest(request.input.headers['x-peer-address'] ?? 'unknown');
           const device = digest(request.input.headers['x-device-id'] ?? 'unknown');
           const client = digest(`${peer}:${request.input.headers['user-agent'] ?? 'unknown'}:${device}`);
           await assertPublicRisk(risk, request, subject, client);
           return {
             body,
-            provider,
             authorization,
             subject,
+            subjectHashes,
             client,
             rateKeys: [
               [subject, client],
@@ -87,47 +102,31 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
             ] as const,
           };
         },
-        execute: async (request, database, { body, provider, authorization, subject, client, rateKeys }) => {
+        execute: async (request, database, { body, authorization, subject, subjectHashes, client, rateKeys }) => {
           await assertLoginAllowed(database, rateKeys);
-          let found: Readonly<{ principal_id: string; credential_version: number }> | undefined;
-          let loginChallenge: string | undefined;
-          let loginCode: string | undefined;
-          if (provider === 'password') {
-            const credential = await database.query<{ principal_id: string; secret_hash: string | null; credential_version: number }>(
-              `select credential.principal_id,credential.secret_hash,principal.credential_version
-            from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
-            where credential.provider='password' and credential.subject_hash=$1 and credential.status='active' and principal.status='active' for update`,
-              [subject]
-            );
-            const credentialFound = credential.rows[0];
-            if (!(await passwords.verify(textField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
-              await recordLoginFailure(database, rateKeys);
-              reject(401, 'CREDENTIAL_INVALID');
-            }
-            if (credentialFound) found = credentialFound;
-          } else {
-            loginChallenge = textField(body, 'challenge', 128);
-            loginCode = textField(body, 'code', 16);
-            found = await verifySmsLoginChallenge(database, {
-              id: loginChallenge,
-              codeHash: codeDigest(loginChallenge, loginCode),
-              destinationHash: subject,
-            });
-            if (!found) {
-              await recordInvalidSmsLoginChallenge(database, loginChallenge, subject);
-              await recordLoginFailure(database, rateKeys);
-              reject(401, 'CREDENTIAL_INVALID');
-            }
+          const credential = await database.query<{ principal_id: string; secret_hash: string | null; credential_version: number }>(
+            `select credential.principal_id,credential.secret_hash,principal.credential_version
+          from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
+          where credential.provider=$1 and credential.subject_hash=any($2::text[]) and credential.status='active' and principal.status='active'
+          order by array_position($2::text[],credential.subject_hash) for update`,
+            [body.provider ?? 'password', subjectHashes]
+          );
+          const found = credential.rows.length === 1 ? credential.rows[0] : undefined;
+          if (!(await passwords.verify(textField(body, 'password', 128), found?.secret_hash ?? null))) {
+            await recordLoginFailure(database, rateKeys);
+            reject(401, 'CREDENTIAL_INVALID');
           }
           if (!found) reject(401, 'CREDENTIAL_INVALID');
-          await database.query("delete from identity.loginattempt where subject_hash=$1 and client_hash in($2,'account')", [subject, client]);
+          await database.query("delete from identity.loginattempt where subject_hash=any($1::text[]) and client_hash in($2,'account')", [subjectHashes, client]);
           const memberships = await database.query<{ id: string; access_version: number; client: string }>(
             `select membership.id,membership.access_version,membership.client from member.profile profile
           join access.membership membership on membership.member_id=profile.id where profile.principal_id=$1 and membership.status='active' order by membership.id`,
             [found.principal_id]
           );
           const requestedTarget = typeof body.target === 'string' ? authTarget(body.target) : undefined;
-          const candidates = requestedTarget === undefined ? memberships.rows : memberships.rows.filter((item) => authTarget(item.client) === requestedTarget);
+          const candidates = requestedTarget === undefined
+            ? memberships.rows
+            : memberships.rows.filter((item) => authTarget(item.client) === requestedTarget);
           const requested = typeof body.membership === 'string' ? body.membership : undefined;
           const membership = requested ? candidates.find((item) => item.id === requested) : candidates.length === 1 ? candidates[0] : undefined;
           if (requested !== undefined && membership === undefined) reject(403, 'MEMBERSHIP_INACTIVE');
@@ -140,18 +139,13 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
               },
             };
           }
-          if (provider === 'phone_otp') {
-            const consumed = await consumeSmsLoginChallenge(database, {
-              id: loginChallenge!,
-              codeHash: codeDigest(loginChallenge!, loginCode!),
-              principal: found.principal_id,
-              destinationHash: subject,
-            });
-            if (!consumed) reject(401, 'CREDENTIAL_INVALID');
-          }
           const token = randomBytes(48).toString('base64url');
           const id = `session:${randomUUID()}`;
-          const assurance = provider === 'phone_otp' ? 2 : 1;
+          const phoneAssurance = await database.query<{ level: number }>(`select case when exists(
+            select 1 from identity.assurance where principal_id=$1 and method='phone_otp' and level=2
+              and verified_at<=clock_timestamp() and expires_at>clock_timestamp()
+          ) then 2 else 1 end::smallint level`, [found.principal_id]);
+          const assurance = phoneAssurance.rows[0]?.level === 2 ? 2 : 1;
           await database.query(
             `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
           values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
@@ -169,19 +163,8 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
               assurance,
             ]
           );
-          if (provider === 'phone_otp') {
-            await database.query(
-              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours')`,
-              [`assurance:${randomUUID()}`, found.principal_id, id, createHash('sha256').update(loginChallenge!).digest('hex')]
-            );
-          }
-          await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!, {
-            principal: found.principal_id,
-            membership: membership.id,
-            assurance,
-            loginMethod: provider,
-          });
+          await publishIdentityEvent(database, 'identity.session.created', id, membership.id, request.input.idempotency!,
+            { principal: found.principal_id, membership: membership.id, assurance });
           const csrf = randomBytes(32).toString('base64url');
           const target = authTarget(membership.client);
           const callback = await tickets.issue(database, id, target, authorization);
@@ -285,33 +268,33 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
           const body = bodyRecord(request);
           const id = `challenge:${randomUUID()}`;
           const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-          const purpose = textField(body, 'purpose');
-          if (!['registration', 'login', 'password_reset', 'phone_change', 'stepup', 'wechat_bind'].includes(purpose)) throw new Error('CHALLENGE_PURPOSE_INVALID');
           const requestedDestination = textField(body, 'destination').trim();
-          const destination = purpose === 'registration' || purpose === 'login' ? canonicalMobile(requestedDestination) : requestedDestination;
+          const purpose = textField(body, 'purpose');
+          if (registrationOnly && purpose !== 'registration') reject(400, 'CHALLENGE_PURPOSE_INVALID');
+          if (!['registration', 'password_reset', 'wechat_bind'].includes(purpose)) throw new Error('CHALLENGE_PURPOSE_INVALID');
+          const destination = purpose === 'registration' ? canonicalMobile(requestedDestination)
+            : purpose === 'password_reset' ? canonicalIdentitySubject(requestedDestination) : requestedDestination;
           const destinationHash = digest(destination);
-          const legacyMobileToken = purpose === 'login' ? createHash('sha256').update(destination).digest('hex') : undefined;
+          const inviteHash = purpose === 'registration' ? digest(textField(body, 'invite')) : undefined;
           const device = digest(request.input.headers['x-device-id'] ?? 'unknown');
           const peer = digest(request.input.headers['x-peer-address'] ?? 'unknown');
           await assertPublicRisk(risk, request, destinationHash, device);
-          const [envelope, recipient, mobileLookup] = await Promise.all([
-            kms.encrypt('identity/challenge', code, { challenge: id, purpose }),
-            kms.encrypt('identity/destination', destination, { challenge: id, purpose }),
-            purpose === 'login' ? kms.encrypt('identity/mobile', destination, { challenge: id, purpose }) : Promise.resolve(undefined),
-          ]);
-          return { body, id, code, purpose, destinationHash, legacyMobileToken, device, peer, envelope, recipient, mobileLookup };
+          const [envelope, recipient] = await Promise.all([kms.encrypt('identity/challenge', code, { challenge: id, purpose }), kms.encrypt('identity/destination', destination, { challenge: id, purpose })]);
+          return { body, id, code, purpose, destinationHash, inviteHash, device, peer, envelope, recipient };
         },
         execute: async (request, database, prepared) => {
-          const { body, id, code, purpose, destinationHash, legacyMobileToken, device, peer, envelope, recipient, mobileLookup } = prepared;
+          const { body, id, code, purpose, destinationHash, inviteHash, device, peer, envelope, recipient } = prepared;
+          if (purpose === 'registration') {
+            if (!inviteHash) throw new Error('INVITE_INVALID');
+            await requireValidInvite(memberPort.assertRegistrationInvite(database, inviteHash, destinationHash));
+          }
           await consumeChallengeRate(database, [
             [destinationHash, purpose],
             [peer, `network:${purpose}`],
             [device, `device:${purpose}`],
           ]);
-          let principal = typeof body.principal === 'string' ? body.principal : null;
-          if (purpose === 'login') {
-            principal = await resolveBoundMobilePrincipal(database, [destinationHash, mobileLookup!.fingerprint, legacyMobileToken!]);
-          } else if (purpose === 'password_reset') {
+          let principal: string | null = null;
+          if (purpose === 'password_reset') {
             const credential = await database.query<{ principal_id: string }>(
               `select principal_id from identity.credential
             where provider='password' and subject_hash=$1 and status='active'`,
@@ -325,13 +308,12 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
           values($1,$2,$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
         ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
-            [id, principal, purpose, destinationHash, codeDigest(id, code), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+            [id, principal, purpose, destinationHash, codeDigest(id, inviteHash === undefined ? code : `${code}:${inviteHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-          select $1,'notification','identity',jsonb_build_object('challenge',$2::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp()
-          where $3::text is not null`,
-            [`job:notify:${id}`, id, purpose === 'login' ? principal : 'public-challenge']
+          values($1,'identitynotification','identity',jsonb_build_object('challenge',$2::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+            [`job:notify:${id}`, id]
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, { challenge: id, destination: destinationHash, purpose });
           return rowResult(result, 202);
@@ -343,26 +325,42 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
         return rowResult(result);
       },
       'identity.invitations.create': async (request, database) => {
-        const access = requireAccess(request);
+        const { access, exactOwner } = await requireInvitationManager(request, database, registrationOnly);
         const body = bodyRecord(request);
         const label = textField(body, 'label', 80);
+        const requestedTarget = body.targetClient;
+        if (requestedTarget !== undefined && requestedTarget !== 'storefront' && requestedTarget !== 'operator') {
+          throw new Error('INVALID_INVITATION_INPUT');
+        }
+        const targetClient = registrationOnly ? 'operator' : requestedTarget ?? 'storefront';
+        if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
+        if (targetClient === 'operator' && !exactOwner) reject(403, 'PERMISSION_DENIED');
         const maxUses = integerField(body, 'maxUses', 1);
         const expiresAt = inviteExpiry(body.expiresAt);
-        if (label.length < 2 || maxUses > 500) throw new Error('INVALID_INVITATION_INPUT');
-        const roles = await database.query<{ operator_role: string; storefront_role: string }>(
-          `select pending.id operator_role,'role:self'::text storefront_role
-          from organization.organization tenant
-          join access.role pending on pending.id='role-console-pending-v1:'||tenant.id
-            and pending.scope_id=tenant.id and pending.status='active'
-          where tenant.kind='tenant' and tenant.status='active'
-            and (tenant.id=$1 or exists(select 1 from organization.unitclosure closure
-              where closure.ancestor_id=tenant.id and closure.descendant_id=$1))
-            and access.scope_allowed(tenant.id)
-            and not exists(select 1 from access.rolepermission mapping where mapping.role_id=pending.id)`,
-          [access.scope.id]
-        );
-        const invitationRoles = roles.rows[0];
-        if (!invitationRoles || roles.rows.length !== 1) throw new Error('CONSOLE_PENDING_ROLE_NOT_FOUND');
+        if (label.length < 2 || maxUses > 500 || (targetClient === 'operator' && maxUses !== 1)) throw new Error('INVALID_INVITATION_INPUT');
+        if (targetClient === 'operator' && (access.scope.kind !== 'tenant' || access.scope.id !== access.scope.tenant)) {
+          throw new Error('INVITATION_SCOPE_INVALID');
+        }
+        if (targetClient === 'storefront' && access.scope.kind !== 'mall') throw new Error('INVITATION_SCOPE_INVALID');
+        const destinationHash = targetClient === 'operator'
+          ? digest(canonicalMobile(textField(body, 'destination', 32)))
+          : null;
+        const requestedStorefront = typeof body.storefrontOrganization === 'string' && body.storefrontOrganization.trim().length > 0
+          ? body.storefrontOrganization.trim()
+          : null;
+        const storefronts = targetClient === 'operator'
+          ? await database.query<{ id: string }>(`select storefront.id from organization.organization storefront
+            join organization.unitclosure closure on closure.descendant_id=storefront.id
+            where closure.ancestor_id=$1 and storefront.kind='mall' and storefront.status='active'
+              and ($2::text is null or storefront.id=$2) order by storefront.id limit 2`, [access.scope.id, requestedStorefront])
+          : { rows: [] };
+        if (targetClient === 'operator' && storefronts.rows.length !== 1) throw new Error('STOREFRONT_SCOPE_REQUIRED');
+        const roleId = targetClient === 'operator' ? 'role-zhudatuan-pending-operator' : 'role-zhudatuan-storefront-member';
+        const role = await database.query<{ id: string }>(`select role.id from access.role role where role.id=$1
+        and role.status='active' and role.scope_id=$2
+        and ($1<>'role-zhudatuan-pending-operator' or not exists(
+          select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))`, [roleId, access.scope.id]);
+        if (role.rows[0]?.id !== roleId) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
         const policy = await database.query<{ id: string; terms_hash: string }>(`select id,terms_hash from identity.registrationpolicy
         where effective_at<=clock_timestamp() and (retired_at is null or retired_at>clock_timestamp()) order by version desc limit 1`);
         if (!policy.rows[0]) throw new Error('INVITE_INVALID');
@@ -370,37 +368,44 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
         const code = randomBytes(24).toString('base64url');
         const result = await database.query(
           `insert into member.invite(id,organization_id,label,destination_hash,token_hash,expires_at,created_by,
-        role_id,storefront_role_id,target_client,allowed_destination_hash,max_uses,use_count,effective_at,status,
-        created_at,registration_policy_id,terms_hash,version)
-        values($1,$2,$3,$4,$5,$6,$7,$8,$9,'operator',null,$10,0,clock_timestamp(),'active',clock_timestamp(),$11,$12,0)
-        returning id,label,'console' target,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, access.scope.id, label, digest(id), digest(code), expiresAt, access.membership.id, invitationRoles.operator_role, invitationRoles.storefront_role, maxUses, policy.rows[0].id, policy.rows[0].terms_hash]
+        role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash,version,
+        target_client,storefront_organization_id)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,clock_timestamp(),'active',clock_timestamp(),$11,$12,0,$13,$14)
+        returning id,label,target_client,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
+          [id, access.scope.id, label, destinationHash ?? digest(id), digest(code), expiresAt, access.membership.id,
+            role.rows[0].id, destinationHash, maxUses, policy.rows[0].id, policy.rows[0].terms_hash,
+            targetClient, storefronts.rows[0]?.id ?? null]
         );
         const saved = result.rows[0];
         if (!saved) throw new Error('INVITE_INVALID');
         return { status: 201, body: { ...saved, code }, headers: { etag: '"0"' } };
       },
       'identity.invitations.revoke': async (request, database) => {
-        requireAccess(request);
+        const { access, exactOwner } = await requireInvitationManager(request, database, registrationOnly);
         const body = bodyRecord(request);
         const reason = textField(body, 'reason', 1000);
         if (reason.length < 4) throw new Error('CHANGE_REASON_REQUIRED');
         const id = request.input.path.invitationid!;
         const result = await database.query(
           `update member.invite set status='disabled',version=version+1
-        where id=$1 and access.scope_allowed(organization_id) and status='active' and ($2::bigint is null or version=$2)
-        returning id,label,case target_client when 'operator' then 'console' else target_client end target,
-          max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, request.input.expectedVersion ?? null]
+        where id=$1 and access.scope_allowed(organization_id)
+          and (not $3::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
+          and (target_client<>'operator' or $4::boolean)
+          and status='active' and ($2::bigint is null or version=$2)
+        returning id,label,target_client,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
+          [id, request.input.expectedVersion ?? null, registrationOnly, exactOwner]
         );
         if (result.rows[0]) return rowResult(result);
         const current = await database.query<{ status: string; version: number }>(
           `select status,version from member.invite
-        where id=$1 and access.scope_allowed(organization_id)`,
-          [id]
+        where id=$1 and access.scope_allowed(organization_id)
+          and (not $2::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
+          and (target_client<>'operator' or $3::boolean)`,
+          [id, registrationOnly, exactOwner]
         );
         if (!current.rows[0]) throw new Error('INVITATION_NOT_FOUND');
         if (request.input.expectedVersion !== undefined && current.rows[0].version !== request.input.expectedVersion) throw new Error('VERSION_CONFLICT');
+        if (current.rows[0].status === 'active') throw new Error('VERSION_CONFLICT');
         return { status: 200, body: { id, status: current.rows[0].status, version: current.rows[0].version }, headers: { etag: `"${String(current.rows[0].version)}"` } };
       },
       'identity.members.create': operationLifecycle({
@@ -422,24 +427,25 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
             assurance: `assurance:${randomUUID()}`,
             member: `member:${randomUUID()}`,
             membership: `membership:${randomUUID()}`,
-            operatorMembership: `membership:${randomUUID()}`,
+            storefrontMembership: `membership:${randomUUID()}`,
             credential: `credential:${randomUUID()}`,
-            scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`] as const,
+            scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`] as const,
+            operatorScopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`] as const,
           };
         },
         execute: async (request, database, prepared) => {
-          const { body, subject, password, principal, mobile, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
+          const { body, subject, password, principal, member, membership, storefrontMembership, credential, scopes, operatorScopes, mobile, assurance } = prepared;
           const subjectHash = digest(subject);
+          const subjectHashes = identitySubjectVariants(subject).map(digest);
           await database.query('select pg_advisory_xact_lock(hashtext($1))', [subjectHash]);
-          const existing = await database.query(
-            `select 1 from identity.credential
-            where provider='password' and subject_hash=$1 and status='active'`,
-            [subjectHash]
-          );
+          const existing = await database.query(`select 1 from identity.credential
+            where provider='password' and subject_hash=any($1::text[]) and status='active'`, [subjectHashes]);
           if (existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
-          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, undefined, { purpose: 'registration', destinationHash: subjectHash });
           const inviteHash = digest(textField(body, 'invite'));
-          const invitation = await memberPort.consumeInvite(database, inviteHash, subjectHash);
+          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
+            (challenge, code) => codeDigest(challenge, `${code}:${inviteHash}`), undefined,
+            { purpose: 'registration', destinationHash: subjectHash });
+          const invitation = await requireValidInvite(memberPort.consumeInvite(database, inviteHash, subjectHash));
           const organization = invitation.organization_id;
           if (body.termsAccepted !== true || body.termsHash !== invitation.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
           await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
@@ -448,50 +454,40 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
           values($1,$2,'password',$3,$4,'active',clock_timestamp())`,
             [credential, principal, subjectHash, password]
           );
-          await memberPort.create(database, {
-            member,
-            principal,
-            display: textField(body, 'displayName'),
-            status: 'active',
-            mobileCiphertext: mobile.ciphertext,
-            mobileFingerprint: subjectHash,
-            mobileMasked: `${subject.slice(0, 3)}****${subject.slice(-4)}`,
-          });
-          await database.query(
-            `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+          await memberPort.create(database, { member, principal, display: textField(body, 'displayName'), status: 'active',
+            mobileCiphertext: mobile.ciphertext, mobileFingerprint: mobile.fingerprint, mobileMasked: maskMobile(subject) });
+          await database.query(`update identity.assurance set expires_at=least(coalesce(expires_at,clock_timestamp()),clock_timestamp())
+            where principal_id=$1 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`, [principal]);
+          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
             values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-            [assurance, principal, subjectHash]
-          );
-          const scopeKind = await organizationPort.kind(database, organization);
-          const result =
-            invitation.target_client === 'operator'
-              ? await accessPort.createInvitedRegistration(database, {
-                  storefrontMembership: membership,
-                  operatorMembership,
-                  member,
-                  principal,
-                  organization,
-                  storefrontRole: invitation.storefront_role_id,
-                  operatorRole: invitation.role_id,
-                  scopeKind,
-                  scopes,
-                })
-              : await accessPort.createRegistration(database, {
-                  membership,
-                  member,
-                  principal,
-                  organization,
-                  role: invitation.role_id,
-                  scopeKind,
-                  scopes: [scopes[0], scopes[1], scopes[2]],
-                });
-          if (typeof body.wechatToken === 'string') await bindWechat(database, tokenHash(body.wechatToken), principal, membership);
-          await publishIdentityEvent(database, 'identity.member.registered', principal, organization, request.input.idempotency!, {
-            principal,
-            member,
-            membership,
-            ...(invitation.target_client === 'operator' ? { operatorMembership } : {}),
-          });
+          [assurance, principal, subjectHash]);
+          const result = invitation.target_client === 'operator'
+            ? await accessPort.createOperatorRegistration(database, {
+              operatorMembership: membership,
+              storefrontMembership,
+              member,
+              principal,
+              operatorOrganization: organization,
+              storefrontOrganization: invitation.storefront_organization_id!,
+              operatorRole: invitation.role_id,
+              storefrontRole: 'role-zhudatuan-storefront-member',
+              storefrontScopes: scopes,
+              operatorScopes,
+            })
+            : await accessPort.createRegistration(database, {
+              membership,
+              member,
+              principal,
+              organization,
+              role: invitation.role_id,
+              scopeKind: await organizationPort.kind(database, organization),
+              scopes,
+            });
+          const storefrontBinding = invitation.target_client === 'operator' ? storefrontMembership : membership;
+          if (typeof body.wechatToken === 'string') await bindWechat(database, tokenHash(body.wechatToken), principal, storefrontBinding);
+          await publishIdentityEvent(database, 'identity.member.registered', principal, organization, request.input.idempotency!,
+            { principal, member, membership, storefrontMembership: storefrontBinding, targetClient: invitation.target_client,
+              assurance: { method: 'phone_otp', level: 2, expiresInDays: 365 } });
           return { status: 201, body: result };
         },
       }),
@@ -571,113 +567,6 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
         await accessPort.revokeSessions(database, membershipId);
         return rowResult(result);
       },
-      'identity.members.reset': async (request, database) => {
-        const access = requireAccess(request);
-        const reason = textField(bodyRecord(request), 'reason', 500).trim();
-        if (reason.length < 4) reject(422, 'CHANGE_REASON_REQUIRED');
-        const expectedVersion = request.input.expectedVersion;
-        if (expectedVersion === undefined) reject(400, 'EXPECTED_VERSION_REQUIRED');
-
-        const root = await database.query(`select 1 from access.membership membership
-          join access.membershiprole assignment on assignment.membership_id=membership.id
-            and assignment.role_id='role-platform-owner-v2'
-            and assignment.effective_at<=clock_timestamp()
-            and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-          where membership.id=$1 and membership.status='active'`, [access.membership.id]);
-        if (!root.rows[0]) reject(403, 'PERMISSION_DENIED');
-
-        const target = await database.query<{
-          member_id: string; principal_id: string; principal_status: string; principal_version: number; organization_id: string;
-        }>(`select membership.member_id,profile.principal_id,principal.status principal_status,
-          principal.version principal_version,membership.organization_id
-          from access.membership membership
-          join member.profile profile on profile.id=membership.member_id
-          join identity.principal principal on principal.id=profile.principal_id
-          where membership.id=$1 and access.scope_allowed(membership.organization_id)
-          for update of membership,profile,principal`, [request.input.path.membershipid!]);
-        const selected = target.rows[0];
-        if (!selected) reject(404, 'MEMBERSHIP_NOT_FOUND');
-        if (selected.principal_id === access.actor.id) reject(409, 'OWNER_MEMBERSHIP_PROTECTED');
-        if (Number(selected.principal_version) !== expectedVersion) reject(409, 'VERSION_CONFLICT');
-
-        const protectedOwner = await database.query(`select 1 from access.membership membership
-          join access.membershiprole assignment on assignment.membership_id=membership.id
-            and assignment.role_id='role-platform-owner-v2'
-            and assignment.effective_at<=clock_timestamp()
-            and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-          where membership.member_id=$1 and membership.status='active'`, [selected.member_id]);
-        if (protectedOwner.rows[0]) reject(409, 'OWNER_MEMBERSHIP_PROTECTED');
-
-        const memberships = await database.query<{ id: string; organization_id: string }>(
-          `select id,organization_id from access.membership where member_id=$1 for update`, [selected.member_id]
-        );
-        if (memberships.rows.length === 0) reject(404, 'MEMBERSHIP_NOT_FOUND');
-        const outsideScope = await database.query(`select 1 from access.membership
-          where member_id=$1 and not access.scope_allowed(organization_id) limit 1`, [selected.member_id]);
-        if (outsideScope.rows[0]) reject(409, 'IDENTITY_RESET_SCOPE_CONFLICT');
-
-        const reauthenticated = await database.query(`select 1 from identity.assurance
-          where principal_id=$1 and session_id=$2 and method='password' and level>=2
-            and verified_at>clock_timestamp()-interval '10 minutes'
-            and (expires_at is null or expires_at>clock_timestamp()) limit 1`, [access.actor.id, access.actor.session]);
-        if (!reauthenticated.rows[0]) reject(403, 'IDENTITY_REAUTH_REQUIRED');
-
-        const credentials = await database.query<{ id: string; provider: string; status: string; subject_hash: string }>(
-          `select id,provider,status,subject_hash from identity.credential where principal_id=$1 for update`, [selected.principal_id]
-        );
-        const activePassword = credentials.rows.filter((credential) => credential.provider === 'password' && credential.status === 'active');
-        if (selected.principal_status !== 'active' || activePassword.length === 0) reject(409, 'IDENTITY_ACCOUNT_ALREADY_RELEASED');
-        for (const credential of activePassword) await database.query('select pg_advisory_xact_lock(hashtext($1))', [credential.subject_hash]);
-
-        const reset = `reset:${randomUUID()}`;
-        const membershipIds = memberships.rows.map(({ id }) => id);
-        await database.query(`update identity.authticket set consumed_at=coalesce(consumed_at,clock_timestamp())
-          where session_id in(select id from identity.session where principal_id=$1)`, [selected.principal_id]);
-        await database.query(`update identity.session set revoked_at=coalesce(revoked_at,clock_timestamp()),
-          revoked_reason=coalesce(revoked_reason,'identity_reset') where principal_id=$1`, [selected.principal_id]);
-        await database.query(`update identity.assurance set expires_at=case when expires_at is null or expires_at>clock_timestamp()
-          then clock_timestamp() else expires_at end where principal_id=$1`, [selected.principal_id]);
-        await database.query(`delete from identity.challengesecret secret using identity.challenge challenge
-          where secret.challenge_id=challenge.id and (challenge.principal_id=$1 or challenge.destination_hash::text=any($2::text[]))`,
-        [selected.principal_id, activePassword.map(({ subject_hash }) => subject_hash)]);
-        await database.query(`update identity.challenge set consumed_at=coalesce(consumed_at,clock_timestamp())
-          where principal_id=$1 or destination_hash::text=any($2::text[])`, [selected.principal_id, activePassword.map(({ subject_hash }) => subject_hash)]);
-        await database.query(`delete from identity.loginattempt where subject_hash::text=any($1::text[])`, [activePassword.map(({ subject_hash }) => subject_hash)]);
-
-        const federated = await database.query<{ id: string }>(`select id from identity.federatedidentity where principal_id=$1 for update`, [selected.principal_id]);
-        for (const identity of federated.rows) {
-          await database.query(`update identity.federatedidentity set status='revoked',subject_hash=$2,union_hash=null,
-            revoked_at=coalesce(revoked_at,clock_timestamp()),updated_at=clock_timestamp() where id=$1`,
-          [identity.id, digest(`${reset}:federated:${identity.id}`)]);
-        }
-        for (const credential of credentials.rows) {
-          await database.query(`update identity.credential set status='revoked',subject_hash=$2,subject_ciphertext=null,
-            subject_key_version=null,secret_hash=null,encrypted_secret=null,rotated_at=clock_timestamp() where id=$1`,
-          [credential.id, digest(`${reset}:credential:${credential.id}`)]);
-        }
-
-        await database.query(`update access.membershiprole set expires_at=clock_timestamp()
-          where membership_id=any($1::text[]) and (expires_at is null or expires_at>clock_timestamp())`, [membershipIds]);
-        await database.query(`update access.scopegrant set expires_at=clock_timestamp()
-          where membership_id=any($1::text[]) and (expires_at is null or expires_at>clock_timestamp())`, [membershipIds]);
-        await database.query(`update access.membershipoverride set revoked_at=coalesce(revoked_at,clock_timestamp())
-          where membership_id=any($1::text[])`, [membershipIds]);
-        await database.query(`update member.invite set status='disabled'
-          where created_by=any($1::text[]) and status='active'`, [membershipIds]);
-        await database.query(`update access.membership set status='left',access_version=access_version+1,
-          employee_no=null,left_at=coalesce(left_at,clock_timestamp()) where id=any($1::text[])`, [membershipIds]);
-        await database.query(`update member.profile set display_name='已重置成员 · '||right(id,8),mobile_ciphertext=null,
-          mobile_token=null,email_ciphertext=null,email_token=null,status='disabled',version=version+1,updated_at=clock_timestamp()
-          where id=$1`, [selected.member_id]);
-        const result = await database.query<{ version: number }>(`update identity.principal set status='disabled',
-          credential_version=credential_version+1,version=version+1,updated_at=clock_timestamp()
-          where id=$1 returning version`, [selected.principal_id]);
-        const version = Number(result.rows[0]?.version);
-        if (!Number.isSafeInteger(version)) throw new Error('IDENTITY_RESET_FAILED');
-        await publishIdentityEvent(database, 'identity.member.reset', selected.principal_id, selected.organization_id,
-          request.input.idempotency!, { principal: selected.principal_id, memberships: membershipIds, reason });
-        return { status: 200, body: { principal_id: selected.principal_id, status: 'reset', login_identity_released: true, history_retained: true, version } };
-      },
       'identity.password.change': operationLifecycle({
         prepare: async (request) => {
           const access = requireAccess(request);
@@ -687,9 +576,20 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
           return { access, currentPassword, hash };
         },
         execute: async (_request, database, { access, currentPassword, hash }) => {
+          await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
           const credential = await database.query<{ id: string; secret_hash: string }>(`select id,secret_hash from identity.credential where principal_id=$1 and provider='password' and status='active' for update`, [access.actor.id]);
           const found = credential.rows[0];
           if (!found || !(await passwords.verify(currentPassword, found.secret_hash))) throw new Error('CREDENTIAL_INVALID');
+          const evidenceHash = sessionDigest(access.actor.session);
+          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+            values($1,$2,'password',2,$3,clock_timestamp(),clock_timestamp()+interval '10 minutes')`,
+          [`assurance:${randomUUID()}`, access.actor.id, evidenceHash]);
+          const ownerRotation = await database.query<{ result: Readonly<Record<string, unknown>> | null }>(
+            `select identity.rotate_zhudatuan_owner_password($1,$2,null::text,$3,'credential_changed') result`,
+            [access.actor.id, access.actor.session, hash]
+          );
+          const ownerResult = ownerRotation.rows[0]?.result;
+          if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0) };
           await database.query('update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where id=$1', [found.id, hash]);
           const result = await database.query('update identity.principal set credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1 returning credential_version,version', [access.actor.id]);
           await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='credential_changed' where principal_id=$1 and id<>$2 and revoked_at is null", [access.actor.id, access.actor.session]);
@@ -707,9 +607,9 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
         if (!(await passwords.verify(password, credential.rows[0]?.secret_hash ?? null))) reject(401, 'CREDENTIAL_INVALID');
         const verifiedAt = new Date().toISOString();
         await database.query(
-          `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-        values($1,$2,$3,'password',2,$4,$5::timestamptz,$5::timestamptz+interval '10 minutes')`,
-          [`assurance:${randomUUID()}`, access.actor.id, access.actor.session, digest(access.actor.session), verifiedAt]
+          `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+        values($1,$2,'password',2,$3,$4::timestamptz,$4::timestamptz+interval '10 minutes')`,
+          [`assurance:${randomUUID()}`, access.actor.id, sessionDigest(access.actor.session), verifiedAt]
         );
         await database.query(
           `update identity.session set assurance_level=greatest(assurance_level,2),last_seen_at=clock_timestamp()
@@ -727,33 +627,121 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
           return { body, challenge, hash };
         },
         execute: async (_request, database, { body, challenge, hash }) => {
-          const consumed = await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, undefined, { purpose: 'password_reset' });
+          const consumed = await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, undefined,
+            { purpose: 'password_reset' });
           const principal = consumed.principal_id;
           if (!principal) reject(400, 'CHALLENGE_PRINCIPAL_MISSING');
+          const ownerRotation = await database.query<{ result: Readonly<Record<string, unknown>> | null }>(
+            `select identity.rotate_zhudatuan_owner_password($1,null::text,$2,$3,'credential_reset') result`,
+            [principal, challenge, hash]
+          );
+          const ownerResult = ownerRotation.rows[0]?.result;
+          if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0) };
           await database.query("update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where principal_id=$1 and provider='password' and status='active'", [principal, hash]);
           const result = await database.query('update identity.principal set credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1 returning credential_version,version', [principal]);
           await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='credential_reset' where principal_id=$1 and revoked_at is null", [principal]);
           return rowResult(result);
         },
       }),
+      'identity.mobile.challenge': operationLifecycle({
+        prepare: async (request) => {
+          const access = requireAccess(request);
+          const body = bodyRecord(request);
+          const id = `challenge:${randomUUID()}`;
+          const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+          const mobile = canonicalMobile(textField(body, 'destination', 32));
+          const destinationHash = digest(mobile);
+          const device = digest(request.input.headers['x-device-id'] ?? 'unknown');
+          const peer = digest(request.input.headers['x-peer-address'] ?? 'unknown');
+          await assertPublicRisk(risk, request, destinationHash, device);
+          const [envelope, recipient] = await Promise.all([
+            kms.encrypt('identity/challenge', code, { challenge: id, purpose: 'phone_change' }),
+            kms.encrypt('identity/destination', mobile, { challenge: id, purpose: 'phone_change' }),
+          ]);
+          return { access, id, code, destinationHash, device, peer, envelope, recipient };
+        },
+        execute: async (request, database, prepared) => {
+          const { access, id, code, destinationHash, device, peer, envelope, recipient } = prepared;
+          await consumeChallengeRate(database, [
+            [destinationHash, 'phone_change'],
+            [peer, 'network:phone_change'],
+            [device, 'device:phone_change'],
+          ]);
+          const result = await database.query(
+            `with challenge as (
+          insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at)
+          values($1,$2,'phone_change',$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
+        ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
+          values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
+            [id, access.actor.id, destinationHash, codeDigest(id, code), sessionDigest(access.actor.session),
+              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+          );
+          await database.query(
+            `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+          values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+            [`job:notify:${id}`, access.scope.id, id]
+          );
+          await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!,
+            { challenge: id, destination: destinationHash, purpose: 'phone_change' });
+          return rowResult(result, 202);
+        },
+      }),
       'identity.mobile.manage': operationLifecycle({
         prepare: async (request) => {
           const access = requireAccess(request);
           const body = bodyRecord(request);
-          const mobile = textField(body, 'mobile', 32).trim();
-          if (!/^\+?[1-9][0-9]{7,14}$/.test(mobile)) throw new Error('MOBILE_INVALID');
+          const mobile = canonicalMobile(textField(body, 'mobile', 32));
           const envelope = await kms.encrypt('identity/mobile', mobile, { principal: access.actor.id });
           return { access, body, mobile, envelope };
         },
         execute: async (_request, database, { access, body, mobile, envelope }) => {
-          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, access.actor.id, { purpose: 'phone_change', destinationHash: digest(mobile) });
+          await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
+          const profile = await database.query<{ mobile_ciphertext: string | null }>(
+            `select mobile_ciphertext from member.profile where principal_id=$1 and status='active' for update`,
+            [access.actor.id]
+          );
+          const current = profile.rows[0];
+          if (!current) reject(404, 'RESOURCE_NOT_FOUND');
+          if (current.mobile_ciphertext === null) {
+            const passwordEvidence = await database.query(
+              `select 1 from identity.assurance where principal_id=$1 and method='password' and level=2
+              and evidence_hash=$2 and verified_at>=clock_timestamp()-interval '10 minutes'
+              and expires_at>clock_timestamp() limit 1`,
+              [access.actor.id, sessionDigest(access.actor.session)]
+            );
+            if (!passwordEvidence.rows[0]) reject(403, 'MOBILE_ENROLLMENT_PASSWORD_REQUIRED');
+          } else if (!stepup.accepts(true, access.assurance, new Date())) {
+            reject(403, 'MOBILE_CHANGE_STEP_UP_REQUIRED');
+          }
+          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, access.actor.id,
+            { purpose: 'phone_change', destinationHash: digest(mobile), sessionHash: sessionDigest(access.actor.session) });
+          const owner = await database.query<{ exact_owner: boolean }>(
+            `select access.zhudatuan_owner_context() exact_owner`
+          );
+          if (owner.rows[0]?.exact_owner === true) {
+            const changed = await database.query<{ profile: Readonly<Record<string, unknown>> }>(
+              `select access.change_zhudatuan_owner_mobile($1,$2,$3,$4,$5,$6,$7,$8,$9) profile`,
+              [access.actor.id, access.actor.session, textField(body, 'challenge'), envelope.ciphertext,
+                digest(mobile), envelope.fingerprint, maskMobile(mobile), sessionDigest(access.actor.session),
+                sessionDigest(access.actor.session)]
+            );
+            const result = changed.rows[0]?.profile;
+            if (!result) throw new Error('MEMBER_PROFILE_NOT_FOUND');
+            return { status: 200, body: result, headers: { ...sessionCookies('', '', 0),
+              etag: `\"${String(result.version)}\"` } };
+          }
           const credential = await database.query<{ id: string }>(`select id from identity.credential where principal_id=$1 and provider='password' and status='active' for update`, [access.actor.id]);
           if (!credential.rows[0]) throw new Error('CREDENTIAL_NOT_FOUND');
           await database.query(`update identity.credential set subject_hash=$2,rotated_at=clock_timestamp() where id=$1`, [credential.rows[0].id, digest(mobile)]);
           const result = await memberPort.changeMobile(database, access.actor.id, envelope.ciphertext, envelope.fingerprint, maskMobile(mobile));
+          await database.query(`update identity.assurance set expires_at=least(coalesce(expires_at,clock_timestamp()),clock_timestamp())
+            where principal_id=$1 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`, [access.actor.id]);
+          await database.query(`insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+            values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
+          [`assurance:${randomUUID()}`, access.actor.id, digest(mobile)]);
           await database.query(`update identity.principal set credential_version=credential_version+1,version=version+1,updated_at=clock_timestamp() where id=$1`, [access.actor.id]);
-          await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='mobile_changed' where principal_id=$1 and id<>$2 and revoked_at is null", [access.actor.id, access.actor.session]);
-          return { status: 200, body: result, headers: { etag: `\"${String(result.version)}\"` } };
+          await database.query("update identity.session set revoked_at=clock_timestamp(),revoked_reason='mobile_changed' where principal_id=$1 and revoked_at is null", [access.actor.id]);
+          return { status: 200, body: result, headers: { ...sessionCookies('', '', 0), etag: `\"${String(result.version)}\"` } };
         },
       }),
       'identity.stepup.start': operationLifecycle({
@@ -761,22 +749,18 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
           const access = requireAccess(request);
           const id = `challenge:${randomUUID()}`;
           const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-          const requested = bodyRecord(request).destination;
-          const destination = typeof requested === 'string' && requested.trim().length > 0 ? requested.trim() : null;
-          return { access, id, code, destination };
+          if (Object.hasOwn(bodyRecord(request), 'destination')) reject(400, 'STEP_UP_DESTINATION_FORBIDDEN');
+          return { access, id, code };
         },
-        execute: async (request, database, { access, id, code, destination: requestedDestination }) => {
-          let destination = requestedDestination;
-          if (destination === null) {
-            const profile = await database.query<{ mobile_ciphertext: string | null }>(
-              `select mobile_ciphertext from member.profile
+        execute: async (request, database, { access, id, code }) => {
+          const profile = await database.query<{ mobile_ciphertext: string | null }>(
+            `select mobile_ciphertext from member.profile
             where principal_id=$1 and status='active'`,
-              [access.actor.id]
-            );
-            const ciphertext = profile.rows[0]?.mobile_ciphertext;
-            if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
-            destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
-          }
+            [access.actor.id]
+          );
+          const ciphertext = profile.rows[0]?.mobile_ciphertext;
+          if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
+          const destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
           const [envelope, recipient] = await Promise.all([kms.encrypt('identity/challenge', code, { challenge: id, purpose: 'stepup' }), kms.encrypt('identity/destination', destination, { challenge: id, purpose: 'stepup' })]);
           await consumeChallengeRate(database, [
             [digest(`${access.actor.id}:${destination}`), 'stepup'],
@@ -784,15 +768,16 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
             [digest(request.input.headers['x-device-id'] ?? 'unknown'), 'device:stepup'],
           ]);
           const result = await database.query(
-            `with challenge as (insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,attempts,expires_at,created_at)
-        values($1,$2,'stepup',$3,$4,0,clock_timestamp()+interval '5 minutes',clock_timestamp()) returning id,purpose,expires_at),
+            `with challenge as (insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,session_hash,attempts,expires_at,created_at)
+        values($1,$2,'stepup',$3,$4,$5,0,clock_timestamp()+interval '5 minutes',clock_timestamp()) returning id,purpose,expires_at),
         secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
-          values($1,$5,$6,$7,$8,clock_timestamp())) select * from challenge`,
-            [id, access.actor.id, digest(destination), codeDigest(id, code), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+          values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
+            [id, access.actor.id, digest(destination), codeDigest(id, code), sessionDigest(access.actor.session),
+              envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-          values($1,'notification','identity',$2,jsonb_build_object('challenge',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+          values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
             [`job:notify:${id}`, access.scope.id, id]
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!, { challenge: id, purpose: 'stepup' });
@@ -802,119 +787,67 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
       'identity.stepup.complete': async (request, database) => {
         const access = requireAccess(request);
         const body = bodyRecord(request);
-        const action = financialActionRequest(body.action);
         const challenge = textField(body, 'challenge');
-        await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, access.actor.id, { purpose: 'stepup' });
+        const profile = await database.query<{ mobile_ciphertext: string | null }>(
+          `select mobile_ciphertext from member.profile where principal_id=$1 and status='active'`, [access.actor.id]
+        );
+        const ciphertext = profile.rows[0]?.mobile_ciphertext;
+        if (!ciphertext) throw new Error('STEP_UP_DESTINATION_MISSING');
+        const destination = await kms.decrypt('identity/mobile', ciphertext, { principal: access.actor.id });
+        await consumeChallenge(database, challenge, textField(body, 'code'), codeDigest, access.actor.id,
+          { purpose: 'stepup', destinationHash: digest(destination), sessionHash: sessionDigest(access.actor.session) });
         const assurance = `assurance:${randomUUID()}`;
         await database.query(
-          `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-        values($1,$2,$3,'otp',3,$4,clock_timestamp(),clock_timestamp()+interval '15 minutes')`,
-          [assurance, access.actor.id, access.actor.session, digest(challenge)]
+          `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+        values($1,$2,'otp',3,$3,clock_timestamp(),clock_timestamp()+interval '15 minutes')`,
+          [assurance, access.actor.id, sessionDigest(access.actor.session)]
         );
         const result = await database.query(
           `update identity.session set assurance_level=3,last_seen_at=clock_timestamp()
         where id=$1 and principal_id=$2 and revoked_at is null returning id,assurance_level`,
           [access.actor.session, access.actor.id]
         );
-        const session = result.rows[0];
-        if (!session) throw new Error('AUTHENTICATION_REQUIRED');
-        if (action === null) return rowResult(result);
-        const proof = randomBytes(48).toString('base64url');
-        const issued = await database.query<{ scope_id: string; resource_id: string; expires_at: Date }>('select scope_id,resource_id,expires_at from access.issue_action_proof($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)', [
-          createHash('sha256').update(proof).digest('hex'),
-          access.actor.id,
-          access.actor.session,
-          access.membership.id,
-          assurance,
-          action.operation,
-          action.resource,
-          action.idempotencyKey,
-          action.expectedVersion,
-          action.requestHash,
-        ]);
-        const binding = issued.rows[0];
-        if (!binding) throw new Error('ACTION_PROOF_REQUIRED');
-        return {
-          status: 200,
-          body: {
-            ...session,
-            actionProof: {
-              proof,
-              operation: action.operation,
-              resource: binding.resource_id,
-              scope: binding.scope_id,
-              idempotencyKey: action.idempotencyKey,
-              expectedVersion: action.expectedVersion,
-              requestHash: action.requestHash,
-              expiresAt: binding.expires_at.toISOString(),
-            },
-          },
-        };
+        return rowResult(result);
       },
-    },
-    CORE_OPERATIONS
-  );
-  return new WechatOperations(core, pool.workload('command'), context.container.get(WECHAT_IDENTITY), kms, audit, keys.identity, keys.session, tickets);
+    };
+  const selected = Object.fromEntries(ownedOperations.map((operationId) => {
+    const action = actions[operationId];
+    if (!action) throw new Error(`IDENTITY_OPERATION_NOT_AVAILABLE:${operationId}`);
+    return [operationId, action];
+  })) as OperationActions;
+  return new ModuleOperations('identity', pool, audit, selected, ownedOperations);
+}
+
+async function requireInvitationManager(request: OperationRequest, database: OperationDatabase, registrationOnly: boolean) {
+  const access = requireAccess(request);
+  const permission = access.membership.grants.some((grant) => grant.permissions.includes('identity.invitation.manage'));
+  if (access.actor.target !== 'console' || !access.capabilities.includes(request.type) || !permission) {
+    reject(403, 'PERMISSION_DENIED');
+  }
+  const exactOwner = await zhudatuanInvitationOwner(database, registrationOnly);
+  if (registrationOnly && !exactOwner) reject(403, 'PERMISSION_DENIED');
+  return { access, exactOwner };
+}
+
+// Owner 身份由数据库单例在同一事务内判定，而非比对固定的 principal/membership 字符串，
+// 因此 Owner 转让后新任 Owner 立即生效、旧 Owner 立即失权。
+async function zhudatuanInvitationOwner(database: OperationDatabase, registrationOnly: boolean): Promise<boolean> {
+  const probe = registrationOnly ? 'access.zhudatuan_invitation_owner()' : 'access.zhudatuan_owner_context()';
+  const result = await database.query<{ exact_owner: boolean }>(`select ${probe} exact_owner`);
+  return result.rows[0]?.exact_owner === true;
+}
+
+async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {
+  try {
+    return await operation;
+  } catch (cause) {
+    if (cause instanceof Error && cause.message === 'INVITE_INVALID') reject(400, 'INVITE_INVALID');
+    throw cause;
+  }
 }
 
 function maskMobile(value: string): string {
   return `${value.slice(0, 3)}****${value.slice(-4)}`;
-}
-
-interface FinancialActionRequest {
-  readonly operation: string;
-  readonly resource: string | null;
-  readonly idempotencyKey: string;
-  readonly expectedVersion: number | null;
-  readonly requestHash: string;
-}
-
-function financialActionRequest(value: unknown): FinancialActionRequest | null {
-  if (value === undefined) return null;
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('ACTION_PROOF_REQUIRED');
-  const operation = Reflect.get(value, 'operation');
-  const resourceValue = Reflect.get(value, 'resource');
-  const idempotencyValue = Reflect.get(value, 'idempotencyKey');
-  const expectedValue = Reflect.get(value, 'expectedVersion');
-  const requestHashValue = Reflect.get(value, 'requestHash');
-  const requestValue = Reflect.get(value, 'request');
-  if (typeof operation !== 'string' || !requiresFinancialActionProof(operation)) throw new Error('ACTION_PROOF_REQUIRED');
-  if (resourceValue !== undefined && (typeof resourceValue !== 'string' || resourceValue.length === 0 || resourceValue.length > 255)) {
-    throw new Error('ACTION_PROOF_REQUIRED');
-  }
-  if (typeof idempotencyValue !== 'string' || idempotencyValue.length === 0 || idempotencyValue.length > 255) {
-    throw new Error('IDEMPOTENCY_KEY_REQUIRED');
-  }
-  if (expectedValue !== undefined && (!Number.isSafeInteger(expectedValue) || (expectedValue as number) < 0)) {
-    throw new Error('EXPECTED_VERSION_INVALID');
-  }
-  if (requiresFinancialExpectedVersion(operation) && expectedValue === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
-  if (typeof requestHashValue !== 'string' || !/^[0-9a-f]{64}$/.test(requestHashValue) || requestValue === null || typeof requestValue !== 'object' || Array.isArray(requestValue)) {
-    throw new Error('ACTION_PROOF_REQUIRED');
-  }
-  let authoritativeHash: string;
-  try {
-    authoritativeHash = createHash('sha256')
-      .update(
-        canonicalFinancialActionRequest({
-          operation,
-          path: Reflect.get(requestValue, 'path'),
-          query: Reflect.get(requestValue, 'query'),
-          body: Reflect.get(requestValue, 'body'),
-        })
-      )
-      .digest('hex');
-  } catch {
-    throw new Error('ACTION_PROOF_REQUIRED');
-  }
-  if (requestHashValue !== authoritativeHash) throw new Error('ACTION_PROOF_REQUIRED');
-  return {
-    operation,
-    resource: typeof resourceValue === 'string' ? resourceValue : null,
-    idempotencyKey: idempotencyValue,
-    expectedVersion: typeof expectedValue === 'number' ? expectedValue : null,
-    requestHash: authoritativeHash,
-  };
 }
 
 function inviteExpiry(value: unknown): string {

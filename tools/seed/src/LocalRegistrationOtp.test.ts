@@ -10,7 +10,9 @@ const INPUT: LocalRegistrationOtpInput = {
   mobile: MOBILE,
   platform: 'darwin',
   secretStoreEndpoint: 'https://127.0.0.1:8443',
+  secretStoreBearerToken: 's'.repeat(43),
   kmsEndpoint: 'https://127.0.0.1:8444',
+  kmsBearerToken: 'k'.repeat(43),
   adminDatabaseConnectionRef: 'shop/local/database/admin',
   identityKeyRef: 'shop/local/identity/index',
 };
@@ -22,8 +24,8 @@ test('copies only the latest active registration challenge after Secret Store an
 
   const expectedHash = createHmac('sha256', IDENTITY_KEY).update(MOBILE).digest('hex');
   assert.deepEqual(events, [
-    ['secret', INPUT.secretStoreEndpoint, INPUT.adminDatabaseConnectionRef],
-    ['secret', INPUT.secretStoreEndpoint, INPUT.identityKeyRef],
+    ['secret', INPUT.secretStoreEndpoint, INPUT.secretStoreBearerToken, INPUT.adminDatabaseConnectionRef],
+    ['secret', INPUT.secretStoreEndpoint, INPUT.secretStoreBearerToken, INPUT.identityKeyRef],
     ['database', 'postgres://local:private@127.0.0.1:5432/shop'],
     ['query', expectedHash],
     ['end'],
@@ -74,8 +76,8 @@ function fixture(
 ): LocalRegistrationOtpDependencies {
   const challenge = Object.hasOwn(options, 'challenge') ? options.challenge : { id: 'challenge:latest', code_ciphertext: 'ciphertext-local' };
   return {
-    readSecret: async (endpoint, reference) => {
-      events.push(['secret', endpoint, reference]);
+    readSecret: async (endpoint, bearerToken, reference) => {
+      events.push(['secret', endpoint, bearerToken, reference]);
       return reference === INPUT.identityKeyRef ? IDENTITY_KEY : (options.connectionString ?? 'postgres://local:private@127.0.0.1:5432/shop');
     },
     openDatabase: async connectionString => {
