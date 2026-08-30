@@ -252,7 +252,7 @@ with role_oid as(
     'runtime.idempotency:INSERT','runtime.idempotency:SELECT','runtime.idempotency:UPDATE','runtime.schemaversion:SELECT'
   ]::text[],array[]::text[],array[
     'access:USAGE','audit:USAGE','benefit:USAGE','capability:USAGE','cart:USAGE','catalog:USAGE','checkout:USAGE',
-    'experience:USAGE','fulfillment:USAGE','identity:USAGE','inventory:USAGE','ordering:USAGE','organization:USAGE',
+    'experience:USAGE','fulfillment:USAGE','identity:USAGE','inventory:USAGE','member:USAGE','ordering:USAGE','organization:USAGE',
     'pricing:USAGE','public:USAGE','reporting:USAGE','risk:USAGE','runtime:USAGE'
   ]::text[],array[
     'access.business_membership_ancestor_scopes(text):EXECUTE','access.membership_version(text):EXECUTE',
@@ -295,7 +295,7 @@ with role_oid as(
     'runtime.idempotency.response:UPDATE','runtime.idempotency.state:UPDATE'
   ]::text[],array[
     'access:USAGE','audit:USAGE','benefit:USAGE','capability:USAGE','cart:USAGE','catalog:USAGE','checkout:USAGE',
-    'experience:USAGE','fulfillment:USAGE','identity:USAGE','inventory:USAGE','invoice:USAGE','marketing:USAGE',
+    'experience:USAGE','fulfillment:USAGE','identity:USAGE','inventory:USAGE','invoice:USAGE','marketing:USAGE','member:USAGE',
     'ordering:USAGE','organization:USAGE','payment:USAGE','pricing:USAGE','public:USAGE','qualification:USAGE','risk:USAGE','runtime:USAGE'
   ]::text[],array[
     'access.business_membership_ancestor_scopes(text):EXECUTE','access.membership_version(text):EXECUTE',
