@@ -8,7 +8,7 @@ revoke all on function public.digest(text,text) from public;
 grant execute on function public.digest(text,text) to shopapp,shopjob;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260830102000','4bcf458925db1854a87612585f1920492cbf4cae392845ef9e93f0f511c2d80b');
+values('20260830102000','0c277dba0bf8af1e8bef9a6419cba87be8bb7e220f293193130e7d81e4cf2e1c');
 
 do $assert$
 begin

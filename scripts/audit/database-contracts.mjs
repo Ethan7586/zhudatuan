@@ -12,6 +12,7 @@ const ROOT = repositoryRoot;
 const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
+const REGISTRATION_MIGRATION_RUNNER = join(ROOT, 'services', 'commerce', 'src', 'foundation', 'infrastructure', 'RegistrationMigrationRunner.ts');
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
@@ -207,6 +208,17 @@ async function verifyInventory(files) {
   }
   const repair = files.filter((name) => name.slice(0, 14) > history.head);
   if (JSON.stringify(repair) !== JSON.stringify(REPAIR_FILES)) throw new Error(`REPAIR_MIGRATION_SEQUENCE_DRIFT:${JSON.stringify(repair)}`);
+  const targetFile = files.at(-1);
+  const targetVersion = targetFile?.slice(0, 14);
+  const targetSource = targetFile ? await readFile(join(MIGRATIONS, targetFile), 'utf8') : '';
+  const targetMarker = targetSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1];
+  if (!targetFile || !targetVersion || !targetMarker) throw new Error('REGISTRATION_MIGRATION_TARGET_MARKER_MISSING');
+  const normalizedTargetDigest = createHash('sha256').update(targetSource.replaceAll(targetMarker, '0'.repeat(64))).digest('hex');
+  if (normalizedTargetDigest !== targetMarker) throw new Error(`REGISTRATION_MIGRATION_TARGET_DIGEST_DRIFT:${targetFile}`);
+  const runner = await readFile(REGISTRATION_MIGRATION_RUNNER, 'utf8');
+  if (!runner.includes(`REGISTRATION_TARGET_VERSION = '${targetVersion}'`)
+    || !runner.includes(`REGISTRATION_TARGET_CHECKSUM = '${targetMarker}'`)
+    || !runner.includes(`name='${targetFile}'`)) throw new Error(`REGISTRATION_MIGRATION_RUNNER_TARGET_DRIFT:${targetFile}`);
   await readFile(OBJECTS, 'utf8').catch(() => {
     throw new Error('DATABASE_OBJECT_CONTRACT_MISSING');
   });
