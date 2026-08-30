@@ -123,7 +123,12 @@ const server = createServer((request, response) => {
   const result = responses.get(route);
 
   if (result === undefined) {
-    send(response, { code: 'PREVIEW_OPERATION_NOT_REGISTERED', method: request.method, path: url.pathname }, 501);
+    send(response, {
+      code: 'PREVIEW_OPERATION_FORBIDDEN',
+      method: request.method,
+      path: url.pathname,
+      requestId: request.headers['x-trace-id'] ?? 'referral-preview',
+    }, 403);
     return;
   }
 
