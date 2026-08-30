@@ -56,10 +56,10 @@ describe('Sidebar commerce navigation', () => {
       capabilities: ['referral.settings.read'],
     });
 
-    const unavailable = screen.getByRole('button', { name: '渠道接入系统，没有权限' });
+    const unavailable = screen.getByRole('button', { name: '渠道接入系统' });
     expect(unavailable.hasAttribute('disabled')).toBe(true);
     expect(unavailable.getAttribute('aria-disabled')).toBe('true');
-    expect(within(unavailable).getByText('没有权限')).toBeTruthy();
+    expect(within(unavailable).getByText('未开放')).toBeTruthy();
     await user.click(unavailable);
     expect(onNavigate).not.toHaveBeenCalled();
 

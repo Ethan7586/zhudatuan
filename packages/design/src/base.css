@@ -271,6 +271,10 @@ section[role='alert'] > button {
   justify-content: center;
 }
 
+.swaccessdeniedactions > .swaccessdeniedrequestbutton {
+  grid-column: 1 / -1;
+}
+
 .swaccessdeniedactions > .swaccessdeniedrelogin {
   grid-column: 1 / -1;
   min-height: auto;
@@ -280,46 +284,30 @@ section[role='alert'] > button {
   box-shadow: none;
 }
 
-.swaccessdenied.swaccessdeniedforbidden {
-  width: 100%;
-  min-height: clamp(28rem, calc(100vh - 13rem), 48rem);
-  margin: 0;
-  border-color: rgb(255 255 255 / 5%);
+.swaccessdeniedrequest {
+  box-sizing: border-box;
+  width: min(31rem, 100%);
+  margin-top: var(--sw-space-2);
+  border: 0.0625rem solid color-mix(in srgb, var(--sw-brand) 14%, var(--sw-border));
   border-radius: var(--sw-radius-md);
-  background:
-    radial-gradient(circle at 50% 44%, rgb(66 91 122 / 16%), transparent 18rem),
-    linear-gradient(180deg, #0d1c2e 0%, #071422 100%);
-  padding: var(--sw-space-4);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 4%),
-    inset 0 0 0 1px rgb(0 0 0 / 18%);
+  background: color-mix(in srgb, var(--sw-brand-light) 38%, var(--sw-surface));
+  padding: var(--sw-space-2) var(--sw-space-3);
+  color: var(--sw-text-secondary);
+  text-align: left;
 }
 
-.swaccessdeniedforbidden:focus {
-  outline: none;
-}
-
-.swaccessdenieddimcontent {
-  display: grid;
-  justify-items: center;
-  gap: var(--sw-space-0-5);
-  color: #7f91a7;
-}
-
-.swaccessdeniedforbidden h2 {
-  margin: 0;
-  color: #9aaabd;
+.swaccessdeniedrequest strong {
+  display: block;
+  margin-bottom: var(--sw-space-0-5);
+  color: var(--sw-brand-ink);
   font-size: 0.8125rem;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
 }
 
-.swaccessdeniedforbidden p {
+.swaccessdeniedrequest p {
   margin: 0;
-  color: #7b8da2;
-  font-size: 0.75rem;
-  line-height: 1.5;
+  color: var(--sw-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.65;
 }
 
 @media (max-width: 40rem) {
@@ -343,10 +331,8 @@ section[role='alert'] > button {
     grid-column: auto;
   }
 
-  .swaccessdenied.swaccessdeniedforbidden {
-    min-height: calc(100vh - 8.5rem);
-    margin: 0;
-    padding: var(--sw-space-2);
+  .swaccessdeniedactions > .swaccessdeniedrequestbutton {
+    grid-column: auto;
   }
 }
 

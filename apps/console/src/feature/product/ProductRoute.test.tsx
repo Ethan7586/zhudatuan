@@ -43,9 +43,9 @@ describe('Product governance workspace', () => {
     )));
     await client.invalidateQueries();
 
-    const access = await screen.findByRole('region', { name: '没有权限' });
+    const access = await screen.findByRole('region', { name: '需要访问权限' });
     await waitFor(() => expect(document.activeElement).toBe(access));
-    expect(within(access).getByText('「商品治理台」不可访问')).toBeTruthy();
+    expect(within(access).getByText('当前账号尚未开通「商品治理台」。')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('table', { name: '商品列表' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: '商品管理' })).toBeNull();
