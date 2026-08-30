@@ -131,7 +131,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled:hover {
   border-color: rgb(255 255 255 / 3%);
   background: #071b32;
-  color: #65778d;
+  color: #8fa0b8;
   cursor: not-allowed;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%);
 }
@@ -141,7 +141,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled > svg {
-  color: #53667d;
+  color: #7f91aa;
   filter: none;
 }
 
