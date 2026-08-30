@@ -59,7 +59,9 @@ revoke all privileges on all sequences in schema identity,access,deployment from
 revoke all privileges on all functions in schema identity,access,deployment from
   shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke usage on schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
+  shopapp,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
+revoke usage on schema deployment from shopmigration;
+grant usage on schema identity,access to shopmigration;
 revoke execute on function deployment.registration_bootstrap_boundary(text) from shopmigration;
 revoke execute on function deployment.is_independent_registration_database() from shopmigration;
 revoke select on deployment.boundary from shopmigration;
@@ -110,6 +112,9 @@ begin
   if has_schema_privilege('zhudatuanbootstrap','identity','USAGE')
     or has_schema_privilege('zhudatuanbootstrap','access','USAGE')
     or has_schema_privilege('zhudatuanbootstrap','deployment','USAGE')
+    or not has_schema_privilege('shopmigration','identity','USAGE')
+    or not has_schema_privilege('shopmigration','access','USAGE')
+    or has_schema_privilege('shopmigration','deployment','USAGE')
     or has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE')
     or has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE')
     or has_function_privilege('shopmigration','deployment.is_independent_registration_database()','EXECUTE') then
