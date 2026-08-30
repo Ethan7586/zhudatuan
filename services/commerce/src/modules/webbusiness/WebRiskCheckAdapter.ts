@@ -37,9 +37,9 @@ export class WebRiskCheckAdapter implements RiskGate {
         actor: input.actor.id,
         trace: input.trace,
       });
-      const hierarchy = await client.query<{ id: string }>(`select closure.ancestor_id id from access.membership membership
-        join organization.unitclosure closure on closure.descendant_id=membership.organization_id
-        where membership.id=$1 order by closure.depth desc`, [input.actor.membership]);
+      const hierarchy = await client.query<{ id: string }>(
+        'select id from access.business_membership_ancestor_scopes($1)', [input.actor.membership],
+      );
       const scopes = Object.freeze([...new Set([
         ...input.scope.path.map(({ id }) => id),
         ...hierarchy.rows.map(({ id }) => id),

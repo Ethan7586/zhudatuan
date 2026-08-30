@@ -74,10 +74,9 @@ export function purchaseOrderOperations(context: ModuleContext): ModuleOperation
       const quoteid = textField(bodyRecord(request), 'quote');
       const stored = await database.query<{ signed_payload: CheckoutQuote }>(`select quote.signed_payload from pricing.quote quote
         join checkout.session checkout on checkout.quote_id=quote.id and checkout.member_id=quote.member_id and checkout.mall_id=quote.mall_id
-        join access.membership membership on membership.id=$2 and membership.member_id=checkout.member_id
-          and membership.organization_id=checkout.mall_id and membership.client='storefront' and membership.status='active'
-        where quote.id=$1 and checkout.state='quoted' and checkout.expires_at>clock_timestamp() and quote.expires_at>clock_timestamp()`,
-      [quoteid, access.membership.id]);
+        where quote.id=$1 and access.purchase_member_mall_allowed(checkout.member_id,checkout.mall_id)
+          and checkout.state='quoted' and checkout.expires_at>clock_timestamp() and quote.expires_at>clock_timestamp()`,
+      [quoteid]);
       const quote = stored.rows[0]?.signed_payload;
       if (!quote) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
       assertInternalBenefitQuote(quote);
@@ -124,10 +123,9 @@ export function purchasePaymentAction(gateway: PaymentGateway, risk: RiskGate, d
         (select count(*)::integer from payment.intenttender tender where tender.intent_id=intent.id
           and tender.kind<>'benefit') unsupported_tenders
         from ordering.orderrecord orders join payment.intent intent on intent.order_id=orders.id
-        join access.membership membership on membership.id=$2 and membership.member_id=orders.member_id
-          and membership.organization_id=orders.mall_id and membership.client='storefront' and membership.status='active'
-        where orders.id=$1 and orders.payment_state in('unpaid','authorizing') for update of orders,intent`,
-      [order, access.membership.id]);
+        where orders.id=$1 and access.purchase_member_mall_allowed(orders.member_id,orders.mall_id)
+          and orders.payment_state in('unpaid','authorizing') for update of orders,intent`,
+      [order]);
       if (selected.rows.length !== 1) throw new Error('PAYMENT_INTENT_CARDINALITY_INVALID');
       const intent = selected.rows[0];
       assertInternalIntent(intent);

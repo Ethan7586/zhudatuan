@@ -39,8 +39,8 @@ interface LedgerRecord {
 }
 
 const BACKFILL = '20260821026000_backfill_domain_data.sql';
-const REGISTRATION_TARGET_VERSION = '20260830103000';
-const REGISTRATION_TARGET_CHECKSUM = '9d701527bc303309ed5536594aceddfb286fc59ec9bbf1d0b249075b5d7f99ae';
+const REGISTRATION_TARGET_VERSION = '20260830104000';
+const REGISTRATION_TARGET_CHECKSUM = '4b693e1cf34f5a1d59355942b5893f8075b302e53bfe41aba9c9564017bb2b0c';
 const REGISTRATION_DATABASE = 'zhudatuan_registration';
 const REGISTRATION_MIGRATION_ROLE = 'shopmigration';
 const MIGRATION_FILE = /^\d{14}_[a-z0-9_]+\.sql$/;
@@ -168,7 +168,7 @@ export class RegistrationMigrationRunner {
       and not exists(select 1 from runtime.schemaversion where version>$1)
       and not exists(select 1 from pg_tables where schemaname='public')
       and exists(select 1 from supabase_migrations.schema_migrations where version=$1
-        and name='20260830103000_identity_runtime_contract_visibility.sql') valid`,
+        and name='20260830104000_business_runtime_role_matrix.sql') valid`,
     [REGISTRATION_TARGET_VERSION, REGISTRATION_TARGET_CHECKSUM]);
     if (result.rows[0]?.valid !== true) throw new Error('REGISTRATION_MIGRATION_TARGET_INVALID');
   }

@@ -117,6 +117,7 @@ const REPAIR_FILES = [
   '20260830101000_console_support_boundary.sql',
   '20260830102000_grant_runtime_digest.sql',
   '20260830103000_identity_runtime_contract_visibility.sql',
+  '20260830104000_business_runtime_role_matrix.sql',
 ];
 
 const mode = process.argv[2];

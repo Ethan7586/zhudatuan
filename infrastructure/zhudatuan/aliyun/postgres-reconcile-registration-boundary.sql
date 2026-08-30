@@ -202,6 +202,139 @@ create policy zhudatuanregistrationboundary_runtime_guard on runtime.schemaversi
 
 grant usage on schema deployment to shopjob,zhudatuanidentityapi,zhudatuanidentityjob;
 set local role zhudatuanregistrationboundary;
+create or replace function deployment.business_runtime_roles_valid()
+returns boolean language sql stable security definer
+set search_path=pg_catalog,pg_temp as $function$
+with role_oid as(
+  select rolname,oid from pg_roles where rolname in('zhudatuanwebapi','zhudatuanpurchaseapi')
+), actual_table as(
+  select role.rolname,array_agg(namespace.nspname||'.'||relation.relname||':'||acl.privilege_type
+    order by namespace.nspname,relation.relname,acl.privilege_type) grants
+  from role_oid role join pg_class relation on true join pg_namespace namespace on namespace.oid=relation.relnamespace
+  cross join lateral aclexplode(coalesce(relation.relacl,acldefault(case when relation.relkind='S' then 'S'::"char" else 'r'::"char" end,relation.relowner))) acl
+  where relation.relkind in('r','p','v','m','f') and acl.grantee=role.oid group by role.rolname
+), actual_column as(
+  select role.rolname,array_agg(namespace.nspname||'.'||relation.relname||'.'||attribute.attname||':'||acl.privilege_type
+    order by namespace.nspname,relation.relname,attribute.attname,acl.privilege_type) grants
+  from role_oid role join pg_attribute attribute on true join pg_class relation on relation.oid=attribute.attrelid
+  join pg_namespace namespace on namespace.oid=relation.relnamespace
+  cross join lateral aclexplode(coalesce(attribute.attacl,acldefault('c',relation.relowner))) acl
+  where attribute.attnum>0 and not attribute.attisdropped and acl.grantee=role.oid group by role.rolname
+), actual_schema as(
+  select role.rolname,array_agg(namespace.nspname||':'||acl.privilege_type order by namespace.nspname,acl.privilege_type) grants
+  from role_oid role join pg_namespace namespace on true
+  cross join lateral aclexplode(coalesce(namespace.nspacl,acldefault('n',namespace.nspowner))) acl
+  where acl.grantee=role.oid group by role.rolname
+), actual_function as(
+  select role.rolname,array_agg(procedure.oid::regprocedure::text||':'||acl.privilege_type
+    order by procedure.oid::regprocedure::text,acl.privilege_type) grants
+  from role_oid role join pg_proc procedure on true
+  cross join lateral aclexplode(coalesce(procedure.proacl,acldefault('f',procedure.proowner))) acl
+  where acl.grantee=role.oid group by role.rolname
+), actual_sequence as(
+  select role.rolname,array_agg(namespace.nspname||'.'||relation.relname||':'||acl.privilege_type
+    order by namespace.nspname,relation.relname,acl.privilege_type) grants
+  from role_oid role join pg_class relation on relation.relkind='S'
+  join pg_namespace namespace on namespace.oid=relation.relnamespace
+  cross join lateral aclexplode(coalesce(relation.relacl,acldefault('S',relation.relowner))) acl
+  where acl.grantee=role.oid group by role.rolname
+), expected(role_name,table_grants,column_grants,schema_grants,function_grants,sequence_grants) as(values
+  ('zhudatuanwebapi',array[
+    'access.decisionaudit:INSERT','access.decisionaudit:SELECT','audit.accessrecord:INSERT','audit.accessrecord:SELECT',
+    'audit.archiveref:SELECT','audit.record:INSERT','audit.record:SELECT','benefit.account:SELECT','benefit.lot:SELECT',
+    'cart.cart:INSERT','cart.cart:SELECT','cart.cart:UPDATE','cart.item:DELETE','cart.item:INSERT','cart.item:SELECT','cart.item:UPDATE',
+    'catalog.listing:SELECT','catalog.product:SELECT','catalog.sku:SELECT','catalog.sourcelisting:SELECT',
+    'checkout.address:INSERT','checkout.address:SELECT','checkout.address:UPDATE','experience.application:SELECT',
+    'fulfillment.fulfillmentorder:SELECT','inventory.reservation:SELECT','inventory.stockitem:SELECT',
+    'ordering.aftersale:SELECT','ordering.line:SELECT','ordering.orderrecord:SELECT',
+    'organization.organization:SELECT','organization.unitclosure:SELECT','pricing.price:SELECT','pricing.pricebook:SELECT',
+    'reporting.fact:SELECT','reporting.metric:SELECT','risk.listentry:SELECT','risk.policy:SELECT','risk.policyversion:SELECT','risk.signal:SELECT',
+    'runtime.idempotency:INSERT','runtime.idempotency:SELECT','runtime.idempotency:UPDATE','runtime.schemaversion:SELECT'
+  ]::text[],array[]::text[],array[
+    'access:USAGE','audit:USAGE','benefit:USAGE','capability:USAGE','cart:USAGE','catalog:USAGE','checkout:USAGE',
+    'experience:USAGE','fulfillment:USAGE','identity:USAGE','inventory:USAGE','ordering:USAGE','organization:USAGE',
+    'pricing:USAGE','public:USAGE','reporting:USAGE','risk:USAGE','runtime:USAGE'
+  ]::text[],array[
+    'access.business_membership_ancestor_scopes(text):EXECUTE','access.membership_version(text):EXECUTE',
+    'access.resolve_membership(text):EXECUTE','access.resolve_scope(text,text,text):EXECUTE','access.resolve_scope(text,text,text,text):EXECUTE',
+    'access.web_audit_scope_allowed(text):EXECUTE','access.web_member_context(text,text):EXECUTE',
+    'access.web_member_scope(text,text):EXECUTE','access.web_order_allowed(text,text):EXECUTE',
+    'access.web_risk_scope_allowed(text):EXECUTE','access.web_scope_allowed(text):EXECUTE',
+    'access.web_storefront_scope(text,text):EXECUTE','benefit.web_account_balance(text,text):EXECUTE',
+    'benefit.web_ledger(text,text):EXECUTE','capability.membership_operations(text):EXECUTE',
+    'identity.resolve_session(text):EXECUTE','public.digest(text,text):EXECUTE','reporting.cockpit(text):EXECUTE'
+  ]::text[],array[]::text[]),
+  ('zhudatuanpurchaseapi',array[
+    'access.decisionaudit:INSERT','access.decisionaudit:SELECT','audit.accessrecord:INSERT','audit.accessrecord:SELECT',
+    'audit.archiveref:SELECT','audit.record:INSERT','audit.record:SELECT','cart.cart:SELECT','cart.item:SELECT',
+    'catalog.listing:SELECT','catalog.product:SELECT','catalog.sku:SELECT','catalog.sourcelisting:SELECT','checkout.address:SELECT',
+    'checkout.evidence:INSERT','checkout.evidence:SELECT','checkout.session:INSERT','checkout.session:SELECT',
+    'experience.publication:SELECT','fulfillment.fulfillmentorder:INSERT','fulfillment.fulfillmentorder:SELECT',
+    'fulfillment.line:INSERT','fulfillment.line:SELECT','inventory.movement:INSERT','inventory.reservation:INSERT',
+    'inventory.reservation:SELECT','inventory.stockitem:SELECT','invoice.profile:SELECT','marketing.campaign:SELECT',
+    'marketing.redemption:INSERT','marketing.redemption:SELECT','ordering.line:INSERT','ordering.line:SELECT',
+    'ordering.orderrecord:INSERT','ordering.orderrecord:SELECT','ordering.suborder:INSERT','ordering.suborder:SELECT',
+    'organization.organization:SELECT','organization.unitclosure:SELECT','payment.allocation:INSERT','payment.allocation:SELECT',
+    'payment.capture:INSERT','payment.capture:SELECT','payment.intent:INSERT','payment.intent:SELECT',
+    'payment.intenttender:INSERT','payment.intenttender:SELECT','payment.payment:INSERT','payment.payment:SELECT',
+    'pricing.price:SELECT','pricing.pricebook:SELECT','pricing.quote:INSERT','pricing.quote:SELECT','pricing.rule:SELECT',
+    'qualification.policy:SELECT','qualification.policyversion:SELECT','qualification.profile:SELECT',
+    'qualification.purchaselimit:SELECT','qualification.resource:SELECT','qualification.subject:SELECT','qualification.tag:SELECT',
+    'risk.listentry:SELECT','risk.policy:SELECT','risk.policyversion:SELECT','risk.signal:SELECT',
+    'runtime.idempotency:INSERT','runtime.idempotency:SELECT','runtime.job:INSERT','runtime.outbox:INSERT','runtime.outbox:SELECT',
+    'runtime.schemaversion:SELECT'
+  ]::text[],array[
+    'cart.cart.state:UPDATE','cart.cart.updated_at:UPDATE','cart.cart.version:UPDATE',
+    'checkout.session.state:UPDATE','checkout.session.version:UPDATE','inventory.reservation.state:UPDATE',
+    'inventory.reservation.version:UPDATE','inventory.stockitem.onhand:UPDATE','inventory.stockitem.updated_at:UPDATE',
+    'inventory.stockitem.version:UPDATE','marketing.campaign.spent_minor:UPDATE','marketing.campaign.updated_at:UPDATE',
+    'marketing.campaign.version:UPDATE','marketing.redemption.state:UPDATE','marketing.redemption.updated_at:UPDATE',
+    'ordering.orderrecord.fulfillment_state:UPDATE','ordering.orderrecord.lifecycle_state:UPDATE',
+    'ordering.orderrecord.payment_state:UPDATE','ordering.orderrecord.updated_at:UPDATE','ordering.orderrecord.version:UPDATE',
+    'payment.intent.state:UPDATE','payment.intent.version:UPDATE','payment.intenttender.state:UPDATE',
+    'runtime.idempotency.response:UPDATE','runtime.idempotency.state:UPDATE'
+  ]::text[],array[
+    'access:USAGE','audit:USAGE','benefit:USAGE','capability:USAGE','cart:USAGE','catalog:USAGE','checkout:USAGE',
+    'experience:USAGE','fulfillment:USAGE','identity:USAGE','inventory:USAGE','invoice:USAGE','marketing:USAGE',
+    'ordering:USAGE','organization:USAGE','payment:USAGE','pricing:USAGE','public:USAGE','qualification:USAGE','risk:USAGE','runtime:USAGE'
+  ]::text[],array[
+    'access.business_membership_ancestor_scopes(text):EXECUTE','access.membership_version(text):EXECUTE',
+    'access.purchase_application_allowed(text):EXECUTE','access.purchase_audit_scope_allowed(text):EXECUTE',
+    'access.purchase_benefit_account_allowed(text):EXECUTE','access.purchase_checkout_allowed(text):EXECUTE',
+    'access.purchase_fulfillment_allowed(text):EXECUTE','access.purchase_intent_allowed(text):EXECUTE',
+    'access.purchase_mall_allowed(text):EXECUTE','access.purchase_member_allowed(text):EXECUTE',
+    'access.purchase_member_mall_allowed(text,text):EXECUTE','access.purchase_member_scope(text,text):EXECUTE',
+    'access.purchase_order_allowed(text):EXECUTE','access.purchase_quote_allowed(text):EXECUTE',
+    'access.purchase_risk_scope_allowed(text):EXECUTE','access.resolve_membership(text):EXECUTE',
+    'access.resolve_scope(text,text,text):EXECUTE','access.resolve_scope(text,text,text,text):EXECUTE',
+    'benefit.purchase_available(text,text,text[]):EXECUTE','benefit.purchase_consume(text,text,text,text,text,bigint):EXECUTE',
+    'benefit.purchase_reserve(text,text,text,text,text[],bigint[]):EXECUTE','capability.membership_operations(text):EXECUTE',
+    'identity.resolve_session(text):EXECUTE','public.digest(text,text):EXECUTE'
+  ]::text[],array['ordering.order_number_seq:USAGE']::text[])
+)
+select (select count(*)=2 and not exists(select 1 from pg_roles role
+    where role.rolname in('zhudatuanwebapi','zhudatuanpurchaseapi')
+      and (not role.rolcanlogin or role.rolsuper or role.rolcreatedb or role.rolcreaterole
+        or role.rolinherit or role.rolreplication or role.rolbypassrls))
+  from pg_roles where rolname in('zhudatuanwebapi','zhudatuanpurchaseapi'))
+  and not exists(select 1 from pg_auth_members membership where membership.roleid in(select oid from role_oid)
+    or membership.member in(select oid from role_oid))
+  and not exists(select 1 from expected
+    left join actual_table on actual_table.rolname=expected.role_name
+    left join actual_column on actual_column.rolname=expected.role_name
+    left join actual_schema on actual_schema.rolname=expected.role_name
+    left join actual_function on actual_function.rolname=expected.role_name
+    left join actual_sequence on actual_sequence.rolname=expected.role_name
+    where coalesce(actual_table.grants,array[]::text[])<>expected.table_grants
+      or coalesce(actual_column.grants,array[]::text[])<>expected.column_grants
+      or coalesce(actual_schema.grants,array[]::text[])<>expected.schema_grants
+      or coalesce(actual_function.grants,array[]::text[])<>expected.function_grants
+      or coalesce(actual_sequence.grants,array[]::text[])<>expected.sequence_grants)
+$function$;
+revoke all on function deployment.business_runtime_roles_valid() from public,anon,authenticated,service_role,
+  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuanwebapi,zhudatuanpurchaseapi,zhudatuansandboxbootstrap,
+  shopjob,zhudatuanidentityapi,zhudatuanidentityjob;
+
 create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
 returns boolean language sql stable security definer
 set search_path=pg_catalog,deployment as $function$
@@ -216,6 +349,7 @@ returns table(
   active_platform_owner_count integer,
   migration_head_valid boolean,
   retired_roles_valid boolean,
+  business_roles_valid boolean,
   runtime_roles_valid boolean,
   boundary_roles_valid boolean,
   retired_membership_count integer,
@@ -239,17 +373,16 @@ set search_path=pg_catalog,pg_temp as $function$
     exists(select 1 from runtime.schemaversion
       where version='20260829060000'
         and checksum='b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a'),
-    (select count(*)=7 and not exists(
+    (select count(*)=5 and not exists(
       select 1 from pg_roles role where role.rolname=any(array[
-          'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-          'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+          'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
         ])
         and (role.rolcanlogin or role.rolsuper or role.rolcreatedb or role.rolcreaterole
           or role.rolinherit or role.rolreplication or role.rolbypassrls)
     ) from pg_roles role where role.rolname=any(array[
-      'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-      'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+      'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
     ])),
+    deployment.business_runtime_roles_valid(),
     (select count(*)=3 and not exists(
       select 1 from pg_roles role
       where role.rolname=any(array['shopjob','zhudatuanidentityapi','zhudatuanidentityjob'])
@@ -271,12 +404,10 @@ set search_path=pg_catalog,pg_temp as $function$
       where role.rolname=any(array['anon','authenticated','service_role','zhudatuanregistrationboundary'])),
     (select count(*)::integer from pg_auth_members membership
       where membership.roleid in(select role.oid from pg_roles role where role.rolname=any(array[
-          'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-          'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+          'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
         ]))
         or membership.member in(select role.oid from pg_roles role where role.rolname=any(array[
-          'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-          'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+          'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
         ]))),
     (select pg_get_userbyid(function.proowner)
       from pg_proc function where function.oid=to_regprocedure('deployment.registration_bootstrap_boundary(text)')),

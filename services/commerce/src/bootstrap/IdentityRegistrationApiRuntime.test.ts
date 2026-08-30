@@ -36,7 +36,7 @@ describe('identity registration API runtime', () => {
 function databaseBoundary(current_user: string) {
   return {
     current_user, current_database: 'zhudatuan_registration', active_platform_owner_count: 1, migration_head_valid: true,
-    retired_roles_valid: true, runtime_roles_valid: true, boundary_roles_valid: true, retired_membership_count: 0,
+    retired_roles_valid: true, business_roles_valid: true, runtime_roles_valid: true, boundary_roles_valid: true, retired_membership_count: 0,
     registration_boundary_owner: 'zhudatuanregistrationboundary', migration_boundary_owner: 'zhudatuanregistrationboundary',
     runtime_boundary_owner: 'zhudatuanregistrationboundary', database_owner: 'shopmigration',
   };

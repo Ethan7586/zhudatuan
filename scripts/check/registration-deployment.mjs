@@ -158,8 +158,9 @@ for (const token of [
 const initBootstrapBoundary = postgresInitSource.match(
   /create or replace function deployment\.registration_bootstrap_boundary\(p_sentinel text\)[\s\S]*?\$function\$;/,
 )?.[0]??'';
-const reconciledBootstrapBoundary = reconciliationSource.match(
-  /set local role zhudatuanregistrationboundary;\s*(create or replace function deployment\.registration_bootstrap_boundary\(p_sentinel text\)[\s\S]*?\$function\$;)/,
+const boundaryRoleStart = reconciliationSource.indexOf('set local role zhudatuanregistrationboundary;');
+const reconciledBootstrapBoundary = (boundaryRoleStart < 0 ? '' : reconciliationSource.slice(boundaryRoleStart)).match(
+  /(create or replace function deployment\.registration_bootstrap_boundary\(p_sentinel text\)[\s\S]*?\$function\$;)/,
 )?.[1]??'';
 for (const [label,source] of [
   ['init',initBootstrapBoundary],

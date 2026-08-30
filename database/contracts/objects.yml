@@ -10,6 +10,11 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: identity
+  - id: access.business_membership_ancestor_scopes
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260830104000_business_runtime_role_matrix.sql
+    operationalOwner: access
   - id: access.cancel_owner_transfer
     kind: function
     owner: access
@@ -212,6 +217,11 @@ objects:
     kind: function
     owner: access
     source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
+    operationalOwner: access
+  - id: access.web_member_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260830104000_business_runtime_role_matrix.sql
     operationalOwner: access
   - id: access.web_member_scope
     kind: function
@@ -16971,14 +16981,6 @@ objects:
     kind: policy
     owner: access
     source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
-  - id: access.membership.zhudatuanpurchaseapi
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
-  - id: access.membership.zhudatuanwebapi
-    kind: policy
-    owner: access
-    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: access.membershipoverride.appscope
     kind: policy
     owner: access
@@ -18583,14 +18585,6 @@ objects:
     kind: policy
     owner: member
     source: database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
-  - id: member.profile.zhudatuanpurchaseapi
-    kind: policy
-    owner: member
-    source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
-  - id: member.profile.zhudatuanwebapi
-    kind: policy
-    owner: member
-    source: database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql
   - id: notification.announcement.appscope
     kind: policy
     owner: notification

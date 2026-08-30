@@ -8,6 +8,7 @@ export interface LiveDatabaseBoundaryState {
   readonly active_platform_owner_count: number;
   readonly migration_head_valid: boolean;
   readonly retired_roles_valid: boolean;
+  readonly business_roles_valid: boolean;
   readonly runtime_roles_valid: boolean;
   readonly boundary_roles_valid: boolean;
   readonly retired_membership_count: number;
@@ -32,6 +33,7 @@ export async function assertLiveDatabaseBoundary(
     || state.active_platform_owner_count !== 1
     || !state.migration_head_valid
     || !state.retired_roles_valid
+    || !state.business_roles_valid
     || !state.runtime_roles_valid
     || !state.boundary_roles_valid
     || state.retired_membership_count !== 0

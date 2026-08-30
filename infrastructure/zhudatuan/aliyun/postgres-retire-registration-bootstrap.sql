@@ -7,7 +7,7 @@ declare
   authority oid := (select oid from pg_roles where rolname=current_user);
   rds_superuser oid := to_regrole('pg_rds_superuser');
   retired_role text;
-  membership record;
+  role_edge record;
 begin
   if current_database()<>'zhudatuan_registration'
     or current_user in('shopmigration','zhudatuanbootstrap')
@@ -28,8 +28,7 @@ begin
   end if;
 
   foreach retired_role in array array[
-    'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-    'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+    'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
   ] loop
     if to_regrole(retired_role) is null then
       raise exception 'ZHUDATUAN_BOOTSTRAP_RETIREMENT_ROLE_MISSING:%',retired_role;
@@ -37,32 +36,30 @@ begin
     execute format('alter role %I nologin password null nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls',retired_role);
   end loop;
 
-  for membership in
+  for role_edge in
     select granted.rolname granted_role,member.rolname member_role
     from pg_auth_members edge
     join pg_roles granted on granted.oid=edge.roleid
     join pg_roles member on member.oid=edge.member
     where granted.rolname=any(array[
-      'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-      'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+      'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
     ]) or member.rolname=any(array[
-      'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-      'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+      'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
     ])
   loop
-    execute format('revoke %I from %I',membership.granted_role,membership.member_role);
+    execute format('revoke %I from %I',role_edge.granted_role,role_edge.member_role);
   end loop;
 end
 $retire$;
 
 revoke all privileges on all tables in schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuanwebapi,zhudatuanpurchaseapi,zhudatuansandboxbootstrap;
+  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke all privileges on all sequences in schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuanwebapi,zhudatuanpurchaseapi,zhudatuansandboxbootstrap;
+  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke all privileges on all functions in schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuanwebapi,zhudatuanpurchaseapi,zhudatuansandboxbootstrap;
+  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke usage on schema identity,access,deployment from
-  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuanwebapi,zhudatuanpurchaseapi,zhudatuansandboxbootstrap;
+  shopapp,shopmigration,shopread,zhudatuanbootstrap,zhudatuansandboxbootstrap;
 revoke execute on function deployment.registration_bootstrap_boundary(text) from shopmigration;
 revoke execute on function deployment.is_independent_registration_database() from shopmigration;
 revoke select on deployment.boundary from shopmigration;
@@ -70,10 +67,10 @@ revoke select on deployment.boundary from shopmigration;
 do $assert_retired$
 declare
   retired_roles constant text[] := array[
-    'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuanwebapi',
-    'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+    'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap'
   ];
   runtime_roles constant text[] := array['shopjob','zhudatuanidentityapi','zhudatuanidentityjob'];
+  business_roles constant text[] := array['zhudatuanwebapi','zhudatuanpurchaseapi'];
   boundary_roles constant text[] := array['anon','authenticated','service_role','zhudatuanregistrationboundary'];
 begin
   if (select count(*) from pg_roles where rolname=any(retired_roles))<>cardinality(retired_roles)
@@ -94,6 +91,15 @@ begin
       and (not rolcanlogin or rolsuper or rolcreatedb or rolcreaterole
         or rolinherit or rolreplication or rolbypassrls)) then
     raise exception 'ZHUDATUAN_BOOTSTRAP_RETIREMENT_RUNTIME_ROLE_INVALID';
+  end if;
+  if (select count(*) from pg_roles where rolname=any(business_roles))<>cardinality(business_roles)
+    or exists(select 1 from pg_roles where rolname=any(business_roles)
+      and (not rolcanlogin or rolsuper or rolcreatedb or rolcreaterole
+        or rolinherit or rolreplication or rolbypassrls))
+    or exists(select 1 from pg_auth_members membership
+      where membership.roleid in(select oid from pg_roles where rolname=any(business_roles))
+        or membership.member in(select oid from pg_roles where rolname=any(business_roles))) then
+    raise exception 'ZHUDATUAN_BOOTSTRAP_RETIREMENT_BUSINESS_ROLE_INVALID';
   end if;
   if (select count(*) from pg_roles where rolname=any(boundary_roles))<>cardinality(boundary_roles)
     or exists(select 1 from pg_roles where rolname=any(boundary_roles)
