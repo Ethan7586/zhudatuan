@@ -69,6 +69,7 @@ assertCaddyMatcher(apiHost, 'registrationPreflight', ['OPTIONS'], [
   '/api/v1/identity/invitations/resolve',
   '/api/v1/identity/members',
   '/api/v1/members',
+  '/api/v1/access/center',
 ], true);
 assertCaddyMatcher(apiHost, 'registrationPost', ['POST'], [
   '/api/v1/identity/sessions',
@@ -81,7 +82,7 @@ assertCaddyMatcher(apiHost, 'registrationPost', ['POST'], [
 assertCaddyMatcher(apiHost, 'registrationSessionRead', ['GET'], ['/api/v1/identity/session']);
 assertCaddyMatcher(apiHost, 'registrationSessionDelete', ['DELETE'], ['/api/v1/identity/session']);
 assertCaddyMatcher(apiHost, 'registrationInvitationDelete', ['DELETE'], ['/api/v1/identity/invitations/*'], true);
-assertCaddyMatcher(apiHost, 'registrationOperatorRead', ['GET'], ['/api/v1/members']);
+assertCaddyMatcher(apiHost, 'registrationOperatorRead', ['GET'], ['/api/v1/members', '/api/v1/access/center']);
 assertCaddyMatcher(apiHost, 'purchasePublicBlocked', ['POST', 'OPTIONS'], [
   '/api/v1/checkouts/quotes',
   '/api/v1/orders',
@@ -106,6 +107,7 @@ const registrationOperations = [
   ['identity.invitations.revoke', 'DELETE', '/api/v1/identity/invitations/{invitationid}'],
   ['identity.members.create', 'POST', '/api/v1/identity/members'],
   ['member.members.read', 'GET', '/api/v1/members'],
+  ['access.center.read', 'GET', '/api/v1/access/center'],
 ];
 for (const [id, method, path] of registrationOperations) {
   const operation = operations.find((candidate) => candidate.id === id);

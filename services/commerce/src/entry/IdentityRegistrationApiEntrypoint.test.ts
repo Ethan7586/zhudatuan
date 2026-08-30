@@ -12,6 +12,8 @@ import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interfac
 import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
+import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/AccessReadOperations';
+import { IdentityOperatorAccessModule } from '../modules/access/IdentityOperatorAccessModule';
 import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity/IdentityOperations';
 import { IdentityRegistrationModule } from '../modules/identity/IdentityRegistrationModule';
 import { IdentityOperatorMemberModule } from '../modules/member/IdentityOperatorMemberModule';
@@ -21,9 +23,9 @@ import { IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS } from '../modules/runtime/
 import { IdentityRegistrationRuntimeModule } from '../modules/runtime/IdentityRegistrationRuntimeModule';
 
 describe('identity registration API entrypoint', () => {
-  it('exposes only health, identity control, and the Owner member list', () => {
+  it('exposes only health, identity control, the Owner member list, and the read-only access center', () => {
     expect([...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS, ...IDENTITY_REGISTRATION_OPERATION_IDS,
-      ...MEMBER_OPERATOR_READ_OPERATION_IDS]).toEqual([
+      ...MEMBER_OPERATOR_READ_OPERATION_IDS, ...ACCESS_OPERATOR_READ_OPERATION_IDS]).toEqual([
       'runtime.health.live',
       'runtime.health.ready',
       'runtime.health.startup',
@@ -37,16 +39,17 @@ describe('identity registration API entrypoint', () => {
       'identity.invitations.revoke',
       'identity.members.create',
       'member.members.read',
+      'access.center.read',
     ]);
   });
 
   it('freezes a route registry containing only the approved operation set', async () => {
     const operationIds = [...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS, ...IDENTITY_REGISTRATION_OPERATION_IDS,
-      ...MEMBER_OPERATOR_READ_OPERATION_IDS];
+      ...MEMBER_OPERATOR_READ_OPERATION_IDS, ...ACCESS_OPERATOR_READ_OPERATION_IDS];
     const pool = { workload: () => pool } as unknown as DatabasePool;
     const extensions = new ExtensionRegistry({ verify: async () => false });
     const bootstrapped = await bootstrapApi({
-      modules: [IdentityRegistrationRuntimeModule, IdentityRegistrationModule, IdentityOperatorMemberModule],
+      modules: [IdentityRegistrationRuntimeModule, IdentityRegistrationModule, IdentityOperatorMemberModule, IdentityOperatorAccessModule],
       operationIds,
       extensions,
       allowedOrigins: ['https://accounts.zhudatuan.com'],
@@ -69,6 +72,9 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')?.operation).toBe('identity.sessions.create');
     expect(bootstrapped.routes.match('GET', '/api/v1/identity/sessions')).toBeNull();
     expect(bootstrapped.routes.match('GET', '/api/v1/members')?.operation).toBe('member.members.read');
+    expect(bootstrapped.routes.match('GET', '/api/v1/access/center')?.operation).toBe('access.center.read');
+    expect(bootstrapped.routes.match('PUT', '/api/v1/access/roles/role:test')).toBeNull();
+    expect(bootstrapped.routes.match('PUT', '/api/v1/access/memberships/membership:test/scopes')).toBeNull();
   });
 
   it('has no static dependency path to full Commerce, payment, providers, finance, WeChat, object storage, or cache', () => {
@@ -80,6 +86,8 @@ describe('identity registration API entrypoint', () => {
       '/modules/payment/',
       '/modules/finance/',
       '/modules/channel/',
+      '/modules/access/AccessModule.ts',
+      '/modules/access/AccessOperations.ts',
       '/modules/identity/WechatOperations.ts',
       '/foundation/infrastructure/ObjectStore.ts',
       '/foundation/cache/',

@@ -5,29 +5,17 @@ import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, rowResult, type OperationDatabase } from '../../foundation/application/ModuleOperations';
 import type { OperationRequest } from '../../foundation/application/OperationHandler';
 import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
-import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { accessPort, type OwnershipProofSnapshot, type OwnershipTransferInput } from './AccessPort';
+import { accessOperatorReadActions } from './AccessReadOperations';
 import { OwnerActionProof, type OwnerAction, type OwnerActionProofPayload } from './OwnerActionProof';
 
 export function accessOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
   const proofs = new OwnerActionProof(context.container.get(IDENTITY_SECURITY_KEYS).session);
   return new ModuleOperations('access', pool, context.container.get(AUDIT_SINK), {
-    'access.center.read': async (request, database) => {
-      const access = requireAccess(request);
-      const page = queryPage(request, 500);
-      const result = await database.query(`select membership.id,membership.status,membership.access_version,
-        coalesce(jsonb_agg(distinct jsonb_build_object('role',role.id,'name',role.name)) filter(where role.id is not null),'[]') roles,
-        coalesce(jsonb_agg(distinct jsonb_build_object('id',scopegrant.id,'kind',scopegrant.scope_kind,'scope',scopegrant.scope_id,'effect',scopegrant.effect,'expires',scopegrant.expires_at)) filter(where scopegrant.id is not null),'[]') scopes
-        from access.membership membership left join access.membershiprole assignment on assignment.membership_id=membership.id
-        left join access.role role on role.id=assignment.role_id left join access.scopegrant scopegrant on scopegrant.membership_id=membership.id
-        where exists(select 1 from organization.unitclosure boundary
-          where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
-        and ($2::text is null or membership.id>$2)
-        group by membership.id order by membership.id limit $3`, [access.scope.id, page.id, page.fetch]);
-      return keysetResult(result, page, 'id');
-    },
+    ...accessOperatorReadActions(),
     'access.roles.manage': async (request, database) => {
       const access = requireAccess(request);
       const body = bodyRecord(request);
