@@ -64,11 +64,11 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
           const available = canAccessNavigationTarget(target.key, permissions, capabilities);
           return <button key={target.key} type="button" disabled={!available}
             onClick={available ? () => onNavigate(suffix) : undefined}
-            aria-label={label} aria-disabled={!available}
+            aria-label={available ? label : `${label}，没有权限`} aria-disabled={!available}
             aria-current={available && target.activeKey === active ? 'page' : undefined}
-            title={collapsed ? `${label}${available ? '' : ' · 当前账号未开放'}` : undefined}>
+            title={collapsed ? `${label}${available ? '' : ' · 没有权限'}` : undefined}>
             <ShellIcon name={target.icon} /><span className="sidebarlabel">{label}</span>
-            {available ? null : <span className="sidebarnavavailability">未开放</span>}
+            {available ? null : <span className="sidebarnavavailability">没有权限</span>}
           </button>;
         })}
       </nav>
