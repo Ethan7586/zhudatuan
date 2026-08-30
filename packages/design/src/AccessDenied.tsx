@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useId, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Button } from './Button';
 
 export type AccessDeniedKind = 'forbidden' | 'unauthenticated';
@@ -12,7 +12,6 @@ export interface AccessDeniedActions {
 export interface AccessDeniedProps {
   readonly kind?: AccessDeniedKind;
   readonly resourceLabel?: string;
-  readonly detail?: string;
   readonly actions?: AccessDeniedActions;
 }
 
@@ -33,23 +32,24 @@ export function ContextualAccessDenied(props: AccessDeniedProps) {
   return <AccessDenied {...props} {...(props.actions === undefined && actions !== undefined ? { actions } : {})} />;
 }
 
-export function AccessDenied({ kind = 'forbidden', resourceLabel, detail, actions }: AccessDeniedProps) {
+export function AccessDenied({ kind = 'forbidden', resourceLabel, actions }: AccessDeniedProps) {
   const containerRef = useRef<HTMLElement>(null);
   const titleId = useId();
   const descriptionId = useId();
+  const requestHelpId = useId();
+  const [requestHelpOpen, setRequestHelpOpen] = useState(false);
   const unauthenticated = kind === 'unauthenticated';
-  const title = unauthenticated ? '登录已失效' : '暂无访问权限';
+  const title = unauthenticated ? '登录已失效' : '需要访问权限';
   const subject =
     resourceLabel === undefined
       ? unauthenticated
         ? '当前登录状态已过期，无法继续查看此页面。'
-        : '当前账号无法查看此页面。'
+        : '当前账号尚未开通此页面。'
       : unauthenticated
         ? `当前登录状态已过期，无法继续查看「${resourceLabel}」。`
-        : `当前账号无法查看「${resourceLabel}」。`;
-  const guidance = unauthenticated ? '请重新登录后继续操作。' : '请切换到已授权的商城，或联系管理员开通权限。';
-  const normalizedDetail = detail?.trim();
-  const hasActions = actions?.onSwitchScope !== undefined || actions?.onReturnToWorkspace !== undefined || actions?.onRelogin !== undefined;
+        : `当前账号尚未开通「${resourceLabel}」。`;
+  const guidance = unauthenticated ? '请重新登录后继续操作。' : '如工作需要，可以向管理员申请访问；审核通过后即可使用。';
+  const hasActions = !unauthenticated || actions?.onReturnToWorkspace !== undefined || actions?.onRelogin !== undefined;
 
   useEffect(() => {
     containerRef.current?.focus();
@@ -65,7 +65,7 @@ export function AccessDenied({ kind = 'forbidden', resourceLabel, detail, action
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <span className="swaccessdeniedlabel">访问受限</span>
+      <span className="swaccessdeniedlabel">{unauthenticated ? '身份验证' : '权限保护'}</span>
       <div className="swaccessdeniedvisual" aria-hidden="true">
         <svg viewBox="0 0 96 96" focusable="false">
           <path className="swaccessdeniedshield" d="M48 12 76 23v22c0 19-11 33-28 41C31 78 20 64 20 45V23L48 12Z" />
@@ -94,31 +94,31 @@ export function AccessDenied({ kind = 'forbidden', resourceLabel, detail, action
             </>
           ) : (
             <>
+              <Button className="swaccessdeniedrequestbutton" tone="primary"
+                aria-expanded={requestHelpOpen} aria-controls={requestHelpId}
+                onPress={() => setRequestHelpOpen((open) => !open)}>
+                申请访问权限
+              </Button>
               {actions?.onSwitchScope === undefined ? null : (
-                <Button tone="primary" onPress={actions.onSwitchScope}>
+                <Button onPress={actions.onSwitchScope}>
                   切换商城
                 </Button>
               )}
               {actions?.onReturnToWorkspace === undefined ? null : (
-                <Button tone={actions.onSwitchScope === undefined ? 'primary' : 'default'} onPress={actions.onReturnToWorkspace}>
+                <Button onPress={actions.onReturnToWorkspace}>
                   返回工作台
-                </Button>
-              )}
-              {actions?.onRelogin === undefined ? null : (
-                <Button className="swaccessdeniedrelogin" onPress={actions.onRelogin}>
-                  重新登录
                 </Button>
               )}
             </>
           )}
         </div>
       ) : null}
-      {normalizedDetail === undefined || normalizedDetail === '' ? null : (
-        <details className="swaccessdenieddetail">
-          <summary>查看权限详情</summary>
-          <code>{normalizedDetail}</code>
-        </details>
-      )}
+      {!unauthenticated && requestHelpOpen ? (
+        <div id={requestHelpId} className="swaccessdeniedrequest" role="status">
+          <strong>申请说明</strong>
+          <p>请将「{resourceLabel ?? '当前页面'}」和当前商城名称发送给商城 Owner 或平台管理员审核。当前为演示环境，不会自动提交申请。</p>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -134,6 +134,32 @@
   color: #fff;
 }
 
+.sidebarnavigation button:disabled,
+.sidebarnavigation button:disabled:hover {
+  border-color: rgb(255 255 255 / 3%);
+  background: #071b32;
+  color: #65778d;
+  cursor: not-allowed;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%);
+}
+
+.sidebarnavigation button:disabled > svg {
+  color: #53667d;
+  filter: none;
+}
+
+.sidebarnavavailability {
+  margin-left: auto;
+  border: 1px solid rgb(148 163 184 / 12%);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 18%);
+  color: #718398;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
 .sidebarnavigation button[aria-current='page'] {
   border-color: rgb(60 119 231 / 20%);
   background: linear-gradient(90deg, rgb(20 62 126 / 96%), rgb(20 65 130 / 82%));
@@ -154,7 +180,8 @@
 
 .consolesidebar.iscollapsed .sidebarbrand { justify-content: center; padding-inline: 8px; }
 .consolesidebar.iscollapsed .sidebarbrandcopy,
-.consolesidebar.iscollapsed .sidebarlabel { display: none; }
+.consolesidebar.iscollapsed .sidebarlabel,
+.consolesidebar.iscollapsed .sidebarnavavailability { display: none; }
 .consolesidebar.iscollapsed .sidebartoggle { top: 70px; right: 17px; opacity: 1; transform: none; }
 .consolesidebar.iscollapsed .sidebarnavigation { padding-top: 22px; }
 .consolesidebar.iscollapsed .sidebarnavigation button { justify-content: center; padding-inline: 0; }
