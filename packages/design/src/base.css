@@ -271,6 +271,10 @@ section[role='alert'] > button {
   justify-content: center;
 }
 
+.swaccessdeniedactions > .swaccessdeniedrequestbutton {
+  grid-column: 1 / -1;
+}
+
 .swaccessdeniedactions > .swaccessdeniedrelogin {
   grid-column: 1 / -1;
   min-height: auto;
@@ -280,24 +284,30 @@ section[role='alert'] > button {
   box-shadow: none;
 }
 
-.swaccessdenieddetail {
-  max-width: 100%;
+.swaccessdeniedrequest {
+  box-sizing: border-box;
+  width: min(31rem, 100%);
   margin-top: var(--sw-space-2);
+  border: 0.0625rem solid color-mix(in srgb, var(--sw-brand) 14%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: color-mix(in srgb, var(--sw-brand-light) 38%, var(--sw-surface));
+  padding: var(--sw-space-2) var(--sw-space-3);
   color: var(--sw-text-secondary);
-  font-size: 0.75rem;
+  text-align: left;
 }
 
-.swaccessdenieddetail summary {
-  cursor: pointer;
-}
-
-.swaccessdenieddetail code {
+.swaccessdeniedrequest strong {
   display: block;
-  max-width: 29rem;
-  margin-top: var(--sw-space-1);
-  overflow-wrap: anywhere;
+  margin-bottom: var(--sw-space-0-5);
+  color: var(--sw-brand-ink);
+  font-size: 0.8125rem;
+}
+
+.swaccessdeniedrequest p {
+  margin: 0;
   color: var(--sw-text-secondary);
-  white-space: normal;
+  font-size: 0.8125rem;
+  line-height: 1.65;
 }
 
 @media (max-width: 40rem) {
@@ -318,6 +328,10 @@ section[role='alert'] > button {
   }
 
   .swaccessdeniedactions > .swaccessdeniedrelogin {
+    grid-column: auto;
+  }
+
+  .swaccessdeniedactions > .swaccessdeniedrequestbutton {
     grid-column: auto;
   }
 }

@@ -30,7 +30,6 @@ export const navigationAccessRequirements: Readonly<Record<string, readonly Navi
     requirement('finance.reconciliations.read', 'finance.reconciliation.read'),
   ]),
   access: Object.freeze([requirement('access.center.read', 'access.center.read')]),
-  support: Object.freeze([requirement('support.cases.read', 'support.case.read')]),
   qualification: Object.freeze([requirement('qualification.center.read', 'qualification.read')]),
 });
 

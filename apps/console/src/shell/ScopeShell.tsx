@@ -1,4 +1,4 @@
-import { AccessDeniedActionsProvider } from '@shop/design';
+import { AccessDeniedActionsProvider, ContextualAccessDenied } from '@shop/design';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';
@@ -7,9 +7,8 @@ import { Sidebar } from '../components/Sidebar';
 import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
-import { consoleModuleById, consoleModules, selectConsoleModuleByEntryPath } from '../route/ConsoleModuleRegistry';
-import { deepestConsoleRouteHandle, resolveConsoleRoutePresentation } from '../route/ConsoleModuleRoutes';
-import { scopeSuffix } from '../route/ProfessionalRouteCatalog';
+import { professionalRouteFromPath, professionalRoutes, scopeSuffix } from '../route/ProfessionalRouteCatalog';
+import { canAccessNavigationTarget } from '../route/NavigationAccess';
 import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
 import { appConfig } from '../shared/config/AppConfig';
 import { scopePath } from '../shared/url/ScopePath';
@@ -43,6 +42,14 @@ export function ScopeShell() {
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
             : professional !== undefined && referralProfessionalFeatures.has(professional.featureKey) ? 'referral'
               : professional?.featureKey ?? workstation?.key;
+  const routeAccessKey = professional?.featureKey === 'productdetail' ? 'products'
+    : professional?.featureKey === 'orderdetail' ? 'orders'
+      : professional?.featureKey ?? workstation?.key;
+  const routeAvailable = canAccessNavigationTarget(
+    routeAccessKey,
+    context.session.permissions,
+    context.session.capabilities,
+  );
   const logout = useMutation({
     mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
       accessVersion: context.session.accessVersion,
@@ -107,7 +114,9 @@ export function ScopeShell() {
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
         <Sidebar active={activeRoute} collapsed={collapsed} mainItems={mainNavigationItems} bottomItems={bottomNavigationItems}
           displayName={context.profile.display_name} roleLabel={scopeLabel}
-          onNavigate={openRoute}
+          scopeKind={context.scope.kind}
+          permissions={context.session.permissions} capabilities={context.session.capabilities}
+          workstations={workstations} onNavigate={openRoute}
           onToggle={() => setCollapsed((value) => !value)} />
         <button className="mobilebackdrop" type="button" onClick={() => setMobileOpen(false)} aria-label="关闭主导航" />
         <div className="consoleworkspace">
@@ -140,7 +149,7 @@ export function ScopeShell() {
             </div>
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
-            <Outlet />
+            {routeAvailable ? <Outlet /> : <ContextualAccessDenied resourceLabel={routeTitle} />}
           </main>
           <footer className="consolefooter">
             <span>© 2026 ZHUDATUAN 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>

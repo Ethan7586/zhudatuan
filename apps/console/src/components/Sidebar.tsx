@@ -1,14 +1,21 @@
 import { Brand } from '@shop/design';
-import type { NavigationItem } from '../entity/navigation/ConsoleNavigation';
-import { ShellIcon } from './ShellIcon';
+import type { ProfessionalRoute } from '../route/ProfessionalRouteCatalog';
+import type { ConsoleScope } from '../entity/session/ConsoleSession';
+import { applicationScopePresentation } from '../feature/application/ApplicationScope';
+import { canAccessNavigationTarget } from '../route/NavigationAccess';
+import type { Workstation } from '../shell/Workstation';
+import { ShellIcon, type ShellIconName } from './ShellIcon';
 
 export interface SidebarProps {
   readonly active: string | undefined;
   readonly collapsed: boolean;
   readonly displayName: string;
   readonly roleLabel: string;
-  readonly mainItems: readonly NavigationItem[];
-  readonly bottomItems: readonly NavigationItem[];
+  readonly scopeKind: ConsoleScope['kind'];
+  readonly professionalRoutes: readonly ProfessionalRoute[];
+  readonly workstations: readonly Workstation[];
+  readonly permissions: readonly string[];
+  readonly capabilities: readonly string[];
   readonly onNavigate: (suffix: string) => void;
   readonly onToggle: () => void;
 }
@@ -29,7 +36,7 @@ const navigationTargets: readonly NavigationTarget[] = Object.freeze([
   { key: 'qualification', activeKey: 'qualification', label: '系统治理台', icon: 'system', source: 'professional' },
 ]);
 
-export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, professionalRoutes, workstations, onNavigate, onToggle }: SidebarProps) {
+export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, professionalRoutes, workstations, permissions, capabilities, onNavigate, onToggle }: SidebarProps) {
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
@@ -42,13 +49,20 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
       </div>
       <div className="sidebarnavtitle">工作台工作流</div>
       <nav aria-label="工作台与治理系统" className="sidebarnavigation">
-        {mainItems.map((item) => {
-          const label = navigationLabel(item);
-          return <button key={item.moduleId} type="button" onClick={() => onNavigate(item.suffix)} data-status={item.status}
-            aria-disabled={item.status === 'disabled' ? true : undefined}
-            aria-label={label} aria-current={item.moduleId === active ? 'page' : undefined}
-            title={collapsed ? label : undefined}>
-            <ShellIcon name={item.icon} /><span className="sidebarlabel">{label}</span>
+        {navigationTargets.map((target) => {
+          const label = target.key === 'applications' ? applicationScopePresentation(scopeKind).navigationLabel : target.label;
+          const suffix = target.source === 'workstation'
+            ? workstations.find(({ key }) => key === target.key)?.key
+            : professionalRoutes.find(({ featureKey }) => featureKey === target.key)?.suffix;
+          if (suffix === undefined) return null;
+          const available = canAccessNavigationTarget(target.key, permissions, capabilities);
+          return <button key={target.key} type="button" disabled={!available}
+            onClick={available ? () => onNavigate(suffix) : undefined}
+            aria-label={label} aria-disabled={!available}
+            aria-current={available && target.activeKey === active ? 'page' : undefined}
+            title={collapsed ? `${label}${available ? '' : ' · 当前账号未开放'}` : undefined}>
+            <ShellIcon name={target.icon} /><span className="sidebarlabel">{label}</span>
+            {available ? null : <span className="sidebarnavavailability">未开放</span>}
           </button>;
         })}
       </nav>
