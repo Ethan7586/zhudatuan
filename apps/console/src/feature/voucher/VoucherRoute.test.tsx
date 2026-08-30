@@ -88,9 +88,9 @@ describe('Voucher governance workspace', () => {
     )));
     await client.invalidateQueries();
 
-    const access = await screen.findByRole('region', { name: '暂无访问权限' });
+    const access = await screen.findByRole('region', { name: '没有权限' });
     await waitFor(() => expect(document.activeElement).toBe(access));
-    expect(within(access).getByText('当前账号无法查看「卡券治理台」。')).toBeTruthy();
+    expect(within(access).getByText('「卡券治理台」不可访问')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('table', { name: '卡券方案' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: '卡券治理台' })).toBeNull();

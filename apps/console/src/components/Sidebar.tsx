@@ -2,6 +2,7 @@ import { Brand } from '@shop/design';
 import type { ProfessionalRoute } from '../route/ProfessionalRouteCatalog';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
 import { applicationScopePresentation } from '../feature/application/ApplicationScope';
+import { canAccessNavigationTarget } from '../route/NavigationAccess';
 import type { Workstation } from '../shell/Workstation';
 import { ShellIcon, type ShellIconName } from './ShellIcon';
 
@@ -13,6 +14,8 @@ export interface SidebarProps {
   readonly scopeKind: ConsoleScope['kind'];
   readonly professionalRoutes: readonly ProfessionalRoute[];
   readonly workstations: readonly Workstation[];
+  readonly permissions: readonly string[];
+  readonly capabilities: readonly string[];
   readonly onNavigate: (suffix: string) => void;
   readonly onToggle: () => void;
 }
@@ -36,12 +39,11 @@ const navigationTargets: readonly NavigationTarget[] = Object.freeze([
   { key: 'vouchers', activeKey: 'vouchers', label: '卡券治理台', icon: 'voucher', source: 'professional' },
   { key: 'finance', activeKey: 'finance', label: '财务与对账台', icon: 'finance', source: 'workstation' },
   { key: 'access', activeKey: 'access', label: '会员与权限', icon: 'members', source: 'professional' },
+  { key: 'support', activeKey: 'support', label: '客服系统', icon: 'support', source: 'professional' },
   { key: 'qualification', activeKey: 'qualification', label: '系统治理台', icon: 'system', source: 'professional' },
 ]);
 
-export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, professionalRoutes, workstations, onNavigate, onToggle }: SidebarProps) {
-  const supportRoute = professionalRoutes.find(({ featureKey }) => featureKey === 'support');
-
+export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, professionalRoutes, workstations, permissions, capabilities, onNavigate, onToggle }: SidebarProps) {
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
@@ -60,19 +62,17 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
             ? workstations.find(({ key }) => key === target.key)?.key
             : professionalRoutes.find(({ featureKey }) => featureKey === target.key)?.suffix;
           if (suffix === undefined) return null;
-          return <button key={target.key} type="button" onClick={() => onNavigate(suffix)}
-            aria-label={label} aria-current={target.activeKey === active ? 'page' : undefined}
-            title={collapsed ? label : undefined}>
+          const available = canAccessNavigationTarget(target.key, permissions, capabilities);
+          return <button key={target.key} type="button" disabled={!available}
+            onClick={available ? () => onNavigate(suffix) : undefined}
+            aria-label={available ? label : `${label}，没有权限`} aria-disabled={!available}
+            aria-current={available && target.activeKey === active ? 'page' : undefined}
+            title={collapsed ? `${label}${available ? '' : ' · 没有权限'}` : undefined}>
             <ShellIcon name={target.icon} /><span className="sidebarlabel">{label}</span>
+            {available ? null : <span className="sidebarnavavailability">没有权限</span>}
           </button>;
         })}
       </nav>
-      {supportRoute ? <nav aria-label="客服系统" className="sidebarsupport">
-        <button type="button" onClick={() => onNavigate(supportRoute.suffix)} aria-label="客服系统"
-          aria-current={active === 'support' ? 'page' : undefined} title={collapsed ? '客服系统' : undefined}>
-          <ShellIcon name="support" /><span className="sidebarlabel">客服系统</span>
-        </button>
-      </nav> : null}
       <div className="sidebarprofile">
         <span className="sidebarprofileavatar" aria-hidden="true">{avatarLetter(displayName)}</span>
         <span className="sidebarprofilecopy"><strong>{displayName}</strong><small>{roleLabel}</small></span>

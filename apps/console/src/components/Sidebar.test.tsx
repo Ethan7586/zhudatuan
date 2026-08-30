@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
+import { navigationAccessRequirements } from '../route/NavigationAccess';
 import { professionalRoutes } from '../route/ProfessionalRouteCatalog';
 import { workstations } from '../shell/Workstation';
 import { Sidebar } from './Sidebar';
@@ -44,23 +45,39 @@ describe('Sidebar commerce navigation', () => {
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
 
-  it('pins customer service above the profile and keeps a collapsed label', async () => {
+  it('darkens unavailable systems and prevents navigation', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
-    const { container } = renderSidebar('mall', true, onNavigate);
-    const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
-    const supportButton = within(supportNavigation).getByRole('button', { name: '客服系统' });
-    const profile = container.querySelector('.sidebarprofile');
+    renderSidebar('mall', false, onNavigate, {
+      permissions: ['referral.settings.read'],
+      capabilities: ['referral.settings.read'],
+    });
 
-    expect(supportButton.getAttribute('title')).toBe('客服系统');
-    expect(supportNavigation.nextElementSibling).toBe(profile);
-    await user.click(supportButton);
-    expect(onNavigate).toHaveBeenCalledWith('support');
+    const unavailable = screen.getByRole('button', { name: '渠道接入系统，没有权限' });
+    expect(unavailable.hasAttribute('disabled')).toBe(true);
+    expect(unavailable.getAttribute('aria-disabled')).toBe('true');
+    expect(within(unavailable).getByText('没有权限')).toBeTruthy();
+    await user.click(unavailable);
+    expect(onNavigate).not.toHaveBeenCalled();
+
+    const referral = screen.getByRole('button', { name: '分销返佣系统' });
+    expect(referral.hasAttribute('disabled')).toBe(false);
   });
 });
 
-function renderSidebar(kind: ConsoleScope['kind'], collapsed: boolean, onNavigate: (suffix: string) => void) {
+const allPermissions = [...new Set(Object.values(navigationAccessRequirements).flatMap((requirements) =>
+  requirements.map(({ permission }) => permission)))];
+const allCapabilities = [...new Set(Object.values(navigationAccessRequirements).flatMap((requirements) =>
+  requirements.map(({ capability }) => capability)))];
+
+function renderSidebar(
+  kind: ConsoleScope['kind'],
+  collapsed: boolean,
+  onNavigate: (suffix: string) => void,
+  access = { permissions: allPermissions, capabilities: allCapabilities },
+) {
   return render(<Sidebar active="applications" collapsed={collapsed} displayName="商城管理员" roleLabel="当前范围"
     scopeKind={kind} professionalRoutes={professionalRoutes} workstations={workstations}
+    permissions={access.permissions} capabilities={access.capabilities}
     onNavigate={onNavigate} onToggle={vi.fn()} />);
 }

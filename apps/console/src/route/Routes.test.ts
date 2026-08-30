@@ -29,7 +29,7 @@ describe('Console route manifest', () => {
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/imports/voucher/job%3A1')?.operations)
       .toContain('voucher.imports.read');
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/referral/withdrawals')?.operation)
-      .toBe('referral.commissions.read');
+      .toBeNull();
     expect(professionalRouteFromPath('/scopes/mall/mall%3A1/products/product%3A1')?.blocker)
       .toContain('catalog.product.detail.read');
   });

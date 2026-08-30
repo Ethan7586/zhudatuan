@@ -4,6 +4,8 @@ import { RouteError } from './RouteError';
 import { ScopeShell } from '../shell/ScopeShell';
 import { landingLoader, scopeLoader } from './SessionLoader';
 
+const previewBasename = import.meta.env.VITE_ROUTER_BASENAME?.trim() || undefined;
+
 export const consoleRouter = createBrowserRouter([
   {
     path: '/',
@@ -54,4 +56,4 @@ export const consoleRouter = createBrowserRouter([
     ],
   },
   { path: '*', lazy: () => import('./NotFoundRoute') },
-]);
+], previewBasename === undefined ? undefined : { basename: previewBasename });

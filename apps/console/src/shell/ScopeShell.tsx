@@ -1,4 +1,4 @@
-import { AccessDeniedActionsProvider } from '@shop/design';
+import { AccessDeniedActionsProvider, ContextualAccessDenied } from '@shop/design';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useNavigate, useNavigation } from 'react-router';
@@ -8,6 +8,7 @@ import { applicationScopePresentation } from '../feature/application/Application
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { professionalRouteFromPath, professionalRoutes, scopeSuffix } from '../route/ProfessionalRouteCatalog';
+import { canAccessNavigationTarget } from '../route/NavigationAccess';
 import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
 import { appConfig } from '../shared/config/AppConfig';
 import { scopePath } from '../shared/url/ScopePath';
@@ -41,6 +42,14 @@ export function ScopeShell() {
           : professional !== undefined && governanceProfessionalFeatures.has(professional.featureKey) ? 'qualification'
             : professional !== undefined && referralProfessionalFeatures.has(professional.featureKey) ? 'referral'
               : professional?.featureKey ?? workstation?.key;
+  const routeAccessKey = professional?.featureKey === 'productdetail' ? 'products'
+    : professional?.featureKey === 'orderdetail' ? 'orders'
+      : professional?.featureKey ?? workstation?.key;
+  const routeAvailable = canAccessNavigationTarget(
+    routeAccessKey,
+    context.session.permissions,
+    context.session.capabilities,
+  );
   const logout = useMutation({
     mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
       accessVersion: context.session.accessVersion,
@@ -69,10 +78,7 @@ export function ScopeShell() {
   };
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
-    const targetScope = suffix.startsWith('referral/') && context.scope.kind !== 'mall'
-      ? context.scopes.find((scope) => scope.kind === 'mall') ?? context.scope
-      : context.scope;
-    navigateAfterCancel(scopePath(targetScope, suffix));
+    navigateAfterCancel(scopePath(context.scope, suffix));
   };
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
@@ -105,6 +111,7 @@ export function ScopeShell() {
         <Sidebar active={activeRoute} collapsed={collapsed} professionalRoutes={professionalRoutes}
           displayName={context.profile.display_name} roleLabel={scopeLabel}
           scopeKind={context.scope.kind}
+          permissions={context.session.permissions} capabilities={context.session.capabilities}
           workstations={workstations} onNavigate={openRoute}
           onToggle={() => setCollapsed((value) => !value)} />
         <button className="mobilebackdrop" type="button" onClick={() => setMobileOpen(false)} aria-label="关闭主导航" />
@@ -138,7 +145,7 @@ export function ScopeShell() {
             </div>
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
-            <Outlet />
+            {routeAvailable ? <Outlet /> : <ContextualAccessDenied resourceLabel={routeTitle} />}
           </main>
           <footer className="consolefooter">
             <span>© 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
