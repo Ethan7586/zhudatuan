@@ -116,6 +116,7 @@ const REPAIR_FILES = [
   '20260830100000_finance_configurable_policy_workflow.sql',
   '20260830101000_console_support_boundary.sql',
   '20260830102000_grant_runtime_digest.sql',
+  '20260830103000_identity_runtime_contract_visibility.sql',
 ];
 
 const mode = process.argv[2];
@@ -212,7 +213,7 @@ async function verifyInventory(files) {
   const targetVersion = targetFile?.slice(0, 14);
   const targetSource = targetFile ? await readFile(join(MIGRATIONS, targetFile), 'utf8') : '';
   const targetMarker = targetSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1];
-  if (!targetFile || !targetVersion || !targetMarker) throw new Error('REGISTRATION_MIGRATION_TARGET_MARKER_MISSING');
+  if (!targetFile || !targetVersion || !targetMarker) throw new Error('REGISTRATION_MIGRATION_TARGET_INVALID');
   const normalizedTargetDigest = createHash('sha256').update(targetSource.replaceAll(targetMarker, '0'.repeat(64))).digest('hex');
   if (normalizedTargetDigest !== targetMarker) throw new Error(`REGISTRATION_MIGRATION_TARGET_DIGEST_DRIFT:${targetFile}`);
   const runner = await readFile(REGISTRATION_MIGRATION_RUNNER, 'utf8');
@@ -336,9 +337,33 @@ async function verifyTarget(database) {
   await verifyFinanceAccountingIntegrity(database);
   await verifyObjectContract(database);
   await verifyRls(database);
+  await verifyRuntimeSchemaVisibility(database);
   await verifyAuditImmutability(database);
   await verifyExperiencePublication(database);
   await verifyExtensionLifecycle(database);
+}
+
+async function verifyRuntimeSchemaVisibility(database) {
+  const expectations = new Map([
+    ['zhudatuanidentityapi', ['20260821032000', '20260821054000', '20260828170000', '20260829060000']],
+    ['zhudatuanidentityjob', ['20260821032000', '20260821054000', '20260828170000']],
+    ['zhudatuanwebapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
+    ['zhudatuanpurchaseapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
+  ]);
+  for (const [role, expectedVersions] of expectations) {
+    await database.exec(`begin; set local role ${role};`);
+    try {
+      const visible = await database.query('select version,checksum from runtime.schemaversion order by version');
+      const versions = visible.rows.map((row) => row.version);
+      const contract = visible.rows.find((row) => row.version === '20260821032000');
+      if (JSON.stringify(versions) !== JSON.stringify(expectedVersions)
+        || contract?.checksum !== 'd7e499c9530d8c7ab46cfb4bc30b4ad17cd39a9c16b9d444ac4a1927f25eae79') {
+        throw new Error(`RUNTIME_SCHEMA_VISIBILITY_INVALID:${role}:${JSON.stringify(visible.rows)}`);
+      }
+    } finally {
+      await database.exec('rollback');
+    }
+  }
 }
 
 async function verifyExtensionLifecycle(database) {
