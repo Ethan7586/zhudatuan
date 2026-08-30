@@ -362,7 +362,8 @@ begin
   into unexpected_public_functions
   from pg_proc function
     join pg_namespace namespace on namespace.oid=function.pronamespace and namespace.nspname='public'
-    where has_function_privilege(boundary_owner,function.oid,'EXECUTE');
+    where has_schema_privilege(boundary_owner,namespace.oid,'USAGE')
+      and has_function_privilege(boundary_owner,function.oid,'EXECUTE');
   if unexpected_public_functions is not null then
     raise exception 'ZHUDATUAN_REGISTRATION_BOUNDARY_PUBLIC_FUNCTION_ACL_INVALID:%',unexpected_public_functions;
   end if;
