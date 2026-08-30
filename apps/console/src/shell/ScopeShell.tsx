@@ -1,3 +1,4 @@
+import { AccessDeniedActionsProvider } from '@shop/design';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useNavigate, useNavigation } from 'react-router';
@@ -85,9 +86,20 @@ export function ScopeShell() {
     navigateAfterCancel(`${location.pathname}?${search.toString()}${location.hash}`);
   };
   const controlContext = workstation?.key === 'control';
+  const showScopePicker = () => {
+    const picker = document.querySelector<HTMLSelectElement>('#consolescope');
+    picker?.focus();
+    if (picker !== null && typeof picker.showPicker === 'function') picker.showPicker();
+  };
+  const accessDeniedActions = {
+    ...(context.scopes.length > 1 ? { onSwitchScope: showScopePicker } : {}),
+    onReturnToWorkspace: () => navigateAfterCancel(scopePath(context.scope, 'cockpit')),
+    onRelogin: () => window.location.assign(`${appConfig.authBaseUrl}/login?client=console`),
+  };
 
   return (
-    <ConsoleContextProvider value={context}>
+    <AccessDeniedActionsProvider actions={accessDeniedActions}>
+      <ConsoleContextProvider value={context}>
       <div className="consolelayout" data-visual-theme="admin-web-v1" data-route={activeRoute}
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
         <Sidebar active={activeRoute} collapsed={collapsed} professionalRoutes={professionalRoutes}
@@ -135,7 +147,8 @@ export function ScopeShell() {
           </footer>
         </div>
       </div>
-    </ConsoleContextProvider>
+      </ConsoleContextProvider>
+    </AccessDeniedActionsProvider>
   );
 }
 

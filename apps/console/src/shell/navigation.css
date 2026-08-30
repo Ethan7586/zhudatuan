@@ -209,15 +209,11 @@
   box-shadow: var(--sw-shadow-card);
 }
 
-.consolelayout[data-visual-theme='admin-web-v1'] .sidebarsupport button[aria-current='page']::before {
-  display: none;
-}
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarsupport button[aria-current='page']::before { display: none; }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarsupport button[aria-current='page'] > svg {
   color: var(--legacy-brand);
   opacity: 1;
 }
 
-.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarsupport {
-  padding-inline: 8px;
-}
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarsupport { padding-inline: 8px; }

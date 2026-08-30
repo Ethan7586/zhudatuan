@@ -8,10 +8,10 @@ import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 const environment = migrationEnvironment(processEnvironment());
 if (!/^[a-z0-9][a-z0-9/._:-]{7,511}$/i.test(environment.snapshotRef)) throw new Error('MIGRATION_SOURCE_SNAPSHOT_REF_INVALID');
 
-const secrets = new WorkloadSecretStore(environment.secretStoreEndpoint);
+const secrets = new WorkloadSecretStore(environment.secretStoreEndpoint, environment.secretStoreBearerToken);
 const connection = await secrets.read(environment.databaseConnectionRef);
 const pool = createPool(connection, 'migration');
-const runner = new MigrationRunner(pool, new KmsClient(environment.kmsEndpoint), environment.directory, {
+const runner = new MigrationRunner(pool, new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken), environment.directory, {
   distributorKeyRef: environment.distributorKeyRef,
   identityKeyRef: environment.identityKeyRef,
   partnerKeyRef: environment.partnerKeyRef,

@@ -283,23 +283,32 @@ describe('Order route', () => {
     expect(screen.getByText('本页 0 条 · 全量总数不可用')).toBeTruthy();
   });
 
-  it('renders a read error and retries it without inventing stale data', async () => {
+  it('renders the calm access boundary for a denied order read without offering a futile retry', async () => {
+    server.use(http.get('*/api/v1/orders', () => HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:failed' }, { status: 403 })));
+    renderRoute();
+
+    const boundary = await screen.findByRole('region', { name: '暂无访问权限' });
+    expect(within(boundary).getByText('当前账号无法查看「订单管理系统」。')).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
+    expect(within(boundary).queryByRole('button', { name: '重试' })).toBeNull();
+  });
+
+  it('hides cached order rows immediately when a refresh loses access', async () => {
     let attempts = 0;
     server.use(
       http.get('*/api/v1/orders', () => {
         attempts += 1;
-        return attempts === 1 ? HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:failed' }, { status: 403 }) : HttpResponse.json(listPage);
+        return attempts === 1 ? HttpResponse.json(listPage) : HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:revoked' }, { status: 403 });
       })
     );
     const user = userEvent.setup();
     renderRoute();
-
-    const alert = await screen.findByRole('alert');
-    expect(within(alert).getByText('订单读取失败')).toBeTruthy();
-    expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
-    await user.click(within(alert).getByRole('button', { name: '重试' }));
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
-    expect(attempts).toBe(2);
+
+    await user.click(screen.getByRole('button', { name: '刷新数据' }));
+    expect(await screen.findByRole('region', { name: '暂无访问权限' })).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
+    expect(screen.queryByText(order.order_number)).toBeNull();
   });
 
   it('configures optional columns and selecting a row never opens its drawer', async () => {

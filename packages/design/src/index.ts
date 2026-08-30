@@ -1,5 +1,6 @@
 export * from './Dialog';
 export * from './AppBoundary';
+export * from './AccessDenied';
 export * from './Bootstrap';
 export * from './Brand';
 export * from './Badge';

@@ -23,7 +23,7 @@ await Promise.all([
   expectReady('http://127.0.0.1:3001/health/ready'),
 ]);
 
-const kms = new KmsClient(environment.kmsEndpoint);
+const kms = new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
 const context = { verification: randomUUID() };
 const envelope = await kms.encrypt('local/verification', 'p0-verification', context);
 if (await kms.decrypt('local/verification', envelope.ciphertext, context) !== 'p0-verification') throw new Error('LOCAL_KMS_ROUNDTRIP_FAILED');

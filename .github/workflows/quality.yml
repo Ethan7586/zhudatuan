@@ -61,6 +61,9 @@ jobs:
           npm ci
           npm run check:cleaninstall
           npm run check:artifacts
+          npm run check:approved-ui
+          npm run check:registration-deployment
+          npm run check:purchase-deployment
 
       - name: Verify immutable migrations and MVP kernel
         run: |

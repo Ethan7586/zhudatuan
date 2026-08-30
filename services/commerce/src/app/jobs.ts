@@ -22,7 +22,7 @@ import { ReferralEventJobProcessor } from '../modules/referral/interface/job/Ref
 import { FulfillmentJobProcessor } from '../modules/fulfillment/FulfillmentJobs';
 import { ExperienceJobProcessor } from '../modules/experience/ExperienceJobs';
 import { CACHE } from '../foundation/cache/Cache';
-import { NotificationJobProcessor } from '../modules/notification/interface/job/NotificationJob';
+import { IdentityNotificationJobProcessor, NotificationJobProcessor } from '../modules/notification/interface/job/NotificationJob';
 import { MemberImportProcessor } from '../modules/member/interface/job/MemberImportJob';
 import { identityPrincipal } from '../modules/identity/IdentityModule';
 import { InventoryImportProcessor } from '../modules/inventory/interface/job/InventoryImportJob';
@@ -94,6 +94,7 @@ export const JOB_CATALOG = Object.freeze([
   registerJob({ id: 'referral', owner: 'referral', queue: 'finance', concurrency: 8, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/referral.md', worker }),
   registerJob({ id: 'settlement', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/settlement.md', worker }),
   registerJob({ id: 'invoice', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 60_000, retry, lease: 90, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/invoice.md', worker }),
+  registerJob({ id: 'identitynotification', owner: 'identity', queue: 'identity', concurrency: 16, timeout: 15_000, retry, lease: 30, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/notification.md', worker }),
   registerJob({ id: 'notification', owner: 'notification', queue: 'notification', concurrency: 32, timeout: 15_000, retry, lease: 30, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/notification.md', worker }),
   registerJob({ id: 'projection', owner: 'reporting', queue: 'projection', concurrency: 16, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/projection.md', worker }),
   registerJob({ id: 'export', owner: 'reporting', queue: 'export', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/export.md', worker }),
@@ -129,6 +130,7 @@ export function registerJobs(registry: JobRegistry, container: Container, extens
   const voucherDeadletter = new VoucherDeadletter();
   const benefitDeadletter = new BenefitDeadletter();
   const financeDeadletter = new FinanceDeadletter();
+  const notificationDispatch = new DispatchNotification(new PgNotificationRepository(pool), kms, deliveries);
   const processors: Readonly<Record<JobKind, JobProcessor>> = Object.freeze({
     catalogsync: new ChannelJobProcessor(pool, extensions, secrets, 'catalogsync'),
     pricesync: new ChannelJobProcessor(pool, extensions, secrets, 'pricesync'),
@@ -150,7 +152,8 @@ export function registerJobs(registry: JobRegistry, container: Container, extens
     referral: new ReferralEventJobProcessor(pool),
     settlement: new SettlementJobProcessor(pool, payouts),
     invoice: new InvoiceJobProcessor(pool, objects, kms, invoices),
-    notification: new NotificationJobProcessor(new DispatchNotification(new PgNotificationRepository(pool), kms, deliveries)),
+    identitynotification: new IdentityNotificationJobProcessor(notificationDispatch),
+    notification: new NotificationJobProcessor(notificationDispatch),
     projection: new ProjectionJobProcessor(pool, cache),
     export: new ExportJobRunner(pool, objects, retry.attempts),
     riskscan: new RiskReplayJobProcessor(pool),

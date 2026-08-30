@@ -17,13 +17,14 @@ const environment: ApiEnvironment = Object.freeze({
   API_ALLOWED_ORIGINS: requiredEnvironment('API_ALLOWED_ORIGINS'),
   DATABASE_API_CONNECTION_REF: requiredEnvironment('DATABASE_API_CONNECTION_REF'),
   SECRET_STORE_ENDPOINT: requiredEnvironment('SECRET_STORE_ENDPOINT'),
+  SECRET_STORE_BEARER_TOKEN: requiredEnvironment('SECRET_STORE_BEARER_TOKEN'),
   KMS_ENDPOINT: requiredEnvironment('KMS_ENDPOINT'),
-  EXTENSION_MANIFEST_KEY_REF: requiredEnvironment('EXTENSION_MANIFEST_KEY_REF'),
+  KMS_BEARER_TOKEN: requiredEnvironment('KMS_BEARER_TOKEN'),
 });
 const runtime = await createConsoleSupportRuntime(environment);
 const modules = [defineModule('runtime', [], consoleSupportHealth), defineModule('support', [], supportRoutes)];
 const bootstrapped = await bootstrapApi({ modules, extensions: runtime.extensions, configure: runtime.configure,
-  allowedOrigins: apiAllowedOrigins(environment), telemetry: runtime.telemetry, operationAllowlist: CONSOLE_SUPPORT_OPERATIONS });
+  allowedOrigins: apiAllowedOrigins(environment), telemetry: runtime.telemetry, operationIds: CONSOLE_SUPPORT_OPERATIONS });
 const ready = await bootstrapped.app.handle(new Request('http://127.0.0.1/health/ready'));
 if (!ready.ok) { await runtime.close(); throw new Error('CONSOLE_SUPPORT_STARTUP_CHECK_FAILED'); }
 const server = listen(bootstrapped.app, apiPort(environment));

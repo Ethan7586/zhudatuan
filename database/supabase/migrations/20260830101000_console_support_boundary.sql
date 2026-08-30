@@ -5,6 +5,10 @@ begin
   if not exists(select 1 from pg_roles where rolname='shopconsole') then
     create role shopconsole nologin noinherit nosuperuser nocreatedb nocreaterole nobypassrls;
   end if;
+  if not exists(select 1 from pg_roles where rolname='zhudatuanconsoleapi') then
+    create role zhudatuanconsoleapi login noinherit nosuperuser nocreatedb nocreaterole nobypassrls;
+    grant shopconsole to zhudatuanconsoleapi;
+  end if;
 end
 $role$;
 
@@ -106,6 +110,11 @@ do $assert$
 begin
   if (select rolbypassrls or rolsuper or rolcreaterole or rolcreatedb from pg_roles where rolname='shopconsole') then
     raise exception 'CONSOLE_SUPPORT_ROLE_PRIVILEGED';
+  end if;
+  if not exists(select 1 from pg_roles where rolname='zhudatuanconsoleapi' and rolcanlogin
+      and not rolsuper and not rolbypassrls and not rolcreaterole and not rolcreatedb)
+    or not pg_has_role('zhudatuanconsoleapi','shopconsole','MEMBER') then
+    raise exception 'CONSOLE_SUPPORT_LOGIN_ROLE_INVALID';
   end if;
   if has_table_privilege('shopconsole','support.agent','SELECT')
     or has_table_privilege('shopconsole','support.account','SELECT')

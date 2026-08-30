@@ -12,7 +12,6 @@ import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interfac
 import { QUERY_METRICS, QueryMetrics } from '../foundation/persistence/QueryMetrics';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
 import { ExtensionRegistry } from './ExtensionRegistry';
-import { SignatureVerifier } from './SignatureVerifier';
 import type { Container } from './Container';
 import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
 import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
@@ -31,7 +30,10 @@ export interface ConsoleSupportRuntime {
 }
 
 export async function createConsoleSupportRuntime(environment: ApiEnvironment): Promise<ConsoleSupportRuntime> {
-  const secrets = new WorkloadSecretStore(required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'));
+  const secrets = new WorkloadSecretStore(
+    required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
+    required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
+  );
   const connection = await secrets.read(required(environment.DATABASE_API_CONNECTION_REF, 'DATABASE_API_CONNECTION_REF_MISSING'));
   const metrics = new QueryMetrics();
   const pool = createPool(connection, 'api', metrics);
@@ -40,15 +42,17 @@ export async function createConsoleSupportRuntime(environment: ApiEnvironment): 
     await pool.end();
     throw new Error('DATABASE_ROLE_INVALID:shopconsole');
   }
-  const manifestKey = await secrets.read(required(environment.EXTENSION_MANIFEST_KEY_REF, 'EXTENSION_MANIFEST_KEY_REF_MISSING'));
-  const extensions = new ExtensionRegistry(new SignatureVerifier(manifestKey));
+  const extensions = new ExtensionRegistry({ verify: async () => false });
   const telemetry = commerceTelemetry();
   const risk = new RiskCheckAdapter(pool);
   const audit = new RecordAudit(new PgAuditRepository());
   const access = new AccessPipeline(new PgSessionResolver(pool), new PgMembershipResolver(pool), new PgAccessVersionResolver(pool),
     new PgScopeResolver(pool), new PgCapabilityResolver(pool), new SystemClock(), risk, new PgDecisionSink(pool));
   const handlers = new Map<OperationId, OperationHandler>();
-  const kms = new KmsClient(required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'));
+  const kms = new KmsClient(
+    required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
+    required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
+  );
   return {
     pool, extensions, telemetry,
     configure(container) {
