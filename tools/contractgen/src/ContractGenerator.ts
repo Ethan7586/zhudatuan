@@ -359,6 +359,19 @@ function contractIdentityOpenapi(value: unknown): unknown {
   return value;
 }
 
+function contractIdentityOpenapi(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(contractIdentityOpenapi);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+      key,
+      key === 'x-requirements' && Array.isArray(child)
+        ? child.filter((requirement) => typeof requirement !== 'string' || !requirement.startsWith('OMS-'))
+        : contractIdentityOpenapi(child),
+    ]));
+  }
+  return value;
+}
+
 function sqlRow(values: readonly (string | number | null)[]): string {
   return `  (${values.map((value) => (value === null ? 'null' : typeof value === 'number' ? String(value) : `'${value.replaceAll("'", "''")}'`)).join(',')})`;
 }
