@@ -26,7 +26,7 @@ const MembershipSchema = z.strictObject({
   id: z.string().min(1),
   member_id: z.string().min(1),
   organization_id: z.string().min(1),
-  client: z.literal('storefront'),
+  client: z.enum(['storefront', 'operator']),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
   access_version: transportInteger.pipe(z.number().positive()),
@@ -67,7 +67,7 @@ export interface CanonicalRegisteredMember {
   readonly membership: string;
   readonly member: string;
   readonly organization: string;
-  readonly target: 'storefront';
+  readonly target: 'storefront' | 'console';
   readonly status: 'active';
   readonly accessVersion: number;
   readonly employeeNo: string | null;
@@ -127,7 +127,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
     membership: output.id,
     member: output.member_id,
     organization: output.organization_id,
-    target: output.client,
+    target: output.client === 'operator' ? 'console' : 'storefront',
     status: output.status,
     accessVersion: output.access_version,
     employeeNo: output.employee_no,
