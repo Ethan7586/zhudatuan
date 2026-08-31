@@ -1,0 +1,30 @@
+{
+  "brand": "MORVIA · zhudatuan 主打团",
+  "version": "1.5",
+  "colors": {
+    "blue": "#143A8F",
+    "blueDeep": "#0D2D72",
+    "blueLight": "#2857BD",
+    "blueJoint": "#0F347F",
+    "ink": "#111111",
+    "paper": "#F4F5F8",
+    "line": "#D7DBE5",
+    "white": "#FFFFFF"
+  },
+  "typography": {
+    "titleFamily": "MORVIA Title",
+    "source": "Noto Sans SC 700",
+    "asset": "assets/fonts/MorviaTitle-700.woff2",
+    "weight": 700
+  },
+  "minimumSize": {
+    "markScreenPx": 24,
+    "compactLockupScreenPx": 120,
+    "masterLockupScreenPx": 220,
+    "masterLockupPrintMm": 45
+  },
+  "clearspace": {
+    "unit": "one quarter of the mark height",
+    "minimum": 0.25
+  }
+}

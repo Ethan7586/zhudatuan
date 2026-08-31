@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" color="#143A8F">
+  <title id="title">zhudatuan 主打团 spider mark</title>
+  <desc id="desc">A frameless geometric spider mark expressing aggregation around a stable center.</desc>
+  <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square" stroke-linejoin="bevel">
+    <path d="M28 22L20 14L10 10"/>
+    <path d="M26 27L15 21L6 22"/>
+    <path d="M25 37L14 42L6 41"/>
+    <path d="M28 44L21 53L12 56"/>
+    <path d="M36 22L44 14L54 10"/>
+    <path d="M38 27L49 21L58 22"/>
+    <path d="M39 37L50 42L58 41"/>
+    <path d="M36 44L43 53L52 56"/>
+  </g>
+  <path d="M32 13L39 20L36 29H28L25 20Z" fill="currentColor"/>
+  <path d="M27 32H37L42 39L37 51H27L22 39Z" fill="currentColor"/>
+</svg>

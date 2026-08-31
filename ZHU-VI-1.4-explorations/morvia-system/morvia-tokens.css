@@ -1,0 +1,16 @@
+:root {
+  --morvia-blue: #143a8f;
+  --morvia-blue-deep: #0d2d72;
+  --morvia-blue-light: #2857bd;
+  --morvia-blue-joint: #0f347f;
+  --morvia-ink: #111111;
+  --morvia-paper: #f4f5f8;
+  --morvia-line: #d7dbe5;
+  --morvia-white: #ffffff;
+
+  --morvia-radius-small: 12px;
+  --morvia-radius-medium: 20px;
+  --morvia-space-unit: 8px;
+  --morvia-clearspace: 25%;
+}
+

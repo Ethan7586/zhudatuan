@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">zhudatuan 主打团 crouched woman mark preview</title>
+  <desc id="desc">Preview of an abstract adult woman in a wide, low, ready-to-spring pose.</desc>
+  <rect width="640" height="640" fill="#FFFFFF"/>
+  <g transform="translate(64 64) scale(8)">
+    <g fill="none" stroke="#143A8F" stroke-linecap="square" stroke-linejoin="bevel">
+      <path d="M28 23L24 33L22 46" stroke-width="4.5"/>
+      <path d="M34 23L44 16L54 20" stroke-width="5"/>
+      <path d="M32 35L19 35L6 39" stroke-width="7"/>
+      <path d="M34 35L44 28L49 34L59 42" stroke-width="7"/>
+    </g>
+    <path d="M26 20L34 20L37 24L33 29L38 34L33 39L27 35L29 29L24 25Z" fill="#143A8F"/>
+    <circle cx="28.5" cy="15.5" r="4.2" fill="#143A8F"/>
+    <path d="M24.7 13L18.5 11L20.5 17.5L24.7 18Z" fill="#2857BD"/>
+  </g>
+</svg>

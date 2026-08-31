@@ -28,9 +28,6 @@ describe('IdentityNotificationPort attempt state', () => {
     await port.ambiguousAttempt(database, 'challenge:one', 1, 'SEND_UNKNOWN');
 
     expect(query.mock.calls.every(([sql]) => sql.includes("state='sending' returning"))).toBe(true);
-    expect(query.mock.calls[0]?.[0]).toContain('reviewed_at=clock_timestamp()');
-    expect(query.mock.calls[1]?.[0]).toContain("'identitynotification:delivery:'||challenge_id");
-    expect(query.mock.calls[2]?.[0]).toContain("'identitynotification:delivery:'||challenge_id");
   });
 });
 

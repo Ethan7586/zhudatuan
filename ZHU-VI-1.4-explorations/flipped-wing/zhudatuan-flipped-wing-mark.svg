@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" color="#143A8F">
+  <title id="title">zhudatuan 主打团 flipped wing mark</title>
+  <desc id="desc">Frameless brand symbol derived by turning the earlier wing-shaped W upside down.</desc>
+  <path
+    d="M9.5 17H18.7L26.7 37.7L32 24.7L37.3 37.7L45.3 17H54.5L42.2 48H34.5L32 41.8L29.5 48H21.8L9.5 17Z"
+    transform="rotate(180 32 32)"
+    fill="currentColor"
+  />
+</svg>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">zhudatuan 主打团 subtly humanized M mark preview</title>
+  <desc id="desc">Preview of a clearly dominant capital M with subtle crouched, articulated human posture.</desc>
+  <rect width="640" height="640" fill="#FFFFFF"/>
+  <g transform="translate(64 64) scale(8)">
+    <path d="M4.5 49L10.5 36.5L18 21L24.5 30L32 43L40.5 29L47.5 18.5L53.5 34.5L59.5 46" fill="none" stroke="#143A8F" stroke-width="9" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M4.5 49L10.5 36.5" fill="none" stroke="#0D2D72" stroke-width="9" stroke-linecap="square"/>
+    <path d="M18 21L22.8 27.7" fill="none" stroke="#2857BD" stroke-width="9" stroke-linecap="butt"/>
+    <path d="M42 26.5L47.5 18.5" fill="none" stroke="#2857BD" stroke-width="9" stroke-linecap="butt"/>
+    <path d="M53.5 34.5L59.5 46" fill="none" stroke="#0D2D72" stroke-width="9" stroke-linecap="square"/>
+    <path d="M32 38.5L35.2 42.5L32 46L28.8 42.5Z" fill="#0F347F"/>
+  </g>
+</svg>

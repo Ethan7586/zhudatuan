@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
-import { assertIdentityRuntimeDatabaseBoundary, assertLiveDatabaseBoundary, type LiveDatabaseBoundaryState } from './LiveDatabaseBoundary';
+import { assertLiveDatabaseBoundary, type LiveDatabaseBoundaryState } from './LiveDatabaseBoundary';
 
 const healthy: LiveDatabaseBoundaryState = Object.freeze({
   current_user: 'zhudatuanidentityapi',
@@ -21,13 +21,6 @@ const healthy: LiveDatabaseBoundaryState = Object.freeze({
 describe('live database boundary', () => {
   it('accepts the exact runtime principal and post-retirement database state', async () => {
     await expect(assertLiveDatabaseBoundary(pool(healthy), 'zhudatuanidentityapi')).resolves.toEqual(healthy);
-  });
-
-  it('keeps identity delivery independent from the temporary migration login state', async () => {
-    await expect(assertIdentityRuntimeDatabaseBoundary(pool({ ...healthy, retired_roles_valid: false }), 'zhudatuanidentityapi'))
-      .resolves.toMatchObject({ retired_roles_valid: false });
-    await expect(assertIdentityRuntimeDatabaseBoundary(pool({ ...healthy, runtime_roles_valid: false }), 'zhudatuanidentityapi'))
-      .rejects.toThrow('LIVE_DATABASE_BOUNDARY_ASSERTION_FAILED');
   });
 
   it.each([

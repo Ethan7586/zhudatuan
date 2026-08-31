@@ -25,10 +25,11 @@ describe('identity registration API runtime', () => {
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, functions: false })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
-    const migrationActive = { query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')
+    const unretired = { query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')
       ? result([{ ...databaseBoundary('zhudatuanidentityapi'), retired_roles_valid: false }], 1)
       : result([healthy], 1) } as unknown as DatabasePool;
-    await expect(assertIdentityRegistrationRuntimeCompatibility(migrationActive)).resolves.toBeUndefined();
+    await expect(assertIdentityRegistrationRuntimeCompatibility(unretired))
+      .rejects.toThrow('LIVE_DATABASE_BOUNDARY_ASSERTION_FAILED');
   });
 });
 

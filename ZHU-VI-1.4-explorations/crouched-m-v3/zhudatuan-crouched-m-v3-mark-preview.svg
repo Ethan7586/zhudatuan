@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">zhudatuan 主打团 layered articulated M mark preview</title>
+  <desc id="desc">Preview of a clearly dominant capital M with a low center of gravity, articulated bends, and restrained internal depth.</desc>
+  <rect width="640" height="640" fill="#FFFFFF"/>
+  <g transform="translate(64 64) scale(8)">
+    <path d="M5 49L11 36L18 20L24 29L32 43L40 30L47 19L53 35L59 47" fill="none" stroke="#0A285F" stroke-width="12" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M5 49L11 36L18 20L24 29L32 43L40 30L47 19L53 35L59 47" fill="none" stroke="#143A8F" stroke-width="9" stroke-linecap="square" stroke-linejoin="bevel"/>
+    <path d="M11 36L18 20L24 29" fill="none" stroke="#2A5ABC" stroke-width="3" stroke-linecap="butt" stroke-linejoin="bevel"/>
+    <path d="M40 30L47 19L53 35" fill="none" stroke="#2A5ABC" stroke-width="3" stroke-linecap="butt" stroke-linejoin="bevel"/>
+    <path d="M5 49L11 36" fill="none" stroke="#0D2D72" stroke-width="6" stroke-linecap="square"/>
+    <path d="M53 35L59 47" fill="none" stroke="#0D2D72" stroke-width="6" stroke-linecap="square"/>
+  </g>
+</svg>

@@ -1,7 +1,7 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import type { OperationId } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, type WebBusinessApiEnvironment } from '@shop/config/server';
+import { CONTRACT_CHECKSUM, type OperationId } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD, type WebBusinessApiEnvironment } from '@shop/config/server';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -166,7 +166,7 @@ export async function webBusinessRuntimeCompatibility(pool: DatabasePool): Promi
       and not has_schema_privilege(current_user,'payment','USAGE')
       and not has_schema_privilege(current_user,'finance','USAGE')
       and has_function_privilege(current_user,'benefit.web_ledger(text,text)','EXECUTE') forbidden_writes`,
-  [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, WEB_BUSINESS_SCHEMA_VERSION, WEB_BUSINESS_SCHEMA_CHECKSUM]);
+  [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM, WEB_BUSINESS_SCHEMA_VERSION, WEB_BUSINESS_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanwebapi' || state.session_user !== 'zhudatuanwebapi' || !state.role_safe
     || !state.writable || !state.schema || !state.contract

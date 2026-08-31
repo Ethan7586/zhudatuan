@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">MORVIA M mark reverse</title>
+  <desc id="desc">White technical reproduction of the approved M mark.</desc>
+  <svg x="0" y="0" width="512" height="512" viewBox="0 0 64 64" preserveAspectRatio="xMinYMid meet">
+  <path d="M4.5 49L10.5 36.5L18 21L24.5 30L32 43L40.5 29L47.5 18.5L53.5 34.5L59.5 46" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="square" stroke-linejoin="bevel"/>
+  <path d="M4.5 49L10.5 36.5" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="square"/>
+  <path d="M18 21L22.8 27.7" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="butt"/>
+  <path d="M42 26.5L47.5 18.5" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="butt"/>
+  <path d="M53.5 34.5L59.5 46" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="square"/>
+  <path d="M32 38.5L35.2 42.5L32 46L28.8 42.5Z" fill="#FFFFFF"/></svg>
+</svg>

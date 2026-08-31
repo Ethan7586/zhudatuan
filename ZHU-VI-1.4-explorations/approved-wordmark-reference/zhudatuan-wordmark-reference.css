@@ -1,0 +1,47 @@
+@font-face {
+  font-family: 'ZDT Approved Noto Sans SC';
+  src: url('./fonts/noto-sans-sc-700-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  unicode-range: U+0000-00FF;
+}
+
+@font-face {
+  font-family: 'ZDT Approved Noto Sans SC';
+  src: url('./fonts/noto-sans-sc-700-u4e3b.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  unicode-range: U+4E3B;
+}
+
+@font-face {
+  font-family: 'ZDT Approved Noto Sans SC';
+  src: url('./fonts/noto-sans-sc-700-u6253.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  unicode-range: U+6253;
+}
+
+@font-face {
+  font-family: 'ZDT Approved Noto Sans SC';
+  src: url('./fonts/noto-sans-sc-700-u56e2.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  unicode-range: U+56E2;
+}
+
+.zdt-approved-wordmark {
+  color: #111111;
+  font-family: 'ZDT Approved Noto Sans SC', 'Noto Sans SC', sans-serif;
+  font-size: 36px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+

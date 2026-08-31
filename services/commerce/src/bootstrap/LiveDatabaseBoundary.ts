@@ -24,20 +24,6 @@ export async function assertLiveDatabaseBoundary(
   pool: DatabasePool,
   expectedRole: RuntimeDatabaseRole,
 ): Promise<Readonly<LiveDatabaseBoundaryState>> {
-  return assertBoundary(pool, expectedRole, true);
-}
-
-export async function assertIdentityRuntimeDatabaseBoundary(
-  pool: DatabasePool,
-  expectedRole: Extract<RuntimeDatabaseRole, 'zhudatuanidentityapi' | 'zhudatuanidentityjob'>,
-): Promise<Readonly<LiveDatabaseBoundaryState>> {
-  // Identity delivery remains independent from shopmigration's temporary
-  // LOGIN state during a serialized release. All data and ownership
-  // invariants below remain mandatory.
-  return assertBoundary(pool, expectedRole, false);
-}
-
-async function assertBoundary(pool: DatabasePool, expectedRole: RuntimeDatabaseRole, requireRetiredRoles: boolean) {
   const result = await pool.query<LiveDatabaseBoundaryState>(`select current_user,current_database(),boundary.*
     from deployment.runtime_database_boundary() boundary`);
   const state = result.rows[0];
@@ -46,7 +32,7 @@ async function assertBoundary(pool: DatabasePool, expectedRole: RuntimeDatabaseR
     || state.current_database !== 'zhudatuan_registration'
     || state.active_platform_owner_count !== 1
     || !state.migration_head_valid
-    || (requireRetiredRoles && !state.retired_roles_valid)
+    || !state.retired_roles_valid
     || !state.business_roles_valid
     || !state.runtime_roles_valid
     || !state.boundary_roles_valid

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">zhudatuan 主打团 articulated M mark</title>
+  <desc id="desc">A low-slung capital M enriched with articulated bends and restrained folded-color facets.</desc>
+  <path d="M5 49L10 36L18 20L24 29L32 43L40 30L47 19L53 35L59 47" fill="none" stroke="#143A8F" stroke-width="9" stroke-linecap="square" stroke-linejoin="bevel"/>
+  <path d="M5 49L10 36" fill="none" stroke="#0D2D72" stroke-width="9" stroke-linecap="square"/>
+  <path d="M18 20L22.8 27.2" fill="none" stroke="#2857BD" stroke-width="9" stroke-linecap="butt"/>
+  <path d="M41.5 27.8L47 19" fill="none" stroke="#2857BD" stroke-width="9" stroke-linecap="butt"/>
+  <path d="M53 35L59 47" fill="none" stroke="#0D2D72" stroke-width="9" stroke-linecap="square"/>
+  <path d="M28.2 36.3L32 43L35.8 36.8L33.8 33.5L32 36.7L30.2 33.3Z" fill="#0F347F"/>
+</svg>

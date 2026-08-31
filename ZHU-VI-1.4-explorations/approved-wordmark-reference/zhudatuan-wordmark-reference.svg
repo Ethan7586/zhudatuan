@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="184" viewBox="0 0 660 184" role="img" aria-labelledby="title desc">
+  <title id="title">zhudatuan 主打团字标锁定参考</title>
+  <desc id="desc">Ethan 批准保留的 Noto Sans SC 700 字标样张。</desc>
+  <style>
+    @font-face {
+      font-family: 'ZDT Approved Noto Sans SC';
+      src: url('./fonts/noto-sans-sc-700-latin.woff2') format('woff2');
+      font-weight: 700;
+      unicode-range: U+0000-00FF;
+    }
+    @font-face {
+      font-family: 'ZDT Approved Noto Sans SC';
+      src: url('./fonts/noto-sans-sc-700-u4e3b.woff2') format('woff2');
+      font-weight: 700;
+      unicode-range: U+4E3B;
+    }
+    @font-face {
+      font-family: 'ZDT Approved Noto Sans SC';
+      src: url('./fonts/noto-sans-sc-700-u6253.woff2') format('woff2');
+      font-weight: 700;
+      unicode-range: U+6253;
+    }
+    @font-face {
+      font-family: 'ZDT Approved Noto Sans SC';
+      src: url('./fonts/noto-sans-sc-700-u56e2.woff2') format('woff2');
+      font-weight: 700;
+      unicode-range: U+56E2;
+    }
+  </style>
+  <rect width="660" height="184" fill="#F2F2F0"/>
+  <text x="48" y="108" fill="#111111" font-family="ZDT Approved Noto Sans SC, Noto Sans SC, sans-serif" font-size="72" font-weight="700" letter-spacing="-0.72">zhudatuan 主打团</text>
+</svg>

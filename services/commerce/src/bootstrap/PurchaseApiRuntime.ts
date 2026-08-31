@@ -1,7 +1,7 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import type { OperationId } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, type PurchaseApiEnvironment } from '@shop/config/server';
+import { CONTRACT_CHECKSUM, type OperationId } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD, type PurchaseApiEnvironment } from '@shop/config/server';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
@@ -232,7 +232,7 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
           and oidvectortypes(procedure.proargtypes)=
             'text, text, text, text, text, text, text, text, text, bigint, timestamp with time zone'
           and has_function_privilege(current_user,procedure.oid,'EXECUTE')) forbidden_privileges`,
-  [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, PURCHASE_SCHEMA_VERSION, PURCHASE_SCHEMA_CHECKSUM]);
+  [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM, PURCHASE_SCHEMA_VERSION, PURCHASE_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanpurchaseapi' || state.session_user !== 'zhudatuanpurchaseapi' || !state.role_safe
     || !state.writable || !state.schema || !state.contract || !state.purchase || !state.relations || !state.functions

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" color="#143A8F">
+  <title id="title">zhudatuan 主打团 spider M mark</title>
+  <desc id="desc">A custom letter M whose structure also suggests an eight-legged spider.</desc>
+  <g fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="square" stroke-linejoin="bevel">
+    <path d="M21 22L13 14H6"/>
+    <path d="M20 31L11 27L5 30"/>
+    <path d="M21 40L12 46L6 44"/>
+    <path d="M43 22L51 14H58"/>
+    <path d="M44 31L53 27L59 30"/>
+    <path d="M43 40L52 46L58 44"/>
+  </g>
+  <path d="M20 50V16H27L32 30L37 16H44V50H37V32L34 41H30L27 32V50Z" fill="currentColor"/>
+</svg>

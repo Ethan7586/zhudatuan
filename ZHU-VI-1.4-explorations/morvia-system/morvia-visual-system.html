@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MORVIA · zhudatuan 主打团视觉系统</title>
+  <style>
+    :root {
+      --blue: #143a8f;
+      --deep: #0d2d72;
+      --light: #2857bd;
+      --joint: #0f347f;
+      --ink: #111111;
+      --muted: #687086;
+      --paper: #f4f5f8;
+      --line: #d7dbe5;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: #e7eaf0; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #e7eaf0;
+      font-family: "Noto Sans SC", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .sheet {
+      width: 1440px;
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--white);
+      box-shadow: 0 24px 80px rgba(13, 27, 57, 0.12);
+    }
+
+    .hero {
+      min-height: 760px;
+      padding: 72px 84px 82px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--white);
+    }
+
+    .eyebrow,
+    .section-index,
+    .asset-label {
+      color: var(--blue);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .hero-lockup {
+      width: 1040px;
+      margin: 76px auto 64px;
+      display: block;
+    }
+
+    .hero-bottom {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 80px;
+      align-items: end;
+      padding-top: 48px;
+      border-top: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-size: 66px;
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+
+    .hero-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.7;
+    }
+
+    section { padding: 84px; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 64px;
+      align-items: flex-end;
+      margin-bottom: 52px;
+    }
+
+    h2 {
+      margin: 10px 0 0;
+      font-size: 44px;
+      letter-spacing: -0.035em;
+    }
+
+    .section-note {
+      width: 470px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .dark-section {
+      color: var(--white);
+      background: var(--deep);
+    }
+
+    .dark-section .section-index,
+    .dark-section .asset-label { color: #88a9ff; }
+
+    .dark-section .section-note { color: #bdc9e4; }
+
+    .reverse-stage {
+      min-height: 400px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 28px;
+      background: rgba(255,255,255,.03);
+    }
+
+    .reverse-stage img { width: 900px; }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .architecture-card,
+    .asset-card,
+    .rule-card,
+    .application-card {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--white);
+    }
+
+    .architecture-card {
+      min-height: 330px;
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .architecture-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 25px;
+    }
+
+    .architecture-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .architecture-mark {
+      width: 142px;
+      height: 142px;
+      object-fit: contain;
+      align-self: center;
+    }
+
+    .architecture-word {
+      width: 240px;
+      align-self: center;
+    }
+
+    .architecture-name {
+      width: 286px;
+      align-self: center;
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .asset-card {
+      min-height: 360px;
+      padding: 28px 30px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .asset-stage {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+
+    .asset-stage img { max-width: 100%; max-height: 230px; }
+    .asset-card.stacked .asset-stage img { max-height: 270px; }
+
+    .asset-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .swatch {
+      height: 260px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 24px;
+      color: var(--white);
+    }
+
+    .swatch strong { font-size: 22px; }
+    .swatch span { font: 600 15px/1 "SFMono-Regular", Consolas, monospace; }
+    .swatch.primary { background: var(--blue); }
+    .swatch.deep { background: var(--deep); }
+    .swatch.light { background: var(--light); }
+    .swatch.joint { background: var(--joint); }
+
+    .scale-row {
+      display: grid;
+      grid-template-columns: 1.4fr .6fr;
+      gap: 20px;
+    }
+
+    .clearspace-card,
+    .minimum-card {
+      min-height: 400px;
+      padding: 34px;
+      border-radius: 24px;
+      background: var(--paper);
+    }
+
+    .clearspace-box {
+      width: 520px;
+      height: 250px;
+      margin: 40px auto 20px;
+      padding: 48px;
+      display: grid;
+      place-items: center;
+      border: 2px dashed #8c96ac;
+    }
+
+    .clearspace-box img { width: 390px; }
+
+    .minimum-sizes {
+      height: 270px;
+      display: flex;
+      align-items: end;
+      justify-content: space-around;
+      gap: 30px;
+    }
+
+    .minimum-sizes div { text-align: center; color: var(--muted); font-size: 14px; }
+    .minimum-sizes img { display: block; margin: 0 auto 18px; }
+
+    .applications {
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      grid-template-rows: 280px 430px;
+      gap: 20px;
+    }
+
+    .application-card { overflow: hidden; }
+
+    .browser-card { grid-column: 1 / -1; background: var(--paper); }
+
+    .browser-bar {
+      height: 74px;
+      padding: 0 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: var(--white);
+    }
+
+    .browser-bar img { width: 225px; }
+
+    .nav-items {
+      display: flex;
+      gap: 32px;
+      color: #4e566a;
+      font-size: 14px;
+    }
+
+    .browser-body {
+      height: 206px;
+      padding: 38px 46px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .browser-body h3 { margin: 0 0 14px; font-size: 33px; letter-spacing: -.03em; }
+    .browser-body p { margin: 0; color: var(--muted); font-size: 16px; }
+
+    .button {
+      padding: 14px 24px;
+      border-radius: 12px;
+      color: var(--white);
+      background: var(--blue);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .contract {
+      padding: 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--white);
+    }
+
+    .contract img { width: 430px; }
+    .contract h3 { margin: 0; font-size: 42px; letter-spacing: -.035em; }
+    .contract p { color: var(--muted); }
+
+    .icon-card {
+      padding: 36px;
+      display: grid;
+      place-items: center;
+      background: var(--deep);
+    }
+
+    .icon-card img { width: 235px; filter: drop-shadow(0 18px 32px rgba(0,0,0,.24)); }
+
+    .rules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .rule-card { padding: 34px; }
+    .rule-card h3 { margin: 0 0 20px; font-size: 25px; }
+    .rule-card ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 17px; line-height: 1.8; }
+    .rule-card.approved { border-top: 5px solid var(--blue); }
+    .rule-card.restricted { border-top: 5px solid #c94d54; }
+
+    footer {
+      padding: 54px 84px 64px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      color: #b8c6e4;
+      background: var(--deep);
+    }
+
+    footer img { width: 310px; }
+    footer p { margin: 0; text-align: right; font-size: 14px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="hero">
+      <div class="eyebrow">MORVIA VISUAL IDENTITY · VERSION 1.0</div>
+      <img class="hero-lockup" src="assets/svg/morvia-master-lockup.svg" alt="MORVIA zhudatuan 主打团主组合" />
+      <div class="hero-bottom">
+        <h1>保留熟悉的名字，增加一个面向未来的英文品牌层。</h1>
+        <p class="hero-note">蓝色 M 原样保留。MORVIA 负责国际识别，`zhudatuan 主打团` 继续承担正式名称与中文信任。</p>
+      </div>
+    </header>
+
+    <section class="dark-section">
+      <div class="section-head">
+        <div>
+          <div class="section-index">01 · MASTER SIGNATURE</div>
+          <h2>主组合与反白版本</h2>
+        </div>
+        <p class="section-note">正式场景优先使用双层主组合。深色背景只使用纯白技术反白版，不重新设计 M。</p>
+      </div>
+      <div class="reverse-stage">
+        <img src="assets/svg/morvia-master-lockup-white.svg" alt="MORVIA 主组合反白版" />
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <div class="section-index">02 · BRAND ARCHITECTURE</div>
+          <h2>三个层级，各司其职</h2>
+        </div>
+        <p class="section-note">不是堆三个名字，而是建立从图形、英文识别到正式名称的清晰层级。</p>
+      </div>
+      <div class="architecture">
+        <article class="architecture-card">
+          <img class="architecture-mark" src="assets/svg/morvia-mark.svg" alt="蓝色 M 图形" />
+          <div><strong>M</strong><p>最高频的图形识别。用于头像、App、favicon 和侧栏收起态。</p></div>
+        </article>
+        <article class="architecture-card">
+          <img class="architecture-word" src="assets/svg/morvia-wordmark.svg" alt="MORVIA 英文字标" />
+          <div><strong>MORVIA</strong><p>英文品牌层。来自 MORE + VIA，表达“通往更多”。</p></div>
+        </article>
+        <article class="architecture-card">
+          <img class="architecture-name" src="components/zhudatuan-wordmark-outlined.svg" alt="zhudatuan 主打团正式名称" />
+          <div><strong>zhudatuan 主打团</strong><p>正式名称与中文信任层。继续使用已经确认的原始字形轮廓。</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section style="background: var(--paper)">
+      <div class="section-head">
+        <div>
+          <div class="section-index">03 · LOCKUP SYSTEM</div>
+          <h2>一套标志，覆盖不同空间</h2>
+        </div>
+        <p class="section-note">根据空间切换组合，不压缩、不拉伸，也不临时重排文字。</p>
+      </div>
+      <div class="asset-grid">
+        <article class="asset-card">
+          <div class="asset-stage"><img src="assets/svg/morvia-compact-lockup.svg" alt="紧凑组合" /></div>
+          <div class="asset-caption"><b>紧凑组合</b><span>网页页头 · 后台导航</span></div>
+        </article>
+        <article class="asset-card">
+          <div class="asset-stage"><img src="assets/svg/morvia-established-lockup.svg" alt="完整横版" /></div>
+          <div class="asset-caption"><b>完整横版</b><span>首次露出 · 宽幅场景</span></div>
+        </article>
+        <article class="asset-card stacked">
+          <div class="asset-stage"><img src="assets/svg/morvia-stacked-lockup.svg" alt="竖版组合" /></div>
+          <div class="asset-caption"><b>竖版组合</b><span>封面 · 方形版面</span></div>
+        </article>
+        <article class="asset-card">
+          <div class="asset-stage"><img src="assets/svg/morvia-master-lockup-mono.svg" alt="单色组合" /></div>
+          <div class="asset-caption"><b>单色技术版</b><span>印章 · 单色印刷</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <div class="section-index">04 · COLOR</div>
+          <h2>以蓝色建立可信度</h2>
+        </div>
+        <p class="section-note">M 的四色关系属于图形本身。界面以主蓝、深蓝、黑白和浅纸色展开。</p>
+      </div>
+      <div class="palette">
+        <div class="swatch primary"><strong>MORVIA Blue</strong><span>#143A8F</span></div>
+        <div class="swatch deep"><strong>Deep</strong><span>#0D2D72</span></div>
+        <div class="swatch light"><strong>Light</strong><span>#2857BD</span></div>
+        <div class="swatch joint"><strong>Joint</strong><span>#0F347F</span></div>
+      </div>
+    </section>
+
+    <section style="background: var(--paper)">
+      <div class="section-head">
+        <div>
+          <div class="section-index">05 · SPACE & SCALE</div>
+          <h2>留白与最小尺寸</h2>
+        </div>
+        <p class="section-note">完整组合不能无限缩小。空间不足时，应该主动切换为紧凑组合或 M。</p>
+      </div>
+      <div class="scale-row">
+        <div class="clearspace-card">
+          <div class="asset-label">MINIMUM CLEAR SPACE · 1/4 M HEIGHT</div>
+          <div class="clearspace-box"><img src="assets/svg/morvia-compact-lockup.svg" alt="标志安全留白示意" /></div>
+        </div>
+        <div class="minimum-card">
+          <div class="asset-label">MINIMUM MARK SIZE</div>
+          <div class="minimum-sizes">
+            <div><img src="assets/svg/morvia-mark.svg" width="96" height="96" alt="96px M" />96 px</div>
+            <div><img src="assets/svg/morvia-mark.svg" width="48" height="48" alt="48px M" />48 px</div>
+            <div><img src="assets/svg/morvia-mark.svg" width="24" height="24" alt="24px M" />24 px</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <div class="section-index">06 · APPLICATION</div>
+          <h2>网页、合同与应用图标</h2>
+        </div>
+        <p class="section-note">应用示例只验证识别层级；标志本身不因场景变化而重画。</p>
+      </div>
+      <div class="applications">
+        <article class="application-card browser-card">
+          <div class="browser-bar">
+            <img src="assets/svg/morvia-compact-lockup.svg" alt="网页页头紧凑组合" />
+            <div class="nav-items"><span>商城</span><span>解决方案</span><span>商家中心</span><span>关于我们</span></div>
+          </div>
+          <div class="browser-body">
+            <div><h3>让每一个好生意，通往更多。</h3><p>MORVIA · zhudatuan 主打团数字商业平台</p></div>
+            <div class="button">进入平台</div>
+          </div>
+        </article>
+        <article class="application-card contract">
+          <img src="assets/svg/morvia-master-lockup.svg" alt="合同封面主组合" />
+          <div><p>2026 / COMMERCIAL AGREEMENT</p><h3>数字商业平台<br />合作协议</h3></div>
+        </article>
+        <article class="application-card icon-card">
+          <img src="assets/svg/morvia-avatar-blue.svg" alt="MORVIA 应用图标" />
+        </article>
+      </div>
+    </section>
+
+    <section style="background: var(--paper)">
+      <div class="section-head">
+        <div>
+          <div class="section-index">07 · CONTROL</div>
+          <h2>哪些可以变，哪些不能变</h2>
+        </div>
+        <p class="section-note">系统的价值不在于制造更多 Logo，而在于让同一个 Logo 长期保持一致。</p>
+      </div>
+      <div class="rules">
+        <article class="rule-card approved">
+          <h3>可以</h3>
+          <ul><li>按场景切换主组合、紧凑组合、竖版或图形</li><li>在生产受限时使用黑白或纯白技术版</li><li>在规定范围内同比例放大或缩小</li></ul>
+        </article>
+        <article class="rule-card restricted">
+          <h3>不可以</h3>
+          <ul><li>修改蓝色 M 的几何、节点、倾角或比例</li><li>重打、重绘或替换已锁定的正式名称字形</li><li>添加边框、渐变、阴影、发光或独立图腾</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <img src="assets/svg/morvia-master-lockup-white.svg" alt="MORVIA 主组合" />
+      <p>VISUAL IDENTITY 1.0<br />MORVIA · zhudatuan 主打团</p>
+    </footer>
+  </main>
+</body>
+</html>

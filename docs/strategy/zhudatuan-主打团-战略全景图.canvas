@@ -1,0 +1,1234 @@
+{
+  "nodes": [
+    {
+      "id": "group-header",
+      "type": "group",
+      "x": 0,
+      "y": 0,
+      "width": 9600,
+      "height": 480,
+      "label": "00｜战略总纲",
+      "color": "#143A8F"
+    },
+    {
+      "id": "group-system-map",
+      "type": "group",
+      "x": 0,
+      "y": 560,
+      "width": 9600,
+      "height": 1880,
+      "label": "01｜两大系统边界与复制模型",
+      "color": "#143A8F"
+    },
+    {
+      "id": "group-control-plane",
+      "type": "group",
+      "x": 80,
+      "y": 700,
+      "width": 1900,
+      "height": 1620,
+      "label": "系统边界一｜平台控制面",
+      "color": "#143A8F"
+    },
+    {
+      "id": "group-mall-product",
+      "type": "group",
+      "x": 2100,
+      "y": 700,
+      "width": 5200,
+      "height": 1620,
+      "label": "系统边界二｜商城系统 Mall｜完整产品所有权边界",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "group-replication",
+      "type": "group",
+      "x": 7420,
+      "y": 700,
+      "width": 2100,
+      "height": 1620,
+      "label": "复制模型｜一套标准内核，十二级独立商城",
+      "color": "#E5482D"
+    },
+    {
+      "id": "group-four-flows",
+      "type": "group",
+      "x": 0,
+      "y": 2530,
+      "width": 9600,
+      "height": 1450,
+      "label": "02｜单个商城内部的四条永久业务线",
+      "color": "#52667F"
+    },
+    {
+      "id": "group-core-boundaries",
+      "type": "group",
+      "x": 0,
+      "y": 4100,
+      "width": 4300,
+      "height": 820,
+      "label": "03｜Mall Core 外围协作边界｜不是第五条业务线",
+      "color": "#8493A8"
+    },
+    {
+      "id": "group-flywheel",
+      "type": "group",
+      "x": 4400,
+      "y": 4100,
+      "width": 5200,
+      "height": 820,
+      "label": "04｜战略飞轮｜从标准化能力到规模化经营",
+      "color": "#E5482D"
+    },
+    {
+      "id": "group-moat",
+      "type": "group",
+      "x": 0,
+      "y": 5040,
+      "width": 9600,
+      "height": 760,
+      "label": "05｜架构护城河｜规模扩大时仍保持一致",
+      "color": "#143A8F"
+    },
+    {
+      "id": "group-execution",
+      "type": "group",
+      "x": 0,
+      "y": 5920,
+      "width": 9600,
+      "height": 780,
+      "label": "06｜实施主线｜非排期，以当前已确认边界推导",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "group-pending",
+      "type": "group",
+      "x": 0,
+      "y": 6820,
+      "width": 9600,
+      "height": 620,
+      "label": "07｜待 Ethan 定稿｜技术实现选择，不改变已锁定的产品边界",
+      "color": "#E5482D"
+    },
+    {
+      "id": "brand-root",
+      "type": "text",
+      "x": 500,
+      "y": 105,
+      "width": 2300,
+      "height": 260,
+      "color": "#143A8F",
+      "text": "# zhudatuan 主打团\n\n**品牌与平台根**"
+    },
+    {
+      "id": "strategy-formula",
+      "type": "text",
+      "x": 3350,
+      "y": 105,
+      "width": 2900,
+      "height": 260,
+      "color": "#1F5EFF",
+      "text": "# 战略公式\n\n一个品牌根 × 两个系统边界 × 一套标准内核  \n× 十二级独立商城 × 四条业务主线"
+    },
+    {
+      "id": "north-star",
+      "type": "text",
+      "x": 6800,
+      "y": 105,
+      "width": 2300,
+      "height": 260,
+      "color": "#143A8F",
+      "text": "# 北极星\n\n**完整、独立、可复制、低耦合运行的标准商城**"
+    },
+    {
+      "id": "cp-create",
+      "type": "text",
+      "x": 210,
+      "y": 820,
+      "width": 1640,
+      "height": 150,
+      "color": "#143A8F",
+      "text": "## 商城创建\n\n创建完整商城实例"
+    },
+    {
+      "id": "cp-hierarchy",
+      "type": "text",
+      "x": 210,
+      "y": 1010,
+      "width": 1640,
+      "height": 260,
+      "color": "#143A8F",
+      "text": "## Hierarchy & Provisioning\n\n层级生成 · 继承 · 父子关系  \n解绑 · 重挂接"
+    },
+    {
+      "id": "cp-config",
+      "type": "text",
+      "x": 210,
+      "y": 1310,
+      "width": 1640,
+      "height": 150,
+      "color": "#143A8F",
+      "text": "## 平台配置\n\n统一配置入口与版本"
+    },
+    {
+      "id": "cp-governance",
+      "type": "text",
+      "x": 210,
+      "y": 1500,
+      "width": 1640,
+      "height": 170,
+      "color": "#143A8F",
+      "text": "## 统一运营与治理\n\n平台级运营、规则与治理"
+    },
+    {
+      "id": "cp-release",
+      "type": "text",
+      "x": 210,
+      "y": 1710,
+      "width": 1640,
+      "height": 180,
+      "color": "#143A8F",
+      "text": "## 基础设施与发布治理\n\n配置 · 制品 · Release Manifest"
+    },
+    {
+      "id": "cp-observability",
+      "type": "text",
+      "x": 210,
+      "y": 1930,
+      "width": 1640,
+      "height": 180,
+      "color": "#143A8F",
+      "text": "## 可观测性\n\nLog · Metric · Trace  \n必须有真实采集出口"
+    },
+    {
+      "id": "mall-experience",
+      "type": "text",
+      "x": 2290,
+      "y": 820,
+      "width": 4820,
+      "height": 210,
+      "color": "#1F5EFF",
+      "text": "## 体验层\n\n**顾客** → Storefront / Miniapp　　**运营人员** → Console　　**Owner / 管理员** → Auth / Account  \nZHU-VI Design System → Token · Component · Pattern"
+    },
+    {
+      "id": "mall-contract",
+      "type": "text",
+      "x": 2290,
+      "y": 1070,
+      "width": 4820,
+      "height": 190,
+      "color": "#1F5EFF",
+      "text": "## 唯一合同层\n\nOperations · Capabilities · Errors · Events · Generated SDK  \n一个操作一个权威定义 · 一个能力一个判定入口 · 前端只通过 Generated SDK"
+    },
+    {
+      "id": "mall-core",
+      "type": "text",
+      "x": 2290,
+      "y": 1300,
+      "width": 4820,
+      "height": 320,
+      "color": "#239B56",
+      "text": "## Commerce 业务内核｜Mall Core\n\n**身份与组织**　IAM · Organization · Member  \n**商品与交易准备**　Catalog · Pricing · Inventory · Cart · Checkout  \n**交易事实**　OMS · Payment · Finance · Fulfillment  \n**增长与运营**　Channel · Referral · Benefit · Voucher · Support · Notification · Risk · Audit · Reporting"
+    },
+    {
+      "id": "mall-runtime",
+      "type": "text",
+      "x": 2290,
+      "y": 1660,
+      "width": 4820,
+      "height": 210,
+      "color": "#52667F",
+      "text": "## 运行层\n\nCommerce API → Application Service → Domain  \nOutbox Dispatcher → Commerce Jobs → Provider / Vendor Adapters  \n外部供应商协议只能存在于 Adapter 一侧"
+    },
+    {
+      "id": "mall-data",
+      "type": "text",
+      "x": 2290,
+      "y": 1910,
+      "width": 4820,
+      "height": 170,
+      "color": "#E8751A",
+      "text": "## Canonical 数据层\n\nCanonical PostgreSQL · Cache · Object Storage · Migration Ledger  \n领域拥有自己的写入边界，共享物理数据库不等于共享数据所有权"
+    },
+    {
+      "id": "mall-request-chain",
+      "type": "text",
+      "x": 2290,
+      "y": 2120,
+      "width": 4820,
+      "height": 150,
+      "color": "#143A8F",
+      "text": "## 唯一请求链\n\nUI → Generated SDK → Commerce API → Application Service → Domain → Repository → Canonical PostgreSQL"
+    },
+    {
+      "id": "replication-core",
+      "type": "text",
+      "x": 7620,
+      "y": 820,
+      "width": 1700,
+      "height": 200,
+      "color": "#E5482D",
+      "text": "## 标准商城内核 Mall Core\n\n同一套代码与构建产物"
+    },
+    {
+      "id": "replication-l0",
+      "type": "text",
+      "x": 7510,
+      "y": 1070,
+      "width": 800,
+      "height": 190,
+      "color": "#E5482D",
+      "text": "## L0\n\n甄选商城  \n平台自营"
+    },
+    {
+      "id": "replication-l1-l11",
+      "type": "text",
+      "x": 8420,
+      "y": 1070,
+      "width": 900,
+      "height": 190,
+      "color": "#E5482D",
+      "text": "## L1—L11\n\n完整独立商城  \n同一内核生成"
+    },
+    {
+      "id": "replication-instance-truth",
+      "type": "text",
+      "x": 7620,
+      "y": 1310,
+      "width": 1700,
+      "height": 260,
+      "color": "#E5482D",
+      "text": "## 每个实例独立拥有\n\nmall_id · 业务数据 · 经营状态  \n配置 · 品牌 · 生命周期"
+    },
+    {
+      "id": "replication-isolation",
+      "type": "text",
+      "x": 7620,
+      "y": 1610,
+      "width": 1700,
+      "height": 300,
+      "color": "#E5482D",
+      "text": "## 运行独立性\n\n不查询父商城或祖先链  \n层级服务不可用，仍可浏览、下单、支付、履约、退款与记账"
+    },
+    {
+      "id": "replication-terms",
+      "type": "text",
+      "x": 7620,
+      "y": 1950,
+      "width": 1700,
+      "height": 290,
+      "color": "#E5482D",
+      "text": "## 名词边界\n\n**Mall Product**＝完整产品所有权边界  \n**Mall Scope**＝mall_id 身份与数据范围  \n**MallContext ≠ 商城系统 Mall**"
+    },
+    {
+      "id": "system-base",
+      "type": "text",
+      "x": 3000,
+      "y": 2290,
+      "width": 3600,
+      "height": 110,
+      "color": "#07182F",
+      "text": "# 战略运行基座　平台负责创建与治理 · Mall 负责完整交易 · 实例保持独立运行"
+    },
+    {
+      "id": "flow-head",
+      "type": "text",
+      "x": 3450,
+      "y": 2620,
+      "width": 2700,
+      "height": 120,
+      "color": "#52667F",
+      "text": "# Mall Core 交易发动机｜四条线各自拥有状态与数据事实，不共享写入权"
+    },
+    {
+      "id": "flow-order",
+      "type": "text",
+      "x": 200,
+      "y": 2780,
+      "width": 9200,
+      "height": 170,
+      "color": "#1F5EFF",
+      "text": "## 订单流｜购买意图　→　购物车与结算　→　订单创建　→　订单状态　→　取消或完成　→　售后关系"
+    },
+    {
+      "id": "flow-product",
+      "type": "text",
+      "x": 200,
+      "y": 2990,
+      "width": 9200,
+      "height": 170,
+      "color": "#239B56",
+      "text": "## 商品流｜商品　→　SKU　→　价格　→　库存　→　预占或释放　→　履约　→　发货与收货　→　退货"
+    },
+    {
+      "id": "flow-cash",
+      "type": "text",
+      "x": 200,
+      "y": 3200,
+      "width": 9200,
+      "height": 170,
+      "color": "#E8751A",
+      "text": "## 现金流｜支付请求　→　支付渠道　→　回调与确认　→　实收　→　退款　→　资金移动状态　→　支付结果"
+    },
+    {
+      "id": "flow-finance",
+      "type": "text",
+      "x": 200,
+      "y": 3410,
+      "width": 9200,
+      "height": 170,
+      "color": "#7A4BC0",
+      "text": "## 财务流｜应收应付　→　内部账本　→　凭证　→　分配　→　结算　→　对账　→　差异处理"
+    },
+    {
+      "id": "flow-links",
+      "type": "text",
+      "x": 200,
+      "y": 3620,
+      "width": 4200,
+      "height": 250,
+      "color": "#52667F",
+      "text": "## 关键跨线关联\n\n结算读取商品与库存事实 · 订单触发库存预占与支付请求  \n支付成功回写订单状态并形成财务事实 · 售后触发退货、退款与逆向记账"
+    },
+    {
+      "id": "flow-complete",
+      "type": "text",
+      "x": 4600,
+      "y": 3620,
+      "width": 2000,
+      "height": 250,
+      "color": "#143A8F",
+      "text": "## 四线汇合｜完整交易事实\n\n订单事实 + 商品与库存事实  \n+ 现金事实 + 财务事实"
+    },
+    {
+      "id": "flow-rule",
+      "type": "text",
+      "x": 6800,
+      "y": 3620,
+      "width": 2400,
+      "height": 250,
+      "color": "#52667F",
+      "text": "## 跨线规则\n\n只通过命令、查询或领域事件协作  \n可识别 · 可追踪 · 可重试 · 幂等 · 可补偿 · 历史快照不可改写"
+    },
+    {
+      "id": "boundary-hierarchy",
+      "type": "text",
+      "x": 150,
+      "y": 4260,
+      "width": 950,
+      "height": 480,
+      "color": "#8493A8",
+      "text": "## Hierarchy & Provisioning\n\n生成 · 继承 · 关系 · 解绑  \n不进入单商城运行依赖"
+    },
+    {
+      "id": "boundary-referral",
+      "type": "text",
+      "x": 1160,
+      "y": 4260,
+      "width": 950,
+      "height": 480,
+      "color": "#8493A8",
+      "text": "## Referral & Settlement\n\n消费稳定业务事实后计算与结算  \n失败不得阻塞订单完成"
+    },
+    {
+      "id": "boundary-membership",
+      "type": "text",
+      "x": 2170,
+      "y": 4260,
+      "width": 950,
+      "height": 480,
+      "color": "#8493A8",
+      "text": "## Membership Capability\n\n入口 · 价格权益 · 资格  \n订单创建后保存权益快照"
+    },
+    {
+      "id": "boundary-provider",
+      "type": "text",
+      "x": 3180,
+      "y": 4260,
+      "width": 950,
+      "height": 480,
+      "color": "#8493A8",
+      "text": "## Provider / Vendor Adapters\n\n商品 · 支付 · 履约 · 消息  \n外部协议止于适配器"
+    },
+    {
+      "id": "flywheel-standardize",
+      "type": "text",
+      "x": 4550,
+      "y": 4290,
+      "width": 700,
+      "height": 390,
+      "color": "#E5482D",
+      "text": "## 1 · 标准化\n\n锁定内核、合同与数据边界"
+    },
+    {
+      "id": "flywheel-replicate",
+      "type": "text",
+      "x": 5380,
+      "y": 4290,
+      "width": 700,
+      "height": 390,
+      "color": "#E5482D",
+      "text": "## 2 · 快速复制\n\n生成完整商城"
+    },
+    {
+      "id": "flywheel-operate",
+      "type": "text",
+      "x": 6210,
+      "y": 4290,
+      "width": 700,
+      "height": 390,
+      "color": "#E5482D",
+      "text": "## 3 · 独立经营\n\n各自配置、品牌与生命周期"
+    },
+    {
+      "id": "flywheel-transact",
+      "type": "text",
+      "x": 7040,
+      "y": 4290,
+      "width": 700,
+      "height": 390,
+      "color": "#E5482D",
+      "text": "## 4 · 稳定交易\n\n四线闭环与故障隔离"
+    },
+    {
+      "id": "flywheel-facts",
+      "type": "text",
+      "x": 7870,
+      "y": 4290,
+      "width": 700,
+      "height": 390,
+      "color": "#E5482D",
+      "text": "## 5 · 沉淀事实\n\n订单 · 商品 · 现金 · 财务"
+    },
+    {
+      "id": "flywheel-govern",
+      "type": "text",
+      "x": 8700,
+      "y": 4290,
+      "width": 700,
+      "height": 390,
+      "color": "#E5482D",
+      "text": "## 6 · 统一治理\n\n配置 · 运营 · 发布 · 观测  \n持续反哺内核"
+    },
+    {
+      "id": "moat-contract",
+      "type": "text",
+      "x": 80,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 唯一合同\n\nOperation · Capability  \nError · Event · SDK"
+    },
+    {
+      "id": "moat-truth",
+      "type": "text",
+      "x": 1270,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 单一事实源\n\n领域数据所有权  \nCanonical PostgreSQL"
+    },
+    {
+      "id": "moat-events",
+      "type": "text",
+      "x": 2460,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 事件可靠性\n\n单一 Outbox  \n幂等 · 重试 · 补偿"
+    },
+    {
+      "id": "moat-isolation",
+      "type": "text",
+      "x": 3650,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 故障隔离\n\n商城独立  \n外围模块不阻塞交易"
+    },
+    {
+      "id": "moat-provider",
+      "type": "text",
+      "x": 4840,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 可替换扩展\n\nProvider 细节  \n止于 Adapter"
+    },
+    {
+      "id": "moat-release",
+      "type": "text",
+      "x": 6030,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 独立发布\n\n不可变制品  \nRelease Manifest"
+    },
+    {
+      "id": "moat-production",
+      "type": "text",
+      "x": 7220,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 生产真值\n\nProduction State Manifest  \n外部验证"
+    },
+    {
+      "id": "moat-vi",
+      "type": "text",
+      "x": 8410,
+      "y": 5210,
+      "width": 1060,
+      "height": 460,
+      "color": "#143A8F",
+      "text": "## 统一体验\n\n唯一 VI Token  \nComponent · Pattern"
+    },
+    {
+      "id": "execution-truth",
+      "type": "text",
+      "x": 100,
+      "y": 6100,
+      "width": 1250,
+      "height": 480,
+      "color": "#1F5EFF",
+      "text": "## 1 · 收束真值\n\nzdt-next 是唯一新系统主轴  \n旧系统只作取证与能力来源"
+    },
+    {
+      "id": "execution-contract",
+      "type": "text",
+      "x": 1450,
+      "y": 6100,
+      "width": 1250,
+      "height": 480,
+      "color": "#1F5EFF",
+      "text": "## 2 · 统一合同与数据\n\nGenerated SDK  \nCanonical PostgreSQL"
+    },
+    {
+      "id": "execution-flows",
+      "type": "text",
+      "x": 2800,
+      "y": 6100,
+      "width": 1250,
+      "height": 480,
+      "color": "#1F5EFF",
+      "text": "## 3 · 闭合单商城四线\n\n订单 · 商品 · 现金 · 财务"
+    },
+    {
+      "id": "execution-experience",
+      "type": "text",
+      "x": 4150,
+      "y": 6100,
+      "width": 1250,
+      "height": 480,
+      "color": "#1F5EFF",
+      "text": "## 4 · 打通体验入口\n\nStorefront · Console  \nAuth · Miniapp"
+    },
+    {
+      "id": "execution-replication",
+      "type": "text",
+      "x": 5500,
+      "y": 6100,
+      "width": 1250,
+      "height": 480,
+      "color": "#1F5EFF",
+      "text": "## 5 · 复制十二级实例\n\nL0 + L1—L11"
+    },
+    {
+      "id": "execution-ecosystem",
+      "type": "text",
+      "x": 6850,
+      "y": 6100,
+      "width": 1250,
+      "height": 480,
+      "color": "#1F5EFF",
+      "text": "## 6 · 平台治理与生态扩展\n\nHierarchy · Referral  \nMembership · Providers"
+    },
+    {
+      "id": "execution-production",
+      "type": "text",
+      "x": 8200,
+      "y": 6100,
+      "width": 1250,
+      "height": 480,
+      "color": "#1F5EFF",
+      "text": "## 7 · 生产状态可证明\n\n不可变制品  \nProduction State Manifest"
+    },
+    {
+      "id": "pending-experience",
+      "type": "text",
+      "x": 100,
+      "y": 6990,
+      "width": 2200,
+      "height": 340,
+      "color": "#E5482D",
+      "text": "## 体验技术\n\n前端框架与单仓工具  \nStorefront 多端实现方式"
+    },
+    {
+      "id": "pending-data-identity",
+      "type": "text",
+      "x": 2475,
+      "y": 6990,
+      "width": 2200,
+      "height": 340,
+      "color": "#E5482D",
+      "text": "## 数据与身份\n\nPostgreSQL 物理实例与 Schema 策略  \n身份服务自建或外部 Provider"
+    },
+    {
+      "id": "pending-runtime",
+      "type": "text",
+      "x": 4850,
+      "y": 6990,
+      "width": 2200,
+      "height": 340,
+      "color": "#E5482D",
+      "text": "## 运行与发布\n\n模块化单体或拆分服务  \n运行平台 · 发布平台 · 网络拓扑"
+    },
+    {
+      "id": "pending-operations",
+      "type": "text",
+      "x": 7225,
+      "y": 6990,
+      "width": 2200,
+      "height": 340,
+      "color": "#E5482D",
+      "text": "## 运行支撑\n\n消息与任务平台  \n可观测性采集与存储产品"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-header-1",
+      "fromNode": "brand-root",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "strategy-formula",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-header-2",
+      "fromNode": "strategy-formula",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "north-star",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-brand-control",
+      "fromNode": "brand-root",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "cp-create",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#143A8F",
+      "label": "创建与治理"
+    },
+    {
+      "id": "edge-brand-mall",
+      "fromNode": "strategy-formula",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "mall-experience",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#1F5EFF",
+      "label": "完整产品"
+    },
+    {
+      "id": "edge-brand-replication",
+      "fromNode": "north-star",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "replication-core",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D",
+      "label": "标准化复制"
+    },
+    {
+      "id": "edge-cp-1",
+      "fromNode": "cp-create",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "cp-hierarchy",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-cp-2",
+      "fromNode": "cp-hierarchy",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "cp-config",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-cp-3",
+      "fromNode": "cp-config",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "cp-governance",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-cp-4",
+      "fromNode": "cp-governance",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "cp-release",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-cp-5",
+      "fromNode": "cp-release",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "cp-observability",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-mall-1",
+      "fromNode": "mall-experience",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "mall-contract",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-mall-2",
+      "fromNode": "mall-contract",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "mall-core",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-mall-3",
+      "fromNode": "mall-core",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "mall-runtime",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#239B56"
+    },
+    {
+      "id": "edge-mall-4",
+      "fromNode": "mall-runtime",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "mall-data",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#52667F"
+    },
+    {
+      "id": "edge-mall-5",
+      "fromNode": "mall-data",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "mall-request-chain",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E8751A"
+    },
+    {
+      "id": "edge-replication-l0",
+      "fromNode": "replication-core",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "replication-l0",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-replication-l1-l11",
+      "fromNode": "replication-core",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "replication-l1-l11",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-replication-l0-instance",
+      "fromNode": "replication-l0",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "replication-instance-truth",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-replication-l1-instance",
+      "fromNode": "replication-l1-l11",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "replication-instance-truth",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-replication-2",
+      "fromNode": "replication-instance-truth",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "replication-isolation",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-replication-3",
+      "fromNode": "replication-isolation",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "replication-terms",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-control-base",
+      "fromNode": "cp-observability",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "system-base",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#143A8F"
+    },
+    {
+      "id": "edge-mall-base",
+      "fromNode": "mall-request-chain",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "system-base",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-replication-base",
+      "fromNode": "replication-terms",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "system-base",
+      "toSide": "right",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-base-flows",
+      "fromNode": "system-base",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "flow-head",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#52667F"
+    },
+    {
+      "id": "edge-flow-order",
+      "fromNode": "flow-head",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "flow-order",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-flow-product",
+      "fromNode": "flow-order",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "flow-product",
+      "toSide": "top",
+      "toEnd": "none",
+      "color": "#239B56"
+    },
+    {
+      "id": "edge-flow-cash",
+      "fromNode": "flow-product",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "flow-cash",
+      "toSide": "top",
+      "toEnd": "none",
+      "color": "#E8751A"
+    },
+    {
+      "id": "edge-flow-finance",
+      "fromNode": "flow-cash",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "flow-finance",
+      "toSide": "top",
+      "toEnd": "none",
+      "color": "#7A4BC0"
+    },
+    {
+      "id": "edge-order-complete",
+      "fromNode": "flow-order",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flow-complete",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-product-complete",
+      "fromNode": "flow-product",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flow-complete",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#239B56"
+    },
+    {
+      "id": "edge-cash-complete",
+      "fromNode": "flow-cash",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flow-complete",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E8751A"
+    },
+    {
+      "id": "edge-finance-complete",
+      "fromNode": "flow-finance",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flow-complete",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#7A4BC0"
+    },
+    {
+      "id": "edge-links-complete",
+      "fromNode": "flow-links",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flow-complete",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#52667F"
+    },
+    {
+      "id": "edge-complete-rule",
+      "fromNode": "flow-complete",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flow-rule",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#52667F"
+    },
+    {
+      "id": "edge-rule-boundary",
+      "fromNode": "flow-rule",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "boundary-hierarchy",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#8493A8",
+      "label": "外围解耦"
+    },
+    {
+      "id": "edge-complete-flywheel",
+      "fromNode": "flow-complete",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "flywheel-standardize",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D",
+      "label": "形成战略飞轮"
+    },
+    {
+      "id": "edge-fw-1",
+      "fromNode": "flywheel-standardize",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flywheel-replicate",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-fw-2",
+      "fromNode": "flywheel-replicate",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flywheel-operate",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-fw-3",
+      "fromNode": "flywheel-operate",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flywheel-transact",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-fw-4",
+      "fromNode": "flywheel-transact",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flywheel-facts",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-fw-5",
+      "fromNode": "flywheel-facts",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "flywheel-govern",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#E5482D"
+    },
+    {
+      "id": "edge-fw-loop",
+      "fromNode": "flywheel-govern",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "flywheel-standardize",
+      "toSide": "bottom",
+      "toEnd": "arrow",
+      "color": "#E5482D",
+      "label": "反哺内核"
+    },
+    {
+      "id": "edge-flywheel-moat",
+      "fromNode": "flywheel-govern",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "moat-contract",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#143A8F",
+      "label": "规模化仍保持一致"
+    },
+    {
+      "id": "edge-moat-execution",
+      "fromNode": "moat-vi",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "execution-truth",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-execution-1",
+      "fromNode": "execution-truth",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "execution-contract",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-execution-2",
+      "fromNode": "execution-contract",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "execution-flows",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-execution-3",
+      "fromNode": "execution-flows",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "execution-experience",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-execution-4",
+      "fromNode": "execution-experience",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "execution-replication",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-execution-5",
+      "fromNode": "execution-replication",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "execution-ecosystem",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-execution-6",
+      "fromNode": "execution-ecosystem",
+      "fromSide": "right",
+      "fromEnd": "none",
+      "toNode": "execution-production",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "color": "#1F5EFF"
+    },
+    {
+      "id": "edge-execution-pending",
+      "fromNode": "execution-production",
+      "fromSide": "bottom",
+      "fromEnd": "none",
+      "toNode": "pending-runtime",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "#E5482D",
+      "label": "需要定稿"
+    }
+  ]
+}

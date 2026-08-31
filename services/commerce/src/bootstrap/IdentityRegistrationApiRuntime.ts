@@ -1,7 +1,7 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import type { OperationId } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, identityRegistrationApiReturnTargets, type IdentityRegistrationApiEnvironment } from '@shop/config/server';
+import { CONTRACT_CHECKSUM, type OperationId } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD, identityRegistrationApiReturnTargets, type IdentityRegistrationApiEnvironment } from '@shop/config/server';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -20,7 +20,7 @@ import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/Ris
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
 import { ExtensionRegistry } from './ExtensionRegistry';
-import { assertIdentityRuntimeDatabaseBoundary } from './LiveDatabaseBoundary';
+import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
 
 interface CompatibilityRow {
   readonly current_user: string;
@@ -118,7 +118,7 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
       to_regclass('identity.registrationpolicy'),to_regclass('member.invite'),to_regclass('member.profile'),
       to_regclass('access.membership'),to_regclass('access.membershiprole'),to_regclass('access.scopegrant'),
       to_regclass('organization.organization'),to_regclass('audit.record'),to_regclass('audit.accessrecord')
-    ],null) is null relations`, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
+    ],null) is null relations`, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanidentityapi' || !state.writable || !state.schema || !state.contract
     || !state.registration || !state.operator_invitation || !state.relations || !state.functions) {
@@ -129,7 +129,7 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
 
 export async function assertIdentityRegistrationRuntimeCompatibility(pool: DatabasePool): Promise<void> {
   await identityRegistrationRuntimeCompatibility(pool);
-  await assertIdentityRuntimeDatabaseBoundary(pool, 'zhudatuanidentityapi');
+  await assertLiveDatabaseBoundary(pool, 'zhudatuanidentityapi');
 }
 
 function required(value: string | undefined, code: string): string {
