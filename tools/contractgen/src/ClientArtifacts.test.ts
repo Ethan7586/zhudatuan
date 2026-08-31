@@ -33,6 +33,16 @@ describe('SDK client artifacts', () => {
     expect(openapi).toContain('"x-expected-version":"required"');
     expect(operationSource([reset], new Map())).toContain('"none","required"');
   });
+
+  it('preserves OMS trace links in contract metadata without creating another operation', () => {
+    const traced = { ...operations[0], requirements: ['MVP03', 'OMS-001'] } as const;
+    const openapi = JSON.stringify(buildOpenapi([traced], new Map()));
+    const source = operationSource([traced], new Map());
+
+    expect(openapi).toContain('OMS-001');
+    expect(source).toContain('OMS-001');
+    expect(source.match(/identity\.session\.read/g)).toHaveLength(1);
+  });
 });
 
 function operation(

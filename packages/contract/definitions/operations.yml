@@ -606,6 +606,7 @@ operations:
     schema: structural
     requirements:
       - MVP03
+      - OMS-004
   - id: access.center.read
     owner: access
     method: GET
@@ -1435,6 +1436,7 @@ operations:
     requirements:
       - MVP05
       - MVP14
+      - OMS-012
   - id: reporting.sales.read
     owner: reporting
     method: GET
@@ -1446,6 +1448,7 @@ operations:
     requirements:
       - MVP11
       - MVP20
+      - OMS-012
   - id: reporting.products.read
     owner: reporting
     method: GET
@@ -1793,6 +1796,9 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-001
+      - OMS-004
+      - OMS-005
   - id: order.reminders.create
     owner: order
     method: POST
@@ -1834,6 +1840,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-007
   - id: order.aftersales.read
     owner: order
     method: GET
@@ -1845,6 +1852,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
   - id: order.aftersales.apply
     owner: order
     method: POST
@@ -1856,6 +1864,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
   - id: order.aftersales.approve
     owner: order
     method: PUT
@@ -1867,6 +1876,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
   - id: order.aftersales.reject
     owner: order
     method: DELETE
@@ -1878,6 +1888,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
   - id: fulfillment.shipments.create
     owner: fulfillment
     method: POST
@@ -2802,6 +2813,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
+      - OMS-011
     expectedVersion: required
   - id: finance.reconciliations.read
     owner: finance
@@ -2814,6 +2826,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
+      - OMS-011
   - id: finance.reconciliationrepairs.read
     owner: finance
     method: GET
@@ -2884,6 +2897,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
+      - OMS-011
   - id: finance.settlements.decide
     owner: finance
     method: POST
@@ -3174,6 +3188,7 @@ operations:
     requirements:
       - MVP12
       - MVP21
+      - OMS-013
   - id: support.cases.update
     owner: support
     method: PATCH
@@ -3350,6 +3365,7 @@ operations:
     requirements:
       - MVP12
       - MVP21
+      - OMS-013
   - id: notification.notifications.read
     owner: notification
     method: GET
