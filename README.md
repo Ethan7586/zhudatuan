@@ -25,10 +25,10 @@ zhudatuan（主項目與唯一正式代碼平台）
 
 ## 已鎖定的正式前端與後臺
 
-| 制品                  | 技術棧                                                                                             | 正式用途                                             |
-| --------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| `apps/storefront-web` | Next.js 16 App Router／Vinext、React 19、TypeScript、Tailwind CSS 4、Motion                        | 消費者購物 Web；使用者已確認的 27 吋／Laptop 標準 VI |
-| `apps/console`        | React 19、Vite 8、TypeScript、React Router、TanStack Query／Table、React Aria、Zod、Tailwind CSS 4 | 企業營運後臺；使用者已確認的 4173 新版後臺           |
+| 制品                  | 技術棧                                                                                             | 正式用途                                                             |
+| --------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `apps/storefront-web` | Next.js 16 App Router／Vinext、React 19、TypeScript、Tailwind CSS 4、Motion                        | 消費者購物 Web；使用者已確認的 27 吋／Laptop 標準 VI                 |
+| `apps/console`        | React 19、Vite 8、TypeScript、React Router、TanStack Query／Table、React Aria、Zod、Tailwind CSS 4 | 企業營運後臺；使用者已確認的 4173 新版後臺                           |
 | `apps/auth-web`       | React 19、Vite 8、TypeScript、Tailwind CSS 4                                                       | 統一身份中心；Console 已接 Canonical Session，消費端身份仍在相容軌道 |
 
 目前正式 `main/` 沒有 `apps/miniapp`；小程序歷史代碼不等於正式制品，只有經 Owner 選定、移植與驗收後才能加入。
@@ -83,6 +83,24 @@ npm run build:console
 npm run build:storefront
 npm run build:auth
 npm run build:commerce
+```
+
+Console 正式制品必须从干净工作区一次构建并通过最终 `dist` 浏览器验收；不得在生产机重新构建：
+
+```bash
+VITE_API_BASE_URL=https://api.zhudatuan.com \
+VITE_AUTH_BASE_URL=https://accounts.zhudatuan.com \
+VITE_CLIENT_VERSION=1.0.0 \
+npm run release:console:build -- /absolute/output/console
+```
+
+该命令会拒绝缺失配置、脏工作区和提交号不一致的制品，并生成 `console-build.json`。上线后使用同一验收器核对生产实际提供的提交：
+
+```bash
+npm run release:console:verify -- \
+  --url https://console.zhudatuan.com \
+  --expected-commit "$(git rev-parse HEAD)" \
+  --require-clean
 ```
 
 `services/commerce-api` 的完整 REST Router 目前由 `apps/storefront-web` Worker 同源嵌入，會隨 Storefront 一起構建；歷史 `adminServer.ts` 只包含 Health／AI 接口，不是完整相容 API 制品。

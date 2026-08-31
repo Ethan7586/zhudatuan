@@ -35,6 +35,8 @@
     "dev:storefront": "npm run dev --workspace @smart-wing/storefront-web",
     "dev:auth": "npm run dev --workspace @smart-wing/auth-web",
     "build:console": "npm run build --workspace @shop/console",
+    "release:console:build": "node --import tsx scripts/release/build-console.mjs",
+    "release:console:verify": "node scripts/release/verify-console.mjs",
     "build:storefront": "npm run build --workspace @smart-wing/storefront-web",
     "build:auth": "npm run build --workspace @smart-wing/auth-web",
     "generate:design": "node scripts/build-web-tokens.mjs && node scripts/build-miniapp-theme.mjs",
