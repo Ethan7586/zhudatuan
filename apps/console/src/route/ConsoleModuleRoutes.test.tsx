@@ -95,17 +95,17 @@ describe('Console module route materializer', () => {
       { ...cockpit, status: 'disabled' },
       { ...control, status: 'enabled' },
       { ...reports, status: 'enabled' },
-    ])).toBe('control');
+    ])).toBe('reports');
     expect(selectDefaultConsoleEntry([
       { ...cockpit, status: 'hidden' },
       { ...control, status: 'disabled' },
       { ...reports, status: 'enabled' },
-    ])).toBeUndefined();
+    ])).toBe('reports');
     expect(materializeConsoleIndexRoute([
       { ...cockpit, status: 'hidden' },
       { ...control, status: 'disabled' },
       { ...reports, status: 'enabled' },
-    ])).toHaveProperty('lazy');
+    ])).toHaveProperty('element');
   });
 });
 

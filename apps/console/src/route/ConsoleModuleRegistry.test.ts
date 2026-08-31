@@ -109,13 +109,15 @@ describe('registered Console modules', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('preserves enabled defaults and the 11 main + reports none + support bottom layout', () => {
+  it('preserves enabled defaults and the 12 main + support bottom layout', () => {
     expect(consoleModules.every(({ status }) => status === 'enabled')).toBe(true);
     expect(consoleModules.filter(({ navigation }) => navigation.placement === 'main').map(({ id }) => id)).toEqual([
       'cockpit', 'control', 'applications', 'products', 'orders', 'referral', 'channels',
-      'vouchers', 'finance', 'access', 'qualification',
+      'vouchers', 'finance', 'access', 'qualification', 'reports',
     ]);
-    expect(consoleModuleById.get('reports')?.navigation).toMatchObject({ placement: 'none', group: null });
+    expect(consoleModuleById.get('reports')?.navigation).toMatchObject({
+      placement: 'main', group: 'overview', order: 15, icon: 'trend',
+    });
     expect(consoleModuleById.get('support')?.navigation).toMatchObject({ placement: 'bottom', label: '客服系统' });
     expect(consoleModuleById.get('referral')?.navigation).toMatchObject({ preferredScopeKind: 'mall' });
   });
