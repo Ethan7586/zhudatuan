@@ -3,9 +3,13 @@ import { generateKeyPairSync } from 'node:crypto';
 import type { ProviderManifest, ProviderPortName, ProviderPorts } from '@shop/contract';
 import type { ProviderFactory } from '@shop/providercore';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { CAKEUNCLE_MEAL_BRANDS, CAKEUNCLE_PHYSICAL_ENDPOINTS, CAKEUNCLE_VOUCHER_ENDPOINTS } from '@shop/vendorcakeuncle';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { CAKEUNCLE_MEAL_BRANDS, CAKEUNCLE_PHYSICAL_ENDPOINTS, CAKEUNCLE_VOUCHER_ENDPOINTS } from '@shop/vendorcakeuncle';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export type ManifestFactory = (signature: string) => ProviderManifest;
 
@@ -18,6 +22,7 @@ export async function providerContract(factory: ProviderFactory, createManifest:
   assert.ok(signed.limits.maxConcurrency > 0);
   assert.ok(signed.limits.maxAttempts > 0);
   assert.throws(() => createManifest(''));
+<<<<<<< HEAD
 <<<<<<< HEAD
   const connection = contractConnection(factory.id, signed.healthOperation, signed.limits);
   const provider = factory.transport === 'remote' ? factory.create({ manifest: signed, connection }) : factory.create({ manifest: signed, local: { ports: localPorts(), health: async () => true } });
@@ -42,6 +47,21 @@ export async function providerContract(factory: ProviderFactory, createManifest:
     ? { connection: { id: 'wrong', baseUrl: 'https://sandbox.invalid', secret: { token: 'x' }, endpoints: { health: '/health' }, healthOperation: 'health', limits: signed.limits } }
     : { local: { ports: localPorts(), health: async () => true } }) }), /PROVIDER_CONTRACT_MISMATCH/);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const connection = contractConnection(factory.id, signed.healthOperation, signed.limits);
+  const provider = factory.transport === 'remote' ? factory.create({ manifest: signed, connection }) : factory.create({ manifest: signed, local: { ports: localPorts(), health: async () => true } });
+  for (const port of ports) assert.equal(provider.has(port), true, `${factory.id} does not expose ${port}`);
+  assert.throws(
+    () =>
+      factory.create({
+        manifest: { ...signed, contractVersion: 'wrong' },
+        ...(factory.transport === 'remote'
+          ? { connection: { id: 'wrong', baseUrl: 'https://sandbox.invalid', secret: { token: 'x' }, endpoints: { health: '/health' }, healthOperation: 'health', limits: signed.limits } }
+          : { local: { ports: localPorts(), health: async () => true } }),
+      }),
+    /PROVIDER_CONTRACT_MISMATCH/
+  );
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   await provider.start();
   if (factory.transport === 'local') assert.equal((await provider.health()).state, 'healthy');
   await provider.stop();
@@ -49,6 +69,9 @@ export async function providerContract(factory: ProviderFactory, createManifest:
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function contractConnection(id: string, defaultHealth: string, limits: ProviderManifest['limits']) {
   const configured = {
     cake: { healthOperation: 'cake.categories', endpoints: { 'cake.categories': CAKEUNCLE_PHYSICAL_ENDPOINTS.categories, 'cake.category.1': CAKEUNCLE_PHYSICAL_ENDPOINTS.products } },
@@ -59,6 +82,7 @@ function contractConnection(id: string, defaultHealth: string, limits: ProviderM
   return { id: `sandbox:${id}`, baseUrl: 'https://sandbox.invalid', secret: contractSecret(), limits, ...configured };
 }
 
+<<<<<<< HEAD
 function contractSecret(): Readonly<Record<string, string>> {
   const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 1024, privateKeyEncoding: { type: 'pkcs8', format: 'pem' }, publicKeyEncoding: { type: 'spki', format: 'pem' } });
   return {
@@ -74,6 +98,18 @@ function contractSecret(): Readonly<Record<string, string>> {
   const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 1024, privateKeyEncoding: { type: 'pkcs8', format: 'pem' }, publicKeyEncoding: { type: 'spki', format: 'pem' } });
   return { keyId: 'contract-key', secret: 'contract-secret', privateKey };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function contractSecret(): Readonly<Record<string, string>> {
+  const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 1024, privateKeyEncoding: { type: 'pkcs8', format: 'pem' }, publicKeyEncoding: { type: 'spki', format: 'pem' } });
+  return {
+    keyId: 'contract-key',
+    secret: 'contract-secret',
+    privateKey,
+    channelNo: 'contract-channel',
+    channelKey: 'contract-channel-key',
+    userId: 'contract-user',
+  };
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function localPorts(): Partial<ProviderPorts> {

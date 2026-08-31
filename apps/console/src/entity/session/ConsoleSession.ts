@@ -23,6 +23,9 @@ export const SessionSchema = z.object({
     verified: z.string().min(1).optional(),
   }),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   security: z.object({
     hasLocalCredential: z.boolean(),
     phoneMasked: z.string().min(1).nullable(),

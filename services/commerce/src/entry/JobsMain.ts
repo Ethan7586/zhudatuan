@@ -1,5 +1,6 @@
 import { jobsEnvironment } from '@shop/config/server';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { runJobs } from './JobsEntrypoint';
 
 await runJobs(jobsEnvironment());
@@ -30,3 +31,8 @@ await Promise.all([...registry.all().map((definition) => definition.job.execute(
   relay.run(controller.signal), scheduler.run(controller.signal)]);
 await runtime.close();
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { runJobs } from './JobsEntrypoint';
+
+await runJobs(jobsEnvironment());
+>>>>>>> 018b2a71 (chore(release): capture current production source)

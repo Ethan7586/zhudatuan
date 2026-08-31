@@ -6,11 +6,17 @@ interface ProductCatalogHeaderProps {
   readonly previewEnabled: boolean;
   readonly status: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly exportReady: boolean;
   readonly onImport: () => void;
   readonly onExport: () => void;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly exportReady: boolean;
+  readonly onImport: () => void;
+  readonly onExport: () => void;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly onStatus: (status: string) => void;
 }
 
@@ -22,10 +28,14 @@ const tabs = Object.freeze([
 ] as const);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 export function ProductCatalogHeader({ page, previewEnabled, status, exportReady, onImport, onExport, onStatus }: ProductCatalogHeaderProps) {
 =======
 export function ProductCatalogHeader({ page, previewEnabled, status, onStatus }: ProductCatalogHeaderProps) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+export function ProductCatalogHeader({ page, previewEnabled, status, exportReady, onImport, onExport, onStatus }: ProductCatalogHeaderProps) {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? undefined : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
   const description = preview === undefined ? '当前范围商品按服务端过滤与游标分页读取；总量尚未由列表合同返回。' : `当前范围内共 ${formatCount(coreTotal ?? preview.totalCount)} 件核心商品`;
@@ -40,6 +50,9 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus }:
         </div>
         <div className="productheroactions" role="group" aria-label="商品管理操作">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
           <button className="productaction" type="button" title="选择本地 CSV 文件，本期不会上传" aria-describedby="productcontractnotice" onClick={onImport}>
             <ProductIcon name="upload" />
             导入
@@ -55,6 +68,7 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus }:
             <ProductIcon name="download" />
             导出当前页
           </button>
+<<<<<<< HEAD
           <UnavailableAction primary icon="plus" label="新建商品" reason="商品创建表单与操作回执尚未闭合" />
         </div>
         <p id="productcontractnotice" className="sr-only">
@@ -67,6 +81,12 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus }:
         <p id="productcontractnotice" className="sr-only">
           这些写操作保持不可用，直到服务端 Operation、权限、版本校验和回执合同全部就绪。
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          <UnavailableAction primary icon="plus" label="新建商品" reason="商品创建表单与操作回执尚未闭合" />
+        </div>
+        <p id="productcontractnotice" className="sr-only">
+          导入只提供本地文件交互预览，文件不会上传；当前页导出只使用浏览器已经加载的服务端读模型。新建商品保持不可用。
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         </p>
       </header>
       <nav className="producttabs" aria-label="商品状态">

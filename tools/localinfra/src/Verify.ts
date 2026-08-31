@@ -1,12 +1,18 @@
 import { createHash, randomUUID } from 'node:crypto';
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { localInfrastructureEnvironment } from '@shop/config/server';
 
 const environment = localInfrastructureEnvironment();
 const secretAuthorization = { authorization: `Bearer ${environment.secretStoreBearerToken}` };
 const kmsAuthorization = { authorization: `Bearer ${environment.kmsBearerToken}` };
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 await Promise.all([8443, 8444, 8445].map(async port => {
   const response = await fetch(`https://127.0.0.1:${port}/health/ready`, { redirect: 'error' });
@@ -18,19 +24,27 @@ await secret('shop/local/database/api');
 const context = { verification: randomUUID() };
 const encrypted = await json('https://127.0.0.1:8444/v1/envelopes', {
 <<<<<<< HEAD
-  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
-=======
-  method: 'POST', headers: { 'content-type': 'application/json' },
->>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
-  body: JSON.stringify({ context, keyRef: 'local/verification', plaintext: 'verified' }),
-});
-if (typeof encrypted.ciphertext !== 'string' || typeof encrypted.fingerprint !== 'string') throw new Error('LOCAL_KMS_ENVELOPE_INVALID');
-const decrypted = await json('https://127.0.0.1:8444/v1/plaintexts', {
 <<<<<<< HEAD
   method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
 =======
   method: 'POST', headers: { 'content-type': 'application/json' },
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
+>>>>>>> 018b2a71 (chore(release): capture current production source)
+  body: JSON.stringify({ context, keyRef: 'local/verification', plaintext: 'verified' }),
+});
+if (typeof encrypted.ciphertext !== 'string' || typeof encrypted.fingerprint !== 'string') throw new Error('LOCAL_KMS_ENVELOPE_INVALID');
+const decrypted = await json('https://127.0.0.1:8444/v1/plaintexts', {
+<<<<<<< HEAD
+<<<<<<< HEAD
+  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
+=======
+  method: 'POST', headers: { 'content-type': 'application/json' },
+>>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   body: JSON.stringify({ context, keyRef: 'local/verification', ciphertext: encrypted.ciphertext }),
 });
 if (decrypted.plaintext !== 'verified') throw new Error('LOCAL_KMS_ROUNDTRIP_FAILED');
@@ -56,10 +70,14 @@ process.stdout.write('LOCAL_HTTPS_CONTRACTS_VERIFIED secretstore=ok kms=ok objec
 
 async function secret(reference: string): Promise<string> {
 <<<<<<< HEAD
+<<<<<<< HEAD
   const value = await json(`https://127.0.0.1:8443/v1/secrets/${encodeURIComponent(reference)}`, { headers: secretAuthorization });
 =======
   const value = await json(`https://127.0.0.1:8443/v1/secrets/${encodeURIComponent(reference)}`);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const value = await json(`https://127.0.0.1:8443/v1/secrets/${encodeURIComponent(reference)}`, { headers: secretAuthorization });
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (typeof value.value !== 'string' || !value.value) throw new Error('LOCAL_SECRET_INVALID');
   return value.value;
 }

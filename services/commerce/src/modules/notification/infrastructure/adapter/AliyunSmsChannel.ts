@@ -44,6 +44,7 @@ export class AliyunSmsChannel implements DeliveryChannel {
       { mode: 'businesskeywrite', retryable });
       const body = response.body;
 <<<<<<< HEAD
+<<<<<<< HEAD
       if (body?.code !== 'OK' || !body.bizId) throw new Error(providerRejection(body?.code));
       return { provider: 'aliyun', externalId: body.bizId };
     } catch (cause) {
@@ -60,6 +61,18 @@ export class AliyunSmsChannel implements DeliveryChannel {
     } catch (cause) {
       if (cause instanceof Error && cause.message === 'ALIYUN_SMS_REJECTED') throw cause;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      if (body?.code !== 'OK' || !body.bizId) throw new Error(providerRejection(body?.code));
+      return { provider: 'aliyun', externalId: body.bizId };
+    } catch (cause) {
+      if (cause instanceof Error && cause.message.startsWith('ALIYUN_SMS_')) throw cause;
+      const providerCode = typeof cause === 'object' && cause !== null && 'code' in cause
+        ? (cause as { readonly code?: unknown }).code
+        : undefined;
+      if (typeof providerCode === 'string' && /^isv\./i.test(providerCode)) {
+        throw new Error(providerRejection(providerCode));
+      }
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       throw new Error('ALIYUN_SMS_UNAVAILABLE');
     }
   }
@@ -68,12 +81,18 @@ export class AliyunSmsChannel implements DeliveryChannel {
 function required(value: string): string { if (!value?.trim()) throw new Error('ALIYUN_SMS_CONFIGURATION_INVALID'); return value.trim(); }
 function defaultConstructor<T>(value: T): T { return (value as unknown as { readonly default?: T }).default ?? value; }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function providerRejection(value: string | undefined): string {
   const normalized = (value ?? '').trim().toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 80);
   return normalized ? `ALIYUN_SMS_${normalized}` : 'ALIYUN_SMS_REJECTED';
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function retryable(cause: unknown): boolean {
   const code = cause instanceof Error ? cause.message : '';
   return /(?:timeout|throttl|network|connection|5\d\d)/i.test(code);

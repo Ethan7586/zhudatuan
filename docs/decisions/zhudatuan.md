@@ -2,6 +2,9 @@
 
 > 智慧翼／築大團 MVP 的產品口徑、系統邊界與已確認決策。  
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 > 最後更新：2026-08-28
 
 ## 2026-08-28：hbbtzn 成為築大團子項目
@@ -66,6 +69,7 @@
 6. 完成真雲端資料庫、短信、微信、支付及 Provider 驗收後，再將相應制品的 `releaseEligible` 由 `false` 改為 `true`。
 
 本次評估只記錄架構現況，未修改前端、後端、合同、資料庫或部署代碼。
+<<<<<<< HEAD
 =======
 > 最後更新：2026-08-27
 
@@ -81,6 +85,8 @@
 
 完整使用規則見 [`archives/README.md`](./archives/README.md)。
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 ## 2026-08-27：會員與權限、渠道與分銷、系統治理台
 
@@ -200,6 +206,9 @@ MVP 階段應包含：
 
 當前狀態：**只完成定義、審計與記錄；未開始修改業務代碼，等待下一條指令。**
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 ## 2026-08-28：財務與對帳 MVP 升級決策
 
@@ -239,5 +248,8 @@ Owner 批准財務系統解除暫停並向本地 MVP **90/100** 衝刺。本階�
 - 本階段只形成可重現的本地驗收基線，不提交、不推送、不部署，也不把目前工作樹標記為生產發布基線。
 
 完整 Migration、測試、得分與剩餘風險見 [`../operations/2026-08-28-finance-upgrade-log.md`](../operations/2026-08-28-finance-upgrade-log.md#2026-08-30本地-90-分驗收)。
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

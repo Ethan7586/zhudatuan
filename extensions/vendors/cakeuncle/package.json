@@ -7,9 +7,13 @@
   "exports": { ".": "./index.ts" },
   "types": "./index.ts",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "dependencies": { "@shop/contract": "1.0.0", "@shop/vendorcore": "1.0.0" },
 =======
   "dependencies": { "@shop/vendorcore": "1.0.0" },
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  "dependencies": { "@shop/contract": "1.0.0", "@shop/vendorcore": "1.0.0" },
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   "devDependencies": { "@types/node": "22.19.19", "typescript": "5.9.3", "vitest": "4.1.10" }
 }

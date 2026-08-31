@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
 import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
 =======
@@ -11,6 +12,10 @@ import type {
   Schema,
 } from '@shop/contract';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
+import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Deadline } from '@shop/kernel/deadline';
@@ -32,14 +37,19 @@ export class ApiClient implements OperationExecutor {
     private readonly baseUrl: string,
     private readonly transport: Transport,
 <<<<<<< HEAD
+<<<<<<< HEAD
     private readonly retry = new RetryPolicy()
 =======
     private readonly retry = new RetryPolicy(),
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    private readonly retry = new RetryPolicy()
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   ) {
     if (!/^https?:\/\//.test(baseUrl)) throw new Error('SDK_BASE_URL_INVALID');
   }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   async execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>> {
 =======
@@ -49,17 +59,24 @@ export class ApiClient implements OperationExecutor {
     context: RequestContext,
   ): Promise<OperationOutputFor<TKey>> {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  async execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>> {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
     if (operation.method !== 'GET' && operation.audience !== 'provider' && context.idempotencyKey === undefined) {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     if (requiresFinancialExpectedVersion(operation.id) && context.expectedVersion === undefined) {
       throw new Error('SDK_EXPECTED_VERSION_REQUIRED');
     }
     if (requiresFinancialActionProof(operation.id) && context.proof === undefined) {
       throw new Error('SDK_ACTION_PROOF_REQUIRED');
     }
+<<<<<<< HEAD
     const parsed = operation.input.parse(input);
     const prepared = operation.id === 'identity.stepup.complete' ? await bindStepupActionRequestHash(parsed) : parsed;
     const value = await this.send(operation.path, operation.method, prepared, context, operation.idempotent, operation.output);
@@ -68,11 +85,15 @@ export class ApiClient implements OperationExecutor {
 
   private async send<TOutput>(path: string, method: string, input: WireInput, context: RequestContext, idempotent: boolean, output: Schema<TOutput>): Promise<TOutput> {
 =======
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const parsed = operation.input.parse(input);
-    const value = await this.send(operation.path, operation.method, parsed, context, operation.idempotent, operation.output);
+    const prepared = operation.id === 'identity.stepup.complete' ? await bindStepupActionRequestHash(parsed) : parsed;
+    const value = await this.send(operation.path, operation.method, prepared, context, operation.idempotent, operation.output);
     return value;
   }
 
+<<<<<<< HEAD
   private async send<TOutput>(
     path: string,
     method: string,
@@ -82,6 +103,9 @@ export class ApiClient implements OperationExecutor {
     output: Schema<TOutput>,
   ): Promise<TOutput> {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  private async send<TOutput>(path: string, method: string, input: WireInput, context: RequestContext, idempotent: boolean, output: Schema<TOutput>): Promise<TOutput> {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const deadline = Deadline.after(RUNTIME_LIMITS.http.totalDeadlineMilliseconds, context.signal);
     const request = this.request(path, method, input, context, deadline.signal);
     const canRetry = idempotent || context.idempotencyKey !== undefined;
@@ -148,6 +172,7 @@ export class ApiClient implements OperationExecutor {
     };
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
 }
 
 async function bindStepupActionRequestHash(input: WireInput): Promise<WireInput> {
@@ -198,12 +223,62 @@ async function sha256(value: string): Promise<string> {
 function decode(body: string): unknown {
   return body.length === 0 ? undefined : (JSON.parse(body) as unknown);
 =======
+=======
+}
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
+async function bindStepupActionRequestHash(input: WireInput): Promise<WireInput> {
+  const body = objectValue(input.body);
+  const actionValue = Reflect.get(body, 'action');
+  if (actionValue === undefined || actionValue === null) return input;
+  const action = objectValue(actionValue);
+  const operation = Reflect.get(action, 'operation');
+  const request = objectValue(Reflect.get(action, 'request'));
+  if (typeof operation !== 'string' || !requiresFinancialActionProof(operation)) {
+    throw new Error('SDK_ACTION_REQUEST_INVALID');
+  }
+  let canonical: string;
+  try {
+    canonical = canonicalFinancialActionRequest({
+      operation,
+      path: Reflect.get(request, 'path'),
+      query: Reflect.get(request, 'query'),
+      body: Reflect.get(request, 'body'),
+    });
+  } catch {
+    throw new Error('SDK_ACTION_REQUEST_INVALID');
+  }
+  const requestHash = await sha256(canonical);
+  const provided = Reflect.get(action, 'requestHash');
+  if (provided !== undefined && provided !== requestHash) throw new Error('SDK_ACTION_REQUEST_HASH_MISMATCH');
+  return {
+    ...input,
+    body: {
+      ...body,
+      action: { ...action, requestHash },
+    } as ContractJsonValue,
+  };
+}
+
+function objectValue(value: unknown): Readonly<Record<string, ContractJsonValue | undefined>> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('SDK_ACTION_REQUEST_INVALID');
+  return value as Readonly<Record<string, ContractJsonValue | undefined>>;
+}
+
+async function sha256(value: string): Promise<string> {
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) throw new Error('SDK_SECURE_HASH_SOURCE_UNAVAILABLE');
+  const digest = await subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 function decode(body: string): unknown {
+<<<<<<< HEAD
   return body.length === 0 ? undefined : JSON.parse(body) as unknown;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  return body.length === 0 ? undefined : (JSON.parse(body) as unknown);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 async function delay(milliseconds: number, signal?: AbortSignal): Promise<void> {

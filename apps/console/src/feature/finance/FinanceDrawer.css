@@ -110,10 +110,14 @@
   color: var(--sw-warning-strong);
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 .financedrawer .financedrawerheader .financeimmutablealert p {
 =======
 .financeimmutablealert p {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+.financedrawer .financedrawerheader .financeimmutablealert p {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   margin: 0;
   color: var(--sw-warning-strong);
   font-size: 9px;

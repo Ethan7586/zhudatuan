@@ -32,9 +32,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -169,9 +173,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -191,6 +199,9 @@ requirements:
       - inventory.availability.read
       - marketing.campaigns.read
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - referral.settings.read
       - referral.settings.manage
       - referral.products.read
@@ -206,8 +217,11 @@ requirements:
       - referral.links.read
       - referral.withdrawals.read
       - referral.withdrawals.create
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - cart.current.read
       - cart.items.put
       - cart.items.batch
@@ -256,9 +270,13 @@ requirements:
       - payment
       - pricing
 <<<<<<< HEAD
+<<<<<<< HEAD
       - referral
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - referral
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - runtime
       - verification
       - voucher
@@ -284,9 +302,13 @@ requirements:
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/referral
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - services/commerce/src/modules/referral
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -329,9 +351,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -445,9 +471,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -574,9 +604,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -704,9 +738,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -835,9 +873,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1066,9 +1108,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1110,13 +1156,19 @@ requirements:
       - finance.reconciliations.manage
       - finance.reconciliations.read
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.reconciliationrepairs.read
       - finance.reconciliationrepairs.preview
       - finance.reconciliationrepairs.submit
       - finance.reconciliationrepairs.decide
       - finance.reconciliationrepairs.reverse
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -1131,16 +1183,22 @@ requirements:
       - finance.backfills.decide
       - finance.policies.manage
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.policies.preview
       - finance.policies.read
       - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
       - invoice.operatorprofiles.read
+<<<<<<< HEAD
 =======
       - invoice.profiles.manage
       - invoice.profiles.read
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -1228,9 +1286,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1355,9 +1417,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1499,16 +1565,22 @@ requirements:
       - identity.members.create
       - identity.members.manage
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
       - identity.mobile.challenge
+<<<<<<< HEAD
 =======
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1516,6 +1588,9 @@ requirements:
       - access.roles.manage
       - access.scopes.manage
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - access.ownership.read
       - access.ownership.transfers.preview
       - access.ownership.transfers.create
@@ -1523,8 +1598,11 @@ requirements:
       - access.ownership.transfers.accept
       - access.ownership.transfers.cancel
       - access.ownership.transfers.cancel.preview
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -1666,9 +1744,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1782,9 +1864,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1911,9 +1997,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2040,9 +2130,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2174,9 +2268,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2404,9 +2502,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2448,13 +2550,19 @@ requirements:
       - finance.reconciliations.manage
       - finance.reconciliations.read
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.reconciliationrepairs.read
       - finance.reconciliationrepairs.preview
       - finance.reconciliationrepairs.submit
       - finance.reconciliationrepairs.decide
       - finance.reconciliationrepairs.reverse
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -2469,16 +2577,22 @@ requirements:
       - finance.backfills.decide
       - finance.policies.manage
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - finance.policies.preview
       - finance.policies.read
       - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
       - invoice.operatorprofiles.read
+<<<<<<< HEAD
 =======
       - invoice.profiles.manage
       - invoice.profiles.read
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -2565,9 +2679,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2694,9 +2812,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2839,16 +2961,22 @@ requirements:
       - identity.members.create
       - identity.members.manage
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
       - identity.mobile.challenge
+<<<<<<< HEAD
 =======
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2856,6 +2984,9 @@ requirements:
       - access.roles.manage
       - access.scopes.manage
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - access.ownership.read
       - access.ownership.transfers.preview
       - access.ownership.transfers.create
@@ -2863,8 +2994,11 @@ requirements:
       - access.ownership.transfers.accept
       - access.ownership.transfers.cancel
       - access.ownership.transfers.cancel.preview
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -3008,9 +3142,13 @@ requirements:
       - identity.password.change
       - identity.password.reset
 <<<<<<< HEAD
+<<<<<<< HEAD
       - identity.mobile.challenge
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - identity.mobile.challenge
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete

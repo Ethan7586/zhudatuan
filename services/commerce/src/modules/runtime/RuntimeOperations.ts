@@ -32,10 +32,14 @@ class RuntimeOperations implements OperationUsecase {
         + "count(*) filter(where state='running')::integer running,"
         + "(select count(*)::integer from runtime.deadletter where reviewed_at is null) deadletters,"
 <<<<<<< HEAD
+<<<<<<< HEAD
         + "coalesce(extract(epoch from clock_timestamp()-(min(created_at) filter(where state='queued'))),0)::integer oldest_seconds from runtime.job",
 =======
         + "coalesce(extract(epoch from clock_timestamp()-min(created_at)) filter(where state='queued'),0)::integer oldest_seconds from runtime.job",
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+        + "coalesce(extract(epoch from clock_timestamp()-(min(created_at) filter(where state='queued'))),0)::integer oldest_seconds from runtime.job",
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       ),
       runtimeCompatibility(this.pool, this.context.extensions, 'api'),
     ]);

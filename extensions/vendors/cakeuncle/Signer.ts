@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 export type CakeuncleH5Parameter = string | number;
@@ -61,6 +64,9 @@ function digest(algorithm: 'sha1' | 'md5', value: string): string {
 function required(value: string, code: string): void {
   if (!value.trim()) throw new Error(code);
 }
+<<<<<<< HEAD
 =======
 export { HmacAuthenticator as CakeuncleSigner } from '@shop/vendorcore';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

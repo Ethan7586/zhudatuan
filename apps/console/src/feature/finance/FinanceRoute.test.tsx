@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { HttpResponse, delay, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
@@ -12,15 +13,25 @@ import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { HttpResponse, delay, http } from 'msw';
+import { setupServer } from 'msw/node';
+import { MemoryRouter, useLocation } from 'react-router';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './FinanceRoute';
 
 const requests: URL[] = [];
 <<<<<<< HEAD
+<<<<<<< HEAD
 const authorityRequests: URL[] = [];
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+const authorityRequests: URL[] = [];
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const writes: string[] = [];
 const server = setupServer(
   http.get('*/api/v1/finance/overview', () => HttpResponse.json(previewOverview())),
@@ -29,6 +40,9 @@ const server = setupServer(
     return HttpResponse.json(previewPage());
   }),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   http.get('*/api/v1/finance/policies', ({ request }) => {
     authorityRequests.push(new URL(request.url));
     return HttpResponse.json(policyPage());
@@ -37,8 +51,11 @@ const server = setupServer(
     authorityRequests.push(new URL(request.url));
     return HttpResponse.json(auditPage());
   }),
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   http.all('*/api/v1/finance/**', ({ request }) => {
     writes.push(request.method);
     return HttpResponse.json({ code: 'UNEXPECTED_FINANCE_WRITE' }, { status: 500 });
@@ -49,20 +66,29 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   cleanup();
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   vi.restoreAllMocks();
   server.resetHandlers();
   requests.length = 0;
   authorityRequests.length = 0;
+<<<<<<< HEAD
 =======
   server.resetHandlers();
   requests.length = 0;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   writes.length = 0;
 });
 afterAll(() => server.close());
 
 describe('Finance reconciliation workspace', () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('shows a dedicated loading state while the authoritative reconciliation read is pending', async () => {
     server.use(
       http.get('*/api/v1/finance/reconciliations', async () => {
@@ -94,8 +120,11 @@ describe('Finance reconciliation workspace', () => {
     expect(screen.queryByRole('table', { name: '支付对账批次' })).toBeNull();
   });
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('renders the server-backed control surface and never derives the reference totals in the browser', async () => {
     renderRoute('/finance', previewContext);
     expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
@@ -108,6 +137,9 @@ describe('Finance reconciliation workspace', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('renders the calm access boundary instead of a finance load failure on 403', async () => {
     server.use(http.get('*/api/v1/finance/reconciliations', () => HttpResponse.json({ code: 'FINANCE_READ_DENIED', requestId: 'request:denied' }, { status: 403 })));
     renderRoute('/finance', previewContext);
@@ -136,8 +168,11 @@ describe('Finance reconciliation workspace', () => {
     expect(screen.queryByText('RCN-20260824-WECHAT-001')).toBeNull();
   });
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('keeps checkbox selection separate from the URL-backed review drawer and fails every final action closed', async () => {
     const user = userEvent.setup();
     renderRoute('/finance?campaign=keep', previewContext);
@@ -167,6 +202,9 @@ describe('Finance reconciliation workspace', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('keeps matched-only reconciliations non-actionable even when the server returns nested items', async () => {
     const user = userEvent.setup();
     server.use(http.get('*/api/v1/finance/reconciliations', () => HttpResponse.json(previewPage([balancedRow]))));
@@ -183,8 +221,11 @@ describe('Finance reconciliation workspace', () => {
     expect(currentParams().get('campaign')).toBe('keep');
   });
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('restores selected difference from the URL and applies preview filters on the server', async () => {
     const user = userEvent.setup();
     renderRoute(`/finance?selected=${encodeURIComponent(row.id)}&cursor=old&campaign=keep`, previewContext);
@@ -199,6 +240,9 @@ describe('Finance reconciliation workspace', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('merges consecutive select filters into the URL without dropping an earlier selection', async () => {
     const user = userEvent.setup();
     renderRoute('/finance?campaign=keep', previewContext);
@@ -218,6 +262,7 @@ describe('Finance reconciliation workspace', () => {
 
   it('keeps authoritative filters enabled while hiding local preview metadata in production scope', async () => {
     const user = userEvent.setup();
+<<<<<<< HEAD
     renderRoute('/finance?q=demo&channel=wechat&reconPeriod=2026-08-24&campaign=keep', productionContext);
     expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
     await waitFor(() => expect(currentParams().get('channel')).toBe('wechat'));
@@ -241,23 +286,39 @@ describe('Finance reconciliation workspace', () => {
   it('routes payment and refund tabs through the authoritative reconciliation kind filter', async () => {
 =======
   it('removes preview-only filters and hides preview metadata in production scope', async () => {
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     renderRoute('/finance?q=demo&channel=wechat&reconPeriod=2026-08-24&campaign=keep', productionContext);
     expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
-    await waitFor(() => expect(currentParams().has('channel')).toBe(false));
+    await waitFor(() => expect(currentParams().get('channel')).toBe('wechat'));
     expect(currentParams().get('campaign')).toBe('keep');
-    expect(screen.getByRole<HTMLInputElement>('textbox', { name: '搜索对账记录' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: '搜索对账记录' }).disabled).toBe(false);
     expect(screen.getByText('reconciliation:preview:wechat:1')).toBeTruthy();
     expect(screen.queryByText('RCN-20260824-WECHAT-001')).toBeNull();
     expect(screen.getByText('本页 1 笔')).toBeTruthy();
-    expect(requests.every((url) => !url.searchParams.has('q') && !url.searchParams.has('channel'))).toBe(true);
+    expect(requests.every((url) => url.searchParams.get('q') === 'demo' && url.searchParams.get('channel') === 'wechat')).toBe(true);
+
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '导出当前页' }).disabled).toBe(false);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '发起对账' }).disabled).toBe(true);
+    await user.click(screen.getByRole('button', { name: '查看差异' }));
+    const drawer = await screen.findByRole('dialog', { name: '差异处理 · 复核预览' });
+    expect(within(drawer).getByText('最终动作未接入')).toBeTruthy();
+    expect(within(drawer).getByRole<HTMLButtonElement>('button', { name: '保存草稿' }).disabled).toBe(true);
+    expect(within(drawer).getByRole<HTMLButtonElement>('button', { name: '提交财务复核' }).disabled).toBe(true);
+    expect(writes).toHaveLength(0);
   });
 
+<<<<<<< HEAD
   it('routes supported tabs and labels unavailable read contracts honestly', async () => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  it('routes payment and refund tabs through the authoritative reconciliation kind filter', async () => {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const user = userEvent.setup();
     renderRoute('/finance', previewContext);
     await screen.findByRole('table', { name: '支付对账批次' });
     await user.click(screen.getByRole('button', { name: '退款对账' }));
+<<<<<<< HEAD
 <<<<<<< HEAD
     expect(await screen.findByRole('table', { name: '退款对账批次' })).toBeTruthy();
     expect(currentParams().get('tab')).toBe('refunds');
@@ -267,11 +328,17 @@ describe('Finance reconciliation workspace', () => {
     expect(screen.getByText(/不会用演示数据替代生产事实/)).toBeTruthy();
     expect(currentParams().get('tab')).toBe('refunds');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    expect(await screen.findByRole('table', { name: '退款对账批次' })).toBeTruthy();
+    expect(currentParams().get('tab')).toBe('refunds');
+    await waitFor(() => expect(requests.some((url) => url.searchParams.get('kind') === 'refund')).toBe(true));
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
     await user.click(screen.getByRole('button', { name: '结算单' }));
     expect(currentLocation()).toContain('/finance/settlements');
   });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   it('renders authoritative rules and audit records as read-only typed pages', async () => {
     const user = userEvent.setup();
@@ -365,14 +432,106 @@ describe('Finance reconciliation workspace', () => {
 
 =======
   it('shows only non-mutating safety dialogs for preview header actions', async () => {
+=======
+  it('renders authoritative rules and audit records as read-only typed pages', async () => {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const user = userEvent.setup();
+    renderRoute('/finance?tab=rules&limit=20&cursor=policy%3Apage%3A2', previewContext);
+
+    const policies = await screen.findByRole('table', { name: '对账规则' });
+    expect(within(policies).getByText('finance.policy.reconciliation.wechat')).toBeTruthy();
+    expect(within(policies).getByText('reconciliation')).toBeTruthy();
+    expect(within(policies).getByText('{"provider":"wechat_pay","matchMode":"one-to-one","toleranceMinor":0}')).toBeTruthy();
+    expect(within(policies).getByText('active')).toBeTruthy();
+    expect(within(policies).getByText('v3')).toBeTruthy();
+    expect(within(policies).getByRole<HTMLButtonElement>('button', { name: '编辑规则 finance.policy.reconciliation.wechat（未启用）' }).disabled).toBe(true);
+    expect(screen.getByText(/LOCAL PREVIEW FIXTURE/)).toBeTruthy();
+    expect(authorityRequests[0]?.searchParams.get('limit')).toBe('20');
+    expect(authorityRequests[0]?.searchParams.get('cursor')).toBe('policy:page:2');
+    expect(currentParams().get('limit')).toBe('20');
+    expect(currentParams().get('cursor')).toBe('policy:page:2');
+
+    await user.click(screen.getByRole('button', { name: '审计记录' }));
+    const audits = await screen.findByRole('table', { name: '审计记录' });
+    expect(within(audits).getByText('finance.reconciliations.approve')).toBeTruthy();
+    expect(within(audits).getByText(/member · actor:finance:reviewer/)).toBeTruthy();
+    expect(within(audits).getByText(/finance:reconciliation:1/)).toBeTruthy();
+    expect(within(audits).getByText('previous ·', { exact: false })).toBeTruthy();
+    expect(within(audits).getByText('record ·', { exact: false })).toBeTruthy();
+    expect(within(audits).getByText('{"fourEyes":true,"effectId":"effect:1"}')).toBeTruthy();
+    expect(within(audits).getByRole<HTMLButtonElement>('button', { name: '审计记录 audit:finance:1 不可变' }).disabled).toBe(true);
+    expect(writes).toHaveLength(0);
+  });
+
+  it('covers loading, empty, and malformed authority responses without a fixture fallback', async () => {
+    server.use(
+      http.get('*/api/v1/finance/policies', async () => {
+        await delay(100);
+        return HttpResponse.json({ items: [], count: 0 });
+      })
+    );
+    renderRoute('/finance?tab=rules', productionContext);
+    expect(screen.getByText('正在读取对账规则权威快照…')).toBeTruthy();
+    expect(await screen.findByText('当前范围没有对账规则。')).toBeTruthy();
+    expect(screen.queryByText(/LOCAL PREVIEW FIXTURE/)).toBeNull();
+    expect(screen.getByText(/没有演示 fallback/)).toBeTruthy();
+    cleanup();
+
+    server.use(http.get('*/api/v1/finance/audits', () => HttpResponse.json({ items: [{ id: 'malformed' }], count: 1 })));
+    renderRoute('/finance?tab=audit', productionContext);
+    const alert = await screen.findByRole('alert');
+    expect(within(alert).getByText('审计记录读取失败')).toBeTruthy();
+    expect(within(alert).getByRole('button', { name: '重试' })).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '审计记录' })).toBeNull();
+  });
+
+  it('renders production policy facts only from the validated response', async () => {
+    server.use(http.get('*/api/v1/finance/policies', () => HttpResponse.json(productionPolicyPage())));
+    renderRoute('/finance?tab=rules', productionContext);
+
+    const policies = await screen.findByRole('table', { name: '对账规则' });
+    expect(within(policies).getByText('finance.policy.production.scope')).toBeTruthy();
+    expect(within(policies).queryByText('finance.policy.reconciliation.wechat')).toBeNull();
+    expect(screen.queryByText(/LOCAL PREVIEW FIXTURE/)).toBeNull();
+    expect(screen.getByText(/只展示通过 Zod 校验的服务端响应/)).toBeTruthy();
+  });
+
+  it('downloads payment and refund current pages, opens local import, and preserves the start boundary', async () => {
+    const user = userEvent.setup();
+    const download = captureDownload();
     renderRoute('/finance', previewContext);
     await screen.findByRole('table', { name: '支付对账批次' });
+<<<<<<< HEAD
     await user.click(screen.getByRole('button', { name: '导出对账单' }));
     const exportDialog = await screen.findByRole('dialog', { name: '导出对账单 · 安全预览' });
     expect(within(exportDialog).getByText(/当前不会生成或下载正式账单/)).toBeTruthy();
     await user.click(within(exportDialog).getByRole('button', { name: '我知道了' }));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    const paymentRequestCount = requests.length;
+
+    await user.click(screen.getByRole('button', { name: '导出当前页' }));
+    expect(download.filenames[0]).toMatch(/^finance-payments-current-page-\d{8}-\d{6}\.csv$/);
+    const paymentCsv = await readBlob(download.blobs[0]!);
+    expect(paymentCsv.split('\r\n')[1]?.startsWith('payments,')).toBe(true);
+    expect(csvRowCount(paymentCsv)).toBe(previewPage().items.length + 1);
+    expect(requests).toHaveLength(paymentRequestCount);
+
+    await user.click(screen.getByRole('button', { name: '导入' }));
+    expect(await screen.findByRole('dialog', { name: '导入财务数据' })).toBeTruthy();
+    await user.click(within(screen.getByRole('dialog', { name: '导入财务数据' })).getByRole('button', { name: '取消' }));
+
+    await user.click(screen.getByRole('button', { name: '退款对账' }));
+    await screen.findByRole('table', { name: '退款对账批次' });
+    const refundRequestCount = requests.length;
+    await user.click(screen.getByRole('button', { name: '导出当前页' }));
+    expect(download.filenames[1]).toMatch(/^finance-refunds-current-page-\d{8}-\d{6}\.csv$/);
+    const refundCsv = await readBlob(download.blobs[1]!);
+    expect(refundCsv.split('\r\n')[1]?.startsWith('refunds,')).toBe(true);
+    expect(csvRowCount(refundCsv)).toBe(previewPage().items.length + 1);
+    expect(requests).toHaveLength(refundRequestCount);
+
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     await user.click(screen.getByRole('button', { name: '发起对账' }));
     const startDialog = await screen.findByRole('dialog', { name: '发起对账 · 安全预览' });
     expect(within(startDialog).getByText(/不会创建对账批次/)).toBeTruthy();
@@ -416,9 +575,13 @@ const row = {
     {
       id: 'DIFF-20260824-0001',
 <<<<<<< HEAD
+<<<<<<< HEAD
       version: 7,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      version: 7,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       externalMinor: 11_900,
       internalMinor: 0,
       differenceMinor: 11_900,
@@ -434,6 +597,7 @@ const row = {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function previewPage(items: readonly unknown[] = [row]) {
   return {
     items,
@@ -444,6 +608,12 @@ function previewPage() {
     items: [row],
     count: 1,
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function previewPage(items: readonly unknown[] = [row]) {
+  return {
+    items,
+    count: items.length,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     preview: {
       source: 'local-preview',
       total: 7,
@@ -465,6 +635,9 @@ function previewPage() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const balancedRow = {
   ...row,
   id: 'reconciliation:preview:alipay:1',
@@ -501,8 +674,11 @@ const balancedRow = {
   ],
 };
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function previewOverview() {
   return {
     items: [
@@ -529,6 +705,9 @@ function previewOverview() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function policyPage() {
   return {
     items: [
@@ -587,8 +766,11 @@ function auditPage() {
   };
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function repairPreview() {
   return {
     source: 'local-preview',
@@ -639,6 +821,9 @@ function renderRoute(entry: string, initialContext: ConsoleContext) {
   );
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 function captureDownload() {
   const blobs: Blob[] = [];
@@ -669,8 +854,11 @@ async function readBlob(blob: Blob): Promise<string> {
 function csvRowCount(csv: string): number {
   return csv.split('\r\n').filter((line) => line !== '').length;
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function LocationProbe() {
   const location = useLocation();
   return (

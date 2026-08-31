@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { bearerToken, distinctValues, integerValue, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 =======
 import { integerValue, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { bearerToken, distinctValues, integerValue, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
   tlsKeyFile: 'LOCAL_TLS_KEY_FILE',
@@ -12,11 +16,17 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
   kmsPort: 'LOCAL_KMS_PORT',
   kmsMasterKey: 'LOCAL_KMS_MASTER_KEY',
 <<<<<<< HEAD
+<<<<<<< HEAD
   kmsBearerToken: 'LOCAL_KMS_BEARER_TOKEN',
   secretStoreBearerToken: 'LOCAL_SECRET_STORE_BEARER_TOKEN',
   workloadAccessPolicyFile: 'LOCAL_WORKLOAD_ACCESS_POLICY_FILE',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  kmsBearerToken: 'LOCAL_KMS_BEARER_TOKEN',
+  secretStoreBearerToken: 'LOCAL_SECRET_STORE_BEARER_TOKEN',
+  workloadAccessPolicyFile: 'LOCAL_WORKLOAD_ACCESS_POLICY_FILE',
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   objectsPort: 'LOCAL_OBJECTS_PORT',
   objectsDirectory: 'LOCAL_OBJECTS_DIRECTORY',
   objectsToken: 'LOCAL_OBJECTS_TOKEN',
@@ -29,9 +39,13 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
   redisPassword: 'REDIS_PASSWORD',
   nodeExtraCaCertificates: 'NODE_EXTRA_CA_CERTS',
 <<<<<<< HEAD
+<<<<<<< HEAD
   runtimeProfile: 'LOCAL_RUNTIME_PROFILE',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  runtimeProfile: 'LOCAL_RUNTIME_PROFILE',
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   adminDatabaseConnectionRef: 'LOCAL_ADMIN_DATABASE_CONNECTION_REF',
   migrationDatabaseConnectionRef: 'MIGRATION_DATABASE_CONNECTION_REF',
   ethanPasswordRef: 'LOCAL_ETHAN_PASSWORD_REF',
@@ -39,9 +53,13 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
 
 export interface LocalInfrastructureEnvironment {
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly kmsBearerToken?: string;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly kmsBearerToken?: string;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly kmsMasterKey: string;
   readonly kmsPort: number;
   readonly objectsDirectory: string;
@@ -50,14 +68,20 @@ export interface LocalInfrastructureEnvironment {
   readonly secretsFile: string;
   readonly secretsPort: number;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly secretStoreBearerToken?: string;
   readonly tlsCertificateFile: string;
   readonly tlsKeyFile: string;
   readonly workloadAccessPolicyFile?: string;
+<<<<<<< HEAD
 =======
   readonly tlsCertificateFile: string;
   readonly tlsKeyFile: string;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 export interface LocalSeedEnvironment {
@@ -65,15 +89,22 @@ export interface LocalSeedEnvironment {
   readonly ethanPasswordRef: string;
   readonly identityKeyRef: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly kmsBearerToken: string;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly kmsBearerToken: string;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly kmsEndpoint: string;
   readonly migrationDatabaseConnectionRef: string;
   readonly objectStoreEndpoint: string;
   readonly objectStoreTokenRef: string;
   readonly secretStoreEndpoint: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly secretStoreBearerToken: string;
 }
 
@@ -165,12 +196,15 @@ export function localInfrastructureEnvironment(source: EnvironmentSource = proce
     ? requiredValue(source.LOCAL_WORKLOAD_ACCESS_POLICY_FILE, 'LOCAL_WORKLOAD_ACCESS_POLICY_FILE_MISSING')
     : undefined;
   const environment = {
+<<<<<<< HEAD
 =======
 }
 
 export function localInfrastructureEnvironment(source: EnvironmentSource = processEnvironment()): LocalInfrastructureEnvironment {
   return Object.freeze({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     tlsKeyFile: requiredValue(source.LOCAL_TLS_KEY_FILE, 'LOCAL_TLS_KEY_FILE_MISSING'),
     tlsCertificateFile: requiredValue(source.LOCAL_TLS_CERT_FILE, 'LOCAL_TLS_CERT_FILE_MISSING'),
     secretsFile: requiredValue(source.LOCAL_SECRETS_FILE, 'LOCAL_SECRETS_FILE_MISSING'),
@@ -178,6 +212,9 @@ export function localInfrastructureEnvironment(source: EnvironmentSource = proce
     kmsPort: integerValue(source.LOCAL_KMS_PORT, 8444, 1024, 65_535, 'LOCAL_KMS_PORT_INVALID'),
     kmsMasterKey: requiredValue(source.LOCAL_KMS_MASTER_KEY, 'LOCAL_KMS_MASTER_KEY_MISSING'),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     ...(legacyTokens ?? {}),
     ...(workloadAccessPolicyFile === undefined ? {} : { workloadAccessPolicyFile }),
     objectsPort,
@@ -221,39 +258,56 @@ function assertFullStagingCredentialPath(
 function rejectUnknownLocalKeys(source: EnvironmentSource, allowed: ReadonlySet<string>, code: string): void {
   for (const key of Object.keys(source).filter((candidate) => LOCAL_CONFIGURATION_KEY.test(candidate)
     && !allowed.has(candidate)).sort()) throw new Error(`${code}:${key}`);
+<<<<<<< HEAD
 =======
     objectsPort: integerValue(source.LOCAL_OBJECTS_PORT, 8445, 1024, 65_535, 'LOCAL_OBJECTS_PORT_INVALID'),
     objectsDirectory: requiredValue(source.LOCAL_OBJECTS_DIRECTORY, 'LOCAL_OBJECTS_DIRECTORY_MISSING'),
     objectsToken: requiredValue(source.LOCAL_OBJECTS_TOKEN, 'LOCAL_OBJECTS_TOKEN_MISSING'),
   });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 export function localSeedEnvironment(source: EnvironmentSource = processEnvironment()): LocalSeedEnvironment {
   const secretStoreEndpoint = secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
+<<<<<<< HEAD
 <<<<<<< HEAD
   const kmsBearerToken = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
   const secretStoreBearerToken = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearerToken, secretStoreBearerToken, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const kmsBearerToken = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
+  const secretStoreBearerToken = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
+  distinctValues(kmsBearerToken, secretStoreBearerToken, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return Object.freeze({
     secretStoreEndpoint,
     adminDatabaseConnectionRef: reference(source.LOCAL_ADMIN_DATABASE_CONNECTION_REF, 'LOCAL_ADMIN_DATABASE_CONNECTION_REF_INVALID'),
     ethanPasswordRef: reference(source.LOCAL_ETHAN_PASSWORD_REF, 'LOCAL_ETHAN_PASSWORD_REF_INVALID'),
     identityKeyRef: reference(source.IDENTITY_KEY_REF, 'IDENTITY_KEY_REF_INVALID'),
 <<<<<<< HEAD
+<<<<<<< HEAD
     kmsBearerToken,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    kmsBearerToken,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     kmsEndpoint: secureEndpoint(source.KMS_ENDPOINT, 'KMS_ENDPOINT_INVALID'),
     migrationDatabaseConnectionRef: reference(source.MIGRATION_DATABASE_CONNECTION_REF, 'MIGRATION_DATABASE_CONNECTION_REF_INVALID'),
     objectStoreEndpoint: secureEndpoint(source.OBJECT_STORE_ENDPOINT, 'OBJECT_STORE_ENDPOINT_INVALID'),
     objectStoreTokenRef: reference(source.OBJECT_STORE_TOKEN_REF, 'OBJECT_STORE_TOKEN_REF_INVALID'),
 <<<<<<< HEAD
+<<<<<<< HEAD
     secretStoreBearerToken,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    secretStoreBearerToken,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   });
 }
 

@@ -6,14 +6,21 @@ import { financePreviewOverview, financeReconciliationPreviewPage, FinancePrevie
 import { orderPreviewPage, OrderPreviewQueryError } from './OrderPreviewFixtures.ts';
 import { productPreviewPage, ProductPreviewQueryError } from './ProductPreviewFixtures.ts';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { referralPreviewBindings, referralPreviewCommissions, referralPreviewMembers, referralPreviewProducts, referralPreviewSetting } from './ReferralPreviewFixtures.ts';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { referralPreviewBindings, referralPreviewCommissions, referralPreviewMembers, referralPreviewProducts, referralPreviewSetting } from './ReferralPreviewFixtures.ts';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { voucherPreviewPage } from './VoucherPreviewFixtures.ts';
 
 const port = Number(process.env.CONSOLE_PREVIEW_API_PORT ?? 4311);
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const referralScope = Object.freeze({ kind: 'mall', id: 'mall:console', name: '主打团示例商城' });
 const referralReads = Object.freeze([
   'referral.settings.read', 'referral.products.read', 'referral.members.read',
@@ -41,9 +48,12 @@ const previewSession = Object.freeze({
   capabilities: previewCapabilities,
   assurance: { level: 2, verified: 'local-preview' },
 });
+<<<<<<< HEAD
 =======
 const previewSession = Object.freeze({ ...consoleSession, scope: previewScope, scopes: [previewScope] });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 const server = createServer((request, response) => {
   setCors(request, response);
@@ -53,12 +63,18 @@ const server = createServer((request, response) => {
     return;
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (request.method !== 'GET') {
     send(response, errorContract(request, 'DISPLAY_ONLY', '分销展示环境禁止写入。'), 503);
     return;
   }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   const url = new URL(request.url ?? '/', `http://${request.headers.host ?? `127.0.0.1:${port}`}`);
   const route = `${request.method ?? 'GET'} ${url.pathname}`;
@@ -75,6 +91,9 @@ const server = createServer((request, response) => {
     return;
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (route === 'GET /api/v1/referral/settings') {
     send(response, referralPreviewSetting);
     return;
@@ -97,8 +116,11 @@ const server = createServer((request, response) => {
     send(response, page(state === null ? referralPreviewCommissions : referralPreviewCommissions.filter((item) => item.state === state)));
     return;
   }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (route === 'GET /api/v1/orders') {
     try {
       send(response, orderPreviewPage(url.searchParams));
@@ -151,10 +173,14 @@ const server = createServer((request, response) => {
 
   if (result === undefined) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     send(response, errorContract(request, 'PREVIEW_OPERATION_FORBIDDEN', '当前预览账号尚未开通此页面。'), 403);
 =======
     send(response, { code: 'PREVIEW_OPERATION_NOT_REGISTERED', method: request.method, path: url.pathname }, 501);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    send(response, errorContract(request, 'PREVIEW_OPERATION_FORBIDDEN', '当前预览账号尚未开通此页面。'), 403);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     return;
   }
 
@@ -178,6 +204,9 @@ function send(response, body, status = 200) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function page(items) {
   return { items, count: items.length };
 }
@@ -192,8 +221,11 @@ function requestId(request) {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : 'referral-preview';
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function setCors(request, response) {
   response.setHeader('access-control-allow-origin', request.headers.origin ?? 'http://127.0.0.1:4173');
   response.setHeader('access-control-allow-credentials', 'true');

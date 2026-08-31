@@ -8,9 +8,13 @@ export const INVOICE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "invoice.profiles.manage",
   "invoice.profiles.read",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "invoice.operatorprofiles.read",
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  "invoice.operatorprofiles.read",
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   "invoice.requests.create",
   "invoice.requests.read",
   "invoice.requests.cancel",
@@ -22,9 +26,13 @@ export interface InvoiceOperations {
   readonly profilesManage: OperationMethod<"invoice.profiles.manage">;
   readonly profilesRead: OperationMethod<"invoice.profiles.read">;
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly operatorprofilesRead: OperationMethod<"invoice.operatorprofiles.read">;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly operatorprofilesRead: OperationMethod<"invoice.operatorprofiles.read">;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly requestsCreate: OperationMethod<"invoice.requests.create">;
   readonly requestsRead: OperationMethod<"invoice.requests.read">;
   readonly requestsCancel: OperationMethod<"invoice.requests.cancel">;
@@ -41,9 +49,13 @@ export function createInvoiceOperations(client: OperationExecutor): InvoiceOpera
     profilesManage: bindProfilesManage(client),
     profilesRead: bindProfilesRead(client),
 <<<<<<< HEAD
+<<<<<<< HEAD
     operatorprofilesRead: bindOperatorprofilesRead(client),
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    operatorprofilesRead: bindOperatorprofilesRead(client),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     requestsCreate: bindRequestsCreate(client),
     requestsRead: bindRequestsRead(client),
     requestsCancel: bindRequestsCancel(client),
@@ -69,6 +81,9 @@ function bindProfilesRead(client: OperationExecutor): OperationMethod<"invoice.p
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export function createFetchInvoiceOperatorprofilesRead(baseUrl: string): OperationMethod<"invoice.operatorprofiles.read"> {
   return bindOperatorprofilesRead(new ApiClient(baseUrl, new FetchTransport()));
 }
@@ -77,18 +92,25 @@ function bindOperatorprofilesRead(client: OperationExecutor): OperationMethod<"i
   return bindOperation(client, defineStructuralOperation({"id":"invoice.operatorprofiles.read","method":"GET","path":"/api/v1/invoices/operator-profiles","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export function createFetchInvoiceRequestsCreate(baseUrl: string): OperationMethod<"invoice.requests.create"> {
   return bindRequestsCreate(new ApiClient(baseUrl, new FetchTransport()));
 }
 
 function bindRequestsCreate(client: OperationExecutor): OperationMethod<"invoice.requests.create"> {
 <<<<<<< HEAD
+<<<<<<< HEAD
   return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.create","method":"POST","path":"/api/v1/invoices/requests","audience":"operator","idempotent":false,"pathKeys":[]}));
 =======
   return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.create","method":"POST","path":"/api/v1/invoices/requests","audience":"member","idempotent":false,"pathKeys":[]}));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.create","method":"POST","path":"/api/v1/invoices/requests","audience":"operator","idempotent":false,"pathKeys":[]}));
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 export function createFetchInvoiceRequestsRead(baseUrl: string): OperationMethod<"invoice.requests.read"> {

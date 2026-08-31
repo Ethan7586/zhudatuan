@@ -5,6 +5,9 @@
  */
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { Membership } from '../types';
 import { resolveBuildTimeOrigin } from './originPolicy';
 
@@ -61,6 +64,7 @@ const stepUpFailureMap: Record<string, FailureRecord> = {};
 // 模拟审计日志
 const auditLogs: Array<{ timestamp: string; identifier: string; reason: string }> = [];
 
+<<<<<<< HEAD
 // 模拟不同场景的预设会员关系数据集
 const MOCK_MEMBERSHIPS_MAP: Record<string, Membership[]> = {
   // 13800138000: 综合多身份账号（混合员工与管理身份）
@@ -196,6 +200,8 @@ const MOCK_MEMBERSHIPS_MAP: Record<string, Membership[]> = {
 };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 /** Public-test fixtures mirror the real Membership IDs seeded in Supabase. */
 export const TEST_ACCOUNT_MEMBERSHIPS: Record<string, Membership[]> = {
   业主测试员: [
@@ -311,6 +317,7 @@ if (import.meta.env.DEV) {
   }
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 /**
@@ -454,6 +461,8 @@ export async function loginWithPassword(identifier: string, password: string): P
 }
 
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export async function changeInitialPassword(username: string, password: string, newPassword: string): Promise<void> {
   const response = await fetch('/api/v1/auth/password/initial-change', {
     method: 'POST',

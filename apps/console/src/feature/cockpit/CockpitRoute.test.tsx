@@ -49,6 +49,9 @@ afterEach(() => { cleanup(); server.resetHandlers(); });
 afterAll(() => server.close());
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function renderCockpit() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
   return render(<MemoryRouter initialEntries={['/?period=30days']}><QueryClientProvider client={client}>
@@ -56,6 +59,7 @@ function renderCockpit() {
   </QueryClientProvider></MemoryRouter>);
 }
 
+<<<<<<< HEAD
 describe('Cockpit route', () => {
   it('renders the scoped Operation response without cross-domain browser aggregation', async () => {
     renderCockpit();
@@ -67,6 +71,11 @@ describe('Cockpit route', () => {
       <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
     </QueryClientProvider></MemoryRouter>);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+describe('Cockpit route', () => {
+  it('renders the scoped Operation response without cross-domain browser aggregation', async () => {
+    renderCockpit();
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     expect(await screen.findByRole('heading', { level: 1, name: '经营驾驶舱' })).toBeTruthy();
     expect(screen.getByText('¥315.00')).toBeTruthy();
     expect(screen.getByText('环比 +12.8%')).toBeTruthy();
@@ -75,6 +84,9 @@ describe('Cockpit route', () => {
     expect(screen.getByRole('button', { name: '查看售后订单 →' })).toBeTruthy();
   });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   it('renders the complete cockpit with zero values when the authoritative read model is empty', async () => {
     server.use(http.get('*/api/v1/reports/dashboard', () => HttpResponse.json({
@@ -99,6 +111,9 @@ describe('Cockpit route', () => {
     expect(screen.getByText('需要关注 0 项')).toBeTruthy();
     expect(screen.queryByText('暂无数据')).toBeNull();
   });
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 });

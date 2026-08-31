@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { consoleSession } from './Fixtures';
@@ -14,11 +15,27 @@ import {
   type FinanceReconciliationRecord,
 } from './FinancePreviewFixtures';
 =======
+=======
+import AxeBuilder from '@axe-core/playwright';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { expect, test, type Page } from '@playwright/test';
-import { expectWcagAA } from './Accessibility';
 import { consoleSession } from './Fixtures';
+<<<<<<< HEAD
 import { financePreviewOverview, financePreviewReconciliations, financeReconciliationPreviewPage, type FinanceReconciliationPreviewPage, type FinanceReconciliationRecord } from './FinancePreviewFixtures';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import {
+  financeAuditPreviewPage,
+  financePolicyPreviewPage,
+  financePreviewEntriesPage,
+  financePreviewOverview,
+  financePreviewReconciliations,
+  financePreviewSettlementsPage,
+  financeReconciliationPreviewPage,
+  type FinanceReconciliationPreviewPage,
+  type FinanceReconciliationRecord,
+} from './FinancePreviewFixtures';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { OperationMock, type OperationCall } from './OperationMock';
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
@@ -26,6 +43,7 @@ const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: Object.freeze([previewScope]),
+<<<<<<< HEAD
 <<<<<<< HEAD
   permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliation.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
   capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policies.read', 'finance.audit.read']),
@@ -35,9 +53,13 @@ const financeUrl = '/scopes/platform/platform%3Apreview/finance';
 =======
   permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliations.read']),
   capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read']),
+=======
+  permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
+  capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policies.read', 'finance.audit.read']),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   assurance: Object.freeze({ level: 3, verified: 'step-up' }),
 });
-const financeConsoleOrigin = process.env.FINANCE_CONSOLE_ORIGIN ?? 'http://127.0.0.1:4173';
+const financeConsoleOrigin = process.env.FINANCE_CONSOLE_ORIGIN ?? 'http://127.0.0.1:4183';
 const financeUrl = `${financeConsoleOrigin}/scopes/platform/platform%3Apreview/finance`;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 const differenceReconciliation = financePreviewReconciliations[0]!;
@@ -106,10 +128,14 @@ test('Console 财务工作台呈现参考页头、状态、页签与服务端对
   await expect(startPreview).toBeHidden();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   await expectFinanceWcagAA(page);
 =======
   await expectWcagAA(page);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  await expectFinanceWcagAA(page);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   expectFinanceReadsOnly(api);
 });
 
@@ -166,14 +192,20 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
 
   const table = page.getByRole('table', { name: '支付对账批次' });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const balancedRow = table.getByRole('row', { name: /RCN-20260824-ALIPAY-001/ });
   await expect(balancedRow.getByRole('button', { name: '无差异' })).toBeDisabled();
   await balancedRow.getByText('RCN-20260824-ALIPAY-001', { exact: true }).click();
   await expect(page.getByRole('dialog', { name: '差异处理 · 复核预览' })).toHaveCount(0);
   expect(new URL(page.url()).searchParams.has('selected')).toBe(false);
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const differenceRow = table.getByRole('row', { name: /RCN-20260824-WECHAT-001/ });
   const checkbox = differenceRow.getByRole('checkbox', { name: '选择对账批次 RCN-20260824-WECHAT-001' });
   await checkbox.check();
@@ -190,10 +222,14 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
   await expect(drawer.getByRole('heading', { name: '差异处理 · 复核预览' })).toBeVisible();
   await expect(drawer.getByText('DIFF-20260824-0001', { exact: true })).toBeVisible();
 <<<<<<< HEAD
+<<<<<<< HEAD
   await expect(drawer.getByText('本地安全预览', { exact: true })).toBeVisible();
 =======
   await expect(drawer.getByText('服务端预览', { exact: true })).toBeVisible();
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  await expect(drawer.getByText('本地安全预览', { exact: true })).toBeVisible();
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   await expect(drawer.getByText('待提交复核', { exact: true })).toBeVisible();
   await expect(drawer.getByText(/版本 v7 · 预览有效至/)).toBeVisible();
   await expect(drawer.getByText('本方案将重放缺失记账事件；不修改或删除原支付、渠道账单及历史账本。', { exact: true })).toBeVisible();
@@ -216,10 +252,14 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
   await expect(drawer.getByRole('status')).toHaveText('提交已安全拦截：尚未闭合二次验证、proof、幂等与权威回读。');
   expectNoWrites(api);
 <<<<<<< HEAD
+<<<<<<< HEAD
   await expectFinanceWcagAA(page);
 =======
   await expectWcagAA(page);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  await expectFinanceWcagAA(page);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   await page.keyboard.press('Escape');
   await expect(drawer).toBeHidden();
@@ -239,10 +279,14 @@ test('Console 财务复选不打开抽屉，selected URL 可恢复安全复核�
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 test('Console 退款、规则与审计页签读取各自权威合同且全程只读', async ({ page }) => {
 =======
 test('Console 财务无权威读合同的页签诚实显示不可用', async ({ page }) => {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+test('Console 退款、规则与审计页签读取各自权威合同且全程只读', async ({ page }) => {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const api = consoleFinanceApi(page);
   await api.install();
   await page.goto(financeUrl);
@@ -250,6 +294,9 @@ test('Console 财务无权威读合同的页签诚实显示不可用', async ({ 
 
   const tabs = page.getByRole('navigation', { name: '财务工作台' });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   await tabs.getByRole('button', { name: '退款对账' }).click();
   await expect.poll(() => new URL(page.url()).searchParams.get('tab')).toBe('refunds');
   const refundTable = page.getByRole('table', { name: '退款对账批次' });
@@ -329,6 +376,7 @@ test('Console 财务无权威读合同的页签诚实显示不可用', async ({ 
   await expect(audits.getByRole('button', { name: /审计记录 .* 不可变/ })).toHaveCount(3);
   for (const button of await audits.getByRole('button', { name: /审计记录 .* 不可变/ }).all()) await expect(button).toBeDisabled();
   await expectFinanceWcagAA(page);
+<<<<<<< HEAD
 =======
   const unavailableTabs = [
     ['退款对账', 'refunds', '现有 reconciliation read 没有退款类型筛选或退款专用权威读模型。'],
@@ -348,6 +396,8 @@ test('Console 财务无权威读合同的页签诚实显示不可用', async ({ 
     await expect(page.getByRole('table', { name: '支付对账批次' })).toHaveCount(0);
   }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   await tabs.getByRole('button', { name: '支付对账' }).click();
   await expect(page.getByRole('table', { name: '支付对账批次' })).toBeVisible();
@@ -355,6 +405,9 @@ test('Console 财务无权威读合同的页签诚实显示不可用', async ({ 
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 test('Console 财务结算与分录页签读取 authoritative-shaped preview 合同', async ({ page }) => {
   const api = consoleFinanceApi(page);
   await api.install();
@@ -387,8 +440,11 @@ test('Console 财务结算与分录页签读取 authoritative-shaped preview 合
   expectFinanceReadsOnly(api);
 });
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 test('Console 财务游标分页保持默认 50 条边界并由 limit URL 驱动', async ({ page }) => {
   const api = consoleFinanceApi(page, financePaginationPage);
   await api.install();
@@ -425,14 +481,20 @@ function consoleFinanceApi(page: Page, reconciliations: (call: OperationCall) =>
     .get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' })
     .get('/api/v1/finance/overview', financePreviewOverview)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     .get('/api/v1/finance/reconciliations', reconciliations)
     .get('/api/v1/finance/entries', financePreviewEntriesPage)
     .get('/api/v1/finance/settlements', financePreviewSettlementsPage)
     .get('/api/v1/finance/policies', (call) => financePolicyPreviewPage(new URLSearchParams(call.query)))
     .get('/api/v1/finance/audits', (call) => financeAuditPreviewPage(new URLSearchParams(call.query)));
+<<<<<<< HEAD
 =======
     .get('/api/v1/finance/reconciliations', reconciliations);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function financeCalls(api: OperationMock): readonly OperationCall[] {
@@ -453,6 +515,7 @@ function expectFinanceReadsOnly(api: OperationMock): void {
   const calls = financeCalls(api);
   expect(calls.length).toBeGreaterThan(0);
 <<<<<<< HEAD
+<<<<<<< HEAD
   expect(new Set(calls.map((call) => call.method))).toEqual(new Set(['GET']));
   expect(calls.every((call) => ['/api/v1/finance/overview', '/api/v1/finance/reconciliations', '/api/v1/finance/entries', '/api/v1/finance/settlements', '/api/v1/finance/policies', '/api/v1/finance/audits'].includes(call.path))).toBe(true);
 =======
@@ -460,6 +523,10 @@ function expectFinanceReadsOnly(api: OperationMock): void {
   expect(new Set(calls.map((call) => call.method))).toEqual(new Set(['GET']));
   expect(calls.every((call) => ['/api/v1/finance/overview', '/api/v1/finance/reconciliations'].includes(call.path))).toBe(true);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  expect(new Set(calls.map((call) => call.method))).toEqual(new Set(['GET']));
+  expect(calls.every((call) => ['/api/v1/finance/overview', '/api/v1/finance/reconciliations', '/api/v1/finance/entries', '/api/v1/finance/settlements', '/api/v1/finance/policies', '/api/v1/finance/audits'].includes(call.path))).toBe(true);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   expect(calls.every((call) => call.headers['x-scope-hint'] === 'platform:preview')).toBe(true);
   expect(calls.every((call) => call.headers['x-access-version'] === '1')).toBe(true);
   expectNoWrites(api);
@@ -471,6 +538,9 @@ function expectNoWrites(api: OperationMock): void {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 async function expectFinanceWcagAA(page: Page): Promise<void> {
   const builder = new AxeBuilder({ page }).include('.financeworkspace').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']);
   if (await page.locator('.financedrawer').isVisible()) builder.include('.financedrawer');
@@ -488,8 +558,11 @@ function describeViolations(
   return violations.map((violation) => `${violation.impact ?? 'unknown'} ${violation.id}: ${violation.nodes.map((node) => node.target.join(' ')).join(', ')}`).join('\n');
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const financePaginationRows: readonly FinanceReconciliationRecord[] = Object.freeze(
   Array.from({ length: 55 }, (_, index) => {
     const source = financePreviewReconciliations[index % financePreviewReconciliations.length]!;

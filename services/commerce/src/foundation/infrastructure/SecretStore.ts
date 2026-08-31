@@ -1,8 +1,12 @@
 import { token } from '../../bootstrap/Container';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { bearerToken } from '@shop/config/server';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { bearerToken } from '@shop/config/server';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { HttpClient } from '../http/HttpClient';
 
 export interface SecretStore {
@@ -20,6 +24,9 @@ export interface SecurityKeys {
 export const SECURITY_KEYS = token<SecurityKeys>('security.keys');
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export interface IdentitySecurityKeys {
   readonly identity: string;
   readonly session: string;
@@ -27,6 +34,7 @@ export interface IdentitySecurityKeys {
 
 export const IDENTITY_SECURITY_KEYS = token<IdentitySecurityKeys>('identity.securitykeys');
 
+<<<<<<< HEAD
 export class WorkloadSecretStore implements SecretStore {
   private readonly http: HttpClient;
   private readonly bearer: string;
@@ -34,11 +42,18 @@ export class WorkloadSecretStore implements SecretStore {
     if (!endpoint.startsWith('https://')) throw new Error('SECRET_STORE_ENDPOINT_INVALID');
     this.bearer = bearerToken(bearer, 'SECRET_STORE_BEARER_TOKEN_INVALID');
 =======
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export class WorkloadSecretStore implements SecretStore {
   private readonly http: HttpClient;
-  constructor(private readonly endpoint: string, fetcher: typeof fetch = fetch) {
+  private readonly bearer: string;
+  constructor(private readonly endpoint: string, bearer: string, fetcher: typeof fetch = fetch) {
     if (!endpoint.startsWith('https://')) throw new Error('SECRET_STORE_ENDPOINT_INVALID');
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    this.bearer = bearerToken(bearer, 'SECRET_STORE_BEARER_TOKEN_INVALID');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     this.http = new HttpClient(fetcher);
   }
 
@@ -46,10 +61,14 @@ export class WorkloadSecretStore implements SecretStore {
     if (!/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(reference)) throw new Error('SECRET_REFERENCE_INVALID');
     const response = await this.http.send(`${this.endpoint.replace(/\/$/, '')}/v1/secrets/${encodeURIComponent(reference)}`, {
 <<<<<<< HEAD
+<<<<<<< HEAD
       headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}` },
 =======
       headers: { accept: 'application/json' },
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}` },
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       redirect: 'error',
     }, { mode: 'read' });
     if (!response.ok) throw new Error('SECRET_READ_FAILED');

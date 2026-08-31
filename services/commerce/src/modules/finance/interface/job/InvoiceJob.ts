@@ -3,6 +3,7 @@ import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectSt
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
 import type { InvoiceIssuer } from '../../application/port/InvoiceIssuer';
 
@@ -20,10 +21,23 @@ export class InvoiceJobProcessor implements JobProcessor {
   constructor(private readonly pool: DatabasePool, private readonly objects: ObjectStore,
     private readonly kms: KmsClient, private readonly issuer: InvoiceIssuer) {}
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { workerTransaction } from '../../../../foundation/infrastructure/WorkerDatabase';
+import type { InvoiceIssuer } from '../../application/port/InvoiceIssuer';
+
+export class InvoiceJobProcessor implements JobProcessor {
+  constructor(
+    private readonly pool: DatabasePool,
+    private readonly objects: ObjectStore,
+    private readonly kms: KmsClient,
+    private readonly issuer: InvoiceIssuer
+  ) {}
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
     if (job.kind !== 'invoice') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
+<<<<<<< HEAD
 <<<<<<< HEAD
     if (job.scope_id === null) throw new Error('INVOICE_JOB_SCOPE_REQUIRED');
     const payload = object(job.payload);
@@ -75,42 +89,45 @@ export class InvoiceJobProcessor implements JobProcessor {
       throw cause;
     }
 =======
+=======
+    if (job.scope_id === null) throw new Error('INVOICE_JOB_SCOPE_REQUIRED');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const payload = object(job.payload);
-    await this.issue(text(payload.request, 'INVOICE_REQUEST_REQUIRED'));
+    await this.issue(job.scope_id, text(payload.request, 'INVOICE_REQUEST_REQUIRED'));
   }
 
-  private async issue(request: string): Promise<void> {
-    const selected = await this.pool.query<InvoiceRow>(`update invoice.request request set state='issuing',version=version+1
-      from invoice.requestprofile profile where request.id=$1 and profile.request_id=request.id and request.state in('approved','issuing')
-      returning request.id,profile.owner_id,request.amount_minor::float8 amount_minor,request.currency,request.profile_id,
-        request.kind,request.red_of_request_id,profile.title_ciphertext,profile.taxid_ciphertext,profile.address_ciphertext`, [request]);
+  private async issue(scope: string, request: string): Promise<void> {
+    const selected = await workerTransaction(this.pool, scope, (database) => database.query<InvoiceRow>(`select * from invoice.claim_issue($1)`, [request]));
     const invoice = selected.rows[0];
-    if (!invoice) {
-      const complete = await this.pool.query(`select 1 from invoice.request where id=$1 and state in('issued','red')`, [request]);
-      if (complete.rows[0]) return;
-      throw new Error('INVOICE_NOT_RUNNABLE');
-    }
-    const original = invoice.red_of_request_id === null ? undefined : (await this.pool.query<{ id: string; external_id: string }>(`select document.id,document.external_id
-      from invoice.document document join invoice.request request on request.id=document.request_id
-      where request.id=$1 and request.state='issued' and document.kind='original'`, [invoice.red_of_request_id])).rows[0];
-    if (invoice.kind === 'red' && !original) throw new Error('INVOICE_ORIGINAL_DOCUMENT_MISSING');
-    const context = { owner: invoice.owner_id };
-    const [title, taxid, address, lines] = await Promise.all([
-      this.kms.decrypt('pii/invoice', invoice.title_ciphertext, { ...context, field: 'title' }),
-      this.kms.decrypt('pii/invoice', invoice.taxid_ciphertext, { ...context, field: 'taxid' }),
-      invoice.address_ciphertext === null ? Promise.resolve(undefined)
-        : this.kms.decrypt('pii/invoice', invoice.address_ciphertext, { ...context, field: 'address' }),
-      this.pool.query<{ description: string; amount_minor: number; tax_minor: number }>(`select description,amount_minor::float8 amount_minor,
-        tax_minor::float8 tax_minor from invoice.line where request_id=$1 order by sequence`, [invoice.id]),
-    ]);
-    const issued = await this.issuer.issue({ request: invoice.id, kind: invoice.kind,
-      ...(original === undefined ? {} : { originalExternalId: original.external_id }), title, taxid,
-      ...(address === undefined ? {} : { address }), amountMinor: invoice.amount_minor, currency: invoice.currency,
-      lines: lines.rows.map((line) => ({ description: line.description, amountMinor: line.amount_minor, taxMinor: line.tax_minor })) });
-    const upload = await this.objects.create(`invoices/${invoice.id}.pdf`, issued.contentType);
+    if (!invoice) return;
+    const claimToken = hex(invoice.claim_token, 'INVOICE_CLAIM_TOKEN_INVALID');
+    const claimId = hex(invoice.claim_id, 'INVOICE_CLAIM_ID_INVALID');
+    let upload: Awaited<ReturnType<ObjectStore['create']>> | undefined;
     try {
+      const amountMinor = safeMinor(invoice.amount_minor, false);
+      const lines = invoiceLines(invoice.lines);
+      if (invoice.kind === 'red' && invoice.original_external_id === null) throw new Error('INVOICE_ORIGINAL_DOCUMENT_MISSING');
+      const context = { owner: invoice.owner_id };
+      const [title, taxid, address] = await Promise.all([
+        this.kms.decrypt('pii/invoice', invoice.title_ciphertext, { ...context, field: 'title' }),
+        this.kms.decrypt('pii/invoice', invoice.taxid_ciphertext, { ...context, field: 'taxid' }),
+        invoice.address_ciphertext === null ? Promise.resolve(undefined) : this.kms.decrypt('pii/invoice', invoice.address_ciphertext, { ...context, field: 'address' }),
+      ]);
+      const issued = await this.issuer.issue({
+        request: invoice.id,
+        kind: invoice.kind,
+        ...(invoice.original_external_id === null ? {} : { originalExternalId: invoice.original_external_id }),
+        title,
+        taxid,
+        ...(address === undefined ? {} : { address }),
+        amountMinor,
+        currency: invoice.currency,
+        lines,
+      });
+      upload = await this.objects.create(`invoices/${claimId}.pdf`, issued.contentType);
       await upload.append(issued.document);
       const stored = await upload.complete();
+<<<<<<< HEAD
       const client = await this.pool.connect();
       try {
         await client.query('begin');
@@ -136,12 +153,28 @@ export class InvoiceJobProcessor implements JobProcessor {
       } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
     } catch (cause) { await upload.abort(); throw cause; }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      const registered = await workerTransaction(this.pool, scope, (database) =>
+        database.query<{ accepted: boolean }>(`select invoice.register_issue_artifact($1,$2,$3,$4,$5,$6) accepted`, [invoice.id, claimToken, issued.provider, issued.externalId, stored.reference, stored.sha256])
+      );
+      if (registered.rows[0]?.accepted !== true) throw new Error('INVOICE_CLAIM_LOST');
+      const finalized = await workerTransaction(this.pool, scope, (database) =>
+        database.query<{ accepted: boolean }>(`select invoice.finalize_issue($1,$2,$3,$4,$5,$6,$7) accepted`, [invoice.id, claimToken, invoice.snapshot_hash, issued.provider, issued.externalId, stored.reference, stored.sha256])
+      );
+      if (finalized.rows[0]?.accepted !== true) throw new Error('INVOICE_CLAIM_LOST');
+    } catch (cause) {
+      await workerTransaction(this.pool, scope, (database) => database.query(`select invoice.release_issue_claim($1,$2)`, [invoice.id, claimToken])).catch(() => undefined);
+      await upload?.abort();
+      throw cause;
+    }
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   }
 }
 
 interface InvoiceRow {
   readonly id: string;
   readonly owner_id: string;
+<<<<<<< HEAD
 <<<<<<< HEAD
   readonly amount_minor: string;
   readonly currency: string;
@@ -157,14 +190,24 @@ interface InvoiceRow {
   readonly claim_id: string;
 =======
   readonly amount_minor: number;
+=======
+  readonly amount_minor: string;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly currency: string;
-  readonly profile_id: string;
   readonly kind: 'original' | 'red';
   readonly red_of_request_id: string | null;
+  readonly original_external_id: string | null;
   readonly title_ciphertext: string;
   readonly taxid_ciphertext: string;
   readonly address_ciphertext: string | null;
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly lines: unknown;
+  readonly snapshot_hash: string;
+  readonly claim_token: string;
+  readonly claim_id: string;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function object(value: unknown): Record<string, unknown> {
@@ -172,6 +215,9 @@ function object(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function text(value: unknown, code: string): string {
   if (typeof value !== 'string' || !value) throw new Error(code);
   return value;
@@ -200,6 +246,9 @@ function hex(value: unknown, code: string): string {
   if (typeof value !== 'string' || !/^[0-9a-f]{64}$/.test(value)) throw new Error(code);
   return value;
 }
+<<<<<<< HEAD
 =======
 function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

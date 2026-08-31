@@ -1,6 +1,9 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const profile = process.env.LOCAL_RUNTIME_PROFILE;
 if (profile !== undefined && profile !== 'registration-only' && profile !== 'full-staging') {
   throw new Error('LOCAL_RUNTIME_PROFILE_INVALID');
@@ -14,6 +17,7 @@ const children = (profile === 'registration-only' ? [
   'services/commerce/dist/LocalKmsMain.js',
   'services/commerce/dist/LocalObjectsMain.js',
 ] : [
+<<<<<<< HEAD
   'tools/localsecrets/src/Main.ts',
   'tools/localkms/src/Main.ts',
   'tools/localobjects/src/Main.ts',
@@ -25,6 +29,12 @@ const children = [
   'tools/localobjects/src/Main.ts',
 ].map(start);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  'tools/localsecrets/src/Main.ts',
+  'tools/localkms/src/Main.ts',
+  'tools/localobjects/src/Main.ts',
+]).map((entry) => start(entry, bundled));
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 let stopping = false;
 for (const child of children) child.once('exit', (code, signal) => {
@@ -40,10 +50,15 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => 
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function start(entry: string, bundled: boolean): ChildProcess {
   return spawn(process.execPath, bundled ? [entry] : ['--import', 'tsx', entry], { cwd: process.cwd(), env: process.env, stdio: 'inherit' });
 =======
 function start(entry: string): ChildProcess {
   return spawn(process.execPath, ['--import', 'tsx', entry], { cwd: process.cwd(), env: process.env, stdio: 'inherit' });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function start(entry: string, bundled: boolean): ChildProcess {
+  return spawn(process.execPath, bundled ? [entry] : ['--import', 'tsx', entry], { cwd: process.cwd(), env: process.env, stdio: 'inherit' });
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }

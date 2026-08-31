@@ -6,6 +6,7 @@ export const definition = Object.freeze({
   kind: 'channel',
   priority: 1,
 <<<<<<< HEAD
+<<<<<<< HEAD
   version: '1.1.0',
   apiVersion: PROVIDER_API_VERSION,
   contractVersion: 'flower.v2',
@@ -17,15 +18,24 @@ export const definition = Object.freeze({
   secretRefs: ['channelNo', 'channelKey'],
 =======
   version: '1.0.0',
+=======
+  version: '1.1.0',
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   apiVersion: PROVIDER_API_VERSION,
-  contractVersion: 'flower.v1',
-  healthOperation: 'health',
-  capabilities: ['Catalog', 'GeoDelivery', 'TimeSlot', 'Order', 'Substitute', 'Cancel', 'Delivery', 'Refund', 'Statement', 'Webhook'],
+  contractVersion: 'flower.v2',
+  healthOperation: 'flower.categories',
+  capabilities: ['Catalog', 'Price', 'Inventory'],
   permissions: ['channel.flower.operate'],
+<<<<<<< HEAD
   configSchema: 'provider.flower.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
   secretRefs: ['credential'],
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  configSchema: 'provider.flower.v2',
+  eventSubscriptions: [],
+  secretRefs: ['channelNo', 'channelKey'],
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 

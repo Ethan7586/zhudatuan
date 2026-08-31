@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { createHash, timingSafeEqual } from 'node:crypto';
 =======
 import { timingSafeEqual } from 'node:crypto';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { createHash, timingSafeEqual } from 'node:crypto';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { readFile } from 'node:fs/promises';
 import { createServer, type Server as HttpsServer } from 'node:https';
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
@@ -22,9 +26,13 @@ export interface LocalResponse {
 
 export type LocalHandler = (request: LocalRequest) => Promise<LocalResponse>;
 <<<<<<< HEAD
+<<<<<<< HEAD
 export type LocalPreflight = (request: Omit<LocalRequest, 'body'>) => void;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+export type LocalPreflight = (request: Omit<LocalRequest, 'body'>) => void;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export interface LocalTls {
   readonly certificateFile: string;
@@ -39,6 +47,9 @@ export class LocalHttpError extends Error {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export async function startLocalHttps(
   name: string,
   port: number,
@@ -47,18 +58,25 @@ export async function startLocalHttps(
   maximumBodyBytes = 9 * 1024 * 1024,
   preflight?: LocalPreflight,
 ): Promise<HttpsServer> {
+<<<<<<< HEAD
 =======
 export async function startLocalHttps(name: string, port: number, handler: LocalHandler, tls: LocalTls, maximumBodyBytes = 9 * 1024 * 1024): Promise<HttpsServer> {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (!/^[a-z][a-z0-9]{2,31}$/.test(name) || !Number.isSafeInteger(port) || port < 1024 || port > 65_535) {
     throw new Error('LOCAL_HTTPS_CONFIGURATION_INVALID');
   }
   const server = createServer({ key: await readFile(tls.keyFile), cert: await readFile(tls.certificateFile) }, (request, response) => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     void dispatch(request, response, handler, maximumBodyBytes, preflight);
 =======
     void dispatch(request, response, handler, maximumBodyBytes);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    void dispatch(request, response, handler, maximumBodyBytes, preflight);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   });
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
@@ -96,6 +114,9 @@ export function jsonBody(request: LocalRequest): Readonly<Record<string, unknown
 
 export function equalSecret(actual: string | undefined, expected: string): boolean {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const left = createHash('sha256').update(actual ?? '').digest();
   const right = createHash('sha256').update(expected).digest();
   return timingSafeEqual(left, right) && actual !== undefined;
@@ -111,12 +132,15 @@ export function workloadBearerPreflight(expected: string): LocalPreflight {
   return request => {
     if (request.url.pathname !== '/health/ready') requireBearerAuthorization(request.headers, expected);
   };
+<<<<<<< HEAD
 =======
   if (actual === undefined) return false;
   const left = Buffer.from(actual);
   const right = Buffer.from(expected);
   return left.length === right.length && timingSafeEqual(left, right);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 export function canonicalRecord(value: unknown): string {
@@ -129,6 +153,9 @@ export function canonicalRecord(value: unknown): string {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 async function dispatch(
   request: IncomingMessage,
   response: ServerResponse,
@@ -136,6 +163,7 @@ async function dispatch(
   maximumBodyBytes: number,
   preflight?: LocalPreflight,
 ): Promise<void> {
+<<<<<<< HEAD
   try {
     const metadata = {
       headers: normalizeHeaders(request.headers),
@@ -149,14 +177,23 @@ async function dispatch(
       ...metadata,
 =======
 async function dispatch(request: IncomingMessage, response: ServerResponse, handler: LocalHandler, maximumBodyBytes: number): Promise<void> {
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   try {
-    const body = await readBody(request, maximumBodyBytes);
-    const result = await handler({
-      body,
+    const metadata = {
       headers: normalizeHeaders(request.headers),
       method: request.method ?? 'GET',
       url: new URL(request.url ?? '/', 'https://127.0.0.1'),
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    };
+    preflight?.(metadata);
+    const body = await readBody(request, maximumBodyBytes);
+    const result = await handler({
+      body,
+      ...metadata,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     });
     response.writeHead(result.status, {
       'cache-control': 'no-store',

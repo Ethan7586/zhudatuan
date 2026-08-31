@@ -1,9 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { Button, Dialog, Form } from '@shop/design';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { safeQueryError } from '../../shared/api/QueryState';
+<<<<<<< HEAD
 import { formatDate } from '../../shared/ui/Format';
 import { copyApplication, createApplication, disableApplication, editApplication } from './ApplicationCommand';
 import { applicationStatusLabel, applicationStatusTone, publicationLabel, validationLabel, validationTone } from './ApplicationPresentation';
@@ -27,26 +31,42 @@ export function ApplicationRecordDrawer({
   onDisable: (record: Application) => void;
 =======
 import { useEffect, useRef, type RefObject } from 'react';
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { formatDate } from '../../shared/ui/Format';
-import {
-  applicationStatusLabel,
-  applicationStatusTone,
-  publicationLabel,
-  validationLabel,
-  validationTone,
-} from './ApplicationPresentation';
-import type { Application } from './ApplicationSchema';
+import { copyApplication, createApplication, disableApplication, editApplication } from './ApplicationCommand';
+import { applicationStatusLabel, applicationStatusTone, publicationLabel, validationLabel, validationTone } from './ApplicationPresentation';
+import { ApplicationCopyDraftSchema, ApplicationCreateDraftSchema, ApplicationEditDraftSchema, type Application } from './ApplicationSchema';
 import type { CommerceScopePresentation, CommerceWorkspaceMode } from './ApplicationScope';
 
-export function ApplicationRecordDrawer({ record, onClose }: Readonly<{
+export function ApplicationRecordDrawer({
+  record,
+  canEdit,
+  canCopy,
+  onEdit,
+  onCopy,
+  onDisable,
+  onClose,
+}: Readonly<{
   record: Application | undefined;
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  canEdit: boolean;
+  canCopy: boolean;
+  onEdit: (record: Application) => void;
+  onCopy: (record: Application) => void;
+  onDisable: (record: Application) => void;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   onClose: () => void;
 }>) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useDialogKeyboard(record !== undefined, onClose, closeRef);
   if (record === undefined) return null;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return (
     <div className="commerceoverlay is-drawer">
       <button className="commercedialogbackdrop" type="button" onClick={onClose} aria-label="关闭商城应用摘要" />
@@ -139,6 +159,7 @@ export function ApplicationRecordDrawer({ record, onClose }: Readonly<{
       </aside>
     </div>
   );
+<<<<<<< HEAD
 }
 
 interface ApplicationDialogProps {
@@ -418,6 +439,256 @@ export function CommerceFlowPreview({
 
 export function CommerceFlowPreview({ open, presentation, onClose }: Readonly<{
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+}
+
+interface ApplicationDialogProps {
+  readonly context: ConsoleContext;
+  readonly onClose: () => void;
+  readonly onSuccess: (notice: string) => Promise<void>;
+}
+
+export function ApplicationCreateDialog({ context, onClose, onSuccess }: Readonly<ApplicationDialogProps>) {
+  const [validationError, setValidationError] = useState<string>();
+  const mutation = useMutation({
+    mutationFn: (draft: Parameters<typeof createApplication>[1]) => createApplication(context, draft),
+    onSuccess: () => onSuccess('应用创建成功。'),
+  });
+  const close = () => {
+    if (!mutation.isPending) onClose();
+  };
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setValidationError(undefined);
+    const form = new FormData(event.currentTarget);
+    const draft = ApplicationCreateDraftSchema.safeParse({
+      name: form.get('name'),
+      code: form.get('code'),
+      publicSlug: form.get('publicSlug'),
+    });
+    if (!draft.success) {
+      setValidationError('请检查应用名称、应用代码和公开路径。');
+      return;
+    }
+    mutation.mutate(draft.data);
+  };
+
+  return (
+    <Dialog open title="新建应用" eyebrow="APPLICATION CREATE" dismissable={!mutation.isPending} onClose={close}>
+      <Form className="command" label="新建应用" onSubmit={submit}>
+        <p className="commandhint">这里只创建 Application 记录，不会创建商城、组织关系、商品池或装修版本。</p>
+        <label>
+          应用名称
+          <input name="name" minLength={1} maxLength={255} required />
+        </label>
+        <label>
+          应用代码
+          <input name="code" pattern="[A-Z][A-Z0-9_]{2,31}" minLength={3} maxLength={32} placeholder="NEW_APP" required />
+        </label>
+        <label>
+          公开路径
+          <input name="publicSlug" pattern="[a-z0-9][a-z0-9-]{2,47}" minLength={3} maxLength={48} placeholder="new-app" required />
+        </label>
+        <CommandError validationError={validationError} error={mutation.error} />
+        <footer>
+          <Button onPress={close} isDisabled={mutation.isPending}>
+            取消
+          </Button>
+          <Button type="submit" tone="primary" isPending={mutation.isPending}>
+            {mutation.isPending ? '正在创建…' : '创建应用'}
+          </Button>
+        </footer>
+      </Form>
+    </Dialog>
+  );
+}
+
+export function ApplicationEditDialog({ context, record, onClose, onSuccess }: Readonly<ApplicationDialogProps & { record: Application }>) {
+  const [validationError, setValidationError] = useState<string>();
+  const mutation = useMutation({
+    mutationFn: (draft: Parameters<typeof editApplication>[3]) => editApplication(context, record.id, record.version, draft),
+    onSuccess: () => onSuccess('应用名称修改成功。'),
+  });
+  const close = () => {
+    if (!mutation.isPending) onClose();
+  };
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setValidationError(undefined);
+    const draft = ApplicationEditDraftSchema.safeParse({ name: new FormData(event.currentTarget).get('name') });
+    if (!draft.success) {
+      setValidationError('请输入有效的应用名称。');
+      return;
+    }
+    mutation.mutate(draft.data);
+  };
+
+  return (
+    <Dialog open title={`编辑应用 · ${record.name}`} eyebrow="APPLICATION UPDATE" dismissable={!mutation.isPending} onClose={close}>
+      <Form className="command" label={`编辑${record.name}`} onSubmit={submit}>
+        <p className="commandhint">本批只修改应用名称；请求会携带当前版本 {record.version}。</p>
+        <label>
+          应用名称
+          <input name="name" defaultValue={record.name} minLength={1} maxLength={255} required />
+        </label>
+        <CommandError validationError={validationError} error={mutation.error} />
+        <footer>
+          <Button onPress={close} isDisabled={mutation.isPending}>
+            取消
+          </Button>
+          <Button type="submit" tone="primary" isPending={mutation.isPending}>
+            {mutation.isPending ? '正在保存…' : '保存名称'}
+          </Button>
+        </footer>
+      </Form>
+    </Dialog>
+  );
+}
+
+export function ApplicationCopyDialog({ context, record, onClose, onSuccess }: Readonly<ApplicationDialogProps & { record: Application }>) {
+  const [validationError, setValidationError] = useState<string>();
+  const copyable = record.head_sequence !== null && record.head_sequence !== undefined;
+  const mutation = useMutation({
+    mutationFn: (draft: Parameters<typeof copyApplication>[2]) => copyApplication(context, record.id, draft),
+    onSuccess: () => onSuccess('应用复制成功。'),
+  });
+  const close = () => {
+    if (!mutation.isPending) onClose();
+  };
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setValidationError(undefined);
+    if (!copyable) {
+      setValidationError('当前应用尚无可复制的草稿版本。');
+      return;
+    }
+    const form = new FormData(event.currentTarget);
+    const draft = ApplicationCopyDraftSchema.safeParse({
+      name: form.get('name'),
+      code: form.get('code'),
+      publicSlug: form.get('publicSlug'),
+      reason: form.get('reason'),
+    });
+    if (!draft.success) {
+      setValidationError('请检查副本名称、新代码、新公开路径和复制原因。');
+      return;
+    }
+    if (draft.data.code === record.code || draft.data.publicSlug === record.public_slug) {
+      setValidationError('新 code 和新 publicSlug 不能与源应用相同。');
+      return;
+    }
+    mutation.mutate(draft.data);
+  };
+
+  return (
+    <Dialog open title={`复制应用 · ${record.name}`} eyebrow="APPLICATION COPY" dismissable={!mutation.isPending} onClose={close}>
+      <Form className="command" label={`复制${record.name}`} onSubmit={submit}>
+        <dl className="commercefacts">
+          <div>
+            <dt>源应用</dt>
+            <dd>{record.name}</dd>
+          </div>
+          <div>
+            <dt>应用代码</dt>
+            <dd>{record.code}</dd>
+          </div>
+          <div>
+            <dt>公开路径</dt>
+            <dd>/{record.public_slug}</dd>
+          </div>
+          <div>
+            <dt>当前草稿版本</dt>
+            <dd>{copyable ? `v${record.head_sequence}` : '尚未建立'}</dd>
+          </div>
+        </dl>
+        {copyable ? null : <p role="alert">当前应用尚无可复制的草稿版本。</p>}
+        <label>
+          副本名称
+          <input name="name" minLength={1} maxLength={255} required disabled={!copyable} />
+        </label>
+        <label>
+          新 code
+          <input name="code" pattern="[A-Z][A-Z0-9_]{2,31}" minLength={3} maxLength={32} required disabled={!copyable} />
+        </label>
+        <label>
+          新 publicSlug
+          <input name="publicSlug" pattern="[a-z0-9][a-z0-9-]{2,47}" minLength={3} maxLength={48} required disabled={!copyable} />
+        </label>
+        <label>
+          复制原因
+          <textarea name="reason" maxLength={500} rows={3} required disabled={!copyable} />
+        </label>
+        <CommandError validationError={validationError} error={mutation.error} />
+        <footer>
+          <Button onPress={close} isDisabled={mutation.isPending}>
+            取消
+          </Button>
+          <Button type="submit" tone="primary" isDisabled={!copyable} isPending={mutation.isPending}>
+            {mutation.isPending ? '正在复制…' : '复制应用'}
+          </Button>
+        </footer>
+      </Form>
+    </Dialog>
+  );
+}
+
+export function ApplicationDisableDialog({ context, record, onClose, onSuccess }: Readonly<ApplicationDialogProps & { record: Application }>) {
+  const mutation = useMutation({
+    mutationFn: () => disableApplication(context, record.id, record.version),
+    onSuccess: () => onSuccess('应用已停用。'),
+  });
+  const close = () => {
+    if (!mutation.isPending) onClose();
+  };
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    mutation.mutate();
+  };
+
+  return (
+    <Dialog open title={`停用应用 · ${record.name}`} eyebrow="APPLICATION DISABLE" dismissable={!mutation.isPending} onClose={close}>
+      <Form className="command" label={`停用${record.name}`} onSubmit={submit}>
+        <dl className="commercefacts">
+          <div>
+            <dt>应用名称</dt>
+            <dd>{record.name}</dd>
+          </div>
+          <div>
+            <dt>当前状态</dt>
+            <dd>{applicationStatusLabel(record.status)}</dd>
+          </div>
+        </dl>
+        <section className="commercewriteboundary" role="note">
+          <strong>停用确认</strong>
+          <p>停用后应用不再作为正常经营应用使用，历史版本和审计记录不会删除。</p>
+        </section>
+        <CommandError error={mutation.error} />
+        <footer>
+          <Button onPress={close} isDisabled={mutation.isPending}>
+            取消
+          </Button>
+          <Button type="submit" tone="danger" isPending={mutation.isPending}>
+            {mutation.isPending ? '正在停用…' : '确认停用'}
+          </Button>
+        </footer>
+      </Form>
+    </Dialog>
+  );
+}
+
+function CommandError({ validationError, error }: Readonly<{ validationError?: string | undefined; error: Error | null }>) {
+  if (validationError === undefined && error === null) return null;
+  const safe = error === null ? undefined : safeQueryError(error);
+  const message = safe?.startsWith('VERSION_CONFLICT') ? 'VERSION_CONFLICT · 数据已经变化，请刷新后重试。' : (validationError ?? `${safe ?? 'REQUEST_FAILED'} · 操作失败，请重试。`);
+  return <p role="alert">{message}</p>;
+}
+
+export function CommerceFlowPreview({
+  open,
+  presentation,
+  onClose,
+}: Readonly<{
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   open: boolean;
   presentation: CommerceScopePresentation;
   onClose: () => void;
@@ -427,6 +698,9 @@ export function CommerceFlowPreview({ open, presentation, onClose }: Readonly<{
   if (!open) return null;
   const copy = previewCopy(presentation.mode);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return (
     <div className="commerceoverlay">
       <button className="commercedialogbackdrop" type="button" onClick={onClose} aria-label={`关闭${copy.title}`} />
@@ -466,6 +740,7 @@ export function CommerceFlowPreview({ open, presentation, onClose }: Readonly<{
       </section>
     </div>
   );
+<<<<<<< HEAD
 =======
   return <div className="commerceoverlay">
     <button className="commercedialogbackdrop" type="button" onClick={onClose} aria-label={`关闭${copy.title}`} />
@@ -481,6 +756,8 @@ export function CommerceFlowPreview({ open, presentation, onClose }: Readonly<{
     </section>
   </div>;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 interface PreviewCopy {
@@ -493,6 +770,9 @@ interface PreviewCopy {
 
 function previewCopy(mode: CommerceWorkspaceMode): PreviewCopy {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (mode === 'management')
     return {
       title: '创建商城 · 六步安全预览',
@@ -522,6 +802,7 @@ function previewCopy(mode: CommerceWorkspaceMode): PreviewCopy {
         ['发布上线', '生成新版本并保留恢复点'],
       ],
     };
+<<<<<<< HEAD
 =======
   if (mode === 'management') return {
     title: '创建商城 · 六步安全预览',
@@ -551,6 +832,8 @@ function previewCopy(mode: CommerceWorkspaceMode): PreviewCopy {
     ],
   };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return {
     title: '商城准入 · 治理边界',
     notice: '平台在这里查看跨商城应用与异常；商户建店和装修仍在所属集团与商城 Scope 内完成。',
@@ -571,6 +854,7 @@ function useDialogKeyboard(open: boolean, onClose: () => void, focusRef: RefObje
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     focusRef.current?.focus();
 <<<<<<< HEAD
+<<<<<<< HEAD
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
@@ -584,5 +868,15 @@ function useDialogKeyboard(open: boolean, onClose: () => void, focusRef: RefObje
     document.addEventListener('keydown', closeOnEscape);
     return () => { document.removeEventListener('keydown', closeOnEscape); previous?.focus(); };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape);
+      previous?.focus();
+    };
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   }, [focusRef, onClose, open]);
 }

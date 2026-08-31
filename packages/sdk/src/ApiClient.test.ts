@@ -1,17 +1,27 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { createHash } from 'node:crypto';
 import { canonicalFinancialActionRequest } from '@shop/contract';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { createHash } from 'node:crypto';
+import { canonicalFinancialActionRequest } from '@shop/contract';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { describe, expect, it } from 'vitest';
 import { ApiClient } from './ApiClient';
 import { createCatalogOperations } from './operations/catalog';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { createFinanceOperations } from './operations/finance';
 import { createIdentityOperations } from './operations/identity';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { createFinanceOperations } from './operations/finance';
+import { createIdentityOperations } from './operations/identity';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { createOrderOperations } from './operations/order';
 import { createRuntimeOperations } from './operations/runtime';
 import type { RequestContext } from './RequestContext';
@@ -38,6 +48,9 @@ describe('ApiClient contract identity', () => {
     const transport = new RecordingTransport();
     const client = new ApiClient('https://shop.example', transport);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     await createCatalogOperations(client).productsUpdate(
       { path: { productid: 'product:1' }, body: { title: 'updated' } },
       {
@@ -49,6 +62,7 @@ describe('ApiClient contract identity', () => {
         proof: 'proof:1',
       }
     );
+<<<<<<< HEAD
 =======
     await createCatalogOperations(client).productsUpdate({ path: { productid: 'product:1' }, body: { title: 'updated' } }, {
       ...context(),
@@ -59,6 +73,8 @@ describe('ApiClient contract identity', () => {
       proof: 'proof:1',
     });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     expect(transport.request?.headers['x-scope-hint']).toBe('mall:1');
     expect(transport.request?.headers['x-access-version']).toBe('11');
     expect(transport.request?.headers['idempotency-key']).toBe('command:1');
@@ -70,6 +86,9 @@ describe('ApiClient contract identity', () => {
     const transport = new RecordingTransport();
     const client = new ApiClient('https://shop.example', transport);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     await expect(createOrderOperations(client).ordersCreate({ body: { quote: 'quote:one' } }, context())).rejects.toThrow('SDK_IDEMPOTENCY_KEY_REQUIRED');
     expect(transport.request).toBeUndefined();
   });
@@ -142,10 +161,13 @@ describe('ApiClient contract identity', () => {
         { ...context(), idempotencyKey: 'stepup:one' }
       )
     ).rejects.toThrow('SDK_ACTION_REQUEST_HASH_MISMATCH');
+<<<<<<< HEAD
 =======
     await expect(createOrderOperations(client).ordersCreate({ body: { quote: 'quote:one' } }, context()))
       .rejects.toThrow('SDK_IDEMPOTENCY_KEY_REQUIRED');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     expect(transport.request).toBeUndefined();
   });
 
@@ -166,6 +188,9 @@ describe('ApiClient contract identity', () => {
       send: (request) => {
         networkSignal = request.signal;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         return new Promise((_resolve, reject) =>
           request.signal?.addEventListener(
             'abort',
@@ -176,12 +201,15 @@ describe('ApiClient contract identity', () => {
             { once: true }
           )
         );
+<<<<<<< HEAD
 =======
         return new Promise((_resolve, reject) => request.signal?.addEventListener('abort', () => {
           const cause: unknown = request.signal?.reason;
           reject(cause instanceof Error ? cause : new Error('REQUEST_ABORTED', { cause }));
         }, { once: true }));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       },
     });
     const pending = createCatalogOperations(client).listingsRead({}, { ...context(), signal: controller.signal });

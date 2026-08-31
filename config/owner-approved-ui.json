@@ -1,6 +1,10 @@
 {
   "schema": "zhudatuan.owner-approved-ui.v1",
+<<<<<<< HEAD
   "approvedAt": "2026-09-01T09:18:00+08:00",
+=======
+  "approvedAt": "2026-08-28T15:59:46+08:00",
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   "owner": "Ethan",
   "policy": {
     "sourceRoot": ".",
@@ -84,6 +88,7 @@
         "https://api.zhudatuan.com/api/v1/identity/members"
       ],
       "disabledUntilBackendExists": ["otp-login", "work-weixin-qr", "wechat-qr", "enterprise-sso", "step-up"],
+<<<<<<< HEAD
       "visualSlices": {
         "apps/auth-web/src/screens/LoginPage.tsx": {
           "startMarker": "  const renderMembershipsList = () => {",
@@ -97,6 +102,15 @@
         "apps/auth-web/src/services/auth.ts": "6c776b1e2c34c294a898a9d2fffb746f28c0a2d91a7bfacf7726ebc569ef30c9",
         "apps/auth-web/src/services/canonicalIdentity.ts": "e7b8cfb122361f165c06b6204d218694b63db51be45aba48bf14b40c2713fefa",
         "apps/auth-web/src/services/canonicalRegistration.ts": "16c635e7d15f083a0f0d1c3c47b6160c3fc87e6e044a8d28a617b26a929e98ba",
+=======
+      "lockedFiles": {
+        "apps/auth-web/src/App.tsx": "5f158b34867a6eea9f06906413c590c024cff2949900946c5bf0cc59a00fe58a",
+        "apps/auth-web/src/screens/LoginPage.tsx": "bce69caf9b4d0f1c3ed0f2e8bb8c94cd3791120238b0fe502715af37c00cd1ad",
+        "apps/auth-web/src/context/MallContext.tsx": "f7413e2e5e39a9a888ba1aab4ac742c6adbc52b6d37749cc130c1f256e639559",
+        "apps/auth-web/src/services/auth.ts": "613239172484080f4043772799b3b2cba4d75fc8b5c690151e9c02164e2485aa",
+        "apps/auth-web/src/services/canonicalIdentity.ts": "e0d8031ae54d7f05f98479dc46e2729d17ba0f3efbde0fa8e54ed04e3a39cfed",
+        "apps/auth-web/src/services/canonicalRegistration.ts": "dd67a2e5a8adb4e87a9da0bd88ba38ee528760ac58b26710c0bf6698f98c5a50",
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         "apps/auth-web/vite.config.ts": "20a25f1ea0d990d5d06a2f7ccbbf92ed43d538bb4182253eb522485cbc57ab0c",
         "apps/auth-web/index.html": "fe9a3d2749aa9c4466150f3ca7c54817f4e72dfade70f7c7b67bdd6539d3c00a",
         "apps/auth-web/public/brand/site.webmanifest": "15fc099b2ef342870838fb9bf72ead08ced3ead8bfb23ce4c76288cf9edaf6df",
@@ -125,6 +139,7 @@
       "requiredBuildEnvironment": ["VITE_API_BASE_URL=https://api.zhudatuan.com", "VITE_AUTH_BASE_URL=https://accounts.zhudatuan.com", "VITE_CLIENT_VERSION=<release-version>", "VITE_ZHUDIAN_SOLUTION_ORIGIN=<approved-origin>"],
       "lockedFiles": {
         "apps/console/src/main.tsx": "9e59f3b4abf5f8b359b42cd3c6e9c09dcda7decdaf36b1e0f19c5b427d27eac9",
+<<<<<<< HEAD
         "apps/console/index.html": "d78fa2c4e09200e71ff2d9eb2d475cc1eabd18900877f239fb5620e2cf686113",
         "apps/console/vite.config.ts": "e1a3454ddc2b2f22d922d4ec8df33bcc088f25b179ca4b934bf37bbe13bf8608",
         "apps/console/src/route/ConsoleRouter.tsx": "8eecf04aef28198112349f1bf8e18bb22a724da97f0e31d72d0db69462b1da0a",
@@ -133,6 +148,16 @@
         "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
         "apps/console/src/components/Sidebar.tsx": "fe4abd8b893c9b104d120a6a7070902c55164820dc1afa6de6c060746170c84b",
         "apps/console/src/feature/cockpit/CockpitRoute.tsx": "df0eaf2b84257a8df1ed4b21a00cf87b1777a6db4b51e0c7ea2ce34234d5d3b4",
+=======
+        "apps/console/index.html": "354111187c3d27e8d775d1f2263fedb8ac8709ad98a9a9e4ca5957e614139686",
+        "apps/console/vite.config.ts": "d890d9ad2ed61972a1070a6194ac3976697ec01cf761d6faaf416c2a11ad7440",
+        "apps/console/src/route/ConsoleRouter.tsx": "8d90b7af76563d5a49ee527288b45ad2a27f2c61edcc720aa0ac8abf0f708f33",
+        "apps/console/src/shell/ScopeShell.tsx": "348fa812ec078767a160e21e874d9bcdd308d002dc80f82e255780db285fae27",
+        "apps/console/src/entity/session/ConsoleSession.ts": "3c01753c53f62aad962045c0f58136366123e41c1194c7f91c8eeb16ef34870f",
+        "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
+        "apps/console/src/components/Sidebar.tsx": "5052da5087da512e5c4ecf14869f94bedb87c1e7cc100d523402c1ccb1d2fe96",
+        "apps/console/src/feature/cockpit/CockpitRoute.tsx": "9a0699f178f45ebd21c6130bb3d9dffd872a907cde2f01c75cea13770b6147e6",
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         "apps/console/src/feature/application/CommerceSolutionCenter.tsx": "eafc31af52cc747470d448c4e2f7b45566d5396ba4ee2d2336d9dcfb05791f78",
         "apps/console/src/smart-wing-vi.css": "6783c64d857bf07b7667825aebb8acb142c97fd28a98ea1678463c81c7916749",
         "apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084",

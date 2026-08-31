@@ -3,9 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { navigationAccessRequirements } from '../route/NavigationAccess';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { navigationAccessRequirements } from '../route/NavigationAccess';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { professionalRoutes } from '../route/ProfessionalRouteCatalog';
 import { workstations } from '../shell/Workstation';
 import { Sidebar } from './Sidebar';
@@ -38,6 +42,46 @@ describe('Sidebar commerce navigation', () => {
     expect(target.getAttribute('title')).toBe(expected);
   });
 <<<<<<< HEAD
+
+  it('opens the referral workspace independently from B2B channels', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    renderSidebar('mall', false, onNavigate);
+
+    await user.click(screen.getByRole('button', { name: '分销返佣系统' }));
+    expect(onNavigate).toHaveBeenCalledWith('referral/settings');
+    expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
+  });
+
+  it('darkens unavailable systems and prevents navigation', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    renderSidebar('mall', false, onNavigate, {
+      permissions: ['referral.settings.read'],
+      capabilities: ['referral.settings.read'],
+    });
+
+    const unavailable = screen.getByRole('button', { name: '渠道接入系统，没有权限' });
+    expect(unavailable.hasAttribute('disabled')).toBe(true);
+    expect(unavailable.getAttribute('aria-disabled')).toBe('true');
+    expect(within(unavailable).getByText('没有权限')).toBeTruthy();
+    await user.click(unavailable);
+    expect(onNavigate).not.toHaveBeenCalled();
+
+    const referral = screen.getByRole('button', { name: '分销返佣系统' });
+    expect(referral.hasAttribute('disabled')).toBe(false);
+  });
+
+  it('exposes reporting and notification routes from the primary navigation', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    renderSidebar('platform', false, onNavigate);
+
+    await user.click(screen.getByRole('button', { name: '数据报表' }));
+    await user.click(screen.getByRole('button', { name: '通知管理' }));
+    expect(onNavigate).toHaveBeenNthCalledWith(1, 'reports');
+    expect(onNavigate).toHaveBeenNthCalledWith(2, 'settings/notification');
+  });
 
   it('opens the referral workspace independently from B2B channels', async () => {
     const user = userEvent.setup();

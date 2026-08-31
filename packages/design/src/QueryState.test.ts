@@ -12,12 +12,18 @@ describe('query resource state', () => {
     [{ pending: false, fetching: true, error: new Error(), empty: false }, 'retry'],
     [{ pending: false, fetching: false, error: new Error(), empty: false }, 'stale'],
 <<<<<<< HEAD
+<<<<<<< HEAD
     [{ pending: false, fetching: false, error: { status: 401 }, empty: true }, 'unauthenticated'],
     [{ pending: false, fetching: false, error: { status: 403 }, empty: true }, 'denied'],
     [{ pending: false, fetching: true, error: { status: 403 }, empty: false }, 'denied'],
 =======
     [{ pending: false, fetching: false, error: { status: 403 }, empty: true }, 'denied'],
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    [{ pending: false, fetching: false, error: { status: 401 }, empty: true }, 'unauthenticated'],
+    [{ pending: false, fetching: false, error: { status: 403 }, empty: true }, 'denied'],
+    [{ pending: false, fetching: true, error: { status: 403 }, empty: false }, 'denied'],
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     [{ pending: false, fetching: false, error: { status: 404 }, empty: true }, 'notfound'],
     [{ pending: false, fetching: false, error: { status: 412 }, empty: true }, 'conflict'],
     [{ pending: false, fetching: false, error: { status: 429 }, empty: true }, 'ratelimited'],

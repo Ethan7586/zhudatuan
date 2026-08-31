@@ -18,6 +18,9 @@ export function getBillsOperations(): OperationActions {
     'finance.statements.read': async (request, database) => {
       const access = requireAccess(request); const page = queryPage(request);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       const result = await database.query(`select statement.*,
         coalesce((select jsonb_agg(jsonb_build_object(
           'accountId',line.account_id,'accountCode',line.account_code,'accountKind',line.account_kind,
@@ -32,11 +35,14 @@ export function getBillsOperations(): OperationActions {
         and statement.state in('draft','final') and statement.calculation_version=2 and statement.balanced
         and ($2::date is null or (statement.period_end,statement.id)<($2::date,$3))
         order by statement.period_end desc,statement.id desc limit $4`,
+<<<<<<< HEAD
 =======
       const result = await database.query(`select * from finance.statement where scope_id in(
           select descendant_id from organization.unitclosure where ancestor_id=$1) and state in('draft','final')
         and ($2::date is null or (period_end,id)<($2::date,$3)) order by period_end desc,id desc limit $4`,
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       [access.scope.id, page.sort, page.id, page.fetch]);
       return keysetResult(result, page, 'period_end');
     },

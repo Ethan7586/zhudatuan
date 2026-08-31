@@ -33,6 +33,7 @@ export class HttpApp {
       const operation = OperationCatalog.get(route.operation);
       observedOperation = operation.id;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       assertCsrf(request, origin, operation.id);
       const version = request.headers.get('x-contract-version');
@@ -41,6 +42,8 @@ export class HttpApp {
           required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
       }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       const payload = await parseBody(request);
       deadline.throwIfExpired();
       const headers = Object.freeze(Object.fromEntries(request.headers.entries()));
@@ -102,6 +105,7 @@ function preflight(request: Request, requestId: string, origin: string | null): 
   if (!method || !['GET','POST','PUT','PATCH','DELETE'].includes(method)) return secure(405, { code: 'METHOD_NOT_ALLOWED', requestId }, requestId, origin);
   return secure(204, undefined, requestId, origin, { 'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
 <<<<<<< HEAD
+<<<<<<< HEAD
     'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-contract-version,x-csrf-token,x-device-id,x-request-id,x-trace-id,x-client-version,x-scope-hint',
     'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
 }
@@ -125,3 +129,8 @@ function cookieValue(cookie: string, name: string): string | null {
   return null;
 }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-contract-version,x-csrf-token,x-device-id,x-request-id,x-trace-id,x-client-version,x-scope-hint',
+    'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
+}
+>>>>>>> 018b2a71 (chore(release): capture current production source)

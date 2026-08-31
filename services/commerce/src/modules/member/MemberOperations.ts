@@ -8,15 +8,20 @@ import { memberImportOperations } from './application/MemberImportOperations';
 import { accessPort } from '../access/AccessModule';
 import { addressPort } from '../checkout/CheckoutModule';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { memberOperatorReadActions } from './MemberReadOperations';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { memberOperatorReadActions } from './MemberReadOperations';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export function memberOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
   const kms = context.container.get(KMS_CLIENT);
   return new ModuleOperations('member', pool, context.container.get(AUDIT_SINK), {
     ...memberImportOperations(context),
+<<<<<<< HEAD
 <<<<<<< HEAD
     ...memberOperatorReadActions(),
 =======
@@ -30,6 +35,9 @@ export function memberOperations(context: ModuleContext): ModuleOperations {
       return keysetResult(result, page, 'id');
     },
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    ...memberOperatorReadActions(),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     'member.profile.read': async (request, database) => {
       const access = requireAccess(request);
       return rowResult(await database.query(`select profile.id,profile.display_name,profile.status,profile.mobile_token is not null mobile_bound,

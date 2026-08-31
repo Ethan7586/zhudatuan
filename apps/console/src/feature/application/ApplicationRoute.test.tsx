@@ -17,6 +17,7 @@ const server = setupServer(
     writes.push(request.method);
     return HttpResponse.json({ code: 'UNEXPECTED_APPLICATION_WRITE' }, { status: 500 });
 <<<<<<< HEAD
+<<<<<<< HEAD
   })
 );
 
@@ -34,6 +35,18 @@ afterEach(() => {
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => { cleanup(); server.resetHandlers(); writes.length = 0; currentSearch = ''; });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  })
+);
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => {
+  cleanup();
+  server.resetHandlers();
+  writes.length = 0;
+  currentSearch = '';
+});
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 afterAll(() => server.close());
 
 describe('Commerce application workspace', () => {
@@ -51,6 +64,9 @@ describe('Commerce application workspace', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('hides cached records and an open drawer when access is revoked', async () => {
     const user = userEvent.setup();
     const { client } = renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
@@ -72,8 +88,11 @@ describe('Commerce application workspace', () => {
     expect(screen.queryByRole('button', { name: '创建商城' })).toBeNull();
   });
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('shows the enterprise six-step bootstrap as a safe non-mutating preview', async () => {
     const user = userEvent.setup();
     renderRoute('/applications', scope('enterprise', 'enterprise:hongtai', '鸿泰集团'));
@@ -89,6 +108,9 @@ describe('Commerce application workspace', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('creates an application through the generated command and rereads the authoritative list', async () => {
     const user = userEvent.setup();
     let created = false;
@@ -293,8 +315,11 @@ describe('Commerce application workspace', () => {
     expect(writes).toHaveLength(0);
   });
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('keeps the three official solutions stable and maps the old preview aliases', () => {
     expect(commerceSolutions.map(({ id, name, path }) => ({ id, name, path }))).toEqual([
       { id: 'jingxu', name: '築店 · 静序', path: '/design-references/admin/first-design/index.html?screen=editor' },
@@ -393,6 +418,7 @@ describe('Commerce application workspace', () => {
 
 let currentSearch = '';
 <<<<<<< HEAD
+<<<<<<< HEAD
 let currentLocationKey = '';
 
 function LocationProbe() {
@@ -404,6 +430,14 @@ function LocationProbe() {
 function LocationProbe() {
   currentSearch = useLocation().search;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+let currentLocationKey = '';
+
+function LocationProbe() {
+  const location = useLocation();
+  currentSearch = location.search;
+  currentLocationKey = location.key;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return null;
 }
 
@@ -411,6 +445,9 @@ function renderRoute(entry: string, activeScope: ConsoleScope) {
   const context = contextFor(activeScope);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const rendered = render(
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
@@ -422,11 +459,14 @@ function renderRoute(entry: string, activeScope: ConsoleScope) {
     </MemoryRouter>
   );
   return { ...rendered, client };
+<<<<<<< HEAD
 =======
   return render(<MemoryRouter initialEntries={[entry]}><QueryClientProvider client={client}>
     <ConsoleContextProvider value={context}><LocationProbe /><Component /></ConsoleContextProvider>
   </QueryClientProvider></MemoryRouter>);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function scope(kind: ConsoleScope['kind'], id: string, name: string): ConsoleScope {
@@ -437,6 +477,9 @@ function contextFor(activeScope: ConsoleScope): ConsoleContext {
   return {
     session: {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       actor: 'actor:commerce',
       membership: 'membership:commerce',
       accessVersion: 11,
@@ -448,11 +491,14 @@ function contextFor(activeScope: ConsoleScope): ConsoleContext {
       scopes: [activeScope],
       assurance: { level: 2 },
       syncedAt: '2026-08-27T05:00:00.000Z',
+<<<<<<< HEAD
 =======
       actor: 'actor:commerce', membership: 'membership:commerce', accessVersion: 11,
       permissions: ['experience.application.read'], capabilities: ['experience.applications.read'], target: 'console',
       scope: activeScope, scopes: [activeScope], assurance: { level: 2 }, syncedAt: '2026-08-27T05:00:00.000Z',
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     },
     profile: { display_name: '商城运营', employee_no: null },
     scope: activeScope,
@@ -463,6 +509,9 @@ function contextFor(activeScope: ConsoleScope): ConsoleContext {
 const applications = {
   items: [
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     {
       id: 'application:benefits',
       code: 'BENEFITS',
@@ -493,6 +542,7 @@ const applications = {
       pool_id: 'pool:select',
       updated_at: '2026-08-27T03:00:00.000Z',
     },
+<<<<<<< HEAD
   ],
   count: 2,
 };
@@ -539,3 +589,40 @@ const copiedApplication = {
   count: 2,
 };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  ],
+  count: 2,
+};
+
+const createdApplication = {
+  id: 'application:new',
+  code: 'NEW_APP',
+  public_slug: 'new-app',
+  name: '築店新应用',
+  status: 'draft',
+  version: 0,
+  head_sequence: null,
+  head_validation_state: null,
+  published_sequence: null,
+  domain: null,
+  mall_id: null,
+  pool_id: null,
+  updated_at: '2026-08-31T08:00:00.000Z',
+};
+
+const copiedApplication = {
+  id: 'application:copy',
+  code: 'BENEFITS_COPY',
+  public_slug: 'benefits-copy',
+  name: '鸿泰惠民通副本',
+  status: 'draft',
+  version: 0,
+  head_sequence: 1,
+  head_validation_state: 'valid',
+  published_sequence: null,
+  domain: null,
+  mall_id: null,
+  pool_id: null,
+  updated_at: '2026-08-31T08:10:00.000Z',
+};
+>>>>>>> 018b2a71 (chore(release): capture current production source)

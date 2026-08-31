@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
 =======
 import { sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { buildOpenapi, operationSource, sdkDomainSources, sdkSource, type OperationDefinition } from './ClientArtifacts';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 const operations = [
   operation('identity.session.read', 'GET', '/api/v1/identity/session', 'member'),
@@ -30,6 +34,9 @@ describe('SDK client artifacts', () => {
     }
   });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   it('publishes an explicitly required optimistic version in every contract artifact', () => {
     const reset = { ...operation('identity.members.reset', 'PUT', '/api/v1/identity/members/{membershipid}/registration', 'operator'), expectedVersion: 'required' as const };
@@ -38,6 +45,7 @@ describe('SDK client artifacts', () => {
     expect(openapi).toContain('"x-expected-version":"required"');
     expect(operationSource([reset], new Map())).toContain('"required","required"');
   });
+<<<<<<< HEAD
 
   it('preserves OMS trace links in contract metadata without creating another operation', () => {
     const traced = { ...operations[0], requirements: ['MVP03', 'OMS-001'] } as const;
@@ -50,6 +58,8 @@ describe('SDK client artifacts', () => {
   });
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 });
 
 function operation(

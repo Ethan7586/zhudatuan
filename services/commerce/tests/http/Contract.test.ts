@@ -26,10 +26,14 @@ describe('HTTP boundary contract', () => {
     const response = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',
 <<<<<<< HEAD
+<<<<<<< HEAD
       headers: { origin: 'https://console.example', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
 =======
       headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      headers: { origin: 'https://console.example', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-request-id': 'request-contract' },
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       body: '{',
     }));
     expect(response.status).toBe(400);
@@ -41,10 +45,14 @@ describe('HTTP boundary contract', () => {
   it('requires a matching CSRF token for cookie-authenticated writes', async () => {
     const { app, handler } = application();
 <<<<<<< HEAD
+<<<<<<< HEAD
     const response = await app.handle(new Request('https://api.example/api/v1/identity/challenges', {
 =======
     const response = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    const response = await app.handle(new Request('https://api.example/api/v1/identity/challenges', {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       method: 'POST',
       headers: { cookie: 'shop_session=session; shop_csrf=expected', origin: 'https://console.example',
         'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-csrf-token': 'wrong' },

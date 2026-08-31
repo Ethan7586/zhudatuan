@@ -22,6 +22,7 @@ test('browser writes require an allowlisted origin and matching CSRF double subm
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 test('allowlisted login and one-time ticket exchange use Origin instead of a readable cross-subdomain CSRF cookie', async () => {
   const app = application();
   const login = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
@@ -42,6 +43,24 @@ test('allowlisted login and one-time ticket exchange use Origin instead of a rea
 test('one-time auth ticket exchange is the only browser write that does not require a CSRF token', async () => {
   const app = application();
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+test('allowlisted login and one-time ticket exchange use Origin instead of a readable cross-subdomain CSRF cookie', async () => {
+  const app = application();
+  const login = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
+    method: 'POST',
+    headers: { origin: 'https://store.example', cookie: 'shop_session=stale', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
+    body: '{}',
+  }));
+  assert.equal(login.status, 200);
+
+  const loginWithoutOrigin = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
+    body: '{}',
+  }));
+  assert.equal(loginWithoutOrigin.status, 403);
+
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const exchange = await app.handle(new Request('https://api.example/api/v1/identity/tickets/exchange', {
     method: 'POST',
     headers: { origin: 'https://store.example', cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
@@ -57,6 +76,9 @@ test('one-time auth ticket exchange is the only browser write that does not requ
   assert.equal(deniedOrigin.status, 403);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const missingOrigin = await app.handle(new Request('https://api.example/api/v1/identity/tickets/exchange', {
     method: 'POST',
     headers: { cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
@@ -64,8 +86,11 @@ test('one-time auth ticket exchange is the only browser write that does not requ
   }));
   assert.equal(missingOrigin.status, 403);
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const normalWrite = await app.handle(new Request('https://api.example/api/v1/identity/challenges', {
     method: 'POST',
     headers: { origin: 'https://store.example', cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
@@ -85,6 +110,7 @@ test('responses always include hard security headers and request correlation', a
 test('invalid media and oversized bodies fail before a handler executes', async () => {
   const app = application();
 <<<<<<< HEAD
+<<<<<<< HEAD
   const media = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'text/plain', 'x-contract-version': CONTRACT_VERSION }, body: 'value' }));
   assert.equal(media.status, 415);
   const large = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'application/json', 'content-length': String(2 * 1024 * 1024 + 1), 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
@@ -93,5 +119,10 @@ test('invalid media and oversized bodies fail before a handler executes', async 
   assert.equal(media.status, 415);
   const large = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { 'content-type': 'application/json', 'content-length': String(2 * 1024 * 1024 + 1), 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const media = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'text/plain', 'x-contract-version': CONTRACT_VERSION }, body: 'value' }));
+  assert.equal(media.status, 415);
+  const large = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'application/json', 'content-length': String(2 * 1024 * 1024 + 1), 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   assert.equal(large.status, 413);
 });

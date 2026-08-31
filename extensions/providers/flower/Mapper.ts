@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { createHash } from 'node:crypto';
 import type { CatalogBatch, JsonObject, JsonValue, PriceBatch, StockBatch } from '@shop/contract';
 import { cakeuncleMinor, cakeuncleNonnegativeInteger } from '@shop/vendorcakeuncle';
@@ -283,6 +286,9 @@ function compareCategory(left: FlowerCategory, right: FlowerCategory): number {
 function compareIdentifiers(left: string, right: string): number {
   return left.length === right.length ? left.localeCompare(right, 'en') : left.length - right.length;
 }
+<<<<<<< HEAD
 =======
 export { CanonicalSourceMapper as FlowerMapper } from '@shop/providercore';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

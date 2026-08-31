@@ -7,9 +7,13 @@ describe('canonical brand', () => {
     expect(JSON.stringify(result)).toContain('brand-mark.svg');
     expect(JSON.stringify(result)).toContain('运营控制台');
 <<<<<<< HEAD
+<<<<<<< HEAD
     expect(JSON.stringify(result)).toContain('"alt":""');
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    expect(JSON.stringify(result)).toContain('"alt":""');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     expect(result.props.className).toContain('swbrand-inverse');
   });
 });

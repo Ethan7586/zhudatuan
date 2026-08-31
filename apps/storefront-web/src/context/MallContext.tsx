@@ -11,9 +11,13 @@ import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { storefrontAuthHref } from '../config/storefrontAuth';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { storefrontAuthHref } from '../config/storefrontAuth';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 
@@ -132,6 +136,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const login = async (_credentials: LoginCredentials): Promise<boolean> => {
     setSessionError(null);
     window.location.assign(storefrontAuthHref());
@@ -151,6 +156,12 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       return false;
     }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const login = async (_credentials: LoginCredentials): Promise<boolean> => {
+    setSessionError(null);
+    window.location.assign(storefrontAuthHref());
+    return false;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   };
   const logout = async () => {
     const revokeRequest = productionApi.logout();
@@ -215,11 +226,16 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     if (sessionStatus === 'authenticated' && product.skuId) {
       try {
 <<<<<<< HEAD
+<<<<<<< HEAD
         const existing = cart.find((item) => item.product.id === product.id);
         await productionApi.upsertCartItem({ listingId: product.id, quantity: (existing?.quantity ?? 0) + quantity });
 =======
         await productionApi.upsertCartItem({ skuId: product.skuId, quantity, selected: true });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+        const existing = cart.find((item) => item.product.id === product.id);
+        await productionApi.upsertCartItem({ listingId: product.id, quantity: (existing?.quantity ?? 0) + quantity });
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         await refreshServerCart();
         showToast(`已将“${product.title.slice(0, 16)}...”加入购物车`, 'success');
       } catch {
@@ -243,10 +259,14 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     if (sessionStatus === 'authenticated') {
       const item = cart.find((candidate) => candidate.id === cartItemId);
 <<<<<<< HEAD
+<<<<<<< HEAD
       if (!item?.product.id) return;
 =======
       if (!item?.product.skuId) return;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      if (!item?.product.id) return;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       if (quantity <= 0) {
         void productionApi
           .deleteCartItem(cartItemId)
@@ -255,10 +275,14 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       } else {
         void productionApi
 <<<<<<< HEAD
+<<<<<<< HEAD
           .upsertCartItem({ listingId: item.product.id, quantity })
 =======
           .upsertCartItem({ skuId: item.product.skuId, quantity, selected: item.selected })
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          .upsertCartItem({ listingId: item.product.id, quantity })
+>>>>>>> 018b2a71 (chore(release): capture current production source)
           .then(refreshServerCart)
           .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
       }
@@ -269,6 +293,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleToggleCartItemSelected = (cartItemId: string) => {
     if (sessionStatus === 'authenticated') {
+<<<<<<< HEAD
 <<<<<<< HEAD
       // Canonical cart does not persist a selected flag. Selection is a UI
       // concern; checkout fails closed unless every server item is selected.
@@ -281,6 +306,11 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         .then(refreshServerCart)
         .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      // Canonical cart does not persist a selected flag. Selection is a UI
+      // concern; checkout fails closed unless every server item is selected.
+      setCart((items) => items.map((item) => (item.id === cartItemId ? { ...item, selected: !item.selected } : item)));
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleCartItemSelected(cartItemId));
@@ -289,6 +319,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const handleToggleSelectAllCart = (selected: boolean) => {
     if (sessionStatus === 'authenticated') {
 <<<<<<< HEAD
+<<<<<<< HEAD
       setCart((items) => items.map((item) => ({ ...item, selected })));
 =======
       const updates = cart.filter((item) => item.product.skuId).map((item) => productionApi.upsertCartItem({ skuId: item.product.skuId!, quantity: item.quantity, selected }));
@@ -296,6 +327,9 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         .then(refreshServerCart)
         .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      setCart((items) => items.map((item) => ({ ...item, selected })));
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleSelectAllCart(selected));
@@ -324,11 +358,15 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     setIsSubmittingOrder(true);
     try {
 <<<<<<< HEAD
+<<<<<<< HEAD
       await checkoutSelectedCartRequest(cart, addresses, user);
 =======
       const { selectedItems } = await checkoutSelectedCartRequest(cart, addresses, user);
       await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      await checkoutSelectedCartRequest(cart, addresses, user);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       await refreshServerCart();
       await refreshProductionData();
       showToast('订单已安全写入数据库并完成福利账户支付', 'success');
@@ -336,12 +374,18 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     } catch (error) {
       const message = error instanceof ProductionApiError ? error.message : '订单服务暂时不可用';
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       // Quote/order/payment are separate authoritative operations. A late
       // payment error can occur after the order has already consumed the cart,
       // so reconcile both views before the user attempts another checkout.
       void Promise.allSettled([refreshServerCart(), refreshProductionData()]);
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       showToast(`订单提交失败：${message}`, 'error');
       return false;
     } finally {

@@ -1,8 +1,12 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import type { FormerOwnerMode, OwnerActionProofPayload } from './OwnerActionProof';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import type { FormerOwnerMode, OwnerActionProofPayload } from './OwnerActionProof';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export interface RegistrationMembership {
   readonly membership: string;
@@ -23,6 +27,9 @@ export interface ImportedMembership {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export interface OperatorRegistrationMembership {
   readonly operatorMembership: string;
   readonly storefrontMembership: string;
@@ -62,12 +69,16 @@ export interface OwnershipProofSnapshot extends OwnershipTransferInput {
   readonly formerOwnerRoleVersion: number | null;
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export class AccessPort {
   async createRegistration(database: OperationDatabase, input: RegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
     const membership = await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
       values($1,$2,$3,'storefront','active',1,clock_timestamp()) returning *`, [input.membership, input.member, input.organization]);
+<<<<<<< HEAD
 <<<<<<< HEAD
     await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
       ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp())`, [input.membership, input.role]);
@@ -80,12 +91,22 @@ export class AccessPort {
       ($1,$2,$3,$4,$4,'allow',clock_timestamp(),1),($5,$2,'owner',$6,$6,'allow',clock_timestamp(),1),($7,$2,'self',$8,$8,'allow',clock_timestamp(),1)`,
     [input.scopes[0], input.membership, input.scopeKind, input.organization, input.scopes[1], input.member, input.scopes[2], input.principal]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
+      ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp())`, [input.membership, input.role]);
+    await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
+      ($1,$2,$3,$4,$4,'allow',clock_timestamp(),1),($5,$2,'owner',$6,$6,'allow',clock_timestamp(),1),($7,$2,'self',$8,$8,'allow',clock_timestamp(),1)`,
+    [input.scopes[0], input.membership, input.scopeKind, input.organization, input.scopes[1], input.member, input.scopes[2], `self:${input.principal}`]);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const row = membership.rows[0];
     if (!row) throw new Error('MEMBERSHIP_CREATE_FAILED');
     return row;
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   async createOperatorRegistration(database: OperationDatabase, input: OperatorRegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
     await this.createRegistration(database, {
       membership: input.storefrontMembership,
@@ -131,6 +152,7 @@ export class AccessPort {
     return row;
   }
 
+<<<<<<< HEAD
   async ensureImported(database: OperationDatabase, input: ImportedMembership): Promise<void> {
     await database.query('select access.ensure_imported_membership($1,$2,$3,$4,$5)',
       [input.membership, input.member, input.organization, input.client, input.employee]);
@@ -140,6 +162,11 @@ export class AccessPort {
       values($1,$2,$3,$4,$5,'invited',1) on conflict(member_id,organization_id,client) do update set employee_no=excluded.employee_no`,
     [input.membership, input.member, input.organization, input.client, input.employee]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  async ensureImported(database: OperationDatabase, input: ImportedMembership): Promise<void> {
+    await database.query('select access.ensure_imported_membership($1,$2,$3,$4,$5)',
+      [input.membership, input.member, input.organization, input.client, input.employee]);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   }
 
   async member(database: OperationDatabase, membership: string): Promise<string> {
@@ -152,6 +179,9 @@ export class AccessPort {
     await database.query(`update access.membership set access_version=access_version+1 where id=$1`, [membership]);
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   async ownership(database: OperationDatabase, membership: string): Promise<Readonly<Record<string, unknown>>> {
     await this.settleExpired(database);
@@ -327,8 +357,11 @@ export class AccessPort {
     await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
     await database.query(`select access.expire_owner_transfers()`);
   }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 export const accessPort = new AccessPort();

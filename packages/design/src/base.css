@@ -1,10 +1,16 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 *,
 *::before,
 *::after {
 =======
 *, *::before, *::after {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+*,
+*::before,
+*::after {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   box-sizing: border-box;
 }
 
@@ -25,26 +31,38 @@ body {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 button,
 input,
 select,
 textarea {
+<<<<<<< HEAD
 =======
 button, input, select, textarea {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   color: inherit;
   font: inherit;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 button,
 a,
 input,
 select,
 textarea {
+<<<<<<< HEAD
 =======
 button, a, input, select, textarea {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -55,6 +73,7 @@ button {
 
 button:disabled {
   cursor: not-allowed;
+<<<<<<< HEAD
 <<<<<<< HEAD
   opacity: var(--sw-opacity-disabled);
 }
@@ -70,6 +89,14 @@ button:disabled {
   outline: 0.1875rem solid var(--sw-brand);
   outline-offset: 0.125rem;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  opacity: var(--sw-opacity-disabled);
+}
+
+:focus-visible {
+  outline: var(--sw-focus-width) solid var(--sw-brand);
+  outline-offset: var(--sw-focus-offset);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 ::selection {
@@ -78,13 +105,19 @@ button:disabled {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 h1,
 h2,
 h3,
 p {
+<<<<<<< HEAD
 =======
 h1, h2, h3, p {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   margin-top: 0;
 }
 
@@ -163,11 +196,16 @@ a {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 section[role='alert'],
 section[role='status'] {
 =======
 section[role='alert'], section[role='status'] {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+section[role='alert'],
+section[role='status'] {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   border: 0.0625rem solid var(--sw-border);
   border-radius: var(--sw-radius-md);
   background: var(--sw-surface);
@@ -189,6 +227,9 @@ section[role='alert'] > button {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 .swaccessdenied {
   box-sizing: border-box;
   display: grid;
@@ -352,8 +393,11 @@ section[role='alert'] > button {
   }
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 .sr-only {
   position: absolute;
   width: 0.0625rem;
@@ -368,6 +412,9 @@ section[role='alert'] > button {
 
 @media (prefers-reduced-motion: no-preference) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   button,
   a,
   input,
@@ -378,9 +425,12 @@ section[role='alert'] > button {
       background-color var(--sw-duration-fast) var(--sw-ease-standard),
       color var(--sw-duration-fast) var(--sw-ease-standard),
       box-shadow var(--sw-duration-fast) var(--sw-ease-standard);
+<<<<<<< HEAD
 =======
   button, a, input, select, textarea {
     transition: border-color var(--sw-duration-fast) var(--sw-ease-standard), background-color var(--sw-duration-fast) var(--sw-ease-standard), color var(--sw-duration-fast) var(--sw-ease-standard), box-shadow var(--sw-duration-fast) var(--sw-ease-standard);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   }
 }

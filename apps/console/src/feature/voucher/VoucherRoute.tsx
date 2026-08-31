@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Button, ResourcePanel, ResourceState } from '@shop/design';
 =======
 import { Button, ResourcePanel } from '@shop/design';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { Button, ResourcePanel, ResourceState } from '@shop/design';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -78,6 +82,9 @@ export function Component() {
   const scopeName = context.scope.name ?? context.scope.id;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (condition === 'unauthenticated' || condition === 'denied') {
     return <div className="voucherworkspace" data-view={view}>
       <ResourceState condition={condition} resourceLabel="卡券治理台"
@@ -87,8 +94,11 @@ export function Component() {
     </div>;
   }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return (
     <div className="voucherworkspace" data-view={view}>
       <ResourcePanel

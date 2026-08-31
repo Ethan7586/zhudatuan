@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { createHash } from 'node:crypto';
 
 import type { JsonObject, JsonValue } from '@shop/contract';
@@ -90,6 +93,9 @@ function minor(value: string): number {
   if (!Number.isSafeInteger(amount)) throw new Error('FOODVOUCHER_PRICE_RANGE_INVALID');
   return amount;
 }
+<<<<<<< HEAD
 =======
 export { CanonicalSourceMapper as FoodvoucherMapper } from '@shop/providercore';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

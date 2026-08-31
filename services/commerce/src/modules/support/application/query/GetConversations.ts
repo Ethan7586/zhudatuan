@@ -2,10 +2,14 @@ import type { QueryResultRow } from 'pg';
 import type { OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { operationLifecycle, requireAccess } from '../../../../foundation/application/ModuleOperations';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { encodeCursor, keysetResult, queryPage } from '../../../../foundation/interface/Validation';
 =======
 import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { encodeCursor, keysetResult, queryPage } from '../../../../foundation/interface/Validation';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { SupportPortFactory } from '../port/SupportPort';
 
@@ -35,6 +39,7 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
           on ticket.conversation_id=message.conversation_id join support.conversation conversation on conversation.id=ticket.conversation_id
           where ticket.id=$1 and (conversation.member_id=$3 or exists(select 1 from organization.unitclosure where ancestor_id=$2
 <<<<<<< HEAD
+<<<<<<< HEAD
           and descendant_id=ticket.scope_id)) and ($4::timestamptz is null or (message.created_at,message.id)<($4::timestamptz,$5))
           order by message.created_at desc,message.id desc limit $6`, [request.input.path.caseid!, access.scope.id, member, page.sort, page.id, page.fetch]);
         const attachments = await database.query(`select evidence.id,evidence.object_ref,evidence.sha256,evidence.kind,evidence.size_bytes,
@@ -55,6 +60,19 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
         const paged = keysetResult(result, page, 'created_at');
         return { ...paged, body: { ...(paged.body as object), attachments: attachments.rows } };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          and descendant_id=ticket.scope_id)) and ($4::timestamptz is null or (message.created_at,message.id)<($4::timestamptz,$5))
+          order by message.created_at desc,message.id desc limit $6`, [request.input.path.caseid!, access.scope.id, member, page.sort, page.id, page.fetch]);
+        const attachments = await database.query(`select evidence.id,evidence.object_ref,evidence.sha256,evidence.kind,evidence.size_bytes,
+          evidence.created_at from support.evidence evidence join support.ticket ticket on ticket.conversation_id=evidence.conversation_id
+          where ticket.id=$1 and evidence.state='clean' order by evidence.created_at,evidence.id`, [request.input.path.caseid!]);
+        const more = result.rows.length > page.limit;
+        const descending = more ? result.rows.slice(0, page.limit) : result.rows;
+        const oldest = descending.at(-1);
+        return { status: 200, body: { items: [...descending].reverse(), count: descending.length,
+          ...(more && oldest ? { nextCursor: encodeCursor({ sort: timestamp(oldest.created_at), id: oldest.id }) } : {}),
+          attachments: attachments.rows } };
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       },
       finalize: async (_request, result) => {
         const body = result.body as { readonly items: readonly MessageRow[]; readonly attachments: readonly unknown[];
@@ -69,9 +87,15 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
   };
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 function timestamp(value: string | Date): string {
   return value instanceof Date ? value.toISOString() : value;
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

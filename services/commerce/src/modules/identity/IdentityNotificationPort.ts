@@ -7,14 +7,20 @@ export interface IdentityChallenge {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export interface IdentityChallengeAttempt {
   readonly sequence: number;
   readonly state: 'sending' | 'sent' | 'ambiguous';
   readonly dispatch: boolean;
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export class IdentityNotificationPort {
   challenge(database: OperationDatabase, id: string) {
     return database.query<IdentityChallenge>(`select challenge.purpose,secret.code_ciphertext,secret.destination_ciphertext
@@ -23,6 +29,9 @@ export class IdentityNotificationPort {
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   beginAttempt(database: OperationDatabase, id: string, provider: string) {
     return database.query<IdentityChallengeAttempt>(`with uncertain as(
       update identity.challengedelivery set state='ambiguous',error_code=coalesce(error_code,'PREVIOUS_SEND_OUTCOME_UNKNOWN')
@@ -52,12 +61,15 @@ export class IdentityNotificationPort {
   ambiguousAttempt(database: OperationDatabase, id: string, sequence: number, code: string) {
     return database.query(`update identity.challengedelivery set state='ambiguous',error_code=$3
       where challenge_id=$1 and sequence=$2 and state='sending' returning challenge_id,sequence,state`, [id, sequence, code]);
+<<<<<<< HEAD
 =======
   attempt(database: OperationDatabase, id: string, provider: string, state: 'sent' | 'failed', external: string | null, code: string | null) {
     return database.query(`insert into identity.challengedelivery(challenge_id,sequence,provider,external_id,state,error_code,attempted_at)
       select $1,coalesce(max(sequence),0)+1,$2,$3,$4,$5,clock_timestamp() from identity.challengedelivery where challenge_id=$1`,
     [id, provider, external, state, code]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   }
 }
 

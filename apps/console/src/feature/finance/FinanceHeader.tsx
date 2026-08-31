@@ -2,10 +2,14 @@ import { Button, Dialog } from '@shop/design';
 import { FinanceIcon } from './FinanceIcon';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 export type FinanceHeaderAction = 'start';
 =======
 export type FinanceHeaderAction = 'export' | 'start';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+export type FinanceHeaderAction = 'start';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export function FinanceHeader({
   summary,
@@ -13,11 +17,17 @@ export function FinanceHeader({
   fetching,
   action,
 <<<<<<< HEAD
+<<<<<<< HEAD
   exportReady,
   onImport,
   onExport,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  exportReady,
+  onImport,
+  onExport,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   onAction,
   onCloseAction,
   onRefresh,
@@ -27,11 +37,17 @@ export function FinanceHeader({
   fetching: boolean;
   action: FinanceHeaderAction | undefined;
 <<<<<<< HEAD
+<<<<<<< HEAD
   exportReady: boolean;
   onImport: () => void;
   onExport: () => void;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  exportReady: boolean;
+  onImport: () => void;
+  onExport: () => void;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   onAction: (action: FinanceHeaderAction) => void;
   onCloseAction: () => void;
   onRefresh: () => void;
@@ -47,11 +63,15 @@ export function FinanceHeader({
         </div>
         <div className="financepageactions" aria-describedby="financeactionboundary">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
           <button type="button" title="选择本地 CSV 文件，本期不会上传" onClick={onImport}>
             <FinanceIcon name="arrowRight" />
             导入
           </button>
           <button type="button" disabled={!exportReady} title={exportReady ? '仅导出当前已加载页，不包含其他分页' : '数据加载中'} onClick={onExport}>
+<<<<<<< HEAD
             <FinanceIcon name="download" />
             导出当前页
 =======
@@ -59,6 +79,10 @@ export function FinanceHeader({
             <FinanceIcon name="download" />
             导出对账单
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+            <FinanceIcon name="download" />
+            导出当前页
+>>>>>>> 018b2a71 (chore(release): capture current production source)
           </button>
           <button className="financeprimarybutton" type="button" disabled={!previewEnabled} title={previewEnabled ? '查看发起对账安全边界' : '缺少受控创建 Operation'} onClick={() => onAction('start')}>
             <FinanceIcon name="plus" />
@@ -94,10 +118,14 @@ export function FinanceHeader({
       </section>
       <p id="financeactionboundary" className="sr-only">
 <<<<<<< HEAD
+<<<<<<< HEAD
         导入只提供本地文件交互预览，文件不会上传；当前页导出只使用浏览器已经加载的数据。发起对账仍保持现有安全边界。
 =======
         导出和发起对账缺少完整安全旅程，生产范围保持关闭。
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+        导入只提供本地文件交互预览，文件不会上传；当前页导出只使用浏览器已经加载的数据。发起对账仍保持现有安全边界。
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       </p>
       <FinanceActionBoundaryDialog action={action} onClose={onCloseAction} />
     </>
@@ -114,6 +142,7 @@ export interface FinanceStatusSummary {
 
 function FinanceActionBoundaryDialog({ action, onClose }: Readonly<{ action: FinanceHeaderAction | undefined; onClose: () => void }>) {
 <<<<<<< HEAD
+<<<<<<< HEAD
   return (
     <Dialog open={action !== undefined} title="发起对账 · 安全预览" eyebrow="LOCAL SAFE PREVIEW" onClose={onClose}>
       <div className="financeactionpreview">
@@ -123,14 +152,21 @@ function FinanceActionBoundaryDialog({ action, onClose }: Readonly<{ action: Fin
           <p>系统尚无受控的对账创建 Operation；需由渠道账单同步与任务回执建立批次。</p>
 =======
   const exportAction = action === 'export';
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return (
-    <Dialog open={action !== undefined} title={exportAction ? '导出对账单 · 安全预览' : '发起对账 · 安全预览'} eyebrow="LOCAL SAFE PREVIEW" onClose={onClose}>
+    <Dialog open={action !== undefined} title="发起对账 · 安全预览" eyebrow="LOCAL SAFE PREVIEW" onClose={onClose}>
       <div className="financeactionpreview">
         <FinanceIcon name="shield" />
         <div>
+<<<<<<< HEAD
           <strong>{exportAction ? '当前不会生成或下载正式账单' : '当前不会创建对账批次'}</strong>
           <p>{exportAction ? '正式导出需要服务端 Filter Snapshot、Level 3 二次验证与 Operation 回执。' : '系统尚无受控的对账创建 Operation；需由渠道账单同步与任务回执建立批次。'}</p>
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          <strong>当前不会创建对账批次</strong>
+          <p>系统尚无受控的对账创建 Operation；需由渠道账单同步与任务回执建立批次。</p>
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         </div>
       </div>
       <div className="financeactiondialogfooter">

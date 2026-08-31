@@ -19,6 +19,7 @@ import { SettlementJobProcessor } from '../modules/finance/interface/job/Settlem
 import { InvoiceJobProcessor } from '../modules/finance/interface/job/InvoiceJob';
 import { FinanceDeadletter } from '../modules/finance/interface/job/FinanceDeadletter';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ReferralEventJobProcessor } from '../modules/referral/interface/job/ReferralEventJob';
 import { FulfillmentJobProcessor } from '../modules/fulfillment/FulfillmentJobs';
 import { ExperienceJobProcessor } from '../modules/experience/ExperienceJobs';
@@ -30,6 +31,13 @@ import { ExperienceJobProcessor } from '../modules/experience/ExperienceJobs';
 import { CACHE } from '../foundation/cache/Cache';
 import { NotificationJobProcessor } from '../modules/notification/interface/job/NotificationJob';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { ReferralEventJobProcessor } from '../modules/referral/interface/job/ReferralEventJob';
+import { FulfillmentJobProcessor } from '../modules/fulfillment/FulfillmentJobs';
+import { ExperienceJobProcessor } from '../modules/experience/ExperienceJobs';
+import { CACHE } from '../foundation/cache/Cache';
+import { IdentityNotificationJobProcessor, NotificationJobProcessor } from '../modules/notification/interface/job/NotificationJob';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { MemberImportProcessor } from '../modules/member/interface/job/MemberImportJob';
 import { identityPrincipal } from '../modules/identity/IdentityModule';
 import { InventoryImportProcessor } from '../modules/inventory/interface/job/InventoryImportJob';
@@ -99,14 +107,20 @@ export const JOB_CATALOG = Object.freeze([
   registerJob({ id: 'voucherexpiry', owner: 'voucher', queue: 'benefit', concurrency: 8, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/voucherexpiry.md', worker }),
   registerJob({ id: 'reconciliation', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/reconciliation.md', worker }),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   registerJob({ id: 'referral', owner: 'referral', queue: 'finance', concurrency: 8, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/referral.md', worker }),
   registerJob({ id: 'settlement', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/settlement.md', worker }),
   registerJob({ id: 'invoice', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 60_000, retry, lease: 90, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/invoice.md', worker }),
   registerJob({ id: 'identitynotification', owner: 'identity', queue: 'identity', concurrency: 16, timeout: 15_000, retry, lease: 30, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/notification.md', worker }),
+<<<<<<< HEAD
 =======
   registerJob({ id: 'settlement', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/settlement.md', worker }),
   registerJob({ id: 'invoice', owner: 'finance', queue: 'finance', concurrency: 4, timeout: 60_000, retry, lease: 90, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/invoice.md', worker }),
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   registerJob({ id: 'notification', owner: 'notification', queue: 'notification', concurrency: 32, timeout: 15_000, retry, lease: 30, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/notification.md', worker }),
   registerJob({ id: 'projection', owner: 'reporting', queue: 'projection', concurrency: 16, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/projection.md', worker }),
   registerJob({ id: 'export', owner: 'reporting', queue: 'export', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/export.md', worker }),
@@ -143,9 +157,13 @@ export function registerJobs(registry: JobRegistry, container: Container, extens
   const benefitDeadletter = new BenefitDeadletter();
   const financeDeadletter = new FinanceDeadletter();
 <<<<<<< HEAD
+<<<<<<< HEAD
   const notificationDispatch = new DispatchNotification(new PgNotificationRepository(pool), kms, deliveries);
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const notificationDispatch = new DispatchNotification(new PgNotificationRepository(pool), kms, deliveries);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const processors: Readonly<Record<JobKind, JobProcessor>> = Object.freeze({
     catalogsync: new ChannelJobProcessor(pool, extensions, secrets, 'catalogsync'),
     pricesync: new ChannelJobProcessor(pool, extensions, secrets, 'pricesync'),
@@ -165,6 +183,7 @@ export function registerJobs(registry: JobRegistry, container: Container, extens
     voucherexpiry: new VoucherJobProcessor(pool, kms, 'voucherexpiry'),
     reconciliation: new ReconciliationJobProcessor(pool, objects),
 <<<<<<< HEAD
+<<<<<<< HEAD
     referral: new ReferralEventJobProcessor(pool),
     settlement: new SettlementJobProcessor(pool, payouts),
     invoice: new InvoiceJobProcessor(pool, objects, kms, invoices),
@@ -175,6 +194,13 @@ export function registerJobs(registry: JobRegistry, container: Container, extens
     invoice: new InvoiceJobProcessor(pool, objects, kms, invoices),
     notification: new NotificationJobProcessor(new DispatchNotification(new PgNotificationRepository(pool), kms, deliveries)),
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    referral: new ReferralEventJobProcessor(pool),
+    settlement: new SettlementJobProcessor(pool, payouts),
+    invoice: new InvoiceJobProcessor(pool, objects, kms, invoices),
+    identitynotification: new IdentityNotificationJobProcessor(notificationDispatch),
+    notification: new NotificationJobProcessor(notificationDispatch),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     projection: new ProjectionJobProcessor(pool, cache),
     export: new ExportJobRunner(pool, objects, retry.attempts),
     riskscan: new RiskReplayJobProcessor(pool),

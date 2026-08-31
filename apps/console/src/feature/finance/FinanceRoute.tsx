@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ResourceState } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -11,20 +12,31 @@ import { FinanceAuthorityTab } from './FinanceAuthorityTabs';
 import { FinanceColumnSettings } from './FinanceColumnSettings';
 import { FinanceFilters } from './FinanceFilters';
 =======
+=======
+import { ResourceState } from '@shop/design';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
+import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
+import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
+import { FinanceAuthorityTab } from './FinanceAuthorityTabs';
 import { FinanceColumnSettings } from './FinanceColumnSettings';
+<<<<<<< HEAD
 import { FinanceFilters, emptyFinanceFilter } from './FinanceFilters';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { FinanceFilters } from './FinanceFilters';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { FinanceHeader, type FinanceHeaderAction } from './FinanceHeader';
 import { FinanceIcon } from './FinanceIcon';
 import { financeKey, readFinance } from './FinanceQuery';
 import { FinanceTabs } from './FinanceTabs';
 import { FinancePagination, ReconciliationTable, defaultFinanceColumns, type FinanceColumnKey } from './ReconciliationTable';
 import { ReconciliationDrawer } from './ReconciliationDrawer';
+<<<<<<< HEAD
 <<<<<<< HEAD
 import { financeReconciliationKey, isFinancePreviewContext, readFinanceReconciliations, type FinanceReconciliationQuery } from './FinanceWorkspaceQuery';
 import { FinanceTabSchema, type FinanceFilter, type FinanceReconciliation, type FinanceTab } from './FinanceWorkspaceSchema';
@@ -40,11 +52,23 @@ import './FinanceWorkspace.css';
 import './FinanceFilters.css';
 import './FinanceTable.css';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { financeReconciliationKey, isFinancePreviewContext, readFinanceReconciliations, type FinanceReconciliationQuery } from './FinanceWorkspaceQuery';
+import { FinanceTabSchema, type FinanceFilter, type FinanceReconciliation, type FinanceTab } from './FinanceWorkspaceSchema';
+import './FinanceWorkspace.css';
+import './FinanceFilters.css';
+import './FinanceTable.css';
+import './FinanceAuthority.css';
+import './FinancePolicyEditor.css';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import './FinanceDrawer.css';
 import './FinanceReview.css';
 import './FinanceResponsive.css';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function financeCsvColumns(reconciliationType: 'payments' | 'refunds'): readonly CsvColumn<FinanceReconciliation>[] {
   return [
     { header: '对账类型', value: () => reconciliationType },
@@ -62,9 +86,12 @@ function financeCsvColumns(reconciliationType: 'payments' | 'refunds'): readonly
     { header: '版本', value: (row) => row.version },
   ];
 }
+<<<<<<< HEAD
 =======
 const previewOnlyKeys = ['q', 'reconPeriod', 'channel', 'mall', 'status', 'difference'] as const;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export function Component() {
   const context = useConsoleContext();
@@ -74,16 +101,23 @@ export function Component() {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [headerAction, setHeaderAction] = useState<FinanceHeaderAction>();
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [importOpen, setImportOpen] = useState(false);
   const searchRef = useRef(new URLSearchParams(search));
   const pendingSearchKey = useRef<string>();
   const searchKey = search.toString();
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const [importOpen, setImportOpen] = useState(false);
+  const searchRef = useRef(new URLSearchParams(search));
+  const searchKey = search.toString();
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const scopeKey = `${context.scope.kind}:${context.scope.id}`;
   const previousScope = useRef(scopeKey);
   const previewContext = isFinancePreviewContext(context);
   const tab = readTab(search);
+<<<<<<< HEAD
 <<<<<<< HEAD
   const filter = readFilter(search);
   const limit = readLimit(search.get('limit'));
@@ -96,14 +130,22 @@ export function Component() {
     enabled: tab === 'payments' || tab === 'refunds',
 =======
   const filter = readFilter(search, previewContext);
+=======
+  const filter = readFilter(search);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const limit = readLimit(search.get('limit'));
   const cursor = search.get('cursor') ?? undefined;
-  const queryInput = { ...filter, limit, ...(cursor === undefined ? {} : { cursor }) };
+  const kind: FinanceReconciliationQuery['kind'] = tab === 'refunds' ? 'refund' : 'payment';
+  const queryInput = { ...filter, kind, limit, ...(cursor === undefined ? {} : { cursor }) };
   const query = useQuery({
     queryKey: financeReconciliationKey(context, queryInput),
     queryFn: ({ signal }) => readFinanceReconciliations(context, queryInput, signal),
+<<<<<<< HEAD
     enabled: tab === 'payments',
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    enabled: tab === 'payments' || tab === 'refunds',
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   });
   const overviewQuery = useQuery({
     queryKey: financeKey(context),
@@ -115,6 +157,9 @@ export function Component() {
   const statusSummary = overviewPreview ?? (previewEnabled ? page?.preview : undefined);
   const selectedId = search.get('selected') ?? undefined;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const selectedRow = page?.items.find((row) => row.id === selectedId && row.items.some((item) => item.state === 'difference' || item.state === 'resolutionpending'));
   const reconciliationCondition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: page !== undefined, empty: page?.items.length === 0, stale: query.isStale });
@@ -126,9 +171,13 @@ export function Component() {
     : overviewCondition === accessCondition ? safeQueryError(overviewQuery.error) : undefined;
 
   useEffect(() => {
+<<<<<<< HEAD
     if (pendingSearchKey.current !== undefined && pendingSearchKey.current !== searchKey) return;
     searchRef.current = new URLSearchParams(searchKey);
     pendingSearchKey.current = undefined;
+=======
+    searchRef.current = new URLSearchParams(searchKey);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   }, [searchKey]);
 
   const updateSearch = useCallback(
@@ -136,6 +185,7 @@ export function Component() {
       const next = new URLSearchParams(searchRef.current);
       mutate(next);
       searchRef.current = next;
+<<<<<<< HEAD
       pendingSearchKey.current = next.toString() === searchKey ? undefined : next.toString();
       setSearch(next, { replace });
     },
@@ -144,10 +194,17 @@ export function Component() {
 =======
   const selectedRow = page?.items.find((row) => row.id === selectedId);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      setSearch(next, { replace });
+    },
+    [setSearch]
+  );
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   useEffect(() => {
     const scopeChanged = previousScope.current !== scopeKey;
     previousScope.current = scopeKey;
+<<<<<<< HEAD
 <<<<<<< HEAD
     if (!scopeChanged) return;
     updateSearch((next) => {
@@ -165,13 +222,16 @@ export function Component() {
     if (!scopeChanged && (previewContext || !hasPreviewOnly)) return;
     const next = new URLSearchParams(search);
     if (scopeChanged) {
+=======
+    if (!scopeChanged) return;
+    updateSearch((next) => {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       next.delete('cursor');
       next.delete('selected');
-    }
-    if (!previewContext) previewOnlyKeys.forEach((key) => next.delete(key));
-    setSearch(next, { replace: true });
-  }, [previewContext, scopeKey, search, setSearch]);
+    }, true);
+  }, [scopeKey, updateSearch]);
 
+<<<<<<< HEAD
   const updateSearch = (mutate: (next: URLSearchParams) => void, replace = false) => {
     setSearch(
       (current) => {
@@ -183,6 +243,12 @@ export function Component() {
     );
   };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  useEffect(() => {
+    if (page === undefined || selectedId === undefined || selectedRow !== undefined) return;
+    updateSearch((next) => next.delete('selected'), true);
+  }, [page, selectedId, selectedRow, updateSearch]);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const applyFilters = (value: FinanceFilter) =>
     updateSearch((next) => {
       setValue(next, 'q', value.q);
@@ -195,6 +261,9 @@ export function Component() {
       next.delete('selected');
     });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const applyFilterPatch = (value: Partial<FinanceFilter>) =>
     updateSearch((next) => {
       for (const [key, parameter] of Object.entries(filterParameters) as readonly [keyof FinanceFilter, string][]) {
@@ -204,8 +273,11 @@ export function Component() {
       next.delete('cursor');
       next.delete('selected');
     });
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const setCursor = (value?: string) =>
     updateSearch((next) => {
       setValue(next, 'cursor', value ?? '');
@@ -247,6 +319,9 @@ export function Component() {
     });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (accessCondition !== undefined) {
     return <section className="financeworkspace" aria-label="财务与对账系统">
       <ResourceState condition={accessCondition} resourceLabel="财务与对账系统"
@@ -254,8 +329,11 @@ export function Component() {
     </section>;
   }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return (
     <section className="financeworkspace" aria-labelledby="financeworkspacetitle">
       <span id="financeworkspacetitle" className="sr-only">
@@ -267,6 +345,9 @@ export function Component() {
         fetching={query.isFetching || overviewQuery.isFetching}
         action={headerAction}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         exportReady={(tab === 'payments' || tab === 'refunds') && page !== undefined}
         onImport={() => setImportOpen(true)}
         onExport={() => {
@@ -277,8 +358,11 @@ export function Component() {
             filename: timestampedCsvFilename(`finance-${tab}-current-page`),
           });
         }}
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         onAction={setHeaderAction}
         onCloseAction={() => setHeaderAction(undefined)}
         onRefresh={() => {
@@ -287,6 +371,7 @@ export function Component() {
         }}
       />
       <FinanceTabs context={context} active={tab} />
+<<<<<<< HEAD
 <<<<<<< HEAD
       {tab === 'rules' || tab === 'audit' ? (
         <FinanceAuthorityTab context={context} tab={tab} queryInput={{ limit, ...(cursor === undefined ? {} : { cursor }) }} previewContext={previewContext} onLimit={setLimit} onCursor={setCursor} />
@@ -302,16 +387,28 @@ export function Component() {
           <div className="financetoolbararea">
             <FinanceFilters value={filter} previewEnabled={previewContext} facets={previewEnabled ? page?.preview?.facets : undefined} columnsOpen={columnsOpen} onApply={applyFilters} onColumns={() => setColumnsOpen((open) => !open)} />
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      {tab === 'rules' || tab === 'audit' ? (
+        <FinanceAuthorityTab context={context} tab={tab} queryInput={{ limit, ...(cursor === undefined ? {} : { cursor }) }} previewContext={previewContext} onLimit={setLimit} onCursor={setCursor} />
+      ) : (
+        <>
+          <div className="financetoolbararea">
+            <FinanceFilters value={filter} enabled facets={page?.facets ?? page?.preview?.facets} columnsOpen={columnsOpen} onApply={applyFilters} onPatch={applyFilterPatch} onColumns={() => setColumnsOpen((open) => !open)} />
+>>>>>>> 018b2a71 (chore(release): capture current production source)
             <FinanceColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
           </div>
           {!previewContext ? (
             <p className="financeproductionboundary">
               <FinanceIcon name="shield" />
 <<<<<<< HEAD
+<<<<<<< HEAD
               当前结果、筛选与游标分页均来自服务端权威读模型；浏览器不重算全量状态或金额。
 =======
               生产范围仅展示服务端实际返回；关键词与业务筛选等待权威读合同。
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+              当前结果、筛选与游标分页均来自服务端权威读模型；浏览器不重算全量状态或金额。
+>>>>>>> 018b2a71 (chore(release): capture current production source)
             </p>
           ) : null}
           {query.isPending ? (
@@ -341,6 +438,9 @@ export function Component() {
           {page === undefined || page.items.length === 0 ? null : (
             <>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
               <ReconciliationTable
                 caption={tab === 'refunds' ? '退款对账批次' : '支付对账批次'}
                 page={page}
@@ -351,15 +451,19 @@ export function Component() {
                 onToggleAll={toggleAll}
                 onOpen={openRow}
               />
+<<<<<<< HEAD
 =======
               <ReconciliationTable page={page} previewEnabled={previewEnabled} visible={visibleColumns} selected={selectedRows} onToggle={toggleRow} onToggleAll={toggleAll} onOpen={openRow} />
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
               <FinancePagination page={page} previewEnabled={previewEnabled} limit={limit} onLimit={setLimit} onCursor={setCursor} />
             </>
           )}
         </>
       )}
       <ReconciliationDrawer row={selectedRow} previewEnabled={previewEnabled} onClose={closeDrawer} />
+<<<<<<< HEAD
 <<<<<<< HEAD
       <LocalImportDialog open={importOpen} title="导入财务数据" resourceLabel="财务数据" onClose={() => setImportOpen(false)} />
 =======
@@ -381,6 +485,9 @@ function UnavailableTab({ tab }: Readonly<{ tab: Exclude<FinanceTab, 'payments'>
       <h2>{detail[0]}</h2>
       <span>{detail[1]} 本页不会用演示数据替代生产事实。</span>
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      <LocalImportDialog open={importOpen} title="导入财务数据" resourceLabel="财务数据" onClose={() => setImportOpen(false)} />
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     </section>
   );
 }
@@ -390,11 +497,15 @@ function readTab(search: URLSearchParams): FinanceTab {
   return parsed.success ? parsed.data : 'payments';
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 function readFilter(search: URLSearchParams): FinanceFilter {
 =======
 function readFilter(search: URLSearchParams, preview: boolean): FinanceFilter {
   if (!preview) return emptyFinanceFilter;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function readFilter(search: URLSearchParams): FinanceFilter {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return { q: search.get('q') ?? '', period: search.get('reconPeriod') ?? '', channel: search.get('channel') ?? '', mall: search.get('mall') ?? '', status: search.get('status') ?? '', difference: search.get('difference') ?? '' };
 }
 function readLimit(value: string | null): number {
@@ -406,6 +517,9 @@ function setValue(search: URLSearchParams, key: string, value: string) {
   else search.set(key, value);
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 const filterParameters: Readonly<Record<keyof FinanceFilter, string>> = Object.freeze({
   q: 'q',
@@ -415,5 +529,8 @@ const filterParameters: Readonly<Record<keyof FinanceFilter, string>> = Object.f
   status: 'status',
   difference: 'difference',
 });
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

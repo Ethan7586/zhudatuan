@@ -86,11 +86,15 @@ describe('public test authentication fixtures', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('fails closed for unfinished invitation and step-up services', async () => {
     await expect(acceptInvitation()).rejects.toThrow('不会模拟授权成功');
     await expect(verifyStepUp()).rejects.toThrow('不会接受固定口令');
   });
 
+<<<<<<< HEAD
 =======
   it('accepts a roster account and rejects former universal passwords', async () => {
     const fetchMock = vi
@@ -117,4 +121,6 @@ describe('public test authentication fixtures', () => {
     await expect(accepted).resolves.toMatchObject({ targetDomain: 'smart.hbbtzn.com' });
   });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 });

@@ -2,10 +2,14 @@ import { createHash } from 'node:crypto';
 import type { MembershipAccess, Scope, ScopeGrant } from '@shop/authz';
 import type { DatabasePool } from '../persistence/Pool';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import type { AccessVersionResolver, CapabilityResolver, MembershipResolver, MembershipSnapshot } from './AccessPipeline';
 =======
 import type { AccessVersionResolver, CapabilityResolver, MembershipResolver } from './AccessPipeline';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import type { AccessVersionResolver, CapabilityResolver, MembershipResolver, MembershipSnapshot } from './AccessPipeline';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import type { Actor } from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
 import type { SessionResolver } from './SessionResolver';
@@ -21,6 +25,9 @@ interface SessionRow {
   readonly assurance_verified_at: Date | null;
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 interface MembershipRow {
   readonly id: string;
   readonly active: boolean;
@@ -29,9 +36,12 @@ interface MembershipRow {
   readonly grants: ScopeGrant[];
   readonly evaluated_at: Date;
 }
+<<<<<<< HEAD
 =======
 interface MembershipRow { readonly id: string; readonly active: boolean; readonly access_version: number; readonly denies: string[]; readonly grants: ScopeGrant[] }
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 interface ScopeRow { readonly scope: Scope }
 
 export class PgSessionResolver implements SessionResolver {
@@ -58,6 +68,9 @@ export class PgSessionResolver implements SessionResolver {
 export class PgMembershipResolver implements MembershipResolver {
   constructor(private readonly pool: DatabasePool) {}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   async resolve(membership: string): Promise<MembershipSnapshot> {
     const result = await this.pool.query<MembershipRow>(
       `with snapshot as materialized(select clock_timestamp() evaluated_at),
@@ -70,6 +83,7 @@ export class PgMembershipResolver implements MembershipResolver {
       from resolved cross join snapshot`,
       [membership]
     );
+<<<<<<< HEAD
     const row = result.rows[0];
     if (!row) throw new Error('MEMBERSHIP_INACTIVE');
     if (!(row.evaluated_at instanceof Date) || !Number.isFinite(row.evaluated_at.getTime())) throw new Error('AUTHORIZATION_TIME_INVALID');
@@ -84,6 +98,15 @@ export class PgMembershipResolver implements MembershipResolver {
     if (!row) throw new Error('MEMBERSHIP_INACTIVE');
     return { id: row.id, active: row.active, accessVersion: row.access_version, denies: row.denies, grants: row.grants };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    const row = result.rows[0];
+    if (!row) throw new Error('MEMBERSHIP_INACTIVE');
+    if (!(row.evaluated_at instanceof Date) || !Number.isFinite(row.evaluated_at.getTime())) throw new Error('AUTHORIZATION_TIME_INVALID');
+    return Object.freeze({
+      access: Object.freeze({ id: row.id, active: row.active, accessVersion: row.access_version, denies: row.denies, grants: row.grants }),
+      evaluatedAt: row.evaluated_at,
+    });
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   }
 }
 
@@ -100,6 +123,7 @@ export class PgAccessVersionResolver implements AccessVersionResolver {
 export class PgScopeResolver implements ScopeResolver {
   constructor(private readonly pool: DatabasePool) {}
 <<<<<<< HEAD
+<<<<<<< HEAD
   async resolve(actor: Actor, operation: string, resource?: string, scopeHint?: string): Promise<Scope> {
     const result = await this.pool.query<ScopeRow>('select scope from access.resolve_scope($1,$2,$3,$4)',
       [actor.membership, operation, resource ?? null, scopeHint ?? null]);
@@ -111,6 +135,13 @@ export class PgScopeResolver implements ScopeResolver {
     const row = result.rows[0];
     if (!row) throw new Error('SCOPE_DENIED');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  async resolve(actor: Actor, operation: string, resource?: string, scopeHint?: string): Promise<Scope> {
+    const result = await this.pool.query<ScopeRow>('select scope from access.resolve_scope($1,$2,$3,$4)',
+      [actor.membership, operation, resource ?? null, scopeHint ?? null]);
+    const row = result.rows[0];
+    if (!row?.scope) throw new Error('SCOPE_DENIED');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     return row.scope;
   }
 }

@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { registerOperationRoutes, registerSelectedOperationRoutes } from '../foundation/interface/OperationController';
 =======
 import { registerOperationRoutes } from '../foundation/interface/OperationController';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { registerOperationRoutes, registerSelectedOperationRoutes } from '../foundation/interface/OperationController';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { OperationCatalog, type OperationId } from '@shop/contract';
 import { OperationHandler, type OperationUsecase } from '../foundation/application/OperationHandler';
 import { OPERATION_HANDLERS } from '../foundation/interface/OperationController';
@@ -27,6 +31,9 @@ export function defineModule(id: string, dependencies: readonly string[] = [], f
   } });
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export function defineSelectedModule(id: string, operationIds: readonly OperationId[], factory: OperationFactory,
   dependencies: readonly string[] = []): CommerceModule {
@@ -46,5 +53,8 @@ export function defineSelectedModule(id: string, operationIds: readonly Operatio
     registerSelectedOperationRoutes(selected, context);
   } });
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

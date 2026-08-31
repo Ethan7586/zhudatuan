@@ -21,16 +21,22 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'identity.members.create',
   'identity.members.manage',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'identity.members.reset',
   'identity.password.change',
   'identity.password.verify',
   'identity.password.reset',
   'identity.mobile.challenge',
+<<<<<<< HEAD
 =======
   'identity.password.change',
   'identity.password.verify',
   'identity.password.reset',
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
@@ -41,6 +47,9 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'access.roles.manage',
   'access.scopes.manage',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'access.ownership.read',
   'access.ownership.transfers.preview',
   'access.ownership.transfers.create',
@@ -48,8 +57,11 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'access.ownership.transfers.accept',
   'access.ownership.transfers.cancel',
   'access.ownership.transfers.cancel.preview',
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'capability.assignments.read',
   'capability.assignments.manage',
   'partner.partners.read',
@@ -92,6 +104,9 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'inventory.imports.read',
   'marketing.campaigns.read',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'referral.settings.read',
   'referral.settings.manage',
   'referral.products.read',
@@ -107,8 +122,11 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'referral.links.read',
   'referral.withdrawals.read',
   'referral.withdrawals.create',
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'reporting.dashboard.read',
   'reporting.sales.read',
   'reporting.products.read',
@@ -193,13 +211,19 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'finance.reconciliations.manage',
   'finance.reconciliations.read',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'finance.reconciliationrepairs.read',
   'finance.reconciliationrepairs.preview',
   'finance.reconciliationrepairs.submit',
   'finance.reconciliationrepairs.decide',
   'finance.reconciliationrepairs.reverse',
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'finance.settlements.read',
   'finance.settlements.decide',
   'finance.settlements.adjust',
@@ -214,16 +238,22 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'finance.backfills.decide',
   'finance.policies.manage',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'finance.policies.preview',
   'finance.policies.read',
   'finance.audit.read',
   'invoice.profiles.manage',
   'invoice.profiles.read',
   'invoice.operatorprofiles.read',
+<<<<<<< HEAD
 =======
   'invoice.profiles.manage',
   'invoice.profiles.read',
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   'invoice.requests.create',
   'invoice.requests.read',
   'invoice.requests.cancel',
@@ -285,10 +315,15 @@ export interface OperationInput {
   readonly deadline: number;
   readonly signal: AbortSignal;
 <<<<<<< HEAD
+<<<<<<< HEAD
   /** Server-derived target used for authorization and action-proof binding. */
   readonly resource?: string;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  /** Server-derived target used for authorization and action-proof binding. */
+  readonly resource?: string;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly idempotency?: string;
   readonly expectedVersion?: number;
 }

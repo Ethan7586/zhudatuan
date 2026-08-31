@@ -15,11 +15,18 @@ import { COMMERCE_EVENTS, CONTRACT_CHECKSUM, OperationCatalog } from '@shop/cont
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import type { ExtensionRegistry } from './ExtensionRegistry';
-import { runtimeCompatibility } from './RuntimeCompatibility';
+import { assertRuntimeCompatibility, runtimeCompatibility } from './RuntimeCompatibility';
 
+<<<<<<< HEAD
 function pool(state: Readonly<Record<string, unknown>>): DatabasePool {
   return { connect: async () => ({
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function pool(state: Readonly<Record<string, unknown>>, boundary = databaseBoundary('shopjob')): DatabasePool {
+  return { query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')
+    ? { rows: [boundary], rowCount: 1 }
+    : { rows: [], rowCount: 0 }, connect: async () => ({
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     query: async (statement: string) => statement.startsWith('select not pg_is_in_recovery')
       ? { rows: [state], rowCount: 1 }
       : { rows: [], rowCount: 0 },
@@ -40,9 +47,13 @@ describe('runtime compatibility', () => {
       schema: true,
       contract: true,
 <<<<<<< HEAD
+<<<<<<< HEAD
       scope_resolver: true,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      scope_resolver: true,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
@@ -62,9 +73,13 @@ describe('runtime compatibility', () => {
       schema: true,
       contract: true,
 <<<<<<< HEAD
+<<<<<<< HEAD
       scope_resolver: true,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      scope_resolver: true,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       operations: OperationCatalog.all().length,
       capabilities: OperationCatalog.all().length,
       events: COMMERCE_EVENTS.length,
@@ -72,6 +87,9 @@ describe('runtime compatibility', () => {
     expect(state.healthy).toBe(false);
   });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   it('fails closed when the target schema is missing', async () => {
     const state = await runtimeCompatibility(pool({
@@ -151,6 +169,9 @@ function databaseBoundary(current_user: string) {
     runtime_boundary_owner: 'zhudatuanregistrationboundary', database_owner: 'shopmigration',
   };
 }
+<<<<<<< HEAD
 =======
 });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

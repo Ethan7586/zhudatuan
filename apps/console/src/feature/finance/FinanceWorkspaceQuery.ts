@@ -8,9 +8,13 @@ const reconciliationsRead = createFetchFinanceReconciliationsRead(appConfig.apiB
 
 export interface FinanceReconciliationQuery extends FinanceFilter {
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly kind: 'payment' | 'refund';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly kind: 'payment' | 'refund';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly cursor?: string;
   readonly limit: number;
 }
@@ -33,22 +37,30 @@ export const financeReconciliationKey = (context: ConsoleContext, filter: Financ
     filter.status,
     filter.difference,
 <<<<<<< HEAD
+<<<<<<< HEAD
     filter.kind,
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    filter.kind,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     filter.cursor ?? null,
     filter.limit,
   ] as const);
 
 export async function readFinanceReconciliations(context: ConsoleContext, filter: FinanceReconciliationQuery, signal: AbortSignal) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   const preview = isFinancePreviewContext(context);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const value = await reconciliationsRead(
     {
       query: {
         limit: filter.limit,
+<<<<<<< HEAD
 <<<<<<< HEAD
         kind: filter.kind,
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
@@ -67,6 +79,16 @@ export async function readFinanceReconciliations(context: ConsoleContext, filter
         ...(preview && filter.status !== '' ? { status: filter.status } : {}),
         ...(preview && filter.difference !== '' ? { difference: filter.difference } : {}),
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+        kind: filter.kind,
+        ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
+        ...(filter.q !== '' ? { q: filter.q } : {}),
+        ...(filter.period !== '' ? { period: filter.period } : {}),
+        ...(filter.channel !== '' ? { channel: filter.channel } : {}),
+        ...(filter.mall !== '' ? { mall: filter.mall } : {}),
+        ...(filter.status !== '' ? { status: filter.status } : {}),
+        ...(filter.difference !== '' ? { difference: filter.difference } : {}),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       },
     },
     consoleRequest(context.scope, signal, context.session.accessVersion)

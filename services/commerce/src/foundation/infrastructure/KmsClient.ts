@@ -1,8 +1,12 @@
 import { token } from '../../bootstrap/Container';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { bearerToken } from '@shop/config/server';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { bearerToken } from '@shop/config/server';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { HttpClient } from '../http/HttpClient';
 
 export interface CipherEnvelope {
@@ -14,6 +18,7 @@ export interface CipherEnvelope {
 export class KmsClient {
   private readonly http: HttpClient;
 <<<<<<< HEAD
+<<<<<<< HEAD
   private readonly bearer: string;
   constructor(private readonly endpoint: string, bearer: string, fetcher: typeof fetch = fetch) {
     if (!endpoint.startsWith('https://')) throw new Error('KMS_ENDPOINT_INVALID');
@@ -22,6 +27,12 @@ export class KmsClient {
   constructor(private readonly endpoint: string, fetcher: typeof fetch = fetch) {
     if (!endpoint.startsWith('https://')) throw new Error('KMS_ENDPOINT_INVALID');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  private readonly bearer: string;
+  constructor(private readonly endpoint: string, bearer: string, fetcher: typeof fetch = fetch) {
+    if (!endpoint.startsWith('https://')) throw new Error('KMS_ENDPOINT_INVALID');
+    this.bearer = bearerToken(bearer, 'KMS_BEARER_TOKEN_INVALID');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     this.http = new HttpClient(fetcher);
   }
 
@@ -31,10 +42,14 @@ export class KmsClient {
     const response = await this.http.send(`${this.endpoint.replace(/\/$/, '')}/v1/envelopes`, {
       method: 'POST',
 <<<<<<< HEAD
+<<<<<<< HEAD
       headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}`, 'content-type': 'application/json' },
 =======
       headers: { accept: 'application/json', 'content-type': 'application/json' },
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}`, 'content-type': 'application/json' },
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       body: JSON.stringify({ context, keyRef, plaintext }),
       redirect: 'error',
     }, { mode: 'read' });
@@ -50,10 +65,14 @@ export class KmsClient {
     if (!/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(keyRef) || ciphertext.length < 16) throw new Error('KMS_DECRYPT_INPUT_INVALID');
     const response = await this.http.send(`${this.endpoint.replace(/\/$/, '')}/v1/plaintexts`, {
 <<<<<<< HEAD
+<<<<<<< HEAD
       method: 'POST', headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}`, 'content-type': 'application/json' },
 =======
       method: 'POST', headers: { accept: 'application/json', 'content-type': 'application/json' },
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      method: 'POST', headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}`, 'content-type': 'application/json' },
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       body: JSON.stringify({ context, keyRef, ciphertext }), redirect: 'error',
     }, { mode: 'read' });
     if (!response.ok) throw new Error('KMS_DECRYPT_FAILED');

@@ -7,6 +7,9 @@ describe('finance policies', () => {
   it('accepts a balanced journal and rejects a difference', () => {
     const policy = new PostingPolicy();
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     expect(() =>
       policy.assertBalanced([
         { side: 'debit', amount: Money.of(100) },
@@ -19,6 +22,7 @@ describe('finance policies', () => {
         { side: 'credit', amount: Money.of(99) },
       ])
     ).toThrow('FINANCE_JOURNAL_UNBALANCED');
+<<<<<<< HEAD
 =======
     expect(() => policy.assertBalanced([
       { side: 'debit', amount: Money.of(100) }, { side: 'credit', amount: Money.of(100) },
@@ -27,6 +31,8 @@ describe('finance policies', () => {
       { side: 'debit', amount: Money.of(100) }, { side: 'credit', amount: Money.of(99) },
     ])).toThrow('FINANCE_JOURNAL_UNBALANCED');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   });
 
   it('enforces four eyes and a positive settlement amount', () => {
@@ -40,6 +46,9 @@ describe('finance policies', () => {
     const policy = new SettlementPolicy();
     expect(policy.split(10_001, { basisPoints: 350, invoiceBasis: 'net' })).toEqual({
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       grossMinor: 10_001,
       feeMinor: 350,
       netMinor: 9_651,
@@ -52,9 +61,12 @@ describe('finance policies', () => {
       netMinor: 4_503_599_627_370_496,
       invoiceBasis: 'gross',
       basisPoints: 5_000,
+<<<<<<< HEAD
 =======
       grossMinor: 10_001, feeMinor: 350, netMinor: 9_651, invoiceBasis: 'net', basisPoints: 350,
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     });
     expect(() => policy.split(100, { basisPoints: 5_001 })).toThrow('FINANCE_SETTLEMENT_FEE_INVALID');
     expect(() => policy.split(100, { invoiceBasis: 'other' })).toThrow('FINANCE_SETTLEMENT_INVOICE_BASIS_INVALID');

@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { createHash } from 'node:crypto';
 import type { JsonObject, JsonValue, ProviderRecordError } from '@shop/contract';
 import type { MealBrand } from './BrandCatalog';
@@ -182,6 +185,9 @@ function stable(value: JsonValue): string {
   return `{${Object.entries(value).sort(([left], [right]) => left.localeCompare(right, 'en'))
     .map(([key, item]) => `${JSON.stringify(key)}:${stable(item)}`).join(',')}}`;
 }
+<<<<<<< HEAD
 =======
 export { CanonicalSourceMapper as MealMapper } from '@shop/providercore';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

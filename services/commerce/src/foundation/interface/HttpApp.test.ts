@@ -4,6 +4,7 @@ import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { HttpApp } from './HttpApp';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function routes(operation = 'identity.sessions.create'): RouteRegistry {
   return {
     match: () => ({
@@ -14,12 +15,19 @@ function routes(): RouteRegistry {
     match: () => ({
       operation: 'identity.sessions.create',
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function routes(operation = 'identity.sessions.create'): RouteRegistry {
+  return {
+    match: () => ({
+      operation,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       parameters: {},
       handler: async () => ({ status: 200, body: { accepted: true } }),
     }),
   } as unknown as RouteRegistry;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 describe('HttpApp request dispatch', () => {
   it('invokes a route without a contract-version header', async () => {
@@ -34,14 +42,24 @@ describe('HttpApp request dispatch', () => {
 describe('HttpApp contract handshake', () => {
   it('returns upgrade required before invoking a route with a missing contract version', async () => {
     const response = await new HttpApp(routes(), []).handle(new Request('https://api.example/api/v1/identity/sessions', {
+=======
+describe('HttpApp request dispatch', () => {
+  it('invokes a route without a contract-version header', async () => {
+    const response = await new HttpApp(routes(), ['https://shop.example']).handle(new Request('https://api.example/api/v1/identity/sessions', {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', origin: 'https://shop.example' },
       body: '{}',
     }));
+<<<<<<< HEAD
     expect(response.status).toBe(426);
     expect(response.headers.get('x-contract-version')).toBe(CONTRACT_VERSION);
     expect(await response.json()).toMatchObject({ code: 'CONTRACT_VERSION_UNSUPPORTED', required: CONTRACT_VERSION });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ accepted: true });
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   });
 
   it('allows the exact generated contract version', async () => {
@@ -56,6 +74,9 @@ describe('HttpApp contract handshake', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it('allows an authenticated API cookie without a CSRF token', async () => {
     const response = await new HttpApp(routes('identity.members.create'), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/members', {
       method: 'POST',
@@ -93,6 +114,7 @@ describe('HttpApp contract handshake', () => {
     expect(response.headers.get('access-control-allow-headers')).toContain('x-action-proof');
   });
 
+<<<<<<< HEAD
   it('ends a request when its total deadline is exhausted', async () => {
     const slow = { match: () => ({ operation: 'identity.sessions.create', parameters: {}, handler: async () => new Promise(() => undefined) }) } as unknown as RouteRegistry;
     const response = await new HttpApp(slow, ['https://shop.example'], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
@@ -103,6 +125,12 @@ describe('HttpApp contract handshake', () => {
     const response = await new HttpApp(slow, [], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST', headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION }, body: '{}',
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  it('ends a request when its total deadline is exhausted', async () => {
+    const slow = { match: () => ({ operation: 'identity.sessions.create', parameters: {}, handler: async () => new Promise(() => undefined) }) } as unknown as RouteRegistry;
+    const response = await new HttpApp(slow, ['https://shop.example'], undefined, 5).handle(new Request('https://api.example/api/v1/identity/sessions', {
+      method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://shop.example', 'x-contract-version': CONTRACT_VERSION }, body: '{}',
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     }));
     expect(response.status).toBe(504);
     expect(await response.json()).toMatchObject({ code: 'DEADLINE_EXCEEDED' });

@@ -132,6 +132,9 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled,
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button:disabled:hover {
   border-color: rgb(255 255 255 / 3%);
@@ -150,8 +153,11 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   filter: none;
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[aria-current='page'] {
   border-color: rgb(84 145 255 / 28%);
   background: linear-gradient(90deg, rgb(31 94 255 / 27%), rgb(31 94 255 / 15%));
@@ -357,6 +363,9 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 .consolelayout[data-visual-theme='admin-web-v1'] .shopbuttonprimary:hover:not(:disabled) {
   border-color: #174ecf;
   background: linear-gradient(135deg, #2a69ff 0%, #173f9b 100%);
@@ -364,8 +373,11 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   box-shadow: 0 8px 18px rgb(31 94 255 / 26%);
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 .consolelayout[data-visual-theme='admin-web-v1'] .shopbuttondanger {
   border-color: #f2b5bf;
   background: #fff7f8;

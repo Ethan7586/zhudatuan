@@ -62,6 +62,9 @@ export class DispatchNotification {
   async challenge(id: string): Promise<void> {
     const selected = (await this.repository.challenge(id)).rows[0]; if (!selected) return;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const attempt = (await this.repository.beginChallengeAttempt(id, 'sms')).rows[0];
     if (!attempt || !attempt.dispatch) return;
     let code: string;
@@ -75,6 +78,7 @@ export class DispatchNotification {
       await this.repository.failChallengeAttempt(id, attempt.sequence, deliveryError(cause));
       throw cause;
     }
+<<<<<<< HEAD
     try {
       const receipt = await this.deliveries.require('sms').send({ recipient, providerTemplate: null, variables: { code }, subject: null,
         body: 'verification', idempotency: id });
@@ -89,13 +93,22 @@ export class DispatchNotification {
       this.kms.decrypt('identity/challenge', selected.code_ciphertext, { challenge: id, purpose: selected.purpose }),
       this.kms.decrypt('identity/destination', selected.destination_ciphertext, { challenge: id, purpose: selected.purpose }),
     ]);
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     try {
       const receipt = await this.deliveries.require('sms').send({ recipient, providerTemplate: null, variables: { code }, subject: null,
         body: 'verification', idempotency: id });
-      await this.repository.challengeAttempt(id, receipt.provider, 'sent', receipt.externalId, null);
+      const completed = await this.repository.completeChallengeAttempt(id, attempt.sequence, receipt.provider, receipt.externalId);
+      if (completed.rowCount !== 1) throw new Error('IDENTITY_NOTIFICATION_DELIVERY_STATE_LOST');
     } catch (cause) {
+<<<<<<< HEAD
       await this.repository.challengeAttempt(id, 'sms', 'failed', null, deliveryError(cause)); throw cause;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      const code = deliveryError(cause);
+      if (definitiveProviderRejection(code)) await this.repository.failChallengeAttempt(id, attempt.sequence, code);
+      else await this.repository.ambiguousChallengeAttempt(id, attempt.sequence, code);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     }
   }
 
@@ -124,8 +137,14 @@ function deliveryError(value: unknown): string {
   return message.replace(/[^A-Z0-9_.:-]/gi, '').slice(0, 200) || 'NOTIFICATION_DELIVERY_FAILED';
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 function definitiveProviderRejection(code: string): boolean {
   return code === 'ALIYUN_SMS_REJECTED' || code.startsWith('ALIYUN_SMS_ISV.');
 }
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function definitiveProviderRejection(code: string): boolean {
+  return code === 'ALIYUN_SMS_REJECTED' || code.startsWith('ALIYUN_SMS_ISV.');
+}
+>>>>>>> 018b2a71 (chore(release): capture current production source)

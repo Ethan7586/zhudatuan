@@ -5,10 +5,15 @@ import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
 import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
+import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { ProductBatchPreview } from './ProductBatchPreview';
 import { ProductCatalogHeader } from './ProductCatalogHeader';
 import { ProductColumnSettings } from './ProductColumnSettings';
@@ -28,6 +33,9 @@ import './product-responsive.css';
 const allColumns: readonly ProductColumnKey[] = Object.freeze(['category', 'sku', 'malls', 'price', 'stock', 'status', 'updated']);
 const pageSizes = new Set([20, 50, 100]);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const productCsvColumns: readonly CsvColumn<Listing>[] = Object.freeze([
   { header: '记录ID', value: (row) => row.id },
   { header: '商品ID', value: (row) => row.product_id },
@@ -41,8 +49,11 @@ const productCsvColumns: readonly CsvColumn<Listing>[] = Object.freeze([
   { header: '失效时间', value: (row) => row.expires_at },
   { header: '更新时间', value: (row) => row.cursor_sort },
 ]);
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export function Component() {
   const context = useConsoleContext();
@@ -83,9 +94,13 @@ export function Component() {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [importOpen, setImportOpen] = useState(false);
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const [importOpen, setImportOpen] = useState(false);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ProductColumnKey>>(() => new Set(allColumns));
   const cursorTrail = useRef(new Map<number, string | undefined>([[1, undefined]]));
   const visibleSelected = useMemo(() => new Set(query.data?.items.filter((row) => selected.has(row.id)).map((row) => row.id) ?? []), [query.data?.items, selected]);
@@ -176,6 +191,9 @@ export function Component() {
   const canPrevious = page === 2 || (page > 2 && cursorTrail.current.has(page - 1));
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (condition === 'unauthenticated' || condition === 'denied') {
     return (
       <section className="productpage">
@@ -193,8 +211,11 @@ export function Component() {
     );
   }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return (
     <section className="productpage" data-drawer={selectedListing === undefined ? 'closed' : 'open'}>
       <ProductCatalogHeader
@@ -202,6 +223,9 @@ export function Component() {
         previewEnabled={previewEnabled}
         status={filter.status ?? ''}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         exportReady={query.data !== undefined}
         onImport={() => setImportOpen(true)}
         onExport={() => {
@@ -212,8 +236,11 @@ export function Component() {
             filename: timestampedCsvFilename('products-current-page'),
           });
         }}
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         onStatus={(status) => apply({ q: filter.q, category: filter.category, supplier: filter.supplier ?? '', mall: filter.mall ?? '', status })}
       />
       <section className="productcontrols" aria-label="商品筛选">
@@ -231,9 +258,13 @@ export function Component() {
       <ResourceState
         condition={condition}
 <<<<<<< HEAD
+<<<<<<< HEAD
         resourceLabel="商品治理台"
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+        resourceLabel="商品治理台"
+>>>>>>> 018b2a71 (chore(release): capture current production source)
         {...(error === undefined ? {} : { error })}
         retry={() => {
           void query.refetch();
@@ -272,9 +303,13 @@ export function Component() {
       <ProductColumnSettings open={columnsOpen} visible={visibleColumns} onChange={toggleColumn} onClose={() => setColumnsOpen(false)} />
       <ProductBatchPreview open={batchOpen} rows={selectedRows} onClose={() => setBatchOpen(false)} />
 <<<<<<< HEAD
+<<<<<<< HEAD
       <LocalImportDialog open={importOpen} title="导入商品" resourceLabel="商品" onClose={() => setImportOpen(false)} />
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      <LocalImportDialog open={importOpen} title="导入商品" resourceLabel="商品" onClose={() => setImportOpen(false)} />
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     </section>
   );
 }

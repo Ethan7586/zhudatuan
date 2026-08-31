@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { checkAssurance, checkScope, decide, precheck, SCOPE_KINDS, type MembershipAccess, type Scope } from './index';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const scope: Scope = {
   kind: 'mall',
   id: 'mall-a',
@@ -11,9 +14,12 @@ const scope: Scope = {
     { kind: 'enterprise', id: 'enterprise-a' },
   ],
 };
+<<<<<<< HEAD
 =======
 const scope: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [{ kind: 'tenant', id: 'tenant-a' }, { kind: 'enterprise', id: 'enterprise-a' }] };
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const membership: MembershipAccess = { id: 'membership-a', active: true, accessVersion: 3, denies: [], grants: [{ scope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
 
 describe('authorization policy', () => {
@@ -44,6 +50,9 @@ describe('authorization policy', () => {
   it('enforces tenant boundaries and delegation expiry for every hierarchical anchor', () => {
     const now = new Date('2026-08-21T00:00:00.000Z');
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     const resource: Scope = {
       kind: 'mall',
       id: 'mall-a',
@@ -56,6 +65,7 @@ describe('authorization policy', () => {
       ],
     };
     for (const grantScope of [resource, ...resource.path.map((item) => ({ ...item, tenant: item.kind === 'platform' ? undefined : 'tenant-a', path: [] }) as Scope)]) {
+<<<<<<< HEAD
 =======
     const resource: Scope = { kind: 'mall', id: 'mall-a', tenant: 'tenant-a', path: [
       { kind: 'platform', id: 'platform-a' }, { kind: 'distributor', id: 'distributor-a' },
@@ -63,6 +73,8 @@ describe('authorization policy', () => {
     ] };
     for (const grantScope of [resource, ...resource.path.map((item) => ({ ...item, tenant: item.kind === 'platform' ? undefined : 'tenant-a', path: [] } as Scope))]) {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       const access: MembershipAccess = { ...membership, grants: [{ scope: grantScope, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
       expect(decide(access, 'order.read', resource, { expectedAccessVersion: 3, now }).allowed).toBe(true);
     }
@@ -72,6 +84,9 @@ describe('authorization policy', () => {
     expect(decide(expired, 'order.read', scope, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'PERMISSION_MISSING' });
   });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   it('keeps distributor grants effective above the tenant boundary without leaking across distributors', () => {
     const now = new Date('2026-08-21T00:00:00.000Z');
@@ -96,6 +111,9 @@ describe('authorization policy', () => {
     const collision: MembershipAccess = { ...membership, grants: [{ scope: { kind: 'mall', id: 'x', tenant: 'tenant-a', path: [] }, permissions: ['order.read'], effective: '2026-01-01T00:00:00.000Z', expires: null }] };
     expect(decide(collision, 'order.read', { kind: 'department', id: 'x', tenant: 'tenant-a', path: [] }, { expectedAccessVersion: 3, now })).toMatchObject({ allowed: false, reason: 'SCOPE_DENIED' });
   });
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 });

@@ -1,9 +1,13 @@
 import { createHash } from 'node:crypto';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { readFile, stat, writeFile } from 'node:fs/promises';
 =======
 import { readFile, writeFile } from 'node:fs/promises';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { readFile, stat, writeFile } from 'node:fs/promises';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { resolve } from 'node:path';
 import { parse } from 'yaml';
 import { PERMISSION_CATALOG } from '../../../packages/authz/src/PermissionCatalog';
@@ -66,7 +70,11 @@ validateCapabilityAudiences(operations, capabilities);
 validateErrors(errors);
 const check = process.argv.includes('--check');
 const contractSdkOnly = process.argv.includes('--scope=contract-sdk');
+<<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+const databaseOnly = process.argv.includes('--scope=database');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const permissionMetadata = new Map(PERMISSION_CATALOG.map(({ code, risk, stepup, scopes }) => [code, { risk, stepup, scopes }]));
 const openapi = buildOpenapi(operations, permissionMetadata);
 const eventArtifact = stable({ version: 1, events: events.map((item) => ({ type: item.id, version: item.version, module: item.owner })) });
@@ -96,20 +104,28 @@ if (databaseOnly) {
 =======
 const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
-await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
-await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
-await emit(resolve(root, 'packages/contract/src/operations/CommerceOperations.ts'), operationSource(operations, permissionMetadata));
-await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
-await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
-await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
-await emit(resolve(root, 'packages/contract/src/ContractIdentity.generated.ts'), contractIdentitySource(contractChecksum));
-await emit(resolve(root, 'packages/contract/src/ErrorContract.generated.ts'), errorSource(errors));
-await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.generated.ts'), sdkSource(operations));
-for (const [domain, source] of sdkDomainSources(operations)) {
-  await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
+if (databaseOnly) {
+  await emitDatabaseArtifact(contractChecksum);
+} else {
+  await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
+  await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
+  await emit(resolve(root, 'packages/contract/src/operations/CommerceOperations.ts'), operationSource(operations, permissionMetadata));
+  await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
+  await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
+  await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
+  await emit(resolve(root, 'packages/contract/src/ContractIdentity.generated.ts'), contractIdentitySource(contractChecksum));
+  await emit(resolve(root, 'packages/contract/src/ErrorContract.generated.ts'), errorSource(errors));
+  await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.generated.ts'), sdkSource(operations));
+  for (const [domain, source] of sdkDomainSources(operations)) {
+    await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
+  }
+  if (!contractSdkOnly) await emitLegacyArtifacts(contractChecksum);
 }
+<<<<<<< HEAD
 if (!contractSdkOnly) await emitLegacyArtifacts(contractChecksum);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 async function catalog<T>(name: string, key: string): Promise<readonly T[]> {
   const payload = parse(await readFile(resolve(definitions, name), 'utf8')) as Record<string, unknown>;
@@ -178,9 +194,11 @@ function validateOperations(values: readonly OperationDefinition[]): void {
   const routes = new Set<string>();
   for (const item of values) {
     if (!/^[a-z]+(?:\.[a-z]+)+$/.test(item.id) || ids.has(item.id)) throw new Error(`OPERATION_ID_INVALID:${item.id}`);
-    const pathAllowed = item.path.startsWith('/api/v1/') || item.id.startsWith('runtime.health.') && item.path.startsWith('/health/');
+    const pathAllowed = item.path.startsWith('/api/v1/') || (item.id.startsWith('runtime.health.') && item.path.startsWith('/health/'));
     if (!pathAllowed || routes.has(`${item.method} ${item.path}`)) throw new Error(`OPERATION_ROUTE_INVALID:${item.id}`);
     if (item.schema !== 'exact' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
+    if (item.expectedVersion !== undefined && !['none', 'optional', 'required'].includes(item.expectedVersion)) throw new Error(`OPERATION_EXPECTED_VERSION_INVALID:${item.id}`);
+    if (item.method === 'GET' && item.expectedVersion !== undefined && item.expectedVersion !== 'none') throw new Error(`OPERATION_EXPECTED_VERSION_INVALID:${item.id}`);
     if (item.requirements.length === 0 || item.requirements.some((id) => !/^MVP(?:0[3-9]|1\d|2[0-3])$/.test(id))) throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
     const domain = item.id.split('.')[0]!;
     if (item.sdk !== `packages/sdk/src/operations/${domain}.ts`) throw new Error(`OPERATION_SDK_TARGET_INVALID:${item.id}`);
@@ -272,22 +290,37 @@ async function emitDatabaseArtifact(contractChecksum: string, values: readonly O
     .join(',\n');
 =======
 async function emitLegacyArtifacts(contractChecksum: string): Promise<void> {
-  await emit(resolve(root, 'apps/miniapp/miniprogram/api/identity.js'), miniappIdentitySource(contractChecksum));
-  await emit(resolve(root, 'apps/miniapp/miniprogram/api/operations.js'), miniappSource(operations, permissionMetadata));
+  const miniappApi = resolve(root, 'apps/miniapp/miniprogram/api');
+  const miniappPresent = await stat(miniappApi)
+    .then((entry) => entry.isDirectory())
+    .catch(() => false);
+  if (miniappPresent) {
+    await emit(resolve(miniappApi, 'identity.js'), miniappIdentitySource(contractChecksum));
+    await emit(resolve(miniappApi, 'operations.js'), miniappSource(operations, permissionMetadata));
+  }
   await emit(resolve(root, 'services/commerce/src/foundation/application/OperationHandler.ts'), hardenedHandlerSource(operations));
   await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), hardenedControllerSource(operations));
   await emit(resolve(root, 'services/commerce/src/app/events.ts'), eventRegistrySource(events));
 
+  await emitDatabaseArtifact(contractChecksum);
+}
+
+async function emitDatabaseArtifact(contractChecksum: string): Promise<void> {
   const template = await readFile(resolve(root, 'database/contracts/publish.template.sql'), 'utf8');
   const operationRows = operations.map((item) => sqlRow([item.id, item.owner, item.method, item.path, '1.0.0'])).join(',\n');
   const eventRows = events.map((item) => sqlRow([item.id, item.version, item.owner, item.schema])).join(',\n');
   const capabilityRows = operations.map((item) => sqlRow([item.id, 'operation', item.id, 1, 'active'])).join(',\n');
   const bindings = operations.map((item) => sqlRow([item.id, item.id, item.permission ?? null, item.audience])).join(',\n');
-  const usedPermissions = new Set(operations.flatMap((item) => item.permission ? [item.permission] : []));
+  const usedPermissions = new Set(operations.flatMap((item) => (item.permission ? [item.permission] : [])));
   const permissions = PERMISSION_CATALOG.filter(({ code }) => usedPermissions.has(code))
     .sort((left, right) => left.code.localeCompare(right.code))
+<<<<<<< HEAD
     .map(({ code, risk }) => sqlRow([`permission:${hash(code).slice(0, 24)}`, code, risk, 'active'])).join(',\n');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    .map(({ code, risk }) => sqlRow([`permission:${hash(code).slice(0, 24)}`, code, risk, 'active']))
+    .join(',\n');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const migration = template
     .replace('{{OPERATIONS}}', operationRows)
     .replace('{{EVENTS}}', eventRows)
@@ -315,6 +348,7 @@ function eventSerializerSource(values: readonly EventDefinition[]): string {
 
 function contractIdentitySource(checksum: string): string {
 <<<<<<< HEAD
+<<<<<<< HEAD
   return ['// Generated from the canonical operation and event definitions. Do not edit.', "export const CONTRACT_VERSION = '1.0.0' as const;", "export const CONTRACT_CHECKSUM = '" + checksum + "' as const;", ''].join('\n');
 }
 
@@ -336,6 +370,13 @@ function miniappIdentitySource(checksum: string): string {
     '',
   ].join('\n');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  return ['// Generated from the canonical operation and event definitions. Do not edit.', "export const CONTRACT_VERSION = '1.0.0' as const;", "export const CONTRACT_CHECKSUM = '" + checksum + "' as const;", ''].join('\n');
+}
+
+function miniappIdentitySource(checksum: string): string {
+  return ['// Generated from the canonical operation and event definitions. Do not edit.', "module.exports = Object.freeze({ version: '1.0.0', checksum: '" + checksum + "' });", ''].join('\n');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function eventRegistrySource(values: readonly EventDefinition[]): string {
@@ -345,6 +386,9 @@ function eventRegistrySource(values: readonly EventDefinition[]): string {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function miniappSource(values: readonly OperationDefinition[], permissions: ReadonlyMap<string, Readonly<{ risk: string; stepup: boolean; scopes: readonly string[] }>>): string {
   const definitions = Object.fromEntries(
     values.map((item) => {
@@ -366,6 +410,7 @@ function miniappSource(values: readonly OperationDefinition[], permissions: Read
       ];
     })
   );
+<<<<<<< HEAD
 =======
 function miniappSource(
   values: readonly OperationDefinition[],
@@ -387,6 +432,8 @@ function miniappSource(
     }];
   }));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const groups = new Map<string, OperationDefinition[]>();
   for (const operation of values) {
     const domain = operation.id.split('.')[0]!;
@@ -395,28 +442,38 @@ function miniappSource(
     groups.set(domain, current);
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const clients = [...groups]
     .map(([domain, operations]) => {
       const methods = operations.map((operation) => `    ${miniappMethodName(operation.id)}: bind(execute, ${JSON.stringify(operation.id)}),`).join('\n');
       return `  ${domain}: Object.freeze({\n${methods}\n  }),`;
     })
     .join('\n');
+<<<<<<< HEAD
 =======
   const clients = [...groups].map(([domain, operations]) => {
     const methods = operations.map((operation) => `    ${miniappMethodName(operation.id)}: bind(execute, ${JSON.stringify(operation.id)}),`).join('\n');
     return `  ${domain}: Object.freeze({\n${methods}\n  }),`;
   }).join('\n');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return `// Generated from definitions/operations.yml. Do not edit.\nconst definitions = Object.freeze(${JSON.stringify(definitions, null, 2)});\n\n/** @param {(id: string, input?: any, context?: any) => Promise<any>} execute */\nfunction createOperations(execute) {\n  if (typeof execute !== 'function') throw new Error('MINIAPP_OPERATION_EXECUTOR_REQUIRED');\n  return Object.freeze({\n${clients}\n  });\n}\n\n/** @param {(id: string, input?: any, context?: any) => Promise<any>} execute @param {string} id */\nfunction bind(execute, id) { return (input = {}, context = {}) => execute(id, input, context); }\n\nmodule.exports = Object.freeze({ createOperations, definitions });\n`;
 }
 
 function miniappMethodName(id: string): string {
   const [, ...segments] = id.split('.');
 <<<<<<< HEAD
+<<<<<<< HEAD
   return segments.map((segment, index) => (index === 0 ? segment : `${segment[0]!.toUpperCase()}${segment.slice(1)}`)).join('');
 =======
   return segments.map((segment, index) => index === 0 ? segment : `${segment[0]!.toUpperCase()}${segment.slice(1)}`).join('');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  return segments.map((segment, index) => (index === 0 ? segment : `${segment[0]!.toUpperCase()}${segment.slice(1)}`)).join('');
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function handlerSource(values: readonly OperationDefinition[]): string {
@@ -431,20 +488,29 @@ function controllerSource(values: readonly OperationDefinition[]): string {
 
 function hardenedHandlerSource(values: readonly OperationDefinition[]): string {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return handlerSource(values).replace(
     '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly body: unknown;',
     '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly headers: Readonly<Record<string, string>>;\n  readonly body: unknown;\n  readonly rawBody: string;\n  readonly deadline: number;\n  readonly signal: AbortSignal;\n  /** Server-derived target used for authorization and action-proof binding. */\n  readonly resource?: string;'
   );
+<<<<<<< HEAD
 =======
   return handlerSource(values)
     .replace('  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly body: unknown;',
       '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly headers: Readonly<Record<string, string>>;\n  readonly body: unknown;\n  readonly rawBody: string;\n  readonly deadline: number;\n  readonly signal: AbortSignal;');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function hardenedControllerSource(values: readonly OperationDefinition[]): string {
   return controllerSource(values)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     .replace(
       'export function registerOperationRoutes(module: string, context: ModuleContext): void {',
       `export function registerOperationRoutes(module: string, context: ModuleContext): void {
@@ -461,6 +527,7 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
       'for (const operation of OperationCatalog.all().filter((candidate) => candidate.module === module)) {',
       'for (const operation of operations) {'
     )
+<<<<<<< HEAD
     .replace("operation.audience === 'public' ? null", "operation.audience === 'public' || operation.audience === 'provider' ? null")
     .replace('const access = operation.audience', 'const resource = operationResource(operation.id, request);\n      const access = operation.audience')
     .replace('Object.values(request.parameters)[0]);', 'resource);')
@@ -485,25 +552,53 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
       "\nfunction operationResource(operation: string, request: HttpRequest): string | undefined {\n  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.\n  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  const pathResource = Object.values(request.parameters)[0];\n  if (pathResource !== undefined) return pathResource;\n  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;\n  const settlement = Reflect.get(request.body, 'settlement');\n  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;\n}\n\nfunction queryObject(parameters: URLSearchParams)"
     );
 =======
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     .replace("operation.audience === 'public' ? null", "operation.audience === 'public' || operation.audience === 'provider' ? null")
-    .replace('operationInput(operation.method, request)', 'operationInput(operation.method, operation.audience, request)')
-    .replace('function operationInput(method: string, request: HttpRequest): OperationInput {', 'function operationInput(method: string, audience: string, request: HttpRequest): OperationInput {')
+    .replace('const access = operation.audience', 'const resource = operationResource(operation.id, request);\n      const access = operation.audience')
+    .replace('Object.values(request.parameters)[0]);', 'resource);')
+    .replace('operationInput(operation.method, request)', 'operationInput(operation.id, operation.method, operation.audience, request, resource)')
+    .replace(
+      'function operationInput(method: string, request: HttpRequest): OperationInput {',
+      'function operationInput(operation: string, method: string, audience: string, request: HttpRequest, resource: string | undefined): OperationInput {'
+    )
     .replace("if (method !== 'GET' && idempotency === undefined)", "if (method !== 'GET' && audience !== 'provider' && idempotency === undefined)")
+<<<<<<< HEAD
     .replace("const normalized = header?.replace(/^W\\/\"|\"$/g, '');", "const normalized = header?.replace(/^W\\//, '').replace(/^\"|\"$/g, '');")
     .replace('return { path: request.parameters, query: queryObject(request.query), body: request.body,',
       'return { path: request.parameters, query: queryObject(request.query), headers: request.headers, body: request.body, rawBody: request.rawBody, deadline: request.deadline, signal: request.signal,');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    .replace('const normalized = header?.replace(/^W\\/"|"$/g, \'\');', "const normalized = header?.replace(/^W\\//, '').replace(/^\"|\"$/g, '');")
+    .replace(
+      "if (normalized !== undefined && (!Number.isSafeInteger(expectedVersion) || expectedVersion! < 0)) throw new Error('EXPECTED_VERSION_INVALID');",
+      "if (normalized !== undefined && (!Number.isSafeInteger(expectedVersion) || expectedVersion! < 0)) throw new Error('EXPECTED_VERSION_INVALID');\n  if (OperationCatalog.get(operation as OperationId).expectedVersion === 'required' && expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');"
+    )
+    .replace(
+      'return { path: request.parameters, query: queryObject(request.query), body: request.body,',
+      'return { path: request.parameters, query: queryObject(request.query), headers: request.headers, body: request.body, rawBody: request.rawBody, deadline: request.deadline, signal: request.signal,'
+    )
+    .replace('    ...(idempotency === undefined ? {} : { idempotency }),', '    ...(resource === undefined ? {} : { resource }), ...(idempotency === undefined ? {} : { idempotency }),')
+    .replace(
+      '\nfunction queryObject(parameters: URLSearchParams)',
+      "\nfunction operationResource(operation: string, request: HttpRequest): string | undefined {\n  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.\n  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  const pathResource = Object.values(request.parameters)[0];\n  if (pathResource !== undefined) return pathResource;\n  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;\n  const settlement = Reflect.get(request.body, 'settlement');\n  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;\n}\n\nfunction queryObject(parameters: URLSearchParams)"
+    );
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   if (value !== null && typeof value === 'object')
     return Object.fromEntries(
       Object.entries(value)
         .sort(([left], [right]) => left.localeCompare(right))
         .map(([key, child]) => [key, stable(child)])
     );
+<<<<<<< HEAD
   return value;
 }
 
@@ -520,15 +615,21 @@ function contractIdentityOpenapi(value: unknown): unknown {
 =======
   if (value !== null && typeof value === 'object') return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, stable(child)]));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   return value;
 }
 
 function sqlRow(values: readonly (string | number | null)[]): string {
 <<<<<<< HEAD
+<<<<<<< HEAD
   return `  (${values.map((value) => (value === null ? 'null' : typeof value === 'number' ? String(value) : `'${value.replaceAll("'", "''")}'`)).join(',')})`;
 =======
   return `  (${values.map((value) => value === null ? 'null' : typeof value === 'number' ? String(value) : `'${value.replaceAll("'", "''")}'`).join(',')})`;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  return `  (${values.map((value) => (value === null ? 'null' : typeof value === 'number' ? String(value) : `'${value.replaceAll("'", "''")}'`)).join(',')})`;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 function hash(value: string): string {

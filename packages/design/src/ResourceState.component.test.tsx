@@ -2,14 +2,19 @@ import { isValidElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { Empty } from './Empty';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ContextualAccessDenied } from './AccessDenied';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { ContextualAccessDenied } from './AccessDenied';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 import { ErrorView } from './Error';
 import { ResourceState, resourceCondition, resourceConditions, type ResourceCondition } from './ResourceState';
 
 describe('resource state contract', () => {
   it('exposes the complete asynchronous state union', () => {
+<<<<<<< HEAD
 <<<<<<< HEAD
     expect(resourceConditions).toEqual(['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry']);
 =======
@@ -18,6 +23,9 @@ describe('resource state contract', () => {
       'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry',
     ]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    expect(resourceConditions).toEqual(['loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry']);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   });
 
   it.each([
@@ -32,6 +40,9 @@ describe('resource state contract', () => {
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   it.each(['notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)('renders %s as an explicit error boundary', (condition: ResourceCondition) => {
     const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
     expect(isValidElement(result)).toBe(true);
@@ -52,6 +63,7 @@ describe('resource state contract', () => {
     expect(result.props.resourceLabel).toBe('分销系统');
     expect(result.props.detail).toBeUndefined();
   });
+<<<<<<< HEAD
 =======
   it.each(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)(
     'renders %s as an explicit error boundary',
@@ -64,6 +76,8 @@ describe('resource state contract', () => {
     },
   );
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
   it('announces loading, renders empty and preserves ready children', () => {
     const loading = ResourceState({ condition: 'loading', children: 'ready' });

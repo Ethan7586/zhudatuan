@@ -14,6 +14,7 @@ export function cartOperations(context: ModuleContext): ModuleOperations {
         coalesce(jsonb_agg(jsonb_build_object('listing',item.listing_id,'sku',item.sku_id,'quantity',item.quantity,'version',item.version,
           'title',listing.title)) order by item.listing_id) filter(where item.listing_id is not null),'[]') items
 <<<<<<< HEAD
+<<<<<<< HEAD
         from access.web_member_context($1,$2) owned
         left join cart.cart cart on cart.member_id=owned.id and cart.mall_id=owned.organization_id and cart.state='active'
         left join cart.item item on item.cart_id=cart.id left join catalog.listing listing on listing.id=item.listing_id
@@ -24,6 +25,12 @@ export function cartOperations(context: ModuleContext): ModuleOperations {
         left join cart.item item on item.cart_id=cart.id left join catalog.listing listing on listing.id=item.listing_id
         where membership.id=$1 group by cart.id`, [access.membership.id]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+        from access.web_member_context($1,$2) owned
+        left join cart.cart cart on cart.member_id=owned.id and cart.mall_id=owned.organization_id and cart.state='active'
+        left join cart.item item on item.cart_id=cart.id left join catalog.listing listing on listing.id=item.listing_id
+        group by cart.id`, [access.membership.id, access.actor.session]);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       return { status: 200, body: result.rows[0] ?? { items: [], version: 0 } };
     },
     'cart.items.put': async (request, database) => {
@@ -31,6 +38,7 @@ export function cartOperations(context: ModuleContext): ModuleOperations {
       const body = bodyRecord(request);
       const quantity = integerField(body, 'quantity', 0);
       const listing = request.input.path.listingid!;
+<<<<<<< HEAD
 <<<<<<< HEAD
       const target = await database.query<{ member_id: string; mall_id: string; application_id: string }>(`select owned.id member_id,owned.organization_id mall_id,application.id application_id
         from access.web_member_context($1,$2) owned
@@ -44,6 +52,13 @@ export function cartOperations(context: ModuleContext): ModuleOperations {
         join experience.application application on application.scope_id=mall.id and application.status='active'
         where membership.id=$1 order by application.updated_at desc limit 1`, [access.membership.id]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      const target = await database.query<{ member_id: string; mall_id: string; application_id: string }>(`select owned.id member_id,owned.organization_id mall_id,application.id application_id
+        from access.web_member_context($1,$2) owned
+        join organization.organization mall on mall.id=owned.organization_id and mall.kind='mall'
+        join experience.application application on application.scope_id=mall.id and application.status='active'
+        order by application.updated_at desc limit 1`, [access.membership.id, access.actor.session]);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       const owner = target.rows[0];
       if (!owner) throw new Error('ACTIVE_MALL_APPLICATION_MISSING');
       const active = await database.query<{ sku_id: string; version: number }>(`select sku_id,version from catalog.listing where id=$1 and scope_id=$2 and status='published'
@@ -73,11 +88,15 @@ export function cartOperations(context: ModuleContext): ModuleOperations {
         if (!listing || !Number.isSafeInteger(quantity) || (quantity as number) < 0) throw new Error('VALIDATION_FAILED:items');
         if (quantity === 0) await database.query(`delete from cart.item where cart_id in(select cart.id from cart.cart cart
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
           join access.web_member_context($1,$2) owned on owned.organization_id=cart.mall_id and owned.id=cart.member_id
           where cart.state='active') and listing_id=$3`, [access.membership.id, access.actor.session, listing]);
         else await database.query(`update cart.item set quantity=$4,version=version+1 where cart_id in(select cart.id from cart.cart cart
           join access.web_member_context($1,$2) owned on owned.organization_id=cart.mall_id and owned.id=cart.member_id
           where cart.state='active') and listing_id=$3`, [access.membership.id, access.actor.session, listing, quantity]);
+<<<<<<< HEAD
       }
       const result = await database.query(`update cart.cart set version=version+1,updated_at=clock_timestamp() where id in(select cart.id from cart.cart cart
         join access.web_member_context($1,$2) owned on owned.organization_id=cart.mall_id and owned.id=cart.member_id
@@ -93,6 +112,12 @@ export function cartOperations(context: ModuleContext): ModuleOperations {
         join access.membership membership on membership.organization_id=cart.mall_id join member.profile profile on profile.id=cart.member_id and membership.member_id=profile.id
         where membership.id=$1 and cart.state='active') returning *`, [access.membership.id]);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      }
+      const result = await database.query(`update cart.cart set version=version+1,updated_at=clock_timestamp() where id in(select cart.id from cart.cart cart
+        join access.web_member_context($1,$2) owned on owned.organization_id=cart.mall_id and owned.id=cart.member_id
+        where cart.state='active') returning *`, [access.membership.id, access.actor.session]);
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       return rowResult(result);
     },
   });

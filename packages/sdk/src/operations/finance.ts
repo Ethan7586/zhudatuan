@@ -12,13 +12,19 @@ export const FINANCE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.reconciliations.manage",
   "finance.reconciliations.read",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   "finance.reconciliationrepairs.read",
   "finance.reconciliationrepairs.preview",
   "finance.reconciliationrepairs.submit",
   "finance.reconciliationrepairs.decide",
   "finance.reconciliationrepairs.reverse",
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   "finance.settlements.read",
   "finance.settlements.decide",
   "finance.settlements.adjust",
@@ -33,11 +39,17 @@ export const FINANCE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.backfills.decide",
   "finance.policies.manage",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "finance.policies.preview",
   "finance.policies.read",
   "finance.audit.read",
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  "finance.policies.preview",
+  "finance.policies.read",
+  "finance.audit.read",
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 ] as const satisfies readonly OperationId[]);
 
 export interface FinanceOperations {
@@ -48,13 +60,19 @@ export interface FinanceOperations {
   readonly reconciliationsManage: OperationMethod<"finance.reconciliations.manage">;
   readonly reconciliationsRead: OperationMethod<"finance.reconciliations.read">;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly reconciliationrepairsRead: OperationMethod<"finance.reconciliationrepairs.read">;
   readonly reconciliationrepairsPreview: OperationMethod<"finance.reconciliationrepairs.preview">;
   readonly reconciliationrepairsSubmit: OperationMethod<"finance.reconciliationrepairs.submit">;
   readonly reconciliationrepairsDecide: OperationMethod<"finance.reconciliationrepairs.decide">;
   readonly reconciliationrepairsReverse: OperationMethod<"finance.reconciliationrepairs.reverse">;
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly settlementsRead: OperationMethod<"finance.settlements.read">;
   readonly settlementsDecide: OperationMethod<"finance.settlements.decide">;
   readonly settlementsAdjust: OperationMethod<"finance.settlements.adjust">;
@@ -69,11 +87,17 @@ export interface FinanceOperations {
   readonly backfillsDecide: OperationMethod<"finance.backfills.decide">;
   readonly policiesManage: OperationMethod<"finance.policies.manage">;
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly policiesPreview: OperationMethod<"finance.policies.preview">;
   readonly policiesRead: OperationMethod<"finance.policies.read">;
   readonly auditRead: OperationMethod<"finance.audit.read">;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly policiesPreview: OperationMethod<"finance.policies.preview">;
+  readonly policiesRead: OperationMethod<"finance.policies.read">;
+  readonly auditRead: OperationMethod<"finance.audit.read">;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 
 export function createFetchFinance(baseUrl: string): FinanceOperations {
@@ -89,13 +113,19 @@ export function createFinanceOperations(client: OperationExecutor): FinanceOpera
     reconciliationsManage: bindReconciliationsManage(client),
     reconciliationsRead: bindReconciliationsRead(client),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     reconciliationrepairsRead: bindReconciliationrepairsRead(client),
     reconciliationrepairsPreview: bindReconciliationrepairsPreview(client),
     reconciliationrepairsSubmit: bindReconciliationrepairsSubmit(client),
     reconciliationrepairsDecide: bindReconciliationrepairsDecide(client),
     reconciliationrepairsReverse: bindReconciliationrepairsReverse(client),
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     settlementsRead: bindSettlementsRead(client),
     settlementsDecide: bindSettlementsDecide(client),
     settlementsAdjust: bindSettlementsAdjust(client),
@@ -110,11 +140,17 @@ export function createFinanceOperations(client: OperationExecutor): FinanceOpera
     backfillsDecide: bindBackfillsDecide(client),
     policiesManage: bindPoliciesManage(client),
 <<<<<<< HEAD
+<<<<<<< HEAD
     policiesPreview: bindPoliciesPreview(client),
     policiesRead: bindPoliciesRead(client),
     auditRead: bindAuditRead(client),
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    policiesPreview: bindPoliciesPreview(client),
+    policiesRead: bindPoliciesRead(client),
+    auditRead: bindAuditRead(client),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   });
 }
 
@@ -167,6 +203,9 @@ function bindReconciliationsRead(client: OperationExecutor): OperationMethod<"fi
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export function createFetchFinanceReconciliationrepairsRead(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.read"> {
   return bindReconciliationrepairsRead(new ApiClient(baseUrl, new FetchTransport()));
 }
@@ -207,8 +246,11 @@ function bindReconciliationrepairsReverse(client: OperationExecutor): OperationM
   return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.reverse","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/reverse","audience":"operator","idempotent":false,"pathKeys":["repairid"]}));
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export function createFetchFinanceSettlementsRead(baseUrl: string): OperationMethod<"finance.settlements.read"> {
   return bindSettlementsRead(new ApiClient(baseUrl, new FetchTransport()));
 }
@@ -313,6 +355,9 @@ function bindPoliciesManage(client: OperationExecutor): OperationMethod<"finance
   return bindOperation(client, defineStructuralOperation({"id":"finance.policies.manage","method":"PUT","path":"/api/v1/finance/policies/{policyid}","audience":"operator","idempotent":true,"pathKeys":["policyid"]}));
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 
 export function createFetchFinancePoliciesPreview(baseUrl: string): OperationMethod<"finance.policies.preview"> {
   return bindPoliciesPreview(new ApiClient(baseUrl, new FetchTransport()));
@@ -337,5 +382,8 @@ export function createFetchFinanceAuditRead(baseUrl: string): OperationMethod<"f
 function bindAuditRead(client: OperationExecutor): OperationMethod<"finance.audit.read"> {
   return bindOperation(client, defineStructuralOperation({"id":"finance.audit.read","method":"GET","path":"/api/v1/finance/audits","audience":"operator","idempotent":true,"pathKeys":[]}));
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)

@@ -50,10 +50,14 @@ export interface ApiAccount {
   balanceCents: number;
   status: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
   updatedAt?: string;
 =======
   updatedAt: string;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  updatedAt?: string;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 export interface ApiAccountLedger {
   id: string;
@@ -87,9 +91,13 @@ export interface ApiDeliveryAddress {
   tag?: string;
   isDefault: boolean;
 <<<<<<< HEAD
+<<<<<<< HEAD
   version?: number;
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  version?: number;
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 }
 export interface ApiAfterSale {
   id: string;

@@ -4,6 +4,9 @@ export const FINANCE_PREVIEW_ACCOUNTING_DATE = '2026-08-24';
 export const FINANCE_PREVIEW_LAST_RECONCILED_AT = '2026-08-24T13:26:00.000Z';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export interface FinanceEntryPreviewRecord {
   readonly source: typeof FINANCE_PREVIEW_SOURCE;
   readonly id: string;
@@ -74,8 +77,11 @@ export interface FinanceAuthorityPreviewPage<TItem> {
   };
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 type ReconciliationState = 'received' | 'matching' | 'balanced' | 'difference' | 'resolved' | 'approved';
 type ReconciliationItemState = 'matched' | 'difference' | 'resolutionpending' | 'resolved';
 
@@ -135,10 +141,15 @@ export interface FinanceRepairPreview {
 export interface FinanceReconciliationItem {
   readonly id: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly version: number;
   readonly kind: 'payment' | 'refund';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly version: number;
+  readonly kind: 'payment' | 'refund';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly externalMinor: number;
   readonly internalMinor: number;
   readonly differenceMinor: number;
@@ -278,10 +289,15 @@ export const financePreviewReconciliations: readonly FinanceReconciliationRecord
     differenceItem: Object.freeze({
       id: 'DIFF-20260824-0001',
 <<<<<<< HEAD
+<<<<<<< HEAD
       version: 7,
       kind: 'payment',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      version: 7,
+      kind: 'payment',
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       externalMinor: 11_900,
       internalMinor: 0,
       differenceMinor: 11_900,
@@ -403,6 +419,9 @@ export const financePreviewReconciliations: readonly FinanceReconciliationRecord
     itemMinors: [9_800, 12_000, 8_800, 10_000, 8_000, 8_000],
   }),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   reconciliation({
     serial: 'wechat-refund',
     batchId: 'RCN-20260824-WECHAT-REFUND-001',
@@ -421,8 +440,11 @@ export const financePreviewReconciliations: readonly FinanceReconciliationRecord
     statementHash: 'ec9287c71cf8a9e20e06f90f85e24682d2e5af873f801a0ae37fc5f1fd48dada',
     itemMinors: [4_000, 2_800],
   }),
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 ]);
 
 export const financePreviewOverview = Object.freeze({
@@ -449,6 +471,9 @@ export const financePreviewOverview = Object.freeze({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 export const financePreviewEntriesPage = Object.freeze({
   source: FINANCE_PREVIEW_SOURCE,
   items: Object.freeze([
@@ -779,16 +804,23 @@ export function financeAuditPreviewPage(search: URLSearchParams): FinanceAuthori
   return financeAuthorityPreviewPage(financePreviewAudits, search, 'finance-audits');
 }
 
+<<<<<<< HEAD
 const facets = Object.freeze({
   periods: Object.freeze([facetValue(FINANCE_PREVIEW_ACCOUNTING_DATE, FINANCE_PREVIEW_ACCOUNTING_DATE, 8)]),
   channels: Object.freeze([
     facetValue('wechat', '微信支付', 2),
 =======
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 const facets = Object.freeze({
-  periods: Object.freeze([facetValue(FINANCE_PREVIEW_ACCOUNTING_DATE, FINANCE_PREVIEW_ACCOUNTING_DATE, 7)]),
+  periods: Object.freeze([facetValue(FINANCE_PREVIEW_ACCOUNTING_DATE, FINANCE_PREVIEW_ACCOUNTING_DATE, 8)]),
   channels: Object.freeze([
+<<<<<<< HEAD
     facetValue('wechat', '微信支付', 1),
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    facetValue('wechat', '微信支付', 2),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     facetValue('alipay', '支付宝', 1),
     facetValue('unionpay', '银联云闪付', 1),
     facetValue('jdpay', '京东支付', 1),
@@ -796,6 +828,7 @@ const facets = Object.freeze({
     facetValue('baidupay', '百度钱包', 1),
     facetValue('wechat-h5', '微信H5', 1),
   ]),
+<<<<<<< HEAD
 <<<<<<< HEAD
   malls: Object.freeze([facetValue('mall:huimin', '鸿泰惠民通', 8)]),
   statuses: Object.freeze([facetValue('difference', '有差异', 1), facetValue('balanced', '已对平', 7)]),
@@ -805,6 +838,11 @@ const facets = Object.freeze({
   statuses: Object.freeze([facetValue('difference', '有差异', 1), facetValue('balanced', '已对平', 6)]),
   differenceTypes: Object.freeze([facetValue('missing_journal_event', '记账事件缺失', 1), facetValue('none', '无差异', 6)]),
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  malls: Object.freeze([facetValue('mall:huimin', '鸿泰惠民通', 8)]),
+  statuses: Object.freeze([facetValue('difference', '有差异', 1), facetValue('balanced', '已对平', 7)]),
+  differenceTypes: Object.freeze([facetValue('missing_journal_event', '记账事件缺失', 1), facetValue('none', '无差异', 7)]),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 } satisfies FinancePreviewFacets);
 
 export function financeReconciliationPreviewPage(search: URLSearchParams): FinanceReconciliationPreviewPage {
@@ -816,9 +854,13 @@ export function financeReconciliationPreviewPage(search: URLSearchParams): Finan
     status: textQuery(search, 'status'),
     difference: textQuery(search, 'difference'),
 <<<<<<< HEAD
+<<<<<<< HEAD
     kind: textQuery(search, 'kind'),
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    kind: textQuery(search, 'kind'),
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     limit: limitQuery(search),
   });
   const fingerprint = JSON.stringify(query);
@@ -855,9 +897,13 @@ interface ReconciliationSeed {
   readonly channelLabel: string;
   readonly paymentChannel: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly kind?: 'payment' | 'refund';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  readonly kind?: 'payment' | 'refund';
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   readonly expectedCount: number;
   readonly matchedCount: number;
   readonly differenceCount: number;
@@ -873,10 +919,14 @@ interface ReconciliationSeed {
 
 function reconciliation(seed: ReconciliationSeed): FinanceReconciliationRecord {
 <<<<<<< HEAD
+<<<<<<< HEAD
   const matched = seed.itemMinors.map((amountMinor, index) => matchedItem(seed.serial, index + 1, amountMinor, seed.kind ?? 'payment'));
 =======
   const matched = seed.itemMinors.map((amountMinor, index) => matchedItem(seed.serial, index + 1, amountMinor));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const matched = seed.itemMinors.map((amountMinor, index) => matchedItem(seed.serial, index + 1, amountMinor, seed.kind ?? 'payment'));
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const items = Object.freeze(seed.differenceItem === undefined ? matched : [seed.differenceItem, ...matched]);
   return Object.freeze({
     id: `reconciliation:preview:${seed.serial}:20260824:001`,
@@ -895,13 +945,19 @@ function reconciliation(seed: ReconciliationSeed): FinanceReconciliationRecord {
     evidence: Object.freeze({
       rowCount: seed.expectedCount,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       provider: Object.freeze({
         paymentsMinor: seed.kind === 'refund' ? 0 : seed.debitMinor,
         refundsMinor: seed.kind === 'refund' ? Math.abs(seed.debitMinor) : 0,
       }),
+<<<<<<< HEAD
 =======
       provider: Object.freeze({ paymentsMinor: seed.debitMinor, refundsMinor: 0 }),
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       internalNet: seed.creditMinor,
       differences: seed.differenceCount,
       statementHash: seed.statementHash,
@@ -929,6 +985,7 @@ function reconciliation(seed: ReconciliationSeed): FinanceReconciliationRecord {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function matchedItem(serial: string, index: number, amountMinor: number, kind: 'payment' | 'refund'): FinanceReconciliationItem {
   const padded = String(index).padStart(4, '0');
   return Object.freeze({
@@ -941,6 +998,14 @@ function matchedItem(serial: string, index: number, amountMinor: number): Financ
   return Object.freeze({
     id: `reconciliationitem:preview:${serial}:${padded}`,
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function matchedItem(serial: string, index: number, amountMinor: number, kind: 'payment' | 'refund'): FinanceReconciliationItem {
+  const padded = String(index).padStart(4, '0');
+  return Object.freeze({
+    id: `reconciliationitem:preview:${serial}:${padded}`,
+    version: 0,
+    kind,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
     externalMinor: amountMinor,
     internalMinor: amountMinor,
     differenceMinor: 0,
@@ -949,10 +1014,14 @@ function matchedItem(serial: string, index: number, amountMinor: number): Financ
     evidence: Object.freeze({
       externalReference: `PAY-${serial.toUpperCase()}-20260824-${padded}`,
 <<<<<<< HEAD
+<<<<<<< HEAD
       kind,
 =======
       kind: 'payment',
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      kind,
+>>>>>>> 018b2a71 (chore(release): capture current production source)
       rawHash: `${serial.charCodeAt(0).toString(16).padStart(2, '0')}${String(index).padStart(2, '0')}`.repeat(16),
     }),
     resolution: null,
@@ -962,10 +1031,14 @@ function matchedItem(serial: string, index: number, amountMinor: number): Financ
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function matches(row: FinanceReconciliationRecord, query: Readonly<{ q: string; period: string; channel: string; mall: string; status: string; difference: string; kind: string }>): boolean {
 =======
 function matches(row: FinanceReconciliationRecord, query: Readonly<{ q: string; period: string; channel: string; mall: string; status: string; difference: string }>): boolean {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+function matches(row: FinanceReconciliationRecord, query: Readonly<{ q: string; period: string; channel: string; mall: string; status: string; difference: string; kind: string }>): boolean {
+>>>>>>> 018b2a71 (chore(release): capture current production source)
   const itemText = row.items
     .map((item) => {
       const reference = item.evidence.externalReference;
@@ -981,6 +1054,7 @@ function matches(row: FinanceReconciliationRecord, query: Readonly<{ q: string; 
     (query.channel === '' || row.preview.paymentChannel === query.channel) &&
     (query.mall === '' || row.preview.mall === query.mall) &&
     (query.status === '' || row.state === query.status) &&
+<<<<<<< HEAD
 <<<<<<< HEAD
     (query.difference === '' || row.preview.differenceType === query.difference) &&
     (query.kind === '' || row.items.some((item) => item.kind === query.kind))
@@ -1015,6 +1089,35 @@ function financeAuthorityPreviewPage<TItem>(rows: readonly TItem[], search: URLS
 }
 
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    (query.difference === '' || row.preview.differenceType === query.difference) &&
+    (query.kind === '' || row.items.some((item) => item.kind === query.kind))
+  );
+}
+
+function financeAuthorityPreviewPage<TItem>(rows: readonly TItem[], search: URLSearchParams, kind: string): FinanceAuthorityPreviewPage<TItem> {
+  const limit = limitQuery(search);
+  const fingerprint = JSON.stringify({ kind, limit });
+  const offset = cursorOffset(search.get('cursor'), fingerprint);
+  const items = Object.freeze(rows.slice(offset, offset + limit));
+  const nextOffset = offset + items.length;
+  const nextCursor = nextOffset < rows.length ? encodeCursor(nextOffset, fingerprint) : undefined;
+  const previousOffset = Math.max(0, offset - limit);
+  const previousCursor = offset === 0 ? undefined : previousOffset === 0 ? 'start' : encodeCursor(previousOffset, fingerprint);
+  return Object.freeze({
+    items,
+    count: items.length,
+    ...(nextCursor === undefined ? {} : { nextCursor }),
+    preview: Object.freeze({
+      source: FINANCE_PREVIEW_SOURCE,
+      total: rows.length,
+      page: Math.floor(offset / limit) + 1,
+      ...(previousCursor === undefined ? {} : { previousCursor }),
+    }),
+  });
+}
+
+>>>>>>> 018b2a71 (chore(release): capture current production source)
 function facetValue(value: string, label: string, count: number): FinancePreviewFacetValue {
   return Object.freeze({ value, label, count });
 }
