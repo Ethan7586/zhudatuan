@@ -63,6 +63,15 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-access-version')).toBe('7');
     expect(writes[0]?.headers.get('x-csrf-token')).toBe('csrf-token-for-invitation');
 
+    await user.click(within(receipt).getByRole('button', { name: /^关闭$/ }));
+    expect(screen.getByRole('dialog', { name: '邀请码已生成' })).toBeTruthy();
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('dialog', { name: '邀请码已生成' })).toBeTruthy();
+    const backdrop = receipt.closest('.dialogbackdrop');
+    if (!(backdrop instanceof HTMLElement)) throw new Error('INVITATION_DIALOG_BACKDROP_MISSING');
+    await user.click(backdrop);
+    expect(screen.getByRole('dialog', { name: '邀请码已生成' })).toBeTruthy();
+
     await user.click(within(receipt).getByRole('button', { name: '复制邀请码' }));
     expect(writeText).toHaveBeenCalledWith('A'.repeat(32));
     expect((await within(receipt).findByRole('status')).textContent).toContain('已复制到剪贴板');

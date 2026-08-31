@@ -18,14 +18,19 @@ export function MemberInvitationDialog({
   const [validationError, setValidationError] = useState<string>();
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const mutation = useMutation({ mutationFn: (draft: Parameters<typeof createMemberInvitation>[1]) => createMemberInvitation(context, draft) });
+  const receipt = mutation.data;
   const tenantScopes = context.scopes.filter((scope) => scope.kind === 'tenant' && scope.id === 'tenant-zhudatuan');
 
-  const close = () => {
-    if (mutation.isPending) return;
+  const resetAndClose = () => {
     mutation.reset();
     setValidationError(undefined);
     setCopyState('idle');
     onClose();
+  };
+
+  const requestClose = () => {
+    if (mutation.isPending || receipt !== undefined) return;
+    resetAndClose();
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -48,7 +53,7 @@ export function MemberInvitationDialog({
   };
 
   const copy = async () => {
-    const code = mutation.data?.code;
+    const code = receipt?.code;
     if (code === undefined || navigator.clipboard === undefined) {
       setCopyState('failed');
       return;
@@ -62,22 +67,30 @@ export function MemberInvitationDialog({
   };
 
   return (
-    <Dialog open={open} title={mutation.data === undefined ? '生成管理员邀请码' : '邀请码已生成'} eyebrow="ZERO-PERMISSION CONSOLE INVITATION" dismissable={!mutation.isPending} onClose={close}>
-      {mutation.data === undefined ? (
-        <Form className="command memberinvitationform" label="生成管理员邀请码" onSubmit={submit}>
+    <Dialog open={open} title={receipt === undefined ? '生成管理员邀请码' : '邀请码已生成'} eyebrow="ZERO-PERMISSION CONSOLE INVITATION" dismissable={!mutation.isPending && receipt === undefined} onClose={requestClose}>
+      {receipt === undefined ? (
+        <Form className={`command memberinvitationform${mutation.isPending ? ' memberinvitationformpending' : ''}`} label="生成管理员邀请码" onSubmit={submit}>
           <div className="memberinvitationbody">
             <div className="memberinvitationgrid">
               <section className="memberinvitationintro">
                 <p className="commandhint">
-                  <span className="memberinvitationhinticon" aria-hidden="true">i</span>
+                  <span className="memberinvitationhinticon" aria-hidden="true">
+                    i
+                  </span>
                   <span>邀请固定创建待授权普通管理员并绑定受邀手机号，仅可使用一次。受邀人完成手机验证后会同时获得购物身份与零业务权限的 Console 身份。</span>
                 </p>
                 {context.scope.kind === 'platform' ? (
                   <label>
                     目标租户
                     <select name="tenantId" defaultValue="" required autoFocus>
-                      <option value="" disabled>请选择目标租户</option>
-                      {tenantScopes.map((scope) => <option key={scope.id} value={scope.id}>{scope.name ?? scope.id}</option>)}
+                      <option value="" disabled>
+                        请选择目标租户
+                      </option>
+                      {tenantScopes.map((scope) => (
+                        <option key={scope.id} value={scope.id}>
+                          {scope.name ?? scope.id}
+                        </option>
+                      ))}
                     </select>
                   </label>
                 ) : (
@@ -124,7 +137,7 @@ export function MemberInvitationDialog({
           <footer>
             <p className="memberinvitationfootnote">生成后邀请码仅显示一次，请及时复制保存。</p>
             <div className="memberinvitationactions">
-              <Button onPress={close} isDisabled={mutation.isPending}>
+              <Button onPress={requestClose} isDisabled={mutation.isPending}>
                 取消
               </Button>
               <Button type="submit" tone="primary" isPending={mutation.isPending}>
@@ -138,7 +151,7 @@ export function MemberInvitationDialog({
           <p className="notice">邀请码只在本次成功回执中显示。关闭后无法再次查看，请现在复制并通过可信渠道发送。</p>
           <div>
             <span>管理员邀请码</span>
-            <code>{mutation.data.code}</code>
+            <code>{receipt.code}</code>
           </div>
           <dl>
             <div>
@@ -147,11 +160,11 @@ export function MemberInvitationDialog({
             </div>
             <div>
               <dt>次数</dt>
-              <dd>{mutation.data.max_uses} 次</dd>
+              <dd>{receipt.max_uses} 次</dd>
             </div>
             <div>
               <dt>到期</dt>
-              <dd>{new Date(mutation.data.expires_at).toLocaleString('zh-CN')}</dd>
+              <dd>{new Date(receipt.expires_at).toLocaleString('zh-CN')}</dd>
             </div>
           </dl>
           {copyState === 'idle' ? null : <p role="status">{copyState === 'copied' ? '已复制到剪贴板。' : '无法访问剪贴板，请手动复制。'}</p>}
@@ -163,7 +176,7 @@ export function MemberInvitationDialog({
             >
               复制邀请码
             </Button>
-            <Button tone="primary" onPress={close}>
+            <Button tone="primary" onPress={resetAndClose}>
               我已保存，关闭
             </Button>
           </footer>
