@@ -4,9 +4,13 @@ import { parse } from 'yaml';
 
 import { loadRequirementAuthority } from '../../tools/requirementgen/src/Authority.ts';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { loadOrderRequirementProfile, ORDER_REQUIREMENT_IDS } from '../../tools/requirementgen/src/OrderRequirementProfile.ts';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { loadOrderRequirementProfile, ORDER_REQUIREMENT_IDS } from '../../tools/requirementgen/src/OrderRequirementProfile.ts';
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 import { report } from './report.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -17,9 +21,13 @@ const names = {
   providers: 'docs/requirements/providers.yml',
   frontend: 'docs/requirements/frontend.yml',
 <<<<<<< HEAD
+<<<<<<< HEAD
   order: 'docs/requirements/order.yml',
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  order: 'docs/requirements/order.yml',
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   contract: 'packages/contract/src/RequirementCatalog.generated.ts',
 };
 const documents = Object.fromEntries(Object.entries(names)
@@ -31,12 +39,18 @@ const mvp = documents.mvp;
 const providerDocument = documents.providers;
 const frontendDocument = documents.frontend;
 <<<<<<< HEAD
+<<<<<<< HEAD
 const orderDocument = documents.order;
 const { authority } = await loadRequirementAuthority(root);
 const orderProfile = await loadOrderRequirementProfile(root);
 =======
 const { authority } = await loadRequirementAuthority(root);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+const orderDocument = documents.order;
+const { authority } = await loadRequirementAuthority(root);
+const orderProfile = await loadOrderRequirementProfile(root);
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 const operations = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8')).operations;
 const operationById = new Map(operations.map((operation) => [operation.id, operation]));
 const contractType = readFileSync(join(root, names.contract), 'utf8');
@@ -45,10 +59,15 @@ const violations = [];
 const fail = (code, location, detail) => violations.push({ code, location, detail });
 const statusRank = new Map(['Missing', 'Designed', 'Implemented', 'Integrated', 'Accepted', 'Released'].map((status, index) => [status, index]));
 <<<<<<< HEAD
+<<<<<<< HEAD
 const traceStatuses = new Set(['Existing', 'Designed', 'Missing']);
 const placeholderPattern = new RegExp('\\b(?:TO' + 'DO|TB' + 'D)\\b', 'i');
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+const traceStatuses = new Set(['Existing', 'Designed', 'Missing']);
+const placeholderPattern = new RegExp('\\b(?:TO' + 'DO|TB' + 'D)\\b', 'i');
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 
 const definitions = [
   ['PLAT', '1-平台层', 68, Array.from({ length: 68 }, (_, index) => index + 4)],
@@ -211,6 +230,9 @@ for (const pattern of [/https?:\/\//i, /@王敏/i, /clientid/i, /鉴权token/i, 
 if (!contractType.includes(workbookHash)) fail('REQUIREMENT_CONTRACT_HASH_INVALID', names.contract, workbookHash);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 const orderRequirements = orderDocument?.requirements ?? [];
 const orderById = new Map(orderRequirements.map((requirement) => [requirement.id, requirement]));
 if (JSON.stringify(orderDocument) !== JSON.stringify(orderProfile)) fail('ORDER_REQUIREMENT_GENERATED_DRIFT', names.order, String(orderDocument?.count));
@@ -292,14 +314,20 @@ for (const operation of operations) {
 }
 if (placeholderPattern.test(JSON.stringify(orderDocument))) fail('ORDER_REQUIREMENT_PLACEHOLDER_FORBIDDEN', names.order, 'placeholder marker');
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 report('requirements', violations);
 
 function checkHash(document, location) {
   if (document?.workbookSha256 !== workbookHash) fail('REQUIREMENT_WORKBOOK_HASH_INVALID', location, String(document?.workbookSha256));
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 
 function checkTraceNode(node, location) {
   if (!node || !traceStatuses.has(node.status) || typeof node.target !== 'string' || !node.target || !Array.isArray(node.evidence)) {
@@ -316,5 +344,8 @@ function checkTraceNode(node, location) {
 function evidenceExists(evidence) {
   return typeof evidence === 'string' && existsSync(join(root, evidence.split('#')[0]));
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)

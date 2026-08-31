@@ -81,6 +81,9 @@ const eventArtifact = stable({ version: 1, events: events.map((item) => ({ type:
 const permissionArtifact = PERMISSION_CATALOG.map(({ code, category, risk, stepup, scopes }) => ({ code, category, risk, stepup, scopes }));
 const errorArtifact = errors.map(({ code, status }) => ({ code, status }));
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 // OMS links are design provenance; without a path/schema/permission change they do not rotate the published runtime identity.
 const contractChecksum = hash(JSON.stringify({ openapi: contractIdentityOpenapi(openapi), events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
@@ -617,6 +620,19 @@ function contractIdentityOpenapi(value: unknown): unknown {
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+  return value;
+}
+
+function contractIdentityOpenapi(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(contractIdentityOpenapi);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+      key,
+      key === 'x-requirements' && Array.isArray(child)
+        ? child.filter((requirement) => typeof requirement !== 'string' || !requirement.startsWith('OMS-'))
+        : contractIdentityOpenapi(child),
+    ]));
+  }
   return value;
 }
 

@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 import { strFromU8, unzipSync } from 'fflate';
 
 export interface WorkbookCell {
@@ -82,8 +85,11 @@ export class Workbook {
   }
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 export function sharedStrings(source: string): readonly string[] {
   return [...source.matchAll(/<si>([\s\S]*?)<\/si>/g)]
     .map((match) => [...match[1]!.matchAll(/<t(?: [^>]*)?>([\s\S]*?)<\/t>/g)]
@@ -111,6 +117,9 @@ function decodeXml(value: string): string {
     .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code))).replace(/&amp;/g, '&');
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 
 function columnNumber(value: string): number {
   return [...value].reduce((result, character) => result * 26 + character.charCodeAt(0) - 64, 0);
@@ -126,5 +135,8 @@ function columnName(value: number): string {
   }
   return result;
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)

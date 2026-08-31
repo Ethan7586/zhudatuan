@@ -8,6 +8,7 @@ export interface RequirementAuthority {
   readonly repositoryRelativePath: string;
   readonly sha256: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
   readonly profile?: string;
   readonly sheets: Readonly<Record<string, number>>;
 }
@@ -30,24 +31,33 @@ export async function loadRequirementAuthority(root: string, authorityName = 're
     mvp: number;
     providers: number;
   }>;
+=======
+  readonly profile?: string;
+  readonly sheets: Readonly<Record<string, number>>;
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 }
 
-interface AuthorityDocument {
-  readonly requirements?: RequirementAuthority;
+export interface LoadedRequirementAuthority {
+  readonly authorityName: string;
+  readonly authority: RequirementAuthority;
+  readonly bytes: Uint8Array;
+  readonly path: string;
 }
 
-export async function loadRequirementAuthority(root: string): Promise<Readonly<{
-  authority: RequirementAuthority;
-  bytes: Uint8Array;
-  path: string;
-}>> {
+export async function loadRequirementAuthority(root: string, authorityName = 'requirements'): Promise<Readonly<LoadedRequirementAuthority>> {
   const repositoryRoot = await realpath(root);
+<<<<<<< HEAD
   const configPath = await realpath(resolve(repositoryRoot, 'config/authorities.yml'));
   assertInsideRepository(repositoryRoot, configPath);
   const document = parse(await readFile(configPath, 'utf8')) as AuthorityDocument;
   const authority = document.requirements;
   if (!authority) throw new Error('REQUIREMENT_AUTHORITY_MISSING:' + configPath);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  const authorities = await loadRequirementAuthorities(repositoryRoot);
+  const authority = authorities.get(authorityName);
+  if (!authority) throw new Error('REQUIREMENT_AUTHORITY_MISSING:' + authorityName);
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   assertRepositoryRelativePath(authority.repositoryRelativePath);
 
   const candidatePath = resolve(repositoryRoot, authority.repositoryRelativePath);
@@ -57,6 +67,9 @@ export async function loadRequirementAuthority(root: string): Promise<Readonly<{
   const bytes = new Uint8Array(await readFile(path));
   const actualHash = createHash('sha256').update(bytes).digest('hex');
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   if (actualHash !== authority.sha256) throw new Error('REQUIREMENT_AUTHORITY_HASH_INVALID:' + authorityName + ':' + actualHash);
   return Object.freeze({ authorityName, authority, bytes, path });
 }
@@ -70,6 +83,7 @@ export async function loadRequirementAuthorities(root: string): Promise<Readonly
   const authorities = new Map<string, RequirementAuthority>();
   for (const [name, value] of Object.entries(document)) {
     if (name !== 'version') authorities.set(name, authorityValue(value, name));
+<<<<<<< HEAD
   }
   if (!authorities.has('requirements')) throw new Error('REQUIREMENT_AUTHORITY_MISSING:requirements');
   return authorities;
@@ -79,6 +93,11 @@ export async function loadRequirementAuthorities(root: string): Promise<Readonly
   }
   return Object.freeze({ authority: Object.freeze(authority), bytes, path });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  }
+  if (!authorities.has('requirements')) throw new Error('REQUIREMENT_AUTHORITY_MISSING:requirements');
+  return authorities;
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 }
 
 function assertRepositoryRelativePath(path: unknown): asserts path is string {
@@ -94,6 +113,9 @@ function assertInsideRepository(root: string, path: string): void {
   }
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 
 function authorityValue(value: unknown, name: string): RequirementAuthority {
   const authority = objectValue(value, name);
@@ -121,5 +143,8 @@ function stringValue(value: unknown, location: string): string {
   if (typeof value !== 'string' || value.length === 0) throw new Error('REQUIREMENT_AUTHORITY_CONFIG_INVALID:' + location);
   return value;
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)

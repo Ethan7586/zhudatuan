@@ -12485,11 +12485,16 @@
         "x-requirements": [
           "MVP10",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
 =======
           "MVP19"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP19",
+          "OMS-011"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -12638,6 +12643,7 @@
         "x-permission": "finance.reconciliation.manage",
         "x-requirements": [
           "MVP10",
+<<<<<<< HEAD
 <<<<<<< HEAD
           "MVP19",
           "OMS-011"
@@ -12801,6 +12807,10 @@
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
           "MVP19"
+=======
+          "MVP19",
+          "OMS-011"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -13088,11 +13098,16 @@
         "x-requirements": [
           "MVP10",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP19",
           "OMS-011"
 =======
           "MVP19"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP19",
+          "OMS-011"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -21947,13 +21962,19 @@
         "x-requirements": [
           "MVP08",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
           "MVP17",
           "OMS-001",
           "OMS-004",
           "OMS-005"
+<<<<<<< HEAD
 =======
           "MVP17"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -22259,11 +22280,16 @@
         "x-requirements": [
           "MVP08",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
           "MVP17"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP17",
+          "OMS-008"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -22551,11 +22577,16 @@
         "x-requirements": [
           "MVP08",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
           "MVP17"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP17",
+          "OMS-008"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -22710,11 +22741,16 @@
         "x-requirements": [
           "MVP08",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
           "MVP17"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP17",
+          "OMS-008"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -22865,11 +22901,16 @@
         "x-requirements": [
           "MVP08",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-008"
 =======
           "MVP17"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP17",
+          "OMS-008"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -23012,11 +23053,16 @@
         "x-requirements": [
           "MVP08",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP17",
           "OMS-007"
 =======
           "MVP17"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP17",
+          "OMS-007"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -23145,11 +23191,16 @@
         "x-permission": "organization.layer.read",
         "x-requirements": [
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP03",
           "OMS-004"
 =======
           "MVP03"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP03",
+          "OMS-004"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -27475,11 +27526,16 @@
         "x-requirements": [
           "MVP05",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP14",
           "OMS-012"
 =======
           "MVP14"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP14",
+          "OMS-012"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -28274,11 +28330,16 @@
         "x-requirements": [
           "MVP11",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP20",
           "OMS-012"
 =======
           "MVP20"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP20",
+          "OMS-012"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -29678,11 +29739,16 @@
         "x-requirements": [
           "MVP12",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP21",
           "OMS-013"
 =======
           "MVP21"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP21",
+          "OMS-013"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -30568,11 +30634,16 @@
         "x-requirements": [
           "MVP12",
 <<<<<<< HEAD
+<<<<<<< HEAD
           "MVP21",
           "OMS-013"
 =======
           "MVP21"
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+          "MVP21",
+          "OMS-013"
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
         ],
         "x-risk": "high",
         "x-schema-fidelity": "structural",

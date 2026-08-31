@@ -8,6 +8,9 @@ requirements:
     mvp: 21
     providers: 20
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 orderRequirements:
   logicalSource: RepositoryAuthority docs/订单需求20260430.xlsx
   repositoryRelativePath: docs/订单需求20260430.xlsx
@@ -16,5 +19,8 @@ orderRequirements:
   sheets:
     20260430需求汇总: 274
     20250416需求汇总: 16
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)

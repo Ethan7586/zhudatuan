@@ -803,12 +803,16 @@ operations:
     requirements:
       - MVP03
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-004
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-004
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: access.center.read
     owner: access
     method: GET
@@ -2193,12 +2197,16 @@ operations:
       - MVP05
       - MVP14
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-012
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-012
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: reporting.sales.read
     owner: reporting
     method: GET
@@ -2211,12 +2219,16 @@ operations:
       - MVP11
       - MVP20
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-012
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-012
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: reporting.products.read
     owner: reporting
     method: GET
@@ -2702,6 +2714,7 @@ operations:
       - MVP08
       - MVP17
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-001
       - OMS-004
       - OMS-005
@@ -2710,6 +2723,11 @@ operations:
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-001
+      - OMS-004
+      - OMS-005
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: order.reminders.create
     owner: order
     method: POST
@@ -2759,12 +2777,16 @@ operations:
       - MVP08
       - MVP17
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-007
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-007
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: order.aftersales.read
     owner: order
     method: GET
@@ -2777,12 +2799,16 @@ operations:
       - MVP08
       - MVP17
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-008
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-008
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: order.aftersales.apply
     owner: order
     method: POST
@@ -2795,12 +2821,16 @@ operations:
       - MVP08
       - MVP17
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-008
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-008
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: order.aftersales.approve
     owner: order
     method: PUT
@@ -2813,12 +2843,16 @@ operations:
       - MVP08
       - MVP17
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-008
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-008
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: order.aftersales.reject
     owner: order
     method: DELETE
@@ -2831,12 +2865,16 @@ operations:
       - MVP08
       - MVP17
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-008
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-008
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: fulfillment.shipments.create
     owner: fulfillment
     method: POST
@@ -4081,6 +4119,9 @@ operations:
       - MVP10
       - MVP19
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
       - OMS-011
     expectedVersion: required
 =======
@@ -4242,12 +4283,15 @@ operations:
       - MVP10
       - MVP19
       - OMS-011
+<<<<<<< HEAD
 =======
     requirements: [MVP10, MVP19]
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: finance.settlements.decide
     owner: finance
     method: POST
@@ -4738,12 +4782,16 @@ operations:
       - MVP12
       - MVP21
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-013
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/support.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-013
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: support.cases.update
     owner: support
     method: PATCH
@@ -5017,12 +5065,16 @@ operations:
       - MVP12
       - MVP21
 <<<<<<< HEAD
+<<<<<<< HEAD
       - OMS-013
 =======
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/support.ts
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - OMS-013
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
   - id: notification.notifications.read
     owner: notification
     method: GET

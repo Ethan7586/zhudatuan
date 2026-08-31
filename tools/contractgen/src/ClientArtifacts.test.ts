@@ -46,6 +46,9 @@ describe('SDK client artifacts', () => {
     expect(operationSource([reset], new Map())).toContain('"required","required"');
   });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 
   it('preserves OMS trace links in contract metadata without creating another operation', () => {
     const traced = { ...operations[0], requirements: ['MVP03', 'OMS-001'] } as const;
@@ -54,12 +57,17 @@ describe('SDK client artifacts', () => {
 
     expect(openapi).toContain('OMS-001');
     expect(source).toContain('OMS-001');
+<<<<<<< HEAD
     expect(source.match(/\["identity\.session\.read",/g)).toHaveLength(1);
   });
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
 =======
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+    expect(source.match(/identity\.session\.read/g)).toHaveLength(1);
+  });
+>>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 });
 
 function operation(
