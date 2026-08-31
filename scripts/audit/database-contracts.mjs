@@ -126,6 +126,7 @@ const REPAIR_FILES = [
   '20260831140000_identity_registration_profile_acl_repair.sql',
   '20260831150000_identity_experience_application_commands.sql',
   '20260901060000_zhudatuan_brand_display_names.sql',
+  '20260901070000_identity_notification_challenge_jobs.sql',
 ];
 
 const mode = process.argv[2];
