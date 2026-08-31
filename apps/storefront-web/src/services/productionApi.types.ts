@@ -49,7 +49,7 @@ export interface ApiAccount {
   type: 'welfare' | 'meal';
   balanceCents: number;
   status: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 export interface ApiAccountLedger {
   id: string;
@@ -82,6 +82,7 @@ export interface ApiDeliveryAddress {
   detail: string;
   tag?: string;
   isDefault: boolean;
+  version?: number;
 }
 export interface ApiAfterSale {
   id: string;

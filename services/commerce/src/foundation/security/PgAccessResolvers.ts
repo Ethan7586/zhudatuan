@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { MembershipAccess, Scope, ScopeGrant } from '@shop/authz';
 import type { DatabasePool } from '../persistence/Pool';
-import type { AccessVersionResolver, CapabilityResolver, MembershipResolver } from './AccessPipeline';
+import type { AccessVersionResolver, CapabilityResolver, MembershipResolver, MembershipSnapshot } from './AccessPipeline';
 import type { Actor } from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
 import type { SessionResolver } from './SessionResolver';
@@ -16,7 +16,14 @@ interface SessionRow {
   readonly assurance_level: number;
   readonly assurance_verified_at: Date | null;
 }
-interface MembershipRow { readonly id: string; readonly active: boolean; readonly access_version: number; readonly denies: string[]; readonly grants: ScopeGrant[] }
+interface MembershipRow {
+  readonly id: string;
+  readonly active: boolean;
+  readonly access_version: number;
+  readonly denies: string[];
+  readonly grants: ScopeGrant[];
+  readonly evaluated_at: Date;
+}
 interface ScopeRow { readonly scope: Scope }
 
 export class PgSessionResolver implements SessionResolver {
@@ -42,11 +49,25 @@ export class PgSessionResolver implements SessionResolver {
 
 export class PgMembershipResolver implements MembershipResolver {
   constructor(private readonly pool: DatabasePool) {}
-  async resolve(membership: string): Promise<MembershipAccess> {
-    const result = await this.pool.query<MembershipRow>('select id,active,access_version,denies,grants from access.resolve_membership($1)', [membership]);
+  async resolve(membership: string): Promise<MembershipSnapshot> {
+    const result = await this.pool.query<MembershipRow>(
+      `with snapshot as materialized(select clock_timestamp() evaluated_at),
+      resolved as materialized(
+        select membership.* from snapshot
+        cross join lateral access.resolve_membership($1) membership
+        where snapshot.evaluated_at is not null
+      )
+      select resolved.id,resolved.active,resolved.access_version,resolved.denies,resolved.grants,snapshot.evaluated_at
+      from resolved cross join snapshot`,
+      [membership]
+    );
     const row = result.rows[0];
     if (!row) throw new Error('MEMBERSHIP_INACTIVE');
-    return { id: row.id, active: row.active, accessVersion: row.access_version, denies: row.denies, grants: row.grants };
+    if (!(row.evaluated_at instanceof Date) || !Number.isFinite(row.evaluated_at.getTime())) throw new Error('AUTHORIZATION_TIME_INVALID');
+    return Object.freeze({
+      access: Object.freeze({ id: row.id, active: row.active, accessVersion: row.access_version, denies: row.denies, grants: row.grants }),
+      evaluatedAt: row.evaluated_at,
+    });
   }
 }
 
@@ -62,10 +83,11 @@ export class PgAccessVersionResolver implements AccessVersionResolver {
 
 export class PgScopeResolver implements ScopeResolver {
   constructor(private readonly pool: DatabasePool) {}
-  async resolve(actor: Actor, operation: string, resource?: string): Promise<Scope> {
-    const result = await this.pool.query<ScopeRow>('select scope from access.resolve_scope($1,$2,$3)', [actor.membership, operation, resource ?? null]);
+  async resolve(actor: Actor, operation: string, resource?: string, scopeHint?: string): Promise<Scope> {
+    const result = await this.pool.query<ScopeRow>('select scope from access.resolve_scope($1,$2,$3,$4)',
+      [actor.membership, operation, resource ?? null, scopeHint ?? null]);
     const row = result.rows[0];
-    if (!row) throw new Error('SCOPE_DENIED');
+    if (!row?.scope) throw new Error('SCOPE_DENIED');
     return row.scope;
   }
 }

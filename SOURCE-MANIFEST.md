@@ -7,7 +7,7 @@
 | 目標                                                     | 來源                                                           | 選用原因                                                                                  |
 | -------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `apps/storefront-web`                                    | `../archives/smart-wing/apps/storefront-web`                   | 使用者確認的消費 Web、Laptop 與 Desktop 1920 VI／UI／UE                                   |
-| `apps/auth-web`                                          | `../archives/smart-wing-20260826/Shop1/apps/auth-web`          | 使用者確認的 3003 登入 VI 母版；正式行為保留 zhudatuan 域、真實 Cookie 登入與安全關閉策略 |
+| `apps/auth-web`                                          | `../archives/smart-wing-20260826/Shop1/apps/auth-web`          | 使用者確認的 3003 登入 VI 母版；Console 已接 Canonical Session，消費身份仍在相容軌道 |
 | `apps/console`                                           | `../archives/smart-wing-20260826/Shop/smart-wing/apps/console` | 使用者確認的 4173 新版後臺                                                                |
 | `services/commerce`、`packages/@shop`、核心 DB           | `../archives/smart-wing-20260826/Shop/smart-wing`              | 與指定 Console 的 217-operation 合同、SDK、權限及後續 Migration 相容                      |
 | `services/commerce-api`、`packages/@smart-wing`、相容 DB | `../archives/smart-wing`                                       | 指定 Storefront 目前直接依賴的 REST／RPC API 閉包                                         |
@@ -20,7 +20,7 @@
 | 域名                     | 唯一正式入口                                                                         | 批准標準                                   | 當前驗收邊界                                                                                                |
 | ------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
 | `zhudatuan.com`          | `apps/storefront-web/app/page.tsx` → `src/StorefrontRoot.tsx` → `StorefrontWebFrame` | 原 `/laptop-web` 的 27 吋／Laptop 組件標準 | VI、型別、51 個 test files／278 tests、production build 已通過；正式資料仍受 Compatibility API 狀態限制     |
-| `accounts.zhudatuan.com` | `apps/auth-web/src/App.tsx` → `src/screens/LoginPage.tsx`                            | 3003 三段式登入、企微藍／微信綠            | 密碼登入以頂層 POST 在目標域建立真實 Cookie；OTP、QR、SSO、多身份選擇、Step-Up 在正式服務接通前 fail-closed |
+| `accounts.zhudatuan.com` | `apps/auth-web/src/App.tsx` → `src/screens/LoginPage.tsx`                            | 3003 三段式登入、企微藍／微信綠            | Console 密碼登入已接 Canonical PKCE、一次性 Ticket 與 API Host-only Cookie；多身份選擇由服務端權威確認；OTP、QR、SSO、Step-Up 繼續 fail-closed |
 | `console.zhudatuan.com`  | `apps/console/src/main.tsx` → `ConsoleRouter.tsx`                                    | 4173 `admin-web-v1`                        | 非財務 150/150 檔與批准快照一致；本地演示仍使用 4311 Fixture，不等於正式 API 驗收                           |
 
 以下入口明確不得再被構建或部署：

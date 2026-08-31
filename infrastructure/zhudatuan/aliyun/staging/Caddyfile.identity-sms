@@ -1,0 +1,127 @@
+{$ZHUDATUAN_STAGING_ACCOUNTS_HOST} {
+	encode gzip zstd
+
+	header {
+		Cache-Control "no-store"
+		Content-Security-Policy "frame-ancestors 'none'; base-uri 'none'; object-src 'none'"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-Robots-Tag "noindex, nofollow, noarchive"
+	}
+
+	@accountsApi path /api /api/*
+	handle @accountsApi {
+		respond "Not Found" 404
+	}
+
+	handle {
+		root * /opt/zhudatuan-staging/current/apps/auth-web/dist
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+{$ZHUDATUAN_STAGING_CONSOLE_HOST} {
+	encode gzip zstd
+
+	header {
+		Cache-Control "no-store"
+		Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-Robots-Tag "noindex, nofollow, noarchive"
+	}
+
+	@consoleApi path /api /api/*
+	handle @consoleApi {
+		respond "Not Found" 404
+	}
+
+	handle {
+		root * /opt/zhudatuan-staging/current/apps/console/dist
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+{$ZHUDATUAN_STAGING_API_HOST} {
+	encode gzip zstd
+
+	header {
+		Cache-Control "no-store"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-Robots-Tag "noindex, nofollow, noarchive"
+	}
+
+	@identityHealth {
+		method GET
+		path /health/live /health/ready /health/startup
+	}
+	handle @identityHealth {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	@identityPreflight {
+		method OPTIONS
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations /api/v1/identity/invitations/resolve /api/v1/identity/members
+	}
+	handle @identityPreflight {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	@identityInvitationItemPreflight {
+		method OPTIONS
+		path_regexp invitationItemPreflight ^/api/v1/identity/invitations/[^/]+$
+	}
+	handle @identityInvitationItemPreflight {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	@identityPost {
+		method POST
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+	}
+	handle @identityPost {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	@identityInvitationCreate {
+		method POST
+		path /api/v1/identity/invitations
+	}
+	handle @identityInvitationCreate {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	@identitySessionRead {
+		method GET
+		path /api/v1/identity/session
+	}
+	handle @identitySessionRead {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	@identitySessionDelete {
+		method DELETE
+		path /api/v1/identity/session
+	}
+	handle @identitySessionDelete {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	@identityInvitationRevoke {
+		method DELETE
+		path_regexp invitationRevoke ^/api/v1/identity/invitations/[^/]+$
+	}
+	handle @identityInvitationRevoke {
+		reverse_proxy 127.0.0.1:4421
+	}
+
+	handle {
+		respond "Not Found" 404
+	}
+}

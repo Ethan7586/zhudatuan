@@ -3,10 +3,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   acceptInvitation,
   buildCredentialLoginAction,
-  getLockoutState,
-  loginWithPassword,
-  MAX_LOGIN_FAILURES,
-  reportLoginFailure,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
   resolveStorefrontLoginOrigin,
@@ -31,13 +27,16 @@ describe('public test authentication fixtures', () => {
   it('only permits the canonical admin origin plus explicit local development', () => {
     expect(resolveAdminLoginOrigin()).toBe('https://console.zhudatuan.com');
     expect(resolveAdminLoginOrigin('http://127.0.0.1:4173', true)).toBe('http://127.0.0.1:4173');
+    expect(resolveAdminLoginOrigin('https://console.staging.example', false, 'https://console.staging.example')).toBe('https://console.staging.example');
     expect(() => resolveAdminLoginOrigin('https://example.com')).toThrow('不在允许清单');
+    expect(() => resolveAdminLoginOrigin('https://console.staging.example', false, 'http://console.staging.example')).toThrow('配置无效');
     expect(() => resolveAdminLoginOrigin('http://127.0.0.1:3001')).toThrow('不在允许清单');
   });
 
   it('only permits the canonical storefront origin plus explicit local development', () => {
     expect(resolveStorefrontLoginOrigin()).toBe('https://zhudatuan.com');
     expect(resolveStorefrontLoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
+    expect(resolveStorefrontLoginOrigin('https://store.staging.example', false, 'https://store.staging.example')).toBe('https://store.staging.example');
     expect(() => resolveStorefrontLoginOrigin('https://example.com')).toThrow('不在允许清单');
     expect(() => resolveStorefrontLoginOrigin('http://127.0.0.1:3000')).toThrow('不在允许清单');
   });
@@ -81,36 +80,9 @@ describe('public test authentication fixtures', () => {
     }
   });
 
-  it('accepts a roster account and rejects former universal passwords', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ authorization: { membershipId: 'membership-test-buyer-001', target: 'storefront' } }), { status: 200, headers: { 'content-type': 'application/json' } }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ error: { message: '账号或密码不正确' } }), { status: 401, headers: { 'content-type': 'application/json' } }));
-    vi.stubGlobal('fetch', fetchMock);
-    const accepted = await loginWithPassword('buyer001', '123456');
-    expect(accepted).toMatchObject({ identifier: 'buyer001', memberships: [{ id: 'membership-test-buyer-001', target: 'storefront' }] });
-    expect(accepted).not.toHaveProperty('preAuthToken');
-
-    const rejected = loginWithPassword('not-an-account', 'password123');
-    await expect(rejected).rejects.toThrow('账号或密码不正确');
-  });
-
   it('fails closed for unfinished invitation and step-up services', async () => {
     await expect(acceptInvitation()).rejects.toThrow('不会模拟授权成功');
     await expect(verifyStepUp()).rejects.toThrow('不会接受固定口令');
   });
 
-  it('matches the server policy of ten failures in fifteen minutes', async () => {
-    const identifier = `lockout-${Date.now()}`;
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-
-    for (let attempt = 0; attempt < MAX_LOGIN_FAILURES - 1; attempt += 1) {
-      await reportLoginFailure(identifier, 'test failure');
-      expect(getLockoutState(identifier).isLocked).toBe(false);
-    }
-
-    await reportLoginFailure(identifier, 'test failure');
-    expect(getLockoutState(identifier)).toMatchObject({ isLocked: true, failedAttempts: MAX_LOGIN_FAILURES });
-  });
 });

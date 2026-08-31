@@ -33,12 +33,6 @@ export interface PreAuthContext {
   memberships: Membership[];
 }
 
-export interface LockoutState {
-  isLocked: boolean;
-  remainingSeconds: number;
-  failedAttempts: number;
-}
-
 export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
 
 export interface MallContextType {

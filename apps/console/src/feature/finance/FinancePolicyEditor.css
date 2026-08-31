@@ -1,0 +1,489 @@
+.financepolicyeditor {
+  min-width: 0;
+}
+.financepolicynav {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--sw-border);
+  padding: 10px 15px;
+}
+.financepolicynav button {
+  min-height: 32px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--sw-muted);
+  padding: 0 12px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.financepolicynav button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--sw-brand) 32%, var(--sw-border));
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+}
+.financeconfigsurface > header {
+  display: flex;
+  min-height: 84px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--sw-border);
+  padding: 14px 15px;
+}
+.financeconfigsurface > header p,
+.financeconfigsurface > header h3,
+.financeconfigsurface > header span {
+  margin: 0;
+}
+.financeconfigsurface > header p {
+  color: var(--sw-brand);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.financeconfigsurface > header h3 {
+  margin-top: 3px;
+  color: var(--sw-text);
+  font-size: 16px;
+}
+.financeconfigsurface > header span {
+  color: var(--sw-muted);
+  font-size: 10px;
+}
+.financeconfigsurface > header button,
+.financeconfigactions button,
+.financeconfigactionsbar button {
+  min-height: 34px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 5px;
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 11px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.financeconfigsurface > header button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: white;
+}
+.financeconfigsurface > header button svg {
+  width: 13px;
+  height: 13px;
+}
+.financeconfigunavailable {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 15px;
+  border: 1px solid var(--sw-border);
+  border-radius: 6px;
+  background: var(--sw-surface-subtle);
+  padding: 14px;
+}
+.financeconfigunavailable > svg {
+  width: 18px;
+  color: var(--sw-muted);
+}
+.financeconfigunavailable strong,
+.financeconfigunavailable p {
+  margin: 0;
+}
+.financeconfigunavailable strong {
+  color: var(--sw-text);
+  font-size: 11px;
+}
+.financeconfigunavailable p {
+  margin-top: 4px;
+  color: var(--sw-muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.financeconfigunavailable button {
+  min-height: 34px;
+  border: 1px solid var(--sw-border);
+  border-radius: 5px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-disabled);
+  padding: 0 10px;
+}
+.financeconfigtable {
+  min-width: 1280px;
+}
+.financeconfigtable td {
+  height: auto;
+  min-height: 54px;
+  vertical-align: top;
+}
+.financeconfigtable td > small,
+.financeconfigtable td > strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--sw-muted);
+  font-size: 9px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.financeconfigtable td > strong {
+  color: var(--sw-text);
+  font-size: 11px;
+  font-weight: 750;
+}
+.financeconfiglink {
+  border: 0;
+  background: transparent;
+  color: var(--sw-brand-dark);
+  padding: 0;
+  font: inherit;
+  font-weight: 750;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.financeconfigactions {
+  display: flex;
+  gap: 5px;
+}
+.financeconfigactions button {
+  min-height: 28px;
+  padding: 0 8px;
+}
+.financeconfigactions button:disabled,
+.financeconfigactionsbar button:disabled {
+  border-color: var(--sw-border);
+  background: var(--sw-surface-subtle);
+  color: var(--sw-disabled);
+}
+.financeconfigdrawermodal {
+  width: min(720px, calc(100vw - 48px));
+}
+.financeconfigdrawerbody {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 13px 19px 24px;
+}
+.financeconfigdrawer .financedrawerbadges {
+  display: flex;
+  gap: 6px;
+}
+.financeconfigdrawer .financedrawerbadges strong,
+.financeconfigdrawer .financedrawerbadges span {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sw-brand) 12%, var(--sw-surface));
+  color: var(--sw-brand-dark);
+  padding: 4px 7px;
+  font-size: 8px;
+  font-style: normal;
+}
+.financeconfigform {
+  display: grid;
+  gap: 14px;
+}
+.financeconfigform fieldset {
+  margin: 0;
+  border: 1px solid var(--sw-border);
+  border-radius: 6px;
+  padding: 13px;
+}
+.financeconfigform legend {
+  color: var(--sw-text);
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 750;
+}
+.financeconfigformgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+.financeconfigfield {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  color: var(--sw-text-secondary);
+  font-size: 9px;
+  font-weight: 700;
+}
+.financeconfigfield.iswide {
+  grid-column: 1 / -1;
+}
+.financeconfigfield input,
+.financeconfigfield select,
+.financeconfigfield textarea {
+  width: 100%;
+  min-height: 36px;
+  box-sizing: border-box;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 5px;
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: 8px 9px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+}
+.financeconfigfield textarea {
+  resize: vertical;
+}
+.financeconfigfield small {
+  color: var(--sw-muted);
+  font-size: 8px;
+  font-weight: 500;
+}
+.financeconfigcheck {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  align-self: end;
+  min-height: 36px;
+  color: var(--sw-text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+}
+.financeconfigguard,
+.financeconfigerror {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0;
+  border-radius: 5px;
+  padding: 9px 10px;
+  font-size: 9px;
+  line-height: 1.6;
+}
+.financeconfigguard {
+  border: 1px solid color-mix(in srgb, var(--sw-brand) 30%, var(--sw-border));
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+}
+.financeconfigerror {
+  border: 1px solid color-mix(in srgb, var(--sw-danger) 32%, var(--sw-border));
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+.financeconfigguard svg {
+  width: 14px;
+  flex: 0 0 auto;
+}
+.financeconfigactionsbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+  border-top: 1px solid var(--sw-border);
+  padding-top: 13px;
+}
+.financeconfigactionsbar button[type='submit'],
+.financeconfigactionsbar button:nth-last-child(2):not(:disabled) {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand);
+  color: white;
+}
+.financeconfigdetail {
+  display: grid;
+  gap: 14px;
+}
+.financeconfigdetail dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.financeconfigdetail dl > div,
+.financeconfigdetail section {
+  border: 1px solid var(--sw-border);
+  border-radius: 5px;
+  padding: 10px;
+}
+.financeconfigdetail dt,
+.financeconfigdetail dd {
+  margin: 0;
+}
+.financeconfigdetail dt {
+  color: var(--sw-muted);
+  font-size: 8px;
+  font-weight: 700;
+}
+.financeconfigdetail dd {
+  margin-top: 3px;
+  color: var(--sw-text);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.financeconfigdetail section h3 {
+  margin: 0 0 8px;
+  color: var(--sw-text);
+  font-size: 11px;
+}
+.financeconfigdetail pre {
+  max-height: 420px;
+  margin: 0;
+  overflow: auto;
+  color: var(--sw-text-secondary);
+  font-family: var(--sw-font-mono);
+  font-size: 9px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+@media (max-width: 720px) {
+  .financepolicynav,
+  .financeconfigsurface > header,
+  .financeconfigactionsbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .financeconfigunavailable {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .financeconfigunavailable button {
+    grid-column: 1 / -1;
+  }
+  .financeconfigformgrid,
+  .financeconfigdetail dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .financeconfigfield.iswide {
+    grid-column: auto;
+  }
+  .financeconfigdrawermodal {
+    width: 100vw;
+  }
+}
+/* Critical policy workflow */
+.financepolicyworkflowoverlay {
+  z-index: 70;
+  align-items: center;
+  justify-content: center;
+}
+
+.financepolicyworkflowmodal {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border-radius: 16px;
+  background: var(--sw-surface, #fff);
+  box-shadow: 0 24px 80px rgb(15 23 42 / 28%);
+}
+
+.financepolicyworkflow > header,
+.financepolicyworkflow > footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--sw-border, #e2e8f0);
+}
+
+.financepolicyworkflow > header p {
+  margin: 0 0 4px;
+  color: var(--sw-brand, #2563eb);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .08em;
+}
+
+.financepolicyworkflow > header h2,
+.financepolicyworkflow > header span {
+  margin: 0;
+}
+
+.financepolicyworkflow > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--sw-border, #e2e8f0);
+  border-bottom: 0;
+}
+
+.financepolicyworkflowbody {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.financeworkflowprimary {
+  justify-self: end;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--sw-brand, #2563eb);
+  font-weight: 700;
+}
+
+.financeworkflowprimary:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
+
+.financeworkflowfacts,
+.financeworkflowstepup {
+  padding: 18px;
+  border: 1px solid var(--sw-border, #e2e8f0);
+  border-radius: 12px;
+  background: var(--sw-subtle, #f8fafc);
+}
+
+.financeworkflowfacts h3,
+.financeworkflowstepup h3 {
+  margin: 0 0 12px;
+}
+
+.financeworkflowfacts dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.financeworkflowfacts dl div {
+  min-width: 0;
+}
+
+.financeworkflowfacts dt {
+  color: var(--sw-muted, #64748b);
+  font-size: 12px;
+}
+
+.financeworkflowfacts dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.financeworkflowreceipt {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #86efac;
+  border-radius: 12px;
+  background: #f0fdf4;
+  color: #14532d;
+}
+
+.financeworkflowreceipt h3,
+.financeworkflowreceipt p {
+  margin: 0 0 4px;
+}
+
+.financeworkflowreceipt code {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .financepolicyworkflowmodal {
+    width: 100vw;
+    min-height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .financeworkflowfacts dl {
+    grid-template-columns: 1fr;
+  }
+}

@@ -7,21 +7,14 @@ import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { memberImportOperations } from './application/MemberImportOperations';
 import { accessPort } from '../access/AccessModule';
 import { addressPort } from '../checkout/CheckoutModule';
+import { memberOperatorReadActions } from './MemberReadOperations';
 
 export function memberOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
   const kms = context.container.get(KMS_CLIENT);
   return new ModuleOperations('member', pool, context.container.get(AUDIT_SINK), {
     ...memberImportOperations(context),
-    'member.members.read': async (request, database) => {
-      const access = requireAccess(request);
-      const page = queryPage(request);
-      const result = await database.query(`select profile.id,profile.display_name,profile.status,membership.id membership_id,
-        membership.employee_no,membership.status membership_status,membership.access_version,membership.joined_at
-        from access.membership membership join member.profile profile on profile.id=membership.member_id
-        where membership.organization_id=$1 and ($2::text is null or profile.id>$2) order by profile.id limit $3`, [access.scope.id, page.id, page.fetch]);
-      return keysetResult(result, page, 'id');
-    },
+    ...memberOperatorReadActions(),
     'member.profile.read': async (request, database) => {
       const access = requireAccess(request);
       return rowResult(await database.query(`select profile.id,profile.display_name,profile.status,profile.mobile_token is not null mobile_bound,

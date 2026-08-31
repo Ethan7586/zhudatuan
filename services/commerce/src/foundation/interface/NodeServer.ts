@@ -1,10 +1,11 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { isIP } from 'node:net';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { HttpApp } from './HttpApp';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 
-export function listen(app: HttpApp, port: number): Readonly<{ close: () => Promise<void> }> {
+export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): Readonly<{ close: () => Promise<void> }> {
   const server = createServer(async (request, response) => {
     const controller = new AbortController();
     request.once('aborted', () => controller.abort(new Error('REQUEST_ABORTED')));
@@ -21,7 +22,7 @@ export function listen(app: HttpApp, port: number): Readonly<{ close: () => Prom
   server.headersTimeout = RUNTIME_LIMITS.http.headersTimeoutMilliseconds;
   server.keepAliveTimeout = RUNTIME_LIMITS.http.keepAliveTimeoutMilliseconds;
   server.maxRequestsPerSocket = RUNTIME_LIMITS.http.maximumRequestsPerSocket;
-  server.listen(port, '0.0.0.0');
+  server.listen(port, host);
   return { close: () => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())) };
 }
 
@@ -34,10 +35,17 @@ async function convert(request: IncomingMessage, signal: AbortSignal): Promise<R
     if (Array.isArray(value)) value.forEach((item) => headers.append(name, item));
     else if (value !== undefined) headers.set(name, value);
   }
-  headers.set('x-peer-address', request.socket.remoteAddress ?? 'unknown');
+  headers.set('x-peer-address', trustedPeerAddress(request.headers['x-real-ip'], request.socket.remoteAddress));
   const body = await read(request);
   return new Request(`${protocol}://${host}${request.url ?? '/'}`, { method: request.method ?? 'GET', headers, signal,
     ...(body === undefined ? {} : { body: body.toString('utf8') }) });
+}
+
+export function trustedPeerAddress(forwarded: string | string[] | undefined, remoteAddress: string | undefined): string {
+  const peer = remoteAddress ?? 'unknown';
+  const local = peer === '127.0.0.1' || peer === '::1' || peer === '::ffff:127.0.0.1';
+  const candidate = Array.isArray(forwarded) ? undefined : forwarded?.trim();
+  return local && candidate !== undefined && isIP(candidate) !== 0 ? candidate : peer;
 }
 
 async function read(request: IncomingMessage): Promise<Buffer | undefined> {

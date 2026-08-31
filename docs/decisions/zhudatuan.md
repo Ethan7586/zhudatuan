@@ -1,7 +1,20 @@
 # 築大團系統問答
 
 > 智慧翼／築大團 MVP 的產品口徑、系統邊界與已確認決策。  
-> 最後更新：2026-08-27
+> 最後更新：2026-08-28
+
+## 2026-08-28：hbbtzn 成為築大團子項目
+
+`hbbtzn` 正式定位為築大團平台下的**獨立部署／租戶子項目**，目錄為 `projects/hbbtzn/`。
+
+- 築大團仍是主項目與唯一正式代碼平台；hbbtzn 不建立第二套 App／Service／Database fork。
+- hbbtzn 可以引用 `config/artifacts.json` 已批准的共享制品，但不能自行增加正式制品或進入根 npm Workspace。
+- hbbtzn 的域名、資料庫、Redis、OSS、KMS／Secret、微信／支付／短信憑據、發布、驗收和回滾必須獨立。
+- 目前只完成子項目身份與配置邊界；hbbtzn 保持原狀，不遷移、不下線、不改 DNS、不切資料，也不納入 `zhudatuan.com` 主站部署。
+- 舊 Smart Wing 代碼繼續保留在 `../archives/` 作只讀提詞庫；不得複製整套歷史代碼回正式工程。
+- hbbtzn 仍存在舊域名與 Cookie／Host／回跳／支付回調硬編碼，只有完成配置化和獨立環境驗收後，才能宣稱運行隔離完成。
+
+機器可讀項目身份見 [`../../projects/hbbtzn/project.yml`](../../projects/hbbtzn/project.yml)，完整責任邊界見 [`../../projects/hbbtzn/README.md`](../../projects/hbbtzn/README.md)。
 
 ## 2026-08-27：正式工程與歷史提詞庫分離
 
@@ -14,6 +27,44 @@
 - 正式 `.git` 位於 `main/.git`；`archives/` 在該 Git 工作樹之外，因此不會被 GitHub、構建或部署誤收錄。
 
 完整使用規則見 [`archives/README.md`](../../../archives/README.md)。
+
+## 2026-08-28：前後端分離完成度評估
+
+### 結論
+
+- **全平台前後端分離：74/100。** 這是 `Console + Storefront + Auth + 兩套 API／資料庫` 的工程架構分離度，不是 UI 完成度或生產上線分數。
+- **新版營運後臺鏈路：91/100。** `apps/console → @shop/sdk／@shop/contract → services/commerce → database/supabase` 已形成清晰的前端、合同、服務和資料庫邊界。
+
+因此準確判定是：**架構已經前後端分離，但目前是「營運後臺鏈路高度完成、消費與身份鏈路仍在過渡」，還不是全平台完全分離。**
+
+### 五項核分
+
+| 評估項目 | 分數 | 判定 |
+| --- | ---: | --- |
+| 前端獨立構建與部署 | 14/20 | Console、Storefront、Auth 均有獨立構建入口；但 Storefront Worker 直接嵌入 Compatibility API Router，消費前端與 BFF 尚不能完全獨立替換和擴容。 |
+| API 合同 | 15/20 | Canonical 217 Operations、生成 SDK、輸入／輸出校驗、合同版本與冪等規則完整；Storefront 仍維護另一套手寫 REST Types／Paths。 |
+| 資料庫訪問邊界 | 18/20 | 瀏覽器不直接持有資料庫密鑰，Canonical PostgreSQL／RLS 邊界清楚；但 Compatibility BFF 隨 Storefront 部署並持有獨立 Supabase service role。 |
+| 身份與跨域邊界 | 13/20 | Canonical 已有 Origin 白名單、credentialed CORS、CSRF、Secure／HttpOnly Cookie；Auth 仍使用 Compatibility `/api/v1/auth/*`、舊 target 語義和舊域名回退，`accounts.zhudatuan.com` 尚未完成運行接入。 |
+| 測試與可替換性 | 14/20 | 已有合同、PostgreSQL／Redis、Journey、安全、性能及構建驗證，SDK Transport 可替換；但正式瀏覽器 E2E 未進當前 CI，前端完整邊界檢查仍引用尚未納入 `main` 的 Miniapp／舊 Workspace。 |
+| **合計** | **74/100** | **已分離，但兩條技術軌道尚未收斂。** |
+
+### 已經成立的邊界
+
+- 正式工程把三個前端放在 `apps/`、兩個服務放在 `services/`、合同與 SDK 放在 `packages/`、Migration 放在 `database/`。
+- Console 不直接操作資料庫，統一經生成 SDK 調用 Canonical API；寫入具備 Scope、Access Version、Idempotency、Expected Version 與 Step-up Proof 等上下文。
+- 瀏覽器源碼未直接使用資料庫 Service Role；資料庫訪問留在服務端。
+- `check:artifacts` 與 `check:boundaries` 已通過，當前選定制品和代碼依賴邊界沒有違規。
+
+### 剩餘 26 分如何補齊
+
+1. 把 Storefront／Auth 從 Compatibility REST 合同逐步接到 Canonical Operations，或建立正式、版本化且可獨立部署的 Adapter／BFF。
+2. 取消 Storefront Worker 對 `services/commerce-api` 源碼 Router 的直接嵌入，讓 Web 靜態制品與 API 服務可以獨立部署、擴容、替換和回滾。
+3. 收斂 Canonical／Compatibility 雙合同與雙資料庫，保留明確遷移期，但不讓兩套業務真值長期並存。
+4. 正式接通 `accounts.zhudatuan.com`，清除 `smart.hbbtzn.com` 等舊域名回退和 `admin/storefront` 舊 target 語義。
+5. 修正前端邊界檢查與 Playwright Workspace 漂移，將真實 Browser → API → PostgreSQL 的登入、購物、支付與後臺操作 E2E 納入 CI。
+6. 完成真雲端資料庫、短信、微信、支付及 Provider 驗收後，再將相應制品的 `releaseEligible` 由 `false` 改為 `true`。
+
+本次評估只記錄架構現況，未修改前端、後端、合同、資料庫或部署代碼。
 
 ## 2026-08-27：會員與權限、渠道與分銷、系統治理台
 
@@ -128,3 +179,42 @@ MVP 階段應包含：
 5. 最後執行真實登入、真實 Scope、真實 API 與資料庫的 MVP 驗收。
 
 當前狀態：**只完成定義、審計與記錄；未開始修改業務代碼，等待下一條指令。**
+
+## 2026-08-28：財務與對帳 MVP 升級決策
+
+Owner 已批准在唯一正式工程 `main/` 內升級財務系統，目標由審計基線 **50/100** 提升至可驗證的 MVP **85/100**。本輪唯一寫入範圍是 finance／invoice 後端、財務 Operation 與合同接線、財務 Migration、Console 財務頁面、財務權限／審計及其測試；歷史 archive 僅可唯讀對照。
+
+正式決策如下：
+
+- 先閉合正確性與安全 P0：混合 Tender／Allocation、部分退款、雙向對帳、逐科目試算平衡、法定期間、不可變沖正、action-bound proof、ExpectedVersion、RLS、Invoice Scope 與最小帳本寫入邊界。
+- 正式會計口徑須覆蓋訂單應收、供應商應付、渠道清算及分銷佣金；瀏覽器不得重算或推導權威金額。
+- 差異處理採「提案／預覽 → Level 3 Step-up → 四眼復核 → 執行或沖正 → 權威回讀 → 審計回執」；發起人與復核人必須不同。
+- 結算以凍結快照、規則版本和應付依據為準；打款必須保存回執並處理 uncertain／recovery。
+- 期間關閉前必須驗證試算平衡、子帳與總帳一致、無未處理差異；已 posted 的 journal 不得直接修改或刪除。
+- Console 六個財務頁籤只接 typed authoritative API；Fixture 只能用於隔離的瀏覽器視覺回歸，未授權或未實作的生產動作必須真正 disabled。
+- 本輪不提交、不推送、不作生產部署，不修改 DNS、雲資源或支付 Provider 真實配置。只有 DB／權限／合同／E2E／build 證據全部成立後，才可標記「已確認發布基線」。
+
+逐批文件、Migration、測試、得分、剩餘風險及回滾說明記錄於 [`../operations/2026-08-28-finance-upgrade-log.md`](../operations/2026-08-28-finance-upgrade-log.md)。
+
+## 2026-08-28：先收旂登錄，再開始權限工作台
+
+Owner 確認實施順序為「先登錄系統，後權限系統」，並批准開始。本輪保留 3003 三段式登錄 VI，將 Console 密碼登錄收旂到 Canonical Identity Session：PKCE 與一次性 Ticket 不進 URL，API 持有 Host-only Cookie，Console 保留服務端 CSRF，多身份選擇改由服務端權威確認。
+
+當前可標記為「代碼／合同／安全測試／構建已通過」，不得標記為「真資料庫 E2E 或生產已上線」。真 DB 驗收被財務並行任務尚未收旂的 Migration 序列門檻阻擋；沒有繞過。Compatibility 帳號憑據轉入 Canonical 身份庫仍需單獨批准。完整證據與回退說明見 [`../operations/2026-08-28-canonical-console-login.md`](../operations/2026-08-28-canonical-console-login.md)。
+
+## 2026-08-30：財務可配置欄位與稅務規則決策
+
+Owner 批准財務系統解除暫停並向本地 MVP **90/100** 衝刺。本階段將「欄位」定義為受控、可版本化的財務元資料，而不是任意修改已入帳事實；所有正式變更繼續遵守 Preview、Level 3 Step-up、action-bound proof、ExpectedVersion、冪等與四眼復核。
+
+正式決策如下：
+
+- 欄位定義可新增、編輯、停用與版本化，資料型別覆蓋文字、整數、小數、日期／時間、布林、單選、多選、國家、地區、幣種、金額、百分比與引用。
+- 欄位可作用於稅務規則、發票、結算、對帳、帳本、應收、應付、渠道清算、分銷佣金、提現與期間關閉；選項型欄位必須提供選項，其他型別禁止混入選項。
+- 稅務規則以國家／地區、稅種、商品稅務分類、HS Code、百萬分率、含稅／未稅／複合方式、捨入、優先級、有效期間與依據來源表示；同類規則可並存，但同一適用範圍與有效期不得產生權威重疊。
+- 正式啟用指標只在另一位復核人批准後切換；發起人不得批准或拒絕自己的提案。編輯與停用均生成新 revision，不覆蓋歷史版本。
+- Console 本地預覽可以用 session-only 資料展示新增／編輯／停用；production 不讀 Fixture，缺權限、CSRF、Step-up 或能力時必須 fail-closed。
+- 本階段沒有跨界修改商品／訂單稅額計算。商品成交時的稅率快照、司法轄區判定與歷史訂單重算策略，須由未來經批准的商品／訂單合同交界承接。
+- 自定義欄位目前完成的是定義與治理，不包含所有業務記錄的通用欄位值儲存；帳務事實仍由 typed authoritative schema 與正式 Operation 管理。
+- 本階段只形成可重現的本地驗收基線，不提交、不推送、不部署，也不把目前工作樹標記為生產發布基線。
+
+完整 Migration、測試、得分與剩餘風險見 [`../operations/2026-08-28-finance-upgrade-log.md`](../operations/2026-08-28-finance-upgrade-log.md#2026-08-30本地-90-分驗收)。

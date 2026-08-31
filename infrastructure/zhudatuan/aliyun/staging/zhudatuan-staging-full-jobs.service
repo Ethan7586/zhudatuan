@@ -1,0 +1,77 @@
+[Unit]
+Description=Zhudatuan full staging complete jobs runtime
+Wants=network-online.target
+Requires=zhudatuan-staging-full-postgres-proxy.service zhudatuan-staging-full-internal-runtime.service
+After=network-online.target zhudatuan-staging-full-postgres-proxy.service zhudatuan-staging-full-internal-runtime.service zhudatuan-staging-full-migration.service zhudatuan-staging-full-owner-bootstrap.service zhudatuan-staging-full-database-retire.service
+ConditionPathExists=/opt/zhudatuan-staging-full/current/services/commerce/dist/JobsMain.js
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/full-jobs.env
+ConditionPathExists=/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt
+ConditionPathExists=!/opt/zhudatuan-staging-full/shared/full-migration.env
+ConditionPathExists=!/opt/zhudatuan-staging-full/shared/full-owner-bootstrap.env
+ConditionPathExists=!/run/zhudatuan-staging-full/rds-init.env
+ConditionPathExists=!/run/zhudatuan-staging-full/database-retire.env
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+DynamicUser=yes
+User=zdt-stg-full-jobs
+WorkingDirectory=/opt/zhudatuan-staging-full/current
+# Fail closed until a no-side-effect FullJobsPreflightMain and audited sandbox
+# provider adapters are implemented. A 64-hex evidence value cannot unlock it.
+ExecCondition=/usr/bin/false
+EnvironmentFile=/opt/zhudatuan-staging-full/shared/full-jobs.env
+LoadCredential=internal-ca.crt:/opt/zhudatuan-staging-full/shared/tls/internal-ca.crt
+ExecStart=/usr/bin/env NODE_ENV=production APP_ENV=production JOB_RUNTIME_PROFILE=full \
+  DATABASE_JOB_CONNECTION_REF=zhudatuan/staging/full/database/jobs REDIS_CONNECTION_REF=zhudatuan/staging/full/redis/jobs \
+  EXTENSION_MANIFEST_KEY_REF=zhudatuan/staging/full/extensions/manifest \
+  WECHAT_APPLICATION_CONFIG_REF=zhudatuan/staging/full/wechat/applications \
+  WECHAT_PAYMENT_CONFIG_REF=zhudatuan/staging/full/payment/wechat \
+  INVOICE_CONFIG_REF=zhudatuan/staging/full/invoice/provider PAYOUT_CONFIG_REF=zhudatuan/staging/full/payout/provider \
+  NOTIFICATION_CONFIG_REF=zhudatuan/staging/full/notification/providers \
+  OBJECT_STORE_TOKEN_REF=zhudatuan/staging/full/objects/jobs \
+  SECRET_STORE_ENDPOINT=https://127.0.0.1:8643 KMS_ENDPOINT=https://127.0.0.1:8644 \
+  OBJECT_STORE_ENDPOINT=https://127.0.0.1:8645 NODE_EXTRA_CA_CERTS=%d/internal-ca.crt \
+  /usr/bin/node services/commerce/dist/JobsMain.js
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=60
+TimeoutStopSec=45
+RuntimeDirectory=zdt-stg-full-jobs
+RuntimeDirectoryMode=0700
+UMask=0077
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=zhudatuan-staging-full-jobs
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateIPC=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+DevicePolicy=closed
+KeyringMode=private
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SocketBindDeny=any
+ReadOnlyPaths=/opt/zhudatuan-staging-full/current /opt/zhudatuan-staging-full/shared
+InaccessiblePaths=-/opt/zhudatuan -/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+# Full Jobs remains non-runnable in this candidate. It intentionally has no
+# [Install] section and cannot be enabled.

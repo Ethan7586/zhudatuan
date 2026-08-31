@@ -73,7 +73,7 @@ function ReconciliationDrawerContent({
             </button>
           </div>
           <span className="financedrawerbadges">
-            <i>服务端预览</i>
+            <i>{preview === undefined ? '权威预览不可用' : '本地安全预览'}</i>
             <i>{preview?.status === 'pending-review' ? '等待复核' : '待提交复核'}</i>
           </span>
           <small>

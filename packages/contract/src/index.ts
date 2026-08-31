@@ -5,6 +5,7 @@ export * from './ErrorContract.generated';
 export * from './EventContract';
 export * from './EventSerializer';
 export * from './ExperienceContract';
+export * from './FinancialActionPolicy';
 export * from './Operation';
 export * from './OperationCatalog';
 export * from './RequirementCatalog.generated';

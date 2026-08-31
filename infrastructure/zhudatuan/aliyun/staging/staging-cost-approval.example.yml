@@ -1,0 +1,51 @@
+version: 1
+state: pending-user-approval
+quotedAt: replace-with-iso-8601-time
+quoteExpiresAt: replace-with-iso-8601-time
+region: cn-beijing
+currency: CNY
+validationWindowHours: 72
+monthlyEstimateHours: 730
+quoteEvidenceSha256: replace-with-sha256-of-redacted-beijing-console-quotes
+
+ecs:
+  configurationFingerprint: replace-with-sha256
+  hourlyComputeAndDiskCny: replace-with-console-quote
+  estimated72HourCny: replace-with-calculated-value
+  estimated730HourCny: replace-with-calculated-value
+  publicTrafficUnitCnyPerGb: replace-with-console-quote
+  acceptancePublicTrafficCapGb: replace-with-approved-cap
+  acceptancePublicTrafficCapCny: replace-with-calculated-value
+
+rds:
+  configurationFingerprint: replace-with-sha256
+  hourlyComputeAndStorageCny: replace-with-console-quote
+  estimated72HourCny: replace-with-calculated-value
+  estimated730HourCny: replace-with-calculated-value
+  optional72HourServiceCny: replace-with-calculated-value
+  optional730HourServiceCny: replace-with-calculated-value
+
+tair:
+  configurationFingerprint: replace-with-sha256
+  hourlyInstanceCny: replace-with-console-quote
+  estimated72HourCny: replace-with-calculated-value
+  estimated730HourCny: replace-with-calculated-value
+  optional72HourServiceCny: replace-with-calculated-value
+  optional730HourServiceCny: replace-with-calculated-value
+
+sms:
+  verificationMessageUnitCny: 0.045
+  acceptanceMessageCap: replace-with-approved-count
+  acceptanceMessageCapCny: replace-with-calculated-value
+
+totals:
+  estimated72HourCny: replace-with-calculated-value
+  estimated730HourCny: replace-with-calculated-value
+  hardApprovalCapCny: replace-with-approved-cap
+
+approval:
+  approvedBy: Ethan
+  approvedAt: pending
+  decision: pending
+  specificationSha256: replace-with-approved-specification-sha256
+  externalApprovalReceiptSha256: replace-with-independent-approval-receipt-sha256

@@ -17,9 +17,11 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.invitations.revoke",
   "identity.members.create",
   "identity.members.manage",
+  "identity.members.reset",
   "identity.password.change",
   "identity.password.verify",
   "identity.password.reset",
+  "identity.mobile.challenge",
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
@@ -40,9 +42,11 @@ export interface IdentityOperations {
   readonly invitationsRevoke: OperationMethod<"identity.invitations.revoke">;
   readonly membersCreate: OperationMethod<"identity.members.create">;
   readonly membersManage: OperationMethod<"identity.members.manage">;
+  readonly membersReset: OperationMethod<"identity.members.reset">;
   readonly passwordChange: OperationMethod<"identity.password.change">;
   readonly passwordVerify: OperationMethod<"identity.password.verify">;
   readonly passwordReset: OperationMethod<"identity.password.reset">;
+  readonly mobileChallenge: OperationMethod<"identity.mobile.challenge">;
   readonly mobileManage: OperationMethod<"identity.mobile.manage">;
   readonly stepupStart: OperationMethod<"identity.stepup.start">;
   readonly stepupComplete: OperationMethod<"identity.stepup.complete">;
@@ -68,9 +72,11 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     invitationsRevoke: bindInvitationsRevoke(client),
     membersCreate: bindMembersCreate(client),
     membersManage: bindMembersManage(client),
+    membersReset: bindMembersReset(client),
     passwordChange: bindPasswordChange(client),
     passwordVerify: bindPasswordVerify(client),
     passwordReset: bindPasswordReset(client),
+    mobileChallenge: bindMobileChallenge(client),
     mobileManage: bindMobileManage(client),
     stepupStart: bindStepupStart(client),
     stepupComplete: bindStepupComplete(client),
@@ -175,6 +181,14 @@ function bindMembersManage(client: OperationExecutor): OperationMethod<"identity
   return bindOperation(client, defineStructuralOperation({"id":"identity.members.manage","method":"PUT","path":"/api/v1/identity/members/{membershipid}","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
 }
 
+export function createFetchIdentityMembersReset(baseUrl: string): OperationMethod<"identity.members.reset"> {
+  return bindMembersReset(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindMembersReset(client: OperationExecutor): OperationMethod<"identity.members.reset"> {
+  return bindOperation(client, defineStructuralOperation({"id":"identity.members.reset","method":"PUT","path":"/api/v1/identity/members/{membershipid}/registration","audience":"operator","idempotent":true,"pathKeys":["membershipid"]}));
+}
+
 export function createFetchIdentityPasswordChange(baseUrl: string): OperationMethod<"identity.password.change"> {
   return bindPasswordChange(new ApiClient(baseUrl, new FetchTransport()));
 }
@@ -197,6 +211,14 @@ export function createFetchIdentityPasswordReset(baseUrl: string): OperationMeth
 
 function bindPasswordReset(client: OperationExecutor): OperationMethod<"identity.password.reset"> {
   return bindOperation(client, defineStructuralOperation({"id":"identity.password.reset","method":"POST","path":"/api/v1/identity/password/reset","audience":"public","idempotent":false,"pathKeys":[]}));
+}
+
+export function createFetchIdentityMobileChallenge(baseUrl: string): OperationMethod<"identity.mobile.challenge"> {
+  return bindMobileChallenge(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindMobileChallenge(client: OperationExecutor): OperationMethod<"identity.mobile.challenge"> {
+  return bindOperation(client, defineStructuralOperation({"id":"identity.mobile.challenge","method":"POST","path":"/api/v1/identity/mobile/challenges","audience":"member","idempotent":false,"pathKeys":[]}));
 }
 
 export function createFetchIdentityMobileManage(baseUrl: string): OperationMethod<"identity.mobile.manage"> {

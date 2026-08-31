@@ -1,0 +1,180 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { HttpResponse, http } from 'msw';
+import { setupServer } from 'msw/node';
+import { MemoryRouter } from 'react-router';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
+import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { Component } from './ProductRoute';
+
+const requests: URL[] = [];
+const writes: string[] = [];
+const server = setupServer(
+  http.get('*/api/v1/catalog/listings', ({ request }) => {
+    requests.push(new URL(request.url));
+    return HttpResponse.json(productPage);
+  }),
+  http.all('*/api/v1/catalog/**', ({ request }) => {
+    writes.push(request.method);
+    return HttpResponse.json({ code: 'UNEXPECTED_CATALOG_WRITE' }, { status: 500 });
+  }),
+);
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  server.resetHandlers();
+  requests.length = 0;
+  writes.length = 0;
+});
+afterAll(() => server.close());
+
+describe('Product governance workspace', () => {
+  it('hides cached product data and an open drawer when access is revoked', async () => {
+    const user = userEvent.setup();
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <MemoryRouter initialEntries={['/products']}>
+        <QueryClientProvider client={client}>
+          <ConsoleContextProvider value={context}>
+            <Component />
+          </ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    await screen.findByRole('table', { name: '商品列表' });
+    await user.click(screen.getByRole('button', { name: /核心商品product:1/ }));
+    expect(await screen.findByRole('dialog', { name: '核心商品' })).toBeTruthy();
+
+    server.use(http.get('*/api/v1/catalog/listings', () => HttpResponse.json(
+      { code: 'PRODUCT_READ_DENIED', requestId: 'request:revoked' },
+      { status: 403 },
+    )));
+    await client.invalidateQueries();
+
+    const access = await screen.findByRole('region', { name: '没有权限' });
+    await waitFor(() => expect(document.activeElement).toBe(access));
+    expect(within(access).getByText('「商品治理台」不可访问')).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('table', { name: '商品列表' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 1, name: '商品管理' })).toBeNull();
+    expect(screen.queryByRole('region', { name: '商品筛选' })).toBeNull();
+    expect(screen.queryByText('核心商品')).toBeNull();
+    expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
+  });
+
+  it('opens local import and downloads exactly the loaded page without another request', async () => {
+    const user = userEvent.setup();
+    const download = captureDownload();
+    renderProductRoute();
+    await screen.findByRole('table', { name: '商品列表' });
+    expect(requests).toHaveLength(1);
+
+    const exportButton = screen.getByRole<HTMLButtonElement>('button', { name: '导出当前页' });
+    expect(exportButton.disabled).toBe(false);
+    expect(exportButton.title).toBe('仅导出当前已加载页，不包含其他分页');
+    await user.click(exportButton);
+
+    expect(download.filenames[0]).toMatch(/^products-current-page-\d{8}-\d{6}\.csv$/);
+    expect(csvRowCount(await readBlob(download.blobs[0]!))).toBe(productPage.items.length + 1);
+    expect(requests).toHaveLength(1);
+    expect(writes).toHaveLength(0);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' }).disabled).toBe(true);
+
+    await user.click(screen.getByRole('button', { name: '导入' }));
+    expect(await screen.findByRole('dialog', { name: '导入商品' })).toBeTruthy();
+    expect(requests).toHaveLength(1);
+  });
+
+  it('downloads an empty loaded page with only the fixed header', async () => {
+    server.use(http.get('*/api/v1/catalog/listings', () => HttpResponse.json({ items: [], count: 0 })));
+    const user = userEvent.setup();
+    const download = captureDownload();
+    renderProductRoute();
+
+    const exportButton = await screen.findByRole<HTMLButtonElement>('button', { name: '导出当前页' });
+    await waitFor(() => expect(exportButton.disabled).toBe(false));
+    await user.click(exportButton);
+
+    const csv = await readBlob(download.blobs[0]!);
+    expect(csv.replace(/^\uFEFF/, '')).toBe('记录ID,商品ID,SKU ID,商品编码,商品名称,商品类型,状态,版本,生效时间,失效时间,更新时间\r\n');
+    expect(csvRowCount(csv)).toBe(1);
+  });
+});
+
+function renderProductRoute() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+  return render(
+    <MemoryRouter initialEntries={['/products']}>
+      <QueryClientProvider client={client}>
+        <ConsoleContextProvider value={context}>
+          <Component />
+        </ConsoleContextProvider>
+      </QueryClientProvider>
+    </MemoryRouter>,
+  );
+}
+
+function captureDownload() {
+  const blobs: Blob[] = [];
+  const filenames: string[] = [];
+  Object.defineProperty(URL, 'createObjectURL', {
+    configurable: true,
+    value: vi.fn((blob: Blob) => {
+      blobs.push(blob);
+      return `blob:product-${blobs.length}`;
+    }),
+  });
+  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function captureFilename(this: HTMLAnchorElement) {
+    filenames.push(this.download);
+  });
+  return { blobs, filenames };
+}
+
+async function readBlob(blob: Blob): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => resolve(String(reader.result)));
+    reader.addEventListener('error', () => reject(reader.error));
+    reader.readAsText(blob);
+  });
+}
+
+function csvRowCount(csv: string): number {
+  return csv.split('\r\n').filter((line) => line !== '').length;
+}
+
+const productPage = {
+  items: [{
+    id: 'listing:1',
+    sku_id: 'sku:1',
+    product_id: 'product:1',
+    title: '核心商品',
+    status: 'published',
+    version: 3,
+  }],
+  count: 1,
+};
+
+const scope = { kind: 'enterprise' as const, id: 'enterprise:1', name: '鸿泰集团' };
+const context: ConsoleContext = {
+  session: {
+    actor: 'actor:product',
+    membership: 'membership:product',
+    accessVersion: 7,
+    permissions: [],
+    capabilities: ['catalog.listings.read'],
+    target: 'console',
+    scope,
+    scopes: [scope],
+    assurance: { level: 2 },
+    syncedAt: '2026-08-30T00:00:00.000Z',
+  },
+  profile: { display_name: '测试商品运营', employee_no: null },
+  scope,
+  scopes: [scope],
+};

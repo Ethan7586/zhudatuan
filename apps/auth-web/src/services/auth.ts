@@ -4,45 +4,30 @@
  * 技术服务方：雍彻科技
  */
 
-import { Membership, PreAuthContext, LockoutState } from '../types';
+import { Membership } from '../types';
+import { resolveBuildTimeOrigin } from './originPolicy';
 
-// 内存中维护的登录失败记录（模拟服务端 Redis / DB 锁定策略）
-interface FailureRecord {
-  attempts: number;
-  lockedUntil: number; // 时间戳
-}
-
-const failureMap: Record<string, FailureRecord> = {};
-export const MAX_LOGIN_FAILURES = 10;
 const CANONICAL_ADMIN_ORIGIN = 'https://console.zhudatuan.com';
 const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
 
-// 模拟审计日志
-const auditLogs: Array<{ timestamp: string; identifier: string; reason: string }> = [];
-
-function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string, allowLocalDevelopment: boolean): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(configuredOrigin?.trim() || canonicalOrigin);
-  } catch {
-    throw new Error(`${targetLabel}登录目标配置无效，已停止提交账号凭证`);
-  }
-
-  const isCanonical = parsed.origin === canonicalOrigin;
-  const isLocalDevelopment = allowLocalDevelopment && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!isCanonical && !isLocalDevelopment) || parsed.username || parsed.password) {
-    throw new Error(`${targetLabel}登录目标不在允许清单，已停止提交账号凭证`);
-  }
-
-  return parsed.origin;
+function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string,
+  allowLocalDevelopment: boolean, stagingOrigin?: string): string {
+  return resolveBuildTimeOrigin({
+    configuredOrigin,
+    canonicalOrigin,
+    stagingOrigin,
+    allowLocalDevelopment,
+    invalidMessage: `${targetLabel}登录目标配置无效，已停止提交账号凭证`,
+    deniedMessage: `${targetLabel}登录目标不在允许清单，已停止提交账号凭证`,
+  });
 }
 
-export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_ORIGIN, '后台', allowLocalDevelopment);
+export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false, stagingOrigin?: string): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_ADMIN_ORIGIN, '后台', allowLocalDevelopment, stagingOrigin);
 }
 
-export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_STOREFRONT_ORIGIN, '商城', allowLocalDevelopment);
+export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false, stagingOrigin?: string): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_STOREFRONT_ORIGIN, '商城', allowLocalDevelopment, stagingOrigin);
 }
 
 export function buildCredentialLoginAction(targetOrigin: string): string {
@@ -60,140 +45,6 @@ export function buildCredentialLoginAction(targetOrigin: string): string {
 export function requiresAuthoritativeMembershipSelection(memberships: Membership[]): boolean {
   return memberships.filter((membership) => membership.status === 'active' || membership.status === 'invited').length > 1;
 }
-
-// 模拟不同场景的预设会员关系数据集
-const MOCK_MEMBERSHIPS_MAP: Record<string, Membership[]> = {
-  // 13800138000: 综合多身份账号（混合员工与管理身份）
-  '13800138000': [
-    {
-      id: 'mem_emp_001',
-      target: 'storefront',
-      status: 'active',
-      enterpriseName: '腾讯科技（深圳）有限公司',
-      storeName: '智慧翼·腾讯员工福利专区',
-      roleName: '正式员工',
-      dataScope: '个人福利包',
-      accountTypeLabel: '福利账户',
-    },
-    {
-      id: 'mem_emp_002',
-      target: 'storefront',
-      status: 'active',
-      enterpriseName: '腾讯科技（深圳）有限公司',
-      storeName: '智慧翼·园区美食餐厅',
-      roleName: '正式员工',
-      dataScope: '每日餐补',
-      accountTypeLabel: '餐卡',
-    },
-    {
-      id: 'mem_adm_001',
-      target: 'admin',
-      status: 'active',
-      enterpriseName: '腾讯科技（深圳）有限公司',
-      storeName: '智慧翼·企业福利运营后台',
-      roleName: '企业福利超级管理员',
-      dataScope: '全公司（12,500人）',
-      subjectScope: '企业',
-      keyPermissions: ['order.refund', 'role.grant', 'audit.read'],
-      authorizedBy: '雍彻科技安全审计部 (admin_01)',
-      expireAt: '2027-12-31',
-      requiresStepUp: true,
-    },
-    {
-      id: 'mem_adm_002',
-      target: 'admin',
-      status: 'active',
-      enterpriseName: '雍彻科技（上海）有限公司',
-      storeName: '智慧翼·特约供应商中心',
-      roleName: '商品运营专员',
-      dataScope: '华东大区专区',
-      subjectScope: '供应商',
-      keyPermissions: ['goods.publish', 'order.view'],
-      authorizedBy: '张主管 (mgr_888)',
-      expireAt: '2026-12-31',
-      requiresStepUp: false,
-    },
-  ],
-
-  // 13900139000: 单一高阶管理账号（1条记录且需StepUp，测试自动进入第3段）
-  '13900139000': [
-    {
-      id: 'mem_adm_sys',
-      target: 'admin',
-      status: 'active',
-      enterpriseName: '智慧翼（总部）运营中心',
-      storeName: '智慧翼全域统一管理后台',
-      roleName: '全域系统风控合规总监',
-      dataScope: '全平台所有租户与企业',
-      subjectScope: '租户',
-      keyPermissions: ['order.refund', 'role.grant', 'audit.read', 'system.config'],
-      authorizedBy: '雍彻科技首席安全官',
-      expireAt: '2028-06-30',
-      requiresStepUp: true,
-    },
-  ],
-
-  // 13700137000: 单一员工账号（1条记录，测试自动跳过第2段直接完成）
-  '13700137000': [
-    {
-      id: 'mem_emp_single',
-      target: 'storefront',
-      status: 'active',
-      enterpriseName: '阿里巴巴（中国）有限公司',
-      storeName: '智慧翼·阿里专享福利商城',
-      roleName: '资深专家',
-      dataScope: '个人专享额度',
-      accountTypeLabel: '福利账户',
-    },
-  ],
-
-  // 13600136000: 多种特殊状态账号（包含 invited, suspended, offboarded, expired）
-  '13600136000': [
-    {
-      id: 'mem_status_invited',
-      target: 'storefront',
-      status: 'invited',
-      enterpriseName: '美团点评集团',
-      storeName: '智慧翼·美团员工特惠商城',
-      roleName: '待入职员工',
-      dataScope: '新员工礼包',
-      accountTypeLabel: '福利账户',
-    },
-    {
-      id: 'mem_status_suspended',
-      target: 'storefront',
-      status: 'suspended',
-      enterpriseName: '字节跳动科技有限公司',
-      storeName: '智慧翼·字节福利专区',
-      roleName: '正式员工',
-      dataScope: '暂停发放',
-      accountTypeLabel: '福利账户',
-    },
-    {
-      id: 'mem_status_offboarded',
-      target: 'storefront',
-      status: 'offboarded',
-      enterpriseName: '百度在线网络技术公司',
-      storeName: '智慧翼·百度福利商城',
-      roleName: '离职员工',
-      dataScope: '已归档',
-      accountTypeLabel: '福利账户',
-    },
-    {
-      id: 'mem_status_expired',
-      target: 'storefront',
-      status: 'expired',
-      enterpriseName: '华为技术有限公司',
-      storeName: '智慧翼·华为2025年度节日商城',
-      roleName: '合约用户',
-      dataScope: '2025周期已截止',
-      accountTypeLabel: '福利账户',
-    },
-  ],
-
-  // 13500135000: 无任何有效企业福利计划
-  '13500135000': [],
-};
 
 /** Public-test fixtures mirror the real Membership IDs seeded in Supabase. */
 export const TEST_ACCOUNT_MEMBERSHIPS: Record<string, Membership[]> = {
@@ -308,145 +159,6 @@ if (import.meta.env.DEV) {
       ];
     }
   }
-}
-
-/**
- * 获取账号当前锁定状态
- */
-export function getLockoutState(identifier: string): LockoutState {
-  const record = failureMap[identifier];
-  if (!record) {
-    return { isLocked: false, remainingSeconds: 0, failedAttempts: 0 };
-  }
-
-  const now = Date.now();
-  if (record.lockedUntil > now) {
-    const remainingSeconds = Math.ceil((record.lockedUntil - now) / 1000);
-    return {
-      isLocked: true,
-      remainingSeconds,
-      failedAttempts: record.attempts,
-    };
-  }
-
-  // 锁定时间已过，重置状态
-  if (record.attempts >= MAX_LOGIN_FAILURES && record.lockedUntil <= now) {
-    delete failureMap[identifier];
-  }
-
-  return {
-    isLocked: false,
-    remainingSeconds: 0,
-    failedAttempts: record?.attempts || 0,
-  };
-}
-
-/**
- * 上报登录失败记录（安全审计要求）
- */
-export async function reportLoginFailure(identifier: string, reason: string): Promise<void> {
-  const timestamp = new Date().toISOString();
-  auditLogs.push({ timestamp, identifier, reason });
-  console.warn(`[SECURITY AUDIT LOG] Login failure for "${identifier}": ${reason} at ${timestamp}`);
-
-  // 增加失败计数
-  if (!failureMap[identifier]) {
-    failureMap[identifier] = { attempts: 1, lockedUntil: 0 };
-  } else {
-    failureMap[identifier].attempts += 1;
-  }
-
-  // 与服务端数据库策略一致：连续失败10次，锁定15分钟。
-  if (failureMap[identifier].attempts >= MAX_LOGIN_FAILURES) {
-    failureMap[identifier].lockedUntil = Date.now() + 15 * 60 * 1000;
-    console.error(`[SECURITY ALERT] Identifier "${identifier}" locked for 15 minutes due to ${MAX_LOGIN_FAILURES} consecutive failures.`);
-  }
-}
-
-/**
- * 1. 发送短信验证码
- */
-export async function requestOtp(phone: string): Promise<{ success: boolean; message: string }> {
-  // 校验手机号格式
-  const cleanPhone = phone.trim();
-  if (!/^1[3-9]\d{9}$/.test(cleanPhone)) {
-    throw new Error('请输入正确的11位手机号码');
-  }
-
-  const lockout = getLockoutState(cleanPhone);
-  if (lockout.isLocked) {
-    throw new Error(`账号已锁定，请在 ${Math.ceil(lockout.remainingSeconds / 60)} 分钟后重试`);
-  }
-
-  throw new Error('短信验证码登录正在接入运营商，请先使用密码登录；新用户可使用注册验证码');
-}
-
-/**
- * 2. 手机号 + 短信验证码登录
- */
-export async function loginWithOtp(phone: string, code: string): Promise<PreAuthContext> {
-  const cleanPhone = phone.trim();
-  const cleanCode = code.trim();
-
-  // 检查锁定
-  const lockout = getLockoutState(cleanPhone);
-  if (lockout.isLocked) {
-    throw new Error(`账号连续失败过多，已被锁定。剩余解封时间：${lockout.remainingSeconds} 秒`);
-  }
-
-  void cleanCode;
-  throw new Error('短信验证码登录正在接入运营商，请先使用密码登录');
-}
-
-/**
- * 3. 工号/邮箱 + 密码登录
- */
-export async function loginWithPassword(identifier: string, password: string): Promise<PreAuthContext> {
-  const cleanId = identifier.trim();
-  const cleanPw = password.trim();
-
-  if (!cleanId || !cleanPw) {
-    throw new Error('请输入账号与密码');
-  }
-
-  // 检查锁定
-  const lockout = getLockoutState(cleanId);
-  if (lockout.isLocked) {
-    throw new Error(`账号已被锁定，请在 ${Math.ceil(lockout.remainingSeconds / 60)} 分钟后再试`);
-  }
-
-  const response = await fetch('/api/v1/auth/credential/discover', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ username: cleanId, password: cleanPw }),
-  });
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    await reportLoginFailure(cleanId, '密码验证失败');
-    throw new Error(payload?.error?.message || '账号或密码不正确');
-  }
-  const membershipId = payload?.authorization?.membershipId;
-  const target = payload?.authorization?.target;
-  if (typeof membershipId !== 'string' || (target !== 'storefront' && target !== 'admin')) throw new Error('会员身份未正确建立');
-  delete failureMap[cleanId];
-  return {
-    identifier: cleanId,
-    loginMethod: 'password',
-    requiresPasswordReset: payload.requiresPasswordReset === true,
-    memberships: [
-      {
-        id: membershipId,
-        target,
-        status: 'active',
-        enterpriseName: '已绑定企业',
-        storeName: target === 'admin' ? '筑大团运营后台' : '筑大团福利商城',
-        roleName: target === 'admin' ? '企业管理会员' : '企业员工会员',
-        dataScope: target === 'admin' ? '已授权业务范围' : '个人福利账户',
-        accountTypeLabel: target === 'storefront' ? '福利账户' : undefined,
-      },
-    ],
-  };
 }
 
 export async function changeInitialPassword(username: string, password: string, newPassword: string): Promise<void> {

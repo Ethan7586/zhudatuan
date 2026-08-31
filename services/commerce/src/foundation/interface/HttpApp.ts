@@ -32,12 +32,6 @@ export class HttpApp {
       if (!route) return secure(404, { code: 'NOT_FOUND', message: 'NOT_FOUND', requestId }, requestId, origin);
       const operation = OperationCatalog.get(route.operation);
       observedOperation = operation.id;
-      assertCsrf(request, origin, operation.id);
-      const version = request.headers.get('x-contract-version');
-      if (!route.operation.startsWith('runtime.health.') && operation.audience !== 'provider' && version !== CONTRACT_VERSION) {
-        return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: 'CONTRACT_VERSION_UNSUPPORTED', requestId,
-          required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
-      }
       const payload = await parseBody(request);
       deadline.throwIfExpired();
       const headers = Object.freeze(Object.fromEntries(request.headers.entries()));
@@ -98,21 +92,6 @@ function preflight(request: Request, requestId: string, origin: string | null): 
   const method = request.headers.get('access-control-request-method');
   if (!method || !['GET','POST','PUT','PATCH','DELETE'].includes(method)) return secure(405, { code: 'METHOD_NOT_ALLOWED', requestId }, requestId, origin);
   return secure(204, undefined, requestId, origin, { 'access-control-allow-methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-    'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-contract-version,x-csrf-token,x-request-id,x-trace-id,x-client-version,x-scope-hint',
+    'access-control-allow-headers': 'authorization,content-type,idempotency-key,if-match,x-access-version,x-action-proof,x-contract-version,x-csrf-token,x-device-id,x-request-id,x-trace-id,x-client-version,x-scope-hint',
     'access-control-max-age': '600', 'access-control-allow-credentials': 'true' });
-}
-
-function assertCsrf(request: Request, origin: string | null, operation: string): void {
-  if (['GET','HEAD','OPTIONS'].includes(request.method)) return;
-  if (operation === 'identity.tickets.exchange') return;
-  const cookie = request.headers.get('cookie');
-  if (!cookie?.split(';').some((part) => part.trim().startsWith('shop_session='))) return;
-  if (!origin) throw new Error('ORIGIN_REQUIRED');
-  const expected = cookieValue(cookie, 'shop_csrf');
-  if (!expected || request.headers.get('x-csrf-token') !== expected) throw new Error('CSRF_TOKEN_INVALID');
-}
-
-function cookieValue(cookie: string, name: string): string | null {
-  for (const item of cookie.split(';')) { const [key, ...rest] = item.trim().split('='); if (key === name) return decodeURIComponent(rest.join('=')); }
-  return null;
 }

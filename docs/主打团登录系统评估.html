@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>主打团登录系统评估</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --bg: #f1f3f5; --surface: #ffffff; --surface-sunk: #e9ecef;
+    --ink: #14171c; --ink-2: #5b626b; --ink-3: #868d96;
+    --rule: #dbdfe4; --rule-strong: #c2c8d0;
+    --brass: #8a6417; --brass-soft: #f0e6d2;
+    --pass: #2c6a4c; --pass-soft: #dfece5;
+    --fail: #a33030; --fail-soft: #f6e2e0;
+    --warn: #8a5a10; --warn-soft: #f5ead6;
+    --serif: "Noto Serif SC", "Songti SC", Georgia, serif;
+    --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --measure: 34rem; --gutter: 1.5rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1114; --surface: #16191e; --surface-sunk: #1c2026;
+      --ink: #e7eaee; --ink-2: #939aa4; --ink-3: #6e757e;
+      --rule: #262a31; --rule-strong: #363c45;
+      --brass: #d6a343; --brass-soft: #2a2317;
+      --pass: #5cb78a; --pass-soft: #17251e;
+      --fail: #e07a6e; --fail-soft: #2a1a19;
+      --warn: #d19b3f; --warn-soft: #29200f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1114; --surface: #16191e; --surface-sunk: #1c2026;
+    --ink: #e7eaee; --ink-2: #939aa4; --ink-3: #6e757e;
+    --rule: #262a31; --rule-strong: #363c45;
+    --brass: #d6a343; --brass-soft: #2a2317;
+    --pass: #5cb78a; --pass-soft: #17251e;
+    --fail: #e07a6e; --fail-soft: #2a1a19;
+    --warn: #d19b3f; --warn-soft: #29200f;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink); font-family: var(--sans);
+    font-size: 16px; line-height: 1.75; margin: 0;
+    padding: 0 var(--gutter) 6rem; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; }
+  .prose { max-width: var(--measure); }
+  code, .mono { font-family: var(--mono); font-size: 0.84em; }
+  code { background: var(--surface-sunk); padding: 0.1em 0.36em; border-radius: 3px; word-break: break-word; }
+  a { color: var(--brass); }
+  a:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+
+  .masthead { padding: 4.5rem 0 2.5rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--brass); margin: 0 0 1.75rem;
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(2.3rem, 5.5vw, 3.3rem); line-height: 1.15;
+    letter-spacing: -0.01em; text-wrap: balance; margin: 0 0 1.25rem;
+  }
+  .thesis {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(1.15rem, 2.4vw, 1.4rem); line-height: 1.6;
+    color: var(--ink-2); max-width: 33rem; margin: 0 0 2.5rem; text-wrap: balance;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 2.25rem;
+    font-family: var(--mono); font-size: 0.75rem; color: var(--ink-3);
+  }
+  .meta b { color: var(--ink-2); font-weight: 500; }
+
+  section { padding-top: 4rem; }
+  h2 {
+    font-family: var(--serif); font-weight: 700; font-size: 1.6rem;
+    line-height: 1.35; margin: 0 0 0.5rem; padding-top: 0.9rem;
+    border-top: 1px solid var(--rule-strong); position: relative;
+  }
+  h2::before {
+    content: ""; position: absolute; top: -1px; left: 0;
+    width: 3.5rem; height: 3px; background: var(--brass);
+  }
+  .kicker {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3); margin: 0 0 2rem;
+  }
+  h3 { font-family: var(--sans); font-weight: 700; font-size: 1rem; line-height: 1.5; margin: 2.5rem 0 0.75rem; }
+  p { margin: 0 0 1.1rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  em { font-style: normal; color: var(--brass); font-weight: 500; }
+
+  .verdict {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-left: 3px solid var(--brass); padding: 1.75rem 1.9rem; margin: 0 0 2rem;
+  }
+  .verdict p { margin-bottom: 0.9rem; }
+  .verdict p:last-child { margin-bottom: 0; }
+  .verdict .lead { font-family: var(--serif); font-weight: 700; font-size: 1.2rem; line-height: 1.55; }
+
+  /* scorecard */
+  .scores {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 0 0 2rem;
+  }
+  .score { background: var(--surface); padding: 1.2rem 1.2rem 1.3rem; }
+  .score .g {
+    font-family: var(--mono); font-weight: 700; font-size: 2rem;
+    line-height: 1; display: block; margin-bottom: 0.4rem;
+  }
+  .score.a .g { color: var(--pass); }
+  .score.b .g { color: var(--brass); }
+  .score.c .g { color: var(--fail); }
+  .score .l { font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.2rem; }
+  .score .d { font-size: 0.76rem; line-height: 1.5; color: var(--ink-2); display: block; }
+
+  /* finding cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-left: 3px solid var(--pass); padding: 1.3rem 1.45rem 1.4rem; margin: 0 0 0.85rem;
+  }
+  .card.warn { border-left-color: var(--warn); }
+  .card.bad { border-left-color: var(--fail); }
+  .card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.75rem; margin-bottom: 0.7rem; }
+  .card-title { font-weight: 700; font-size: 0.98rem; }
+  .card p { font-size: 0.89rem; margin: 0 0 0.6rem; color: var(--ink-2); }
+  .card p:last-child { margin-bottom: 0; }
+  .card p strong { color: var(--ink); }
+  .chip {
+    display: inline-block; font-family: var(--mono); font-size: 0.68rem;
+    font-weight: 500; letter-spacing: 0.04em; padding: 0.12rem 0.45rem;
+    border-radius: 2px; white-space: nowrap;
+  }
+  .chip.good { background: var(--pass-soft); color: var(--pass); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.bad { background: var(--fail-soft); color: var(--fail); }
+  .chip.path { background: var(--surface-sunk); color: var(--ink-2); }
+
+  pre {
+    font-family: var(--mono); font-size: 0.75rem; line-height: 1.7;
+    background: var(--surface-sunk); border: 1px solid var(--rule);
+    padding: 0.8rem 0.95rem; overflow-x: auto; margin: 0.75rem 0 0; border-radius: 2px;
+  }
+  .card pre { margin-top: 0.7rem; }
+
+  ul.pts { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
+  ul.pts li {
+    font-size: 0.87rem; line-height: 1.6; color: var(--ink-2);
+    padding-left: 1.2rem; position: relative;
+  }
+  ul.pts li::before { content: "▸"; position: absolute; left: 0; color: var(--brass); }
+  ul.pts li b { color: var(--ink); font-weight: 700; }
+
+  .table-scroll { overflow-x: auto; margin: 0 0 1.25rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--surface); border: 1px solid var(--rule); }
+  th, td { text-align: left; padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.55; }
+  th {
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3);
+    background: var(--surface-sunk); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.m { font-family: var(--mono); font-size: 0.78rem; word-break: break-all; }
+
+  .prio { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 0 0 1.25rem; }
+  .prio-item { background: var(--surface); display: grid; grid-template-columns: 3rem 1fr; gap: 0 1.1rem; padding: 1.35rem 1.5rem 1.45rem; }
+  .prio-n { font-family: var(--mono); font-weight: 700; font-size: 1.6rem; line-height: 1; color: var(--brass); }
+  .prio-body h4 { margin: 0 0 0.45rem; font-size: 1rem; font-weight: 700; line-height: 1.45; }
+  .prio-body p { font-size: 0.88rem; margin: 0 0 0.5rem; color: var(--ink-2); }
+  .prio-body p:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 4.5rem; padding-top: 1.5rem; border-top: 1px solid var(--rule-strong);
+    font-family: var(--mono); font-size: 0.73rem; line-height: 1.8; color: var(--ink-3);
+  }
+  @media (max-width: 40rem) {
+    body { padding: 0 1.1rem 4rem; }
+    .masthead { padding-top: 3rem; }
+    .prio-item { grid-template-columns: 2.3rem 1fr; padding: 1.1rem 1.15rem 1.25rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">只读代码审查 · 未修改任何文件</p>
+    <h1>主打团登录系统评估</h1>
+    <p class="thesis">密码学与协议设计达到生产级水准，明显高于这个项目其他部分的平均线。今晚所有登录故障没有一个是设计缺陷。</p>
+    <div class="meta">
+      <span><b>范围</b> identity 模块 + auth-web</span>
+      <span><b>基线</b> be37030 / 13781f1</span>
+      <span><b>日期</b> 2026-08-29</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>总评</h2>
+    <p class="kicker">Verdict</p>
+
+    <div class="verdict">
+      <p class="lead">这套登录系统的核心设计没有需要重做的地方。</p>
+      <p>scrypt 密码派生、S256 PKCE、单语句原子票据交换、全程哈希存储——这些不是"能用"的水平，是<em>有人认真想过攻击面</em>的水平。反计时攻击那种细节，多数生产系统都会跳过。</p>
+      <p>今晚登录反复失败，根因全部是<strong>部署期的最小权限 ACL 缺口</strong>，不是协议或代码缺陷。最后那个 <code>INTERNAL_ERROR</code>——密码验证已经通过，是随后清理失败计数时缺 DELETE 权限导致整笔回滚。</p>
+    </div>
+
+    <div class="scores">
+      <div class="score a"><span class="g">A−</span><span class="l">密码与凭证</span><span class="d">scrypt、随机盐、常量时间比较、反计时攻击</span></div>
+      <div class="score a"><span class="g">A−</span><span class="l">票据与会话</span><span class="d">S256 PKCE、原子一次性、会话绑定</span></div>
+      <div class="score b"><span class="g">B</span><span class="l">Cookie 策略</span><span class="d">属性正确，缺 <code>__Host-</code> 前缀</span></div>
+      <div class="score c"><span class="g">C+</span><span class="l">工程封装</span><span class="d">LoginPage 1387 行，超预算 4.6 倍</span></div>
+      <div class="score c"><span class="g">C</span><span class="l">部署鲁棒性</span><span class="d">ACL 缺口逐个发现，今晚至少 4 次</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>密码层</h2>
+    <p class="kicker">services/commerce/src/modules/identity/domain/policy/PasswordPolicy.ts</p>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">scrypt + 版本化存储格式</span><span class="chip good">优秀</span></div>
+      <pre>scrypt$&lt;VERSION&gt;$&lt;N&gt;$&lt;r&gt;$&lt;p&gt;$&lt;salt-base64url&gt;$&lt;hash-base64url&gt;</pre>
+      <ul class="pts">
+        <li><b>scrypt</b>——内存硬 KDF，抗 GPU/ASIC 暴力破解，不是 SHA-256 裸哈希</li>
+        <li><b>每个密码 16 字节随机盐</b>，64 字节输出</li>
+        <li><b>参数编码进存储串</b>（N/r/p）——将来调整成本参数可以无痛平滑迁移，旧记录仍可验证</li>
+        <li><b><code>timingSafeEqual</code></b> 常量时间比较，不用 <code>===</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">反计时攻击：记录不存在也烧同等时间</span><span class="chip good">少见的细节</span></div>
+      <p>第 37 行，当凭证记录缺失时仍然执行一次 dummy scrypt：</p>
+      <pre>await scrypt(password, Buffer.alloc(16), 64);</pre>
+      <p style="margin-top:0.7rem">这让"<strong>用户不存在</strong>"和"<strong>密码错误</strong>"的响应时间一致，攻击者无法用计时差异枚举有效账号。<strong>多数生产系统不做这一步。</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>票据交换</h2>
+    <p class="kicker">这是整套系统最强的部分</p>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">单语句 CTE 完成三件事，全程原子</span><span class="chip path">PgAuthTicket.ts:26-37</span></div>
+      <pre>with accepted as (
+  select ... where ticket.token_hash=$1 and state_hash=$2
+    and nonce_hash=$3 and pkce_challenge=$4
+    and consumed_at is null and expires_at &gt; clock_timestamp()
+), consumed as (
+  update identity.authticket set consumed_at=clock_timestamp() from accepted ...
+), rotated as (
+  update identity.session set token_hash=$6 from consumed
+  where session.id=consumed.session_id and session.token_hash=$5
+)</pre>
+      <ul class="pts">
+        <li><b>四重匹配</b>——token、state、nonce、PKCE challenge 必须同时命中，缺一不可</li>
+        <li><b>一次性不可双花</b>——<code>consumed_at</code> 在同一语句内写入，并发重放拿不到第二次</li>
+        <li><b>绑定原会话</b>——轮换要求出示<em>当前</em> session token（<code>$5</code>）。偷到票据也无法在另一个会话里兑换</li>
+        <li><b>全部哈希存储</b>——ticket / state / nonce / session token 无一以明文落库</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">PKCE 是 S256，不是 plain</span><span class="chip path">AuthTransaction.ts:9,14,17</span></div>
+      <ul class="pts">
+        <li><code>challenge</code> 强制<b>恰好 43 字符</b> = base64url(sha256(32B))，从长度上排除了 plain 方法</li>
+        <li><code>verifier</code> 限制 <b>43–128</b>，符合 RFC 7636</li>
+        <li>服务端重算 <code>sha256(verifier)</code> 与存储的 challenge 比对，而不是信任客户端声明</li>
+        <li>state / nonce 以 sha256 hex 存储，不留明文</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>会话与 CSRF</h2>
+    <p class="kicker">services/commerce/src/modules/identity/IdentitySecurity.ts:21-22</p>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">双 Cookie 分工正确</span><span class="chip good">设计对</span></div>
+      <pre>shop_session=...; Path=/; Max-Age=..; Secure; HttpOnly; SameSite=Lax
+shop_csrf=...;    Path=/; Max-Age=..; Secure;           SameSite=Strict</pre>
+      <ul class="pts">
+        <li>会话 cookie <b>HttpOnly</b>——JS 读不到，XSS 偷不走</li>
+        <li>CSRF cookie <b>刻意不设 HttpOnly</b>——前端必须读它放进请求头，这是标准 double-submit 模式，不是疏忽</li>
+        <li>两者都 <b>Secure</b>，且<b>不设 <code>Domain=</code></b> → host-only，不会泄漏到子域</li>
+      </ul>
+    </div>
+
+    <div class="card warn">
+      <div class="card-head"><span class="card-title">缺 <code>__Host-</code> 前缀</span><span class="chip warn">小、易补</span></div>
+      <p>当前配置已经<strong>满足 <code>__Host-</code> 的全部条件</strong>（Secure + <code>Path=/</code> + 无 <code>Domain</code>），但没有用这个前缀。</p>
+      <p>加上之后，host-only 这个属性由<strong>浏览器强制</strong>，而不只是靠服务端自觉。任何一次配置疏忽（比如将来误加 <code>Domain=</code>）浏览器会直接拒绝写入，而不是静默降级。</p>
+      <pre>__Host-shop_session=...; Path=/; Secure; HttpOnly; SameSite=Lax</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>今晚故障的真实性质</h2>
+    <p class="kicker">没有一个是设计缺陷</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>症状</th><th>根因</th><th>性质</th></tr></thead>
+        <tbody>
+          <tr><td>Identity API 三项 false</td><td>角色有 GRANT 但缺 RLS policy → 查询返回 0 行</td><td>部署 ACL</td></tr>
+          <tr><td>bootstrap 事务回滚</td><td><code>zhudatuanbootstrap</code> 缺 <code>access.membershiprole</code> 读权限</td><td>部署 ACL</td></tr>
+          <tr><td>邀请 one-shot 失败</td><td>42P18 参数类型无法推断（PGlite 漏，真 PG 拒）</td><td>SQL 类型</td></tr>
+          <tr><td><code>INTERNAL_ERROR</code> 登录失败</td><td>密码<strong>已验证通过</strong>，清理失败计数缺 DELETE 权限 → 整笔回滚</td><td>部署 ACL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose">
+      <p>最后那个尤其能说明问题。<code>IdentityOperations.ts:114</code>：</p>
+    </div>
+    <pre>delete from identity.loginattempt
+where subject_hash = any($1::text[]) and client_hash in ($2,'account')</pre>
+    <div class="prose">
+      <p style="margin-top:1rem">这是<strong>登录成功后</strong>清零失败计数的收尾动作。密码校验、会话创建全部正确，倒在最后一步的权限上，事务回滚，于是对外表现成"登录失败"。<strong>代码逻辑完全正确，缺的只是一行 GRANT。</strong></p>
+      <p>顺带一提：<code>subject_hash</code> 和 <code>client_hash</code>——登录失败追踪也是哈希存储的，不留可关联的明文标识。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>真正的弱点</h2>
+    <p class="kicker">按影响排序</p>
+
+    <div class="card bad">
+      <div class="card-head"><span class="card-title">ACL 缺口是逐个发现的，这个类没有被结构性关闭</span><span class="chip bad">最高优先</span></div>
+      <p>今晚至少 <strong>4 次</strong>同类失败。模式是固定的：代码在超级用户或 PGlite 上下文里写就并通过测试，然后最小权限角色在生产上一个表一个表地撞。</p>
+      <p>Codex 已经为登录链路做了完整权限矩阵，<strong>但下一个碰新表的 operation 会重演同一出</strong>。</p>
+      <p><strong>结构性解法：</strong>在 migration 重放之后，以每个最小权限角色的身份跑一遍该角色实际会执行的 SQL。项目里已经有现成材料——<code>database-contracts.mjs</code> 里刚加的 <code>set local role</code> 手法就是对的做法，只是目前只覆盖了 <code>runtime.schemaversion</code> 一张表。</p>
+    </div>
+
+    <div class="card warn">
+      <div class="card-head"><span class="card-title">LoginPage.tsx 1387 行</span><span class="chip warn">全库最大文件</span></div>
+      <p>行预算是 299 行，<strong>超了 4.6 倍</strong>。登录、注册、OTP、多身份选择、锁定倒计时全挤在一个文件。</p>
+      <p>这是<strong>安全敏感 UI</strong>——审查面越大，漏掉一个状态处理错误的概率越高。后端那套精心设计的协议，前端如果在某个分支里把 CSRF token 忘了带，一样白搭。</p>
+    </div>
+
+    <div class="card warn">
+      <div class="card-head"><span class="card-title">三轨身份仍未合流</span><span class="chip warn">架构债</span></div>
+      <p>canonical console 登录、canonical registration、smart-wing 兼容登录三条链路并存。<code>auth.ts</code>（520 行）与 <code>canonicalIdentity.ts</code> + <code>canonicalRegistration.ts</code>（452 行）是两套并行实现。</p>
+      <p>短期没问题，长期是双倍的安全审查成本——任何一条链路的疏漏都是整体的疏漏。</p>
+    </div>
+
+    <div class="card warn">
+      <div class="card-head"><span class="card-title">测试覆盖 6/19 ≈ 32%</span><span class="chip warn">相对最好，绝对不够</span></div>
+      <p>identity 是 commerce 里<strong>覆盖最好的模块</strong>（finance 23%、payment 25%、order/checkout/cart 为 0）。但这是最该有覆盖的地方，而今晚暴露的所有问题——ACL、类型推断、RLS 可见性——<strong>现有测试一个都测不到</strong>，因为它们都是 mock 或 PGlite。</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>建议顺序</h2>
+    <p class="kicker">按性价比</p>
+
+    <div class="prio">
+      <div class="prio-item">
+        <span class="prio-n">1</span>
+        <div class="prio-body">
+          <h4>把最小权限角色的 SQL 执行做成真库测试</h4>
+          <p>重放 migration 后，以 <code>zhudatuanidentityapi</code>、<code>zhudatuanwebapi</code>、<code>zhudatuanpurchaseapi</code>、<code>zhudatuanbootstrap</code> 的身份各跑一遍其真实 SQL。今晚 4 个 ACL 故障会全部提前到 CI。</p>
+        </div>
+      </div>
+      <div class="prio-item">
+        <span class="prio-n">2</span>
+        <div class="prio-body">
+          <h4>加 <code>__Host-</code> cookie 前缀</h4>
+          <p>改两行字符串。条件已经全部满足，纯收益。</p>
+        </div>
+      </div>
+      <div class="prio-item">
+        <span class="prio-n">3</span>
+        <div class="prio-body">
+          <h4>拆 LoginPage.tsx</h4>
+          <p>按登录 / 注册 / OTP / 身份选择四块拆开。不改行为，只降审查面。</p>
+        </div>
+      </div>
+      <div class="prio-item">
+        <span class="prio-n">4</span>
+        <div class="prio-body">
+          <h4>三轨合流</h4>
+          <p>需要 Owner 决策与完整回归，不是今天的事。但要记在案上——它是持续的双倍审查成本。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>只读审查，未修改任何文件、Git 状态或云资源。所有引用的行号基于 release <code>be37030</code> 工作树；<code>13781f1</code> 之后的 ACL 修复未纳入本次逐行核对。<br>
+    结论基于源码阅读，非渗透测试；未对运行中的服务发起任何请求。</p>
+  </footer>
+
+</div>
+</body>
+</html>
