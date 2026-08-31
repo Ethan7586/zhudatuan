@@ -4,7 +4,8 @@ import { access, chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { LOCAL_ENVIRONMENT_KEYS } from '@shop/config/server';
+import { LOCAL_ENVIRONMENT_KEYS, bearerToken } from '@shop/config/server';
+import { localBootstrapPassword } from './LocalPassword';
 
 const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -15,23 +16,39 @@ const privateKey = join(tls, 'local.key');
 const secretsFile = join(local, 'secrets.local.json');
 const infrastructureEnvironmentFile = join(local, '.env.local');
 const commerceEnvironmentFile = join(root, 'services', 'commerce', '.env.local');
+const legacySecretStoreBearerRef = 'local/internal/secret-store-bearer';
+const legacyKmsBearerRef = 'local/internal/kms-bearer';
+
+interface PreparedSecrets {
+  readonly catalog: Readonly<Record<string, string>>;
+  readonly kmsBearerToken: string;
+  readonly secretStoreBearerToken: string;
+}
 
 await Promise.all([
   mkdir(tls, { recursive: true }),
   mkdir(join(local, 'data', 'objects'), { recursive: true }),
 ]);
 await prepareCertificate();
-const values = await loadOrCreateSecrets();
-await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(values));
-await writePrivate(commerceEnvironmentFile, commerceEnvironment());
-await Promise.all([
-  writePrivate(join(root, 'apps', 'console', '.env.local'), viteEnvironment(5173)),
-  writePrivate(join(root, 'apps', 'store', '.env.local'), viteEnvironment(5174)),
-  writePrivate(join(root, 'apps', 'supplier', '.env.local'), viteEnvironment(5175)),
-  writePrivate(join(root, 'apps', 'auth', '.env.local'), viteEnvironment(5176)),
-  writePrivate(join(root, 'apps', 'storefront', '.env.local'), viteEnvironment(3000)),
-  writePrivate(join(root, 'apps', 'miniapp', '.env.local'), miniappEnvironment()),
-]);
+const prepared = await loadOrCreateSecrets();
+await writePrivate(infrastructureEnvironmentFile, infrastructureEnvironment(prepared));
+await writePrivate(commerceEnvironmentFile, commerceEnvironment(prepared));
+const clientEnvironments: ReadonlyArray<readonly [string, string]> = [
+  ['console', viteEnvironment(4173)],
+  ['store', viteEnvironment(5174)],
+  ['supplier', viteEnvironment(5175)],
+  ['auth', viteEnvironment(3002)],
+  ['storefront', viteEnvironment(3000)],
+  ['miniapp', miniappEnvironment()],
+];
+const clientEnvironmentWrites: Array<Promise<void>> = [];
+for (const [application, environment] of clientEnvironments) {
+  const applicationRoot = join(root, 'apps', application);
+  if (await exists(join(applicationRoot, 'package.json'))) {
+    clientEnvironmentWrites.push(writePrivate(join(applicationRoot, '.env.local'), environment));
+  }
+}
+await Promise.all(clientEnvironmentWrites);
 
 process.stdout.write('LOCAL_ENVIRONMENT_PREPARED\n');
 process.stdout.write(`LOCAL_CA_CERTIFICATE ${certificate}\n`);
@@ -49,11 +66,31 @@ async function prepareCertificate(): Promise<void> {
   await Promise.all([chmod(privateKey, 0o600), chmod(certificate, 0o644)]);
 }
 
-async function loadOrCreateSecrets(): Promise<Readonly<Record<string, string>>> {
+async function loadOrCreateSecrets(): Promise<PreparedSecrets> {
+  const persisted = await persistedBearerTokens();
   if (await exists(secretsFile)) {
     const parsed: unknown = JSON.parse(await readFile(secretsFile, 'utf8'));
     if (!validSecretMap(parsed)) throw new Error('LOCAL_SECRETS_INVALID');
-    return parsed;
+    const existing = parsed as Readonly<Record<string, string>>;
+    const secretStoreBearerToken = selectBearer(
+      persisted.secretStoreBearerToken,
+      existing[legacySecretStoreBearerRef],
+      'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID',
+    );
+    const kmsBearerToken = selectBearer(
+      persisted.kmsBearerToken,
+      existing[legacyKmsBearerRef],
+      'LOCAL_KMS_BEARER_TOKEN_INVALID',
+    );
+    if (secretStoreBearerToken === kmsBearerToken) throw new Error('LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+    const catalog: Record<string, string> = { ...existing };
+    delete catalog[legacySecretStoreBearerRef];
+    delete catalog[legacyKmsBearerRef];
+    if (Object.keys(catalog).length === 0) throw new Error('LOCAL_SECRETS_INVALID');
+    if (Object.hasOwn(existing, legacySecretStoreBearerRef) || Object.hasOwn(existing, legacyKmsBearerRef)) {
+      await writePrivate(secretsFile, `${JSON.stringify(catalog, null, 2)}\n`);
+    }
+    return Object.freeze({ catalog: Object.freeze(catalog), kmsBearerToken, secretStoreBearerToken });
   }
   const postgresAdmin = secret();
   const postgresApi = secret();
@@ -82,13 +119,13 @@ async function loadOrCreateSecrets(): Promise<Readonly<Record<string, string>>> 
     { appId: 'wxLocalMiniapp0001', scene: 'miniapp' },
     { appId: 'wxLocalJsapi000002', scene: 'jsapi' },
   ] };
-  const values: Readonly<Record<string, string>> = Object.freeze({
+  const catalog: Readonly<Record<string, string>> = Object.freeze({
     'local/postgres/admin-password': postgresAdmin,
     'local/postgres/api-password': postgresApi,
     'local/postgres/jobs-password': postgresJobs,
     'local/postgres/migration-password': postgresMigration,
     'local/redis/password': redisPassword,
-    'local/ethan/password': secret(18),
+    'local/ethan/password': localBootstrapPassword(),
     'shop/local/database/admin': postgresUrl('shopadmin', postgresAdmin),
     'shop/local/database/api': postgresUrl('shopapp', postgresApi),
     'shop/local/database/jobs': postgresUrl('shopjob', postgresJobs),
@@ -116,11 +153,16 @@ async function loadOrCreateSecrets(): Promise<Readonly<Record<string, string>>> 
     }),
     'shop/local/kms/master': randomBytes(32).toString('base64url'),
   });
-  await writePrivate(secretsFile, `${JSON.stringify(values, null, 2)}\n`);
-  return values;
+  const secretStoreBearerToken = selectBearer(persisted.secretStoreBearerToken, undefined,
+    'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
+  const kmsBearerToken = selectBearer(persisted.kmsBearerToken, undefined, 'LOCAL_KMS_BEARER_TOKEN_INVALID');
+  if (secretStoreBearerToken === kmsBearerToken) throw new Error('LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+  await writePrivate(secretsFile, `${JSON.stringify(catalog, null, 2)}\n`);
+  return Object.freeze({ catalog, kmsBearerToken, secretStoreBearerToken });
 }
 
-function infrastructureEnvironment(values: Readonly<Record<string, string>>): string {
+function infrastructureEnvironment(prepared: PreparedSecrets): string {
+  const values = prepared.catalog;
   return lines({
     [LOCAL_ENVIRONMENT_KEYS.tlsKeyFile]: privateKey,
     [LOCAL_ENVIRONMENT_KEYS.tlsCertificateFile]: certificate,
@@ -128,6 +170,8 @@ function infrastructureEnvironment(values: Readonly<Record<string, string>>): st
     [LOCAL_ENVIRONMENT_KEYS.secretsPort]: '8443',
     [LOCAL_ENVIRONMENT_KEYS.kmsPort]: '8444',
     [LOCAL_ENVIRONMENT_KEYS.kmsMasterKey]: required(values, 'shop/local/kms/master'),
+    [LOCAL_ENVIRONMENT_KEYS.kmsBearerToken]: prepared.kmsBearerToken,
+    [LOCAL_ENVIRONMENT_KEYS.secretStoreBearerToken]: prepared.secretStoreBearerToken,
     [LOCAL_ENVIRONMENT_KEYS.objectsPort]: '8445',
     [LOCAL_ENVIRONMENT_KEYS.objectsDirectory]: join(local, 'data', 'objects'),
     [LOCAL_ENVIRONMENT_KEYS.objectsToken]: required(values, 'shop/local/objects/api'),
@@ -142,14 +186,16 @@ function infrastructureEnvironment(values: Readonly<Record<string, string>>): st
   });
 }
 
-function commerceEnvironment(): string {
+function commerceEnvironment(prepared: PreparedSecrets): string {
+  const values = prepared.catalog;
   return lines({
     APP_ENV: 'development',
     SERVICE_VERSION: 'local',
+    JOB_RUNTIME_PROFILE: 'full',
     AUTH_MODE: 'membership',
     API_PORT: '3001',
-    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175,http://localhost:5176,http://127.0.0.1:5176',
-    AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://localhost:5173', storefront: 'http://localhost:3000', store: 'http://localhost:5174', supplier: 'http://localhost:5175' }),
+    API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175',
+    AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://127.0.0.1:4173', storefront: 'http://127.0.0.1:3000', store: 'http://127.0.0.1:5174', supplier: 'http://127.0.0.1:5175' }),
     DATABASE_API_CONNECTION_REF: 'shop/local/database/api',
     DATABASE_JOB_CONNECTION_REF: 'shop/local/database/jobs',
     REDIS_CONNECTION_REF: 'shop/local/redis/query',
@@ -158,6 +204,7 @@ function commerceEnvironment(): string {
     QUOTE_KEY_REF: 'shop/local/checkout/quote',
     PII_KEY_REF: 'shop/local/pii',
     KMS_ENDPOINT: 'https://127.0.0.1:8444',
+    KMS_BEARER_TOKEN: prepared.kmsBearerToken,
     WECHAT_APPLICATION_CONFIG_REF: 'shop/local/wechat/applications',
     WECHAT_PAYMENT_CONFIG_REF: 'shop/local/payment/wechat',
     WECHAT_IDENTITY_CONFIG_REF: 'shop/local/identity/wechat',
@@ -168,6 +215,7 @@ function commerceEnvironment(): string {
     OBJECT_STORE_TOKEN_REF: 'shop/local/objects/api',
     EXTENSION_MANIFEST_KEY_REF: 'shop/local/extensions/manifest',
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443',
+    SECRET_STORE_BEARER_TOKEN: prepared.secretStoreBearerToken,
     PUBLIC_MEDIA_BASE_URL: 'https://127.0.0.1:8445',
     PUBLIC_MALL_SLUG: 'local',
     JOB_WORKER_ID: 'local-worker-1',
@@ -186,7 +234,7 @@ function commerceEnvironment(): string {
 }
 
 function viteEnvironment(port: number): string {
-  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:5176', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
+  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
 }
 
 function miniappEnvironment(): string {
@@ -198,6 +246,46 @@ function postgresUrl(user: string, password: string): string {
 }
 
 function secret(bytes = 32): string { return randomBytes(bytes).toString('base64url'); }
+function selectBearer(primary: string | undefined, legacy: string | undefined, code: string): string {
+  return bearerToken(primary ?? legacy ?? secret(), code);
+}
+async function persistedBearerTokens(): Promise<Readonly<{
+  kmsBearerToken?: string;
+  secretStoreBearerToken?: string;
+}>> {
+  const [infrastructure, commerce] = await Promise.all([
+    readEnvironment(infrastructureEnvironmentFile),
+    readEnvironment(commerceEnvironmentFile),
+  ]);
+  const serverSecret = infrastructure[LOCAL_ENVIRONMENT_KEYS.secretStoreBearerToken];
+  const clientSecret = commerce.SECRET_STORE_BEARER_TOKEN;
+  const serverKms = infrastructure[LOCAL_ENVIRONMENT_KEYS.kmsBearerToken];
+  const clientKms = commerce.KMS_BEARER_TOKEN;
+  if (serverSecret !== undefined && clientSecret !== undefined && serverSecret !== clientSecret) {
+    throw new Error('LOCAL_SECRET_STORE_BEARER_TOKEN_DRIFT');
+  }
+  if (serverKms !== undefined && clientKms !== undefined && serverKms !== clientKms) {
+    throw new Error('LOCAL_KMS_BEARER_TOKEN_DRIFT');
+  }
+  return Object.freeze({
+    ...((serverKms ?? clientKms) ? { kmsBearerToken: bearerToken(serverKms ?? clientKms, 'LOCAL_KMS_BEARER_TOKEN_INVALID') } : {}),
+    ...((serverSecret ?? clientSecret) ? { secretStoreBearerToken: bearerToken(serverSecret ?? clientSecret,
+      'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID') } : {}),
+  });
+}
+async function readEnvironment(path: string): Promise<Readonly<Record<string, string>>> {
+  if (!await exists(path)) return Object.freeze({});
+  const result: Record<string, string> = {};
+  for (const line of (await readFile(path, 'utf8')).split(/\r?\n/)) {
+    if (!line || line.startsWith('#')) continue;
+    const separator = line.indexOf('=');
+    if (separator < 1) throw new Error('LOCAL_ENVIRONMENT_FILE_INVALID');
+    const key = line.slice(0, separator);
+    if (!/^[A-Z][A-Z0-9_]*$/.test(key) || Object.hasOwn(result, key)) throw new Error('LOCAL_ENVIRONMENT_FILE_INVALID');
+    result[key] = line.slice(separator + 1);
+  }
+  return Object.freeze(result);
+}
 function required(values: Readonly<Record<string, string>>, name: string): string {
   const value = values[name];
   if (!value) throw new Error(`LOCAL_SECRET_MISSING:${name}`);

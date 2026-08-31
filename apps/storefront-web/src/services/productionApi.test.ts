@@ -50,13 +50,6 @@ afterEach(() => {
 });
 
 describe('canonical storefront production API', () => {
-  it('never accepts hbbtzn as the backend API origin', async () => {
-    const { resolveProductionApiOrigin } = await import('./canonicalApiClient');
-
-    expect(resolveProductionApiOrigin(undefined, 'production')).toBe('https://api.zhudatuan.com');
-    expect(() => resolveProductionApiOrigin('https://api.hbbtzn.com', 'production')).toThrow('API 地址不在允许清单');
-  });
-
   it('loads identity, profile, benefits, ledgers and orders from api.zhudatuan.com with cookie credentials', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
@@ -82,26 +75,13 @@ describe('canonical storefront production API', () => {
     expect(new Headers(logout.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
   });
 
-  it('loads the public catalog before login without sending browser credentials', async () => {
-    const fetcher = apiFetch();
-    vi.stubGlobal('fetch', fetcher);
-    const { productionApi } = await import('./productionApi');
-
-    const page = await productionApi.listProducts();
-
-    expect(page.items).toMatchObject([{ id: 'listing:one', skuId: 'sku:one', priceCents: 21900, availableStock: 6,
-      purchasable: false, qualification: { purchaseReason: 'LOGIN_REQUIRED' } }]);
-    expect(requestInit(fetcher, '/api/v1/catalog/public/products')).toMatchObject({ credentials: 'omit' });
-    expect(requestPaths(fetcher)).not.toContain('/api/v1/identity/session');
-  });
-
-  it('aggregates authenticated listings with authoritative offers and inventory', async () => {
+  it('aggregates canonical listings with authoritative offers and inventory', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
 
-    const page = await productionApi.listQualifiedProducts();
+    const page = await productionApi.listProducts();
 
     expect(page.items).toMatchObject([{ id: 'listing:one', skuId: 'sku:one', priceCents: 21900, availableStock: 6, purchasable: true }]);
     expect(requestPaths(fetcher)).toEqual(expect.arrayContaining(['/api/v1/catalog/listings', '/api/v1/pricing/offers', '/api/v1/inventory/availability']));
@@ -129,42 +109,6 @@ describe('canonical storefront production API', () => {
     expect(JSON.parse(String(address![1]?.body))).toEqual({ recipient: '张三', mobile: '13800000000', address: '文一路 1 号', region: '浙江省/杭州市/西湖区', status: 'active' });
   });
 
-  it('raises the current password session to phone assurance before payment', async () => {
-    const fetcher = apiFetch();
-    vi.stubGlobal('fetch', fetcher);
-    const { productionApi } = await import('./productionApi');
-    await productionApi.getHomeSnapshot();
-
-    await expect(productionApi.startPaymentPhoneVerification()).resolves.toEqual({
-      challengeId: 'challenge:payment-stepup',
-      expiresAt: '2026-09-03T14:10:00.000Z',
-    });
-    await expect(productionApi.completePaymentPhoneVerification('challenge:payment-stepup', '123456')).resolves.toEqual({ verified: true });
-
-    const start = requestInit(fetcher, '/api/v1/identity/stepup/challenges', 'POST');
-    const complete = requestInit(fetcher, '/api/v1/identity/stepup/verifications', 'POST');
-    expect(new Headers(start.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
-    expect(JSON.parse(String(complete.body))).toEqual({ challenge: 'challenge:payment-stepup', code: '123456' });
-  });
-
-  it('obtains and binds a WeChat identity grant to the authenticated L6 membership', async () => {
-    const fetcher = apiFetch();
-    vi.stubGlobal('fetch', fetcher);
-    const { productionApi } = await import('./productionApi');
-    const { beginH5WechatAuthorization, requestH5WechatAuthorization, exchangeH5WechatCode, bindH5WechatIdentity } = await import('./h5WechatIdentity');
-    await productionApi.getHomeSnapshot();
-
-    const authorization = await beginH5WechatAuthorization();
-    await expect(requestH5WechatAuthorization(authorization)).resolves.toBe('https://open.weixin.qq.com/connect/oauth2/authorize');
-    const exchanged = await exchangeH5WechatCode('wechatCode123', authorization);
-    expect(exchanged).toEqual({ kind: 'binding', bindingToken: 'wechat-binding-token' });
-    if (exchanged.kind === 'binding') await bindH5WechatIdentity(exchanged.bindingToken);
-
-    const binding = requestInit(fetcher, '/api/v1/identity/wechat/bindings', 'POST');
-    expect(new Headers(binding.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
-    expect(JSON.parse(String(binding.body))).toEqual({ bindingToken: 'wechat-binding-token' });
-  });
-
   it('completes quote to order to payment only when the server captures an internal-benefit payment', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
@@ -185,9 +129,8 @@ describe('canonical storefront production API', () => {
     }
   });
 
-  it('creates the external-payment order, invokes WeChat once, and reports paid only after the server confirms it', async () => {
-    const fetcher = apiFetch({ personalMinor: 100, confirmedOrderPaymentState: 'paid' });
-    const invoke = wechatBridge('get_brand_wcpay_request:ok');
+  it('does not create an order when the authoritative quote requires external payment', async () => {
+    const fetcher = apiFetch({ personalMinor: 100 });
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
@@ -196,7 +139,7 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:external',
-    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'captured' });
+    })).rejects.toMatchObject({ code: 'EXTERNAL_PAYMENT_REQUIRED' });
     const postOrder = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === '/api/v1/orders' && init?.method === 'POST');
     expect(postOrder).toBeUndefined();
   });
@@ -211,74 +154,25 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:pending',
-    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
-  });
-
-  it('reports reconciling when WeChat returns success but the canonical order is not paid yet', async () => {
-    const fetcher = apiFetch({ personalMinor: 100 });
-    wechatBridge('get_brand_wcpay_request:ok');
-    vi.stubGlobal('fetch', fetcher);
-    const { checkoutWithCanonicalPayment } = await import('./canonicalCheckout');
-    const { productionApi } = await import('./productionApi');
-    await productionApi.getHomeSnapshot();
-
-    await expect(checkoutWithCanonicalPayment({
-      addressId: 'address:one',
-      items: [{ listingId: 'listing:one', quantity: 1 }],
-      idempotencyKey: 'checkout:reconcile-after-wechat',
-    }, { attempts: 1, wait: async () => undefined })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
-  });
-
-  it('preserves the created order and reports an explicit cancellation when the user closes WeChat Pay', async () => {
-    const fetcher = apiFetch({ personalMinor: 100 });
-    wechatBridge('get_brand_wcpay_request:cancel');
-    vi.stubGlobal('fetch', fetcher);
-    const { productionApi } = await import('./productionApi');
-    await productionApi.getHomeSnapshot();
-
-    await expect(productionApi.checkout({
-      addressId: 'address:one',
-      items: [{ listingId: 'listing:one', quantity: 1 }],
-      idempotencyKey: 'checkout:cancelled',
-    })).rejects.toMatchObject({ code: 'PAYMENT_CANCELLED' });
-    expect(requestInit(fetcher, '/api/v1/orders', 'POST')).toBeTruthy();
+    })).rejects.toMatchObject({ code: 'PAYMENT_NOT_CAPTURED' });
   });
 });
 
-function apiFetch(options: { personalMinor?: number; paymentState?: string; confirmedOrderPaymentState?: string } = {}) {
-  let orderReads = 0;
+function apiFetch(options: { personalMinor?: number; paymentState?: string } = {}) {
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
-    const path = new URL(String(input), 'https://hbbtzn.com').pathname;
+    const path = new URL(String(input)).pathname;
     const method = init?.method ?? 'GET';
     if (path === '/api/v1/identity/session') return json(SESSION);
     if (path === '/api/v1/members/me') return json(PROFILE);
     if (path === '/api/v1/benefits/accounts') return json(ACCOUNTS);
     if (path === '/api/v1/benefits/ledgers') return json({ items: [] });
     if (path === '/api/v1/orders' && method === 'GET') return json({ items: [] });
-    if (path === '/api/v1/catalog/public/products') return json({
-      items: [{
-        id: 'listing:one', skuId: 'sku:one', name: '空气炸锅', subtitle: '企业严选', categoryCode: 'welfare', coverUrl: null,
-        priceCents: 21900, marketPriceCents: 25900, availableStock: 6, supplierName: '平台自营', isTest: false,
-        purchasable: false, qualification: { visible: true, purchasable: false, visibilityReason: 'PUBLIC_CATALOG', purchaseReason: 'LOGIN_REQUIRED' },
-      }],
-      pagination: { nextCursor: null },
-    });
     if (path === '/api/v1/catalog/listings') return json({ items: [{ id: 'listing:one', sku_id: 'sku:one', title: '空气炸锅', status: 'published', product_type: 'physical', cover_url: null, subtitle: '企业严选' }] });
-    // PostgreSQL bigint values arrive over JSON as decimal strings in production.
-    if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: '21900', compare_minor: '25900', currency: 'CNY' }] });
-    if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: '6' }] });
+    if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: 21900, compare_minor: 25900, currency: 'CNY' }] });
+    if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: 6 }] });
     if (path === '/api/v1/carts/current' && method === 'GET') return json({ id: 'cart:one', version: 3, items: [{ listing: 'listing:one', sku: 'sku:one', quantity: 1, version: 0 }] });
     if (path.startsWith('/api/v1/carts/current/items/') && method === 'PUT') return json({ id: 'cart:one', version: 4 });
     if (path.startsWith('/api/v1/members/me/addresses/') && method === 'PUT') return json({ id: decodeURIComponent(path.split('/').at(-1)!), status: 'active', version: 0 });
-    if (path === '/api/v1/identity/stepup/challenges' && method === 'POST') return json({ id: 'challenge:payment-stepup', expires_at: '2026-09-03T14:10:00.000Z' }, 202);
-    if (path === '/api/v1/identity/stepup/verifications' && method === 'POST') return json({ id: 'session:one', assurance_level: 3 });
-    if (path === '/api/v1/identity/wechat/sessions' && method === 'POST') {
-      const body = JSON.parse(String(init?.body)) as { action: string };
-      return body.action === 'authorize'
-        ? json({ authorizationUrl: 'https://open.weixin.qq.com/connect/oauth2/authorize' })
-        : json({ bindingToken: 'wechat-binding-token', expiresIn: 600, state: 'registration_required' }, 202);
-    }
-    if (path === '/api/v1/identity/wechat/bindings' && method === 'POST') return json({ identity: 'wechat:one', status: 'active' });
     if (path === '/api/v1/checkouts/quotes' && method === 'POST') return json({ quote: { id: 'quote:one', personalMinor: options.personalMinor ?? 0, rejections: [] } }, 201);
     if (path === '/api/v1/orders' && method === 'POST') return json({ id: 'order:one', payment: { intent: 'intent:one', personalMinor: 0 } }, 201);
     if (path === '/api/v1/payments/intents' && method === 'POST') return json({ intent: 'intent:one', state: options.paymentState ?? 'captured', payment: 'payment:one' });
@@ -291,7 +185,7 @@ function json(value: unknown, status = 200) {
 }
 
 function requestPaths(fetcher: ReturnType<typeof apiFetch>): string[] {
-  return fetcher.mock.calls.map(([url]) => new URL(String(url), 'https://hbbtzn.com').pathname);
+  return fetcher.mock.calls.map(([url]) => new URL(String(url)).pathname);
 }
 
 function requestHeaders(fetcher: ReturnType<typeof apiFetch>, path: string): Record<string, string> {
@@ -299,7 +193,7 @@ function requestHeaders(fetcher: ReturnType<typeof apiFetch>, path: string): Rec
 }
 
 function requestInit(fetcher: ReturnType<typeof apiFetch>, path: string, method = 'GET'): RequestInit {
-  const call = fetcher.mock.calls.find(([url, init]) => new URL(String(url), 'https://hbbtzn.com').pathname === path && (init?.method ?? 'GET') === method);
+  const call = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === path && (init?.method ?? 'GET') === method);
   if (!call) throw new Error(`REQUEST_NOT_FOUND:${method}:${path}`);
   return call[1] ?? {};
 }

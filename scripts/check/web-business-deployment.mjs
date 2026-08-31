@@ -58,27 +58,31 @@ if (!caddyMatch) throw new Error('WEB_BUSINESS_CADDY_MATCHER_MISSING');
 assertExactSet(caddyMatch[1].trim().split(/\s+/), publicPaths, 'WEB_BUSINESS_CADDY_PATHS');
 
 const apiHost = slice(caddy, 'api.zhudatuan.com {', 'media.zhudatuan.com {');
-assertCaddyMatcher(apiHost, 'apiPublicCatalog', ['GET'], ['/api/v1/catalog/public/products']);
 assertCaddyMatcher(apiHost, 'registrationHealth', ['GET'], ['/health/live', '/health/ready', '/health/startup']);
 assertCaddyMatcher(apiHost, 'registrationPreflight', ['OPTIONS'], [
   '/api/v1/identity/sessions',
   '/api/v1/identity/tickets/exchange',
   '/api/v1/identity/session',
   '/api/v1/identity/challenges',
+  '/api/v1/identity/invitations',
+  '/api/v1/identity/invitations/*',
   '/api/v1/identity/invitations/resolve',
-  '/api/v1/identity/storefronts/resolve',
   '/api/v1/identity/members',
-]);
+  '/api/v1/members',
+  '/api/v1/access/center',
+], true);
 assertCaddyMatcher(apiHost, 'registrationPost', ['POST'], [
   '/api/v1/identity/sessions',
   '/api/v1/identity/tickets/exchange',
   '/api/v1/identity/challenges',
+  '/api/v1/identity/invitations',
   '/api/v1/identity/invitations/resolve',
-  '/api/v1/identity/storefronts/resolve',
   '/api/v1/identity/members',
 ]);
 assertCaddyMatcher(apiHost, 'registrationSessionRead', ['GET'], ['/api/v1/identity/session']);
 assertCaddyMatcher(apiHost, 'registrationSessionDelete', ['DELETE'], ['/api/v1/identity/session']);
+assertCaddyMatcher(apiHost, 'registrationInvitationDelete', ['DELETE'], ['/api/v1/identity/invitations/*'], true);
+assertCaddyMatcher(apiHost, 'registrationOperatorRead', ['GET'], ['/api/v1/members', '/api/v1/access/center']);
 assertCaddyMatcher(apiHost, 'purchasePublicBlocked', ['POST', 'OPTIONS'], [
   '/api/v1/checkouts/quotes',
   '/api/v1/orders',
@@ -89,15 +93,6 @@ assertCaddyMatcher(apiHost, 'purchasePreflight', ['OPTIONS'], [
   '/api/v1/orders',
   '/api/v1/payments/intents',
 ]);
-assertCaddyMatcher(apiHost, 'mallProvisioningPreflight', ['OPTIONS'], [
-  '/api/v1/provisioning/malls',
-]);
-assertCaddyMatcher(apiHost, 'mallProvisioningApi', ['POST'], [
-  '/api/v1/provisioning/malls',
-]);
-assertCaddyMatcher(apiHost, 'mallProvisioningRead', ['GET'], [
-  '/api/v1/provisioning/malls/*',
-], true);
 const registrationOperations = [
   ['runtime.health.live', 'GET', '/health/live'],
   ['runtime.health.ready', 'GET', '/health/ready'],
@@ -108,10 +103,11 @@ const registrationOperations = [
   ['identity.session.delete', 'DELETE', '/api/v1/identity/session'],
   ['identity.challenges.create', 'POST', '/api/v1/identity/challenges'],
   ['identity.invitations.read', 'POST', '/api/v1/identity/invitations/resolve'],
-  ['identity.storefronts.read', 'POST', '/api/v1/identity/storefronts/resolve'],
   ['identity.invitations.create', 'POST', '/api/v1/identity/invitations'],
   ['identity.invitations.revoke', 'DELETE', '/api/v1/identity/invitations/{invitationid}'],
   ['identity.members.create', 'POST', '/api/v1/identity/members'],
+  ['member.members.read', 'GET', '/api/v1/members'],
+  ['access.center.read', 'GET', '/api/v1/access/center'],
 ];
 for (const [id, method, path] of registrationOperations) {
   const operation = operations.find((candidate) => candidate.id === id);
@@ -121,27 +117,22 @@ if (apiHost.includes('/api/v1/*')) throw new Error('GENERIC_CANONICAL_API_WILDCA
 assertExactSet(
   [...apiHost.matchAll(/^\s*@(\w+)(?:\s+path\b|\s*\{)/gm)].map((match) => match[1]),
   ['registrationHealth', 'registrationPreflight', 'registrationPost', 'registrationSessionRead', 'registrationSessionDelete',
-    'registrationInvitationDelete', 'registrationOperatorRead', 'mallProvisioningPreflight', 'mallProvisioningApi', 'mallProvisioningRead',
-    'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi',
-    'consoleSupportPreflight', 'consoleSupportRead', 'consoleSupportSend', 'apiPublicCatalog', 'webBusinessApi'],
+    'registrationInvitationDelete', 'registrationOperatorRead', 'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi',
+    'consoleSupportPreflight', 'consoleSupportRead', 'consoleSupportSend', 'webBusinessApi'],
   'CANONICAL_API_PATH_MATCHERS'
 );
 assertExactList(
   [...apiHost.matchAll(/reverse_proxy\s+127\.0\.0\.1:(\d+)/g)].map((match) => match[1]),
-  ['4321', '4321', '4321', '4321', '4321', '4321', '4321', '4325', '4325', '4325',
-    '4323', '4323', '4324', '4324', '4324', '4322', '4322'],
+  ['4321', '4321', '4321', '4321', '4321', '4321', '4321', '4323', '4323', '4324', '4324', '4324', '4322'],
   'CANONICAL_API_PROXY_TARGETS'
 );
-if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@registrationSessionRead', '@registrationSessionDelete']
+if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@registrationSessionRead',
+  '@registrationSessionDelete', '@registrationInvitationDelete', '@registrationOperatorRead']
   .some((matcher) => apiHost.indexOf(matcher) > apiHost.indexOf('@purchaseApi'))
-  || apiHost.indexOf('handle @mallProvisioningPreflight') > apiHost.indexOf('handle @mallProvisioningApi')
-  || apiHost.indexOf('handle @mallProvisioningApi') > apiHost.indexOf('handle @mallProvisioningRead')
-  || apiHost.indexOf('handle @mallProvisioningRead') > apiHost.indexOf('handle @purchasePublicBlocked')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchasePreflight')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchaseApi')
   || apiHost.indexOf('handle @purchasePreflight') > apiHost.indexOf('handle @purchaseApi')
-  || apiHost.indexOf('handle @purchaseApi') > apiHost.indexOf('handle @apiPublicCatalog')
-  || apiHost.indexOf('handle @apiPublicCatalog') > apiHost.indexOf('handle @webBusinessApi')
+  || apiHost.indexOf('handle @purchaseApi') > apiHost.indexOf('handle @webBusinessApi')
   || apiHost.indexOf('handle @webBusinessApi') > apiHost.indexOf('respond "Not Found" 404')) {
   throw new Error('CANONICAL_API_HANDLER_ORDER_INVALID');
 }
@@ -150,7 +141,6 @@ if (!/handle\s*\{\s*respond "Not Found" 404\s*\}/s.test(apiHost)) {
 }
 
 const storefrontHost = slice(caddy, '\nzhudatuan.com {', '\naccounts.zhudatuan.com {');
-assertCaddyMatcher(storefrontHost, 'storefrontPublicCatalog', ['GET'], ['/api/v1/catalog/public/products']);
 const showcaseMatch = storefrontHost.match(/^\s*@productionShowcases path (.+)$/m);
 if (!showcaseMatch) throw new Error('PRODUCTION_SHOWCASE_CADDY_MATCHER_MISSING');
 assertExactSet(showcaseMatch[1].trim().split(/\s+/),
@@ -212,13 +202,12 @@ const environmentKeys = environment
   .map((line) => line.slice(0, line.indexOf('=')));
 assertExactSet(
   environmentKeys,
-  ['APP_ENV', 'AUTH_MODE', 'SERVICE_VERSION', 'API_ALLOWED_ORIGINS', 'PUBLIC_MALL_SLUG', 'DATABASE_API_CONNECTION_REF', 'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN', 'NODE_EXTRA_CA_CERTS'],
+  ['APP_ENV', 'AUTH_MODE', 'SERVICE_VERSION', 'API_ALLOWED_ORIGINS', 'DATABASE_API_CONNECTION_REF', 'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN', 'NODE_EXTRA_CA_CERTS'],
   'WEB_BUSINESS_ENVIRONMENT_KEYS'
 );
-if (!environment.includes('API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com')) {
+if (!environment.includes('API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://zhudatuan.com')) {
   throw new Error('WEB_BUSINESS_ORIGIN_ALLOWLIST_INVALID');
 }
-if (!environment.includes('PUBLIC_MALL_SLUG=zdt-l1-verify')) throw new Error('WEB_BUSINESS_PUBLIC_MALL_SLUG_INVALID');
 if (!environment.includes('DATABASE_API_CONNECTION_REF=zhudatuan/web-business/database/api') || !environment.includes('NODE_EXTRA_CA_CERTS=/opt/zhudatuan/shared/tls/internal-ca.crt')) {
   throw new Error('WEB_BUSINESS_PRIVATE_DEPENDENCY_CONFIGURATION_INVALID');
 }
@@ -298,14 +287,16 @@ function assertExactList(actual, expected, label) {
   }
 }
 
-function assertCaddyMatcher(source, name, expectedMethods, expectedPaths) {
+function assertCaddyMatcher(source, name, expectedMethods, expectedPaths, allowWildcard = false) {
   const block = source.match(new RegExp(`^\\s*@${name}\\s*\\{([\\s\\S]*?)^\\s*\\}`, 'm'))?.[1];
   if (!block) throw new Error(`CADDY_MATCHER_MISSING:${name}`);
   const methods = block.match(/^\s*method\s+(.+)$/m)?.[1]?.trim().split(/\s+/) ?? [];
   const paths = block.match(/^\s*path\s+(.+)$/m)?.[1]?.trim().split(/\s+/) ?? [];
   assertExactSet(methods, expectedMethods, `${name}:METHODS`);
   assertExactSet(paths, expectedPaths, `${name}:PATHS`);
-  if (paths.some((path) => path.includes('*') || path.includes('{'))) throw new Error(`${name}:NON_EXACT_PATH_FORBIDDEN`);
+  if (!allowWildcard && paths.some((path) => path.includes('*') || path.includes('{'))) {
+    throw new Error(`${name}:NON_EXACT_PATH_FORBIDDEN`);
+  }
 }
 
 function handleBlock(source, name) {

@@ -16,7 +16,7 @@ function valid() {
     APP_ENV: 'production',
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
-    API_ALLOWED_ORIGINS: 'https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com',
+    API_ALLOWED_ORIGINS: 'https://zhudatuan.com',
     DATABASE_API_CONNECTION_REF: 'zhudatuan/purchase/database/api',
     QUOTE_KEY_REF: 'zhudatuan/purchase/checkout/quote',
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
@@ -29,12 +29,7 @@ describe('purchase API environment', () => {
     const environment = purchaseApiEnvironment(valid());
     expect(environment.PURCHASE_API_PROFILE).toBe('purchase-only');
     expect(purchaseApiPort(environment)).toBe(4323);
-    expect(purchaseApiAllowedOrigins(environment)).toEqual([
-      'https://hbbtzn.com',
-      'https://mall.hbbtzn.com',
-      'https://www.hbbtzn.com',
-      'https://zhudatuan.com',
-    ]);
+    expect(purchaseApiAllowedOrigins(environment)).toEqual(['https://zhudatuan.com']);
     expect(new Set(PURCHASE_API_ENVIRONMENT_KEYS).size).toBe(PURCHASE_API_ENVIRONMENT_KEYS.length);
   });
 

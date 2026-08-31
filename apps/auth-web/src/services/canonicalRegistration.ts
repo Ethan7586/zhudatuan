@@ -1,7 +1,6 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
+import { transportInteger } from '@shop/contract/client';
 import { z } from 'zod';
-import { beginCanonicalAuthorization, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
-import { runtimeConsumerFacadeOrigin } from './consumerFacade';
 
 const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
@@ -12,21 +11,9 @@ const InvitationSchema = z.strictObject({
   privacy_title: z.string().min(1),
   privacy_body: z.string().min(1),
   terms_hash: z.string().regex(/^[a-f0-9]{64}$/i),
+  target_client: z.enum(['storefront', 'operator']),
   effective_at: z.iso.datetime(),
   expires_at: z.iso.datetime(),
-});
-
-const StorefrontRegistrationSchema = z.strictObject({
-  terms_title: z.string().min(1),
-  terms_body: z.string().min(1),
-  privacy_title: z.string().min(1),
-  privacy_body: z.string().min(1),
-  terms_hash: z.string().regex(/^[a-f0-9]{64}$/i),
-  application_id: z.string().min(1),
-  application_slug: z.string().regex(/^[a-z0-9][a-z0-9-]{2,47}$/),
-  organization_id: z.string().min(1),
-  organization_name: z.string().min(1),
-  target_client: z.literal('storefront'),
 });
 
 const ChallengeSchema = z.strictObject({
@@ -39,12 +26,10 @@ const MembershipSchema = z.strictObject({
   id: z.string().min(1),
   member_id: z.string().min(1),
   organization_id: z.string().min(1),
-  client: z.enum(['storefront', 'operator']),
-  governance_parent_membership_id: z.string().min(1).nullable().optional(),
-  governanceLevel: z.enum(['administrator', 'senior_administrator']).optional(),
+  client: z.literal('storefront'),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
-  access_version: z.number().int().positive(),
+  access_version: transportInteger.pipe(z.number().positive()),
   joined_at: z.iso.datetime(),
   left_at: z.iso.datetime().nullable(),
 });
@@ -55,6 +40,7 @@ export interface CanonicalInvitation {
   readonly privacyTitle: string;
   readonly privacyBody: string;
   readonly termsHash: string;
+  readonly target: 'storefront' | 'console';
   readonly effectiveAt: string;
   readonly expiresAt: string;
 }
@@ -65,25 +51,11 @@ export interface CanonicalRegistrationChallenge {
   readonly expiresAt: string;
 }
 
-export interface CanonicalStorefrontRegistration {
-  readonly termsTitle: string;
-  readonly termsBody: string;
-  readonly privacyTitle: string;
-  readonly privacyBody: string;
-  readonly termsHash: string;
-  readonly applicationId: string;
-  readonly applicationSlug: string;
-  readonly organizationId: string;
-  readonly organizationName: string;
-  readonly target: 'storefront';
-}
-
 export interface CanonicalMemberRegistrationInput {
   readonly subject: string;
   readonly password: string;
   readonly displayName: string;
-  readonly inviteCode?: string;
-  readonly applicationSlug?: string;
+  readonly inviteCode: string;
   readonly challengeId: string;
   readonly code: string;
   readonly termsAccepted: boolean;
@@ -111,55 +83,19 @@ export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortS
     privacyTitle: output.privacy_title,
     privacyBody: output.privacy_body,
     termsHash: output.terms_hash,
+    target: output.target_client === 'operator' ? 'console' : 'storefront',
     effectiveAt: output.effective_at,
     expiresAt: output.expires_at,
   });
 }
 
-export async function resolveCanonicalStorefrontRegistration(
-  applicationSlug: string,
-  signal?: AbortSignal,
-): Promise<CanonicalStorefrontRegistration> {
-  const output = StorefrontRegistrationSchema.parse(await identityRequest('/api/v1/identity/storefronts/resolve', {
-    application: requiredApplicationSlug(applicationSlug),
-  }, signal));
-  return Object.freeze({
-    termsTitle: output.terms_title,
-    termsBody: output.terms_body,
-    privacyTitle: output.privacy_title,
-    privacyBody: output.privacy_body,
-    termsHash: output.terms_hash,
-    applicationId: output.application_id,
-    applicationSlug: output.application_slug,
-    organizationId: output.organization_id,
-    organizationName: output.organization_name,
-    target: 'storefront',
-  });
-}
-
 export async function createCanonicalRegistrationChallenge(destination: string, inviteCode: string, signal?: AbortSignal): Promise<CanonicalRegistrationChallenge> {
-  return createRegistrationChallenge(destination, { invite: requiredText(inviteCode, '请输入有效的邀请码') }, signal);
-}
-
-export async function createCanonicalStorefrontRegistrationChallenge(
-  destination: string,
-  applicationSlug: string,
-  signal?: AbortSignal,
-): Promise<CanonicalRegistrationChallenge> {
-  return createRegistrationChallenge(destination, { application: requiredApplicationSlug(applicationSlug) }, signal);
-}
-
-async function createRegistrationChallenge(
-  destination: string,
-  registration: Readonly<{ invite: string } | { application: string }>,
-  signal?: AbortSignal,
-): Promise<CanonicalRegistrationChallenge> {
   const output = ChallengeSchema.parse(
     await identityRequest(
       '/api/v1/identity/challenges',
       {
-        destination: canonicalRegistrationMobile(destination),
-        ...registration,
+        destination: requiredMobile(destination),
+        invite: requiredText(inviteCode, '请输入有效的邀请码'),
         purpose: 'registration',
       },
       signal
@@ -168,44 +104,25 @@ async function createRegistrationChallenge(
   return Object.freeze({ challengeId: output.id, purpose: output.purpose, expiresAt: output.expires_at });
 }
 
-export async function createCanonicalMember(
-  input: CanonicalMemberRegistrationInput,
-  signal?: AbortSignal,
-): Promise<CanonicalRegisteredMember> {
+export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
-  const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
-  const verification = input.deferPhoneVerification === true
-    ? { phoneVerification: 'checkout' }
-    : {
-        challenge: requiredText(input.challengeId, '请先获取验证码'),
-        code: requiredText(input.code, '请输入验证码'),
-      };
   const output = MembershipSchema.parse(
     await identityRequest(
       '/api/v1/identity/members',
       {
-        subject: canonicalRegistrationMobile(input.subject),
+        subject: requiredMobile(input.subject),
         password: requiredPassword(input.password),
         displayName: requiredText(input.displayName, '请输入姓名'),
-        ...memberRegistrationReference(input),
+        invite: requiredText(input.inviteCode, '请输入有效的邀请码'),
         challenge: requiredText(input.challengeId, '请先获取验证码'),
         code: requiredText(input.code, '请输入验证码'),
         termsAccepted: true,
         termsHash: requiredText(input.termsHash, '注册条款版本无效'),
-        ...(authorization === undefined ? {} : { authorization: authorization.request }),
         ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
       },
-      signal,
-      { credentials: authorization === undefined ? 'omit' : 'include' },
+      signal
     )
   );
-  let redirectUrl: string | undefined;
-  if (authorization !== undefined) {
-    if (!output.authentication || output.authentication.membership !== output.id) {
-      throw new Error('消费者登录会话未能建立，请重新获取验证码');
-    }
-    redirectUrl = await exchangeCanonicalStorefrontSession(output.authentication.callback, authorization.secret, signal);
-  }
   return Object.freeze({
     membership: output.id,
     member: output.member_id,
@@ -242,8 +159,7 @@ async function identityRequest(path: string, body: Readonly<Record<string, unkno
 }
 
 function apiOrigin(): string {
-  const facadeOrigin = runtimeConsumerFacadeOrigin();
-  const configured = facadeOrigin ?? (import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN));
+  const configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
   const parsed = new URL(configured);
   const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
   if ((!local && parsed.origin !== CANONICAL_API_ORIGIN) || parsed.username || parsed.password || parsed.hash) {
@@ -289,27 +205,12 @@ function requiredPassword(value: string): string {
   return value;
 }
 
-function memberRegistrationReference(input: CanonicalMemberRegistrationInput): Readonly<{ invite: string } | { application: string }> {
-  const hasInvite = typeof input.inviteCode === 'string' && input.inviteCode.trim().length > 0;
-  const hasStorefront = typeof input.applicationSlug === 'string' && input.applicationSlug.trim().length > 0;
-  if (hasInvite === hasStorefront) throw new Error('请选择唯一的注册入口');
-  return hasInvite
-    ? { invite: requiredText(input.inviteCode!, '请输入有效的邀请码') }
-    : { application: requiredApplicationSlug(input.applicationSlug!) };
-}
-
-function requiredApplicationSlug(value: string): string {
+function requiredMobile(value: string): string {
   const cleaned = value.trim();
-  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(cleaned)) throw new Error('商城注册入口无效');
+  const mainlandChina = /^1[3-9]\d{9}$/.test(cleaned);
+  const international = /^\+[1-9]\d{7,14}$/.test(cleaned);
+  if (!mainlandChina && !international) throw new Error('请输入有效的手机号');
   return cleaned;
-}
-
-export function canonicalRegistrationMobile(value: string): string {
-  const compact = value.trim().replace(/[\s()-]/g, '');
-  if (/^1[3-9]\d{9}$/.test(compact)) return `+86${compact}`;
-  if (/^\+861[3-9]\d{9}$/.test(compact)) return compact;
-  if (!/^\+[1-9]\d{7,14}$/.test(compact)) throw new Error('请输入有效的手机号');
-  return compact;
 }
 
 function registrationError(value: unknown, status: number): string {
@@ -325,8 +226,6 @@ function registrationError(value: unknown, status: number): string {
       IDENTITY_SUBJECT_EXISTS: '该手机号已注册，请直接登录或找回密码',
       PASSWORD_POLICY_REJECTED: '密码须为 12–128 位，并同时包含大小写字母、数字和符号',
       TERMS_ACCEPTANCE_REQUIRED: '注册条款已更新，请重新阅读并同意',
-      STOREFRONT_NOT_FOUND: '商城尚未开放消费者注册',
-      REGISTRATION_CONTEXT_INVALID: '消费者注册入口无效',
     }[code] ?? `统一身份服务暂时无法完成注册（${code}）`
   );
 }

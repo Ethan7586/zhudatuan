@@ -1,8 +1,9 @@
-import { enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
+import { bearerToken, distinctValues, enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 import type { AuthTarget } from './ClientEnvironment';
 
 export const API_ENVIRONMENT_KEYS = [
   'API_PORT',
+  'API_BIND_HOST',
   'APP_ENV',
   'SERVICE_VERSION',
   'AUTH_MODE',
@@ -14,6 +15,7 @@ export const API_ENVIRONMENT_KEYS = [
   'IDENTITY_KEY_REF',
   'QUOTE_KEY_REF',
   'KMS_ENDPOINT',
+  'KMS_BEARER_TOKEN',
   'PII_KEY_REF',
   'WECHAT_APPLICATION_CONFIG_REF',
   'WECHAT_PAYMENT_CONFIG_REF',
@@ -24,6 +26,7 @@ export const API_ENVIRONMENT_KEYS = [
   'PUBLIC_MEDIA_BASE_URL',
   'PUBLIC_MALL_SLUG',
   'SECRET_STORE_ENDPOINT',
+  'SECRET_STORE_BEARER_TOKEN',
 ] as const;
 
 export type ApiEnvironment = Readonly<Partial<Record<(typeof API_ENVIRONMENT_KEYS)[number], string>>>;
@@ -36,6 +39,12 @@ export function apiEnvironment(): ApiEnvironment {
 
 export function apiPort(environment: ApiEnvironment): number {
   return integerValue(environment.API_PORT, 3001, 1, 65_535, 'API_PORT_INVALID');
+}
+
+export function apiBindHost(environment: ApiEnvironment): '127.0.0.1' | '0.0.0.0' {
+  const value = environment.API_BIND_HOST?.trim() || '127.0.0.1';
+  if (value !== '127.0.0.1' && value !== '0.0.0.0') throw new Error('API_BIND_HOST_INVALID');
+  return value;
 }
 
 export function apiAllowedOrigins(environment: ApiEnvironment): readonly string[] {
@@ -79,8 +88,11 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
     ['OBJECT_STORE_TOKEN_REF', 'OBJECT_STORE_TOKEN_REF_MISSING'],
     ['EXTENSION_MANIFEST_KEY_REF', 'EXTENSION_MANIFEST_KEY_REF_MISSING'],
     ['KMS_ENDPOINT', 'KMS_ENDPOINT_MISSING'],
+    ['SECRET_STORE_ENDPOINT', 'SECRET_STORE_ENDPOINT_MISSING'],
   ] as const) requiredValue(source[key], code);
-  if (app === 'production') requiredValue(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING');
+  const kmsBearer = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
+  const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
+  distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
 }
 
 function webUrl(value: unknown): string {

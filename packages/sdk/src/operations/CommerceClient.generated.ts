@@ -14,6 +14,7 @@ import { createCatalogOperations, type CatalogOperations } from './catalog';
 import { createPricingOperations, type PricingOperations } from './pricing';
 import { createInventoryOperations, type InventoryOperations } from './inventory';
 import { createMarketingOperations, type MarketingOperations } from './marketing';
+import { createReferralOperations, type ReferralOperations } from './referral';
 import { createReportingOperations, type ReportingOperations } from './reporting';
 import { createExperienceOperations, type ExperienceOperations } from './experience';
 import { createCartOperations, type CartOperations } from './cart';
@@ -46,6 +47,7 @@ export type { CatalogOperations } from './catalog';
 export type { PricingOperations } from './pricing';
 export type { InventoryOperations } from './inventory';
 export type { MarketingOperations } from './marketing';
+export type { ReferralOperations } from './referral';
 export type { ReportingOperations } from './reporting';
 export type { ExperienceOperations } from './experience';
 export type { CartOperations } from './cart';
@@ -83,9 +85,11 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.invitations.revoke",
   "identity.members.create",
   "identity.members.manage",
+  "identity.members.reset",
   "identity.password.change",
   "identity.password.verify",
   "identity.password.reset",
+  "identity.mobile.challenge",
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
@@ -95,6 +99,13 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "access.center.read",
   "access.roles.manage",
   "access.scopes.manage",
+  "access.ownership.read",
+  "access.ownership.transfers.preview",
+  "access.ownership.transfers.create",
+  "access.ownership.transfers.accept.preview",
+  "access.ownership.transfers.accept",
+  "access.ownership.transfers.cancel",
+  "access.ownership.transfers.cancel.preview",
   "capability.assignments.read",
   "capability.assignments.manage",
   "partner.partners.read",
@@ -136,6 +147,21 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "inventory.imports.create",
   "inventory.imports.read",
   "marketing.campaigns.read",
+  "referral.settings.read",
+  "referral.settings.manage",
+  "referral.products.read",
+  "referral.products.manage",
+  "referral.members.read",
+  "referral.members.apply",
+  "referral.members.approve",
+  "referral.members.disqualify",
+  "referral.bindings.read",
+  "referral.bindings.create",
+  "referral.commissions.read",
+  "referral.earnings.read",
+  "referral.links.read",
+  "referral.withdrawals.read",
+  "referral.withdrawals.create",
   "reporting.dashboard.read",
   "reporting.sales.read",
   "reporting.products.read",
@@ -219,6 +245,11 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.statements.export",
   "finance.reconciliations.manage",
   "finance.reconciliations.read",
+  "finance.reconciliationrepairs.read",
+  "finance.reconciliationrepairs.preview",
+  "finance.reconciliationrepairs.submit",
+  "finance.reconciliationrepairs.decide",
+  "finance.reconciliationrepairs.reverse",
   "finance.settlements.read",
   "finance.settlements.decide",
   "finance.settlements.adjust",
@@ -232,8 +263,12 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.backfills.read",
   "finance.backfills.decide",
   "finance.policies.manage",
+  "finance.policies.preview",
+  "finance.policies.read",
+  "finance.audit.read",
   "invoice.profiles.manage",
   "invoice.profiles.read",
+  "invoice.operatorprofiles.read",
   "invoice.requests.create",
   "invoice.requests.read",
   "invoice.requests.cancel",
@@ -300,6 +335,7 @@ export interface CommerceClient {
   readonly pricing: PricingOperations;
   readonly inventory: InventoryOperations;
   readonly marketing: MarketingOperations;
+  readonly referral: ReferralOperations;
   readonly reporting: ReportingOperations;
   readonly experience: ExperienceOperations;
   readonly cart: CartOperations;
@@ -335,6 +371,7 @@ export function createCommerceClient(client: OperationExecutor): CommerceClient 
     pricing: createPricingOperations(client),
     inventory: createInventoryOperations(client),
     marketing: createMarketingOperations(client),
+    referral: createReferralOperations(client),
     reporting: createReportingOperations(client),
     experience: createExperienceOperations(client),
     cart: createCartOperations(client),

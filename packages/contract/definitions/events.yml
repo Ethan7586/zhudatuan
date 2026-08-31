@@ -28,6 +28,13 @@ events:
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
     handlers: [projection]
+  - id: identity.member.reset
+    owner: identity
+    version: 1
+    schema: contract://events/identity.member.reset/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: [projection]
   - id: access.version.changed
     owner: access
     version: 1
@@ -35,6 +42,34 @@ events:
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
     handlers: [projection]
+  - id: access.owner.transfer.initiated
+    owner: access
+    version: 1
+    schema: contract://events/access.owner.transfer.initiated/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: []
+  - id: access.owner.bootstrapped
+    owner: access
+    version: 1
+    schema: contract://events/access.owner.bootstrapped/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: []
+  - id: access.owner.transferred
+    owner: access
+    version: 1
+    schema: contract://events/access.owner.transferred/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: []
+  - id: access.owner.transfer.cancelled
+    owner: access
+    version: 1
+    schema: contract://events/access.owner.transfer.cancelled/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: []
   - id: catalog.listing.published
     owner: catalog
     version: 1
@@ -83,21 +118,28 @@ events:
     schema: contract://events/order.placed/v1
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
-    handlers: [projection]
+    handlers: [projection, reconciliation, referral]
   - id: order.paid
     owner: order
     version: 1
     schema: contract://events/order.paid/v1
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
-    handlers: [projection]
+    handlers: [projection, referral]
+  - id: order.received
+    owner: order
+    version: 1
+    schema: contract://events/order.received/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: [referral]
   - id: order.cancelled
     owner: order
     version: 1
     schema: contract://events/order.cancelled/v1
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
-    handlers: [projection]
+    handlers: [projection, reconciliation, referral]
   - id: payment.succeeded
     owner: payment
     version: 1
@@ -111,7 +153,7 @@ events:
     schema: contract://events/payment.refunded/v1
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
-    handlers: [projection, notification, reconciliation]
+    handlers: [projection, notification, reconciliation, referral]
   - id: payment.late.detected
     owner: payment
     version: 1

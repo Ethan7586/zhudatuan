@@ -68,7 +68,10 @@ jobs:
         run: |
           npm ci
           npm run check:cleaninstall
-          npm run check:migration-inventory
+          npm run check:artifacts
+          npm run check:approved-ui
+          npm run check:registration-deployment
+          npm run check:purchase-deployment
 
       - name: ci/02_secretlicense
         run: |

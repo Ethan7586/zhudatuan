@@ -213,6 +213,21 @@ operations:
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
+  - id: identity.members.reset
+    owner: identity
+    method: PUT
+    path: /api/v1/identity/members/{membershipid}/registration
+    audience: operator
+    permission: identity.registration.reset
+    idempotent: true
+    expectedVersion: required
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.password.change
     owner: identity
     method: PUT
@@ -244,6 +259,18 @@ operations:
     method: POST
     path: /api/v1/identity/password/reset
     audience: public
+    idempotent: false
+    schema: structural
+    requirements: *a1
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+  - id: identity.mobile.challenge
+    owner: identity
+    method: POST
+    path: /api/v1/identity/mobile/challenges
+    audience: member
+    permission: identity.mobile.manage
     idempotent: false
     schema: structural
     requirements: *a1
@@ -358,6 +385,104 @@ operations:
     path: /api/v1/access/memberships/{membershipid}/scopes
     audience: operator
     permission: access.scope.manage
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.read
+    owner: access
+    method: GET
+    path: /api/v1/access/ownership
+    audience: operator
+    permission: access.ownership.read
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.preview
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/preview
+    audience: operator
+    permission: access.ownership.transfer
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.create
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers
+    audience: operator
+    permission: access.ownership.transfer
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.accept.preview
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/accept/preview
+    audience: operator
+    permission: access.ownership.accept
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.accept
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/accept
+    audience: operator
+    permission: access.ownership.accept
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.cancel
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/cancel
+    audience: operator
+    permission: access.ownership.transfer
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/access.ts
+  - id: access.ownership.transfers.cancel.preview
+    owner: access
+    method: POST
+    path: /api/v1/access/ownership/transfers/{transferid}/cancel/preview
+    audience: operator
+    permission: access.ownership.transfer
     idempotent: true
     schema: structural
     requirements:
@@ -921,6 +1046,186 @@ operations:
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/marketing.ts
+  - id: referral.settings.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/settings
+    audience: operator
+    permission: referral.settings.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.settings.manage
+    owner: referral
+    method: PUT
+    path: /api/v1/referral/settings
+    audience: operator
+    permission: referral.settings.manage
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.products.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/products
+    audience: operator
+    permission: referral.products.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.products.manage
+    owner: referral
+    method: PUT
+    path: /api/v1/referral/products
+    audience: operator
+    permission: referral.products.manage
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.members.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/members
+    audience: operator
+    permission: referral.members.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.members.apply
+    owner: referral
+    method: POST
+    path: /api/v1/referral/members/apply
+    audience: member
+    permission: referral.self.manage
+    idempotent: false
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.members.approve
+    owner: referral
+    method: POST
+    path: /api/v1/referral/members/approve
+    audience: operator
+    permission: referral.members.approve
+    idempotent: false
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.members.disqualify
+    owner: referral
+    method: POST
+    path: /api/v1/referral/members/disqualify
+    audience: operator
+    permission: referral.members.disqualify
+    idempotent: false
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.bindings.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/bindings
+    audience: operator
+    permission: referral.bindings.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.bindings.create
+    owner: referral
+    method: POST
+    path: /api/v1/referral/bindings
+    audience: member
+    permission: referral.self.manage
+    idempotent: false
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.commissions.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/commissions
+    audience: operator
+    permission: referral.commissions.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.earnings.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/earnings
+    audience: member
+    permission: referral.self.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.links.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/links
+    audience: member
+    permission: referral.self.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.withdrawals.read
+    owner: referral
+    method: GET
+    path: /api/v1/referral/withdrawals
+    audience: member
+    permission: referral.self.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
+  - id: referral.withdrawals.create
+    owner: referral
+    method: POST
+    path: /api/v1/referral/withdrawals
+    audience: member
+    permission: referral.withdrawals.create
+    idempotent: false
+    schema: structural
+    requirements: [MVP04]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/referral.ts
   - id: reporting.dashboard.read
     owner: reporting
     method: GET
@@ -2032,6 +2337,66 @@ operations:
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.reconciliationrepairs.read
+    owner: finance
+    method: GET
+    path: /api/v1/finance/reconciliation-repairs/{repairid}
+    audience: operator
+    permission: finance.reconciliation.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.reconciliationrepairs.preview
+    owner: finance
+    method: POST
+    path: /api/v1/finance/reconciliations/{reconciliationid}/items/{itemid}/repairs/preview
+    audience: operator
+    permission: finance.reconciliation.manage
+    idempotent: false
+    schema: structural
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.reconciliationrepairs.submit
+    owner: finance
+    method: POST
+    path: /api/v1/finance/reconciliation-repairs/{repairid}/submit
+    audience: operator
+    permission: finance.reconciliation.manage
+    idempotent: false
+    schema: structural
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.reconciliationrepairs.decide
+    owner: finance
+    method: POST
+    path: /api/v1/finance/reconciliation-repairs/{repairid}/decide
+    audience: operator
+    permission: finance.reconciliation.manage
+    idempotent: false
+    schema: structural
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.reconciliationrepairs.reverse
+    owner: finance
+    method: POST
+    path: /api/v1/finance/reconciliation-repairs/{repairid}/reverse
+    audience: operator
+    permission: finance.reconciliation.manage
+    idempotent: false
+    schema: structural
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.settlements.read
     owner: finance
     method: GET
@@ -2190,6 +2555,44 @@ operations:
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.policies.preview
+    owner: finance
+    method: POST
+    path: /api/v1/finance/policies/{policyid}/preview
+    audience: operator
+    permission: finance.policy.manage
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP10
+      - MVP19
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.policies.read
+    owner: finance
+    method: GET
+    path: /api/v1/finance/policies
+    audience: operator
+    permission: finance.policy.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
+  - id: finance.audit.read
+    owner: finance
+    method: GET
+    path: /api/v1/finance/audits
+    audience: operator
+    permission: audit.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP10, MVP19]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
   - id: invoice.profiles.manage
     owner: finance
     method: PUT
@@ -2219,11 +2622,25 @@ operations:
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/invoice.ts
+  - id: invoice.operatorprofiles.read
+    owner: finance
+    method: GET
+    path: /api/v1/invoices/operator-profiles
+    audience: operator
+    permission: invoice.profile.read
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP10
+      - MVP19
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/invoice.ts
   - id: invoice.requests.create
     owner: finance
     method: POST
     path: /api/v1/invoices/requests
-    audience: member
+    audience: operator
     permission: invoice.request.create
     idempotent: false
     schema: structural

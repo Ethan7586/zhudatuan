@@ -31,8 +31,7 @@ export function integer(value: unknown, label: string): number {
 }
 
 export function nonNegativeInteger(value: unknown, label: string): number {
-  const result = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : integer(value, label);
-  if (!Number.isSafeInteger(result)) invalid(label);
+  const result = integer(value, label);
   if (result < 0) invalid(label);
   return result;
 }

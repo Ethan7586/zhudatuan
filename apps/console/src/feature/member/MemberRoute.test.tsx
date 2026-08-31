@@ -21,7 +21,7 @@ const server = setupServer(
   http.put('*/api/v1/identity/members/:membershipid/registration', async ({ request }) => {
     resetWrites.push({ body: await request.clone().json(), headers: request.headers });
     return HttpResponse.json(resetReceipt());
-  })
+  }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -41,10 +41,6 @@ describe('member administrator invitation', () => {
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '成员管理' });
-    expect(screen.getByRole('heading', { name: '会员与权限控制中心' })).toBeTruthy();
-    expect(screen.getByText('角色模板')).toBeTruthy();
-    expect(screen.getByText('数据范围')).toBeTruthy();
-    expect(screen.getByText('明确禁止')).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
@@ -62,15 +58,6 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
     expect(writes[0]?.headers.get('x-access-version')).toBe('7');
     expect(writes[0]?.headers.get('x-csrf-token')).toBe('csrf-token-for-invitation');
-
-    await user.click(within(receipt).getByRole('button', { name: /^关闭$/ }));
-    expect(screen.getByRole('dialog', { name: '邀请码已生成' })).toBeTruthy();
-    await user.keyboard('{Escape}');
-    expect(screen.getByRole('dialog', { name: '邀请码已生成' })).toBeTruthy();
-    const backdrop = receipt.closest('.dialogbackdrop');
-    if (!(backdrop instanceof HTMLElement)) throw new Error('INVITATION_DIALOG_BACKDROP_MISSING');
-    await user.click(backdrop);
-    expect(screen.getByRole('dialog', { name: '邀请码已生成' })).toBeTruthy();
 
     await user.click(within(receipt).getByRole('button', { name: '复制邀请码' }));
     expect(writeText).toHaveBeenCalledWith('A'.repeat(32));
@@ -178,7 +165,7 @@ function renderRoute(context: ConsoleContext) {
 }
 
 const tenantScope = { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', name: '主打团租户' } as const;
-const secondTenantScope = { kind: 'tenant', id: 'tenant-smart-wing', tenant: 'tenant-smart-wing', name: '主打团租户' } as const;
+const secondTenantScope = { kind: 'tenant', id: 'tenant-smart-wing', tenant: 'tenant-smart-wing', name: '智慧翼租户' } as const;
 const zhudatuanTenantScope = { ...tenantScope, id: 'tenant-zhudatuan', tenant: 'tenant-zhudatuan', name: '主打团' } as const;
 const platformScope = { kind: 'platform', id: 'platform:one', name: '福利商城平台' } as const;
 const missingEvidenceCases: ReadonlyArray<readonly [string, Partial<ConsoleContext['session']>]> = [

@@ -6,13 +6,12 @@ export const IDENTITY_REGISTRATION_API_PROFILE = 'registration-only' as const;
 const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
   'https://accounts.zhudatuan.com',
   'https://console.zhudatuan.com',
-  'https://hbbtzn.com',
   'https://zhudatuan.com',
 ] as const);
 
 const PRODUCTION_RETURN_TARGETS = Object.freeze({
   console: 'https://console.zhudatuan.com',
-  storefront: 'https://hbbtzn.com',
+  storefront: 'https://zhudatuan.com',
   store: 'https://console.zhudatuan.com/entrances/store',
   supplier: 'https://console.zhudatuan.com/entrances/supplier',
 } satisfies AuthReturnTargets);
@@ -29,8 +28,6 @@ export const IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS = Object.freeze([
   'DATABASE_API_CONNECTION_REF',
   'SESSION_KEY_REF',
   'IDENTITY_KEY_REF',
-  'WECHAT_APPLICATION_CONFIG_REF',
-  'WECHAT_IDENTITY_CONFIG_REF',
   'KMS_ENDPOINT',
   'KMS_BEARER_TOKEN',
   'SECRET_STORE_ENDPOINT',
@@ -67,8 +64,6 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
     ['DATABASE_API_CONNECTION_REF', 'DATABASE_API_CONNECTION_REF_MISSING'],
     ['SESSION_KEY_REF', 'SESSION_KEY_REF_MISSING'],
     ['IDENTITY_KEY_REF', 'IDENTITY_KEY_REF_MISSING'],
-    ['WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_APPLICATION_CONFIG_REF_MISSING'],
-    ['WECHAT_IDENTITY_CONFIG_REF', 'WECHAT_IDENTITY_CONFIG_REF_MISSING'],
     ['KMS_ENDPOINT', 'KMS_ENDPOINT_MISSING'],
     ['SECRET_STORE_ENDPOINT', 'SECRET_STORE_ENDPOINT_MISSING'],
   ] as const) requiredValue(source[key], code);

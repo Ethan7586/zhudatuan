@@ -65,7 +65,10 @@ const SettlementSchema = z
 const WithdrawalSchema = z
   .object({
     id: z.string().min(1),
-    settlement_id: z.string().min(1),
+    settlement_id: z.string().min(1).nullable(),
+    source_kind: z.enum(['settlement', 'referral']),
+    source_id: z.string().min(1),
+    beneficiary_member_id: z.string().min(1).nullable(),
     amount_minor: DatabaseIntegerSchema,
     currency: z.string().length(3),
     state: z.string().min(1),

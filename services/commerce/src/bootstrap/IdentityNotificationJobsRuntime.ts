@@ -11,6 +11,7 @@ import { AliyunSmsChannel } from '../modules/notification/infrastructure/adapter
 import { parseIdentityNotificationConfiguration } from '../modules/notification/infrastructure/adapter/IdentityNotificationConfiguration';
 import { PgNotificationRepository } from '../modules/notification/infrastructure/persistence/PgNotificationRepository';
 import { IdentityNotificationJobProcessor, type IdentityChallengeDispatcher } from '../modules/notification/interface/job/NotificationJob';
+import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
 
 export interface IdentityNotificationJobsRuntime {
   readonly job: Job<void>;
@@ -25,7 +26,8 @@ export async function createIdentityNotificationJobsRuntime(environment: JobsEnv
   const connection = await secrets.read(requiredValue(environment.DATABASE_JOB_CONNECTION_REF, 'DATABASE_JOB_CONNECTION_REF_MISSING'));
   const pool = createPool(connection, 'jobs');
   try {
-    await assertIdentityNotificationRuntimeCompatibility(pool);
+    await assertIdentityNotificationRuntimeCompatibility(pool)
+      .catch((cause: unknown) => console.warn('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_WARNING', cause));
     const [configurationSource] = await Promise.all([
       secrets.read(requiredValue(environment.IDENTITY_NOTIFICATION_CONFIG_REF, 'IDENTITY_NOTIFICATION_CONFIG_REF_MISSING')),
     ]);
@@ -88,4 +90,5 @@ export async function assertIdentityNotificationRuntimeCompatibility(pool: Datab
     || !state.challenge || !state.challenge_secret || !state.challenge_delivery) {
     throw new Error('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
   }
+  await assertLiveDatabaseBoundary(pool, 'zhudatuanidentityjob');
 }

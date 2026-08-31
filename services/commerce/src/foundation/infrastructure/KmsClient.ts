@@ -1,4 +1,5 @@
 import { token } from '../../bootstrap/Container';
+import { bearerToken } from '@shop/config/server';
 import { HttpClient } from '../http/HttpClient';
 
 export interface CipherEnvelope {
@@ -9,8 +10,10 @@ export interface CipherEnvelope {
 
 export class KmsClient {
   private readonly http: HttpClient;
-  constructor(private readonly endpoint: string, fetcher: typeof fetch = fetch) {
+  private readonly bearer: string;
+  constructor(private readonly endpoint: string, bearer: string, fetcher: typeof fetch = fetch) {
     if (!endpoint.startsWith('https://')) throw new Error('KMS_ENDPOINT_INVALID');
+    this.bearer = bearerToken(bearer, 'KMS_BEARER_TOKEN_INVALID');
     this.http = new HttpClient(fetcher);
   }
 
@@ -19,7 +22,7 @@ export class KmsClient {
     if (!plaintext) throw new Error('KMS_PLAINTEXT_EMPTY');
     const response = await this.http.send(`${this.endpoint.replace(/\/$/, '')}/v1/envelopes`, {
       method: 'POST',
-      headers: { accept: 'application/json', 'content-type': 'application/json' },
+      headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}`, 'content-type': 'application/json' },
       body: JSON.stringify({ context, keyRef, plaintext }),
       redirect: 'error',
     }, { mode: 'read' });
@@ -34,7 +37,7 @@ export class KmsClient {
   async decrypt(keyRef: string, ciphertext: string, context: Readonly<Record<string, string>>): Promise<string> {
     if (!/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(keyRef) || ciphertext.length < 16) throw new Error('KMS_DECRYPT_INPUT_INVALID');
     const response = await this.http.send(`${this.endpoint.replace(/\/$/, '')}/v1/plaintexts`, {
-      method: 'POST', headers: { accept: 'application/json', 'content-type': 'application/json' },
+      method: 'POST', headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}`, 'content-type': 'application/json' },
       body: JSON.stringify({ context, keyRef, ciphertext }), redirect: 'error',
     }, { mode: 'read' });
     if (!response.ok) throw new Error('KMS_DECRYPT_FAILED');

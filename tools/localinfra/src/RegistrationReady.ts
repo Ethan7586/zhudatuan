@@ -1,11 +1,15 @@
-import { localIdentityInfrastructureEnvironment } from '@shop/config/server';
+import { localIdentityInfrastructureEnvironment, localInfrastructureEnvironment } from '@shop/config/server';
 
-const environment = localIdentityInfrastructureEnvironment();
-await Promise.all([
+const fullStaging = process.env.LOCAL_RUNTIME_PROFILE === 'full-staging';
+const fullEnvironment = fullStaging ? localInfrastructureEnvironment() : undefined;
+const environment = fullEnvironment ?? localIdentityInfrastructureEnvironment();
+const services = [
   ready(`https://127.0.0.1:${environment.secretsPort}/health/ready`, 'SECRET_STORE'),
   ready(`https://127.0.0.1:${environment.kmsPort}/health/ready`, 'KMS'),
-]);
-process.stdout.write('ZHUDATUAN_INTERNAL_RUNTIME_READY services=secret-store,kms\n');
+];
+if (fullEnvironment) services.push(ready(`https://127.0.0.1:${fullEnvironment.objectsPort}/health/ready`, 'OBJECT_STORE'));
+await Promise.all(services);
+process.stdout.write(`ZHUDATUAN_INTERNAL_RUNTIME_READY services=secret-store,kms${fullStaging ? ',object-store' : ''}\n`);
 
 async function ready(url: string, service: string): Promise<void> {
   let last = 'not-started';

@@ -1,4 +1,4 @@
-import { OperationCatalog, type OperationId } from './OperationCatalog';
+import type { OperationId } from './OperationCatalog';
 
 export interface FinancialActionRequest {
   readonly operation: string;
@@ -28,16 +28,34 @@ const ACTION_PROOF_OPERATIONS = new Set<OperationId>([
   'invoice.requests.red',
 ]);
 
+const EXPECTED_VERSION_OPERATIONS = new Set<OperationId>([
+  'finance.reconciliations.manage',
+  'finance.reconciliationrepairs.preview',
+  'finance.reconciliationrepairs.submit',
+  'finance.reconciliationrepairs.decide',
+  'finance.reconciliationrepairs.reverse',
+  'finance.settlements.decide',
+  'finance.settlements.adjust',
+  'finance.withdrawals.create',
+  'finance.withdrawals.decide',
+  'finance.withdrawals.recover',
+  'finance.periods.manage',
+  'finance.backfills.decide',
+  'finance.policies.preview',
+  'finance.policies.manage',
+  'invoice.profiles.manage',
+  'invoice.requests.create',
+  'invoice.requests.cancel',
+  'invoice.requests.decide',
+  'invoice.requests.red',
+]);
+
 export function requiresFinancialActionProof(operation: string): boolean {
   return ACTION_PROOF_OPERATIONS.has(operation as OperationId);
 }
 
 export function requiresFinancialExpectedVersion(operation: string): boolean {
-  try {
-    return OperationCatalog.definition(operation).expectedVersion === 'required';
-  } catch {
-    return false;
-  }
+  return EXPECTED_VERSION_OPERATIONS.has(operation as OperationId);
 }
 
 /**

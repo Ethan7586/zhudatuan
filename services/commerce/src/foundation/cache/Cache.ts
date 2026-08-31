@@ -7,6 +7,7 @@ export interface CacheState {
 
 export interface Cache {
   start(): Promise<void>;
+  onUnavailable(listener: (state: CacheState) => void): () => void;
   get<T>(key: string): Promise<T | null>;
   put<T>(key: string, value: T, seconds: number): Promise<boolean>;
   remove(...keys: readonly string[]): Promise<boolean>;

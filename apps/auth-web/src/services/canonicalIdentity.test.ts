@@ -2,12 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createCanonicalLoginChallenge,
   createCanonicalPasswordResetChallenge,
-  currentCanonicalStorefrontOrganization,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
-  loginCanonicalStorefront,
-  loginCanonicalStorefrontEntry,
-  loginCanonicalStorefrontEntryWithOtp,
   resetCanonicalPassword,
 } from './canonicalIdentity';
 
@@ -27,34 +23,98 @@ beforeEach(() => {
   });
 });
 
-describe('canonical storefront session', () => {
-  it('recognizes the already signed-in L1 before reopening consumer registration', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
-      target: 'storefront',
-      governance: { organization: 'mall:l1-hongtai' },
-      actor: 'principal:one',
-    }));
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(currentCanonicalStorefrontOrganization()).resolves.toBe('mall:l1-hongtai');
-
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/session');
-    expect(init).toMatchObject({ method: 'GET', credentials: 'include', redirect: 'error' });
-  });
-
-  it('treats an absent storefront session as unauthenticated', async () => {
-    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ code: 'AUTHENTICATION_REQUIRED' }, 401)));
-    await expect(currentCanonicalStorefrontOrganization()).resolves.toBeNull();
-  });
-});
-
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
 describe('canonical console identity', () => {
+  it('requests a login-only challenge for the canonical mobile number', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      id: 'challenge:login:1234567890',
+      purpose: 'login',
+      expires_at: '2099-01-01T00:00:00.000Z',
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalLoginChallenge('138 0013 8000')).resolves.toEqual({
+      challengeId: 'challenge:login:1234567890',
+      expiresAt: '2099-01-01T00:00:00.000Z',
+    });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
+    expect(JSON.parse(String(init?.body))).toEqual({ purpose: 'login', destination: '+8613800138000' });
+  });
+
+  it('uses the OTP credential without sending a password', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated()))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged(CONSOLE_DESTINATION)));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await loginCanonicalConsoleWithOtp('13800138000', 'challenge:login:1234567890', '123456');
+
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body).toMatchObject({
+      provider: 'phone_otp',
+      subject: '+8613800138000',
+      challenge: 'challenge:login:1234567890',
+      code: '123456',
+      target: 'console',
+    });
+    expect(body).not.toHaveProperty('password');
+  });
+
+  it('normalizes a mobile password subject exactly like registration', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated()))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged(CONSOLE_DESTINATION)));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await loginCanonicalConsole('192 8724 7586', 'Original!Password1');
+
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
+      provider: 'password',
+      subject: '+8619287247586',
+      password: 'Original!Password1',
+      target: 'console',
+    });
+  });
+
+  it('uses the public canonical challenge and reset operations for password recovery', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({
+        id: 'challenge:password-reset:1234567890',
+        purpose: 'password_reset',
+        expires_at: '2099-01-01T00:00:00.000Z',
+      }, 202))
+      .mockResolvedValueOnce(jsonResponse({ credential_version: 2, version: 2 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalPasswordResetChallenge('19287247586')).resolves.toEqual({
+      challengeId: 'challenge:password-reset:1234567890',
+      expiresAt: '2099-01-01T00:00:00.000Z',
+    });
+    await resetCanonicalPassword('challenge:password-reset:1234567890', '123456', 'Replacement!Password2');
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'POST', credentials: 'omit' });
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toEqual({
+      purpose: 'password_reset',
+      destination: '+8619287247586',
+    });
+    expect(String(fetchMock.mock.calls[1][0])).toBe('http://127.0.0.1:3001/api/v1/identity/password/reset');
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'POST', credentials: 'omit' });
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toEqual({
+      challenge: 'challenge:password-reset:1234567890',
+      code: '123456',
+      newPassword: 'Replacement!Password2',
+    });
+  });
+
   it('creates and exchanges a session while preserving credentials and request metadata', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
@@ -116,85 +176,6 @@ describe('canonical console identity', () => {
     expect(exchangeBody.verifier).not.toBe(sessionBody.authorization.challenge);
   });
 
-  it('logs a newly registered consumer into its exact storefront membership before redirecting', async () => {
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:storefront-one')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged(STOREFRONT_DESTINATION)));
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(loginCanonicalStorefront(
-      '+8613800138000',
-      'Generated!Password2',
-      'membership:storefront-one',
-    )).resolves.toEqual({
-      membership: 'membership:storefront-one',
-      redirectUrl: STOREFRONT_DESTINATION,
-    });
-
-    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
-      provider: 'password',
-      subject: '+8613800138000',
-      password: 'Generated!Password2',
-      membership: 'membership:storefront-one',
-      target: 'storefront',
-    });
-  });
-
-  it('opens a single storefront membership directly with a phone OTP', async () => {
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:storefront-one')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged(STOREFRONT_DESTINATION)));
-    vi.stubGlobal('fetch', fetchMock);
-
-    await expect(loginCanonicalStorefrontEntryWithOtp(
-      '13800138000',
-      'challenge:login:1234567890',
-      '123456',
-    )).resolves.toEqual({
-      kind: 'authenticated',
-      membership: 'membership:storefront-one',
-      redirectUrl: STOREFRONT_DESTINATION,
-    });
-
-    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
-    expect(body).toMatchObject({
-      provider: 'phone_otp',
-      subject: '+8613800138000',
-      challenge: 'challenge:login:1234567890',
-      code: '123456',
-      target: 'storefront',
-    });
-    expect(body).not.toHaveProperty('password');
-    expect(body).not.toHaveProperty('membership');
-  });
-
-  it('returns storefront membership choices without changing their IDs', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
-      principal: 'principal-consumer',
-      memberships: [
-        { id: 'membership:mall-a', client: 'storefront' },
-        { id: 'membership:mall-b', client: 'storefront' },
-      ],
-    }));
-    vi.stubGlobal('fetch', fetchMock);
-
-    const result = await loginCanonicalStorefrontEntry('13800138000', 'Original!Password1');
-
-    expect(result).toMatchObject({
-      kind: 'selection',
-      context: {
-        identifier: '+8613800138000',
-        loginMethod: 'password',
-        memberships: [
-          { id: 'membership:mall-a', target: 'storefront' },
-          { id: 'membership:mall-b', target: 'storefront' },
-        ],
-      },
-    });
-  });
-
   it('maps a canonical console membership selection to the approved admin UI model', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
       principal: 'principal-owner',
@@ -214,7 +195,7 @@ describe('canonical console identity', () => {
           target: 'admin',
           status: 'active',
           enterpriseName: '已授权企业',
-          storeName: '筑大团运营后台',
+          storeName: '主打团运营后台',
           roleName: '运营会员',
           dataScope: '按权限系统授权范围',
           subjectScope: '企业',
@@ -262,9 +243,9 @@ function ticketExchanged(url: string): Readonly<Record<string, unknown>> {
   };
 }
 
-function jsonResponse(body: unknown): Response {
+function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
-    status: 200,
+    status,
     headers: { 'content-type': 'application/json' },
   });
 }

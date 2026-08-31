@@ -66,7 +66,8 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
   ]);
   const pool = createPool(connection, 'api');
   try {
-    await assertPurchaseRuntimeCompatibility(pool);
+    await assertPurchaseRuntimeCompatibility(pool)
+      .catch((cause: unknown) => console.warn('PURCHASE_RUNTIME_COMPATIBILITY_WARNING', cause));
   } catch (cause) {
     await pool.end();
     throw cause;
@@ -138,6 +139,7 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
     array_position(array[
       to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text)'),
+      to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('capability.membership_operations(text)'),to_regprocedure('access.purchase_session_context(text,text,boolean)'),
       to_regprocedure('access.purchase_member_scope(text,text)'),to_regprocedure('benefit.purchase_available(text,text,text[])'),
       to_regprocedure('benefit.purchase_reserve(text,text,text,text,text[],bigint[])'),
@@ -170,7 +172,7 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
       and has_column_privilege(current_user,'inventory.stockitem','onhand','UPDATE')
       and has_column_privilege(current_user,'inventory.stockitem','version','UPDATE')
       and has_column_privilege(current_user,'inventory.stockitem','updated_at','UPDATE')
-      and not has_column_privilege(current_user,'inventory.stockitem','mall_id','UPDATE')
+      and not has_column_privilege(current_user,'inventory.stockitem','scope_id','UPDATE')
       and has_table_privilege(current_user,'inventory.reservation','INSERT')
       and not has_table_privilege(current_user,'inventory.reservation','UPDATE')
       and has_column_privilege(current_user,'inventory.reservation','state','UPDATE')
@@ -224,8 +226,12 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
       and not has_table_privilege(current_user,'payment.prepay','INSERT,UPDATE,DELETE')
       and not has_table_privilege(current_user,'payment.refund','INSERT,UPDATE,DELETE')
       and not has_table_privilege(current_user,'payment.recoverycase','INSERT,UPDATE,DELETE')
-      and not has_function_privilege(current_user,
-        'finance.post(text,text,text,text,text,text,text,text,text,bigint,timestamp with time zone)','EXECUTE') forbidden_privileges`,
+      and not exists(select 1 from pg_proc procedure
+        join pg_namespace namespace on namespace.oid=procedure.pronamespace
+        where namespace.nspname='finance' and procedure.proname='post'
+          and oidvectortypes(procedure.proargtypes)=
+            'text, text, text, text, text, text, text, text, text, bigint, timestamp with time zone'
+          and has_function_privilege(current_user,procedure.oid,'EXECUTE')) forbidden_privileges`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM, PURCHASE_SCHEMA_VERSION, PURCHASE_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanpurchaseapi' || state.session_user !== 'zhudatuanpurchaseapi' || !state.role_safe

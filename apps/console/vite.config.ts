@@ -7,7 +7,7 @@ export default defineConfig(() => {
     plugins: [react(), tailwindcss()],
     build: { manifest: true },
     server: {
-      port: 5173,
+      port: 4173,
       /**
        * In production Caddy reverse-proxies smart.hbbtzn.com/api/* to the commerce
        * runtime. The dev server must do the same or every authenticated request

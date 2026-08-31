@@ -52,6 +52,7 @@ if (process.argv.includes('--check')) {
   if (readFileSync(wingCodeTarget, 'utf8') !== readFileSync(wingCodeSource, 'utf8')) throw new Error('MINIAPP_WING_CODE_GENERATED_DRIFT');
   console.log('miniapp theme: current');
 } else {
+  mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, output);
   mkdirSync(join(root, 'apps/miniapp/miniprogram/assets'), { recursive: true });
   writeFileSync(brandTarget, readFileSync(brandSource));

@@ -48,7 +48,7 @@ describe('Finance reconciliation workspace query', () => {
     });
   });
 
-  it('sends preview filters only for platform:preview and always carries scope, access version, cursor, and limit', async () => {
+  it('sends authoritative filters in every scope and always carries scope, access version, cursor, kind, and limit', async () => {
     const selected = filter({ cursor: 'cursor:2' });
     await readFinanceReconciliations(context('platform', 'platform:preview', 11), selected, new AbortController().signal);
     await readFinanceReconciliations(context('enterprise', 'enterprise:1', 12), selected, new AbortController().signal);
@@ -61,9 +61,11 @@ describe('Finance reconciliation workspace query', () => {
     expect(preview?.url.searchParams.get('cursor')).toBe('cursor:2');
     expect(production?.url.searchParams.get('limit')).toBe('50');
     expect(production?.url.searchParams.get('cursor')).toBe('cursor:2');
+    expect(preview?.url.searchParams.get('kind')).toBe('payment');
+    expect(production?.url.searchParams.get('kind')).toBe('payment');
     for (const [key, value] of Object.entries(previewFilters)) {
       expect(preview?.url.searchParams.get(key), key).toBe(value);
-      expect(production?.url.searchParams.has(key), key).toBe(false);
+      expect(production?.url.searchParams.get(key), key).toBe(value);
     }
   });
 
@@ -112,7 +114,7 @@ const previewFilters = Object.freeze({
 });
 
 function filter(overrides: Partial<FinanceReconciliationQuery> = {}): FinanceReconciliationQuery {
-  return { ...previewFilters, limit: 50, ...overrides };
+  return { ...previewFilters, kind: 'payment', limit: 50, ...overrides };
 }
 
 function context(kind: ScopeKind, id: string, accessVersion: number): ConsoleContext {
@@ -182,6 +184,7 @@ function reconciliationPage() {
         items: [
           {
             id: 'difference:1',
+            version: '7',
             externalMinor: '31500',
             internalMinor: '43400',
             differenceMinor: '-11900',

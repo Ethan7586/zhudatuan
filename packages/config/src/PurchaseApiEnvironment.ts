@@ -61,12 +61,7 @@ export function validatePurchaseApiEnvironment(source: EnvironmentSource): void 
   }
   bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   const origins = apiAllowedOrigins(source);
-  if (app === 'production' && origins.join(',') !== [
-    'https://hbbtzn.com',
-    'https://mall.hbbtzn.com',
-    'https://www.hbbtzn.com',
-    'https://zhudatuan.com',
-  ].join(',')) {
+  if (app === 'production' && origins.join(',') !== 'https://zhudatuan.com') {
     throw new Error('PURCHASE_API_ORIGINS_INVALID');
   }
   if (purchaseApiPort(source) !== 4323) throw new Error('PURCHASE_API_PORT_INVALID');

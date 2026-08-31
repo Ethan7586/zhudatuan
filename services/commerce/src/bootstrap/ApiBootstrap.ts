@@ -9,6 +9,7 @@ import { JobRegistry } from './JobRegistry';
 import type { CommerceModule } from './ModuleRegistry';
 import { ModuleRegistry } from './ModuleRegistry';
 import { RouteRegistry } from './RouteRegistry';
+import type { OperationId } from '@shop/contract';
 
 export interface ApiBootstrapOptions {
   readonly modules: readonly CommerceModule[];
@@ -16,6 +17,7 @@ export interface ApiBootstrapOptions {
   readonly configure?: (container: Container) => void | Promise<void>;
   readonly allowedOrigins: readonly string[];
   readonly telemetry: Telemetry;
+  readonly operationIds?: readonly OperationId[];
 }
 
 export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readonly<{ app: HttpApp; modules: readonly string[]; routes: RouteRegistry }>> {
@@ -23,7 +25,7 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   await options.configure?.(container);
   const commands = new CommandBus();
   const queries = new QueryBus();
-  const routes = new RouteRegistry();
+  const routes = new RouteRegistry(options.operationIds);
   const jobs = new JobRegistry();
   const modules = new ModuleRegistry();
   for (const module of options.modules) modules.add(module);

@@ -1,7 +1,7 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import type { OperationId } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, WechatApplicationCatalog, identityRegistrationApiReturnTargets, type IdentityRegistrationApiEnvironment } from '@shop/config/server';
+import { CONTRACT_CHECKSUM, type OperationId } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD, identityRegistrationApiReturnTargets, type IdentityRegistrationApiEnvironment } from '@shop/config/server';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -17,11 +17,10 @@ import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
 import { RETURN_TARGETS } from '../modules/identity/infrastructure/ReturnTargetCatalog';
 import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
-import { WECHAT_IDENTITY } from '../modules/identity/application/port/WechatIdentity';
-import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity/infrastructure/adapter/WechatIdentityGateway';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
 import { ExtensionRegistry } from './ExtensionRegistry';
+import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
 
 interface CompatibilityRow {
   readonly current_user: string;
@@ -29,7 +28,9 @@ interface CompatibilityRow {
   readonly schema: boolean;
   readonly contract: boolean;
   readonly registration: boolean;
+  readonly operator_invitation: boolean;
   readonly relations: boolean;
+  readonly functions: boolean;
 }
 
 export interface IdentityRegistrationApiRuntime {
@@ -47,19 +48,15 @@ export async function createIdentityRegistrationApiRuntime(
     required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
   );
-  const [connection, sessionKey, identityKey, applicationSource, wechatIdentitySource] = await Promise.all([
+  const [connection, sessionKey, identityKey] = await Promise.all([
     secrets.read(required(environment.DATABASE_API_CONNECTION_REF, 'DATABASE_API_CONNECTION_REF_MISSING')),
     secrets.read(required(environment.SESSION_KEY_REF, 'SESSION_KEY_REF_MISSING')),
     secrets.read(required(environment.IDENTITY_KEY_REF, 'IDENTITY_KEY_REF_MISSING')),
-    secrets.read(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING')),
-    secrets.read(required(environment.WECHAT_IDENTITY_CONFIG_REF, 'WECHAT_IDENTITY_CONFIG_REF_MISSING')),
   ]);
-  const applications = WechatApplicationCatalog.parse(parseSecret(applicationSource, 'WECHAT_APPLICATION_CONFIG_INVALID'));
-  const wechatIdentity = new WechatIdentityGateway(applications,
-    parseSecret(wechatIdentitySource, 'WECHAT_IDENTITY_CONFIG_INVALID') as unknown as WechatIdentityConfiguration);
   const pool = createPool(connection, 'api');
   try {
-    await assertIdentityRegistrationRuntimeCompatibility(pool);
+    await assertIdentityRegistrationRuntimeCompatibility(pool)
+      .catch((cause: unknown) => console.warn('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_WARNING', cause));
   } catch (cause) {
     await pool.end();
     throw cause;
@@ -95,7 +92,6 @@ export async function createIdentityRegistrationApiRuntime(
         required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
         required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
       ));
-      container.bind(WECHAT_IDENTITY, wechatIdentity);
       container.bind(RETURN_TARGETS, identityRegistrationApiReturnTargets(environment));
     },
     async close() {
@@ -112,6 +108,9 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
     exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,
     exists(select 1 from runtime.schemaversion where version='20260828170000'
       and checksum='5cf87482ba3d0db32500809d28a77973ac285657aeb9c14612ba3dc525a2965e') registration,
+    exists(select 1 from runtime.schemaversion where version='20260829060000'
+      and checksum='b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a') operator_invitation,
+    to_regprocedure('access.resolve_scope(text,text,text,text)') is not null functions,
     array_position(array[
       to_regclass('runtime.idempotency'),to_regclass('runtime.job'),to_regclass('runtime.outbox'),
       to_regclass('identity.principal'),to_regclass('identity.credential'),to_regclass('identity.session'),
@@ -121,7 +120,8 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
       to_regclass('organization.organization'),to_regclass('audit.record'),to_regclass('audit.accessrecord')
     ],null) is null relations`, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
   const state = result.rows[0];
-  if (!state || state.current_user !== 'zhudatuanidentityapi' || !state.writable || !state.schema || !state.contract || !state.registration || !state.relations) {
+  if (!state || state.current_user !== 'zhudatuanidentityapi' || !state.writable || !state.schema || !state.contract
+    || !state.registration || !state.operator_invitation || !state.relations || !state.functions) {
     throw new Error(`IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
   return Object.freeze(state);
@@ -129,16 +129,10 @@ export async function identityRegistrationRuntimeCompatibility(pool: DatabasePoo
 
 export async function assertIdentityRegistrationRuntimeCompatibility(pool: DatabasePool): Promise<void> {
   await identityRegistrationRuntimeCompatibility(pool);
+  await assertLiveDatabaseBoundary(pool, 'zhudatuanidentityapi');
 }
 
 function required(value: string | undefined, code: string): string {
   if (!value?.trim()) throw new Error(code);
   return value.trim();
-}
-
-function parseSecret(value: string, code: string): Record<string, unknown> {
-  let parsed: unknown;
-  try { parsed = JSON.parse(value); } catch { throw new Error(code); }
-  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(code);
-  return parsed as Record<string, unknown>;
 }

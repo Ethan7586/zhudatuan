@@ -1,5 +1,5 @@
 /**
- * 智慧翼企业福利商城 - 统一登录 LoginPage screen
+ * 主打团 - 统一登录 LoginPage screen
  * 消费者端（zhudatuan.com）与运营后台共用同一份账号密码登录组件
  * 技术服务方：雍彻科技
  */
@@ -28,11 +28,45 @@ import {
 } from 'lucide-react';
 import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
-import { loginWithPassword, getLockoutState, acceptInvitation, changeInitialPassword, registerUsernameMember } from '../services/auth';
+import {
+  changeInitialPassword,
+  buildCredentialLoginAction,
+  requiresAuthoritativeMembershipSelection,
+  resolveAdminLoginOrigin,
+  resolveStorefrontLoginOrigin,
+} from '../services/auth';
+import {
+  createCanonicalLoginChallenge,
+  createCanonicalPasswordResetChallenge,
+  loginCanonicalConsole,
+  loginCanonicalConsoleWithOtp,
+  resetCanonicalPassword,
+} from '../services/canonicalIdentity';
+import {
+  createCanonicalMember,
+  createCanonicalRegistrationChallenge,
+  resolveCanonicalInvite,
+  type CanonicalInvitation,
+} from '../services/canonicalRegistration';
+import { registrationPresentation } from './registrationPresentation';
+
+type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
+
+function isStrongRegistrationPassword(value: string): boolean {
+  return value.length >= 12 && value.length <= 128
+    && /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value);
+}
+
+function maskMobile(value: string): string {
+  const mobile = value.trim();
+  if (mobile.length <= 7) return mobile;
+  return `${mobile.slice(0, 3)}****${mobile.slice(-4)}`;
+}
 
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
+  const isCanonicalConsoleRequest = true;
 
   // 当前流程阶段: 1 = 账号认证, 2 = 选择会员身份
   const [stage, setStage] = useState<1 | 2>(1);
@@ -40,9 +74,27 @@ export const LoginPage: React.FC = () => {
   // 表单受控字段
   const [identifier, setIdentifier] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [loginOtp, setLoginOtp] = useState({ code: '', challengeId: '', challengeMobile: '' });
+  const [loginOtpSeconds, setLoginOtpSeconds] = useState(0);
+  const [loginOtpSending, setLoginOtpSending] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
-  const [registration, setRegistration] = useState({ username: '', displayName: '', inviteCode: '', password: '', confirmPassword: '' });
+  const [registration, setRegistration] = useState({
+    mobile: '',
+    displayName: '',
+    inviteCode: '',
+    code: '',
+    challengeId: '',
+    challengeMobile: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [registrationInvite, setRegistrationInvite] = useState<CanonicalInvitation | null>(null);
+  const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(false);
+  const [registrationPolicyModal, setRegistrationPolicyModal] = useState<'terms' | 'privacy' | null>(null);
+  const [registrationBusy, setRegistrationBusy] = useState<'invite' | 'code' | 'submit' | null>(null);
+  const [registrationCodeSeconds, setRegistrationCodeSeconds] = useState(0);
   const [registrationNotice, setRegistrationNotice] = useState('');
+  const [formNotice, setFormNotice] = useState('');
   const [resetOpen, setResetOpen] = useState(false);
   const [resetForm, setResetForm] = useState({ mobile: '', code: '', challengeId: '', password: '', confirm: '' });
 
@@ -51,9 +103,6 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-  // 倒计时状态
-  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
 
   // 认证返回的短时效 PreAuth 上下文（前端不持久化至 localStorage/sessionStorage）
   const [preAuthContext, setPreAuthContext] = useState<PreAuthContext | null>(null);
@@ -64,41 +113,62 @@ export const LoginPage: React.FC = () => {
   // 首次登录修改密码
   const [showForcePasswordModal, setShowForcePasswordModal] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
+  const registrationCopy = registrationPresentation(registrationInvite?.target);
 
-  // 处理 lockout 倒计时
   useEffect(() => {
-    let timer: any;
-    if (lockoutSeconds > 0) {
-      timer = setInterval(() => {
-        setLockoutSeconds((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [lockoutSeconds]);
+    if (registrationCodeSeconds <= 0) return;
+    const timer = window.setInterval(() => {
+      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [registrationCodeSeconds]);
+
+  useEffect(() => {
+    if (loginOtpSeconds <= 0) return;
+    const timer = window.setInterval(() => setLoginOtpSeconds((seconds) => Math.max(0, seconds - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [loginOtpSeconds]);
 
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
-    setFormError('');
-    setFieldErrors((prev) => ({ ...prev, identifier: '' }));
-    const lock = getLockoutState(val.trim());
-    if (lock.isLocked) {
-      setLockoutSeconds(lock.remainingSeconds);
+    if (val.trim() !== loginOtp.challengeMobile) {
+      setLoginOtp({ code: '', challengeId: '', challengeMobile: '' });
+      setLoginOtpSeconds(0);
     }
+    setFormError('');
+    setFormNotice('');
+    setFieldErrors((prev) => ({ ...prev, identifier: '' }));
+  };
+
+  const selectAuthMethod = (method: AuthMethod) => {
+    setActiveTab(method);
+    setFormError('');
+    setFormNotice('');
+    setFieldErrors({});
+  };
+
+  const fillDevelopmentAccount = (account: string) => {
+    if (!import.meta.env.DEV) return;
+    setIdentifier(account);
+    setPassword('');
+    setActiveTab('password');
+    setFormError('');
+    setFieldErrors({});
   };
 
   // 校验第一段表单
   const validateStage1 = (): boolean => {
     const errors: Record<string, string> = {};
     if (!identifier.trim()) {
-      errors.identifier = '请输入登录账号或已绑定手机号';
+      errors.identifier = activeTab === 'otp' ? '请输入已绑定手机号' : '请输入登录账号或已绑定手机号';
     }
-    if (!password.trim()) {
+    if (activeTab === 'otp' && !/^1[3-9]\d{9}$/.test(identifier.trim())) {
+      errors.identifier = '请输入有效的已绑定手机号';
+    } else if (activeTab === 'otp' && (!loginOtp.challengeId || loginOtp.challengeMobile !== identifier.trim())) {
+      errors.otp = '请先为当前手机号获取验证码';
+    } else if (activeTab === 'otp' && !/^\d{6}$/.test(loginOtp.code.trim())) {
+      errors.otp = '请输入 6 位短信验证码';
+    } else if (activeTab === 'password' && !password.trim()) {
       errors.password = '请输入密码';
     }
 
@@ -106,34 +176,132 @@ export const LoginPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const updateRegistration = (field: keyof typeof registration, value: string) => {
-    setRegistration((current) => ({ ...current, [field]: value }));
+  const handleSendLoginCode = async () => {
+    if (!/^1[3-9]\d{9}$/.test(identifier.trim())) {
+      setFieldErrors((current) => ({ ...current, identifier: '请输入有效的已绑定手机号' }));
+      return;
+    }
+    setLoginOtpSending(true);
     setFormError('');
+    setFormNotice('');
+    try {
+      const challenge = await createCanonicalLoginChallenge(identifier);
+      setLoginOtp({ code: '', challengeId: challenge.challengeId, challengeMobile: identifier.trim() });
+      setLoginOtpSeconds(60);
+      setFormNotice(`如果该手机号已绑定账号，验证码将发送至 ${maskMobile(identifier)}。`);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : '验证码请求失败');
+    } finally {
+      setLoginOtpSending(false);
+    }
+  };
+
+  const updateRegistration = (field: keyof typeof registration, value: string) => {
+    setRegistration((current) => {
+      if (field === 'mobile') {
+        return { ...current, mobile: value, code: '', challengeId: '', challengeMobile: '' };
+      }
+      return { ...current, [field]: value };
+    });
+    if (field === 'inviteCode') {
+      setRegistrationInvite(null);
+      setRegistrationTermsAccepted(false);
+    }
+    if (field === 'mobile') setRegistrationCodeSeconds(0);
+    setFormError('');
+    setRegistrationNotice('');
+  };
+
+  const closeRegistration = () => {
+    setRegistrationOpen(false);
+    setRegistrationInvite(null);
+    setRegistrationTermsAccepted(false);
+    setRegistrationPolicyModal(null);
+    setRegistrationCodeSeconds(0);
+    setRegistrationBusy(null);
+    setRegistrationNotice('');
+    setFormError('');
+    setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
+  };
+
+  const handleResolveRegistrationInvite = async () => {
+    setRegistrationBusy('invite');
+    setFormError('');
+    setRegistrationNotice('');
+    try {
+      const invitation = await resolveCanonicalInvite(registration.inviteCode);
+      setRegistrationInvite(invitation);
+      setRegistrationTermsAccepted(false);
+      setRegistrationNotice(registrationPresentation(invitation.target).resolvedNotice);
+    } catch (error) {
+      setRegistrationInvite(null);
+      setRegistrationTermsAccepted(false);
+      setFormError(error instanceof Error ? error.message : '邀请码验证失败');
+    } finally {
+      setRegistrationBusy(null);
+    }
+  };
+
+  const handleSendRegistrationCode = async () => {
+    if (!registrationInvite) {
+      setFormError('请先验证企业邀请码');
+      return;
+    }
+    setRegistrationBusy('code');
+    setFormError('');
+    setRegistrationNotice('');
+    try {
+      const challenge = await createCanonicalRegistrationChallenge(registration.mobile, registration.inviteCode);
+      const seconds = Math.max(1, Math.floor((new Date(challenge.expiresAt).getTime() - Date.now()) / 1000));
+      setRegistration((current) => ({
+        ...current,
+        code: '',
+        challengeId: challenge.challengeId,
+        challengeMobile: current.mobile.trim(),
+      }));
+      setRegistrationCodeSeconds(seconds);
+      setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}，请在有效期内完成注册。`);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : '验证码发送失败');
+    } finally {
+      setRegistrationBusy(null);
+    }
   };
 
   const handleRegistrationSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!acceptedTerms) return setFormError('请先阅读并同意用户协议和隐私政策');
+    if (!registrationInvite) return setFormError('请先验证企业邀请码');
+    if (!registration.challengeId || registration.challengeMobile !== registration.mobile.trim()) return setFormError('请为当前手机号重新获取验证码');
+    if (!/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
+    if (!registrationTermsAccepted) return setFormError('请先阅读并同意本次邀请绑定的服务协议与隐私政策');
+    if (!isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
     if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
-    setLoading(true);
+    setRegistrationBusy('submit');
     setFormError('');
     try {
-      await registerUsernameMember({
-        username: registration.username.trim(),
+      await createCanonicalMember({
+        subject: registration.mobile,
         password: registration.password,
-        displayName: registration.displayName.trim(),
-        inviteCode: registration.inviteCode.trim(),
-        acceptedTerms: true,
+        displayName: registration.displayName,
+        inviteCode: registration.inviteCode,
+        challengeId: registration.challengeId,
+        code: registration.code,
+        termsAccepted: registrationTermsAccepted,
+        termsHash: registrationInvite.termsHash,
       });
-      setIdentifier(registration.username.trim().toLowerCase());
-      setPassword(registration.password);
+      setIdentifier(registration.mobile.trim());
+      setPassword('');
       setRegistrationOpen(false);
       setRegistrationNotice('');
-      setFormError('注册成功。已建立基础会员身份；手机尚未验证，可登录和浏览，短信认证完成前暂不能提交订单或付款。');
-    } catch (error: any) {
-      setFormError(error.message || '注册失败');
+      setRegistrationInvite(null);
+      setRegistrationTermsAccepted(false);
+      setRegistrationCodeSeconds(0);
+      setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
+      setFormNotice(registrationCopy.successNotice);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : '注册失败');
     } finally {
-      setLoading(false);
+      setRegistrationBusy(null);
     }
   };
 
@@ -141,13 +309,11 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setFormError('');
     try {
-      const response = await fetch('/api/v1/auth/security/otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mobile: resetForm.mobile, purpose: 'password_reset' }) });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '验证码发送失败');
-      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: payload.debugCode ?? current.code }));
-      setRegistrationNotice(payload.debugCode ? `开发环境验证码：${payload.debugCode}` : '验证码已发送');
-    } catch (error: any) {
-      setFormError(error.message || '验证码发送失败');
+      const challenge = await createCanonicalPasswordResetChallenge(resetForm.mobile);
+      setResetForm((current) => ({ ...current, challengeId: challenge.challengeId, code: '' }));
+      setRegistrationNotice('验证码已发送');
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : '验证码发送失败');
     } finally {
       setLoading(false);
     }
@@ -155,24 +321,19 @@ export const LoginPage: React.FC = () => {
 
   const submitPasswordReset = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!isStrongRegistrationPassword(resetForm.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
     if (resetForm.password !== resetForm.confirm) return setFormError('两次输入的新密码不一致');
     setLoading(true);
     setFormError('');
     try {
-      const response = await fetch('/api/v1/auth/password/reset', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ mobile: resetForm.mobile, challengeId: resetForm.challengeId, code: resetForm.code, newPassword: resetForm.password }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '密码重置失败');
+      await resetCanonicalPassword(resetForm.challengeId, resetForm.code, resetForm.password);
       setIdentifier(resetForm.mobile);
       setPassword(resetForm.password);
       setResetOpen(false);
       setRegistrationNotice('');
       setFormError('密码已重置，所有旧设备均已下线，请重新登录。');
-    } catch (error: any) {
-      setFormError(error.message || '密码重置失败');
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : '密码重置失败');
     } finally {
       setLoading(false);
     }
@@ -191,25 +352,21 @@ export const LoginPage: React.FC = () => {
     setFormError('');
 
     try {
-      const context: PreAuthContext = await loginWithPassword(identifier, password);
-
-      // 如果需要重置密码
-      if (context.requiresPasswordReset) {
-        setPreAuthContext(context);
-        setShowForcePasswordModal(true);
-        setLoading(false);
+      if (isCanonicalConsoleRequest) {
+        const result = activeTab === 'otp'
+          ? await loginCanonicalConsoleWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
+          : await loginCanonicalConsole(identifier, password);
+        if (result.kind === 'authenticated') {
+          window.location.replace(result.redirectUrl);
+          return;
+        }
+        setPreAuthContext(result.context);
+        setStage(2);
         return;
       }
 
-      setPreAuthContext(context);
-      await processPreAuthContext(context);
     } catch (err: any) {
       setFormError(err.message || '认证失败');
-      // 检查是否触发锁定
-      const lock = getLockoutState(identifier);
-      if (lock.isLocked) {
-        setLockoutSeconds(lock.remainingSeconds);
-      }
     } finally {
       setLoading(false);
     }
@@ -314,6 +471,32 @@ export const LoginPage: React.FC = () => {
     }
     if (mem.status === 'expired') {
       setFormError(`【${mem.enterpriseName}】福利周期已届满到期`);
+      return;
+    }
+
+    if (isCanonicalConsoleRequest) {
+      if (mem.target !== 'admin') {
+        setFormError('该身份不属于运营后台');
+        return;
+      }
+      setLoading(true);
+      setFormError('');
+      try {
+        const result = preAuthContext?.loginMethod === 'otp'
+          ? await loginCanonicalConsoleWithOtp(identifier, loginOtp.challengeId, loginOtp.code, mem.id)
+          : await loginCanonicalConsole(identifier, password, mem.id);
+        if (result.kind !== 'authenticated') throw new Error('服务端未确认所选后台身份');
+        window.location.replace(result.redirectUrl);
+      } catch (error: any) {
+        setFormError(error.message || '后台身份选择失败');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (preAuthContext && requiresAuthoritativeMembershipSelection(preAuthContext.memberships)) {
+      setFormError('多身份选择尚未获得服务端授权，已停止建立会话。');
       return;
     }
 
@@ -587,7 +770,7 @@ export const LoginPage: React.FC = () => {
             <div className="relative z-10 flex items-center gap-3">
               <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-12 w-12 shrink-0 rounded-2xl shadow-md" />
               <div>
-                <span className="text-2xl font-bold tracking-tight text-white block">智慧翼 Smart Wing</span>
+                <span className="text-2xl font-bold tracking-tight text-white block">主打团</span>
                 <span className="text-[10px] font-semibold tracking-widest text-blue-200 uppercase">Enterprise Benefits</span>
               </div>
             </div>
@@ -655,34 +838,121 @@ export const LoginPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* 全局锁定/错误信息通告 Banner */}
-                {lockoutSeconds > 0 && (
-                  <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
-                    <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                    <div className="space-y-0.5">
-                      <p className="font-semibold">连续失败次数过多，账号已触发安全锁定</p>
-                      <p className="text-[11px] text-rose-600">
-                        请在 <span className="font-mono font-bold">{lockoutSeconds}</span> 秒后重试。
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {formError && lockoutSeconds === 0 && (
+                {formError && (
                   <div className="mb-5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
                     <p className="flex-1">{formError}</p>
                   </div>
                 )}
 
-                {/* 第一段：正式账号密码认证 */}
+                {formNotice && (
+                  <div className="mb-5 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800" role="status">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <p className="flex-1">{formNotice}</p>
+                  </div>
+                )}
+
+                {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    <div className="rounded-xl bg-slate-100 p-1 text-xs font-medium" aria-label="登录方式">
-                      <div className="rounded-lg bg-white px-3 py-2 text-center font-bold text-[var(--sw-brand)] shadow-sm">账号密码登录</div>
+                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('otp')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'otp' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'otp'}
+                      >
+                        手机验证码
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('password')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'password' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'password'}
+                      >
+                        密码登录
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('work_weixin')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'work_weixin'}
+                      >
+                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => selectAuthMethod('sso')}
+                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                        role="tab"
+                        aria-selected={activeTab === 'sso'}
+                      >
+                        企业 SSO
+                      </button>
                     </div>
 
-                    <div id="login-method-panel" aria-live="polite">
+                    <div id="login-method-panel" role="tabpanel" aria-live="polite">
+                      {activeTab === 'otp' && (
+                        <form onSubmit={handleStage1Submit} className="space-y-4">
+                          <div className="space-y-1.5">
+                            <label className="flex items-center gap-1 text-xs font-medium text-slate-700">
+                              <Building2 className="h-3.5 w-3.5 text-slate-400" /> 已绑定手机号
+                            </label>
+                            <input
+                              type="tel"
+                              inputMode="tel"
+                              autoComplete="tel"
+                              value={identifier}
+                              onChange={(event) => handleIdentifierChange(event.target.value)}
+                              placeholder="请输入 11 位手机号"
+                              className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-[var(--sw-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                              disabled={loading}
+                            />
+                            {fieldErrors.identifier && <p className="text-[11px] text-rose-500">{fieldErrors.identifier}</p>}
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="flex items-center gap-1 text-xs font-medium text-slate-700">
+                              <ShieldCheck className="h-3.5 w-3.5 text-slate-400" /> 短信验证码
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                maxLength={6}
+                                value={loginOtp.code}
+                                onChange={(event) => {
+                                  setLoginOtp((current) => ({ ...current, code: event.target.value.replace(/\D/g, '').slice(0, 6) }));
+                                  setFieldErrors((current) => ({ ...current, otp: '' }));
+                                }}
+                                placeholder="6 位验证码"
+                                className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-[var(--sw-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                                disabled={loading}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void handleSendLoginCode()}
+                                disabled={loginOtpSending || loginOtpSeconds > 0 || loading}
+                                className="whitespace-nowrap rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {loginOtpSending ? '发送中…' : loginOtpSeconds > 0 ? `${loginOtpSeconds}s` : '获取验证码'}
+                              </button>
+                            </div>
+                            {fieldErrors.otp && <p className="text-[11px] text-rose-500">{fieldErrors.otp}</p>}
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={!acceptedTerms || loading}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] py-3 text-sm font-bold text-white disabled:bg-slate-300"
+                          >
+                            {loading && <RefreshCw className="h-4 w-4 animate-spin" />}安全登录
+                          </button>
+                        </form>
+                      )}
+
+                      {activeTab === 'password' && (
                         <form onSubmit={handleStage1Submit} className="space-y-4">
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-slate-700 flex items-center gap-1">
@@ -695,7 +965,7 @@ export const LoginPage: React.FC = () => {
                               placeholder="输入登录账号或已绑定手机号"
                               className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--sw-brand)] focus:border-[var(--sw-brand)] transition-all"
                               aria-label="登录账号或已绑定手机号"
-                              disabled={lockoutSeconds > 0 || loading}
+                              disabled={loading}
                             />
                             {fieldErrors.identifier && <p className="text-[11px] text-rose-500">{fieldErrors.identifier}</p>}
                           </div>
@@ -715,7 +985,7 @@ export const LoginPage: React.FC = () => {
                                 placeholder="请输入密码"
                                 className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--sw-brand)] focus:border-[var(--sw-brand)] transition-all pr-10"
                                 aria-label="密码"
-                                disabled={lockoutSeconds > 0 || loading}
+                                disabled={loading}
                               />
                               <button
                                 type="button"
@@ -745,6 +1015,8 @@ export const LoginPage: React.FC = () => {
                               onClick={() => {
                                 setRegistrationOpen(true);
                                 setFormError('');
+                                setFormNotice('');
+                                setRegistrationNotice('');
                               }}
                               className="font-semibold text-[var(--sw-brand)] hover:underline"
                             >
@@ -754,7 +1026,7 @@ export const LoginPage: React.FC = () => {
 
                           <button
                             type="submit"
-                            disabled={!acceptedTerms || lockoutSeconds > 0 || loading}
+                            disabled={!acceptedTerms || loading}
                             className="w-full py-3 px-4 bg-[var(--sw-brand)] hover:bg-[var(--sw-brand-dark)] text-white font-medium text-sm rounded-xl shadow-md shadow-blue-500/10 transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             {loading ? (
@@ -778,7 +1050,7 @@ export const LoginPage: React.FC = () => {
                       <label className="flex items-start gap-2 cursor-pointer text-xs text-slate-500">
                         <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-0.5 w-4 h-4 text-[var(--sw-brand)] rounded border-slate-300 focus:ring-[var(--sw-brand)]" />
                         <span className="leading-tight">
-                          我已阅读并同意智慧翼福利商城的{' '}
+                          我已阅读并同意主打团的{' '}
                           <button
                             type="button"
                             onClick={(e) => {
@@ -830,10 +1102,10 @@ export const LoginPage: React.FC = () => {
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">Member Registration</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-950">注册员工会员</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">先用账号密码建立普通员工会员。手机号、微信和企业微信以后可绑定到同一个账号；管理员与 Owner 不开放自助注册。</p>
+                <h3 className="mt-1 text-2xl font-bold text-slate-950">{registrationCopy.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-500">{registrationCopy.description}</p>
               </div>
-              <button type="button" onClick={() => setRegistrationOpen(false)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
+              <button type="button" onClick={closeRegistration} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -851,29 +1123,65 @@ export const LoginPage: React.FC = () => {
                 />
               </label>
               <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                企业邀请码
+                <span className="flex items-center justify-between gap-2">
+                  企业邀请码
+                  {registrationInvite && <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600"><CheckCircle2 className="h-3 w-3" />已验证</span>}
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    value={registration.inviteCode}
+                    onChange={(event) => updateRegistration('inviteCode', event.target.value)}
+                    maxLength={255}
+                    required
+                    autoComplete="off"
+                    placeholder="由企业福利管理员提供"
+                    className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleResolveRegistrationInvite}
+                    disabled={registrationBusy !== null || !registration.inviteCode.trim()}
+                    className="rounded-xl border border-blue-200 bg-blue-50 px-3 text-[11px] font-bold text-[var(--sw-brand)] disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    {registrationBusy === 'invite' ? '验证中' : '验证'}
+                  </button>
+                </div>
+              </label>
+              <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
+                登录手机号
                 <input
-                  value={registration.inviteCode}
-                  onChange={(e) => updateRegistration('inviteCode', e.target.value.toUpperCase())}
-                  maxLength={80}
+                  value={registration.mobile}
+                  onChange={(event) => updateRegistration('mobile', event.target.value)}
+                  maxLength={16}
                   required
-                  placeholder="由企业福利管理员提供"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono uppercase outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="用于登录、验证与找回密码"
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </label>
               <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
-                登录账号
-                <input
-                  value={registration.username}
-                  onChange={(e) => updateRegistration('username', e.target.value.toLowerCase())}
-                  minLength={4}
-                  maxLength={32}
-                  pattern="[A-Za-z][A-Za-z0-9._-]{3,31}"
-                  required
-                  autoComplete="username"
-                  placeholder="4–32位，以字母开头，可含数字、点、横线和下划线"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
+                手机验证码
+                <div className="flex gap-2">
+                  <input
+                    value={registration.code}
+                    onChange={(event) => updateRegistration('code', event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                    required
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="输入 6 位验证码"
+                    className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm tracking-[0.22em] outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendRegistrationCode}
+                    disabled={registrationBusy !== null || registrationCodeSeconds > 0 || !registrationInvite || !registration.mobile.trim()}
+                    className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    {registrationBusy === 'code' ? '发送中…' : registrationCodeSeconds > 0 ? `${registrationCodeSeconds}s` : '获取验证码'}
+                  </button>
+                </div>
               </label>
               <label className="space-y-1.5 text-xs font-medium text-slate-700">
                 设置密码
@@ -881,10 +1189,11 @@ export const LoginPage: React.FC = () => {
                   type="password"
                   value={registration.password}
                   onChange={(e) => updateRegistration('password', e.target.value)}
-                  minLength={10}
+                  minLength={12}
                   maxLength={128}
                   required
-                  placeholder="至少10位，含字母和数字"
+                  autoComplete="new-password"
+                  placeholder="12位以上，含大小写、数字和符号"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </label>
@@ -894,9 +1203,10 @@ export const LoginPage: React.FC = () => {
                   type="password"
                   value={registration.confirmPassword}
                   onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
-                  minLength={10}
+                  minLength={12}
                   maxLength={128}
                   required
+                  autoComplete="new-password"
                   placeholder="再次输入密码"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
@@ -906,19 +1216,54 @@ export const LoginPage: React.FC = () => {
             {registrationNotice && <p className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">{registrationNotice}</p>}
             {formError && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{formError}</p>}
             <label className="mt-5 flex cursor-pointer items-start gap-2 text-xs leading-5 text-slate-500">
-              <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300 accent-[var(--sw-brand)]" />
-              <span>我已阅读并同意《用户服务协议》和《隐私保护政策》，并确认使用本人账号注册。</span>
+              <input
+                type="checkbox"
+                checked={registrationTermsAccepted}
+                onChange={(event) => setRegistrationTermsAccepted(event.target.checked)}
+                disabled={!registrationInvite}
+                className="mt-1 h-4 w-4 rounded border-slate-300 accent-[var(--sw-brand)] disabled:cursor-not-allowed"
+              />
+              <span>
+                我已阅读并同意
+                <button type="button" disabled={!registrationInvite} onClick={() => setRegistrationPolicyModal('terms')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《用户服务协议》</button>
+                和
+                <button type="button" disabled={!registrationInvite} onClick={() => setRegistrationPolicyModal('privacy')} className="text-[var(--sw-brand)] hover:underline disabled:text-slate-400">《隐私保护政策》</button>
+                ，并确认使用本人手机号注册。
+              </span>
             </label>
             <button
               type="submit"
-              disabled={loading || !acceptedTerms}
+              disabled={registrationBusy !== null || !registrationInvite || !registration.challengeId || !registrationTermsAccepted}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
             >
-              {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
-              创建普通员工会员账号
+              {registrationBusy === 'submit' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
+              {registrationCopy.submitLabel}
             </button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">企业管理员不能查看你的密码。手机号与微信绑定入口已预留；未绑定手机前无法自助找回密码。</p>
+            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">{registrationCopy.footer}</p>
           </form>
+        </div>
+      )}
+
+      {registrationPolicyModal && registrationInvite && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+                <FileText className="h-5 w-5 text-[var(--sw-brand)]" />
+                {registrationPolicyModal === 'terms' ? registrationInvite.termsTitle : registrationInvite.privacyTitle}
+              </div>
+              <button type="button" onClick={() => setRegistrationPolicyModal(null)} className="rounded-lg p-1 text-slate-400 hover:text-slate-600" aria-label="关闭注册条款">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto whitespace-pre-wrap pr-2 text-xs leading-6 text-slate-600">
+              {registrationPolicyModal === 'terms' ? registrationInvite.termsBody : registrationInvite.privacyBody}
+            </div>
+            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-[10px] text-slate-400">
+              <span>版本 {registrationInvite.termsHash.slice(0, 12)}…</span>
+              <button type="button" onClick={() => setRegistrationPolicyModal(null)} className="rounded-xl bg-[var(--sw-brand)] px-5 py-2 text-xs font-semibold text-white">关闭</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -946,7 +1291,7 @@ export const LoginPage: React.FC = () => {
               type="password"
               value={resetForm.password}
               onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
-              placeholder="新密码（至少10位，含字母和数字）"
+              placeholder="新密码（至少12位，含大小写字母、数字和符号）"
               className="w-full rounded-xl border px-3.5 py-2.5 text-sm"
             />
             <input type="password" value={resetForm.confirm} onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })} placeholder="确认新密码" className="w-full rounded-xl border px-3.5 py-2.5 text-sm" />
@@ -1028,7 +1373,7 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
               <div className="flex items-center gap-2 text-slate-900 font-bold text-base">
                 <FileText className="w-5 h-5 text-[var(--sw-brand)]" />
-                {activeModal === 'terms' ? '智慧翼企业福利商城 - 用户服务协议' : '智慧翼企业福利商城 - 隐私保护政策'}
+                {activeModal === 'terms' ? '主打团 - 用户服务协议' : '主打团 - 隐私保护政策'}
               </div>
               <button onClick={() => setActiveModal(null)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                 <X className="w-5 h-5" />
@@ -1037,7 +1382,7 @@ export const LoginPage: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto text-xs text-slate-600 space-y-3 pr-2 custom-scrollbar leading-relaxed">
               <p className="font-semibold text-slate-800">一、服务说明与主体定义</p>
-              <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；原智慧翼域名在迁移期保持兼容。</p>
+              <p>本《统一身份与登录服务协议》适用于主打团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
 
               <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
               <p>
@@ -1070,7 +1415,7 @@ export const LoginPage: React.FC = () => {
       {/* 底部页脚 */}
       {!isStorefrontEmbed && (
         <footer className="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
-          <p>© 2026 智慧翼企业福利商城. All Rights Reserved. 技术服务方：雍彻科技</p>
+          <p>© 2026 主打团. All Rights Reserved. 技术服务方：雍彻科技</p>
         </footer>
       )}
     </div>
