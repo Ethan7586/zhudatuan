@@ -124,6 +124,8 @@ const REPAIR_FILES = [
   '20260831120000_identity_reporting_read_boundary.sql',
   '20260831130000_identity_console_tail_read_boundary.sql',
   '20260831140000_identity_registration_profile_acl_repair.sql',
+  '20260831150000_identity_experience_application_commands.sql',
+  '20260901060000_zhudatuan_brand_display_names.sql',
 ];
 
 const mode = process.argv[2];
