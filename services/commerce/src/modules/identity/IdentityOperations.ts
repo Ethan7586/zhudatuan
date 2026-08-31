@@ -330,7 +330,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-          select $1,'notification','identity',jsonb_build_object('challenge',$2::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp()
+          select $1,'identitynotification','identity',jsonb_build_object('challenge',$2::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp()
           where $3::text is not null`,
             [`job:notify:${id}`, id, purpose === 'login' ? principal : 'public-challenge']
           );
@@ -887,7 +887,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-          values($1,'notification','identity',$2,jsonb_build_object('challenge',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+          values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
             [`job:notify:${id}`, access.scope.id, id]
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!, { challenge: id, purpose: 'stepup' });
