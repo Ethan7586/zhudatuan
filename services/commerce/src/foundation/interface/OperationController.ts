@@ -284,15 +284,15 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     context.routes.register({ operation: operation.id, handler: async (request) => {
       const resource = operationResource(operation.id, request);
       const access = operation.audience === 'public' || operation.audience === 'provider' ? null : await authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
-      const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.id, operation.method, operation.audience, request, resource), access });
+      const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.id, request, resource), access });
       return json(result.status, result.body, result.headers);
     } });
   }
 }
 
-function operationInput(operation: string, method: string, audience: string, request: HttpRequest, resource: string | undefined): OperationInput {
+function operationInput(operation: string, request: HttpRequest, resource: string | undefined): OperationInput {
   const idempotency = request.headers['idempotency-key'];
-  if (method !== 'GET' && audience !== 'provider' && idempotency === undefined) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
+  if (OperationCatalog.get(operation as OperationId).idempotency === 'required' && idempotency === undefined) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
   const header = request.headers['if-match'];
   const normalized = header?.replace(/^W\//, '').replace(/^"|"$/g, '');
   const expectedVersion = normalized === undefined ? undefined : Number(normalized);

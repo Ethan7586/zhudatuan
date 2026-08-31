@@ -48,7 +48,7 @@ export function createFetchNotificationNotificationsRead(baseUrl: string): Opera
 }
 
 function bindNotificationsRead(client: OperationExecutor): OperationMethod<"notification.notifications.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.notifications.read","method":"GET","path":"/api/v1/notifications","audience":"member","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.notifications.read","method":"GET","path":"/api/v1/notifications","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchNotificationPreferencesRead(baseUrl: string): OperationMethod<"notification.preferences.read"> {
@@ -56,7 +56,7 @@ export function createFetchNotificationPreferencesRead(baseUrl: string): Operati
 }
 
 function bindPreferencesRead(client: OperationExecutor): OperationMethod<"notification.preferences.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.preferences.read","method":"GET","path":"/api/v1/notifications/preferences","audience":"member","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.preferences.read","method":"GET","path":"/api/v1/notifications/preferences","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchNotificationPreferencesManage(baseUrl: string): OperationMethod<"notification.preferences.manage"> {
@@ -64,7 +64,7 @@ export function createFetchNotificationPreferencesManage(baseUrl: string): Opera
 }
 
 function bindPreferencesManage(client: OperationExecutor): OperationMethod<"notification.preferences.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.preferences.manage","method":"PUT","path":"/api/v1/notifications/preferences/{channel}/{eventtype}","audience":"member","idempotent":true,"pathKeys":["channel","eventtype"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.preferences.manage","method":"PUT","path":"/api/v1/notifications/preferences/{channel}/{eventtype}","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["channel","eventtype"]}));
 }
 
 export function createFetchNotificationEndpointsManage(baseUrl: string): OperationMethod<"notification.endpoints.manage"> {
@@ -72,7 +72,7 @@ export function createFetchNotificationEndpointsManage(baseUrl: string): Operati
 }
 
 function bindEndpointsManage(client: OperationExecutor): OperationMethod<"notification.endpoints.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.endpoints.manage","method":"PUT","path":"/api/v1/notifications/endpoints/{channel}","audience":"member","idempotent":true,"pathKeys":["channel"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.endpoints.manage","method":"PUT","path":"/api/v1/notifications/endpoints/{channel}","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["channel"]}));
 }
 
 export function createFetchNotificationTemplatesManage(baseUrl: string): OperationMethod<"notification.templates.manage"> {
@@ -80,7 +80,7 @@ export function createFetchNotificationTemplatesManage(baseUrl: string): Operati
 }
 
 function bindTemplatesManage(client: OperationExecutor): OperationMethod<"notification.templates.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.templates.manage","method":"PUT","path":"/api/v1/notifications/templates/{templateid}","audience":"operator","idempotent":true,"pathKeys":["templateid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.templates.manage","method":"PUT","path":"/api/v1/notifications/templates/{templateid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["templateid"]}));
 }
 
 export function createFetchNotificationTemplatesRead(baseUrl: string): OperationMethod<"notification.templates.read"> {
@@ -88,7 +88,7 @@ export function createFetchNotificationTemplatesRead(baseUrl: string): Operation
 }
 
 function bindTemplatesRead(client: OperationExecutor): OperationMethod<"notification.templates.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.templates.read","method":"GET","path":"/api/v1/notifications/templates","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.templates.read","method":"GET","path":"/api/v1/notifications/templates","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchNotificationAnnouncementsRead(baseUrl: string): OperationMethod<"notification.announcements.read"> {
@@ -96,7 +96,7 @@ export function createFetchNotificationAnnouncementsRead(baseUrl: string): Opera
 }
 
 function bindAnnouncementsRead(client: OperationExecutor): OperationMethod<"notification.announcements.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.announcements.read","method":"GET","path":"/api/v1/notifications/announcements","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.announcements.read","method":"GET","path":"/api/v1/notifications/announcements","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchNotificationAnnouncementsManage(baseUrl: string): OperationMethod<"notification.announcements.manage"> {
@@ -104,5 +104,5 @@ export function createFetchNotificationAnnouncementsManage(baseUrl: string): Ope
 }
 
 function bindAnnouncementsManage(client: OperationExecutor): OperationMethod<"notification.announcements.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"notification.announcements.manage","method":"PUT","path":"/api/v1/notifications/announcements/{announcementid}","audience":"operator","idempotent":true,"pathKeys":["announcementid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"notification.announcements.manage","method":"PUT","path":"/api/v1/notifications/announcements/{announcementid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["announcementid"]}));
 }

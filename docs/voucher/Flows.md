@@ -652,14 +652,14 @@ sequenceDiagram
     Command-->>App: redemption receipt
 ```
 
-## 9. 退款与冲正
+## 9. 退款
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Operator
     participant Payment as Refund Settlement
-    participant Command as ReverseRedemption
+    participant Command as RefundRedemption
     participant Repo as VoucherRepository
     participant Redemption
     participant Voucher
@@ -668,21 +668,21 @@ sequenceDiagram
 
     Payment->>Command: redemption + amount + refund reference
     Command->>Repo: lock redemption and voucher
-    Command->>Redemption: reverse partial amount
+    Command->>Redemption: refund partial amount
     Redemption->>Redemption: assert cumulative amount
     Command->>Voucher: restore amount and operational state
-    Command->>Repo: insert reversal, update redemption and voucher, append event
-    Command->>Finance: post reversal fact
-    Command->>Outbox: voucher.reversed
-    Command-->>Payment: reversal receipt
+    Command->>Repo: insert refund, update redemption and voucher, append event
+    Command->>Finance: post refund fact
+    Command->>Outbox: voucher.refunded
+    Command-->>Payment: refund receipt
 ```
 
-冲正后的状态：
+退款后的状态：
 
 - 会员已绑定：bound。
 - 已激活但未绑定：active。
 - 从未激活：issued。
-- 如果冲正后仍为零余额，保持 redeemed；正常正金额冲正会离开 redeemed。
+- 如果退款后仍为零余额，保持 redeemed；正常正金额退款会离开 redeemed。
 
 ## 10. 券操作
 
@@ -829,7 +829,7 @@ sequenceDiagram
         Repo-->>UI: detail
     and 时间线
         UI->>Timeline: voucher id + cursor
-        Timeline->>Repo: status events + redemptions + reversals
+        Timeline->>Repo: status events + redemptions + refunds
         Repo-->>UI: ordered timeline
     end
 ```
@@ -917,6 +917,6 @@ sequenceDiagram
 | 激活绑定 | User credential | Credential lookup + Voucher | voucher/events | Member voucher receipt |
 | 券操作 | Selector + action | ActionBatch + VoucherPolicy | action items/voucher/events | Progress and result |
 | 核销 | Tender/verification | Voucher + Redemption | hold/redemption/voucher/event | Finance fact |
-| 冲正 | Redemption + amount | Redemption + Voucher | reversal/redemption/voucher/event | Finance fact |
+| 退款 | Redemption + amount | Redemption + Voucher | refund/redemption/voucher/event | Finance fact |
 | 查询 | Filter specification | Query service | searchdocument/events | Keyset pages |
 | 导出 | Filter snapshot | Reporting job | export job/object | File receipt |

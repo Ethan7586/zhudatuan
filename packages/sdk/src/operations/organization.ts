@@ -33,7 +33,7 @@ export function createFetchOrganizationLayersRead(baseUrl: string): OperationMet
 }
 
 function bindLayersRead(client: OperationExecutor): OperationMethod<"organization.layers.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"organization.layers.read","method":"GET","path":"/api/v1/organizations/layers","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"organization.layers.read","method":"GET","path":"/api/v1/organizations/layers","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchOrganizationStoresRead(baseUrl: string): OperationMethod<"organization.stores.read"> {
@@ -41,7 +41,7 @@ export function createFetchOrganizationStoresRead(baseUrl: string): OperationMet
 }
 
 function bindStoresRead(client: OperationExecutor): OperationMethod<"organization.stores.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"organization.stores.read","method":"GET","path":"/api/v1/organizations/stores","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"organization.stores.read","method":"GET","path":"/api/v1/organizations/stores","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchOrganizationStoresManage(baseUrl: string): OperationMethod<"organization.stores.manage"> {
@@ -49,5 +49,5 @@ export function createFetchOrganizationStoresManage(baseUrl: string): OperationM
 }
 
 function bindStoresManage(client: OperationExecutor): OperationMethod<"organization.stores.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"organization.stores.manage","method":"PUT","path":"/api/v1/organizations/stores/{storeid}","audience":"operator","idempotent":true,"pathKeys":["storeid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"organization.stores.manage","method":"PUT","path":"/api/v1/organizations/stores/{storeid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["storeid"]}));
 }

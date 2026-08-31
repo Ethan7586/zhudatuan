@@ -206,7 +206,7 @@ Voucher 是核心域，内部划分六个子域：
 3. Stock：备券申请、修订和可发行数量。
 4. Issue：销售订单、发行批次和逐项执行。
 5. Lifecycle：单券、激活、绑定、余额和状态事件。
-6. Action：批量状态操作、到期、核销与冲正。
+6. Action：批量状态操作、到期、核销与退款。
 
 这些子域位于同一模块和 Schema，可在一个事务内维护关键不变量，但只能通过应用服务协调，不能由一个聚合直接修改另一个聚合的私有状态。
 
@@ -218,7 +218,7 @@ Finance 接收卡券事实并负责生成会计分录：
 - 发行事实：已成功发行数量与面值。
 - 收款事实：本次实收金额。
 - 核销事实：实际消耗余额。
-- 冲正事实：恢复金额。
+- 退款事实：恢复金额。
 - 作废和到期事实：剩余余额及原因。
 
 Voucher 不选择借贷科目，不创建自己的财务挂账表。`FinancePort` 是唯一会计边界。
@@ -521,7 +521,7 @@ services/commerce/src/modules/
     │   │   ├── Voucher.ts
     │   │   ├── TenderHold.ts
     │   │   ├── Redemption.ts
-    │   │   ├── Reversal.ts
+    │   │   ├── Refund.ts
     │   │   ├── ActionBatch.ts
     │   │   └── ActionItem.ts
     │   ├── policy/
@@ -738,7 +738,7 @@ flowchart TB
 ## 12. 契约与生成代码
 
 ```text
-packages/contracts/src/definitions/
+packages/contract/definitions/
 ├── operations.yml
 ├── events.yml
 └── schemas.yml
