@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { registrationMigrationExecution } from './RegistrationMigrationPlan';
+import { registrationMigrationExecution, registrationMigrationLedgerMatches } from './RegistrationMigrationPlan';
 
 const migration = (file: string) => fileURLToPath(new URL(`../../../../../database/supabase/migrations/${file}`, import.meta.url));
 
@@ -85,5 +85,16 @@ describe('registration migration execution plan', () => {
     expect(registrationMigrationExecution('20260820133000_inventory_single_source_cutover.sql', source)).toEqual({
       kind: 'original', ledgerName: '20260820133000_inventory_single_source_cutover.sql', ledgerStatements: [], sql: source,
     });
+  });
+
+  it('accepts only the known generic-ledger transition with empty statement metadata', async () => {
+    const file = '20260831150000_identity_experience_application_commands.sql';
+    const execution = registrationMigrationExecution(file, await readFile(migration(file), 'utf8'));
+
+    expect(registrationMigrationLedgerMatches(file, file, [], execution)).toBe(true);
+    expect(registrationMigrationLedgerMatches(
+      '20260831140000_identity_registration_profile_acl_repair.sql', file, [], execution,
+    )).toBe(false);
+    expect(registrationMigrationLedgerMatches(file, 'wrong.sql', [], execution)).toBe(false);
   });
 });
