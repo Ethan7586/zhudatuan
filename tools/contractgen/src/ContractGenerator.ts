@@ -42,7 +42,8 @@ const openapi = buildOpenapi(operations, permissionMetadata);
 const eventArtifact = stable({ version: 1, events: events.map((item) => ({ type: item.id, version: item.version, module: item.owner })) });
 const permissionArtifact = PERMISSION_CATALOG.map(({ code, category, risk, stepup, scopes }) => ({ code, category, risk, stepup, scopes }));
 const errorArtifact = errors.map(({ code, status }) => ({ code, status }));
-const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
+// OMS links are design provenance; without a path/schema/permission change they do not rotate the published runtime identity.
+const contractChecksum = hash(JSON.stringify({ openapi: contractIdentityOpenapi(openapi), events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
 await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
@@ -73,7 +74,9 @@ function validateOperations(values: readonly OperationDefinition[]): void {
     const pathAllowed = item.path.startsWith('/api/v1/') || item.id.startsWith('runtime.health.') && item.path.startsWith('/health/');
     if (!pathAllowed || routes.has(`${item.method} ${item.path}`)) throw new Error(`OPERATION_ROUTE_INVALID:${item.id}`);
     if (item.schema !== 'exact' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
-    if (item.requirements.length === 0 || item.requirements.some((id) => !/^MVP(?:0[3-9]|1\d|2[0-3])$/.test(id))) throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
+    if (item.requirements.length === 0 || item.requirements.some((id) => !/^(?:MVP(?:0[3-9]|1\d|2[0-3])|OMS-(?:00[1-9]|01[0-4]))$/.test(id))) {
+      throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
+    }
     const domain = item.id.split('.')[0]!;
     if (item.sdk !== `packages/sdk/src/operations/${domain}.ts`) throw new Error(`OPERATION_SDK_TARGET_INVALID:${item.id}`);
     ids.add(item.id);
@@ -262,6 +265,19 @@ function hardenedControllerSource(values: readonly OperationDefinition[]): strin
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
   if (value !== null && typeof value === 'object') return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, stable(child)]));
+  return value;
+}
+
+function contractIdentityOpenapi(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(contractIdentityOpenapi);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+      key,
+      key === 'x-requirements' && Array.isArray(child)
+        ? child.filter((requirement) => typeof requirement !== 'string' || !requirement.startsWith('OMS-'))
+        : contractIdentityOpenapi(child),
+    ]));
+  }
   return value;
 }
 

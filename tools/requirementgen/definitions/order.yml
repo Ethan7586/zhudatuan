@@ -1,0 +1,719 @@
+version: 1
+profile: Smart Wing OMS 2.0 / WCHS-MCBS Order Profile 1.0
+authority: orderRequirements
+chain:
+  - WorkbookCell
+  - Requirement
+  - UIRoute
+  - Operation
+  - Owner
+  - Handler
+  - RepositoryOrProjection
+  - Test
+  - Runbook
+  - ReleaseEvidence
+  - WorkPackage
+productBaseline:
+  platformOrderCapability: 平台继承全域订单能力
+  procurementMarker: 已采购是人工运营标识，与 Provider Purchase 独立
+  orderType: 商品、话费、虚拟券、自有实物与 Provider 等稳定枚举
+  exceptionReasons: payment、provider、fulfillment、aftersale、reconciliation
+  tagScope: 标签在机构范围创建，后代继承必须显式
+  noteVisibility: 运营备注仅内部可见，会员回复归 Support
+  exportTemplate: 模板按版本冻结列、数据范围与最大行数
+  mergedOrder: 仅同收货人、同商城、同支付主体、确定性 Provider 与运费规则可合并
+requirements:
+  - id: OMS-001
+    version: 1
+    title: 订单状态分组
+    description: 将支付、履约、售后等独立状态投影成待支付、待发货、已发货、已完成、已取消或关闭等稳定工作台分组。
+    wave: 1
+    priority: P0
+    workbookEvidence:
+      - sheet: 20250416需求汇总
+        range: A8:C8
+      - sheet: 20260430需求汇总
+        range: H111:K112
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 平台看全域，机构与子机构看后代商城，商城仅看本商城。
+    owner: order
+    collaboratingModules: [payment, fulfillment, reporting]
+    uiRoute: /orders
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [order.orders.read]
+    plannedOperations: []
+    operationCoverage: 当前读 Operation 只提供分页与精确订单 ID，状态分组和多维状态过滤仍由后续工作包补齐。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: ordering.orderrecord
+        evidence: [services/commerce/src/modules/order/OrderOperations.ts]
+      - status: Designed
+        target: reporting.orderworkspaceprojection.statusgroups
+        evidence: []
+    successDefinition:
+      - 每个工作台分组由服务端确定性过滤，不由前端样例计数推导。
+      - Lifecycle、Payment、Fulfillment、Aftersale 维度保持独立且分组口径有版本。
+    exceptionsAndRejections:
+      - 未识别状态进入可解释的未归类结果，不伪装成已完成。
+      - 状态过滤与当前组织范围不一致时拒绝返回越界记录。
+    performanceTarget: 50 行 Keyset 列表 P95 不超过 300ms，最大页 200 行。
+    securityPolicyStatement: 沿用现有 order.read、组织 closure 与 RLS；A01 不新增或收窄权限。
+    futureWorkPackages: [E01, E02, E03]
+    testPlans:
+      Unit: 验证独立状态维度到工作台分组的穷举映射。
+      Contract: 验证分组枚举、过滤参数与响应计数契约。
+      Integration: 验证组织范围、Keyset 与组合状态 SQL。
+      Journey: 验证运营人员切换全部状态分组并打开订单。
+      Browser: 验证桌面与窄屏分组、Loading、Empty、Error 和 Stale 状态。
+      Performance: 验证 50/200 行分页的 P95、查询次数与返回字节。
+      Recovery: 验证投影落后或未知状态时可重建并保留 Watermark。
+    runbookSlug: order-status-groups
+    releaseEvidenceSlug: order-status-groups
+    lifecycleStatus: Designed
+
+  - id: OMS-002
+    version: 1
+    title: 订单详情
+    description: 展示订单编号、金额、收货人、商品行、供应商、用户、组织、支付、履约、售后、发票与核销的稳定详情摘要。
+    wave: 1
+    priority: P0
+    workbookEvidence:
+      - sheet: 20250416需求汇总
+        range: C8
+      - sheet: 20260430需求汇总
+        range: E111
+      - sheet: 20260430需求汇总
+        range: K112
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator, supplieroperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall, supplier, owner]
+      rule: 详情可见范围必须与列表相同，供应商只见其履约相关订单。
+    owner: order
+    collaboratingModules: [payment, fulfillment, finance, channel]
+    uiRoute: /orders/:orderId
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: []
+    plannedOperations: [order.orders.detail.read]
+    operationCoverage: 现有列表通过 order 查询参数模拟详情，缺少稳定详情 Operation 与跨域摘要契约。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: ordering.orderrecord-and-line
+        evidence: [services/commerce/src/modules/order/OrderOperations.ts]
+      - status: Designed
+        target: reporting.orderdetailprojection
+        evidence: []
+    successDefinition:
+      - 一个详情响应返回订单强事实和有来源版本的跨域摘要。
+      - 从列表打开详情后不丢失筛选、游标和组织上下文。
+    exceptionsAndRejections:
+      - 不存在或不在可见范围的订单统一返回资源不可见结果。
+      - 跨域摘要暂不可用时标明 Partial Failure，不伪造终态。
+    performanceTarget: 订单详情 P95 不超过 500ms，禁止 N+1 查询。
+    securityPolicyStatement: 复用列表的现有组织范围与字段处理；A01 不新增详情权限。
+    futureWorkPackages: [C01, C02, E01, E02, E03]
+    testPlans:
+      Unit: 验证详情摘要字段和跨域状态组合。
+      Contract: 验证详情路径、字段、版本与 Partial Failure 结构。
+      Integration: 验证订单行与跨域投影一次有界读取。
+      Journey: 验证从列表进入详情并查看支付、履约、售后页签。
+      Browser: 验证 Drawer 与独立详情页在四种宽度下可用。
+      Performance: 验证详情 P95、查询数、计划成本与响应体大小。
+      Recovery: 验证某个摘要投影不可用时其余强事实仍可读取。
+    runbookSlug: order-detail-read
+    releaseEvidenceSlug: order-detail-read
+    lifecycleStatus: Designed
+
+  - id: OMS-003
+    version: 1
+    title: 标签与备注
+    description: 支持机构范围标签、订单标签分配和仅运营可见的追加备注，并记录操作者、时间与变更历史。
+    wave: 1
+    priority: P1
+    workbookEvidence:
+      - sheet: 20250416需求汇总
+        range: C8
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 标签归属机构，后代商城是否继承由已采纳的产品基线显式配置。
+    owner: order
+    collaboratingModules: [organization, audit, support]
+    uiRoute: /orders/:orderId?tab=operations
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: []
+    plannedOperations: [order.orders.annotations.create]
+    operationCoverage: 当前订单没有标签或备注写 Operation，客服外部回复继续由 Support 承载。
+    dataObjectsAndProjections:
+      - status: Designed
+        target: ordering.orderannotation
+        evidence: []
+      - status: Designed
+        target: ordering.ordertag-and-assignment
+        evidence: []
+    successDefinition:
+      - 可追加内部备注、分配或移除标签，并按标签检索订单。
+      - 每次变更保留组织范围、操作者、时间和不可混淆的可见性。
+    exceptionsAndRejections:
+      - 跨机构标签分配被拒绝且不产生部分写入。
+      - 会员可见内容被引导到 Support 消息，不写入运营备注。
+    performanceTarget: 普通标注命令 P95 不超过 800ms，列表标签过滤满足 300ms 目标。
+    securityPolicyStatement: 仅声明沿用现有组织范围；标签继承和备注可见性不在 A01 实施。
+    futureWorkPackages: [F01]
+    testPlans:
+      Unit: 验证标签归属、继承决策和备注可见性规则。
+      Contract: 验证追加式标注命令与冲突响应。
+      Integration: 验证标签分配、历史记录和筛选投影原子一致。
+      Journey: 验证打标、备注、筛选和操作历史闭环。
+      Browser: 验证标签选择器、备注编辑与禁用原因可访问。
+      Performance: 验证批量标签读取无 N+1 且过滤命中索引。
+      Recovery: 验证投影重建后标签和备注历史不丢失。
+    runbookSlug: order-annotations
+    releaseEvidenceSlug: order-annotations
+    lifecycleStatus: Designed
+
+  - id: OMS-004
+    version: 1
+    title: 层级可见性
+    description: 平台、机构、子机构、商城、供应商和会员按组织树与业务归属读取订单，平台继承全域订单能力。
+    wave: 1
+    priority: P0
+    workbookEvidence:
+      - sheet: 20250416需求汇总
+        range: D8:G9
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator, supplieroperator, member]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall, supplier, owner]
+      rule: 组织后代通过权威 closure 计算，供应商和会员按订单业务归属读取。
+    owner: order
+    collaboratingModules: [organization, fulfillment]
+    uiRoute: /orders
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [organization.layers.read, order.orders.read]
+    plannedOperations: []
+    operationCoverage: 现有订单 SQL 已使用组织 closure 及供应商、门店、会员分支，但全筛选矩阵仍待集成验证。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: organization.unitclosure
+        evidence: [services/commerce/src/modules/order/OrderOperations.ts]
+      - status: Existing
+        target: ordering.orderrecord.scope
+        evidence: [services/commerce/src/modules/order/OrderOperations.ts]
+    successDefinition:
+      - 同一订单在各角色下的可见结果与组织树和业务归属一致。
+      - 平台、机构、子机构与商城计数由同一服务端范围口径计算。
+    exceptionsAndRejections:
+      - 浏览器提交的任意 scope 不替代服务端已解析范围。
+      - 组织移动期间使用明确版本，避免一次请求混用新旧层级。
+    performanceTarget: 范围过滤包含在 50 行列表 P95 300ms 内。
+    securityPolicyStatement: 只记录现有 closure、scope 与 RLS 事实；A01 不新增任何权限守卫。
+    futureWorkPackages: [E01, E02]
+    testPlans:
+      Unit: 验证角色与范围种类的可见性矩阵。
+      Contract: 验证范围上下文不由查询参数声明。
+      Integration: 验证组织后代、供应商、门店与会员查询分支。
+      Journey: 验证不同层级登录后看到对应订单集合。
+      Browser: 验证当前组织范围在工作台中清晰展示。
+      Performance: 验证 closure 查询计划与大组织树分页性能。
+      Recovery: 验证组织树版本变化时重试不泄漏跨范围数据。
+    runbookSlug: order-scope-visibility
+    releaseEvidenceSlug: order-scope-visibility
+    lifecycleStatus: Designed
+
+  - id: OMS-005
+    version: 1
+    title: 多维检索
+    description: 支持时间、订单号、人员、收货人、商品、供应商、类型、状态、商城、核销和开票等条件的服务端组合检索。
+    wave: 1
+    priority: P0
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: E111
+      - sheet: 20260430需求汇总
+        range: K112
+      - sheet: 20260430需求汇总
+        range: K115
+      - sheet: 20260430需求汇总
+        range: K117
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 所有检索条件先与服务端组织范围相交，再执行有界 Keyset 查询。
+    owner: order
+    collaboratingModules: [reporting, organization, fulfillment, finance]
+    uiRoute: /orders
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [order.orders.read]
+    plannedOperations: []
+    operationCoverage: 当前 Operation 仅支持 order 精确 ID 和游标，工作簿要求的组合条件尚未成为服务端契约。
+    dataObjectsAndProjections:
+      - status: Designed
+        target: reporting.orderworkspaceprojection.searchfields
+        evidence: []
+      - status: Existing
+        target: ordering.orderrecord
+        evidence: [services/commerce/src/modules/order/OrderOperations.ts]
+    successDefinition:
+      - 工作簿列出的条件可组合、可分页、可复现为 Filter Snapshot。
+      - 姓名和手机号检索复用项目既有搜索标识，不建立第二套 PII 规则。
+    exceptionsAndRejections:
+      - 无效枚举、时间范围或游标以稳定错误拒绝。
+      - 过滤条件超出模板或范围时不静默忽略。
+    performanceTarget: 默认 50、最大 200 行 Keyset，订单列表 P95 不超过 300ms。
+    securityPolicyStatement: 复用既有字段处理和组织范围；A01 只冻结检索需求，不改变权限。
+    futureWorkPackages: [E01, E02, E03]
+    testPlans:
+      Unit: 验证过滤规范化、稳定枚举和 Filter Snapshot。
+      Contract: 验证全部查询参数、组合规则与错误代码。
+      Integration: 验证组合索引、Keyset 和组织范围查询。
+      Journey: 验证用户组合筛选、重置、刷新和返回详情。
+      Browser: 验证高级筛选折叠、键盘顺序和窄屏布局。
+      Performance: 验证代表性高选择性与低选择性组合的 P95。
+      Recovery: 验证 Stale Watermark 下刷新仍保持原 Filter Snapshot。
+    runbookSlug: order-search
+    releaseEvidenceSlug: order-search
+    lifecycleStatus: Designed
+
+  - id: OMS-006
+    version: 1
+    title: 采购标识
+    description: 单条或批量标记人工已采购并可筛选，人工标识与 Channel 权威的 Provider Purchase 状态始终分开。
+    wave: 1
+    priority: P1
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: K111
+      - sheet: 20260430需求汇总
+        range: K114
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 只能标记当前可见范围内的显式订单 ID 集。
+    owner: order
+    collaboratingModules: [channel, audit]
+    uiRoute: /orders
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: []
+    plannedOperations: [order.orders.procurementmarks.batch]
+    operationCoverage: 当前没有采购标识 Operation，且不得复用 Provider Purchase 状态冒充人工动作。
+    dataObjectsAndProjections:
+      - status: Designed
+        target: ordering.orderprocurementmarker
+        evidence: []
+      - status: Designed
+        target: reporting.providerpurchaseprojection
+        evidence: []
+    successDefinition:
+      - 单条和批量标记返回逐项成功、冲突或不可见结果。
+      - 工作台同时显示人工标识与真实 Provider Purchase 状态且可分别筛选。
+    exceptionsAndRejections:
+      - 空 ID 集、重复 ID、不可见订单和版本冲突逐项报告。
+      - 人工标记不会触发 Provider 网络调用或改变外部采购终态。
+    performanceTarget: 普通命令 P95 不超过 800ms，批量命令异步分片且不占长事务。
+    securityPolicyStatement: 复用现有订单范围与审计基础；A01 不创建标记权限或守卫。
+    futureWorkPackages: [F02]
+    testPlans:
+      Unit: 验证人工标识与 Provider Purchase 状态完全独立。
+      Contract: 验证显式 ID 集和逐项结果契约。
+      Integration: 验证批量 CAS、审计记录与列表投影。
+      Journey: 验证选择多单、标记、筛选与撤销产品决策。
+      Browser: 验证批量选择、标识呈现和禁用原因。
+      Performance: 验证大批次分片、锁范围和返回大小。
+      Recovery: 验证部分成功后可用同一幂等键安全重试。
+    runbookSlug: procurement-marker
+    releaseEvidenceSlug: procurement-marker
+    lifecycleStatus: Designed
+
+  - id: OMS-007
+    version: 1
+    title: 多模板导出
+    description: 按筛选快照异步生成订单总表、发货表、自定义发货表、礼包、积分商城和机构对账等版本化模板。
+    wave: 1
+    priority: P1
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: E112
+      - sheet: 20260430需求汇总
+        range: K113
+      - sheet: 20260430需求汇总
+        range: K116
+      - sheet: 20260430需求汇总
+        range: K118
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator, financeoperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 导出范围固定为创建请求时的服务端可见范围与 Filter Snapshot。
+    owner: reporting
+    collaboratingModules: [order, finance, fulfillment]
+    uiRoute: /orders
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [order.orders.export]
+    plannedOperations: []
+    operationCoverage: 当前 Operation 可创建 orders 导出任务，但模板版本、列清单、最大行数和恢复证据尚未冻结。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: reporting.exportjob
+        evidence: [services/commerce/src/modules/reporting/domain/model/ExportJob.ts]
+      - status: Designed
+        target: reporting.exporttemplate-and-artifact
+        evidence: []
+    successDefinition:
+      - 每个导出记录模板版本、列、范围、Filter Snapshot、Watermark、行数和对象 Hash。
+      - 创建接口快速返回任务，生成过程可查询、重试和下载。
+    exceptionsAndRejections:
+      - 未知模板、超最大行数或失效范围以稳定结果结束任务。
+      - 失败任务不暴露半成品对象且可从检查点恢复。
+    performanceTarget: 创建请求 P95 不超过 800ms，文件异步分片生成且订单明细上限一万行。
+    securityPolicyStatement: 沿用创建时组织范围与现有导出权限；A01 不增加下载授权策略。
+    futureWorkPackages: [G02]
+    testPlans:
+      Unit: 验证模板版本、列清单和最大行数规则。
+      Contract: 验证创建、查询、下载元数据与错误状态。
+      Integration: 验证 Filter Snapshot、Watermark、对象 Hash 和幂等任务。
+      Journey: 验证选择模板、创建任务、等待完成和下载。
+      Browser: 验证导出对话框、进度、失败和过期状态。
+      Performance: 验证一万行导出的分片时间、内存与对象大小。
+      Recovery: 验证任务中断后从检查点恢复且 Hash 保持确定。
+    runbookSlug: order-export-templates
+    releaseEvidenceSlug: order-export-templates
+    lifecycleStatus: Designed
+
+  - id: OMS-008
+    version: 1
+    title: 售后工作台
+    description: 统一展示和处理售后申请、审核、退货、收货、退款、拒绝与完成时间线，并保留订单和行级数量约束。
+    wave: 1
+    priority: P0
+    workbookEvidence:
+      - sheet: 20250416需求汇总
+        range: B9:C9
+      - sheet: 20260430需求汇总
+        range: J115:K116
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator, supplieroperator, member]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall, supplier, owner]
+      rule: 运营角色按组织后代查看，供应商按退货履约归属查看，会员只看本人申请。
+    owner: order
+    collaboratingModules: [payment, fulfillment, support, channel]
+    uiRoute: /orders?workspace=aftersales
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [order.aftersales.read, order.aftersales.apply, order.aftersales.approve, order.aftersales.reject]
+    plannedOperations: []
+    operationCoverage: 现有四个 Operation 覆盖列表、申请和审核决定，完整退货、退款、附件与时间线仍待后续闭环。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: ordering.aftersale-and-reviewaction
+        evidence: [services/commerce/src/modules/order/OrderOperations.ts]
+      - status: Designed
+        target: reporting.aftersaleworkspaceprojection
+        evidence: []
+    successDefinition:
+      - 售后列表、详情和时间线可追踪每次状态、数量、金额、证据与跨模块结果。
+      - 无需退货退款、需退货退款、拒绝和完成均有确定终态。
+    exceptionsAndRejections:
+      - 超量、重复申请、审核职责冲突和版本冲突被稳定拒绝。
+      - Provider Unknown、退款回调重复或依赖超时进入可恢复状态。
+    performanceTarget: 售后列表 P95 不超过 300ms，普通决定命令 P95 不超过 800ms。
+    securityPolicyStatement: 沿用现有售后 Operation 权限与范围；A01 不改变审批或职责分离约束。
+    futureWorkPackages: [D02, G01]
+    testPlans:
+      Unit: 验证售后状态机、行级数量、金额和审核冲突。
+      Contract: 验证列表、申请、批准、拒绝和时间线契约。
+      Integration: 验证订单、退货、退款、审计与 Outbox 一致性。
+      Journey: 验证全部成功、拒绝、退货退款和无需退货退款路径。
+      Browser: 验证主从工作台、附件、时间线和动作状态。
+      Performance: 验证售后筛选与详情查询无 N+1。
+      Recovery: 验证 Provider Unknown、重复回调和退款任务重放。
+    runbookSlug: aftersale-workspace
+    releaseEvidenceSlug: aftersale-workspace
+    lifecycleStatus: Designed
+
+  - id: OMS-009
+    version: 1
+    title: 异常订单
+    description: 按 payment、provider、fulfillment、aftersale、reconciliation 原因聚合订单异常，不污染订单主状态并提供恢复上下文。
+    wave: 1
+    priority: P1
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: J117:K118
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 异常投影继承订单可见范围，不扩大任一来源域的数据范围。
+    owner: reporting
+    collaboratingModules: [order, payment, fulfillment, channel, finance]
+    uiRoute: /orders?workspace=exceptions
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: []
+    plannedOperations: [order.exceptions.read]
+    operationCoverage: 各来源域存在局部恢复能力，但没有订单维度的可解释异常聚合 Operation。
+    dataObjectsAndProjections:
+      - status: Designed
+        target: reporting.orderexceptionprojection
+        evidence: []
+    successDefinition:
+      - 一个订单可同时保留多个原因代码、来源、首次和最近发生时间及恢复状态。
+      - 异常可筛选、导出、进入对应恢复流程且不改 Lifecycle。
+    exceptionsAndRejections:
+      - 阈值缺失时不凭 Handler 常量推导异常，记录配置缺口。
+      - 来源事实消失或恢复后保留历史并更新当前状态。
+    performanceTarget: 异常列表 50 行 P95 不超过 300ms，投影事件 P99 30 秒内可见。
+    securityPolicyStatement: 继承订单与来源域现有范围；A01 不新增异常处理权限。
+    futureWorkPackages: [F03]
+    testPlans:
+      Unit: 验证五类原因代码、共存和恢复状态推导。
+      Contract: 验证异常列表、原因、来源和恢复链接结构。
+      Integration: 验证多来源事件投影、Watermark 和去重。
+      Journey: 验证从异常列表定位订单并进入恢复流程。
+      Browser: 验证异常主从界面、原因解释与部分失败。
+      Performance: 验证高异常量下的分页、聚合和事件延迟。
+      Recovery: 验证投影重建、重复事件和乱序事件收敛。
+    runbookSlug: order-exceptions
+    releaseEvidenceSlug: order-exceptions
+    lifecycleStatus: Designed
+
+  - id: OMS-010
+    version: 1
+    title: 批量下单
+    description: 下载地址库和模板、上传订单行、校验地址与商品、选择供应商和下单账号，并在确认后分片扣减和建单。
+    wave: 2
+    priority: P1
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: D113:E115
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 文件中每一行都绑定创建者范围，确认时重新验证范围和账号。
+    owner: order
+    collaboratingModules: [checkout, payment, channel, fulfillment]
+    uiRoute: /orders?workspace=batch
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: []
+    plannedOperations: [order.batchorders.validate, order.batchorders.create, order.batchorders.read]
+    operationCoverage: 现有单笔 order.orders.create 不覆盖文件预检、确认快照、逐行结果或批次恢复。
+    dataObjectsAndProjections:
+      - status: Designed
+        target: ordering.batchorder-and-row
+        evidence: []
+      - status: Designed
+        target: checkout.batchconfirmationsnapshot
+        evidence: []
+    successDefinition:
+      - 校验阶段无资金、库存或订单副作用，确认阶段只消费已确认 Snapshot。
+      - 合并下单仅在同收货人、商城、支付主体、Provider 和确定性运费规则下执行。
+    exceptionsAndRejections:
+      - 地址、商品、数量、账号、余额和 Provider 不确定逐行报告。
+      - 文件重复、确认重复或部分失败可幂等恢复且不重复扣减。
+    performanceTarget: 上传和确认异步分片，下单单行 P95 不超过 1500ms且不占用长 API 事务。
+    securityPolicyStatement: 沿用现有下单范围和账号事实；A01 不创建批量下单权限。
+    futureWorkPackages: [G03, G04]
+    testPlans:
+      Unit: 验证模板字段、地址解析、合并规则和逐行状态。
+      Contract: 验证校验、确认、批次查询和逐行错误契约。
+      Integration: 验证 Snapshot、分片建单、扣减与幂等。
+      Journey: 验证下载模板、上传、修正、确认和查看结果。
+      Browser: 验证文件选择、校验表、部分失败和确认警示。
+      Performance: 验证大文件解析、分片吞吐和资源上限。
+      Recovery: 验证进程中断、重复确认和单行失败后的安全重放。
+    runbookSlug: batch-order
+    releaseEvidenceSlug: batch-order
+    lifecycleStatus: Designed
+
+  - id: OMS-011
+    version: 1
+    title: 对账与结算
+    description: 机构、子机构、商城、供应商和采购维度的账单、差异与结算可追踪到订单和经济腿，并支持历史查询。
+    wave: 2
+    priority: P1
+    workbookEvidence:
+      - sheet: 20250416需求汇总
+        range: B11:G11
+      - sheet: 20260430需求汇总
+        range: H119:K122
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator, financeoperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall, supplier]
+      rule: 每一层只查看自身及后代范围的账单，供应商维度按结算主体隔离。
+    owner: finance
+    collaboratingModules: [order, reporting, channel, payment]
+    uiRoute: /finance/reconciliations
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [finance.reconciliations.read, finance.reconciliations.manage, finance.settlements.read]
+    plannedOperations: []
+    operationCoverage: 现有对账读取、差异处理和结算读取有真实实现，月度生成口径与订单经济腿追踪仍需工作包验收。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: finance.reconciliation-and-settlement
+        evidence: [services/commerce/src/modules/finance/FinanceLifecycleOperations.ts]
+      - status: Designed
+        target: reporting.ordereconomiclegprojection
+        evidence: []
+    successDefinition:
+      - 月度账单、差异、调整和结算行可回溯订单、采购与退款经济腿。
+      - 机构、商城和供应商口径可导出且总额与不可变分录一致。
+    exceptionsAndRejections:
+      - 差异未解决、期间未关闭或账单版本过期时不进入完成终态。
+      - 手工调整保留双人信息和来源证据，不改历史分录。
+    performanceTarget: 对账列表 50 行 P95 不超过 300ms，月度生成异步执行。
+    securityPolicyStatement: 沿用现有 Finance Operation 与组织范围；A01 不更改财务权限或审批。
+    futureWorkPackages: [G05]
+    testPlans:
+      Unit: 验证账单口径、差异状态和结算金额恒等式。
+      Contract: 验证对账读取、差异处理和结算读取结构。
+      Integration: 验证订单经济腿、分录、账单与结算追踪。
+      Journey: 验证月度对账、差异处理、完成和历史下载。
+      Browser: 验证财务工作台状态、明细和禁用原因。
+      Performance: 验证大期间生成、分页与导出资源上限。
+      Recovery: 验证账单重算、任务重放和重复来源文件。
+    runbookSlug: order-reconciliation
+    releaseEvidenceSlug: order-reconciliation
+    lifecycleStatus: Designed
+
+  - id: OMS-012
+    version: 1
+    title: 订单数据中心
+    description: 展示订单量、GMV、退款、净销售额、客单价、状态分布、趋势和退款原因，并携带可解释 Watermark。
+    wave: 2
+    priority: P1
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: F11:F16
+      - sheet: 20260430需求汇总
+        range: J125:K125
+    roles: [platformoperator, enterpriseoperator, departmentoperator, malloperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall]
+      rule: 指标按当前组织及后代范围汇总，Watermark 明示数据新鲜度。
+    owner: reporting
+    collaboratingModules: [order, payment, finance, organization]
+    uiRoute: /reports?section=orders
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [reporting.dashboard.read, reporting.sales.read]
+    plannedOperations: []
+    operationCoverage: 现有 Dashboard 与 Sales Operation 提供通用指标读取，订单专属口径、退款分类和导出仍待冻结。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: reporting.metric
+        evidence: [services/commerce/src/modules/reporting/application/query/GetDashboard.ts]
+      - status: Designed
+        target: reporting.ordermetricsprojection
+        evidence: []
+    successDefinition:
+      - 所有指标定义分子、分母、时间窗、货币和组织范围。
+      - 日周月年趋势、同比环比、状态分布和退款原因可复现。
+    exceptionsAndRejections:
+      - Watermark 过旧时标记 Stale，不把缓存值冒充实时。
+      - 多币种或口径缺失时拒绝合计并说明缺口。
+    performanceTarget: 指标读取 P95 不超过 500ms，来源事件到投影 P99 不超过 30 秒。
+    securityPolicyStatement: 沿用 reporting.read 与组织范围；A01 不增加数据中心权限。
+    futureWorkPackages: [E01, E02]
+    testPlans:
+      Unit: 验证指标公式、时间桶、退款分类和净额恒等式。
+      Contract: 验证指标、趋势、Watermark 和导出元数据。
+      Integration: 验证事件投影、组织聚合和可重建结果。
+      Journey: 验证时间维度切换、下钻和导出。
+      Browser: 验证指标栅格、图表替代文本和 Stale 状态。
+      Performance: 验证多组织和长时间窗聚合的 P95。
+      Recovery: 验证投影截断重建与重复事件收敛。
+    runbookSlug: order-data-center
+    releaseEvidenceSlug: order-data-center
+    lifecycleStatus: Designed
+
+  - id: OMS-013
+    version: 1
+    title: 客服关联订单
+    description: 工单详情展示关联订单快照、物流、售后和处理时间线，内部备注与会员可见回复保持边界且 Support 不改订单事实。
+    wave: 2
+    priority: P2
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: J130:K131
+    roles: [supportagent, supportmanager, platformoperator, enterpriseoperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall, owner]
+      rule: 工单与订单范围取交集，客服只能读取其工单范围内的订单快照。
+    owner: support
+    collaboratingModules: [order, fulfillment]
+    uiRoute: /support/:caseId
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: [support.cases.read, support.history.read]
+    plannedOperations: []
+    operationCoverage: 现有工单与历史读取 Operation 真实存在，但订单快照关联和物流、售后摘要尚未进入契约。
+    dataObjectsAndProjections:
+      - status: Existing
+        target: support.ticket-and-history
+        evidence: [services/commerce/src/modules/support/application/query/GetConversations.ts]
+      - status: Designed
+        target: support.ordercontextsnapshot
+        evidence: []
+    successDefinition:
+      - 工单可按关联订单号精确检索并显示有版本的订单快照。
+      - 内部备注仅客服可见，会员回复只通过 Support 消息产生。
+    exceptionsAndRejections:
+      - 工单与订单范围不相交时不返回订单快照。
+      - 订单投影暂不可用时工单仍可处理并标明 Partial Failure。
+    performanceTarget: 工单详情及订单快照 P95 不超过 500ms且无跨模块 N+1。
+    securityPolicyStatement: 沿用现有 Support 与 Order 范围交集；A01 不新增客服权限矩阵。
+    futureWorkPackages: [G01]
+    testPlans:
+      Unit: 验证内部备注、外部回复和订单引用边界。
+      Contract: 验证工单订单快照、物流和售后摘要结构。
+      Integration: 验证工单范围与订单范围交集及快照版本。
+      Journey: 验证按订单搜索工单、查看快照和回复用户。
+      Browser: 验证时间线、订单卡片和内部外部消息区分。
+      Performance: 验证工单详情组合读取的查询数和 P95。
+      Recovery: 验证订单投影不可用时工单处理与后续补全。
+    runbookSlug: support-order-context
+    releaseEvidenceSlug: support-order-context
+    lifecycleStatus: Designed
+
+  - id: OMS-014
+    version: 1
+    title: 运费差额
+    description: 将用户免邮、Provider 结算门槛、Provider 运费和平台垫付拆成可解释的报价与结算快照。
+    wave: 2
+    priority: P1
+    workbookEvidence:
+      - sheet: 20260430需求汇总
+        range: C109:E109
+    roles: [platformoperator, enterpriseoperator, financeoperator]
+    scopeHierarchy:
+      kinds: [platform, enterprise, department, mall, supplier]
+      rule: 报价使用下单商城与 Provider 规则，结算差额按财务主体和供应商范围查看。
+    owner: finance
+    collaboratingModules: [checkout, channel, order, reporting]
+    uiRoute: /finance/reconciliations?view=freight
+    uiRouteEvidence: [apps/console/src/route/ConsoleRouter.tsx]
+    existingOperations: []
+    plannedOperations: [checkout.freightquotes.create, finance.freightdifferences.read]
+    operationCoverage: 当前 Checkout 报价只有商品金额，没有 Provider 运费门槛或平台垫付快照。
+    dataObjectsAndProjections:
+      - status: Designed
+        target: checkout.freightquotesnapshot
+        evidence: []
+      - status: Designed
+        target: finance.freightdifferenceprojection
+        evidence: []
+    successDefinition:
+      - 下单时冻结用户运费、Provider 运费、门槛、补贴与规则版本。
+      - 对账可按订单、Provider、商城和期间解释每笔垫付差额。
+    exceptionsAndRejections:
+      - Provider 运费未知时不按零运费提交，进入明确待确认结果。
+      - 合并下单无法确定唯一 Provider 或运费规则时拒绝合并。
+    performanceTarget: 报价随下单链路 P95 不超过 1500ms，差额列表 P95 不超过 300ms。
+    securityPolicyStatement: 沿用 Checkout、Channel 与 Finance 现有范围；A01 不新增运费配置权限。
+    futureWorkPackages: [G05]
+    testPlans:
+      Unit: 验证免邮门槛、Provider 运费、补贴和合并规则。
+      Contract: 验证运费报价快照与差额读取字段。
+      Integration: 验证报价、订单快照、Provider 账单和财务差额追踪。
+      Journey: 验证免邮但 Provider 收费、差额入账和对账解释。
+      Browser: 验证订单与对账页面的运费构成和异常状态。
+      Performance: 验证 Provider 规则查询缓存和差额列表 P95。
+      Recovery: 验证 Provider 运费 Unknown 后补偿、重算与幂等。
+    runbookSlug: freight-difference
+    releaseEvidenceSlug: freight-difference
+    lifecycleStatus: Designed

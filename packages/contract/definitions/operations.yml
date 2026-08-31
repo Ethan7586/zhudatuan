@@ -321,6 +321,7 @@ operations:
     schema: structural
     requirements:
       - MVP03
+      - OMS-004
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
@@ -932,6 +933,7 @@ operations:
     requirements:
       - MVP05
       - MVP14
+      - OMS-012
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
@@ -946,6 +948,7 @@ operations:
     requirements:
       - MVP11
       - MVP20
+      - OMS-012
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/reporting.ts
@@ -1257,6 +1260,9 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-001
+      - OMS-004
+      - OMS-005
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
@@ -1283,6 +1289,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-007
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
@@ -1297,6 +1304,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
@@ -1311,6 +1319,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
@@ -1325,6 +1334,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
@@ -1339,6 +1349,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/order.ts
@@ -2017,6 +2028,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
+      - OMS-011
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
@@ -2028,7 +2040,7 @@ operations:
     permission: finance.reconciliation.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
+    requirements: [MVP10, MVP19, OMS-011]
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
@@ -2040,7 +2052,7 @@ operations:
     permission: finance.settlement.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
+    requirements: [MVP10, MVP19, OMS-011]
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/finance.ts
@@ -2310,6 +2322,7 @@ operations:
     requirements:
       - MVP12
       - MVP21
+      - OMS-013
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/support.ts
@@ -2522,6 +2535,7 @@ operations:
     requirements:
       - MVP12
       - MVP21
+      - OMS-013
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/support.ts

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { loadRequirementAuthority } from './Authority';
+import { loadRequirementAuthorities, loadRequirementAuthority } from './Authority';
 
 describe('requirement authority', () => {
   it('binds the repository 260821 workbook by content hash', async () => {
@@ -18,8 +18,41 @@ describe('requirement authority', () => {
     expect(result.bytes.length).toBeGreaterThan(0);
   });
 
+  it('binds the independent Smart Wing OMS authority without replacing the commerce authority', async () => {
+    const root = resolve(import.meta.dirname, '../../..');
+    const authorities = await loadRequirementAuthorities(root);
+    const result = await loadRequirementAuthority(root, 'orderRequirements');
+
+    expect([...authorities.keys()]).toEqual(['requirements', 'orderRequirements']);
+    expect(result.authority.logicalSource).toBe('RepositoryAuthority docs/订单需求20260430.xlsx');
+    expect(result.authority.repositoryRelativePath).toBe('docs/订单需求20260430.xlsx');
+    expect(result.authority.sha256).toBe('2d26811cd4fe3fca65f126432a71f176628d12ff262cd0844498abc3fec9e79e');
+    expect(result.authority.sheets).toEqual({ '20260430需求汇总': 274, '20250416需求汇总': 16 });
+    expect(result.bytes.length).toBeGreaterThan(0);
+  });
+
+  it('rejects authority content whose hash no longer matches the declaration', async () => {
+    const fixture = await createFixture('docs/authority.xlsx', 'a'.repeat(64));
+    try {
+      await mkdir(join(fixture.root, 'docs'));
+      await writeFile(join(fixture.root, 'docs/authority.xlsx'), 'changed authority');
+      await expect(loadRequirementAuthority(fixture.root)).rejects.toThrow('REQUIREMENT_AUTHORITY_HASH_INVALID');
+    } finally {
+      await rm(fixture.directory, { recursive: true, force: true });
+    }
+  });
+
   it('rejects parent traversal before reading the authority', async () => {
     const fixture = await createFixture('../outside.xlsx');
+    try {
+      await expect(loadRequirementAuthority(fixture.root)).rejects.toThrow('REQUIREMENT_AUTHORITY_PATH_INVALID');
+    } finally {
+      await rm(fixture.directory, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects an absolute authority path before reading the authority', async () => {
+    const fixture = await createFixture(resolve(tmpdir(), 'absolute-authority.xlsx'));
     try {
       await expect(loadRequirementAuthority(fixture.root)).rejects.toThrow('REQUIREMENT_AUTHORITY_PATH_INVALID');
     } finally {
@@ -39,7 +72,7 @@ describe('requirement authority', () => {
   });
 });
 
-async function createFixture(repositoryRelativePath: string) {
+async function createFixture(repositoryRelativePath: string, declaredHash?: string) {
   const directory = await mkdtemp(join(tmpdir(), 'smart-wing-authority-'));
   const root = join(directory, 'repository');
   const outside = join(directory, 'outside.xlsx');
@@ -51,7 +84,7 @@ async function createFixture(repositoryRelativePath: string) {
     'requirements:',
     '  logicalSource: fixture',
     `  repositoryRelativePath: ${repositoryRelativePath}`,
-    `  sha256: ${createHash('sha256').update(bytes).digest('hex')}`,
+    `  sha256: ${declaredHash ?? createHash('sha256').update(bytes).digest('hex')}`,
     '  sheets:',
     '    requirements: 0',
     '    mvp: 0',
