@@ -3,42 +3,14 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { COMMERCE_OPERATIONS, type OperationId } from '@shop/contract';
 import { describe, expect, it } from 'vitest';
-import { workstations, type WorkstationKey } from '../shell/Workstation';
+import { consoleModules } from './ConsoleModuleRegistry';
 import { professionalRoutes } from './ProfessionalRouteCatalog';
 
 const repositoryRoot = resolve(import.meta.dirname, '../../../..');
-const routerSource = readFileSync(join(repositoryRoot, 'apps/console/src/route/ConsoleRouter.tsx'), 'utf8');
 const ownerProjection = readFileSync(
   join(repositoryRoot, 'database/supabase/migrations/20260829210000_owner_operator_coverage.sql'),
   'utf8',
 );
-
-const workstationOperations = Object.freeze({
-  cockpit: ['reporting.dashboard.read'],
-  control: ['runtime.health.dependency'],
-  products: ['catalog.listings.read'],
-  orders: ['order.orders.read'],
-  finance: ['finance.overview.read', 'finance.reconciliations.read', 'finance.audit.read',
-    'finance.policies.read', 'finance.policies.preview', 'finance.policies.manage'],
-} as const satisfies Readonly<Record<WorkstationKey, readonly OperationId[]>>);
-
-const routeOperationAdditions = Object.freeze({
-  'settings/access': [
-    'access.ownership.read',
-    'access.ownership.transfers.preview',
-    'access.ownership.transfers.create',
-    'access.ownership.transfers.accept.preview',
-    'access.ownership.transfers.accept',
-    'access.ownership.transfers.cancel.preview',
-    'access.ownership.transfers.cancel',
-    'identity.password.verify',
-    'identity.mobile.challenge',
-    'identity.mobile.manage',
-    'identity.stepup.start',
-    'identity.stepup.complete',
-  ],
-  'settings/members': ['identity.invitations.create', 'identity.members.reset'],
-} as const satisfies Readonly<Record<string, readonly OperationId[]>>);
 
 const shellOperations = Object.freeze([
   'identity.session.read',
@@ -100,18 +72,15 @@ describe('Owner Console route and Operation coverage', () => {
 });
 
 function businessRoutePaths(): readonly string[] {
-  return [...routerSource.matchAll(/\bpath:\s*'([^']+)'/g)]
-    .map((match) => match[1]!)
-    .filter((path) => path !== '/' && path !== '/scopes/:scopeKind/:scopeId' && path !== '*');
+  return consoleModules.flatMap(({ routes }) => routes.map(({ path }) => path));
 }
 
 function routeCoverage(path: string): Readonly<{ path: string; operations: readonly OperationId[] }> | undefined {
-  const workstation = workstations.find(({ key }) => key === path);
-  if (workstation !== undefined) return { path, operations: workstationOperations[workstation.key] };
-  const professional = professionalRoutes.find(({ suffix }) => routeCovers(path, suffix));
-  if (professional === undefined) return undefined;
-  const additions = routeOperationAdditions[professional.suffix as keyof typeof routeOperationAdditions] ?? [];
-  return { path, operations: [...professional.operations, ...additions] };
+  for (const module of consoleModules) {
+    const route = module.routes.find((candidate) => candidate.path === path);
+    if (route !== undefined) return { path, operations: route.operations };
+  }
+  return undefined;
 }
 
 function allRequiredOperations(): readonly OperationId[] {

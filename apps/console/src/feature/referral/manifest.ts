@@ -1,0 +1,72 @@
+import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModuleManifest';
+
+export const referralModule = {
+  id: 'referral',
+  status: 'enabled',
+  navigation: {
+    placement: 'main',
+    group: 'commerce',
+    order: 60,
+    label: '分销返佣系统',
+    icon: 'channel',
+    preferredScopeKind: 'mall',
+  },
+  routes: [
+    {
+      id: 'referral.root',
+      path: 'referral',
+      kind: 'child',
+      lazy: () => import('./ReferralRoute'),
+      operations: ['referral.settings.read'],
+      presentation: { title: '分销返佣系统', summary: '分销招募、关系、商品、佣金与提现' },
+    },
+    {
+      id: 'referral.settings',
+      path: 'referral/settings',
+      kind: 'entry',
+      lazy: () => import('./ReferralRoute'),
+      operations: ['referral.settings.read'],
+      presentation: { title: '分销设定', summary: '招募、绑定、结算和提现策略' },
+    },
+    {
+      id: 'referral.products',
+      path: 'referral/products',
+      kind: 'child',
+      lazy: () => import('./ReferralRoute'),
+      operations: ['referral.products.read'],
+      presentation: { title: '分销商品', summary: '导购商品与返佣比例' },
+    },
+    {
+      id: 'referral.review',
+      path: 'referral/review',
+      kind: 'child',
+      lazy: () => import('./ReferralRoute'),
+      operations: ['referral.members.read', 'referral.members.approve', 'referral.members.disqualify'],
+      presentation: { title: '分销审核', summary: '会员申请与运营审核' },
+    },
+    {
+      id: 'referral.bindings',
+      path: 'referral/bindings',
+      kind: 'child',
+      lazy: () => import('./ReferralRoute'),
+      operations: ['referral.bindings.read'],
+      presentation: { title: '分销关系', summary: '客户与导购的一层绑定关系' },
+    },
+    {
+      id: 'referral.withdrawals',
+      path: 'referral/withdrawals',
+      kind: 'child',
+      lazy: () => import('./ReferralRoute'),
+      operations: ['referral.commissions.read'],
+      presentation: { title: '佣金提现', summary: '已结算佣金与可提现余额' },
+    },
+    {
+      id: 'referral.promotion',
+      path: 'referral/promotion',
+      kind: 'child',
+      lazy: () => import('./ReferralRoute'),
+      operations: ['referral.commissions.read'],
+      presentation: { title: '推广详情', summary: '订单行返佣、奖励与冲正终态' },
+    },
+  ],
+} as const satisfies ConsoleModuleManifest<'referral'>;
