@@ -19,7 +19,7 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, mainItems, 
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
         <Brand variant="mark" inverse />
-        <span className="sidebarbrandcopy"><strong>智慧翼 Smart Wing</strong><small>福利平台治理系统</small></span>
+        <span className="sidebarbrandcopy"><strong>主打团 ZHUDATUAN</strong><small>福利平台治理系统</small></span>
         <button className="sidebartoggle" type="button" onClick={onToggle}
           aria-label={collapsed ? '展开导航' : '收起导航'} aria-expanded={!collapsed}>
           <ShellIcon name={collapsed ? 'chevron' : 'collapse'} />

@@ -11,7 +11,7 @@ function propsOf<T>(value: unknown): T {
 
 describe('VI 1.2 workspace foundations', () => {
   it('keeps hero identity, content and actions as optional composition slots', () => {
-    const hero = propsOf<{ className: string; children: unknown }>(WorkspaceHero({ identity: '品牌', eyebrow: 'SMART WING', title: '权限中心', description: '角色与作用域', actions: '创建角色' }));
+    const hero = propsOf<{ className: string; children: unknown }>(WorkspaceHero({ identity: '品牌', eyebrow: 'ZHUDATUAN', title: '权限中心', description: '角色与作用域', actions: '创建角色' }));
     expect(hero.className).toContain('swworkspacehero');
     expect(Children.count(hero.children)).toBe(3);
   });

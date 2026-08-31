@@ -68,6 +68,8 @@
     "check:approved-ui": "node scripts/check/owner-approved-ui.mjs",
     "check:generated": "node scripts/audit/generated.mjs",
     "check:errors": "node scripts/check/errors.mjs",
+    "check:brand-language": "node scripts/check/brand-language.mjs",
+    "check:brand-language:browser": "node scripts/check/browser-brand-language.mjs",
     "check:requirements": "npm run check --workspace @shop/requirementgen",
     "check:naming": "node scripts/audit/naming.mjs",
     "check:boundaries": "node scripts/audit/boundary.mjs",

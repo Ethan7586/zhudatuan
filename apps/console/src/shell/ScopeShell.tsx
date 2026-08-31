@@ -48,7 +48,7 @@ export function ScopeShell() {
   });
 
   useEffect(() => {
-    document.title = `${routeTitle} · 智慧翼`;
+    document.title = `${routeTitle} · 主打团`;
     setMobileOpen(false);
     const frame = requestAnimationFrame(() => {
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
@@ -136,7 +136,7 @@ export function ScopeShell() {
             <Outlet />
           </main>
           <footer className="consolefooter">
-            <span>© 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
+            <span>© 2026 ZHUDATUAN 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
             <span className="consolefooterstatus"><i aria-hidden="true" />服务运行正常</span>
             <code>AI 调用需服务端授权</code>
           </footer>

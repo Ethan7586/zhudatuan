@@ -41,7 +41,7 @@ function ViBoard() {
       <ComponentSections />
 
       <footer className="v11footer">
-        <span>Smart Wing Brand VI 1.0.0 → Zhudatuan Product Design System 1.1.0</span>
+        <span>ZHUDATUAN Brand VI 1.0.0 → Zhudatuan Product Design System 1.1.0</span>
         <span>Upgrade Draft · 2026-08-28 20:37 CST</span>
       </footer>
     </main>

@@ -20,7 +20,7 @@ function FoundationPreview() {
     <main className="vi12preview" data-sw-theme="light">
       <WorkspaceHero
         identity={<Brand inverse product="Product Design System" variant="mark" />}
-        eyebrow="Smart Wing workspace foundation"
+        eyebrow="ZHUDATUAN workspace foundation"
         title="清晰、克制、有层次的企业工作台"
         description="VI 1.2 把英雄区、指标、主从布局和可选择列表沉淀为稳定组件；业务模块逐个接入，互不牵连。"
         meta={

@@ -106,7 +106,7 @@ describe('WeChat Pay RSA signing', () => {
 describe('WeChat Pay pure helpers', () => {
   it('builds truthful bounded descriptions from immutable item names', () => {
     const description = createWechatPayDescription(['有机纯牛奶', '办公笔记本', '重复不会出现', '重复不会出现']);
-    expect(description).toBe('智慧翼福利商城-有机纯牛奶、办公笔记本等3种商品');
+    expect(description).toBe('主打团福利商城-有机纯牛奶、办公笔记本等3种商品');
     expect(Array.from(description).length).toBeLessThanOrEqual(127);
   });
 

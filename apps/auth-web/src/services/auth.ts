@@ -1,5 +1,5 @@
 /**
- * 智慧翼企业福利商城 - 认证与权限 Mock 服务 (auth.ts)
+ * 主打团企业福利商城 - 认证与权限 Mock 服务 (auth.ts)
  * 职责：模拟统一登录认证段、会员关系查询、Step-Up 二次验证、跨域票据交换及安全审计
  * 技术服务方：雍彻科技
  */
@@ -54,7 +54,7 @@ export const TEST_ACCOUNT_MEMBERSHIPS: Record<string, Membership[]> = {
       target: 'storefront',
       status: 'active',
       enterpriseName: '示范企业',
-      storeName: '智慧翼企业福利商城',
+      storeName: '主打团企业福利商城',
       roleName: '测试员工',
       dataScope: '个人福利账户',
       accountTypeLabel: '福利账户',
@@ -66,9 +66,9 @@ export const TEST_ACCOUNT_MEMBERSHIPS: Record<string, Membership[]> = {
       target: 'admin',
       status: 'active',
       enterpriseName: '示范企业',
-      storeName: '智慧翼运营后台',
+      storeName: '主打团运营后台',
       roleName: '商城管理员',
-      dataScope: '智慧翼企业福利商城',
+      dataScope: '主打团企业福利商城',
       subjectScope: '商城',
       keyPermissions: ['product.publish', 'order.ship'],
       authorizedBy: '测试租户管理员',
@@ -82,9 +82,9 @@ export const TEST_ACCOUNT_MEMBERSHIPS: Record<string, Membership[]> = {
       target: 'admin',
       status: 'active',
       enterpriseName: '示范企业',
-      storeName: '智慧翼运营后台',
+      storeName: '主打团运营后台',
       roleName: '企业运营经理',
-      dataScope: '示范企业 / 智慧翼企业福利商城',
+      dataScope: '示范企业 / 主打团企业福利商城',
       subjectScope: '企业',
       keyPermissions: ['order.refund', 'finance.reconcile'],
       authorizedBy: '测试租户管理员',
@@ -97,8 +97,8 @@ export const TEST_ACCOUNT_MEMBERSHIPS: Record<string, Membership[]> = {
       id: 'membership-test-owner-admin',
       target: 'admin',
       status: 'active',
-      enterpriseName: '智慧翼福利平台',
-      storeName: '智慧翼运营后台',
+      enterpriseName: '主打团福利平台',
+      storeName: '主打团运营后台',
       roleName: '平台业主',
       dataScope: '全租户',
       subjectScope: '租户',
@@ -123,13 +123,13 @@ const ROLE_TEST_MEMBERSHIP_DEFINITIONS: ReadonlyArray<{
 }> = [
   { prefix: 'buyer', target: 'storefront', roleName: '测试买家', dataScope: '个人福利账户', keyPermissions: ['catalog.read', 'order.create', 'order.read'], requiresStepUp: false },
   { prefix: 'seller', target: 'admin', roleName: '测试商家', dataScope: '央企供应链', subjectScope: '供应商', keyPermissions: ['catalog.read', 'product.publish', 'order.read', 'order.ship'], requiresStepUp: false },
-  { prefix: 'ops', target: 'admin', roleName: '测试运营', dataScope: '智慧翼企业福利商城', subjectScope: '商城', keyPermissions: ['catalog.read', 'product.publish', 'order.read', 'order.ship', 'audit.read'], requiresStepUp: false },
-  { prefix: 'cs', target: 'admin', roleName: '测试客服', dataScope: '智慧翼企业福利商城', subjectScope: '商城', keyPermissions: ['catalog.read', 'order.read', 'member.read'], requiresStepUp: false },
+  { prefix: 'ops', target: 'admin', roleName: '测试运营', dataScope: '主打团企业福利商城', subjectScope: '商城', keyPermissions: ['catalog.read', 'product.publish', 'order.read', 'order.ship', 'audit.read'], requiresStepUp: false },
+  { prefix: 'cs', target: 'admin', roleName: '测试客服', dataScope: '主打团企业福利商城', subjectScope: '商城', keyPermissions: ['catalog.read', 'order.read', 'member.read'], requiresStepUp: false },
   {
     prefix: 'admin',
     target: 'admin',
     roleName: '测试企业管理员',
-    dataScope: '示范企业 / 智慧翼企业福利商城',
+    dataScope: '示范企业 / 主打团企业福利商城',
     subjectScope: '企业',
     keyPermissions: ['member.invite', 'member.disable', 'finance.reconcile', 'audit.read'],
     requiresStepUp: false,
@@ -146,7 +146,7 @@ if (import.meta.env.DEV) {
           target: definition.target,
           status: 'active',
           enterpriseName: '示范企业',
-          storeName: definition.target === 'storefront' ? '智慧翼企业福利商城' : '智慧翼运营后台',
+          storeName: definition.target === 'storefront' ? '主打团企业福利商城' : '主打团运营后台',
           roleName: definition.roleName,
           dataScope: definition.dataScope,
           accountTypeLabel: definition.target === 'storefront' ? '福利账户' : undefined,

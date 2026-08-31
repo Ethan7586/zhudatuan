@@ -178,7 +178,7 @@ function renderRoute(context: ConsoleContext) {
 }
 
 const tenantScope = { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', name: '主打团租户' } as const;
-const secondTenantScope = { kind: 'tenant', id: 'tenant-smart-wing', tenant: 'tenant-smart-wing', name: '智慧翼租户' } as const;
+const secondTenantScope = { kind: 'tenant', id: 'tenant-smart-wing', tenant: 'tenant-smart-wing', name: '主打团租户' } as const;
 const zhudatuanTenantScope = { ...tenantScope, id: 'tenant-zhudatuan', tenant: 'tenant-zhudatuan', name: '主打团' } as const;
 const platformScope = { kind: 'platform', id: 'platform:one', name: '福利商城平台' } as const;
 const missingEvidenceCases: ReadonlyArray<readonly [string, Partial<ConsoleContext['session']>]> = [

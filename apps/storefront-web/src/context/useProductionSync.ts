@@ -8,6 +8,7 @@ import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontStat
 import { mergeAuthenticatedMemberProfile } from './storefrontMemberProfile';
 import { createCatalogPublisher } from './catalogSync';
 import { captureBrowserReferralAttribution } from '../services/referralAttribution';
+import { canonicalizeProductBrand } from '../domain/brand/productBrand';
 
 interface ProductionSyncSetters {
   setProducts: Dispatch<SetStateAction<Product[]>>;
@@ -123,11 +124,11 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     const resolvedMall: EnterpriseMall = {
       id: bootstrap.scope.mallId,
       enterpriseId: bootstrap.scope.enterpriseId,
-      enterpriseName: bootstrap.scope.enterpriseName,
-      mallName: bootstrap.scope.mallName,
-      logoText: bootstrap.scope.brandName,
+      enterpriseName: canonicalizeProductBrand(bootstrap.scope.enterpriseName),
+      mallName: canonicalizeProductBrand(bootstrap.scope.mallName),
+      logoText: canonicalizeProductBrand(bootstrap.scope.brandName),
       badge: '企业福利专享',
-      welcomeBanner: `${bootstrap.scope.enterpriseName}员工福利商城已开放，实际权益以企业发放为准。`,
+      welcomeBanner: `${canonicalizeProductBrand(bootstrap.scope.enterpriseName)}员工福利商城已开放，实际权益以企业发放为准。`,
     };
     setters.setCurrentMall(resolvedMall);
     setters.setMalls([resolvedMall]);
