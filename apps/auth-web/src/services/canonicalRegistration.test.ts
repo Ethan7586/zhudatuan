@@ -134,6 +134,30 @@ describe('canonical registration', () => {
     expect(result.accessVersion).toBe(7);
   });
 
+  it('accepts an operator membership receipt and maps it to Console', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      ...membership(),
+      id: 'membership:operator-one',
+      client: 'operator',
+    }, 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember({
+      subject: '+8613800138000',
+      password: 'SecurePassword1!',
+      displayName: 'Ethan',
+      inviteCode: 'operator-invitation',
+      challengeId: 'challenge:registration-one',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    })).resolves.toMatchObject({
+      membership: 'membership:operator-one',
+      target: 'console',
+      status: 'active',
+    });
+  });
+
   it('fails closed before the network when current terms were not accepted', async () => {
     const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);
