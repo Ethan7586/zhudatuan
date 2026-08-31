@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Brand } from './Brand';
-import { token } from './Token';
 import { ComponentSections } from './VI11StoryComponents';
 import { FoundationSections } from './VI11StoryFoundation';
 import './vi-1-1-story.css';
@@ -27,7 +26,7 @@ function ViBoard() {
         </div>
         <div className="v11meta">
           <span>
-            Version <strong>{token.version}</strong>
+            Version <strong>1.1.0 reference</strong>
           </span>
           <span>
             Status <strong>Upgrade Draft</strong>
