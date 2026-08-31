@@ -1,0 +1,57 @@
+.memberresetform,
+.memberresetreceipt {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+
+.memberresetimpact,
+.memberresetreceipt > div {
+  display: grid;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid color-mix(in srgb, var(--sw-danger) 28%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+  padding: var(--sw-space-2);
+}
+
+.memberresetimpact p,
+.memberresetimpact ul,
+.memberresetreceipt p {
+  margin: 0;
+}
+
+.memberresetimpact ul {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  padding-left: var(--sw-space-3);
+}
+
+.memberresetacknowledgement {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sw-space-1);
+}
+
+.memberresetacknowledgement input {
+  flex: 0 0 auto;
+  margin-top: 0.2em;
+}
+
+.memberreseterror {
+  margin: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+  padding: var(--sw-space-1-5);
+}
+
+.memberresetform footer,
+.memberresetreceipt footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  padding-top: var(--sw-space-2);
+}

@@ -1,4 +1,5 @@
 import { token } from '../../bootstrap/Container';
+import { bearerToken } from '@shop/config/server';
 import { HttpClient } from '../http/HttpClient';
 
 export interface SecretStore {
@@ -15,17 +16,26 @@ export interface SecurityKeys {
 
 export const SECURITY_KEYS = token<SecurityKeys>('security.keys');
 
+export interface IdentitySecurityKeys {
+  readonly identity: string;
+  readonly session: string;
+}
+
+export const IDENTITY_SECURITY_KEYS = token<IdentitySecurityKeys>('identity.securitykeys');
+
 export class WorkloadSecretStore implements SecretStore {
   private readonly http: HttpClient;
-  constructor(private readonly endpoint: string, fetcher: typeof fetch = fetch) {
+  private readonly bearer: string;
+  constructor(private readonly endpoint: string, bearer: string, fetcher: typeof fetch = fetch) {
     if (!endpoint.startsWith('https://')) throw new Error('SECRET_STORE_ENDPOINT_INVALID');
+    this.bearer = bearerToken(bearer, 'SECRET_STORE_BEARER_TOKEN_INVALID');
     this.http = new HttpClient(fetcher);
   }
 
   async read(reference: string): Promise<string> {
     if (!/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(reference)) throw new Error('SECRET_REFERENCE_INVALID');
     const response = await this.http.send(`${this.endpoint.replace(/\/$/, '')}/v1/secrets/${encodeURIComponent(reference)}`, {
-      headers: { accept: 'application/json' },
+      headers: { accept: 'application/json', authorization: `Bearer ${this.bearer}` },
       redirect: 'error',
     }, { mode: 'read' });
     if (!response.ok) throw new Error('SECRET_READ_FAILED');

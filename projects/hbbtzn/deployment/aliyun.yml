@@ -1,0 +1,33 @@
+schema: zhudatuan.project-deployment.v1
+project: hbbtzn
+provider: aliyun
+enabled: false
+mode: preserve-existing
+
+domains:
+  storefront: hbbtzn.com
+  storefrontAlias: www.hbbtzn.com
+  console: smart.hbbtzn.com
+  accounts: auth.hbbtzn.com
+  api: api.hbbtzn.com
+
+artifacts:
+  manifest: ../../../config/artifacts.json
+  copySourceCode: false
+
+isolation:
+  compute: dedicated-namespace
+  database: dedicated-database
+  cache: dedicated-instance-or-prefix
+  objects: dedicated-bucket-or-prefix
+  secrets: dedicated-secret-scope
+  release: independent
+  rollback: independent
+
+legacyReferences:
+  - ../../../infrastructure/aliyun/delivery.yml
+  - ../../../infrastructure/storefront-compatibility/aliyun/Caddyfile
+
+approval:
+  owner: Ethan
+  deploymentApproved: false

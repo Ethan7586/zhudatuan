@@ -28,7 +28,7 @@ export function Component() {
     fetching: query.isFetching,
     error: query.error,
     hasData: query.data !== undefined,
-    empty: query.data?.summary.orderCount === 0 && query.data.summary.catalogCount === 0,
+    empty: false,
     stale: query.isStale,
   });
   const openInsight = (insight: BusinessInsight) => {
@@ -36,7 +36,7 @@ export function Component() {
   };
   return (
     <section className="cockpitpage" aria-label="经营驾驶舱">
-      <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+      <ResourceState condition={condition} resourceLabel="经营驾驶舱" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
         {query.data === undefined ? <span /> : <CockpitContent sales={query.data.summary.sales} onOpenInsight={openInsight} />}
       </ResourceState>
     </section>

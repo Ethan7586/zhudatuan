@@ -1,0 +1,145 @@
+.swbadge {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-1);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-label-sm);
+  white-space: nowrap;
+}
+.swbadge[data-tone='info'] {
+  border-color: color-mix(in srgb, var(--sw-info) 25%, var(--sw-border));
+  background: var(--sw-info-surface);
+  color: var(--sw-info-strong);
+}
+.swbadge[data-tone='success'] {
+  border-color: color-mix(in srgb, var(--sw-success) 28%, var(--sw-border));
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+.swbadge[data-tone='warning'] {
+  border-color: color-mix(in srgb, var(--sw-warning) 32%, var(--sw-border));
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+.swbadge[data-tone='danger'] {
+  border-color: color-mix(in srgb, var(--sw-danger) 28%, var(--sw-border));
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+
+.swtabs {
+  display: flex;
+  min-height: var(--sw-control-height);
+  align-items: end;
+  gap: var(--sw-space-3);
+  overflow-x: auto;
+  border-bottom: var(--sw-border-width) solid var(--sw-divider);
+}
+.swtabs > button {
+  position: relative;
+  min-height: var(--sw-control-height);
+  border: 0;
+  background: transparent;
+  color: var(--sw-muted);
+  padding: 0;
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-medium);
+  white-space: nowrap;
+}
+.swtabs > button::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--sw-brand);
+  content: '';
+  opacity: 0;
+  transform: scaleX(0.5);
+  transition:
+    opacity var(--sw-duration-fast),
+    transform var(--sw-duration-fast);
+}
+.swtabs > button:hover {
+  color: var(--sw-brand-dark);
+}
+.swtabs > button[aria-selected='true'] {
+  color: var(--sw-brand-dark);
+  font-weight: var(--sw-font-weight-semibold);
+}
+.swtabs > button[aria-selected='true']::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+.swtabs > button:focus-visible {
+  border-radius: var(--sw-radius-sm);
+  outline: var(--sw-focus-width) solid var(--sw-brand);
+  outline-offset: var(--sw-focus-offset);
+  box-shadow: var(--sw-shadow-focus);
+}
+
+.swavatar {
+  display: inline-grid;
+  width: var(--sw-icon-container);
+  height: var(--sw-icon-container);
+  overflow: hidden;
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-brand) 24%, var(--sw-border));
+  border-radius: var(--sw-radius-full);
+  background: linear-gradient(145deg, var(--sw-brand-faint), var(--sw-brand-light));
+  color: var(--sw-brand-dark);
+  place-items: center;
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-bold);
+  box-shadow: var(--sw-shadow-avatar);
+}
+.swavatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.swtable {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+}
+.swtable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sw-font-size-body-sm);
+  font-variant-numeric: tabular-nums;
+}
+.swtable th,
+.swtable td {
+  height: var(--sw-control-height-lg);
+  border-bottom: var(--sw-border-width) solid var(--sw-divider);
+  padding: 0 var(--sw-space-1-5);
+  text-align: left;
+  white-space: nowrap;
+}
+.swtable th {
+  background: var(--sw-surface-subtle);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+}
+.swtable tbody tr:last-child td {
+  border-bottom: 0;
+}
+.swtable tbody tr:hover {
+  background: var(--sw-surface-hover);
+}
+.swtable tbody tr[aria-selected='true'] {
+  background: var(--sw-surface-selected);
+}

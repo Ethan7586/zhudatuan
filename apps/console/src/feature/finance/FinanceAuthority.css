@@ -1,0 +1,121 @@
+.financeauthority {
+  min-width: 0;
+}
+.financeauthorityheader {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--sw-border);
+  padding: 15px;
+}
+.financeauthorityheader p {
+  margin: 0 0 4px;
+  color: var(--sw-brand);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.financeauthorityheader h2 {
+  margin: 0 0 4px;
+  color: var(--sw-text);
+  font-size: 18px;
+}
+.financeauthorityheader span {
+  color: var(--sw-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.financeauthorityheader > button {
+  min-height: 36px;
+  flex: 0 0 auto;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 5px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-disabled);
+  padding: 0 13px;
+  font-size: 11px;
+  font-weight: 650;
+}
+.financepreviewboundary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 15px;
+  border: 1px solid color-mix(in srgb, var(--sw-brand) 38%, var(--sw-border));
+  border-radius: 5px;
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 650;
+}
+.financepreviewboundary svg {
+  width: 14px;
+  height: 14px;
+}
+.financeauthoritytable {
+  min-width: 980px;
+}
+.financeaudittable {
+  min-width: 1480px;
+}
+.financeauthoritytable td {
+  height: auto;
+  min-height: 52px;
+  vertical-align: top;
+}
+.financejsoncell {
+  min-width: 260px;
+  max-width: 420px;
+  white-space: normal !important;
+}
+.financejsoncell code,
+.financehashcell code {
+  color: var(--sw-text-secondary);
+  font-family: var(--sw-font-mono);
+  font-size: 9px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.financehashcell {
+  min-width: 260px;
+  max-width: 320px;
+  white-space: normal !important;
+}
+.financehashpair {
+  display: grid;
+  gap: 6px;
+}
+.financehashpair > span {
+  color: var(--sw-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+.financereadstate {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border-radius: 4px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  padding: 0 7px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.financereadstate[data-state='active'] {
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+
+@media (max-width: 720px) {
+  .financeauthorityheader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .financeauthorityheader > button {
+    width: 100%;
+  }
+}

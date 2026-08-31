@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "phase": "bootstrap",
+  "secretStore": {
+    "migration": {
+      "bearerToken": "REPLACE_FULL_MIGRATION_SECRET_BEARER_TOKEN_000000000011",
+      "resources": [
+        "zhudatuan/staging/full/database/migration"
+      ]
+    },
+    "owner-bootstrap": {
+      "bearerToken": "REPLACE_FULL_OWNER_SECRET_BEARER_TOKEN_000000000000012",
+      "resources": [
+        "zhudatuan/staging/full/identity/index",
+        "zhudatuan/staging/full/registration/owner/bootstrap-receipt",
+        "zhudatuan/staging/full/registration/owner/password"
+      ]
+    }
+  },
+  "kms": {
+    "migration": {
+      "bearerToken": "REPLACE_FULL_MIGRATION_KMS_BEARER_TOKEN_00000000000013",
+      "resources": [
+        "channel/distributor",
+        "identity/wechat",
+        "partner/address",
+        "voucher/code"
+      ]
+    }
+  }
+}

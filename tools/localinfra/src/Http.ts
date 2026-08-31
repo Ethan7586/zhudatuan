@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { createServer, type Server as HttpsServer } from 'node:https';
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
@@ -17,6 +17,7 @@ export interface LocalResponse {
 }
 
 export type LocalHandler = (request: LocalRequest) => Promise<LocalResponse>;
+export type LocalPreflight = (request: Omit<LocalRequest, 'body'>) => void;
 
 export interface LocalTls {
   readonly certificateFile: string;
@@ -30,12 +31,19 @@ export class LocalHttpError extends Error {
   }
 }
 
-export async function startLocalHttps(name: string, port: number, handler: LocalHandler, tls: LocalTls, maximumBodyBytes = 9 * 1024 * 1024): Promise<HttpsServer> {
+export async function startLocalHttps(
+  name: string,
+  port: number,
+  handler: LocalHandler,
+  tls: LocalTls,
+  maximumBodyBytes = 9 * 1024 * 1024,
+  preflight?: LocalPreflight,
+): Promise<HttpsServer> {
   if (!/^[a-z][a-z0-9]{2,31}$/.test(name) || !Number.isSafeInteger(port) || port < 1024 || port > 65_535) {
     throw new Error('LOCAL_HTTPS_CONFIGURATION_INVALID');
   }
   const server = createServer({ key: await readFile(tls.keyFile), cert: await readFile(tls.certificateFile) }, (request, response) => {
-    void dispatch(request, response, handler, maximumBodyBytes);
+    void dispatch(request, response, handler, maximumBodyBytes, preflight);
   });
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
@@ -72,10 +80,21 @@ export function jsonBody(request: LocalRequest): Readonly<Record<string, unknown
 }
 
 export function equalSecret(actual: string | undefined, expected: string): boolean {
-  if (actual === undefined) return false;
-  const left = Buffer.from(actual);
-  const right = Buffer.from(expected);
-  return left.length === right.length && timingSafeEqual(left, right);
+  const left = createHash('sha256').update(actual ?? '').digest();
+  const right = createHash('sha256').update(expected).digest();
+  return timingSafeEqual(left, right) && actual !== undefined;
+}
+
+export function requireBearerAuthorization(headers: Readonly<Record<string, string>>, expected: string): void {
+  const authorization = headers.authorization;
+  const actual = authorization?.slice(0, 7).toLowerCase() === 'bearer ' ? authorization.slice(7) : undefined;
+  if (!equalSecret(actual, expected)) throw new LocalHttpError(401, 'WORKLOAD_AUTHENTICATION_REQUIRED');
+}
+
+export function workloadBearerPreflight(expected: string): LocalPreflight {
+  return request => {
+    if (request.url.pathname !== '/health/ready') requireBearerAuthorization(request.headers, expected);
+  };
 }
 
 export function canonicalRecord(value: unknown): string {
@@ -87,14 +106,24 @@ export function canonicalRecord(value: unknown): string {
   return JSON.stringify(Object.fromEntries(entries));
 }
 
-async function dispatch(request: IncomingMessage, response: ServerResponse, handler: LocalHandler, maximumBodyBytes: number): Promise<void> {
+async function dispatch(
+  request: IncomingMessage,
+  response: ServerResponse,
+  handler: LocalHandler,
+  maximumBodyBytes: number,
+  preflight?: LocalPreflight,
+): Promise<void> {
   try {
-    const body = await readBody(request, maximumBodyBytes);
-    const result = await handler({
-      body,
+    const metadata = {
       headers: normalizeHeaders(request.headers),
       method: request.method ?? 'GET',
       url: new URL(request.url ?? '/', 'https://127.0.0.1'),
+    };
+    preflight?.(metadata);
+    const body = await readBody(request, maximumBodyBytes);
+    const result = await handler({
+      body,
+      ...metadata,
     });
     response.writeHead(result.status, {
       'cache-control': 'no-store',

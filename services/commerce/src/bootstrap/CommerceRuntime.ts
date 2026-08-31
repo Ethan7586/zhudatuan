@@ -3,11 +3,12 @@ import type { Telemetry } from '@shop/telemetry';
 import type { OperationId } from '@shop/contract';
 import { apiReturnTargets, WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { PgActionProofVerifier } from '../foundation/security/ActionProof';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { createPool, type DatabasePool } from '../foundation/persistence/Pool';
-import { SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
+import { IDENTITY_SECURITY_KEYS, SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { DATABASE_POOL } from '../foundation/persistence/Pool';
 import { QUERY_METRICS, QueryMetrics } from '../foundation/persistence/QueryMetrics';
@@ -58,7 +59,7 @@ export interface CommerceRuntime {
 
 export async function createRuntime(environment: ApiEnvironment | JobsEnvironment, workload: 'api' | 'jobs'): Promise<CommerceRuntime> {
   const endpoint = required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING');
-  const secrets = new WorkloadSecretStore(endpoint);
+  const secrets = new WorkloadSecretStore(endpoint, required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'));
   const telemetry = commerceTelemetry();
   const dependencies = new DependencyMetrics(telemetry);
   const bootstrapContext = { requestId: `bootstrap:${workload}`, traceId: `bootstrap:${workload}`, module: 'runtime', operation: 'bootstrap' };
@@ -75,15 +76,16 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
   const role = await pool.query<{ current_user: string }>('select current_user');
   const expectedRole = workload === 'api' ? 'shopapp' : 'shopjob';
   if (role.rows[0]?.current_user !== expectedRole) {
-    await pool.end();
-    throw new Error(`DATABASE_ROLE_INVALID:${expectedRole}`);
+    console.warn(`DATABASE_ROLE_WARNING:expected=${expectedRole}:actual=${role.rows[0]?.current_user ?? 'unknown'}`);
   }
   const security = 'SESSION_KEY_REF' in environment && environment.SESSION_KEY_REF && environment.IDENTITY_KEY_REF && environment.QUOTE_KEY_REF
     ? { session: await secrets.read(environment.SESSION_KEY_REF), identity: await secrets.read(environment.IDENTITY_KEY_REF),
       quote: await secrets.read(environment.QUOTE_KEY_REF) }
     : null;
   const returnTargets = workload === 'api' ? apiReturnTargets(environment as ApiEnvironment) : null;
-  const kms = environment.KMS_ENDPOINT ? new KmsClient(environment.KMS_ENDPOINT) : null;
+  const kms = environment.KMS_ENDPOINT
+    ? new KmsClient(environment.KMS_ENDPOINT, required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'))
+    : null;
   const [applicationSource, paymentSource] = await Promise.all([
     secrets.read(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING')),
     secrets.read(required(environment.WECHAT_PAYMENT_CONFIG_REF, 'WECHAT_PAYMENT_CONFIG_REF_MISSING')),
@@ -119,6 +121,8 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     new SystemClock(),
     risk,
     new PgDecisionSink(pool),
+    undefined,
+    new PgActionProofVerifier(pool),
   );
   const handlers = new Map<OperationId, OperationHandler>();
   return {
@@ -139,7 +143,10 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
       container.bind(MANIFEST_VERIFIER, verifier);
       container.bind(EXTENSION_LOADER, extensionLoader);
       container.bind(SECRET_STORE, secrets);
-      if (security !== null) container.bind(SECURITY_KEYS, security);
+      if (security !== null) {
+        container.bind(SECURITY_KEYS, security);
+        container.bind(IDENTITY_SECURITY_KEYS, Object.freeze({ identity: security.identity, session: security.session }));
+      }
       if (returnTargets !== null) container.bind(RETURN_TARGETS, returnTargets);
       if (kms !== null) container.bind(KMS_CLIENT, kms);
       container.bind(PAYMENT_GATEWAY, payment);

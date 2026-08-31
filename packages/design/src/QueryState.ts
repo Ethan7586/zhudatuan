@@ -9,10 +9,11 @@ export interface QueryStateInput {
 
 export function queryCondition(state: QueryStateInput): ResourceCondition {
   if (state.error !== null && state.error !== undefined) {
+    const status = responseStatus(state.error);
+    if (status === 401) return 'unauthenticated';
+    if (status === 403) return 'denied';
     if (state.fetching) return 'retry';
     if (!state.empty) return 'stale';
-    const status = responseStatus(state.error);
-    if (status === 403) return 'denied';
     if (status === 404) return 'notfound';
     if (status === 409 || status === 412) return 'conflict';
     if (status === 429) return 'ratelimited';

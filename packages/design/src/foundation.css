@@ -1,0 +1,197 @@
+.swsurface {
+  min-width: 0;
+  border: var(--sw-border-width) solid var(--sw-border);
+  background: var(--sw-surface-raised);
+  color: var(--sw-text);
+}
+
+.swsurface[data-depth='flat'] {
+  box-shadow: none;
+}
+.swsurface[data-depth='low'] {
+  box-shadow: var(--sw-shadow-surface-low);
+}
+.swsurface[data-depth='raised'] {
+  box-shadow: var(--sw-shadow-surface-raised);
+}
+.swsurface[data-depth='floating'] {
+  box-shadow: var(--sw-shadow-floating);
+}
+.swsurface[data-radius='small'] {
+  border-radius: var(--sw-radius-sm);
+}
+.swsurface[data-radius='medium'] {
+  border-radius: var(--sw-radius-md);
+}
+.swsurface[data-radius='large'] {
+  border-radius: var(--sw-radius-lg);
+}
+.swsurface[data-radius='extraLarge'] {
+  border-radius: var(--sw-radius-xl);
+}
+.swsurface[data-padding='none'] {
+  padding: 0;
+}
+.swsurface[data-padding='compact'] {
+  padding: var(--sw-space-1-5);
+}
+.swsurface[data-padding='default'] {
+  padding: var(--sw-space-2);
+}
+.swsurface[data-padding='spacious'] {
+  padding: var(--sw-space-3);
+}
+
+.swdivider {
+  flex: none;
+  border: 0;
+  background: var(--sw-divider);
+}
+
+.swdivider[data-orientation='horizontal'] {
+  width: auto;
+  height: var(--sw-border-width);
+  margin: var(--sw-space-2) 0;
+}
+
+.swdivider[data-orientation='vertical'] {
+  width: var(--sw-border-width);
+  height: auto;
+  min-height: var(--sw-space-3);
+  margin: 0 var(--sw-space-2);
+  align-self: stretch;
+}
+
+.swdivider[data-tone='subtle'] {
+  background: var(--sw-divider-subtle);
+}
+.swdivider[data-tone='strong'] {
+  background: var(--sw-divider-strong);
+}
+.swdivider[data-tone='inverse'] {
+  background: var(--sw-divider-inverse);
+}
+.swdivider[data-inset='content'][data-orientation='horizontal'] {
+  margin-inline: var(--sw-space-2);
+}
+.swdivider[data-inset='icon'][data-orientation='horizontal'] {
+  margin-left: calc(var(--sw-icon-container) + var(--sw-space-2));
+}
+
+.swicon {
+  display: inline-grid;
+  width: var(--sw-icon-size-md);
+  height: var(--sw-icon-size-md);
+  flex: 0 0 auto;
+  color: currentColor;
+  place-items: center;
+  vertical-align: middle;
+}
+
+.swicon > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke-width: var(--sw-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.swicon[data-size='extraSmall'] {
+  width: var(--sw-icon-size-xs);
+  height: var(--sw-icon-size-xs);
+}
+.swicon[data-size='small'] {
+  width: var(--sw-icon-size-sm);
+  height: var(--sw-icon-size-sm);
+}
+.swicon[data-size='medium'] {
+  width: var(--sw-icon-size-md);
+  height: var(--sw-icon-size-md);
+}
+.swicon[data-size='standard'] {
+  width: var(--sw-icon-size);
+  height: var(--sw-icon-size);
+}
+.swicon[data-size='large'] {
+  width: var(--sw-icon-size-lg);
+  height: var(--sw-icon-size-lg);
+}
+.swicon[data-size='extraLarge'] {
+  width: var(--sw-icon-size-xl);
+  height: var(--sw-icon-size-xl);
+}
+.swicon[data-size='hero'] {
+  width: var(--sw-icon-size-hero);
+  height: var(--sw-icon-size-hero);
+}
+.swicon[data-tone='brand'] {
+  color: var(--sw-brand);
+}
+.swicon[data-tone='muted'] {
+  color: var(--sw-muted);
+}
+.swicon[data-tone='success'] {
+  color: var(--sw-success-strong);
+}
+.swicon[data-tone='warning'] {
+  color: var(--sw-warning-strong);
+}
+.swicon[data-tone='danger'] {
+  color: var(--sw-danger-strong);
+}
+.swicon[data-tone='inverse'] {
+  color: var(--sw-text-inverse);
+}
+
+.swdisplay,
+.swheading,
+.swtitle,
+.swbody,
+.swcaption,
+.swoverline,
+.swamount {
+  margin: 0;
+}
+.swdisplay {
+  font-size: var(--sw-font-size-display);
+  font-weight: var(--sw-font-weight-bold);
+  line-height: var(--sw-line-height-display);
+  letter-spacing: var(--sw-letter-spacing-tight);
+}
+.swheading {
+  font-size: var(--sw-font-size-h1);
+  font-weight: var(--sw-font-weight-bold);
+  line-height: var(--sw-line-height-h1);
+  letter-spacing: var(--sw-letter-spacing-tight);
+}
+.swtitle {
+  font-size: var(--sw-font-size-h2);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-h2);
+}
+.swbody {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body);
+  line-height: var(--sw-line-height-body);
+}
+.swcaption {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+.swoverline {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-overline);
+  font-weight: var(--sw-font-weight-bold);
+  line-height: var(--sw-line-height-overline);
+  letter-spacing: var(--sw-letter-spacing-overline);
+  text-transform: uppercase;
+}
+.swamount {
+  font-family: var(--sw-font-financial);
+  font-size: var(--sw-font-size-amount);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--sw-font-weight-bold);
+  line-height: var(--sw-line-height-amount);
+}
