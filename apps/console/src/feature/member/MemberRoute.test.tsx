@@ -21,7 +21,7 @@ const server = setupServer(
   http.put('*/api/v1/identity/members/:membershipid/registration', async ({ request }) => {
     resetWrites.push({ body: await request.clone().json(), headers: request.headers });
     return HttpResponse.json(resetReceipt());
-  }),
+  })
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -41,6 +41,10 @@ describe('member administrator invitation', () => {
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '成员管理' });
+    expect(screen.getByRole('heading', { name: '会员与权限控制中心' })).toBeTruthy();
+    expect(screen.getByText('角色模板')).toBeTruthy();
+    expect(screen.getByText('数据范围')).toBeTruthy();
+    expect(screen.getByText('明确禁止')).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
