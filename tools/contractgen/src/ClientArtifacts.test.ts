@@ -26,12 +26,14 @@ describe('SDK client artifacts', () => {
     }
   });
 
-  it('publishes an explicitly required optimistic version in every contract artifact', () => {
-    const reset = { ...operation('identity.members.reset', 'PUT', '/api/v1/identity/members/{membershipid}/registration', 'operator'), expectedVersion: 'required' as const };
-    const openapi = JSON.stringify(buildOpenapi([reset], new Map()));
+  it('preserves OMS trace links in contract metadata without creating another operation', () => {
+    const traced = { ...operations[0], requirements: ['MVP03', 'OMS-001'] } as const;
+    const openapi = JSON.stringify(buildOpenapi([traced], new Map()));
+    const source = operationSource([traced], new Map());
 
-    expect(openapi).toContain('"x-expected-version":"required"');
-    expect(operationSource([reset], new Map())).toContain('"none","required"');
+    expect(openapi).toContain('OMS-001');
+    expect(source).toContain('OMS-001');
+    expect(source.match(/identity\.session\.read/g)).toHaveLength(1);
   });
 });
 

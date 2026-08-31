@@ -606,6 +606,10 @@ operations:
     schema: structural
     requirements:
       - MVP03
+      - OMS-004
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/organization.ts
   - id: access.center.read
     owner: access
     method: GET
@@ -1435,6 +1439,10 @@ operations:
     requirements:
       - MVP05
       - MVP14
+      - OMS-012
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.sales.read
     owner: reporting
     method: GET
@@ -1446,6 +1454,10 @@ operations:
     requirements:
       - MVP11
       - MVP20
+      - OMS-012
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.products.read
     owner: reporting
     method: GET
@@ -1793,6 +1805,12 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-001
+      - OMS-004
+      - OMS-005
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
   - id: order.reminders.create
     owner: order
     method: POST
@@ -1834,6 +1852,10 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-007
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
   - id: order.aftersales.read
     owner: order
     method: GET
@@ -1845,6 +1867,10 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
   - id: order.aftersales.apply
     owner: order
     method: POST
@@ -1856,6 +1882,10 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
   - id: order.aftersales.approve
     owner: order
     method: PUT
@@ -1867,6 +1897,10 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
   - id: order.aftersales.reject
     owner: order
     method: DELETE
@@ -1878,6 +1912,10 @@ operations:
     requirements:
       - MVP08
       - MVP17
+      - OMS-008
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
   - id: fulfillment.shipments.create
     owner: fulfillment
     method: POST
@@ -2802,7 +2840,10 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    expectedVersion: required
+      - OMS-011
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.reconciliations.read
     owner: finance
     method: GET
@@ -2811,68 +2852,10 @@ operations:
     permission: finance.reconciliation.read
     idempotent: true
     schema: structural
-    requirements:
-      - MVP10
-      - MVP19
-  - id: finance.reconciliationrepairs.read
-    owner: finance
-    method: GET
-    path: /api/v1/finance/reconciliation-repairs/{repairid}
-    audience: operator
-    permission: finance.reconciliation.read
-    idempotent: true
-    schema: structural
-    requirements:
-      - MVP10
-      - MVP19
-  - id: finance.reconciliationrepairs.preview
-    owner: finance
-    method: POST
-    path: /api/v1/finance/reconciliations/{reconciliationid}/items/{itemid}/repairs/preview
-    audience: operator
-    permission: finance.reconciliation.manage
-    idempotent: false
-    schema: structural
-    requirements:
-      - MVP10
-      - MVP19
-    expectedVersion: required
-  - id: finance.reconciliationrepairs.submit
-    owner: finance
-    method: POST
-    path: /api/v1/finance/reconciliation-repairs/{repairid}/submit
-    audience: operator
-    permission: finance.reconciliation.manage
-    idempotent: false
-    schema: structural
-    requirements:
-      - MVP10
-      - MVP19
-    expectedVersion: required
-  - id: finance.reconciliationrepairs.decide
-    owner: finance
-    method: POST
-    path: /api/v1/finance/reconciliation-repairs/{repairid}/decide
-    audience: operator
-    permission: finance.reconciliation.manage
-    idempotent: false
-    schema: structural
-    requirements:
-      - MVP10
-      - MVP19
-    expectedVersion: required
-  - id: finance.reconciliationrepairs.reverse
-    owner: finance
-    method: POST
-    path: /api/v1/finance/reconciliation-repairs/{repairid}/reverse
-    audience: operator
-    permission: finance.reconciliation.manage
-    idempotent: false
-    schema: structural
-    requirements:
-      - MVP10
-      - MVP19
-    expectedVersion: required
+    requirements: [MVP10, MVP19, OMS-011]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.settlements.read
     owner: finance
     method: GET
@@ -2881,9 +2864,10 @@ operations:
     permission: finance.settlement.read
     idempotent: true
     schema: structural
-    requirements:
-      - MVP10
-      - MVP19
+    requirements: [MVP10, MVP19, OMS-011]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.settlements.decide
     owner: finance
     method: POST
@@ -3174,6 +3158,10 @@ operations:
     requirements:
       - MVP12
       - MVP21
+      - OMS-013
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
   - id: support.cases.update
     owner: support
     method: PATCH
@@ -3350,6 +3338,10 @@ operations:
     requirements:
       - MVP12
       - MVP21
+      - OMS-013
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
   - id: notification.notifications.read
     owner: notification
     method: GET

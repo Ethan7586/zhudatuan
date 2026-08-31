@@ -14184,7 +14184,8 @@
         "x-permission": "finance.reconciliation.read",
         "x-requirements": [
           "MVP10",
-          "MVP19"
+          "MVP19",
+          "OMS-011"
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -14336,7 +14337,8 @@
         "x-permission": "finance.reconciliation.manage",
         "x-requirements": [
           "MVP10",
-          "MVP19"
+          "MVP19",
+          "OMS-011"
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -14629,7 +14631,8 @@
         "x-permission": "finance.settlement.read",
         "x-requirements": [
           "MVP10",
-          "MVP19"
+          "MVP19",
+          "OMS-011"
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -23631,7 +23634,10 @@
         "x-permission": "order.read",
         "x-requirements": [
           "MVP08",
-          "MVP17"
+          "MVP17",
+          "OMS-001",
+          "OMS-004",
+          "OMS-005"
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -23942,7 +23948,8 @@
         "x-permission": "order.aftersale.apply",
         "x-requirements": [
           "MVP08",
-          "MVP17"
+          "MVP17",
+          "OMS-008"
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -24235,7 +24242,8 @@
         "x-permission": "order.aftersale.read",
         "x-requirements": [
           "MVP08",
-          "MVP17"
+          "MVP17",
+          "OMS-008"
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -24392,7 +24400,8 @@
         "x-permission": "order.aftersale.decide",
         "x-requirements": [
           "MVP08",
-          "MVP17"
+          "MVP17",
+          "OMS-008"
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -24545,7 +24554,8 @@
         "x-permission": "order.aftersale.decide",
         "x-requirements": [
           "MVP08",
-          "MVP17"
+          "MVP17",
+          "OMS-008"
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -24690,7 +24700,8 @@
         "x-permission": "order.export",
         "x-requirements": [
           "MVP08",
-          "MVP17"
+          "MVP17",
+          "OMS-007"
         ],
         "x-risk": "critical",
         "x-schema-fidelity": "structural",
@@ -24821,7 +24832,8 @@
         "x-idempotent": true,
         "x-permission": "organization.layer.read",
         "x-requirements": [
-          "MVP03"
+          "MVP03",
+          "OMS-004"
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -30254,7 +30266,8 @@
         "x-permission": "reporting.dashboard.read",
         "x-requirements": [
           "MVP05",
-          "MVP14"
+          "MVP14",
+          "OMS-012"
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -31066,7 +31079,8 @@
         "x-permission": "reporting.sales.read",
         "x-requirements": [
           "MVP11",
-          "MVP20"
+          "MVP20",
+          "OMS-012"
         ],
         "x-risk": "low",
         "x-schema-fidelity": "structural",
@@ -32495,7 +32509,8 @@
         "x-permission": "support.case.read",
         "x-requirements": [
           "MVP12",
-          "MVP21"
+          "MVP21",
+          "OMS-013"
         ],
         "x-risk": "elevated",
         "x-schema-fidelity": "structural",
@@ -33398,7 +33413,8 @@
         "x-permission": "support.history.read",
         "x-requirements": [
           "MVP12",
-          "MVP21"
+          "MVP21",
+          "OMS-013"
         ],
         "x-risk": "high",
         "x-schema-fidelity": "structural",
