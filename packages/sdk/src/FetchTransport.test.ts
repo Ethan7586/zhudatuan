@@ -11,7 +11,7 @@ describe('FetchTransport', () => {
   it('binds the native fetch receiver for strict browser implementations', async () => {
     const fetcher = vi.fn(function (this: typeof globalThis) {
       if (this !== globalThis) throw new TypeError('Illegal invocation');
-      return Promise.resolve(new Response('{}', { status: 200 }));
+      return Promise.resolve(new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }));
     });
     globalThis.fetch = fetcher;
 
@@ -29,7 +29,7 @@ describe('FetchTransport', () => {
     const controller = new AbortController();
     const fetcher = vi.fn((_url: string | URL | Request, init?: RequestInit) => {
       expect(init?.signal).toBe(controller.signal);
-      return Promise.resolve(new Response('{}', { status: 200 }));
+      return Promise.resolve(new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }));
     });
 
     await new FetchTransport(fetcher).send({

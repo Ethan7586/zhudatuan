@@ -1,9 +1,28 @@
 import { ResourcePanel } from '@shop/design';
+import { ApiError } from '@shop/sdk/error';
+import { useEffect } from 'react';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
+import { NAVIGATION_CATALOG_HASH } from '../generated/NavigationBinding';
+import { NavigationEmpty } from '../shell/NavigationEmpty';
+import { NavigationError } from '../shell/NavigationError';
 
 export function RouteError() {
   const error = useRouteError();
-  const status = isRouteErrorResponse(error) ? error.status : 500;
+  const status = isRouteErrorResponse(error) ? error.status : error instanceof ApiError ? error.status : 500;
+  const data: unknown = isRouteErrorResponse(error) ? (error.data as unknown) : undefined;
+  const code: string = error instanceof ApiError ? error.code : routeCode(data);
+  const catalogMismatch = status === 409 || code === 'NAVIGATION_CATALOG_MISMATCH';
+  useEffect(() => {
+    if (!catalogMismatch) return;
+    const key = 'console-navigation-refresh';
+    if (window.sessionStorage.getItem(key) === NAVIGATION_CATALOG_HASH) return;
+    window.sessionStorage.setItem(key, NAVIGATION_CATALOG_HASH);
+    window.location.reload();
+  }, [catalogMismatch]);
+  if (status === 403 && code.includes('NAVIGATION_EMPTY')) return <NavigationEmpty />;
+  if (catalogMismatch) return <NavigationError kind="catalog" />;
+  if (status === 401) return <NavigationError kind="session" />;
+  if (status >= 500) return <NavigationError kind="dependency" />;
   const denied = status === 401 || status === 403;
   const missing = status === 404;
   const condition = denied ? 'denied' : missing ? 'notfound' : 'failure';
@@ -15,4 +34,11 @@ export function RouteError() {
       </ResourcePanel>
     </main>
   );
+}
+
+function routeCode(data: unknown): string {
+  if (typeof data === 'string') return data;
+  if (data === null || typeof data !== 'object' || Array.isArray(data)) return '';
+  if ('code' in data && typeof data.code === 'string') return data.code;
+  return '';
 }

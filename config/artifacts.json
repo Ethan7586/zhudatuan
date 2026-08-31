@@ -1,16 +1,57 @@
 {
-  "schema": "zhudatuan.artifacts.v1",
-  "lockedAt": "2026-08-27",
-  "canonical": {
-    "applications": ["apps/console"],
-    "services": ["services/commerce"],
-    "database": "database/supabase",
-    "releaseEligible": false
-  },
-  "compatibility": {
-    "applications": ["apps/auth-web", "apps/storefront-web"],
-    "services": ["services/commerce-api"],
-    "database": "database/storefront-compatibility/supabase",
-    "releaseEligible": false
+  "schema": "zhudatuan.artifacts.v3",
+  "lockedAt": "2026-08-30",
+  "applications": ["apps/auth", "apps/console", "apps/storefront"],
+  "service": "services/commerce",
+  "database": "database/migrations",
+  "authorities": [
+    "docs/福利商城功能清单.xlsx",
+    "docs/architecture/商城优化方案.md",
+    "config/requirements.yml",
+    "config/visuals.yml",
+    "config/navigation.yml",
+    "config/capacity.yml",
+    "config/cache.yml",
+    "config/telemetry.yml",
+    "config/naming.yml",
+    "packages/contract/definitions/operations.yml",
+    "packages/contract/definitions/events.yml",
+    "packages/contract/definitions/errors.yml",
+    "packages/contract/definitions/capabilities.yml",
+    "packages/contract/definitions/permissions.yml"
+  ],
+  "generated": [
+    "docs/requirements/mapping.json",
+    "docs/requirements/requirements.yml",
+    "docs/requirements/mvp.yml",
+    "docs/requirements/providers.yml",
+    "docs/requirements/frontend.yml",
+    "docs/requirements/trace.yml",
+    "packages/contract/src/RequirementCatalog.ts",
+    "services/commerce/src/modules/navigation/infrastructure/catalog/NavigationCatalog.ts",
+    "apps/console/src/generated/NavigationBinding.ts",
+    "apps/storefront/src/generated/NavigationBinding.ts",
+    "evidence/navigation/catalog.json",
+    "packages/contract/openapi.json",
+    "packages/contract/events.json",
+    "packages/contract/src/operations/CommerceOperations.ts",
+    "packages/contract/src/operations/CommerceSchemas.ts",
+    "packages/contract/src/events/CommerceEvents.ts",
+    "packages/contract/src/EventSerializer.ts",
+    "packages/contract/src/ContractIdentity.ts",
+    "packages/contract/src/ErrorContract.ts",
+    "packages/authz/src/PermissionCatalog.ts",
+    "packages/sdk/src/operations",
+    "services/commerce/src/foundation/interface/OperationController.ts",
+    "services/commerce/src/generated/HandlerCatalog.ts",
+    "services/commerce/src/generated/EventHandlers.ts",
+    "services/commerce/src/app/events.ts",
+    "database/contracts/current.sql",
+    "docs/evidence/frontend/files.json"
+  ],
+  "extensions": ["extensions/channel", "extensions/notification", "extensions/payment"],
+  "eligibility": {
+    "source": "evidence/releases/index.json",
+    "derived": true
   }
 }

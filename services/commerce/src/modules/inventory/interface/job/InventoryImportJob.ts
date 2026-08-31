@@ -2,7 +2,7 @@ import { BatchImportProcessor } from '../../../../foundation/application/BatchIm
 import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { PgInventoryImport } from '../../infrastructure/persistence/PgInventoryImport';
-import type { CatalogSku } from '../../../catalog/CatalogModule';
+import type { CatalogSku } from '../../../catalog/public/index';
 
 export class InventoryImportProcessor extends BatchImportProcessor {
   constructor(pool: DatabasePool, objects: ObjectStore, catalog: CatalogSku) {

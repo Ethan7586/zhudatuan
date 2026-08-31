@@ -5,13 +5,13 @@ import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { FinanceColumnSettings } from './FinanceColumnSettings';
 import { FinanceFilters, emptyFinanceFilter } from './FinanceFilters';
-import { FinanceHeader, type FinanceHeaderAction } from './FinanceHeader';
+import { FinanceHeader } from './FinanceHeader';
 import { FinanceIcon } from './FinanceIcon';
 import { financeKey, readFinance } from './FinanceQuery';
 import { FinanceTabs } from './FinanceTabs';
 import { FinancePagination, ReconciliationTable, defaultFinanceColumns, type FinanceColumnKey } from './ReconciliationTable';
 import { ReconciliationDrawer } from './ReconciliationDrawer';
-import { financeReconciliationKey, isFinancePreviewContext, readFinanceReconciliations } from './FinanceWorkspaceQuery';
+import { financeReconciliationKey, readFinanceReconciliations } from './FinanceWorkspaceQuery';
 import { FinanceTabSchema, type FinanceFilter, type FinanceTab } from './FinanceWorkspaceSchema';
 import './FinanceWorkspace.css';
 import './FinanceFilters.css';
@@ -20,7 +20,7 @@ import './FinanceDrawer.css';
 import './FinanceReview.css';
 import './FinanceResponsive.css';
 
-const previewOnlyKeys = ['q', 'reconPeriod', 'channel', 'mall', 'status', 'difference'] as const;
+const unsupportedFilterKeys = ['q', 'reconPeriod', 'channel', 'mall', 'status', 'difference'] as const;
 
 export function Component() {
   const context = useConsoleContext();
@@ -28,15 +28,13 @@ export function Component() {
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<string>>(new Set());
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<FinanceColumnKey>>(defaultFinanceColumns);
   const [columnsOpen, setColumnsOpen] = useState(false);
-  const [headerAction, setHeaderAction] = useState<FinanceHeaderAction>();
   const scopeKey = `${context.scope.kind}:${context.scope.id}`;
   const previousScope = useRef(scopeKey);
-  const previewContext = isFinancePreviewContext(context);
   const tab = readTab(search);
-  const filter = readFilter(search, previewContext);
+  const filter = emptyFinanceFilter;
   const limit = readLimit(search.get('limit'));
   const cursor = search.get('cursor') ?? undefined;
-  const queryInput = { ...filter, limit, ...(cursor === undefined ? {} : { cursor }) };
+  const queryInput = { limit, ...(cursor === undefined ? {} : { cursor }) };
   const query = useQuery({
     queryKey: financeReconciliationKey(context, queryInput),
     queryFn: ({ signal }) => readFinanceReconciliations(context, queryInput, signal),
@@ -47,25 +45,22 @@ export function Component() {
     queryFn: ({ signal }) => readFinance(context, signal),
   });
   const page = query.data;
-  const previewEnabled = previewContext && page?.preview?.source === 'local-preview';
-  const overviewPreview = previewContext && overviewQuery.data?.preview?.source === 'local-preview' ? overviewQuery.data.preview : undefined;
-  const statusSummary = overviewPreview ?? (previewEnabled ? page?.preview : undefined);
   const selectedId = search.get('selected') ?? undefined;
   const selectedRow = page?.items.find((row) => row.id === selectedId);
 
   useEffect(() => {
     const scopeChanged = previousScope.current !== scopeKey;
     previousScope.current = scopeKey;
-    const hasPreviewOnly = previewOnlyKeys.some((key) => search.has(key));
-    if (!scopeChanged && (previewContext || !hasPreviewOnly)) return;
+    const hasUnsupportedFilter = unsupportedFilterKeys.some((key) => search.has(key));
+    if (!scopeChanged && !hasUnsupportedFilter) return;
     const next = new URLSearchParams(search);
     if (scopeChanged) {
       next.delete('cursor');
       next.delete('selected');
     }
-    if (!previewContext) previewOnlyKeys.forEach((key) => next.delete(key));
+    unsupportedFilterKeys.forEach((key) => next.delete(key));
     setSearch(next, { replace: true });
-  }, [previewContext, scopeKey, search, setSearch]);
+  }, [scopeKey, search, setSearch]);
 
   const updateSearch = (mutate: (next: URLSearchParams) => void, replace = false) => {
     setSearch(
@@ -134,12 +129,7 @@ export function Component() {
         财务与对账系统
       </span>
       <FinanceHeader
-        summary={statusSummary}
-        previewEnabled={previewContext}
         fetching={query.isFetching || overviewQuery.isFetching}
-        action={headerAction}
-        onAction={setHeaderAction}
-        onCloseAction={() => setHeaderAction(undefined)}
         onRefresh={() => {
           void query.refetch();
           void overviewQuery.refetch();
@@ -151,15 +141,13 @@ export function Component() {
       ) : (
         <>
           <div className="financetoolbararea">
-            <FinanceFilters value={filter} previewEnabled={previewContext} facets={previewEnabled ? page?.preview?.facets : undefined} columnsOpen={columnsOpen} onApply={applyFilters} onColumns={() => setColumnsOpen((open) => !open)} />
+            <FinanceFilters value={filter} columnsOpen={columnsOpen} onApply={applyFilters} onColumns={() => setColumnsOpen((open) => !open)} />
             <FinanceColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
           </div>
-          {!previewContext ? (
-            <p className="financeproductionboundary">
-              <FinanceIcon name="shield" />
-              生产范围仅展示服务端实际返回；关键词与业务筛选等待权威读合同。
-            </p>
-          ) : null}
+          <p className="financeproductionboundary">
+            <FinanceIcon name="shield" />
+            当前仅展示服务端实际返回；关键词与业务筛选等待权威读合同。
+          </p>
           {query.isPending ? (
             <div className="financequerystate" role="status">
               正在读取对账权威快照…
@@ -186,13 +174,13 @@ export function Component() {
           ) : null}
           {page === undefined || page.items.length === 0 ? null : (
             <>
-              <ReconciliationTable page={page} previewEnabled={previewEnabled} visible={visibleColumns} selected={selectedRows} onToggle={toggleRow} onToggleAll={toggleAll} onOpen={openRow} />
-              <FinancePagination page={page} previewEnabled={previewEnabled} limit={limit} onLimit={setLimit} onCursor={setCursor} />
+              <ReconciliationTable page={page} visible={visibleColumns} selected={selectedRows} onToggle={toggleRow} onToggleAll={toggleAll} onOpen={openRow} />
+              <FinancePagination page={page} limit={limit} onLimit={setLimit} onCursor={setCursor} />
             </>
           )}
         </>
       )}
-      <ReconciliationDrawer row={selectedRow} previewEnabled={previewEnabled} onClose={closeDrawer} />
+      <ReconciliationDrawer row={selectedRow} onClose={closeDrawer} />
     </section>
   );
 }
@@ -209,7 +197,7 @@ function UnavailableTab({ tab }: Readonly<{ tab: Exclude<FinanceTab, 'payments'>
       <FinanceIcon name="shield" />
       <p>CAPABILITY UNAVAILABLE</p>
       <h2>{detail[0]}</h2>
-      <span>{detail[1]} 本页不会用演示数据替代生产事实。</span>
+      <span>{detail[1]} 本页不会推断服务端未返回的事实。</span>
     </section>
   );
 }
@@ -217,10 +205,6 @@ function UnavailableTab({ tab }: Readonly<{ tab: Exclude<FinanceTab, 'payments'>
 function readTab(search: URLSearchParams): FinanceTab {
   const parsed = FinanceTabSchema.safeParse(search.get('tab') ?? 'payments');
   return parsed.success ? parsed.data : 'payments';
-}
-function readFilter(search: URLSearchParams, preview: boolean): FinanceFilter {
-  if (!preview) return emptyFinanceFilter;
-  return { q: search.get('q') ?? '', period: search.get('reconPeriod') ?? '', channel: search.get('channel') ?? '', mall: search.get('mall') ?? '', status: search.get('status') ?? '', difference: search.get('difference') ?? '' };
 }
 function readLimit(value: string | null): number {
   const parsed = Number(value ?? 50);

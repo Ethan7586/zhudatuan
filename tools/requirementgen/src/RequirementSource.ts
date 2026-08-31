@@ -1,3 +1,7 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { parse } from 'yaml';
+
 export interface SheetDefinition {
   readonly name: string;
   readonly label: string;
@@ -10,66 +14,143 @@ export interface SheetDefinition {
 
 export interface ProviderDefinition {
   readonly id: string;
-  readonly label: string;
-  readonly priority: 1 | 3 | 4;
-  readonly vendor?: string;
+  readonly row: number;
+  readonly core?: 'jdcore' | 'cakecore' | 'wanliancore' | 'tmallcore' | 'bookcore' | 'local';
 }
 
-const range = (start: number, end: number): readonly number[] =>
-  Object.freeze(Array.from({ length: end - start + 1 }, (_, index) => start + index));
+export interface MvpDefinition {
+  readonly id: `MVP${Uppercase<string>}`;
+  readonly title: string;
+  readonly source: Readonly<{
+    sheet: 'MVP上线功能清单';
+    row: number;
+    range: string;
+  }>;
+  readonly status: 'Designed' | 'Implemented' | 'Integrated' | 'Accepted' | 'Released';
+  readonly release: 'required' | 'nonblocking';
+  readonly modules: readonly string[];
+  readonly operations: readonly string[];
+  readonly journeys: readonly string[];
+  readonly providers: readonly string[];
+  readonly clarifications: readonly string[];
+  readonly runbook: string;
+  readonly tables: readonly string[];
+}
 
-export const SHEETS: readonly SheetDefinition[] = Object.freeze([
-  { name: '1-平台层', label: '平台层', prefix: 'PLAT', rows: range(4, 71), level: 'platform', role: 'platformoperator', scope: 'platform' },
-  { name: '2-分销层', label: '分销层', prefix: 'DIST', rows: range(4, 44), level: 'distribution', role: 'distributoroperator', scope: 'distributor' },
-  { name: '3-集团', label: '集团', prefix: 'GROUP', rows: range(4, 71), level: 'enterprise', role: 'enterpriseoperator', scope: 'enterprise' },
-  { name: '4-、商城', label: '商城', prefix: 'MALL', rows: range(4, 56).filter((row) => row !== 54), level: 'mall', role: 'malloperator', scope: 'mall' },
-  { name: '门店后台', label: '门店后台', prefix: 'STORE', rows: range(4, 23), level: 'store', role: 'storeoperator', scope: 'store' },
-  { name: '供应链后台', label: '供应链后台', prefix: 'SUPPLY', rows: range(4, 24).filter((row) => row !== 22), level: 'partner', role: 'supplieroperator', scope: 'partner' },
-  { name: '供应链平台', label: '供应链平台', prefix: 'CHAIN', rows: [7, 8, 10, 11, 12, 13, 14], level: 'platform', role: 'platformoperator', scope: 'platform' },
-  { name: '接口', label: '接口', prefix: 'INTEG', rows: range(2, 21), level: 'platform', role: 'integrationoperator', scope: 'platform' },
-]);
+export interface ClarificationDefinition {
+  readonly id: string;
+  readonly requirements: readonly MvpDefinition['id'][];
+  readonly term: string;
+  readonly status: 'open' | 'resolved';
+  readonly blocking: boolean;
+  readonly owner: string;
+  readonly acceptance: string | null;
+  readonly resolvedby: string | null;
+  readonly reason: string;
+}
 
-export const PROVIDERS: readonly ProviderDefinition[] = Object.freeze([
-  { id: 'jdproduct', label: '京东', priority: 1, vendor: 'jd' },
-  { id: 'jdfresh', label: '京东生鲜', priority: 1, vendor: 'jd' },
-  { id: 'tmallmarket', label: '天猫超市', priority: 1, vendor: 'tmall' },
-  { id: 'private', label: '自有供应商', priority: 1 },
-  { id: 'cake', label: '蛋糕', priority: 1, vendor: 'cakeuncle' },
-  { id: 'flower', label: '鲜花', priority: 1, vendor: 'cakeuncle' },
-  { id: 'book', label: '图书', priority: 1, vendor: 'wenxuan' },
-  { id: 'directcharge', label: '虚拟卡券/直充', priority: 1, vendor: 'wanlian' },
-  { id: 'foodvoucher', label: '虚拟食品提货券', priority: 1, vendor: 'cakeuncle' },
-  { id: 'movie', label: '电影', priority: 1, vendor: 'wanlian' },
-  { id: 'meal', label: '在线点餐', priority: 1, vendor: 'cakeuncle' },
-  { id: 'taobaonow', label: '淘宝闪购', priority: 3 },
-  { id: 'elephantmarket', label: '小象超市', priority: 3 },
-  { id: 'meituan', label: '美团', priority: 3 },
-  { id: 'privatehome', label: '自营家政', priority: 3 },
-  { id: 'jdhome', label: '京东家政', priority: 3 },
-  { id: 'laundry', label: '干洗', priority: 4 },
-  { id: 'errand', label: '配送跑腿', priority: 4 },
-  { id: 'carservice', label: '车咖汽车服务', priority: 4 },
-  { id: 'show', label: '大麦演出', priority: 4 },
-]);
+export interface RequirementSource {
+  readonly version: number;
+  readonly sheets: readonly SheetDefinition[];
+  readonly providers: readonly ProviderDefinition[];
+  readonly mvp: readonly MvpDefinition[];
+  readonly clarifications: readonly ClarificationDefinition[];
+}
 
-export const MVP_LABELS = Object.freeze([
-  '平台层', '分销层', '集团数据大屏', '集团应用', '集团商品池', '集团订单', '集团卡券', '集团财务', '集团数据统计', '集团客服', '集团设置',
-  '商城数据大屏', '商城装修', '商城商品池', '商城订单', '商城卡券', '商城财务', '商城数据统计', '商城客服', '商城设置', '优先级1接口',
-] as const);
+interface SourceDocument {
+  readonly version?: number;
+  readonly sheets?: readonly SheetRecord[];
+  readonly providers?: readonly ProviderDefinition[];
+  readonly mvp?: readonly MvpDefinition[];
+  readonly clarifications?: readonly ClarificationDefinition[];
+}
 
-export const MVP_ROUTES = Object.freeze([
-  '/platform', '/distributors', '/enterprises/current/dashboard', '/enterprises/current/applications', '/enterprises/current/products',
-  '/enterprises/current/orders', '/enterprises/current/vouchers', '/enterprises/current/finance', '/enterprises/current/reports', '/enterprises/current/support',
-  '/enterprises/current/settings', '/malls/current/dashboard', '/malls/current/design', '/malls/current/products', '/malls/current/orders', '/malls/current/vouchers',
-  '/malls/current/finance', '/malls/current/reports', '/malls/current/support', '/malls/current/settings', '/channels',
-] as const);
+interface SheetRecord extends Omit<SheetDefinition, 'rows'> {
+  readonly rows?: readonly number[];
+  readonly start?: number;
+  readonly end?: number;
+  readonly skip?: readonly number[];
+}
 
-export const MVP_JOURNEYS = Object.freeze([
-  'platform', 'distribution', 'groupdashboard', 'groupapplication', 'groupproduct', 'grouporder', 'groupvoucher', 'groupfinance', 'groupreport',
-  'groupsupport', 'groupsetting', 'malldashboard', 'malldesign', 'mallproduct', 'mallorder', 'mallvoucher', 'mallfinance', 'mallreport', 'mallsupport', 'mallsetting', 'providers',
-] as const);
+export async function loadRequirementSource(root: string): Promise<RequirementSource> {
+  const path = resolve(root, 'config/requirements.yml');
+  const document = parse(await readFile(path, 'utf8')) as SourceDocument;
+  if (document.version !== 3) throw new Error('REQUIREMENT_SOURCE_VERSION_INVALID:' + String(document.version));
+  const sheets = Object.freeze((document.sheets ?? []).map(expandSheet));
+  const providers = Object.freeze([...(document.providers ?? [])]);
+  const mvp = Object.freeze([...(document.mvp ?? [])]);
+  const clarifications = Object.freeze([...(document.clarifications ?? [])]);
+  assertUnique(
+    sheets.map(({ prefix }) => prefix),
+    'REQUIREMENT_SHEET_PREFIX_DUPLICATE'
+  );
+  assertUnique(
+    providers.map(({ id }) => id),
+    'REQUIREMENT_PROVIDER_ID_DUPLICATE'
+  );
+  assertUnique(
+    providers.map(({ row }) => String(row)),
+    'REQUIREMENT_PROVIDER_ROW_DUPLICATE'
+  );
+  assertUnique(
+    mvp.map(({ id }) => id),
+    'MVP_ID_DUPLICATE'
+  );
+  if (mvp.length !== 22) throw new Error('MVP_SOURCE_COUNT_INVALID:' + mvp.length);
+  if (mvp.some(({ id }) => !/^MVP[A-Z]+$/.test(id))) throw new Error('MVP_ID_INVALID');
+  assertUnique(
+    mvp.map(({ source }) => String(source.row)),
+    'MVP_SOURCE_ROW_DUPLICATE'
+  );
+  assertUnique(
+    mvp.flatMap(({ journeys }) => journeys),
+    'MVP_JOURNEY_DUPLICATE'
+  );
+  if (mvp.some(({ source }) => source.sheet !== 'MVP上线功能清单' || source.row < 3 || source.row > 24 || source.range !== `A${source.row}:F${source.row}`)) {
+    throw new Error('MVP_SOURCE_INVALID');
+  }
+  const mvpIds = new Set(mvp.map(({ id }) => id));
+  const providerIds = new Set(providers.map(({ id }) => id));
+  if (providers.slice(0, 11).some(({ core }) => core === undefined) || providers.slice(11).some(({ core }) => core !== undefined)) {
+    throw new Error('REQUIREMENT_PROVIDER_CORE_INVALID');
+  }
+  const clarificationIds = new Set(clarifications.map(({ id }) => id));
+  if (
+    mvp.some(({ journeys, providers: references }) => journeys.length === 0 || references.some((reference) => !providerIds.has(reference))) ||
+    clarifications.some(({ id, requirements, status }) => id.length === 0 || requirements.length === 0 || requirements.some((requirement) => !mvpIds.has(requirement)) || (status !== 'open' && status !== 'resolved')) ||
+    mvp.some(({ clarifications: references }) => references.some((reference) => !clarificationIds.has(reference)))
+  ) {
+    throw new Error('REQUIREMENT_CLARIFICATION_INVALID');
+  }
+  return Object.freeze({ version: document.version, sheets, providers, mvp, clarifications });
+}
 
-export const MVP_RUNBOOKS = Object.freeze([
-  'catalogsync', 'catalogsync', 'projection', 'experiencepublish', 'catalogsync', 'fulfillment', 'benefitgrant', 'reconciliation', 'export', 'supportsla',
-  'riskscan', 'projection', 'experiencepublish', 'pricesync', 'paymentrefund', 'voucherexpiry', 'reconciliation', 'export', 'supportsla', 'riskscan', 'catalogsync',
-] as const);
+function expandSheet(record: SheetRecord): SheetDefinition {
+  const rows = record.rows ?? range(required(record.start, record.prefix + ':start'), required(record.end, record.prefix + ':end'));
+  const skipped = new Set(record.skip ?? []);
+  const selected = Object.freeze(rows.filter((row) => !skipped.has(row)));
+  if (selected.length === 0) throw new Error('REQUIREMENT_SHEET_ROWS_EMPTY:' + record.prefix);
+  return Object.freeze({
+    name: record.name,
+    label: record.label,
+    prefix: record.prefix,
+    rows: selected,
+    level: record.level,
+    role: record.role,
+    scope: record.scope,
+  });
+}
+
+function required(value: number | undefined, name: string): number {
+  if (!Number.isInteger(value)) throw new Error('REQUIREMENT_SOURCE_FIELD_INVALID:' + name);
+  return value!;
+}
+
+function range(start: number, end: number): readonly number[] {
+  if (end < start) throw new Error('REQUIREMENT_SOURCE_RANGE_INVALID:' + start + ':' + end);
+  return Object.freeze(Array.from({ length: end - start + 1 }, (_, index) => start + index));
+}
+
+function assertUnique(values: readonly string[], code: string): void {
+  if (new Set(values).size !== values.length) throw new Error(code);
+}

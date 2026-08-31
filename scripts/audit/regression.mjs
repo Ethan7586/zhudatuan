@@ -1,12 +1,20 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { productionSources, relative, root } from '../check/source.mjs';
 
 const findings = [];
-const retiredDirectories = ['apps/admin-web', 'apps/auth-web', 'apps/storefront-web', 'apps/wechat-miniapp', 'services/commerce-api', 'services/core-read-cache', 'services/jobs'];
+const retiredDirectories = ['apps/admin-web', 'apps/auth-web', 'apps/storefront-web', 'apps/store', 'apps/supplier', 'apps/miniapp', 'apps/wechat-miniapp', 'services/commerce-api', 'services/core-read-cache', 'services/jobs'];
 const auxiliaryDirectories = ['archive', 'artifacts', 'deliverables', 'pre-contract-code-merge-20260820', 'smart-wing-branch-work'];
-const retiredStorefrontRuntime = ['apps/storefront/.next', 'apps/storefront/.open-next', 'apps/storefront/.vinext', 'apps/storefront/.wrangler',
-  'apps/storefront/pages', 'apps/storefront/next.config.ts', 'apps/storefront/vinext.config.ts', 'apps/storefront/wrangler.toml'];
+const retiredStorefrontRuntime = [
+  'apps/storefront/.next',
+  'apps/storefront/.open-next',
+  'apps/storefront/.vinext',
+  'apps/storefront/.wrangler',
+  'apps/storefront/pages',
+  'apps/storefront/next.config.ts',
+  'apps/storefront/vinext.config.ts',
+  'apps/storefront/wrangler.toml',
+];
 const retiredReferences = [
   ['OLD_PACKAGE_SCOPE', '@smart-wing/'],
   ['OLD_ROUTE', '/api/health'],
@@ -17,9 +25,9 @@ const retiredReferences = [
   ['OLD_ENV', 'SUPABASE_SERVICE_ROLE_KEY'],
 ];
 
-for (const directory of retiredDirectories) if (existsSync(resolve(root, directory))) findings.push(`RETIRED_DIRECTORY ${directory}`);
+for (const directory of retiredDirectories) if (containsFile(resolve(root, directory))) findings.push(`RETIRED_DIRECTORY ${directory}`);
 for (const directory of auxiliaryDirectories) if (existsSync(resolve(root, directory))) findings.push(`AUXILIARY_DIRECTORY ${directory}`);
-for (const runtime of retiredStorefrontRuntime) if (existsSync(resolve(root, runtime))) findings.push(`RETIRED_STOREFRONT_RUNTIME ${runtime}`);
+for (const runtime of retiredStorefrontRuntime) if (hasContent(resolve(root, runtime))) findings.push(`RETIRED_STOREFRONT_RUNTIME ${runtime}`);
 for (const file of productionSources()) {
   const path = relative(file);
   const source = readFileSync(file, 'utf8');
@@ -34,3 +42,13 @@ if (findings.length > 0) {
   process.exit(1);
 }
 console.log('hard-cut regression: no retired runtime, route, package, environment, or production substitute');
+
+function containsFile(directory) {
+  if (!existsSync(directory)) return false;
+  return readdirSync(directory, { withFileTypes: true }).some((entry) => entry.isFile() || (entry.isDirectory() && containsFile(resolve(directory, entry.name))));
+}
+
+function hasContent(target) {
+  if (!existsSync(target)) return false;
+  return statSync(target).isDirectory() ? containsFile(target) : true;
+}

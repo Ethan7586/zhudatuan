@@ -7,6 +7,7 @@ export default defineConfig(() => {
     plugins: [react(), tailwindcss()],
     build: { manifest: true },
     server: {
+      host: '127.0.0.1',
       port: 4173,
       /**
        * In production Caddy reverse-proxies console.zhudatuan.com/api/* to the commerce

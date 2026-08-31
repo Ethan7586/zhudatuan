@@ -16,12 +16,17 @@ for (const entry of catalog.errors) {
 }
 
 const occurrences = new Map();
+const unsafeErrors = [];
 for (const directory of roots) await scan(join(root, directory));
 const missing = [...occurrences].filter(([code]) => !codes.has(code));
 if (missing.length > 0) {
-  const report = missing.sort(([left], [right]) => left.localeCompare(right)).map(([code, locations]) => `${code} ${[...locations].sort().join(',')}`).join('\n');
+  const report = missing
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([code, locations]) => `${code} ${[...locations].sort().join(',')}`)
+    .join('\n');
   throw new Error(`ERROR_CONTRACT_MISSING\n${report}`);
 }
+if (unsafeErrors.length > 0) throw new Error(`BUSINESS_ERROR_MAPPED_TO_INTERNAL\n${unsafeErrors.sort().join('\n')}`);
 process.stdout.write(`error-contract accepted=true declared=${codes.size} literals=${occurrences.size} missing=0\n`);
 
 async function scan(directory) {
@@ -29,15 +34,15 @@ async function scan(directory) {
     if (ignored.has(entry.name)) continue;
     const path = join(directory, entry.name);
     if (entry.isDirectory()) await scan(path);
-    else if (!/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(entry.name)
-      && ['.js', '.mjs', '.ts', '.tsx'].includes(extname(entry.name))) inspect(path, await readFile(path, 'utf8'));
+    else if (!/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(entry.name) && ['.js', '.mjs', '.ts', '.tsx'].includes(extname(entry.name))) inspect(path, await readFile(path, 'utf8'));
   }
 }
 
 function inspect(path, sourceText) {
   const source = ts.createSourceFile(path, sourceText, ts.ScriptTarget.Latest, true);
   const visit = (node) => {
-    if (ts.isNewExpression(node) && ['Error', 'DomainError'].includes(node.expression.getText(source))) record(node.arguments?.[0]);
+    if (ts.isNewExpression(node) && ['ApplicationError', 'DomainError'].includes(node.expression.getText(source))) record(node.arguments?.[0]);
+    if (ts.isNewExpression(node) && node.expression.getText(source) === 'Error') unsafe(node.arguments?.[0]);
     if (ts.isCallExpression(node) && node.expression.getText(source) === 'reject') record(node.arguments[1]);
     ts.forEachChild(node, visit);
   };
@@ -49,5 +54,10 @@ function inspect(path, sourceText) {
     const values = occurrences.get(argument.text) ?? new Set();
     values.add(location);
     occurrences.set(argument.text, values);
+  }
+  function unsafe(argument) {
+    if (!path.startsWith(join(root, 'services/commerce/src')) || !argument || !ts.isStringLiteralLike(argument) || !codes.has(argument.text) || codes.get(argument.text) >= 500) return;
+    const line = source.getLineAndCharacterOfPosition(argument.getStart(source)).line + 1;
+    unsafeErrors.push(`${relative(root, path)}:${line}:${argument.text}`);
   }
 }

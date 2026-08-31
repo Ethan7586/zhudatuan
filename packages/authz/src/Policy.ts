@@ -6,8 +6,11 @@ export interface MembershipAccess {
   readonly id: string;
   readonly active: boolean;
   readonly accessVersion: number;
-  readonly denies: readonly string[];
-  readonly grants: readonly ScopeGrant[];
+  readonly permissions: Readonly<{
+    readonly allows: ReadonlySet<string>;
+    readonly denies: ReadonlySet<string>;
+  }>;
+  readonly scopes: readonly ScopeGrant[];
 }
 
 export interface DecisionContext {
@@ -15,6 +18,7 @@ export interface DecisionContext {
   readonly now: Date;
   readonly stepupAt?: Date;
   readonly stepupSeconds?: number;
+  readonly clockSkewSeconds?: number;
 }
 
 export function decide(membership: MembershipAccess, permission: string, resource: Scope, context: DecisionContext): Decision {
@@ -30,25 +34,23 @@ export function decide(membership: MembershipAccess, permission: string, resourc
 export function precheck(membership: MembershipAccess, permission: string, context: Pick<DecisionContext, 'expectedAccessVersion' | 'now'>): DenialReason | null {
   if (!membership.active) return 'MEMBERSHIP_INACTIVE';
   if (membership.accessVersion !== context.expectedAccessVersion) return 'ACCESS_VERSION_STALE';
-  if (membership.denies.includes(permission)) return 'EXPLICIT_DENY';
+  if (membership.permissions.denies.has(permission)) return 'EXPLICIT_DENY';
   permissionDefinition(permission);
-  return membership.grants.some((grant) => hasPermission(grant, permission) && isEffective(grant, context.now)) ? null : 'PERMISSION_MISSING';
+  return membership.permissions.allows.has(permission) ? null : 'PERMISSION_MISSING';
 }
 
 export function checkScope(membership: MembershipAccess, permission: string, resource: Scope, now: Date): Readonly<{ evidence: DecisionEvidence }> | Readonly<{ reason: DenialReason }> {
   const definition = permissionDefinition(permission);
-  if (!definition.scopes.includes(resource.kind)) return { reason: 'SCOPE_KIND_DENIED' };
-  const grant = membership.grants.find((candidate) => hasPermission(candidate, permission) && isEffective(candidate, now) && contains(candidate.scope, resource));
+  if (!definition.allowedScopeKinds.includes(resource.kind)) return { reason: 'SCOPE_KIND_DENIED' };
+  const denied = membership.scopes.some((candidate) => candidate.effect === 'deny' && isEffective(candidate, now) && contains(candidate.scope, resource));
+  if (denied) return { reason: 'SCOPE_DENIED' };
+  const grant = membership.scopes.find((candidate) => candidate.effect === 'allow' && isEffective(candidate, now) && contains(candidate.scope, resource));
   if (!grant) return { reason: 'SCOPE_DENIED' };
   return { evidence: { membership: membership.id, permission, scope: grant.scope, accessVersion: membership.accessVersion } };
 }
 
-export function checkAssurance(permission: string, context: Pick<DecisionContext, 'now' | 'stepupAt' | 'stepupSeconds'>): DenialReason | null {
-  return permissionDefinition(permission).stepup && !freshStepup(context) ? 'STEPUP_REQUIRED' : null;
-}
-
-function hasPermission(grant: ScopeGrant, permission: string): boolean {
-  return grant.permissions.includes(permission);
+export function checkAssurance(permission: string, context: Pick<DecisionContext, 'now' | 'stepupAt' | 'stepupSeconds' | 'clockSkewSeconds'>): DenialReason | null {
+  return permissionDefinition(permission).minimumAssurance === 3 && !freshStepup(context) ? 'STEPUP_REQUIRED' : null;
 }
 
 function isEffective(grant: ScopeGrant, now: Date): boolean {
@@ -64,8 +66,8 @@ function contains(grant: Scope, resource: Scope): boolean {
   return grant.id === resource.id || resource.path.some((ancestor) => ancestor.kind === grant.kind && ancestor.id === grant.id);
 }
 
-function freshStepup(context: Pick<DecisionContext, 'now' | 'stepupAt' | 'stepupSeconds'>): boolean {
+export function freshStepup(context: Pick<DecisionContext, 'now' | 'stepupAt' | 'stepupSeconds' | 'clockSkewSeconds'>): boolean {
   if (context.stepupAt === undefined) return false;
   const age = context.now.getTime() - context.stepupAt.getTime();
-  return age >= 0 && age <= (context.stepupSeconds ?? 900) * 1_000;
+  return age >= -(context.clockSkewSeconds ?? 5) * 1_000 && age <= (context.stepupSeconds ?? 900) * 1_000;
 }

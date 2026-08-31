@@ -7,14 +7,15 @@ import { describe, expect, it } from 'vitest';
 import { loadRequirementAuthority } from './Authority';
 
 describe('requirement authority', () => {
-  it('binds the repository 260821 workbook by content hash', async () => {
+  it('binds the canonical repository workbook by content hash', async () => {
     const root = resolve(import.meta.dirname, '../../..');
     const result = await loadRequirementAuthority(root);
 
-    expect(result.authority.logicalSource).toBe('RepositoryAuthority docs/福利商城功能清单260821.xlsx');
-    expect(result.authority.repositoryRelativePath).toBe('docs/福利商城功能清单260821.xlsx');
-    expect(result.authority.sha256).toBe('78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942');
-    expect(result.authority.sheets).toEqual({ requirements: 296, mvp: 21, providers: 20 });
+    expect(result.authority.logicalSource).toBe('RepositoryAuthority docs/福利商城功能清单.xlsx');
+    expect(result.authority.repositoryRelativePath).toBe('docs/福利商城功能清单.xlsx');
+    expect(result.authority.sha256).toBe('f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f');
+    expect(result.authority.range).toBe('A1:F24');
+    expect(result.authority.sheets).toEqual({ requirements: 296, mvp: 22, providers: 20 });
     expect(result.bytes.length).toBeGreaterThan(0);
   });
 
@@ -46,16 +47,19 @@ async function createFixture(repositoryRelativePath: string) {
   const bytes = new TextEncoder().encode('authority');
   await mkdir(join(root, 'config'), { recursive: true });
   await writeFile(outside, bytes);
-  await writeFile(join(root, 'config/authorities.yml'), [
-    'version: 1',
-    'requirements:',
-    '  logicalSource: fixture',
-    `  repositoryRelativePath: ${repositoryRelativePath}`,
-    `  sha256: ${createHash('sha256').update(bytes).digest('hex')}`,
-    '  sheets:',
-    '    requirements: 0',
-    '    mvp: 0',
-    '    providers: 0',
-  ].join('\n'));
+  await writeFile(
+    join(root, 'config/authorities.yml'),
+    [
+      'version: 1',
+      'requirements:',
+      '  logicalSource: fixture',
+      `  repositoryRelativePath: ${repositoryRelativePath}`,
+      `  sha256: ${createHash('sha256').update(bytes).digest('hex')}`,
+      '  sheets:',
+      '    requirements: 0',
+      '    mvp: 0',
+      '    providers: 0',
+    ].join('\n')
+  );
   return { directory, root, outside };
 }

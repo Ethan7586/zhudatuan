@@ -29,36 +29,50 @@ const SalesSchema = z.object({
   topProducts: z.array(z.unknown()),
   period: z.object({ from: z.string().min(1), to: z.string().min(1) }).optional(),
   conclusion: z.string().min(1).optional(),
-  deltas: z.object({
-    netSalesRatio: z.number().finite().optional(),
-    paidOrdersRatio: z.number().finite().optional(),
-    averageOrderRatio: z.number().finite().optional(),
-    refundRate: z.number().finite().optional(),
-    refundRateDeltaPoints: z.number().finite().optional(),
-  }).optional(),
-  malls: z.array(z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    salesCents: z.number().finite(),
-    paidOrderCount: z.number().int().nonnegative(),
-    refundRate: z.number().finite(),
-  })).optional(),
-  events: z.array(z.object({
-    id: z.string().min(1),
-    kind: z.enum(['calendar', 'warning', 'sync']),
-    title: z.string().min(1),
-    metric: z.string().min(1),
-    time: z.string().min(1),
-    date: z.string().min(1).optional(),
-  })).optional(),
-  insights: z.array(z.object({
-    id: z.string().min(1),
-    tone: z.enum(['warning', 'positive']),
-    title: z.string().min(1),
-    detail: z.string().min(1).optional(),
-    action: z.string().min(1),
-    target: z.enum(['orders', 'reports']).optional(),
-  })).optional(),
+  deltas: z
+    .object({
+      netSalesRatio: z.number().finite().optional(),
+      paidOrdersRatio: z.number().finite().optional(),
+      averageOrderRatio: z.number().finite().optional(),
+      refundRate: z.number().finite().optional(),
+      refundRateDeltaPoints: z.number().finite().optional(),
+    })
+    .optional(),
+  malls: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        salesCents: z.number().finite(),
+        paidOrderCount: z.number().int().nonnegative(),
+        refundRate: z.number().finite(),
+      })
+    )
+    .optional(),
+  events: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        kind: z.enum(['calendar', 'warning', 'sync']),
+        title: z.string().min(1),
+        metric: z.string().min(1),
+        time: z.string().min(1),
+        date: z.string().min(1).optional(),
+      })
+    )
+    .optional(),
+  insights: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        tone: z.enum(['warning', 'positive']),
+        title: z.string().min(1),
+        detail: z.string().min(1).optional(),
+        action: z.string().min(1),
+        target: z.enum(['orders', 'reports']).optional(),
+      })
+    )
+    .optional(),
 });
 
 export const CockpitSchema = z.object({

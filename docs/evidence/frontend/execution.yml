@@ -128,28 +128,26 @@ items:
     batch: 2
     status: VerifiedLocal
     files:
-      - apps/auth/src/features/invitation/RegisterForm.tsx
-      - apps/auth/src/features/recovery/RecoveryForm.tsx
-      - apps/auth/src/entity/identity/Challenge.ts
-      - apps/auth/src/entity/identity/Invitation.ts
-      - apps/auth/src/entity/identity/Member.ts
-      - apps/auth/src/entity/identity/Password.ts
+      - apps/auth/src/feature/login/InvitationForm.tsx
+      - apps/auth/src/feature/invitation/EnrollmentPage.tsx
+      - apps/auth/src/feature/login/PasswordResetDialog.tsx
+      - apps/auth/src/shared/api/IdentityClient.ts
     callers:
-      - apps/auth/src/pages/RegisterPage.tsx
-      - apps/auth/src/pages/InvitationPage.tsx
-      - apps/auth/src/pages/RecoveryPage.tsx
+      - apps/auth/src/app/AuthFlow.tsx
     callees:
-      - identity.invitations.read
+      - identity.invitations.resolve
       - identity.challenges.create
-      - identity.members.create
+      - identity.enrollments.read
+      - identity.enrollments.complete
       - identity.password.reset
     requirement: MVP03..MVP23 identity crosscut
     client: auth
-    route: /register,/invitation,/recovery
+    route: /
     feature: identity/registration-recovery
-    operation: identity.invitations.read,identity.challenges.create,identity.members.create,identity.password.reset
+    operation: identity.invitations.resolve,identity.challenges.create,identity.enrollments.read,identity.enrollments.complete,identity.password.reset
     test:
-      - apps/auth/src/app/Routes.test.tsx
+      - apps/auth/src/App.component.test.tsx
+      - apps/auth/src/shared/security/SecretState.test.ts
     evidence:
       - feature responses narrowed with Zod
       - generic identityCommand and AuthFlow removed with zero remaining call sites

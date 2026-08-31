@@ -33,7 +33,7 @@
           "claimType": "observed",
           "sourceKind": "source",
           "evidenceId": "E004",
-          "path": "database/supabase/migrations/20260812160000_membership_permission_command_center.sql",
+          "path": "database/migrations/20260812160000_membership_permission_command_center.sql",
           "claim": "Distributor, brand and store kinds were reserved while delegation remained flat."
         },
         {
@@ -158,7 +158,7 @@
           ],
           "residualRisks": ["Global grant lifecycle is not yet exposed.", "Large hierarchy move performance is unmeasured."],
           "implementationReadiness": {
-            "affectedComponents": ["database/supabase/migrations", "packages/api-contract", "packages/authz", "services/commerce-api"],
+            "affectedComponents": ["database/migrations", "packages/api-contract", "packages/authz", "services/commerce-api"],
             "workPackages": ["Backfill hierarchy.", "Attach trusted ancestor paths.", "Propagate role permission invalidation."],
             "acceptanceCriteria": ["All legacy entities map once.", "Cross-tenant lower grants fail.", "Role permission edits bump affected memberships."],
             "migrationNotes": ["Keep legacy fields."],

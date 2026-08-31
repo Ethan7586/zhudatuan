@@ -1,0 +1,61 @@
+import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { SessionIssuer } from '../port/SessionIssuer';
+import type { FederationProtector } from '../../domain/service/FederationProtector';
+import type { MembershipSelectionPort, MembershipCandidate } from '../port/MembershipSelectionPort';
+import type { IdentityAccessPort } from '../../../access/public';
+import type { IdentityMemberPort } from '../../../member/public';
+import type { ReturnTargetPort } from '../port/ReturnTargetPort';
+import type { AuthTransaction } from '../../domain/model/AuthTransaction';
+import type { FederationCompletionPort } from '../port/FederationRepository';
+import type { SessionCookiePort } from '../port/SessionCookiePort';
+export class MembershipSelector {
+  constructor(
+    private readonly repository: MembershipSelectionPort,
+    private readonly sessions: SessionIssuer,
+    private readonly protector: FederationProtector,
+    private readonly returns: ReturnTargetPort,
+    private readonly access: IdentityAccessPort,
+    private readonly members: IdentityMemberPort,
+    private readonly federations: FederationCompletionPort,
+    private readonly cookies: SessionCookiePort
+  ) {}
+  async begin(
+    database: OperationDatabase,
+    input: Readonly<{ principal: string; target: 'console' | 'storefront'; memberships: readonly MembershipCandidate[]; assurance: number; authorization: AuthTransaction }>,
+    context: Readonly<{ peer: string; agent: string; device: string }>
+  ) {
+    const selection = await this.repository.create(database, {
+      principal: input.principal,
+      target: input.target,
+      memberships: input.memberships,
+      assurance: input.assurance,
+      authorization: Object.freeze({ stateHash: input.authorization.stateHash, nonceHash: input.authorization.nonceHash, challenge: input.authorization.challenge }),
+      browser: this.protector.browser(context.peer, context.agent, context.device),
+      device: this.protector.device(context.device),
+    });
+    return Object.freeze({ id: selection.id, headers: Object.freeze({ 'set-cookie': this.cookies.preauth(selection.token) }) });
+  }
+  read(database: OperationDatabase, id: string) {
+    return this.repository.read(database, id);
+  }
+  async select(database: OperationDatabase, id: string, membership: string, context: Readonly<{ peer: string; agent: string; device: string; trace: string }>) {
+    const browser = this.protector.browser(context.peer, context.agent, context.device);
+    const selected = await this.repository.consume(database, id, browser, this.protector.device(context.device), membership);
+    const member = await this.members.memberForPrincipal(database, selected.principal);
+    const active = await this.access.memberships(database, member, selected.target);
+    if (!active.some((candidate) => candidate.id === membership)) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
+    const issued = await this.sessions.issue(database, {
+      principal: selected.principal,
+      membership,
+      assurance: selected.assurance,
+      target: selected.target,
+      device: context.device,
+      peer: context.peer,
+      agent: context.agent,
+      trace: context.trace,
+    });
+    if (selected.transaction !== null) await this.federations.complete(database, selected.transaction, await this.federations.version(database, selected.transaction));
+    return Object.freeze({ headers: issued.headers, destination: this.returns.issue(selected.target).url });
+  }
+}

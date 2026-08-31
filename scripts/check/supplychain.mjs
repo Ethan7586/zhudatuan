@@ -48,13 +48,12 @@ for (const path of repositoryFiles()) {
   const target = join(root, path);
   if (!existsSync(target) || !statSync(target).isFile()) continue;
   const extension = extname(path).toLowerCase();
-  if (secretFileExtensions.has(extension)
-    && !path.includes('/test') && !path.includes('.test.') && !path.includes('.spec.')) findings.push(`SECRET_FILE ${path}`);
+  if (secretFileExtensions.has(extension) && !path.includes('/test') && !path.includes('.test.') && !path.includes('.spec.')) findings.push(`SECRET_FILE ${path}`);
   if (!textExtensions.has(extension) || statSync(target).size > 5_000_000) continue;
   const source = readFileSync(target, 'utf8');
   for (const [code, pattern] of signatures) if (pattern.test(source)) findings.push(`${code} ${path}`);
-  if (/^[A-Z][A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|PRIVATE_KEY)\s*=\s*[^\s#][^\r\n]{7,}$/m.test(source)
-    && !path.endsWith('.example') && !path.includes('/test') && !path.includes('.test.') && !path.includes('.spec.')) findings.push(`PLAINTEXT_SECRET_ASSIGNMENT ${path}`);
+  if (/^[A-Z][A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|PRIVATE_KEY)\s*=\s*[^\s#][^\r\n]{7,}$/m.test(source) && !path.endsWith('.example') && !path.includes('/test') && !path.includes('.test.') && !path.includes('.spec.'))
+    findings.push(`PLAINTEXT_SECRET_ASSIGNMENT ${path}`);
 }
 
 if (findings.length > 0) {

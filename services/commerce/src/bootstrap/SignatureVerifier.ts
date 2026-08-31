@@ -7,7 +7,7 @@ export interface ManifestVerifier {
   verify(manifest: ProviderManifest): Promise<boolean>;
 }
 
-export const MANIFEST_VERIFIER=token<ManifestVerifier>('extension.manifestverifier');
+export const MANIFEST_VERIFIER = token<ManifestVerifier>('extension.manifestverifier');
 
 export class SignatureVerifier implements ManifestVerifier {
   private readonly key;

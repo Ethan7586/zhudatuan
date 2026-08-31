@@ -6,4 +6,9 @@ describe('Redactor', () => {
     const value = new Redactor().redact({ token: 'secret', nested: { phone: '13800138000', note: 'mail a@b.com' } });
     expect(value).toEqual({ token: '[REDACTED]', nested: { phone: '[REDACTED]', note: 'mail [EMAIL]' } });
   });
+
+  it('preserves bounded operational codes without allowing arbitrary error messages through', () => {
+    const value = new Redactor().redact({ errorCode: 'AUTHORIZATION_DENIED', faultCode: 'SW-ACCESS-102', verificationCode: '123456', nested: { errorCode: 'user 13800138000 failed' } });
+    expect(value).toEqual({ errorCode: 'AUTHORIZATION_DENIED', faultCode: 'SW-ACCESS-102', verificationCode: '[REDACTED]', nested: { errorCode: '[REDACTED]' } });
+  });
 });

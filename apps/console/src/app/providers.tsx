@@ -1,6 +1,8 @@
-import { AppBoundary } from '@shop/design';
+import { AppBoundary, RouteFallback } from '@shop/design';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ConsoleApp } from './ConsoleApp';
+import { lazy, Suspense } from 'react';
+
+const ConsoleApp = lazy(() => import('./ConsoleApp').then((module) => ({ default: module.ConsoleApp })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,7 +20,9 @@ export function Providers() {
   return (
     <AppBoundary>
       <QueryClientProvider client={queryClient}>
-        <ConsoleApp />
+        <Suspense fallback={<RouteFallback />}>
+          <ConsoleApp />
+        </Suspense>
       </QueryClientProvider>
     </AppBoundary>
   );

@@ -1,0 +1,6 @@
+@media (max-width: 767px) {
+  [data-storefront-standard-standard] .sw-web-header,
+  [data-storefront-standard-standard] .sw-web-checkout-summary {
+    position: static;
+  }
+}

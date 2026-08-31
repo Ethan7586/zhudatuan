@@ -1,5 +1,7 @@
-source: RepositoryAuthority docs/福利商城功能清单260821.xlsx#接口!A2:D21
-workbookSha256: 78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942
+source: RepositoryAuthority docs/福利商城功能清单.xlsx#接口!A2:D21
+workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
+navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
+contractSha256: e43962c59027687e19e380eb26298c55f53c0a461bb3c52405b9f27c749abd1d
 generated: true
 count: 20
 priorities:
@@ -16,8 +18,8 @@ providers:
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/jdproduct
-    vendor: jd
+    extension: extensions/channel/jdproduct
+    core: jdcore
   - requirement: INTEG002
     row: 3
     id: jdfresh
@@ -27,52 +29,52 @@ providers:
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/jdfresh
-    vendor: jd
+    extension: extensions/channel/jdfresh
+    core: jdcore
   - requirement: INTEG003
     row: 4
-    id: tmallmarket
+    id: tmall
     label: 天猫超市
     priority: 1
     delivery: required
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/tmallmarket
-    vendor: tmall
+    extension: extensions/channel/tmall
+    core: tmallcore
   - requirement: INTEG004
     row: 5
-    id: private
+    id: supplier
     label: 自有供应商
     priority: 1
     delivery: required
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/private
-    vendor: null
+    extension: extensions/channel/supplier
+    core: local
   - requirement: INTEG005
     row: 6
     id: cake
-    label: 蛋糕
+    label: 蛋糕（元祖、幸福西饼、家有熊猫、帕瑞斯、窝夫小子、甜风集、味多美、味之初、维尔纳斯、窝家甜品、星期六、蜜时cake、诺心、米卡米卡、榴芒一刻、积慕cake、映悦、香缇蜜语、爱在此客、喜芙来、皇冠幸福里、焙福谷……）
     priority: 1
     delivery: required
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/cake
-    vendor: cakeuncle
+    extension: extensions/channel/cake
+    core: cakecore
   - requirement: INTEG006
     row: 7
     id: flower
-    label: 鲜花
+    label: 鲜花（花千束、花映里、花礼甄选、爱在此刻鲜花）
     priority: 1
     delivery: required
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/flower
-    vendor: cakeuncle
+    extension: extensions/channel/flower
+    core: cakecore
   - requirement: INTEG007
     row: 8
     id: book
@@ -82,30 +84,30 @@ providers:
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/book
-    vendor: wenxuan
+    extension: extensions/channel/book
+    core: bookcore
   - requirement: INTEG008
     row: 9
-    id: directcharge
+    id: charge
     label: 虚拟卡券/直充
     priority: 1
     delivery: required
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/directcharge
-    vendor: wanlian
+    extension: extensions/channel/charge
+    core: wanliancore
   - requirement: INTEG009
     row: 10
     id: foodvoucher
-    label: 虚拟食品提货券
+    label: 虚拟食品提货券(元祖、仟吉、BONCAKE、蛋糕王国、囍甜、一鸣真鲜奶……）
     priority: 1
     delivery: required
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/foodvoucher
-    vendor: cakeuncle
+    extension: extensions/channel/foodvoucher
+    core: cakecore
   - requirement: INTEG010
     row: 11
     id: movie
@@ -115,19 +117,19 @@ providers:
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/movie
-    vendor: wanlian
+    extension: extensions/channel/movie
+    core: wanliancore
   - requirement: INTEG011
     row: 12
     id: meal
-    label: 在线点餐
+    label: 在线点餐(肯德基、麦当劳、瑞幸、星巴克。 新增：库迪)
     priority: 1
     delivery: required
     available: true
     status: Designed
     evidence: []
-    extension: extensions/providers/meal
-    vendor: cakeuncle
+    extension: extensions/channel/meal
+    core: cakecore
   - requirement: INTEG012
     row: 13
     id: taobaonow
@@ -138,7 +140,7 @@ providers:
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG013
     row: 14
     id: elephantmarket
@@ -149,7 +151,7 @@ providers:
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG014
     row: 15
     id: meituan
@@ -160,7 +162,7 @@ providers:
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG015
     row: 16
     id: privatehome
@@ -171,7 +173,7 @@ providers:
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG016
     row: 17
     id: jdhome
@@ -182,40 +184,40 @@ providers:
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG017
     row: 18
     id: laundry
-    label: 干洗
+    label: 干洗（新增）
     priority: 4
     delivery: deferred-contract
     available: false
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG018
     row: 19
     id: errand
-    label: 配送跑腿
+    label: 配送跑腿（新增）
     priority: 4
     delivery: deferred-contract
     available: false
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG019
     row: 20
     id: carservice
-    label: 车咖汽车服务
+    label: 车咖汽车服务（新增）
     priority: 4
     delivery: deferred-contract
     available: false
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null
   - requirement: INTEG020
     row: 21
     id: show
@@ -226,4 +228,4 @@ providers:
     status: Designed
     evidence: []
     extension: null
-    vendor: null
+    core: null

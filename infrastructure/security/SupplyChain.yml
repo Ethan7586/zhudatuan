@@ -1,0 +1,16 @@
+version: 1
+owner: security
+ciCredential: oidc
+artifacts:
+  sbom: cyclonedx
+  licenseReport: required
+  signature: sigstore
+  provenance: slsaprovenance
+scanning:
+  sourceSecrets: required
+  gitHistorySecrets: required
+  logsSecrets: required
+  backupSecrets: required
+  retiredArtifactsSecrets: required
+response:
+  revokeConfirmedCredentials: required

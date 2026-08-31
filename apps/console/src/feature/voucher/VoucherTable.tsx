@@ -22,9 +22,13 @@ function columnsFor(view: VoucherView, onOpen: (record: VoucherRecord) => void):
     label: view === 'libraries' ? '卡号库 / 前缀' : view === 'reserves' ? '申请名称' : view === 'batches' ? '发行批次' : '卡券方案',
     render: (row) => (
       <div className="voucheridentity">
-        <span className={`vouchermark is-${view}`} aria-hidden="true">{voucherViewMeta[view].short}</span>
+        <span className={`vouchermark is-${view}`} aria-hidden="true">
+          {voucherViewMeta[view].short}
+        </span>
         <span>
-          <button type="button" onClick={() => onOpen(row)} aria-label={`查看${row.name}摘要`}>{row.name}</button>
+          <button type="button" onClick={() => onOpen(row)} aria-label={`查看${row.name}摘要`}>
+            {row.name}
+          </button>
           <code>{row.id}</code>
         </span>
       </div>
@@ -33,39 +37,51 @@ function columnsFor(view: VoucherView, onOpen: (record: VoucherRecord) => void):
   const state: DataColumn<VoucherRecord> = {
     key: 'state',
     label: '状态',
-    render: (row) => <span className={`voucherstate is-${voucherStateTone(row.state)}`}><i aria-hidden="true" />{voucherStateLabel(row.state)}</span>,
+    render: (row) => (
+      <span className={`voucherstate is-${voucherStateTone(row.state)}`}>
+        <i aria-hidden="true" />
+        {voucherStateLabel(row.state)}
+      </span>
+    ),
   };
   const action: DataColumn<VoucherRecord> = {
     key: 'action',
     label: '操作',
-    render: (row) => <button className="voucherrowaction" type="button" onClick={() => onOpen(row)}>查看</button>,
+    render: (row) => (
+      <button className="voucherrowaction" type="button" onClick={() => onOpen(row)}>
+        查看
+      </button>
+    ),
   };
 
-  if (view === 'programs') return Object.freeze([
-    identity,
-    { key: 'amount', label: '面值', render: (row) => formatRecordAmount(row) },
-    { key: 'detail', label: '审批机制', render: (row) => row.detail },
-    state,
-    { key: 'version', label: '版本', render: (row) => row.version === null ? '—' : `v${row.version}` },
-    action,
-  ]);
-  if (view === 'libraries') return Object.freeze([
-    identity,
-    { key: 'detail', label: '生成 / 导入方式', render: (row) => row.detail },
-    { key: 'quantity', label: '成功数量', render: (row) => formatQuantity(row.quantity) },
-    state,
-    { key: 'version', label: '版本', render: (row) => row.version === null ? '—' : `v${row.version}` },
-    action,
-  ]);
-  if (view === 'reserves') return Object.freeze([
-    identity,
-    { key: 'detail', label: '申请单号', render: (row) => <code className="vouchercode">{row.detail}</code> },
-    { key: 'quantity', label: '申请数量', render: (row) => formatQuantity(row.quantity) },
-    { key: 'amount', label: '申请金额（最小单位）', render: (row) => formatRecordAmount(row) },
-    state,
-    { key: 'time', label: '创建时间', render: (row) => formatDate(row.occurredAt) },
-    action,
-  ]);
+  if (view === 'programs')
+    return Object.freeze([
+      identity,
+      { key: 'amount', label: '面值', render: (row) => formatRecordAmount(row) },
+      { key: 'detail', label: '审批机制', render: (row) => row.detail },
+      state,
+      { key: 'version', label: '版本', render: (row) => (row.version === null ? '—' : `v${row.version}`) },
+      action,
+    ]);
+  if (view === 'libraries')
+    return Object.freeze([
+      identity,
+      { key: 'detail', label: '生成 / 导入方式', render: (row) => row.detail },
+      { key: 'quantity', label: '成功数量', render: (row) => formatQuantity(row.quantity) },
+      state,
+      { key: 'version', label: '版本', render: (row) => (row.version === null ? '—' : `v${row.version}`) },
+      action,
+    ]);
+  if (view === 'reserves')
+    return Object.freeze([
+      identity,
+      { key: 'detail', label: '申请单号', render: (row) => <code className="vouchercode">{row.detail}</code> },
+      { key: 'quantity', label: '申请数量', render: (row) => formatQuantity(row.quantity) },
+      { key: 'amount', label: '申请金额（最小单位）', render: (row) => formatRecordAmount(row) },
+      state,
+      { key: 'time', label: '创建时间', render: (row) => formatDate(row.occurredAt) },
+      action,
+    ]);
   return Object.freeze([
     identity,
     { key: 'detail', label: '发行进度', render: (row) => row.detail },

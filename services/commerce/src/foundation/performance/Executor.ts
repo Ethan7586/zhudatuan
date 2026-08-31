@@ -9,8 +9,8 @@ export type ExecutionMode = RetryMode | 'none';
 
 export interface ExecutionContext {
   readonly mode: ExecutionMode;
-  readonly signal?: AbortSignal;
-  readonly deadline?: number;
+  readonly signal?: AbortSignal | undefined;
+  readonly deadline?: number | undefined;
   readonly retryable?: (cause: unknown) => boolean;
 }
 
@@ -24,14 +24,22 @@ export class Executor {
     const deadline = Deadline.at(expires, context.signal);
     try {
       await this.rate.acquire(deadline);
-      return await this.bulkhead.run(() => this.circuit.run(() => context.mode === 'none' ? operation(deadline) : retry(() => operation(deadline), {
-        mode: context.mode,
-        attempts: RUNTIME_LIMITS.external.attempts,
-        minimumDelayMilliseconds: RUNTIME_LIMITS.external.retryMinimumMilliseconds,
-        maximumDelayMilliseconds: RUNTIME_LIMITS.external.retryMaximumMilliseconds,
-        deadline,
-        retryable: context.retryable ?? (() => false),
-      })), deadline.signal);
+      return await this.bulkhead.run(
+        () =>
+          this.circuit.run(() =>
+            context.mode === 'none'
+              ? operation(deadline)
+              : retry(() => operation(deadline), {
+                  mode: context.mode,
+                  attempts: RUNTIME_LIMITS.external.attempts,
+                  minimumDelayMilliseconds: RUNTIME_LIMITS.external.retryMinimumMilliseconds,
+                  maximumDelayMilliseconds: RUNTIME_LIMITS.external.retryMaximumMilliseconds,
+                  deadline,
+                  retryable: context.retryable ?? (() => false),
+                })
+          ),
+        deadline.signal
+      );
     } finally {
       deadline.dispose();
     }

@@ -26,8 +26,7 @@ export interface OrderProjection {
   readonly snapshot: Readonly<Record<string, unknown>>;
 }
 
-export function projectedMetric(code: string, scope: string, period: DailyPeriod, dimensions: Readonly<Record<string, string>>,
-  value: number, unit: MetricUnit, watermark: string): Metric {
+export function projectedMetric(code: string, scope: string, period: DailyPeriod, dimensions: Readonly<Record<string, string>>, value: number, unit: MetricUnit, watermark: string): Metric {
   if (!code || !scope || !Number.isSafeInteger(value) || value < 0 || Number.isNaN(Date.parse(watermark))) throw new Error('REPORT_METRIC_INVALID');
   return Object.freeze({ code, version: 1, scope, period, dimensions: Object.freeze({ ...dimensions }), value, unit, watermark, projectionVersion: 1 });
 }

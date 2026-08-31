@@ -6,193 +6,218 @@ import { loadRequirementAuthority } from '../../tools/requirementgen/src/Authori
 import { report } from './report.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
-const names = {
+const names = Object.freeze({
   mapping: 'docs/requirements/mapping.json',
   requirements: 'docs/requirements/requirements.yml',
   mvp: 'docs/requirements/mvp.yml',
   providers: 'docs/requirements/providers.yml',
   frontend: 'docs/requirements/frontend.yml',
-  contract: 'packages/contract/src/RequirementCatalog.generated.ts',
-};
-const documents = Object.fromEntries(Object.entries(names)
-  .filter(([key]) => key !== 'contract')
-  .map(([key, name]) => [key, parse(readFileSync(join(root, name), 'utf8'))]));
-const full = documents.requirements;
-const mapping = documents.mapping;
-const mvp = documents.mvp;
-const providerDocument = documents.providers;
-const frontendDocument = documents.frontend;
-const { authority } = await loadRequirementAuthority(root);
-const operations = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8')).operations;
-const operationById = new Map(operations.map((operation) => [operation.id, operation]));
-const contractType = readFileSync(join(root, names.contract), 'utf8');
-const workbookHash = authority.sha256;
-const violations = [];
-const fail = (code, location, detail) => violations.push({ code, location, detail });
-const statusRank = new Map(['Missing', 'Designed', 'Implemented', 'Integrated', 'Accepted', 'Released'].map((status, index) => [status, index]));
-
-const definitions = [
-  ['PLAT', '1-平台层', 68, Array.from({ length: 68 }, (_, index) => index + 4)],
-  ['DIST', '2-分销层', 41, Array.from({ length: 41 }, (_, index) => index + 4)],
-  ['GROUP', '3-集团', 68, Array.from({ length: 68 }, (_, index) => index + 4)],
-  ['MALL', '4-、商城', 52, Array.from({ length: 53 }, (_, index) => index + 4).filter((row) => row !== 54)],
-  ['STORE', '门店后台', 20, Array.from({ length: 20 }, (_, index) => index + 4)],
-  ['SUPPLY', '供应链后台', 20, Array.from({ length: 21 }, (_, index) => index + 4).filter((row) => row !== 22)],
-  ['CHAIN', '供应链平台', 7, [7, 8, 10, 11, 12, 13, 14]],
-  ['INTEG', '接口', 20, Array.from({ length: 20 }, (_, index) => index + 2)],
-];
-const expectedSheetCounts = Object.fromEntries(definitions.map(([prefix, , count]) => [prefix, count]));
-const fullRequirements = full?.requirements ?? [];
-if (mapping?.source !== full?.source || mapping?.count !== authority.sheets.requirements || mapping?.workbookSha256 !== workbookHash
-  || JSON.stringify(mapping?.requirements) !== JSON.stringify(fullRequirements)) {
-  fail('REQUIREMENT_MAPPING_DRIFT', names.mapping, `${mapping?.count ?? 'missing'}/${authority.sheets.requirements}`);
-}
-if (workbookHash !== authority.sha256) fail('REQUIREMENT_AUTHORITY_HASH_INVALID', 'config/authorities.yml', workbookHash);
-if (full?.source !== authority.logicalSource) fail('REQUIREMENT_SOURCE_INVALID', names.requirements, String(full?.source));
-if (full?.count !== authority.sheets.requirements || fullRequirements.length !== authority.sheets.requirements) {
-  fail('REQUIREMENT_COUNT_INVALID', names.requirements, full?.count + '/' + fullRequirements.length);
-}
-if (JSON.stringify(full?.sheetCounts) !== JSON.stringify(expectedSheetCounts)) fail('REQUIREMENT_SHEET_COUNTS_INVALID', names.requirements, JSON.stringify(full?.sheetCounts));
-checkHash(full, names.requirements);
-
-const fullIds = new Set();
-for (const [prefix, sheet, count, rows] of definitions) {
-  const records = fullRequirements.filter(({ id }) => typeof id === 'string' && id.startsWith(prefix));
-  const expectedIds = Array.from({ length: count }, (_, index) => prefix + String(index + 1).padStart(3, '0'));
-  if (records.map(({ id }) => id).join(',') !== expectedIds.join(',')) fail('REQUIREMENT_IDS_INVALID', names.requirements + ':' + prefix, records.map(({ id }) => id).join(','));
-  if (records.map(({ source }) => source?.row).join(',') !== rows.join(',')) fail('REQUIREMENT_ROWS_INVALID', names.requirements + ':' + prefix, records.map(({ source }) => source?.row).join(','));
-  for (const requirement of records) {
-    const location = names.requirements + ':' + requirement.id;
-    if (fullIds.has(requirement.id)) fail('REQUIREMENT_ID_DUPLICATE', location, requirement.id);
-    fullIds.add(requirement.id);
-    if (requirement.source?.sheet !== sheet) fail('REQUIREMENT_SHEET_INVALID', location, String(requirement.source?.sheet));
-    for (const field of ['id', 'section', 'title', 'description', 'role', 'level', 'scope', 'audit', 'module', 'capability', 'api',
-      'commandOrQuery', 'tableOrProjection', 'client', 'feature', 'uiRoute', 'performance', 'owner', 'status', 'disposition']) {
-      if (typeof requirement[field] !== 'string' || !requirement[field]) fail('REQUIREMENT_FIELD_MISSING', location, field);
-    }
-    for (const field of ['prerequisites', 'inputs', 'mainFlow', 'stateTransitions', 'exceptionFlow', 'tests', 'externalDependencies', 'evidence']) {
-      if (!Array.isArray(requirement[field])) fail('REQUIREMENT_FIELD_MISSING', location, field);
-    }
-    if (!statusRank.has(requirement.status)) fail('REQUIREMENT_STATUS_INVALID', location, String(requirement.status));
-    if (statusRank.get(requirement.status) > statusRank.get('Designed') && requirement.evidence.length === 0) {
-      fail('REQUIREMENT_STATUS_WITHOUT_EVIDENCE', location, requirement.status);
-    }
-    const frontend = requirement.frontend;
-    if (!frontend || frontend.client !== requirement.client || frontend.route !== requirement.uiRoute
-      || frontend.feature !== requirement.feature || frontend.operation !== requirement.capability
-      || !Array.isArray(frontend.evidence) || frontend.status !== 'Missing') {
-      fail('REQUIREMENT_FRONTEND_TRACE_INVALID', location, JSON.stringify(frontend));
-    }
-    const operation = operationById.get(requirement.capability);
-    if (!operation) fail('REQUIREMENT_OPERATION_MISSING', location, requirement.capability);
-    else if (requirement.api !== operation.method + ' ' + operation.path || requirement.owner !== operation.owner || requirement.module !== operation.owner) {
-      fail('REQUIREMENT_OPERATION_TRACE_INVALID', location, requirement.api + '/' + requirement.owner);
-    }
-    if (!existsSync(join(root, 'services/commerce/src/modules', requirement.module))) fail('REQUIREMENT_MODULE_MISSING', location, requirement.module);
-    for (const path of requirement.tests ?? []) if (!existsSync(join(root, path))) fail('REQUIREMENT_TEST_MISSING', location, path);
-    if (!contractType.includes("'" + requirement.id + "'") && !contractType.includes('"' + requirement.id + '"')) {
-      fail('REQUIREMENT_CONTRACT_TYPE_MISSING', location, requirement.id);
-    }
-  }
-}
-
-const frontendRequirements = frontendDocument?.requirements ?? [];
-if (frontendDocument?.source !== authority.logicalSource || frontendDocument?.workbookSha256 !== workbookHash
-  || frontendDocument?.count !== authority.sheets.requirements || frontendRequirements.length !== authority.sheets.requirements) {
-  fail('FRONTEND_REQUIREMENT_INDEX_INVALID', names.frontend, String(frontendDocument?.count));
-}
-if (JSON.stringify(frontendDocument?.chain) !== JSON.stringify(['Requirement', 'Client', 'Route', 'Feature', 'Operation', 'Test', 'Evidence'])) {
-  fail('FRONTEND_REQUIREMENT_CHAIN_INVALID', names.frontend, JSON.stringify(frontendDocument?.chain));
-}
-for (const [index, trace] of frontendRequirements.entries()) {
-  const requirement = fullRequirements[index];
-  const location = names.frontend + ':' + String(trace?.requirement ?? index);
-  if (!requirement || trace.requirement !== requirement.id || trace.client !== requirement.client || trace.route !== requirement.uiRoute
-    || trace.feature !== requirement.feature || trace.operation !== requirement.capability || trace.test !== requirement.frontend?.test) {
-    fail('FRONTEND_REQUIREMENT_TRACE_DRIFT', location, String(requirement?.id));
-  }
-  for (const field of ['callers', 'callees', 'evidence']) {
-    if (!Array.isArray(trace[field])) fail('FRONTEND_REQUIREMENT_FIELD_MISSING', location, field);
-  }
-  if (!trace.files || typeof trace.files.route !== 'string' || typeof trace.files.feature !== 'string' || typeof trace.files.sdk !== 'string') {
-    fail('FRONTEND_REQUIREMENT_FIELD_MISSING', location, 'files');
-  }
-  if (trace.status !== 'Missing' || trace.evidence.length !== 0) {
-    fail('FRONTEND_REQUIREMENT_PREMATURE_EVIDENCE', location, trace.status);
-  }
-}
-
-const excluded = fullRequirements.filter(({ disposition }) => disposition === 'NotRequired');
-if (excluded.map(({ source }) => source?.row).join(',') !== '62,66,67'
-  || excluded.some(({ source, inScope, status }) => source?.sheet !== '3-集团' || inScope !== false || status !== 'Designed')) {
-  fail('REQUIREMENT_NOT_REQUIRED_INVALID', names.requirements, excluded.map(({ id }) => id).join(','));
-}
-if (fullRequirements.some(({ disposition, inScope }) => disposition === 'InScope' && inScope !== true)) {
-  fail('REQUIREMENT_SCOPE_INVALID', names.requirements, 'InScope requirement is not enabled');
-}
-
-const mvpRequirements = mvp?.requirements ?? [];
-const expectedMvpIds = Array.from({ length: 21 }, (_, index) => 'MVP' + String(index + 3).padStart(2, '0'));
-if (mvp?.source !== authority.logicalSource + '#MVP上线功能清单!A3:F23') fail('MVP_SOURCE_INVALID', names.mvp, String(mvp?.source));
-if (mvp?.count !== authority.sheets.mvp || mvpRequirements.length !== authority.sheets.mvp) {
-  fail('MVP_COUNT_INVALID', names.mvp, mvp?.count + '/' + mvpRequirements.length);
-}
-if (mvpRequirements.map(({ id }) => id).join(',') !== expectedMvpIds.join(',')) fail('MVP_IDS_INVALID', names.mvp, mvpRequirements.map(({ id }) => id).join(','));
-checkHash(mvp, names.mvp);
-for (const requirement of mvpRequirements) {
-  const location = names.mvp + ':' + requirement.id;
-  if (requirement.row !== Number(requirement.id.slice(3))) fail('MVP_ROW_INVALID', location, String(requirement.row));
-  for (const field of ['label', 'route', 'contractTest', 'journeyTest', 'dashboard', 'runbook', 'releaseEvidence', 'status']) {
-    if (typeof requirement[field] !== 'string' || !requirement[field]) fail('MVP_FIELD_MISSING', location, field);
-  }
-  for (const field of ['operations', 'modules', 'tables', 'moduleSources', 'unitTests']) {
-    if (!Array.isArray(requirement[field]) || requirement[field].length === 0) fail('MVP_FIELD_MISSING', location, field);
-  }
-  if (!Array.isArray(requirement.evidence)) fail('MVP_FIELD_MISSING', location, 'evidence');
-  if (statusRank.get(requirement.status) > statusRank.get('Designed') && requirement.evidence.length === 0) {
-    fail('MVP_STATUS_WITHOUT_EVIDENCE', location, requirement.status);
-  }
-  for (const operation of requirement.operations ?? []) if (!operationById.has(operation)) fail('MVP_OPERATION_MISSING', location, operation);
-  const evidencePaths = [...(requirement.moduleSources ?? []), ...(requirement.unitTests ?? []), requirement.contractTest, requirement.journeyTest, requirement.dashboard, requirement.runbook];
-  for (const path of evidencePaths) if (typeof path !== 'string' || !existsSync(join(root, path))) fail('MVP_EVIDENCE_MISSING', location, String(path));
-  const releaseExists = existsSync(join(root, requirement.releaseEvidence ?? ''));
-  if (requirement.status === 'Released' && !releaseExists) fail('MVP_RELEASE_EVIDENCE_MISSING', location, requirement.releaseEvidence);
-  if (requirement.status !== 'Released' && releaseExists) fail('MVP_PREMATURE_RELEASE_EVIDENCE', location, requirement.releaseEvidence);
-}
-
-const providers = providerDocument?.providers ?? [];
-const expectedProviderIds = ['jdproduct', 'jdfresh', 'tmallmarket', 'private', 'cake', 'flower', 'book', 'directcharge', 'foodvoucher', 'movie', 'meal',
-  'taobaonow', 'elephantmarket', 'meituan', 'privatehome', 'jdhome', 'laundry', 'errand', 'carservice', 'show'];
-if (providerDocument?.source !== authority.logicalSource + '#接口!A2:D21') fail('PROVIDER_SOURCE_INVALID', names.providers, String(providerDocument?.source));
-if (providerDocument?.count !== authority.sheets.providers || providers.length !== authority.sheets.providers) {
-  fail('PROVIDER_COUNT_INVALID', names.providers, providerDocument?.count + '/' + providers.length);
-}
-if (providers.map(({ id }) => id).join(',') !== expectedProviderIds.join(',')) fail('PROVIDER_IDS_INVALID', names.providers, providers.map(({ id }) => id).join(','));
-if (JSON.stringify(providerDocument?.priorities) !== JSON.stringify({ 1: 11, 3: 5, 4: 4 })) fail('PROVIDER_PRIORITIES_INVALID', names.providers, JSON.stringify(providerDocument?.priorities));
-checkHash(providerDocument, names.providers);
-for (const provider of providers) {
-  const location = names.providers + ':' + provider.id;
-  const required = provider.priority === 1;
-  if (provider.requirement !== 'INTEG' + String(provider.row - 1).padStart(3, '0')) fail('PROVIDER_REQUIREMENT_INVALID', location, provider.requirement);
-  if (required && (provider.delivery !== 'required' || provider.available !== true || provider.status !== 'Designed')) fail('PROVIDER_P1_STATE_INVALID', location, provider.status);
-  if (!required && (provider.delivery !== 'deferred-contract' || provider.available !== false || provider.status !== 'Designed')) fail('PROVIDER_DEFERRED_STATE_INVALID', location, provider.status);
-  if (!Array.isArray(provider.evidence) || provider.evidence.length !== 0) fail('PROVIDER_EVIDENCE_INVALID', location, JSON.stringify(provider.evidence));
-  if (required && (!provider.extension || !existsSync(join(root, provider.extension, 'manifest.ts')))) fail('PROVIDER_EXTENSION_MISSING', location, String(provider.extension));
-  if (!required && (provider.extension !== null || existsSync(join(root, 'extensions/providers', provider.id)))) fail('PROVIDER_EMPTY_EXTENSION_FORBIDDEN', location, String(provider.extension));
-  if (!contractType.includes('"' + provider.id + '"')) fail('PROVIDER_CONTRACT_TYPE_MISSING', location, provider.id);
-}
-
-const sensitiveProjection = JSON.stringify({
-  interfaceRequirements: fullRequirements.filter(({ id }) => id.startsWith('INTEG')),
-  providers: providerDocument,
+  trace: 'docs/requirements/trace.yml',
+  contract: 'packages/contract/src/RequirementCatalog.ts',
 });
-for (const pattern of [/https?:\/\//i, /@王敏/i, /clientid/i, /鉴权token/i, /采购账号/i, /对接渠道\/公司/i]) {
-  if (pattern.test(sensitiveProjection)) fail('REQUIREMENT_SENSITIVE_SOURCE_COPIED', names.providers, String(pattern));
+const readYaml = (name) => parse(readFileSync(join(root, name), 'utf8'), { merge: true });
+const documents = Object.fromEntries(
+  Object.entries(names)
+    .filter(([key]) => !['mapping', 'contract'].includes(key))
+    .map(([key, name]) => [key, readYaml(name)])
+);
+const mapping = JSON.parse(readFileSync(join(root, names.mapping), 'utf8'));
+const contractType = readFileSync(join(root, names.contract), 'utf8');
+const { authority } = await loadRequirementAuthority(root);
+const operations = readYaml('packages/contract/definitions/operations.yml').operations ?? [];
+const navigationEvidence = JSON.parse(readFileSync(join(root, 'evidence/navigation/catalog.json'), 'utf8'));
+const operationById = new Map(operations.map((operation) => [operation.id, operation]));
+const violations = [];
+const fail = (code, location, detail = '') => violations.push({ code, location, detail });
+const statusRank = new Map(['Designed', 'Implemented', 'Integrated', 'Accepted', 'Released'].map((status, index) => [status, index]));
+const requiredOperationFields = [
+  'id',
+  'owner',
+  'method',
+  'path',
+  'audience',
+  'permission',
+  'capability',
+  'scopeKinds',
+  'assuranceLevel',
+  'makerChecker',
+  'originPolicy',
+  'csrfPolicy',
+  'responseMode',
+  'cachePolicy',
+  'targetPolicy',
+  'idempotencyPolicy',
+  'requestSchema',
+  'responseSchema',
+  'errorUnion',
+  'idempotencyScope',
+  'expectedVersion',
+  'timeout',
+  'rateClass',
+  'risk',
+  'resourceResolver',
+  'requirements',
+];
+
+checkDocumentHeaders();
+checkRequirements();
+checkMvp();
+checkProviders();
+checkFrontend();
+checkTrace();
+
+report('requirement graph', violations, {
+  requirements: documents.requirements.requirements?.length ?? 0,
+  mvp: documents.mvp.requirements?.length ?? 0,
+  providers: documents.providers.providers?.length ?? 0,
+  traces: documents.trace.requirements?.length ?? 0,
+});
+
+function checkDocumentHeaders() {
+  const documentsWithSource = [mapping, documents.requirements, documents.mvp, documents.providers, documents.frontend, documents.trace];
+  for (const document of documentsWithSource) {
+    if (document.workbookSha256 !== authority.sha256) fail('REQUIREMENT_HASH_DRIFT', 'docs/requirements', String(document.workbookSha256));
+    if (typeof document.source !== 'string' || !document.source.includes(authority.repositoryRelativePath)) {
+      fail('REQUIREMENT_SOURCE_DRIFT', 'docs/requirements', String(document.source));
+    }
+    if (document.navigationCatalogSha256 !== navigationEvidence.hash) fail('NAVIGATION_HASH_DRIFT', 'docs/requirements', String(document.navigationCatalogSha256));
+    if (typeof document.contractSha256 !== 'string' || document.contractSha256.length !== 64) fail('CONTRACT_HASH_MISSING', 'docs/requirements');
+  }
+  if (mapping.parserVersion !== authority.parserVersion || mapping.generatorVersion !== authority.generatorVersion || mapping.generatedAt !== authority.generatedAt) fail('REQUIREMENT_GENERATOR_METADATA_DRIFT', names.mapping);
 }
-if (!contractType.includes(workbookHash)) fail('REQUIREMENT_CONTRACT_HASH_INVALID', names.contract, workbookHash);
 
-report('requirements', violations);
+function checkRequirements() {
+  const requirements = documents.requirements.requirements ?? [];
+  if (requirements.length !== authority.sheets.requirements || mapping.requirements?.length !== requirements.length) {
+    fail('REQUIREMENT_COUNT_INVALID', names.requirements, String(requirements.length));
+  }
+  if (JSON.stringify(mapping.requirements) !== JSON.stringify(requirements)) fail('REQUIREMENT_MAPPING_DRIFT', names.mapping);
+  const ids = new Set();
+  for (const requirement of requirements) {
+    const location = `${names.requirements}:${requirement.id}`;
+    if (ids.has(requirement.id)) fail('REQUIREMENT_ID_DUPLICATE', location);
+    ids.add(requirement.id);
+    checkStatus(requirement, location);
+    if (!['console', 'auth', 'storefront'].includes(requirement.client)) fail('NON_MVP_CLIENT', location, requirement.client);
+    if (!String(requirement.uiRoute).startsWith('/scopes/:scopeKind/:scopeId/')) fail('ROUTE_OUTSIDE_SCOPE_WORKSPACE', location, requirement.uiRoute);
+    const operation = operationById.get(requirement.capability);
+    if (!operation) {
+      fail('REQUIREMENT_OPERATION_MISSING', location, requirement.capability);
+      continue;
+    }
+    if (operation.owner !== requirement.owner || `${operation.method} ${operation.path}` !== requirement.api) {
+      fail('REQUIREMENT_OPERATION_TRACE_INVALID', location, requirement.capability);
+    }
+    for (const field of requiredOperationFields) if (!(field in operation)) fail('OPERATION_FIELD_MISSING', operation.id, field);
+    if (!contractType.includes(`'${requirement.id}'`) && !contractType.includes(`"${requirement.id}"`)) {
+      fail('REQUIREMENT_CONTRACT_TYPE_MISSING', location);
+    }
+  }
+}
 
-function checkHash(document, location) {
-  if (document?.workbookSha256 !== workbookHash) fail('REQUIREMENT_WORKBOOK_HASH_INVALID', location, String(document?.workbookSha256));
+function checkMvp() {
+  const records = documents.mvp.requirements ?? [];
+  const expectedIds = [
+    'MVPPLATFORM',
+    'MVPDISTRIBUTION',
+    'MVPGROUPDASHBOARD',
+    'MVPGROUPAPPLICATION',
+    'MVPGROUPPOOL',
+    'MVPGROUPORDER',
+    'MVPGROUPVOUCHER',
+    'MVPGROUPFINANCE',
+    'MVPGROUPREPORT',
+    'MVPGROUPSUPPORT',
+    'MVPGROUPSETTING',
+    'MVPMALLDASHBOARD',
+    'MVPMALLDESIGN',
+    'MVPMALLPOOL',
+    'MVPMALLORDER',
+    'MVPMALLVOUCHER',
+    'MVPMALLFINANCE',
+    'MVPMALLREPORT',
+    'MVPMALLSUPPORT',
+    'MVPMALLSETTING',
+    'MVPIDENTITY',
+    'MVPPROVIDER',
+  ];
+  if (records.length !== expectedIds.length) fail('MVP_COUNT_INVALID', names.mvp, String(records.length));
+  records.forEach((record, index) => {
+    const expected = expectedIds[index];
+    const location = `${names.mvp}:${record.id}`;
+    if (record.id !== expected || record.row !== index + 3) fail('MVP_SEQUENCE_INVALID', location, expected);
+    checkStatus(record, location);
+    if (!Array.isArray(record.navigation) || record.navigation.length === 0) fail('MVP_NAVIGATION_MISSING', location);
+    if (!Array.isArray(record.routes) || record.routes.length === 0) fail('MVP_ROUTE_MISSING', location);
+    for (const route of record.routes ?? []) if (!String(route).startsWith('/')) fail('MVP_ROUTE_INVALID', location, route);
+    for (const operationId of record.operations ?? []) {
+      const operation = operationById.get(operationId);
+      if (!operation || !operation.requirements?.includes(record.id)) fail('MVP_OPERATION_TRACE_INVALID', location, operationId);
+    }
+    if (record.status === 'Released') checkSignedEvidence(record.releaseEvidence, location);
+  });
+  const blockers = records.flatMap((record) => (record.releaseBlockers ?? []).map((blocker) => ({ requirement: record.id, ...blocker })));
+  const expected = ['MVPGROUPSETTING', 'MVPGROUPVOUCHER', 'MVPMALLREPORT', 'MVPMALLVOUCHER'];
+  if (
+    blockers
+      .map(({ requirement }) => requirement)
+      .sort()
+      .join() !== expected.join()
+  )
+    fail('MVP_RELEASE_BLOCKERS_INVALID', names.mvp);
+  for (const blocker of blockers) if (!['open', 'resolved'].includes(blocker.status) || !blocker.owner) fail('MVP_RELEASE_BLOCKER_POLICY_INVALID', names.mvp, blocker.requirement);
+}
+
+function checkProviders() {
+  const providers = documents.providers.providers ?? [];
+  if (providers.length !== authority.sheets.providers) fail('PROVIDER_COUNT_INVALID', names.providers, String(providers.length));
+  const required = providers.filter(({ priority }) => priority === 1);
+  if (required.length !== 11) fail('P1_PROVIDER_COUNT_INVALID', names.providers, String(required.length));
+  for (const provider of providers) {
+    const location = `${names.providers}:${provider.id}`;
+    checkStatus(provider, location);
+    if (provider.priority === 1 && provider.extension !== `extensions/channel/${provider.id}`) {
+      fail('P1_PROVIDER_EXTENSION_INVALID', location, provider.extension);
+    }
+    if (provider.priority !== 1 && provider.extension !== null) fail('DEFERRED_PROVIDER_EXPOSED', location, provider.extension);
+  }
+}
+
+function checkFrontend() {
+  const records = documents.frontend.requirements ?? [];
+  if (records.length !== authority.sheets.requirements) fail('FRONTEND_COUNT_INVALID', names.frontend, String(records.length));
+  for (const record of records) {
+    const location = `${names.frontend}:${record.requirement}`;
+    checkStatus(record, location);
+    if (!['console', 'auth', 'storefront'].includes(record.client)) fail('NON_MVP_CLIENT', location, record.client);
+    if (!Array.isArray(record.callers) || !Array.isArray(record.callees) || !record.files) fail('FRONTEND_TRACE_INCOMPLETE', location);
+  }
+}
+
+function checkTrace() {
+  const records = documents.trace.requirements ?? [];
+  if (records.length !== 22) fail('MVP_TRACE_COUNT_INVALID', names.trace, String(records.length));
+  const expectedChain = ['WorkbookCell', 'Requirement', 'Route', 'Operation', 'Schema', 'Permission', 'Capability', 'Scope', 'Handler', 'Owner', 'Table', 'Test', 'Runbook', 'SignedEvidence'];
+  if (JSON.stringify(documents.trace.chain) !== JSON.stringify(expectedChain)) fail('MVP_TRACE_CHAIN_INVALID', names.trace);
+  for (const record of records) {
+    const location = `${names.trace}:${record.requirement}`;
+    for (const field of ['workbookCell', 'requirement', 'navigation', 'routes', 'operations', 'schemas', 'modules', 'tables', 'tests', 'runbook', 'signedEvidence', 'releaseBlockers']) {
+      if (!(field in record)) fail('MVP_TRACE_FIELD_MISSING', location, field);
+    }
+  }
+}
+
+function checkStatus(record, location) {
+  const rank = statusRank.get(record.status);
+  if (rank === undefined) fail('REQUIREMENT_STATUS_INVALID', location, record.status);
+  if ((rank ?? 0) > 0 && (!Array.isArray(record.evidence) || record.evidence.length === 0)) {
+    fail('REQUIREMENT_STATUS_WITHOUT_EVIDENCE', location, record.status);
+  }
+}
+
+function checkSignedEvidence(path, location) {
+  const absolute = join(root, path);
+  if (!existsSync(absolute)) return fail('SIGNED_EVIDENCE_MISSING', location, path);
+  const evidence = JSON.parse(readFileSync(absolute, 'utf8'));
+  if (evidence.requirement !== location.split(':').at(-1) || !evidence.signature || !evidence.sourceTreeHash || !evidence.contractHash || !evidence.migrationHead || !evidence.artifactDigest) fail('SIGNED_EVIDENCE_INVALID', location, path);
 }

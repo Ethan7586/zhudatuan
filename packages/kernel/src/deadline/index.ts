@@ -9,7 +9,11 @@ export class Deadline {
   private readonly timer: ReturnType<typeof setTimeout>;
   private readonly detach?: () => void;
 
-  private constructor(expiresAt: number, parent?: AbortSignal, private readonly now: () => number = Date.now) {
+  private constructor(
+    expiresAt: number,
+    parent?: AbortSignal,
+    private readonly now: () => number = Date.now
+  ) {
     if (!Number.isSafeInteger(expiresAt) || expiresAt <= 0) throw new Error('DEADLINE_INVALID');
     this.expiresAt = expiresAt;
     this.signal = this.controller.signal;
@@ -54,7 +58,9 @@ export class Deadline {
     return new Promise<T>((resolve, reject) => {
       const abort = () => reject(errorCause(this.signal.reason, 'DEADLINE_EXCEEDED'));
       this.signal.addEventListener('abort', abort, { once: true });
-      operation(this.signal).then(resolve, reject).finally(() => this.signal.removeEventListener('abort', abort));
+      operation(this.signal)
+        .then(resolve, reject)
+        .finally(() => this.signal.removeEventListener('abort', abort));
     });
   }
 

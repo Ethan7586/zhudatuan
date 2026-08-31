@@ -23,7 +23,9 @@ function DialogExample() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button tone="primary" onPress={() => setOpen(true)}>打开确认框</Button>
+      <Button tone="primary" onPress={() => setOpen(true)}>
+        打开确认框
+      </Button>
       <Dialog open={open} title="确认业务操作" onClose={() => setOpen(false)}>
         <p>提交前请核对当前范围与业务编号。</p>
       </Dialog>

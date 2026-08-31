@@ -1,7 +1,11 @@
 import { Money } from '@shop/kernel';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 
-export interface TenderAllocation { readonly tender: string; readonly amount: Money; readonly refundable: Money }
+export interface TenderAllocation {
+  readonly tender: string;
+  readonly amount: Money;
+  readonly refundable: Money;
+}
 
 export class AllocationPolicy {
   allocateRefund(allocations: readonly TenderAllocation[], requested: Money): readonly Readonly<{ tender: string; amount: Money }>[] {

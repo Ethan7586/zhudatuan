@@ -1,0 +1,33 @@
+import { useEffect, useState } from 'react';
+import { useCartCommand } from '../../cart/public/index';
+import { useCatalogState } from './CatalogState';
+import { useCatalogFilters } from './CatalogFilters';
+
+export function useCatalogRuntime() {
+  const filterState = useCatalogFilters();
+  const [query, setQuery] = useState(filterState.filters.query);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setQuery(filterState.filters.query), 250);
+    return () => window.clearTimeout(timer);
+  }, [filterState.filters.query]);
+  const catalog = useCatalogState({
+    ...(query ? { query } : {}),
+    ...(filterState.filters.category !== 'all' ? { categoryId: filterState.filters.category } : {}),
+    ...(filterState.filters.mealOnly ? { account: 'meal' as const } : {}),
+    ...(filterState.filters.subsidyOnly ? { exclusive: true } : {}),
+  });
+  const cart = useCartCommand();
+  return Object.freeze({
+    presentationProducts: catalog.presentationProducts,
+    presentationCategories: catalog.presentationCategories,
+    addToCart: (product: Parameters<typeof cart.add>[0], quantity?: Parameters<typeof cart.add>[1]) => {
+      void cart.add(product, quantity);
+    },
+    filters: filterState.filters,
+    updateFilters: filterState.update,
+    resetFilters: filterState.reset,
+    hasMore: catalog.hasMore,
+    isLoadingMore: catalog.isLoadingMore,
+    loadMore: catalog.loadMore,
+  });
+}

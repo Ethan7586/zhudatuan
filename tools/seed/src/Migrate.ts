@@ -4,11 +4,9 @@ import { localSecret } from './LocalSecrets';
 import { run } from './Process';
 
 const environment = localSeedEnvironment();
-const [adminConnection, migrationConnection] = await Promise.all([
-  localSecret(environment.adminDatabaseConnectionRef),
-  localSecret(environment.migrationDatabaseConnectionRef),
-]);
-if (!await schemaExists(adminConnection)) {
+const adminConnection = await localSecret(environment.adminDatabaseConnectionRef);
+if (!(await schemaExists(adminConnection))) {
+  const databaseName = canonicalDatabaseName(adminConnection);
   const admin = new Client({ connectionString: adminConnection });
   await admin.connect();
   try {
@@ -16,7 +14,7 @@ if (!await schemaExists(adminConnection)) {
       if not exists(select 1 from pg_roles where rolname='shopread') then create role shopread nologin; end if;
     end $$`);
     await admin.query('grant shopapp,shopjob to shopmigration');
-    await admin.query('alter database shop owner to shopmigration');
+    await admin.query(`alter database "${databaseName}" owner to shopmigration`);
   } finally {
     await admin.end();
   }
@@ -25,6 +23,12 @@ if (!await schemaExists(adminConnection)) {
 await run('npm', ['run', 'build:commerce']);
 await run(process.execPath, ['--env-file=services/commerce/.env.local', 'services/commerce/dist/MigrationMain.js']);
 process.stdout.write('LOCAL_MIGRATIONS_READY\n');
+
+function canonicalDatabaseName(connectionString: string): string {
+  const databaseName = decodeURIComponent(new URL(connectionString).pathname.slice(1));
+  if (databaseName !== 'zhudatuan_registration') throw new Error('LOCAL_DATABASE_NAME_INVALID');
+  return databaseName;
+}
 
 async function schemaExists(connectionString: string): Promise<boolean> {
   const client = new Client({ connectionString });

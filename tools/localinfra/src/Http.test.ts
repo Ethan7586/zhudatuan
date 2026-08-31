@@ -20,7 +20,10 @@ describe('workload bearer transport preflight', () => {
   });
 });
 
-function request(path: string, bearer = ''): Readonly<{
+function request(
+  path: string,
+  bearer = ''
+): Readonly<{
   headers: Readonly<Record<string, string>>;
   method: string;
   url: URL;

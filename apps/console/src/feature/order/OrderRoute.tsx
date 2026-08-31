@@ -1,41 +1,46 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
-import { formatOrderTime } from './OrderPresentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
-import { orderDetailKey } from './OrderDetailQuery';
-import { OrderDrawer } from './OrderDrawer';
+import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
 import { OrderPageHeader } from './OrderPageHeader';
-import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
+import { orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
-import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
+import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
 import { OrderStatusTabs } from './OrderStatusTabs';
-import './order-layout.css';
-import './order-controls.css';
-import './order-table.css';
-import './order-drawer.css';
-import './order-drawer-panels.css';
-import './order-preview-actions.css';
+import { aftersaleKey, readAftersales } from './AfterSaleQuery';
+import { AfterSaleTable } from './AfterSaleTable';
+import './Layout.css';
+import './Controls.css';
+import './Table.css';
+import './Drawer.css';
+import './DrawerPanels.css';
 
-const previewOnlySearchKeys = ['placed', 'lifecycle', 'payment', 'fulfillment', 'mall', 'view'] as const;
+const unsupportedSearchKeys = ['placed', 'lifecycle', 'payment', 'fulfillment', 'mall'] as const;
 const emptyChecked: ReadonlySet<string> = new Set();
+const OrderDrawer = lazy(() => import('./OrderDrawer').then((module) => ({ default: module.OrderDrawer })));
 
 export function Component() {
   const context = useConsoleContext();
   const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
-  const previewEnabled = isOrderPreviewContext(context);
-  const filter = readFilter(search, previewEnabled);
-  const view = readView(search, previewEnabled);
+  const filter = readFilter(search);
+  const view = readView(search);
   const selected = readSelected(search);
   const detailTab = readDetailTab(search);
   const cursor = search.get('cursor') ?? undefined;
-  const queryFilter: OrderQuery = { ...filter, view, ...(cursor === undefined ? {} : { cursor }) };
-  const query = useQuery({ queryKey: orderKey(context, queryFilter), queryFn: ({ signal }) => readOrders(context, queryFilter, signal) });
+  const queryFilter: OrderQuery = { order: filter.order, ...(cursor === undefined ? {} : { cursor }) };
+  const query = useQuery({ queryKey: orderKey(context, queryFilter), queryFn: ({ signal }) => readOrders(context, queryFilter, signal), enabled: view === 'all' });
+  const aftersaleQuery = useQuery({ queryKey: aftersaleKey(context, queryFilter), queryFn: ({ signal }) => readAftersales(context, queryFilter, signal), enabled: view === 'aftersale' });
+  const detailQuery = useQuery({
+    queryKey: orderDetailKey(context, selected ?? ''),
+    queryFn: ({ signal }) => (selected === undefined ? Promise.resolve(undefined) : readOrderDetail(context, selected, signal)),
+    enabled: selected !== undefined,
+  });
   const page = query.data;
   const pageIds = useMemo(() => page?.items.map((order) => order.id) ?? [], [page?.items]);
   const selectionBoundary = `${context.scope.kind}\u0000${context.scope.id}\u0000${context.session.accessVersion}`;
@@ -48,15 +53,15 @@ export function Component() {
   }, [checkedState, pageIds, selectionBoundary]);
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<OrderColumnKey>>(() => new Set(defaultOrderColumns));
-  const previewPage = previewEnabled && page?.preview?.source === 'local-preview' ? page.preview : undefined;
   const error = safeQueryError(query.error);
 
   useEffect(() => {
-    if (previewEnabled || !previewOnlySearchKeys.some((key) => search.has(key))) return;
+    if (!unsupportedSearchKeys.some((key) => search.has(key)) && (search.get('view') === null || readView(search) === search.get('view'))) return;
     const next = new URLSearchParams(search);
-    previewOnlySearchKeys.forEach((key) => next.delete(key));
+    unsupportedSearchKeys.forEach((key) => next.delete(key));
+    if (search.get('view') !== null && readView(search) === 'all') next.delete('view');
     setSearch(next, { replace: true });
-  }, [previewEnabled, search, setSearch]);
+  }, [search, setSearch]);
   useEffect(() => {
     setCheckedState((current) => (current.boundary === selectionBoundary ? current : { boundary: selectionBoundary, ids: new Set() }));
   }, [selectionBoundary]);
@@ -96,6 +101,11 @@ export function Component() {
       next.set('selected', id);
       next.delete('tab');
     });
+  const openAfterSaleOrder = (id: string) =>
+    updateSearch((next) => {
+      next.set('selected', id);
+      next.set('tab', 'aftersale');
+    });
   const closeOrder = () =>
     updateSearch((next) => {
       next.delete('selected');
@@ -109,7 +119,8 @@ export function Component() {
       resetChecked();
     });
   const refresh = () => {
-    void query.refetch();
+    if (view === 'aftersale') void aftersaleQuery.refetch();
+    else void query.refetch();
     if (selected !== undefined) void queryClient.refetchQueries({ queryKey: orderDetailKey(context, selected), exact: true });
   };
   const toggleColumn = (key: OrderColumnKey) =>
@@ -136,18 +147,18 @@ export function Component() {
 
   return (
     <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
-      <OrderPageHeader previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
+      <OrderPageHeader isFetching={view === 'aftersale' ? aftersaleQuery.isFetching : query.isFetching} onRefresh={refresh} />
 
       <p id="orderwriteboundary" className="ordercontractnote" role="note">
-        {previewEnabled ? '本地预览范围：可点击查看安全预览，但不会执行导出、发货、退款或售后写入。' : '当前生产读合同仅保证 member audience 范围、内部订单 ID 精确筛选与游标分页；组织级完整性和最终动作合同尚不可用。'}
+        商品订单与售后订单都由服务端按当前组织树或会员本人范围隔离，并使用内部订单 ID 精确筛选与游标分页；最终写操作保持关闭。
       </p>
 
-      <OrderStatusTabs active={view} previewEnabled={previewEnabled} page={page} onChange={selectView} />
+      <OrderStatusTabs active={view} onChange={selectView} />
       <div className="orderfilterarea">
-        <OrderFilterForm value={filter} previewEnabled={previewEnabled} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
+        <OrderFilterForm value={filter} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
         <OrderColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
         <div className="orderfiltermeta">
-          <span>{previewPage === undefined ? '服务端筛选 · 更新时间未提供' : `服务端实时筛选 · ${formatOrderTime(previewPage.updatedAt)}`}</span>
+          <span>服务端筛选 · 更新时间未提供</span>
         </div>
       </div>
 
@@ -156,73 +167,135 @@ export function Component() {
           已选择 {checked.size} 条当前页订单；跨页动作等待 Filter Snapshot 与 Preview 证明。
         </p>
       )}
-      <div id="orderlistpanel" className="orderlistpanel" aria-busy={query.isFetching}>
-        {query.isPending ? (
-          <p className="orderliststate" role="status">
-            正在读取订单…
-          </p>
-        ) : null}
-        {query.isError && page === undefined ? (
-          <section className="orderliststate" role="alert">
-            <strong>订单读取失败</strong>
-            <p>{error}</p>
-            <button type="button" onClick={refresh}>
-              重试
-            </button>
-          </section>
-        ) : null}
-        {query.isError && page !== undefined ? (
-          <p className="orderstalebanner" role="status">
-            刷新失败，当前保留最近一次已验证数据：{error}
-          </p>
-        ) : null}
-        {page?.items.length === 0 ? (
-          <section className="orderliststate" role="status">
-            <OrderIcon name="order" />
-            <strong>暂无符合条件的订单</strong>
-            <p>请调整服务端筛选条件后重试。</p>
-          </section>
-        ) : null}
-        {page === undefined || page.items.length === 0 ? null : (
-          <OrderTable
-            rows={page.items}
-            previewEnabled={previewEnabled}
-            visible={visibleColumns}
-            checked={checked}
-            {...(selected === undefined ? {} : { activeOrder: selected })}
-            onCheck={toggleChecked}
-            onCheckAll={togglePage}
-            onOpen={openOrder}
-          />
+      <div id="orderlistpanel" className="orderlistpanel" aria-busy={view === 'aftersale' ? aftersaleQuery.isFetching : query.isFetching}>
+        {view === 'aftersale' ? (
+          <AfterSalePanel query={aftersaleQuery} error={safeQueryError(aftersaleQuery.error)} selected={selected} onOpen={openAfterSaleOrder} onRetry={refresh} />
+        ) : (
+          <>
+            {query.isPending ? (
+              <p className="orderliststate" role="status">
+                正在读取订单…
+              </p>
+            ) : null}
+            {query.isError && page === undefined ? (
+              <section className="orderliststate" role="alert">
+                <strong>订单读取失败</strong>
+                <p>{error}</p>
+                <button type="button" onClick={refresh}>
+                  重试
+                </button>
+              </section>
+            ) : null}
+            {query.isError && page !== undefined ? (
+              <p className="orderstalebanner" role="status">
+                刷新失败，当前保留最近一次已验证数据：{error}
+              </p>
+            ) : null}
+            {page?.items.length === 0 ? (
+              <section className="orderliststate" role="status">
+                <OrderIcon name="order" />
+                <strong>暂无符合条件的订单</strong>
+                <p>请调整服务端筛选条件后重试。</p>
+              </section>
+            ) : null}
+            {page === undefined || page.items.length === 0 ? null : (
+              <OrderTable rows={page.items} visible={visibleColumns} checked={checked} {...(selected === undefined ? {} : { activeOrder: selected })} onCheck={toggleChecked} onCheckAll={togglePage} onOpen={openOrder} />
+            )}
+          </>
         )}
       </div>
 
-      {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
-      {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} onTab={selectTab} onClose={closeOrder} />}
+      {view === 'aftersale' ? (
+        aftersaleQuery.data === undefined ? null : (
+          <OrderPagination count={aftersaleQuery.data.count} nextCursor={aftersaleQuery.data.nextCursor} onCursor={setCursor} />
+        )
+      ) : page === undefined ? null : (
+        <OrderPagination count={page.count} nextCursor={page.nextCursor} onCursor={setCursor} />
+      )}
+      {selected === undefined ? null : (
+        <Suspense fallback={null}>
+          <OrderDrawer
+            orderId={selected}
+            tab={detailTab}
+            query={{
+              data: detailQuery.data,
+              isPending: detailQuery.isPending,
+              isError: detailQuery.isError,
+              error: safeQueryError(detailQuery.error),
+              refetch: () => {
+                void detailQuery.refetch();
+              },
+            }}
+            onTab={selectTab}
+            onClose={closeOrder}
+          />
+        </Suspense>
+      )}
     </section>
+  );
+}
+
+function AfterSalePanel({
+  query,
+  error,
+  selected,
+  onOpen,
+  onRetry,
+}: Readonly<{
+  query: ReturnType<typeof useQuery<Awaited<ReturnType<typeof readAftersales>>>>;
+  error: string | undefined;
+  selected: string | undefined;
+  onOpen: (order: string) => void;
+  onRetry: () => void;
+}>) {
+  if (query.isPending)
+    return (
+      <p className="orderliststate" role="status">
+        正在读取售后订单…
+      </p>
+    );
+  if (query.isError && query.data === undefined)
+    return (
+      <section className="orderliststate" role="alert">
+        <strong>售后订单读取失败</strong>
+        <p>{error}</p>
+        <button type="button" onClick={onRetry}>
+          重试
+        </button>
+      </section>
+    );
+  if (query.data?.items.length === 0)
+    return (
+      <section className="orderliststate" role="status">
+        <OrderIcon name="order" />
+        <strong>暂无符合条件的售后订单</strong>
+        <p>当前范围没有售后申请，或订单筛选条件未命中。</p>
+      </section>
+    );
+  return query.data === undefined ? null : (
+    <>
+      <AfterSaleTable rows={query.data.items} {...(selected === undefined ? {} : { activeOrder: selected })} onOpen={onOpen} />
+      {query.isError ? (
+        <p className="orderstalebanner" role="status">
+          刷新失败，当前保留最近一次已验证数据：{error}
+        </p>
+      ) : null}
+    </>
   );
 }
 
 function OrderPagination({
   count,
-  total,
-  page,
-  previousCursor,
   nextCursor,
   onCursor,
 }: Readonly<{
   count: number;
-  total: number | undefined;
-  page: number | undefined;
-  previousCursor: string | undefined;
   nextCursor: string | undefined;
   onCursor: (cursor?: string) => void;
 }>) {
-  const start = page === undefined ? undefined : (page - 1) * 50 + (count === 0 ? 0 : 1);
-  const end = start === undefined ? undefined : start + Math.max(0, count - 1);
   return (
     <footer className="orderpagination">
-      <span>{total === undefined ? `本页 ${count} 条 · 全量总数不可用` : `${start}–${end} / 共 ${total} 笔`}</span>
+      <span>本页 {count} 条 · 全量总数不可用</span>
       <label>
         每页{' '}
         <select aria-label="每页数量" value="50" disabled>
@@ -230,10 +303,9 @@ function OrderPagination({
         </select>
       </label>
       <div>
-        <button type="button" onClick={() => onCursor(previousCursor)} disabled={previousCursor === undefined} aria-label="上一页">
+        <button type="button" disabled aria-label="上一页">
           <OrderIcon name="arrowLeft" />
         </button>
-        {page === undefined ? null : <span aria-current="page">{page}</span>}
         <button type="button" onClick={() => onCursor(nextCursor)} disabled={nextCursor === undefined} aria-label="下一页">
           <OrderIcon name="arrowRight" />
         </button>
@@ -242,22 +314,20 @@ function OrderPagination({
   );
 }
 
-function readFilter(search: URLSearchParams, previewEnabled: boolean): OrderListFilter {
+function readFilter(search: URLSearchParams): OrderListFilter {
   const parsed = OrderListFilterSchema.safeParse({
     order: search.get('order') ?? '',
-    placed: previewEnabled ? (search.get('placed') ?? '') : '',
-    lifecycle: previewEnabled ? (search.get('lifecycle') ?? '') : '',
-    payment: previewEnabled ? (search.get('payment') ?? '') : '',
-    fulfillment: previewEnabled ? (search.get('fulfillment') ?? '') : '',
-    mall: previewEnabled ? (search.get('mall') ?? '') : '',
+    placed: '',
+    lifecycle: '',
+    payment: '',
+    fulfillment: '',
+    mall: '',
   });
   return parsed.success ? parsed.data : emptyOrderFilter;
 }
 
-function readView(search: URLSearchParams, previewEnabled: boolean): OrderView {
-  if (!previewEnabled) return 'all';
-  const parsed = OrderViewSchema.safeParse(search.get('view') ?? 'all');
-  return parsed.success ? parsed.data : 'all';
+function readView(search: URLSearchParams): OrderView {
+  return search.get('view') === 'aftersale' ? 'aftersale' : 'all';
 }
 
 function readSelected(search: URLSearchParams): string | undefined {

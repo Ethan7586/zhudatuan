@@ -108,12 +108,8 @@ describe('WeChat Pay notification verification', () => {
     const headers = await signedProviderHeaders(keys, body, TIMESTAMP);
     const retainedId = 'PUB_KEY_ID_RETAINED_PLATFORM_2026';
     headers.set('wechatpay-serial', retainedId);
-    const rotated = { ...keys.config, platformKeys: [
-      { id: retainedId, publicKeyPem: keys.config.platformKeys[0]!.publicKeyPem, active: false },
-      keys.config.platformKeys[0]!,
-    ] };
-    await expect(verifyAndDecryptWechatPayNotification(rotated, { headers, body }, { nowMs: NOW_MS }))
-      .resolves.toMatchObject({ notificationId: 'EV-20260814-0001' });
+    const rotated = { ...keys.config, platformKeys: [{ id: retainedId, publicKeyPem: keys.config.platformKeys[0]!.publicKeyPem, active: false }, keys.config.platformKeys[0]!] };
+    await expect(verifyAndDecryptWechatPayNotification(rotated, { headers, body }, { nowMs: NOW_MS })).resolves.toMatchObject({ notificationId: 'EV-20260814-0001' });
   });
 });
 

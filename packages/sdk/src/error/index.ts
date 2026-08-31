@@ -1,4 +1,3 @@
-import type { ContractJsonValue } from '@shop/contract';
 import { ErrorContractSchema } from '@shop/contract/error';
 
 export class ApiError extends Error {
@@ -7,9 +6,9 @@ export class ApiError extends Error {
     readonly status: number,
     readonly requestId: string,
     readonly retryable = false,
-    readonly details?: Readonly<Record<string, ContractJsonValue>>,
+    readonly details?: Readonly<{ field: string }>,
     message = code,
-    options?: ErrorOptions,
+    options?: ErrorOptions
   ) {
     super(message, options);
     this.name = 'ApiError';
@@ -21,7 +20,7 @@ export class ApiError extends Error {
       const result = ErrorContractSchema.safeParse(decoded);
       if (result.success) {
         const value = result.data;
-        return new ApiError(value.code, status, value.requestId, value.retryable ?? false, value.details, value.message);
+        return new ApiError(value.code, status, value.requestId, value.retryable, value.details, value.message);
       }
     } catch (cause) {
       return new ApiError('CONTRACT_RESPONSE_INVALID', status, fallbackRequestId, false, undefined, 'The server returned an invalid error response.', { cause });

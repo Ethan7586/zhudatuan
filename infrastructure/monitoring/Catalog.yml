@@ -1,0 +1,28 @@
+version: 1
+owner: reliability
+source: config/telemetry.yml
+probes: [live, ready, startup, dependency]
+dashboards: [runtime, database, queue, provider, security]
+alerts:
+  - readiness
+  - errorbudget
+  - outboxlag
+  - providerbreaker
+  - databasefencing
+  - backuprestore
+  - invitationbruteforce
+  - invitationreplay
+  - consoleprooffailure
+  - invitationstale
+  - invitationclaimbacklog
+  - invitationcleanuplag
+  - authorizationsnapshotlatency
+  - invitationkeyunavailable
+  - invitationreceiptconsistency
+  - invitationsessionconsistency
+  - navigationauthorizationdrift
+  - cacheunavailable
+  - jobqueuebacklog
+  - workloadavailability
+  - zonecapacity
+  - postgresfailover

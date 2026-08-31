@@ -1,3 +1,4 @@
 import { defineModule } from '../../bootstrap/DefinedModule';
 import { verificationOperations } from './VerificationOperations';
-export const VerificationModule = defineModule('verification', ['member', 'partner'], verificationOperations);
+import { Manifest } from './Manifest';
+export const VerificationModule = defineModule(Manifest, verificationOperations);

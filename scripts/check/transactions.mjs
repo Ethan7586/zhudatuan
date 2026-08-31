@@ -4,9 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { productionSources, relative, root, ts } from './source.mjs';
 
-const externalMethods = new Set([
-  'decrypt', 'deliver', 'download', 'encrypt', 'evaluate', 'exchange', 'prepay', 'publish', 'refund', 'request', 'send', 'upload', 'verifyNotification',
-]);
+const externalMethods = new Set(['decrypt', 'deliver', 'download', 'encrypt', 'evaluate', 'exchange', 'prepay', 'publish', 'refund', 'request', 'send', 'upload', 'verifyNotification']);
 const moduleRoot = path.join(root, 'services', 'commerce', 'src', 'modules');
 
 function propertyName(node) {
@@ -18,8 +16,7 @@ function propertyName(node) {
 function containsExternalCall(node) {
   let found = false;
   const visit = (current) => {
-    if (ts.isCallExpression(current) && ts.isPropertyAccessExpression(current.expression)
-      && externalMethods.has(current.expression.name.text)) found = true;
+    if (ts.isCallExpression(current) && ts.isPropertyAccessExpression(current.expression) && externalMethods.has(current.expression.name.text)) found = true;
     if (!found) ts.forEachChild(current, visit);
   };
   visit(node);

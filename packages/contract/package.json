@@ -15,9 +15,10 @@
     "./client": "./src/ClientSchema.ts",
     "./error": "./src/ErrorSchema.ts",
     "./schema": "./src/schema/index.ts",
-    "./version": "./src/ContractIdentity.generated.ts",
+    "./version": "./src/ContractIdentity.ts",
     "./openapi.json": "./openapi.json",
-    "./events.json": "./events.json"
+    "./events.json": "./events.json",
+    "./catalog-taxonomy.json": "./src/catalog-taxonomy.json"
   },
   "types": "./src/index.ts",
   "dependencies": {

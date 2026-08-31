@@ -1,5 +1,6 @@
-import type { ProviderPriority } from './Manifest';
-import { PROVIDER_CATALOG_RECORDS } from '../RequirementCatalog.generated';
+import { PROVIDER_CATALOG_RECORDS } from '../RequirementCatalog';
+
+export type ProviderPriority = 1 | 3 | 4;
 
 export type ProviderDelivery = 'required' | 'deferred-contract';
 

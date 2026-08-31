@@ -2,14 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
-const migration = await readFile(new URL(
-  '../../../database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql', import.meta.url,
-), 'utf8');
+const migration = await readFile(new URL('../../../database/migrations/20260828180000_zhudatuan_purchase_access.sql', import.meta.url), 'utf8');
 const runner = await readFile(new URL('./BootstrapSandboxQualification.ts', import.meta.url), 'utf8');
-const qualificationBoundary = migration.slice(
-  migration.indexOf('create or replace function deployment.sandbox_member_qualification_bootstrap'),
-  migration.indexOf('create or replace function deployment.sandbox_member_welfare_bootstrap'),
-);
+const qualificationBoundary = migration.slice(migration.indexOf('create or replace function deployment.sandbox_member_qualification_bootstrap'), migration.indexOf('create or replace function deployment.sandbox_member_welfare_bootstrap'));
 
 test('qualification boundary is direct-login, one-member, idempotent and audit chained', () => {
   assert.match(qualificationBoundary, /sandbox_member_qualification_bootstrap\(p_sentinel text,p_membership text\)/);

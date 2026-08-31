@@ -1,4 +1,4 @@
-export type FrontendClient = 'console' | 'store' | 'supplier';
+export type FrontendClient = 'console' | 'auth' | 'storefront';
 
 export interface FrontendExecutionTrace {
   readonly client: FrontendClient;
@@ -18,25 +18,23 @@ export interface FrontendExecutionTrace {
 }
 
 export function clientFor(prefix: string): FrontendClient {
-  if (prefix === 'STORE') return 'store';
-  if (prefix === 'SUPPLY') return 'supplier';
   return 'console';
 }
 
 export function featureFor(prefix: string, module: string): string {
-  const area = prefix === 'STORE' ? 'store' : prefix === 'SUPPLY' ? 'supplier'
-    : prefix === 'GROUP' ? 'enterprise' : prefix === 'MALL' ? 'mall'
-      : prefix === 'DIST' ? 'distribution' : 'platform';
+  const area = prefix === 'STORE' ? 'store' : prefix === 'SUPPLY' ? 'supplier' : prefix === 'GROUP' ? 'enterprise' : prefix === 'MALL' ? 'mall' : prefix === 'DIST' ? 'distribution' : 'platform';
   return area + '/' + module;
 }
 
-export function executionTrace(input: Readonly<{
-  prefix: string;
-  module: string;
-  route: string;
-  operation: string;
-  test: string;
-}>): FrontendExecutionTrace {
+export function executionTrace(
+  input: Readonly<{
+    prefix: string;
+    module: string;
+    route: string;
+    operation: string;
+    test: string;
+  }>
+): FrontendExecutionTrace {
   const client = clientFor(input.prefix);
   const feature = featureFor(input.prefix, input.module);
   return Object.freeze({
@@ -46,13 +44,13 @@ export function executionTrace(input: Readonly<{
     operation: input.operation,
     test: input.test,
     files: Object.freeze({
-      route: `apps/${client}/src/route/routes.tsx`,
+      route: 'apps/console/src/route/Router.tsx',
       feature: `apps/${client}/src/feature/${input.module}`,
       sdk: 'packages/sdk/src/operations/CommerceClient.ts',
     }),
     callers: Object.freeze([`${client}:${input.route}`, feature]),
     callees: Object.freeze([`sdk:${input.operation}`, `operation:${input.operation}`]),
     evidence: Object.freeze([]),
-    status: 'Missing',
+    status: 'Designed',
   });
 }

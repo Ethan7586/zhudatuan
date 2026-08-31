@@ -24,19 +24,26 @@ export function sandboxWelfareBootstrapEnvironment(source: NodeJS.ProcessEnv): S
   if (source.ZHUDATUAN_SANDBOX_WELFARE_CONFIRM !== SANDBOX_WELFARE_CONFIRMATION) {
     throw new Error('SANDBOX_WELFARE_OWNER_CONFIRMATION_REQUIRED');
   }
-  const connectionString = required(source.ZHUDATUAN_SANDBOX_WELFARE_DATABASE_URL,
-    'SANDBOX_WELFARE_DATABASE_URL_REQUIRED');
+  const connectionString = required(source.ZHUDATUAN_SANDBOX_WELFARE_DATABASE_URL, 'SANDBOX_WELFARE_DATABASE_URL_REQUIRED');
   let databaseUrl: URL;
-  try { databaseUrl = new URL(connectionString); }
-  catch { throw new Error('SANDBOX_WELFARE_DATABASE_URL_INVALID'); }
-  if (!['postgres:', 'postgresql:'].includes(databaseUrl.protocol) || databaseUrl.hash || databaseUrl.search
-    || databaseUrl.hostname !== DATABASE_HOST || databaseUrl.port !== DATABASE_PORT
-    || decodeURIComponent(databaseUrl.pathname.slice(1)) !== DATABASE_NAME
-    || decodeURIComponent(databaseUrl.username) !== DATABASE_ROLE || databaseUrl.password.length < 16) {
+  try {
+    databaseUrl = new URL(connectionString);
+  } catch {
+    throw new Error('SANDBOX_WELFARE_DATABASE_URL_INVALID');
+  }
+  if (
+    !['postgres:', 'postgresql:'].includes(databaseUrl.protocol) ||
+    databaseUrl.hash ||
+    databaseUrl.search ||
+    databaseUrl.hostname !== DATABASE_HOST ||
+    databaseUrl.port !== DATABASE_PORT ||
+    decodeURIComponent(databaseUrl.pathname.slice(1)) !== DATABASE_NAME ||
+    decodeURIComponent(databaseUrl.username) !== DATABASE_ROLE ||
+    databaseUrl.password.length < 16
+  ) {
     throw new Error('SANDBOX_WELFARE_DATABASE_ENDPOINT_INVALID');
   }
-  const expectedDatabase = required(source.ZHUDATUAN_SANDBOX_WELFARE_DATABASE_NAME,
-    'SANDBOX_WELFARE_DATABASE_NAME_REQUIRED');
+  const expectedDatabase = required(source.ZHUDATUAN_SANDBOX_WELFARE_DATABASE_NAME, 'SANDBOX_WELFARE_DATABASE_NAME_REQUIRED');
   if (expectedDatabase !== DATABASE_NAME) throw new Error('SANDBOX_WELFARE_DATABASE_NAME_MISMATCH');
   const sentinel = required(source.ZHUDATUAN_SANDBOX_WELFARE_SENTINEL, 'SANDBOX_WELFARE_SENTINEL_REQUIRED');
   if (!SENTINEL_PATTERN.test(sentinel)) throw new Error('SANDBOX_WELFARE_SENTINEL_INVALID');
@@ -48,8 +55,7 @@ export function sandboxWelfareBootstrapEnvironment(source: NodeJS.ProcessEnv): S
   if (!Number.isSafeInteger(amountMinor) || amountMinor > 1_000_000) throw new Error('SANDBOX_WELFARE_AMOUNT_INVALID');
   const currency = required(source.ZHUDATUAN_SANDBOX_WELFARE_CURRENCY, 'SANDBOX_WELFARE_CURRENCY_REQUIRED');
   if (currency !== 'CNY') throw new Error('SANDBOX_WELFARE_CURRENCY_INVALID');
-  return Object.freeze({ amountMinor, confirmation: SANDBOX_WELFARE_CONFIRMATION, connectionString,
-    currency: 'CNY', expectedDatabase: DATABASE_NAME, membership, sentinel });
+  return Object.freeze({ amountMinor, confirmation: SANDBOX_WELFARE_CONFIRMATION, connectionString, currency: 'CNY', expectedDatabase: DATABASE_NAME, membership, sentinel });
 }
 
 export function sandboxWelfareBootstrapSummary(membership: string, amountMinor: number): string {

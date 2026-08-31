@@ -1,7 +1,7 @@
 {
   "algorithm": "sha256",
-  "count": 94,
-  "head": "20260820133000",
+  "count": 171,
+  "head": "20260829054500",
   "migrations": [
     {
       "file": "20260724070000_production_mvp.sql",
@@ -378,6 +378,314 @@
     {
       "file": "20260820133000_inventory_single_source_cutover.sql",
       "sha256": "2389aadba4f46edeeb1cee8ba9f84f57ed76fcbcf898c6516db35867c788d98b"
+    },
+    {
+      "file": "20260821010000_assert_source_head.sql",
+      "sha256": "b027b38e69ca75d7f53fb02212342eb27e405b3312fd0a409bddf6b0ed596890"
+    },
+    {
+      "file": "20260821011000_create_domain_schemas.sql",
+      "sha256": "83353ab1c170eba7e0554785ced4bc265335a1e9c269be15c35d892f41aa2d7f"
+    },
+    {
+      "file": "20260821012000_create_runtime_control.sql",
+      "sha256": "b7ae0ad46f683b170b1267df6c5c7e6990a3972f7c461789e86153d82702d4c8"
+    },
+    {
+      "file": "20260821013000_create_identity_access.sql",
+      "sha256": "17923b4823d08a8c42f57b917384dc4ccbf6d6a2d3542ed010380b3ae09633b6"
+    },
+    {
+      "file": "20260821014000_create_organization_partner.sql",
+      "sha256": "13771017670a808e9b9cf89edb948c2cc224c797abe507063de2dcd25c9dae26"
+    },
+    {
+      "file": "20260821015000_create_capability_member.sql",
+      "sha256": "e62fc87188fb7fc7d1ee16327e594014406b97de683b84efcf44f13c9adb7841"
+    },
+    {
+      "file": "20260821016000_create_qualification.sql",
+      "sha256": "50a1c7e4ee399acbc4cc4b5e5afdf8cb4db0d36971251a403809dad19cd1c625"
+    },
+    {
+      "file": "20260821017000_create_catalog_pricing.sql",
+      "sha256": "1dc87b33cd46d6f7b1c4bbceb83d1661e5775836ac2c2688b2544916a335d8d3"
+    },
+    {
+      "file": "20260821018000_create_inventory_experience.sql",
+      "sha256": "421962d835cc632993a2feed814d041c760970e35b22d9da259cc6f16d0ad684"
+    },
+    {
+      "file": "20260821019000_create_cart_checkout_order.sql",
+      "sha256": "569d70cf4a1fe252b1636f2873b86eb8223ab3138b568a32669042f81cf65565"
+    },
+    {
+      "file": "20260821020000_create_fulfillment_verification.sql",
+      "sha256": "34c6c981499db8433dbff115b41a65a31f174eaf8016f5d4214478717e9cecae"
+    },
+    {
+      "file": "20260821021000_create_payment_voucher_benefit.sql",
+      "sha256": "490ef6a1a272cab8ff08c841bf6c0f1520e1c56c615f5e644598c98967e4bbdf"
+    },
+    {
+      "file": "20260821022000_create_finance_channel.sql",
+      "sha256": "94a425943609befc92b35b5d310a3568268344be43265fec431e9cf0605d6617"
+    },
+    {
+      "file": "20260821023000_create_support_notification.sql",
+      "sha256": "27c0255e678f807a42a1d642e4b0076ef457d630da2f58eb25a296ab2d93b7db"
+    },
+    {
+      "file": "20260821024000_create_reporting_risk_audit.sql",
+      "sha256": "00183e44ff0a117d39517c817e9e1026d7082ea6299045d03dd8e0ca30e8c319"
+    },
+    {
+      "file": "20260821025000_create_extension.sql",
+      "sha256": "4694c9efa32d50d8c25d9f284039111ff09d61ff932254b69389e50c69dbc6ce"
+    },
+    {
+      "file": "20260821026000_backfill_domain_data.sql",
+      "sha256": "126540b5c19f30a0f01588c72238b27d51ef0adf85fcde3e5cfea8d1b24feff5"
+    },
+    {
+      "file": "20260821027000_reconcile_domain_data.sql",
+      "sha256": "7eadf003860dbe5e3b6c9e8da65478bbec6398009b77287ad3aa96943eff5f72"
+    },
+    {
+      "file": "20260821028000_build_domain_indexes.sql",
+      "sha256": "51775c6c3d5f775e6bc8b1462c7c644cca6cfbf620ccd5f16b49fb0843f9537b"
+    },
+    {
+      "file": "20260821029000_publish_domain_contract.sql",
+      "sha256": "43838fa722632b93f412614a4267ec948354ddec909cb5874b896bd87a7a5365"
+    },
+    {
+      "file": "20260821030000_revoke_public_access.sql",
+      "sha256": "e32f5e82f706c51d10941610a09c1de070b5344004196f1f533478e2fcf41607"
+    },
+    {
+      "file": "20260821031000_drop_legacy_objects.sql",
+      "sha256": "d0f2326e85a997cac208473959976a9831e7c0a2178f49b87c2e6c0a6fe98527"
+    },
+    {
+      "file": "20260821032000_assert_target_head.sql",
+      "sha256": "93edc9c011bd3103bdc6e8388cf36ef89d9a1694ad87ac49bf6e9be7f9ff77a6"
+    },
+    {
+      "file": "20260821033000_complete_experience_publication.sql",
+      "sha256": "99335bd5d089d8a46208028bee89b8520667d17ed5acf45f8c9d1bf53f1dc276"
+    },
+    {
+      "file": "20260821034000_add_storefront_offer_read.sql",
+      "sha256": "cc844dc59b25618a8e393fd5b86f0a7fe1aa2ebaf892b59e8e258c68edc4d217"
+    },
+    {
+      "file": "20260821035000_add_auth_ticket_exchange.sql",
+      "sha256": "ff1607e4b357320c733f544a0c7ecda9c64df73c3f4bd467109ae98aa97c8455"
+    },
+    {
+      "file": "20260821036000_add_invitation_terms_read.sql",
+      "sha256": "4b18dc5e813b974f5202ec170344f150231103855fb65916580dbb6533d3578b"
+    },
+    {
+      "file": "20260821037000_add_member_journey.sql",
+      "sha256": "78ed185333ea1b1856c16d051dff1a2d8012c377bbb97e50d5d96fd0ee9b7126"
+    },
+    {
+      "file": "20260821038000_add_keyset_indexes.sql",
+      "sha256": "0c78c515a88f6272184b3a94e57fa2c15f0d272066b8256a8f70af0e79bfb359"
+    },
+    {
+      "file": "20260821039000_checkout_atomic_order.sql",
+      "sha256": "6704a9435258c8b08e8b30cf45ec9912ec5f0e29dfee2795e6f7ec8b1853e467"
+    },
+    {
+      "file": "20260821040000_payment_recovery.sql",
+      "sha256": "d93d91d32c0ef84be9250440cf064a7e5f72776462450618b1ae71ebd668cc6d"
+    },
+    {
+      "file": "20260821041000_voucher_lifecycle.sql",
+      "sha256": "714ed5bfc039ff5c6cd1b2aef01c7c584d6aabe7b22b0c478f760e19372315f8"
+    },
+    {
+      "file": "20260821042000_benefit_lifecycle.sql",
+      "sha256": "5573913c36c50baf5fe50e8f0e7422e6241ba3529048d3f26c15f4fb4f3ce816"
+    },
+    {
+      "file": "20260821043000_finance_lifecycle.sql",
+      "sha256": "7e895f5a32a76a99b0531df53153f4d89d38b62b65958b3a458ced072f59a377"
+    },
+    {
+      "file": "20260821044000_channel_lifecycle.sql",
+      "sha256": "5dbdb0d7274f4aad382cecd0df1ebd941e91d269931ddcf017af40dc77eb14a5"
+    },
+    {
+      "file": "20260821045000_channel_scope_mapping.sql",
+      "sha256": "3937e5712a3e109f5f31f065296d7fa075b2f1a853a5f9b34fd9f13c4030a9d5"
+    },
+    {
+      "file": "20260821046000_support_lifecycle.sql",
+      "sha256": "49c946eea684d633268df9ec71e26a58a9f68dce4479165e9c393eb2ef6907fd"
+    },
+    {
+      "file": "20260821047000_notification_lifecycle.sql",
+      "sha256": "2a30bcbf35f91f5277603a4ba64f91f84e09a4b303b2cfc0557e3ad047f12f18"
+    },
+    {
+      "file": "20260821048000_reporting_lifecycle.sql",
+      "sha256": "66ad407bef7b4ea3fcea355b8ae84f68d3526efc1763b29bf34f023db83b9515"
+    },
+    {
+      "file": "20260821049000_risk_lifecycle.sql",
+      "sha256": "4bbd766c0297c8c01329d4d0d41c738d3180ebb2c0df7756aaf55536dffa0bc3"
+    },
+    {
+      "file": "20260821050000_audit_lifecycle.sql",
+      "sha256": "60d0ad70fea7e0e3447221e2db2e56590d956be8cd586604cbd3e38c2900d995"
+    },
+    {
+      "file": "20260821051000_extension_lifecycle.sql",
+      "sha256": "519e836ae5d89acbaf375333d9a448be59a08cf72b411eccc5c7e2022f5f0905"
+    },
+    {
+      "file": "20260821052000_import_lifecycle.sql",
+      "sha256": "a70ec4dcffde4bd7f087d8d64d384c6c3d7b8204cc0163cd7f842327297cdd2c"
+    },
+    {
+      "file": "20260821053000_complete_batch_imports.sql",
+      "sha256": "b66b0c302255dfecf87532e3b79442ac6a19221ac49c1e5fd7e1e55088e09a73"
+    },
+    {
+      "file": "20260821054000_move_membership_owner.sql",
+      "sha256": "00cc0692f63dd6c08d3f1c5bb0586db0930d59e552a8128a0675f57b6eaa5a0f"
+    },
+    {
+      "file": "20260821055000_isolate_wechat_payment_applications.sql",
+      "sha256": "9e9d610b0f5b5e945d5b3c04412175f6afda40d5c9fb251642104746b6349101"
+    },
+    {
+      "file": "20260821056000_authorize_member_data_scope.sql",
+      "sha256": "3681d8c6f724e9c1dc1b63af2383069e19051b7d31bddd09c1febc8541e6dec6"
+    },
+    {
+      "file": "20260821057000_resolve_payment_webhook_scope.sql",
+      "sha256": "3929bf7a790be9ac854e41b9b0fe16995a0cfbf770f4fe4ea3d04054ec456633"
+    },
+    {
+      "file": "20260821058000_align_member_operations.sql",
+      "sha256": "116ddfb0412b330001986af2fe8ba12e644dc7bcffbe8d55324fcf0591e69ec8"
+    },
+    {
+      "file": "20260821059000_reconcile_contract_head.sql",
+      "sha256": "8185d6f017a043e549824af2fed3e279ab9c2a1ba7787e38a733d8d69dd957eb"
+    },
+    {
+      "file": "20260821060000_rebind_membership_functions.sql",
+      "sha256": "8349c6352d63271980996a44ce6984e25dcd6c4e27ef4e45eee9c321233bd289"
+    },
+    {
+      "file": "20260821061000_normalize_membership_scopes.sql",
+      "sha256": "7fa17a112c65b418a4d0c1fbe2786dfbdfc17ec517f04eaa977a061a6a4d5fdc"
+    },
+    {
+      "file": "20260821062000_publish_error_contract.sql",
+      "sha256": "d53727c4927e71d21ad9c57d5d82819e73b06c95d02b894b69fb874dc09a627e"
+    },
+    {
+      "file": "20260821063000_finalize_error_contract.sql",
+      "sha256": "47be2d567f3de6ad045afec963d79d4693a0750a720aa3948110a9f116bdf581"
+    },
+    {
+      "file": "20260821064000_add_client_error_telemetry.sql",
+      "sha256": "17ed6189d58982bb98ed424c9a6212781ad64f6d9f2fdc4866e6ca7d3308f14f"
+    },
+    {
+      "file": "20260821065000_add_invitation_lifecycle.sql",
+      "sha256": "835703dc436396f0a46944d124b91c6bdada86202ddbe34a87c88b1f298be64d"
+    },
+    {
+      "file": "20260821066000_resolve_invitation_scope.sql",
+      "sha256": "8e27b18c651517975ad1620c4edc35771b895eeb2c2dbb23a4322e2e88aa6ed8"
+    },
+    {
+      "file": "20260821067000_add_session_management.sql",
+      "sha256": "d371a6f1b4ad9833ea987c0c10d8cd16b5ad2de2d35e7ac360324e803e803bcd"
+    },
+    {
+      "file": "20260821068000_add_member_benefit_ledger.sql",
+      "sha256": "5b4e001dcddd2f4400d3e52e85f6b48ae02c25f709cc6c4c94ef9195e52b7353"
+    },
+    {
+      "file": "20260821069000_add_store_management.sql",
+      "sha256": "d1f63e15a95ca62453e5acb280b18933e32982e4cdc15491e12c79c29d814ea8"
+    },
+    {
+      "file": "20260821070000_repair_decision_audit_scope.sql",
+      "sha256": "09daced33031fe5235c98080cb7f1905a53c63776c0f501c1eb19bb20168b427"
+    },
+    {
+      "file": "20260821071000_grant_store_administration.sql",
+      "sha256": "6f4dc5b7b7c25a1fb82789882c69102868bc2a0a31c4e39e99023dc3596f81b9"
+    },
+    {
+      "file": "20260821072000_add_console_member_commands.sql",
+      "sha256": "4e59ee3ff47b04afa470c1eb85b2e2cb34445b9aa06a28510cc0d62a8ebdb771"
+    },
+    {
+      "file": "20260821073000_publish_console_contract.sql",
+      "sha256": "4f83abdb3e89d63c7e1995c4512f54fecfcac855aca3b7eee24b86e2823dac46"
+    },
+    {
+      "file": "20260821074000_grant_platform_owner_operations.sql",
+      "sha256": "bebc75c01fa11ea98ce6e99344981cd2bcdd13c2228f0270463eed7d0cec4414"
+    },
+    {
+      "file": "20260821075000_grant_platform_cardlibrary_read.sql",
+      "sha256": "18e1dc1816ff407ee40736fd28b61d5c20afa149e0c718581cdcfb5ceb913834"
+    },
+    {
+      "file": "20260821076000_grant_platform_cockpit_reads.sql",
+      "sha256": "bd47ffe5a031681a938fb02874cdbd1d7e005892c53dd5b5159301c54c87885f"
+    },
+    {
+      "file": "20260821077000_add_reporting_cockpit.sql",
+      "sha256": "5dc8d5e6fe193daea2e43b09d40915975bfa44b591be522a552f3db34e8eed4a"
+    },
+    {
+      "file": "20260821078000_complete_experience_application.sql",
+      "sha256": "defa914b7058b5e62503904eb3cef5ec93b669cce63077db892ee816b2e11bf8"
+    },
+    {
+      "file": "20260821079000_resolve_experience_version_scope.sql",
+      "sha256": "d0fd73f0a5ff77897723dd32de71a100a9cda6c5bf69fb8fc726188ef27c4b53"
+    },
+    {
+      "file": "20260821080000_restore_member_scope_authorization.sql",
+      "sha256": "8c5e8fd39acb950cf45d9017c1798d8e5e720f097919cf1aa20eaa13eb190750"
+    },
+    {
+      "file": "20260828170000_zhudatuan_registration_baseline.sql",
+      "sha256": "d6c6fea6af00656473af11a104aae77b5057b1eb6ef61ec78eaacceaf978f0fd"
+    },
+    {
+      "file": "20260828173000_zhudatuan_web_business_access.sql",
+      "sha256": "bf790e5e9a94f89abbee39d90338fef6504c2a33809995271aeaa947d07ca981"
+    },
+    {
+      "file": "20260828180000_zhudatuan_purchase_access.sql",
+      "sha256": "38cd43115db61a1cb0c97320264ba86de30148c0a0ecc96f9d2557211aa878cf"
+    },
+    {
+      "file": "20260828183000_zhudatuan_runtime_readiness_repair.sql",
+      "sha256": "6cbc0848ff1cd1729810ada50a80cfced994d3055a1b89ea5b2094eba4aeac86"
+    },
+    {
+      "file": "20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql",
+      "sha256": "c7f179ebc16bf21e84b20a304f0c110824fc9bb3a4fad7e91368caf2519bf01a"
+    },
+    {
+      "file": "20260829054500_zhudatuan_identity_login_acl_repair.sql",
+      "sha256": "a909cc9c878e2e15892985b1a480701e437be4d233fd848387595366e937d9e2"
     }
   ]
 }

@@ -17,10 +17,19 @@ describe('job claim, retry and dead letter', () => {
     const abort = new AbortController();
     const fixture = database(job(1));
     const runner = new JobRunner(fixture.pool, configuration(3));
-    await runner.run('contractjob', { process: async () => { abort.abort(); throw new Error('DEPENDENCY_TIMEOUT'); } }, abort.signal);
+    await runner.run(
+      'contractjob',
+      {
+        process: async () => {
+          abort.abort();
+          throw new Error('DEPENDENCY_TIMEOUT');
+        },
+      },
+      abort.signal
+    );
     expect(fixture.sql).toContain('begin');
     expect(fixture.sql).toContain('commit');
-    expect(fixture.sql.some((query) => query.includes("state=$3") && fixture.values.some((values) => values?.includes('queued')))).toBe(true);
+    expect(fixture.sql.some((query) => query.includes('state=$3') && fixture.values.some((values) => values?.includes('queued')))).toBe(true);
     expect(fixture.sql.some((query) => query.includes('runtime.deadletter'))).toBe(false);
   });
 
@@ -29,7 +38,16 @@ describe('job claim, retry and dead letter', () => {
     const fixture = database(job(3));
     const deadletter = { record: vi.fn(async () => undefined) };
     const runner = new JobRunner(fixture.pool, configuration(3), deadletter);
-    await runner.run('contractjob', { process: async () => { abort.abort(); throw new Error('PERMANENT_FAILURE'); } }, abort.signal);
+    await runner.run(
+      'contractjob',
+      {
+        process: async () => {
+          abort.abort();
+          throw new Error('PERMANENT_FAILURE');
+        },
+      },
+      abort.signal
+    );
     expect(fixture.sql.some((query) => query.includes('insert into runtime.deadletter'))).toBe(true);
     expect(fixture.values.some((values) => values?.includes('failed'))).toBe(true);
     expect(deadletter.record).toHaveBeenCalledOnce();
@@ -38,12 +56,11 @@ describe('job claim, retry and dead letter', () => {
 });
 
 function configuration(attempts: number): JobRunnerConfig {
-  return { worker: 'worker-contract', owner: 'runtime', batch: 1, lease: 5, concurrency: 1, attempts, poll: 1,
-    deadline: 1_000, retryMinimum: 1, retryMaximum: 2 };
+  return { worker: 'worker-contract', workload: 'jobs', owner: 'runtime', batch: 1, lease: 5, concurrency: 1, attempts, poll: 1, deadline: 1_000, retryMinimum: 1, retryMaximum: 2 };
 }
 
 function job(attempts: number): ClaimedJob {
-  return { id: 'job-contract', kind: 'contractjob', scope_id: 'mall-contract', payload: {}, attempts };
+  return { id: 'job-contract', kind: 'contractjob', scope_id: 'mall-contract', payload: {}, attempts, fencing_token: 1 };
 }
 
 function database(claimed: ClaimedJob) {
@@ -52,7 +69,8 @@ function database(claimed: ClaimedJob) {
   let claims = 0;
   const client = {
     query: async (text: string, parameters?: readonly unknown[]) => {
-      sql.push(text.trim()); values.push(parameters);
+      sql.push(text.trim());
+      values.push(parameters);
       return { rows: [], rowCount: 1 } as unknown as QueryResult;
     },
     release: () => undefined,
@@ -60,7 +78,8 @@ function database(claimed: ClaimedJob) {
   const pool = {
     connect: async () => client,
     query: async <T>(text: string, parameters?: readonly unknown[]) => {
-      sql.push(text.trim()); values.push(parameters);
+      sql.push(text.trim());
+      values.push(parameters);
       if (text.includes('runtime.claim_job')) return { rows: claims++ === 0 ? [claimed] : [], rowCount: claims === 1 ? 1 : 0 } as unknown as QueryResult<T & never>;
       return { rows: [], rowCount: 1 } as unknown as QueryResult<T & never>;
     },

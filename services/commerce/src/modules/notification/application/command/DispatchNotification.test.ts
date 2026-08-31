@@ -12,8 +12,7 @@ describe('identity challenge notification delivery safety', () => {
     const repository = repositoryWith({ sequence: 1, state: 'sent', dispatch: false });
     const decrypt = vi.fn(async () => 'unused');
     const send = vi.fn(async () => ({ provider: 'aliyun', externalId: 'sms:1' }));
-    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient,
-      new DeliveryRegistry([{ id: 'sms', send }]));
+    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient, new DeliveryRegistry([{ id: 'sms', send }]));
 
     await command.challenge(challenge);
 
@@ -25,26 +24,30 @@ describe('identity challenge notification delivery safety', () => {
 
   it('persists sent only after provider receipt is returned', async () => {
     const repository = repositoryWith({ sequence: 2, state: 'sending', dispatch: true });
-    const decrypt = vi.fn(async (key: string) => key === 'identity/challenge' ? '123456' : '+8613800138000');
+    const decrypt = vi.fn(async (_purpose: string, key: string) => (key === 'identity/challenge' ? '123456' : '+8613800138000'));
     const send = vi.fn(async () => ({ provider: 'aliyun', externalId: 'sms:2' }));
-    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient,
-      new DeliveryRegistry([{ id: 'sms', send }]));
+    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient, new DeliveryRegistry([{ id: 'sms', send }]));
 
     await command.challenge(challenge);
 
-    expect(send).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      recipient: '+8613800138000', variables: { code: '123456' }, idempotency: challenge,
-    }));
+    expect(send).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        recipient: '+8613800138000',
+        variables: { code: '123456' },
+        idempotency: challenge,
+      })
+    );
     expect(repository.complete).toHaveBeenCalledExactlyOnceWith(challenge, 2, 'aliyun', 'sms:2');
     expect(repository.ambiguous).not.toHaveBeenCalled();
   });
 
   it('marks provider or commit uncertainty ambiguous and never blindly resends it', async () => {
     const repository = repositoryWith({ sequence: 3, state: 'sending', dispatch: true });
-    const decrypt = vi.fn(async (key: string) => key === 'identity/challenge' ? '123456' : '+8613800138000');
-    const send = vi.fn(async () => { throw new Error('PROVIDER_OUTCOME_UNKNOWN'); });
-    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient,
-      new DeliveryRegistry([{ id: 'sms', send }]));
+    const decrypt = vi.fn(async (_purpose: string, key: string) => (key === 'identity/challenge' ? '123456' : '+8613800138000'));
+    const send = vi.fn(async () => {
+      throw new Error('PROVIDER_OUTCOME_UNKNOWN');
+    });
+    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient, new DeliveryRegistry([{ id: 'sms', send }]));
 
     await expect(command.challenge(challenge)).resolves.toBeUndefined();
     expect(repository.ambiguous).toHaveBeenCalledExactlyOnceWith(challenge, 3, 'PROVIDER_OUTCOME_UNKNOWN');
@@ -53,10 +56,11 @@ describe('identity challenge notification delivery safety', () => {
 
   it('records a definitive Aliyun rejection with its sanitized provider code', async () => {
     const repository = repositoryWith({ sequence: 4, state: 'sending', dispatch: true });
-    const decrypt = vi.fn(async (key: string) => key === 'identity/challenge' ? '123456' : '+8613800138000');
-    const send = vi.fn(async () => { throw new Error('ALIYUN_SMS_ISV.SMS_SIGNATURE_ILLEGAL'); });
-    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient,
-      new DeliveryRegistry([{ id: 'sms', send }]));
+    const decrypt = vi.fn(async (_purpose: string, key: string) => (key === 'identity/challenge' ? '123456' : '+8613800138000'));
+    const send = vi.fn(async () => {
+      throw new Error('ALIYUN_SMS_ISV.SMS_SIGNATURE_ILLEGAL');
+    });
+    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient, new DeliveryRegistry([{ id: 'sms', send }]));
 
     await expect(command.challenge(challenge)).resolves.toBeUndefined();
     expect(repository.fail).toHaveBeenCalledExactlyOnceWith(challenge, 4, 'ALIYUN_SMS_ISV.SMS_SIGNATURE_ILLEGAL');
@@ -65,10 +69,11 @@ describe('identity challenge notification delivery safety', () => {
 
   it('records a pre-send decrypt failure as failed and allows the job to retry', async () => {
     const repository = repositoryWith({ sequence: 5, state: 'sending', dispatch: true });
-    const decrypt = vi.fn(async () => { throw new Error('KMS_DECRYPT_FAILED'); });
+    const decrypt = vi.fn(async () => {
+      throw new Error('KMS_DECRYPT_FAILED');
+    });
     const send = vi.fn(async () => ({ provider: 'aliyun', externalId: 'sms:4' }));
-    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient,
-      new DeliveryRegistry([{ id: 'sms', send }]));
+    const command = new DispatchNotification(repository.value, { decrypt } as unknown as KmsClient, new DeliveryRegistry([{ id: 'sms', send }]));
 
     await expect(command.challenge(challenge)).rejects.toThrow('KMS_DECRYPT_FAILED');
     expect(repository.fail).toHaveBeenCalledExactlyOnceWith(challenge, 5, 'KMS_DECRYPT_FAILED');
@@ -81,8 +86,7 @@ function repositoryWith(attempt: Readonly<{ sequence: number; state: 'sending' |
   const fail = vi.fn(async () => result([{}]));
   const ambiguous = vi.fn(async () => result([{}]));
   const value = {
-    challenge: vi.fn(async () => result([{ purpose: 'registration', code_ciphertext: 'ciphertext-code',
-      destination_ciphertext: 'ciphertext-destination' }])),
+    challenge: vi.fn(async () => result([{ purpose: 'registration', code_ciphertext: 'ciphertext-code', destination_ciphertext: 'ciphertext-destination' }])),
     beginChallengeAttempt: vi.fn(async () => result([attempt])),
     completeChallengeAttempt: complete,
     failChallengeAttempt: fail,

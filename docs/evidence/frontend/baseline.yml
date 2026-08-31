@@ -28,4 +28,3 @@ protection:
   policy: preserve all pre-existing tracked and untracked changes
   destructiveCommands: forbidden
   productionMutation: not authorized by this baseline
-

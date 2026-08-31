@@ -38,8 +38,12 @@ export class ClientErrorBuffer implements ClientErrorTelemetry {
   private readonly records = new Map<string, ClientErrorRecord>();
   private readonly redactor = new Redactor();
 
-  constructor(private readonly writer: ClientErrorWriter, private readonly capacity = 2_000,
-    private readonly retentionMs = 7 * 24 * 60 * 60 * 1_000, private readonly now = () => Date.now()) {
+  constructor(
+    private readonly writer: ClientErrorWriter,
+    private readonly capacity = 2_000,
+    private readonly retentionMs = 7 * 24 * 60 * 60 * 1_000,
+    private readonly now = () => Date.now()
+  ) {
     if (!Number.isSafeInteger(capacity) || capacity < 1 || retentionMs < 1) throw new Error('TELEMETRY_BUFFER_CONFIG_INVALID');
   }
 
@@ -50,18 +54,22 @@ export class ClientErrorBuffer implements ClientErrorTelemetry {
     const fingerprint = fingerprintOf(`${safe.scope.id}\n${safe.surface}\n${safe.route}\n${safe.message}\n${safe.stack ?? ''}`);
     const current = this.records.get(fingerprint);
     const observedAt = new Date(timestamp).toISOString();
-    const record = Object.freeze({ ...safe, fingerprint, faultCode: faultCode(fingerprint),
-      occurrences: (current?.occurrences ?? 0) + 1, firstSeenAt: current?.firstSeenAt ?? observedAt, lastSeenAt: observedAt });
+    const record = Object.freeze({ ...safe, fingerprint, faultCode: faultCode(fingerprint), occurrences: (current?.occurrences ?? 0) + 1, firstSeenAt: current?.firstSeenAt ?? observedAt, lastSeenAt: observedAt });
     this.records.delete(fingerprint);
     this.records.set(fingerprint, record);
     this.trim();
-    void this.writer(Object.freeze({ kind:'clienterror', event:'client.error', ...record }));
+    void this.writer(Object.freeze({ kind: 'clienterror', event: 'client.error', ...record }));
     return record;
   }
 
   list(scope: TelemetryScope, limit: number): readonly ClientErrorRecord[] {
     this.prune(this.now());
-    return Object.freeze([...this.records.values()].reverse().filter((record) => contains(scope, record.scope)).slice(0, limit));
+    return Object.freeze(
+      [...this.records.values()]
+        .reverse()
+        .filter((record) => contains(scope, record.scope))
+        .slice(0, limit)
+    );
   }
 
   private prune(timestamp: number): void {

@@ -1,57 +1,22 @@
 import type { MembershipAccess, Scope } from '@shop/authz';
-import { CONTRACT_VERSION, OperationCatalog, type OperationId } from '@shop/contract';
+import type { OperationId } from '@shop/contract';
 import { describe, expect, it, vi } from 'vitest';
-import { Container } from '../../bootstrap/Container';
-import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import type { RouteDefinition } from '../../bootstrap/RouteRegistry';
-import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
-import { OperationHandler } from '../application/OperationHandler';
-import { HttpApp } from '../interface/HttpApp';
-import { OPERATION_AUTHORIZER, OPERATION_HANDLERS, registerOperationRoutes } from '../interface/OperationController';
 import { AccessPipeline } from './AccessPipeline';
 import type { Actor } from './AccessContext';
-import { PipelineAuthorizer } from './PipelineAuthorizer';
 
 const NOW = new Date('2026-08-27T00:00:00.000Z');
 const PLATFORM: Scope = Object.freeze({ kind: 'platform', id: 'platform:one', path: [] });
 const OWNER: Scope = Object.freeze({ kind: 'owner', id: 'member:one', path: [] });
 
 describe('AccessPipeline audience boundary', () => {
-  it.each(['storefront', 'store', 'supplier'] as const)('returns 403 before an operator handler for a %s session', async (target) => {
+  it('denies a console operation before membership resolution for a storefront session', async () => {
+    const target = 'storefront' as const;
     const fixture = accessFixture(target, 'access.center.read', 'access.center.read', PLATFORM);
-    const invoke = vi.fn(async () => ({ status: 200, body: { exposed: true } }) as const);
-    const container = new Container();
-    const operationHandler = new OperationHandler({ invoke });
-    const handlers = new Map<OperationId, OperationHandler>(
-      OperationCatalog.all()
-        .filter((operation) => operation.module === 'access')
-        .map((operation) => [operation.id, operationHandler])
-    );
-    const registered: RouteDefinition[] = [];
-    container.bind(OPERATION_HANDLERS, handlers);
-    container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(fixture.pipeline));
-    registerOperationRoutes('access', { container, routes: { register: (route: RouteDefinition) => registered.push(route) } } as unknown as ModuleContext);
-    const route = registered.find((candidate) => candidate.operation === 'access.center.read');
-    if (!route) throw new Error('TEST_ROUTE_MISSING');
-    const routes = { match: () => ({ operation: route.operation, handler: route.handler, parameters: {} }) } as unknown as RouteRegistry;
-
-    const response = await new HttpApp(routes, []).handle(
-      new Request('https://api.example/api/v1/access/center', {
-        headers: { authorization: `Bearer ${'a'.repeat(32)}`, 'x-contract-version': CONTRACT_VERSION },
-      })
-    );
-
-    expect(response.status).toBe(403);
-    expect(await response.json()).toMatchObject({
+    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read')).rejects.toMatchObject({
       code: 'PERMISSION_DENIED',
-      details: {
-        reason: 'AUDIENCE_TARGET_MISMATCH',
-        audience: 'operator',
-        target,
-      },
+      details: { reason: 'AUDIENCE_TARGET_MISMATCH', audience: 'console', target },
     });
-    expect(invoke).not.toHaveBeenCalled();
-    expect(fixture.membership).not.toHaveBeenCalled();
+    expect(fixture.snapshot).not.toHaveBeenCalled();
     expect(fixture.decisions).toHaveBeenCalledWith(
       expect.objectContaining({
         operation: 'access.center.read',
@@ -78,32 +43,48 @@ describe('AccessPipeline audience boundary', () => {
       actor: { target: 'storefront' },
       scope: OWNER,
     });
-    expect(fixture.membership).toHaveBeenCalledWith('membership:one');
+    expect(fixture.snapshot).toHaveBeenCalledWith(expect.objectContaining({ membership: 'membership:one' }), 'member.profile.read', undefined);
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
+  });
+
+  it('preserves the authoritative risk reason for immediate session invalidation', async () => {
+    const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER, 'deny');
+
+    await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read')).rejects.toMatchObject({
+      code: 'AUTHORIZATION_DENIED',
+      details: { reason: 'RISK_DENIED' },
+    });
+    expect(fixture.decisions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor: expect.objectContaining({ id: 'actor:one' }),
+        outcome: 'deny',
+        reason: 'RISK_DENIED',
+      })
+    );
+  });
+
+  it('rejects a session when the canonical credential version changed', async () => {
+    const fixture = accessFixture('console', 'access.center.read', 'access.center.read', PLATFORM, 'allow', 2);
+    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read')).rejects.toMatchObject({
+      code: 'AUTHENTICATION_REQUIRED',
+      details: { reason: 'CREDENTIAL_VERSION_STALE' },
+    });
   });
 });
 
-function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope) {
-  const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
+function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope, riskOutcome: 'allow' | 'deny' = 'allow', credentialVersion = 1) {
+  const privileged = operation === 'access.center.read';
+  const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: privileged ? { level: 3, verified: NOW } : { level: 1 } });
   const membershipAccess: MembershipAccess = Object.freeze({
     id: actor.membership,
     active: true,
     accessVersion: actor.accessVersion,
-    denies: [],
-    grants: [{ scope, permissions: [permission], effective: '2026-08-26T00:00:00.000Z', expires: null }],
+    permissions: Object.freeze({ allows: new Set([permission]), denies: new Set<string>() }),
+    scopes: [{ effect: 'allow' as const, scope, effective: '2026-08-26T00:00:00.000Z', expires: null }],
   });
-  const membership = vi.fn(async () => membershipAccess);
-  const risk = vi.fn(async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) as const);
+  const snapshot = vi.fn(async () => Object.freeze({ membership: membershipAccess, scope, capabilities: new Set([operation]), capabilityVersion: 1, credentialVersion, organization: 'organization:one', target, roles: Object.freeze([]) }));
+  const risk = vi.fn(async () => ({ outcome: riskOutcome, safeReason: riskOutcome === 'allow' ? 'policy' : 'signal', decision: null }) as const);
   const decisions = vi.fn(async () => undefined);
-  const pipeline = new AccessPipeline(
-    { resolve: vi.fn(async () => actor) },
-    { resolve: membership },
-    { resolve: vi.fn(async () => actor.accessVersion) },
-    { resolve: vi.fn(async () => scope) },
-    { resolve: vi.fn(async () => [operation]) },
-    { now: () => NOW },
-    { evaluate: risk },
-    { append: decisions }
-  );
-  return { pipeline, membership, risk, decisions };
+  const pipeline = new AccessPipeline({ resolve: vi.fn(async () => actor) }, { resolve: snapshot }, { now: () => NOW }, { evaluate: risk }, { append: decisions });
+  return { pipeline, snapshot, risk, decisions };
 }

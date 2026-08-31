@@ -11,11 +11,14 @@ import { getSalesReportOperations } from '../../application/query/GetSalesReport
 import { PgReportingRepository } from '../../infrastructure/persistence/PgReportingRepository';
 
 export function reportingRoutes(context: ModuleContext): ModuleOperations {
-  const pool = context.container.get(DATABASE_POOL);
-  const objects = context.container.get(OBJECT_STORE);
-  const cache = context.container.get(CACHE);
+  const pool = context.service(DATABASE_POOL);
+  const objects = context.service(OBJECT_STORE);
+  const cache = context.service(CACHE);
   const repository = (database: OperationDatabase) => new PgReportingRepository(database);
-  return new ModuleOperations('reporting', pool, context.container.get(AUDIT_SINK), { ...getDashboardOperations(repository, pool.workload('query'), cache),
-    ...getSalesReportOperations(repository, pool.workload('query'), cache),
-    ...createExportOperations(repository), ...getExportOperations(repository, objects) });
+  return new ModuleOperations('reporting', pool, context.service(AUDIT_SINK), {
+    ...getDashboardOperations(repository, cache),
+    ...getSalesReportOperations(repository, cache),
+    ...createExportOperations(repository),
+    ...getExportOperations(repository, objects),
+  });
 }

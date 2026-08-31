@@ -17,5 +17,7 @@ export async function workerTransaction<T>(pool: DatabasePool, scope: string, op
   } catch (cause) {
     await client.query('rollback');
     throw cause;
-  } finally { client.release(); }
+  } finally {
+    client.release();
+  }
 }

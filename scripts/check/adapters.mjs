@@ -13,20 +13,23 @@ redis.on('error', () => undefined);
 await Promise.all([database.connect(), redis.connect()]);
 try {
   const target = await database.query("select count(*)::integer migrations,to_regclass('runtime.job')::text jobs from supabase_migrations.schema_migrations");
-  const expectedMigrations = readdirSync('database/supabase/migrations').filter((name) => name.endsWith('.sql')).length;
+  const expectedMigrations = readdirSync('database/migrations').filter((name) => name.endsWith('.sql')).length;
   if (target.rows[0]?.migrations !== expectedMigrations || target.rows[0]?.jobs !== 'runtime.job') throw new Error('POSTGRES_ADAPTER_TARGET_INVALID');
   await database.query('begin');
   const job = `adapter:${randomUUID()}`;
-  await database.query(`insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-    values($1,'adaptercheck','runtime','{}'::jsonb,'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`, [job]);
+  await database.query(
+    `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
+    values($1,'adaptercheck','runtime','{}'::jsonb,'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+    [job]
+  );
   const claim = await database.query("select id from runtime.job where id=$1 and state='queued' for update skip locked", [job]);
   if (claim.rows[0]?.id !== job) throw new Error('POSTGRES_QUEUE_CLAIM_INVALID');
   await database.query('rollback');
 
   const key = `shop:adapter:${randomUUID()}`;
-  if (await redis.set(key, 'lease', { NX: true, PX: 10_000 }) !== 'OK') throw new Error('REDIS_LEASE_CREATE_INVALID');
-  if (await redis.set(key, 'duplicate', { NX: true, PX: 10_000 }) !== null) throw new Error('REDIS_LEASE_DUPLICATE_INVALID');
-  if (await redis.get(key) !== 'lease') throw new Error('REDIS_LEASE_READ_INVALID');
+  if ((await redis.set(key, 'lease', { NX: true, PX: 10_000 })) !== 'OK') throw new Error('REDIS_LEASE_CREATE_INVALID');
+  if ((await redis.set(key, 'duplicate', { NX: true, PX: 10_000 })) !== null) throw new Error('REDIS_LEASE_DUPLICATE_INVALID');
+  if ((await redis.get(key)) !== 'lease') throw new Error('REDIS_LEASE_READ_INVALID');
   await redis.del(key);
   console.log('adapter integration accepted: postgres=true redis=true queueclaim=true');
 } finally {

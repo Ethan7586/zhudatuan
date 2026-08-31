@@ -15,8 +15,24 @@ import { auditRoutes } from './callgraph/routes.mjs';
 const retiredParts = new Set(['admin-web', 'auth-web', 'commerce-api', 'core-read-cache', 'jobs', 'storefront-web', 'wechat-miniapp']);
 const allowedOrphanNames = new Set(['vite-env.d.ts', 'worker-configuration.d.ts', 'env.d.ts']);
 const entryNames = new Set([
-  'main.ts', 'main.tsx', 'app.js', 'ApiMain.ts', 'JobsMain.ts', 'MigrationMain.ts', 'SmokeMain.ts',
-  'ContractGenerator.ts', 'RequirementGenerator.ts', 'Main.ts', 'Prepare.ts', 'Run.ts', 'Verify.ts', 'Migrate.ts', 'Seed.ts', 'Launch.mjs',
+  'main.ts',
+  'main.tsx',
+  'app.js',
+  'ApiMain.ts',
+  'JobsMain.ts',
+  'ProviderMain.ts',
+  'MigrationMain.ts',
+  'SmokeMain.ts',
+  'ContractGenerator.ts',
+  'RequirementGenerator.ts',
+  'Main.ts',
+  'Prepare.ts',
+  'Database.ts',
+  'Run.ts',
+  'Verify.ts',
+  'Migrate.ts',
+  'Seed.ts',
+  'Launch.mjs',
 ]);
 const operationPattern = /^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){2,}$/;
 
@@ -57,9 +73,24 @@ function entrypoints(sources, packages) {
         const candidate = path.resolve(directory, target);
         if (sources.has(candidate)) entries.add(candidate);
       }
+      for (const target of scriptTargets(payload.scripts)) {
+        const candidate = path.resolve(directory, target);
+        if (sources.has(candidate)) entries.add(candidate);
+      }
     }
   }
   return entries;
+}
+
+function scriptTargets(scripts) {
+  if (scripts === null || typeof scripts !== 'object' || Array.isArray(scripts)) return [];
+  const targets = [];
+  const sourcePattern = /(?:^|[\s"'])(\.?\.?\/?[A-Za-z0-9./-]+\.(?:[cm]?[jt]sx?))(?=$|[\s"'])/g;
+  for (const command of Object.values(scripts)) {
+    if (typeof command !== 'string') continue;
+    for (const match of command.matchAll(sourcePattern)) targets.push(match[1]);
+  }
+  return targets;
 }
 
 function exportTargets(value) {
@@ -81,9 +112,9 @@ function boundaryDetail(source, target) {
   if (sourceParts.length < 7 || targetParts.length < 7) return undefined;
   const sourceModule = sourceParts[4];
   const targetModule = targetParts[4];
-  if (sourceModule !== targetModule) return `cross-module internal import ${sourceModule}->${targetModule}`;
-  const sourceLayer = sourceParts[5];
   const targetLayer = targetParts[5];
+  if (sourceModule !== targetModule) return targetLayer === 'public' ? undefined : `cross-module internal import ${sourceModule}->${targetModule}`;
+  const sourceLayer = sourceParts[5];
   const denied = {
     domain: new Set(['application', 'infrastructure', 'interface']),
     application: new Set(['infrastructure', 'interface']),

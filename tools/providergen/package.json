@@ -1,0 +1,21 @@
+{
+  "name": "@shop/providergen",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "npm run typecheck",
+    "generate": "node --import tsx src/ProviderGenerator.ts",
+    "check": "node --import tsx src/ProviderGenerator.ts --check",
+    "lint": "npm run typecheck",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "yaml": "2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3"
+  }
+}

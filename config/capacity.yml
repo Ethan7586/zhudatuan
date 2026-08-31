@@ -15,10 +15,23 @@ provider:
   maxConnections: 1000
   defaultRequestsPerSecond: 20
 runtime:
+  authentication:
+    otp:
+      validMinutes: 10
+      resendSeconds: 30
+  poolBudget:
+    databaseMaximumConnections: 100
+    maximumUtilizationPercent: 70
+  sql:
+    defaultRows: 50
+    maximumRows: 200
+    maximumResponseBytes: 2097152
+    maximumPlanCost: 100000
   external:
     connectionTimeoutMilliseconds: 3000
     responseTimeoutMilliseconds: 10000
     totalDeadlineMilliseconds: 15000
+    maximumResponseBytes: 2097152
     maximumConcurrency: 32
     maximumQueue: 128
     requestsPerSecond: 100
@@ -29,6 +42,9 @@ runtime:
     recoveryMilliseconds: 30000
   http:
     totalDeadlineMilliseconds: 15000
+    maximumBodyBytes: 2097152
+    maximumConcurrency: 256
+    maximumQueue: 1024
     headersTimeoutMilliseconds: 10000
     keepAliveTimeoutMilliseconds: 5000
     maximumRequestsPerSocket: 1000

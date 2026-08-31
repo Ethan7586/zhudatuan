@@ -11,13 +11,20 @@ export class Semaphore {
   private active = 0;
   private readonly waiting: Waiter[] = [];
 
-  constructor(readonly capacity: number, private readonly maximumQueue = Number.MAX_SAFE_INTEGER) {
+  constructor(
+    readonly capacity: number,
+    private readonly maximumQueue = Number.MAX_SAFE_INTEGER
+  ) {
     if (!Number.isSafeInteger(capacity) || capacity < 1) throw new Error('SEMAPHORE_CAPACITY_INVALID');
     if (!Number.isSafeInteger(maximumQueue) || maximumQueue < 0) throw new Error('SEMAPHORE_QUEUE_INVALID');
   }
 
-  get running(): number { return this.active; }
-  get queued(): number { return this.waiting.length; }
+  get running(): number {
+    return this.active;
+  }
+  get queued(): number {
+    return this.waiting.length;
+  }
 
   async use<T>(work: () => Promise<T>, signal?: AbortSignal): Promise<T> {
     const release = await this.acquire(signal);

@@ -7,34 +7,35 @@ import type { OperationRequest, OperationResult } from './OperationHandler';
 import type { DatabasePool } from '../persistence/Pool';
 
 describe('identity credential idempotency', () => {
-  it.each(['identity.sessions.create', 'identity.tickets.exchange', 'identity.invitations.create'] as const)(
-    'persists a secret-free one-time replay for %s', async (operation) => {
-    const secret = `secret-for-${operation}`;
-    const result: OperationResult = {
-      status: operation === 'identity.tickets.exchange' ? 200 : 201,
-      body: {
-        session: `session-${secret}`,
-        csrf: `csrf-${secret}`,
-        ticket: `ticket-${secret}`,
-      },
-      headers: { 'x-set-cookie': `shop_session=${secret}; HttpOnly` },
-    };
-    const harness = identityOperationHarness(operation, result);
-    const request = identityRequest(operation);
+  it.each(['identity.sessions.create', 'identity.sessions.complete', 'identity.tickets.exchange', 'identity.invitations.create', 'identity.enrollments.complete', 'identity.federations.start'] as const)(
+    'persists a secret-free one-time replay for %s',
+    async (operation) => {
+      const secret = `secret-for-${operation}`;
+      const result: OperationResult = {
+        status: operation === 'identity.tickets.exchange' ? 200 : 201,
+        body: {
+          session: `session-${secret}`,
+          csrf: `csrf-${secret}`,
+          ticket: `ticket-${secret}`,
+        },
+        headers: { 'x-set-cookie': `__Host-storefront-session=${secret}; Secure; HttpOnly; SameSite=Strict` },
+      };
+      const harness = identityOperationHarness(operation, result);
+      const request = identityRequest(operation);
 
-    await expect(harness.operations.invoke(request)).resolves.toEqual(result);
-    expect(harness.persisted()).toEqual({
-      status: 409,
-      body: {
-        code: 'IDEMPOTENCY_KEY_REUSED',
-        message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME',
-      },
-    });
-    expect(JSON.stringify(harness.persisted())).not.toContain(secret);
+      await expect(harness.operations.invoke(request)).resolves.toEqual(result);
+      expect(harness.persisted()).toEqual({
+        status: 409,
+        body: {
+          code: 'IDEMPOTENCY_REPLAY_FORBIDDEN',
+        },
+      });
+      expect(JSON.stringify(harness.persisted())).not.toContain(secret);
 
-    await expect(harness.operations.invoke(request)).resolves.toEqual(harness.persisted());
-    expect(harness.executions()).toBe(1);
-  });
+      await expect(harness.operations.invoke(request)).resolves.toEqual(harness.persisted());
+      expect(harness.executions()).toBe(1);
+    }
+  );
 });
 
 function identityOperationHarness(
@@ -51,7 +52,7 @@ function identityOperationHarness(
   const client = {
     query: async (text: string, values: readonly unknown[] = []) => {
       if (text.includes('insert into runtime.idempotency') && requestHash.length === 0) {
-        requestHash = String(values[3]);
+        requestHash = String(values[4]);
       }
       if (text.startsWith('select request_hash,state,response')) {
         return {
@@ -60,7 +61,7 @@ function identityOperationHarness(
         } as unknown as QueryResult;
       }
       if (text.includes("update runtime.idempotency set state='completed'")) {
-        replay = JSON.parse(String(values[3])) as OperationResult;
+        replay = JSON.parse(String(values[4])) as OperationResult;
       }
       return { rows: [], rowCount: 0 } as unknown as QueryResult;
     },
@@ -81,14 +82,15 @@ function identityOperationHarness(
   return Object.freeze({ operations, persisted: () => replay, executions: () => executions });
 }
 
-function identityRequest(type: 'identity.sessions.create' | 'identity.tickets.exchange' | 'identity.invitations.create'): OperationRequest {
+function identityRequest(type: 'identity.sessions.create' | 'identity.sessions.complete' | 'identity.tickets.exchange' | 'identity.invitations.create' | 'identity.enrollments.complete' | 'identity.federations.start'): OperationRequest {
   return {
     type,
-    access: null,
+    security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'test:anonymous' },
     input: {
       path: {},
       query: {},
       headers: {},
+      publicActor: `public:${'b'.repeat(64)}`,
       body: { subject: 'ethan', authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' } },
       rawBody: '',
       deadline: Date.now() + 1_000,

@@ -7,8 +7,8 @@ insert into catalog.category(id,parent_id,code,name,status,sort_order)
 values('category:zhudatuan:sandbox',null,'ZHUDATUAN_SANDBOX','主打团 Sandbox', 'active',0)
 on conflict do nothing;
 
-insert into catalog.product(id,owner_partner_id,brand_id,category_id,title,product_type,attributes,status,version,created_at,updated_at)
-values('product:zhudatuan:sandbox:welcome',null,null,'category:zhudatuan:sandbox','主打团 Sandbox 验收商品','physical',
+insert into catalog.product(id,scope_id,owner_partner_id,brand_id,category_id,title,product_type,attributes,status,version,created_at,updated_at)
+values('product:zhudatuan:sandbox:welcome','mall-zhudatuan',null,null,'category:zhudatuan:sandbox','主打团 Sandbox 验收商品','physical',
   '{"sandbox":true,"subtitle":"仅用于独立测试数据库的原生商城验收"}'::jsonb,'active',1,
   '2026-08-28T00:00:00Z','2026-08-28T00:00:00Z')
 on conflict do nothing;

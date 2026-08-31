@@ -6,6 +6,6 @@ import { getAuditRecordsOperations } from '../../application/query/GetAuditRecor
 import { AUDIT_PORT } from '../../application/port/AuditPort';
 
 export function auditRoutes(context: ModuleContext): ModuleOperations {
-  const repository = context.container.get(AUDIT_PORT);
-  return new ModuleOperations('audit', context.container.get(DATABASE_POOL), context.container.get(AUDIT_SINK), getAuditRecordsOperations(repository));
+  const repository = context.service(AUDIT_PORT);
+  return new ModuleOperations('audit', context.service(DATABASE_POOL), context.service(AUDIT_SINK), getAuditRecordsOperations(repository));
 }

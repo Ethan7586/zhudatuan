@@ -42,17 +42,13 @@ export async function encryptNotificationResource(apiV3Key: string, value: unkno
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv: buffer(new TextEncoder().encode(nonce)), additionalData: buffer(new TextEncoder().encode(associatedData)) },
     key,
-    buffer(new TextEncoder().encode(JSON.stringify(value))),
+    buffer(new TextEncoder().encode(JSON.stringify(value)))
   );
   return { ciphertext: toBase64(new Uint8Array(encrypted)), nonce, associated_data: associatedData };
 }
 
 async function createRsaPemPair(): Promise<{ privateKeyPem: string; publicKeyPem: string }> {
-  const result = await crypto.subtle.generateKey(
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]) },
-    true,
-    ['sign', 'verify'],
-  );
+  const result = await crypto.subtle.generateKey({ name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]) }, true, ['sign', 'verify']);
   if (!('privateKey' in result)) throw new Error('TEST_RSA_KEYPAIR_REQUIRED');
   const [privateBytes, publicBytes] = await Promise.all([crypto.subtle.exportKey('pkcs8', result.privateKey), crypto.subtle.exportKey('spki', result.publicKey)]);
   return { privateKeyPem: toPem('PRIVATE KEY', new Uint8Array(privateBytes)), publicKeyPem: toPem('PUBLIC KEY', new Uint8Array(publicBytes)) };

@@ -8,11 +8,13 @@ export interface MetricCard {
 export function MetricCards({ items }: Readonly<{ items: readonly MetricCard[] }>) {
   return (
     <div className="metricgrid">
-      {items.map((item) => <article key={item.label} className={`metriccard metric${item.tone ?? 'default'}`}>
-        <span>{item.label}</span>
-        <strong>{item.value}</strong>
-        {item.detail === undefined ? null : <small>{item.detail}</small>}
-      </article>)}
+      {items.map((item) => (
+        <article key={item.label} className={`metriccard metric${item.tone ?? 'default'}`}>
+          <span>{item.label}</span>
+          <strong>{item.value}</strong>
+          {item.detail === undefined ? null : <small>{item.detail}</small>}
+        </article>
+      ))}
     </div>
   );
 }

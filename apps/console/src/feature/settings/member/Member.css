@@ -1,0 +1,77 @@
+.memberactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-1);
+}
+.memberform {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.memberform > label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+}
+.memberform :where(input, select, textarea) {
+  min-height: 2.5rem;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1);
+  color: var(--sw-text);
+}
+.memberform textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.memberform fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-2);
+  border: 0;
+  padding: 0;
+}
+.memberform fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+}
+.memberform fieldset input {
+  min-height: auto;
+}
+.membertarget {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-2);
+}
+.membertarget span,
+.membertarget small {
+  color: var(--sw-muted);
+  overflow-wrap: anywhere;
+}
+.membersecurity {
+  margin: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand-light);
+  padding: var(--sw-space-1-5);
+  color: var(--sw-brand-dark);
+}
+.membererror {
+  margin: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-danger-surface);
+  padding: var(--sw-space-1-5);
+  color: var(--sw-danger-strong);
+}
+.memberform footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  padding-top: var(--sw-space-2);
+}

@@ -40,4 +40,4 @@
 
 接入真实短信供应商后沿用现有挑战流程：发送验证码、频率限制、短时有效、错误次数限制、一次性消费。验证成功后只需创建或更新同一会员的 `local_phone` 别名，订单和支付能力会自动解锁，不需要迁移账号、会员、余额或订单。
 
-生产迁移：`database/supabase/migrations/20260812260000_member_identity_assurance.sql`
+生产迁移：`database/migrations/20260812260000_member_identity_assurance.sql`

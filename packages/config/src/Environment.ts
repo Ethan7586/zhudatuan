@@ -29,8 +29,7 @@ export function requiredValue(value: string | undefined, code: string): string {
 
 export function bearerToken(value: string | undefined, code: string): string {
   const normalized = requiredValue(value, code);
-  if (normalized.length < 43 || normalized.length > 512 || normalized.length % 4 === 1
-    || !/^[A-Za-z0-9_-]+$/.test(normalized)) throw new Error(code);
+  if (normalized.length < 43 || normalized.length > 512 || normalized.length % 4 === 1 || !/^[A-Za-z0-9_-]+$/.test(normalized)) throw new Error(code);
   return normalized;
 }
 

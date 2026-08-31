@@ -25,9 +25,8 @@ if (!/^[a-z0-9]{8,64}$/.test(approval.releaseId ?? '')) throw new Error('PROMOTI
 if (!/^.+@sha256:[0-9a-f]{64}$/.test(approval.image ?? '')) throw new Error('PROMOTION_IMAGE_INVALID');
 if (approval.candidateImageSha256 !== candidate.commerce.sha256) throw new Error('PROMOTION_IMAGE_PROVENANCE_INVALID');
 if (!/^oss:\/\/[a-z0-9.-]+\/.+/.test(approval.databaseSnapshot ?? '')) throw new Error('PROMOTION_SNAPSHOT_INVALID');
-if (!/^oss:\/\/[a-z0-9.-]+\/.+/.test(approval.rollback?.databaseSnapshot ?? '')
-  || !/^[a-z0-9]{8,64}$/.test(approval.rollback?.releaseId ?? '')
-  || !/^[0-9a-f]{64}$/.test(approval.rollback?.pointerSha256 ?? '')) throw new Error('PROMOTION_ROLLBACK_INVALID');
+if (!/^oss:\/\/[a-z0-9.-]+\/.+/.test(approval.rollback?.databaseSnapshot ?? '') || !/^[a-z0-9]{8,64}$/.test(approval.rollback?.releaseId ?? '') || !/^[0-9a-f]{64}$/.test(approval.rollback?.pointerSha256 ?? ''))
+  throw new Error('PROMOTION_ROLLBACK_INVALID');
 if (!/^[0-9a-f]{64}$/.test(approval.approvalSha256 ?? '') || !/^[a-z0-9.-]+$/.test(approval.bucket ?? '')) throw new Error('PROMOTION_AUTHORITY_INVALID');
 
 const release = Object.freeze({
@@ -36,9 +35,11 @@ const release = Object.freeze({
   commit: candidate.commit,
   schemaHead: candidate.schemaHead,
   contractHash: candidate.contractHash,
+  facts: candidate.facts,
   commerce: Object.freeze({ image: approval.image, artifactSha256: candidate.commerce.sha256 }),
   clients: candidate.clients,
   sbom: candidate.sbom,
+  buildProvenance: candidate.provenance,
   provenance: Object.freeze({ path: 'stage.json', sha256: hash(stageBytes) }),
   static: Object.freeze({ bucket: approval.bucket }),
   evidence: Object.freeze({

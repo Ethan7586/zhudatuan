@@ -3,9 +3,10 @@ owner: reliability
 slo:
   catalogP95Ms: 150
   queryP95Ms: 300
+  detailP95Ms: 500
   commandP95Ms: 800
   orderP95Ms: 1500
-  paymentCallbackP99Ms: 500
+  webhookDurableAcceptP99Ms: 500
   outboxP99Seconds: 30
   availabilityPercent: 99.95
   rpoMinutes: 5
@@ -18,3 +19,9 @@ redaction:
     - otp
     - secret
     - cardsecret
+    - invite
+    - code
+    - claim
+    - preauth
+    - recipient
+    - tokenhash

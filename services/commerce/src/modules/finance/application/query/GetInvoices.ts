@@ -1,26 +1,79 @@
+import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { OperationActions } from '../../../../foundation/application/ModuleOperations';
-import { requireAccess } from '../../../../foundation/application/ModuleOperations';
+import { operationLifecycle, requireAccess } from '../../../../foundation/application/ModuleOperations';
 import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
+import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
+import type { MemberAccessPort } from '../../../access/public';
 
-export function getInvoicesOperations(): OperationActions {
+export function getInvoicesOperations(members: MemberAccessPort, objects: Pick<ObjectStore, 'authorize'>): OperationActions {
   return {
     'invoice.profiles.read': async (request, database) => {
-      const access = requireAccess(request); const page = queryPage(request);
-      const result = await database.query(`select profile.id,profile.status,profile.version from access.membership membership
-        join invoice.profile profile on profile.owner_id=membership.member_id where membership.id=$1 and profile.status='active'
-        and ($2::text is null or profile.id>$2) order by profile.id limit $3`, [access.membership.id, page.id, page.fetch]);
+      const access = requireAccess(request);
+      const page = queryPage(request);
+      const member = await members.member(database, access.membership.id);
+      const result = await database.query(
+        `select profile.id,profile.status,profile.version from invoice.profile profile where profile.owner_id=$1 and profile.status='active'
+        and ($2::text is null or profile.id>$2) order by profile.id limit $3`,
+        [member, page.id, page.fetch]
+      );
       return keysetResult(result, page, 'id');
     },
     'invoice.requests.read': async (request, database) => {
-      const access = requireAccess(request); const page = queryPage(request);
-      const result = await database.query(`select request.*,document.object_ref,document.sha256,document.issued_at,
+      const access = requireAccess(request);
+      const page = queryPage(request);
+      const result = await database.query(
+        `select request.id,request.profile_id,request.settlement_id,request.amount_minor,request.currency,
+        request.state,request.created_at,request.version,request.requested_by,request.approved_by,request.reason,request.evidence,
+        request.source_hash,request.kind,request.red_of_request_id,document.object_ref,document.sha256,document.issued_at,
         coalesce((select jsonb_agg(jsonb_build_object('settlementLine',line.settlement_line_id,'amountMinor',line.amount_minor,
           'taxMinor',line.tax_minor,'sourceHash',line.source_hash) order by line.settlement_line_id)
           from invoice.requestline line where line.request_id=request.id),'[]'::jsonb) lines from invoice.request request
         join invoice.profile profile on profile.id=request.profile_id left join invoice.document document on document.request_id=request.id
         where profile.owner_id=$1 and ($2::timestamptz is null or (request.created_at,request.id)<($2::timestamptz,$3))
-        order by request.created_at desc,request.id desc limit $4`, [access.scope.id, page.sort, page.id, page.fetch]);
+        order by request.created_at desc,request.id desc limit $4`,
+        [access.scope.id, page.sort, page.id, page.fetch]
+      );
       return keysetResult(result, page, 'created_at');
     },
+    'finance.invoices.read': async (request, database) => {
+      const access = requireAccess(request);
+      const page = queryPage(request);
+      const member = await members.member(database, access.membership.id);
+      const result = await database.query(
+        `select request.id,request.amount_minor "amountMinor",request.currency,request.state,request.kind,
+        request.created_at "createdAt",document.issued_at "issuedAt",document.sha256,(document.object_ref is not null and request.state='issued') downloadable,
+        request.version from invoice.request request join invoice.profile profile on profile.id=request.profile_id
+        left join invoice.document document on document.request_id=request.id
+        where profile.owner_id=$1 and ($2::timestamptz is null or (request.created_at,request.id)<($2::timestamptz,$3))
+        order by request.created_at desc,request.id desc limit $4`,
+        [member, page.sort, page.id, page.fetch]
+      );
+      return keysetResult(result, page, 'createdAt');
+    },
+    'finance.invoices.download': operationLifecycle({
+      async execute(request, database) {
+        const access = requireAccess(request);
+        const member = await members.member(database, access.membership.id);
+        const result = await database.query<{ readonly id: string; readonly object_ref: string; readonly sha256: string }>(
+          `select request.id,document.object_ref,document.sha256 from invoice.request request
+          join invoice.profile profile on profile.id=request.profile_id
+          join invoice.document document on document.request_id=request.id
+          where request.id=$1 and profile.owner_id=$2 and request.state='issued'`,
+          [request.input.path.invoiceid!, member]
+        );
+        const invoice = result.rows[0];
+        if (!invoice) throw new DomainError('RESOURCE_NOT_FOUND');
+        return { status: 200, body: invoice };
+      },
+      async finalize(_request, result) {
+        const invoice = result.body as Readonly<{ id: string; object_ref: string; sha256: string }>;
+        const authorization = await objects.authorize(invoice.object_ref, 300);
+        return { status: 200, body: { ...authorization, filename: `${safeName(invoice.id)}.pdf`, sha256: invoice.sha256 } };
+      },
+    }),
   };
+}
+
+function safeName(value: string): string {
+  return value.replace(/[^A-Za-z0-9.-]/g, '-').slice(0, 120) || 'invoice';
 }

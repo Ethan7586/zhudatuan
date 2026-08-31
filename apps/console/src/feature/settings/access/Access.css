@@ -1,0 +1,186 @@
+.accesstabs {
+  display: inline-flex;
+  gap: var(--sw-space-1);
+}
+.accesstabs [aria-selected='true'] {
+  border-color: var(--sw-brand);
+  color: var(--sw-brand);
+}
+.invitationform {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.invitationform label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+}
+.invitationform input,
+.invitationform select,
+.invitationform textarea,
+.invitationworkspace select {
+  min-height: 2.5rem;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1);
+  color: var(--sw-text);
+}
+.invitationform textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.invitationpreview {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-2);
+  overflow-wrap: anywhere;
+}
+.invitationwarning {
+  color: var(--sw-warning-strong);
+}
+.invitationactions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+}
+.invitationcode {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.invitationcode code {
+  overflow-wrap: anywhere;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-2);
+  font-size: var(--sw-font-size-h3);
+}
+.accessactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-1);
+}
+.accessroles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-0-5);
+}
+.accessroles span {
+  border-radius: 999px;
+  background: var(--sw-brand-light);
+  padding: 0.25rem 0.55rem;
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-caption);
+}
+.accessform {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+.accessform > label,
+.accessapproval label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: 700;
+}
+.accessform :where(input, select, textarea) {
+  min-height: 2.5rem;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1);
+  color: var(--sw-text);
+}
+.accessform textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.accesstarget {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-2);
+  overflow-wrap: anywhere;
+}
+.accesstarget span {
+  color: var(--sw-muted);
+}
+.accessapproval {
+  display: grid;
+  gap: var(--sw-space-1);
+  border: 0.0625rem solid var(--sw-brand);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-brand-light);
+  padding: var(--sw-space-2);
+}
+.accessapproval p {
+  margin: 0;
+  color: var(--sw-brand-dark);
+}
+.accesshint {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-1);
+  color: var(--sw-text-secondary);
+}
+.accesshint small,
+.accessmatrix small {
+  color: var(--sw-muted);
+  font-family: var(--sw-font-mono);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.accessmatrix {
+  display: grid;
+  max-height: 22rem;
+  gap: var(--sw-space-1);
+  overflow: auto;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  padding: var(--sw-space-2);
+}
+.accessmatrix > p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.accessmatrixrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 8rem;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  padding-top: var(--sw-space-1);
+}
+.accessmatrixrow > span {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.accesserror {
+  margin: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-danger-surface);
+  padding: var(--sw-space-1-5);
+  color: var(--sw-danger-strong);
+}
+.accessform footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  padding-top: var(--sw-space-2);
+}

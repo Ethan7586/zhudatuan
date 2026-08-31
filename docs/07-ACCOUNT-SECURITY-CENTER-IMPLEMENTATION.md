@@ -36,4 +36,4 @@
 
 当前开发/测试环境会在页面显示调试验证码。生产环境会严格返回 `SMS_PROVIDER_NOT_CONFIGURED`，不会泄漏验证码，也不会假装发送成功。正式上线前必须接入经过备案的短信服务商，并补齐短信模板、签名、发送回执和失败重试监控。
 
-生产迁移文件：`database/supabase/migrations/20260812240000_account_security_center.sql`。
+生产迁移文件：`database/migrations/20260812240000_account_security_center.sql`。

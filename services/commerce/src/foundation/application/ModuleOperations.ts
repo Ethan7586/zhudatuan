@@ -1,75 +1,81 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { DomainError } from '../domain/DomainError';
+import { createHash } from 'node:crypto';
 import { permissionDefinition } from '@shop/authz';
-import { OperationCatalog, type OperationId } from '@shop/contract';
-import { Redactor } from '@shop/telemetry';
+import { errorStatus, OperationCatalog, type ErrorCode, type OperationId } from '@shop/contract';
 import type { QueryResult, QueryResultRow } from 'pg';
 import type { DatabasePool } from '../persistence/Pool';
-import { PgUnitOfWork } from '../infrastructure/PgUnitOfWork';
-import type { OperationRequest, OperationResult, OperationUsecase } from './OperationHandler';
+import { PgUnitOfWork } from '../../adapter/database/PgUnitOfWork';
+import type { OperationRequest, OperationResult, OperationUsecase } from './OperationExecution';
 import { TransactionRunner } from './TransactionRunner';
 import type { AuditSink } from './AuditSink';
+import { requireSession, sessionAccess } from '../security/OperationSecurityContext';
+import { MakerCheckerPolicy } from '../security/MakerCheckerPolicy';
+import { operationRequestHash } from './OperationHash';
+import type { ErrorDetail } from '../domain/ApplicationError';
+import { appendOperationAudit } from './OperationAudit';
+export { appendOperationAudit } from './OperationAudit';
 
 export interface OperationDatabase {
   query<R extends QueryResultRow = QueryResultRow>(text: string, values?: readonly unknown[]): Promise<QueryResult<R>>;
 }
 
 export type OperationAction = (request: OperationRequest, database: OperationDatabase) => Promise<OperationResult>;
-export interface OperationLifecycle<T = unknown> {
-  prepare?(request: OperationRequest): Promise<T>;
+export interface OperationLifecycle<T = unknown, L = undefined> {
+  load?(request: OperationRequest, database: OperationDatabase): Promise<L>;
+  prepare?(request: OperationRequest, loaded: L): Promise<T>;
   shortCircuit?(request: OperationRequest, preparation: T): OperationResult | undefined;
   execute(request: OperationRequest, database: OperationDatabase, preparation: T): Promise<OperationResult>;
   finalize?(request: OperationRequest, result: OperationResult, preparation: T): Promise<OperationResult>;
+  /** Persist a commit checkpoint before an external finalization step. */
+  readonly durableFinalize?: boolean;
   discard?(request: OperationRequest, preparation: T, cause: unknown): Promise<void>;
 }
-type OperationEntry = OperationAction | OperationLifecycle;
+type OperationEntry = OperationAction | OperationLifecycle<unknown, unknown>;
 export type OperationActions = Readonly<Partial<Record<OperationId, OperationEntry>>>;
 
-const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
-  'identity.sessions.create': Object.freeze(['provider', 'target', 'membership']),
-  'identity.tickets.exchange': Object.freeze([]),
-  'identity.challenges.create': Object.freeze(['purpose']),
-  'identity.invitations.read': Object.freeze([]),
-  'identity.members.create': Object.freeze(['termsAccepted', 'termsHash']),
-  'identity.members.manage': Object.freeze(['action', 'status', 'departmentId']),
-  'identity.password.change': Object.freeze([]),
-  'identity.password.verify': Object.freeze([]),
-  'identity.password.reset': Object.freeze([]),
-  'identity.mobile.manage': Object.freeze([]),
-  'identity.stepup.start': Object.freeze([]),
-  'identity.stepup.complete': Object.freeze([]),
-  'identity.wechat.session': Object.freeze(['scene', 'action']),
-  'identity.wechat.bind': Object.freeze([]),
-});
-
-const IDENTITY_AUDIT_OUTPUT_FIELDS: Readonly<Partial<Record<OperationId, readonly string[]>>> = Object.freeze({
-  'identity.invitations.create': Object.freeze(['code']),
-  'identity.tickets.exchange': Object.freeze(['proof']),
-});
-
-export function operationLifecycle<T>(definition: OperationLifecycle<T>): OperationLifecycle {
-  return definition as OperationLifecycle;
+export function operationLifecycle<T, L = undefined>(definition: OperationLifecycle<T, L>): OperationLifecycle<T, L> {
+  return definition;
 }
 
 export class OperationRejection extends Error {
-  constructor(readonly result: OperationResult) {
-    super(String((result.body as { code?: unknown } | undefined)?.code ?? 'OPERATION_REJECTED'));
+  readonly result: OperationResult;
+
+  constructor(
+    readonly code: ErrorCode,
+    readonly details?: Readonly<Record<string, ErrorDetail>>
+  ) {
+    super(code);
     this.name = 'OperationRejection';
+    const status = errorStatus(code);
+    if (status === undefined) throw new Error('ERROR_CONTRACT_MISSING');
+    this.result = { status, body: { code, ...(details === undefined ? {} : { details }) } };
   }
 }
 
-export function reject(status: number, code: string, details?: unknown): never {
-  throw new OperationRejection({ status, body: { code, ...(details === undefined ? {} : { details }) } });
+export function reject(code: ErrorCode, details?: Readonly<Record<string, ErrorDetail>>): never {
+  throw new OperationRejection(code, details);
 }
 
 export class ModuleOperations implements OperationUsecase {
   private readonly actions: ReadonlyMap<OperationId, OperationEntry>;
   private readonly query: TransactionRunner;
   private readonly command: TransactionRunner;
+  private readonly makerChecker = new MakerCheckerPolicy();
 
-  constructor(private readonly module: string, private readonly pool: DatabasePool, private readonly audit: AuditSink,
-    actions: OperationActions, owned?: readonly OperationId[]) {
+  constructor(
+    private readonly module: string,
+    private readonly pool: DatabasePool,
+    private readonly audit: AuditSink,
+    actions: OperationActions,
+    owned?: readonly OperationId[]
+  ) {
     this.actions = new Map(Object.entries(actions) as [OperationId, OperationEntry][]);
-    const expected = [...(owned ?? OperationCatalog.all().filter((operation) => operation.module === module).map((operation) => operation.id))].sort();
+    const expected = [
+      ...(owned ??
+        OperationCatalog.all()
+          .filter((operation) => operation.module === module)
+          .map((operation) => operation.id)),
+    ].sort();
     const actual = [...this.actions.keys()].sort();
     if (expected.join('\n') !== actual.join('\n')) throw new Error(`MODULE_OPERATION_CATALOG_MISMATCH:${module}`);
     this.query = new TransactionRunner(new PgUnitOfWork(pool.workload('query')));
@@ -77,26 +83,26 @@ export class ModuleOperations implements OperationUsecase {
   }
 
   async invoke(request: OperationRequest): Promise<OperationResult> {
-    if (request.input.signal.aborted || request.input.deadline <= Date.now()) throw request.input.signal.reason ?? new Error('DEADLINE_EXCEEDED');
+    if (request.input.signal.aborted || request.input.deadline <= Date.now()) throw request.input.signal.reason ?? new DomainError('DEADLINE_EXCEEDED');
     const operation = OperationCatalog.get(request.type);
     if (operation.module !== this.module) throw new Error(`MODULE_OPERATION_OWNER_MISMATCH:${request.type}`);
     const action = this.actions.get(request.type);
     if (!action) throw new Error(`OPERATION_ACTION_MISSING:${request.type}`);
     const lifecycle = typeof action === 'function' ? undefined : action;
-    const preparation = lifecycle?.prepare ? await lifecycle.prepare(request) : undefined;
+    const loaded = lifecycle?.load ? await this.query.run(transactionContext(request, this.module, 'query'), (database) => lifecycle.load!(request, database)) : undefined;
+    const preparation = lifecycle?.prepare ? await lifecycle.prepare(request, loaded) : loaded;
     const immediate = lifecycle?.shortCircuit?.(request, preparation);
     if (immediate) {
       if (operation.method !== 'GET') throw new Error('WRITE_SHORT_CIRCUIT_FORBIDDEN');
       return immediate;
     }
-    const execute: OperationAction = typeof action === 'function'
-      ? action
-      : (preparedRequest, database) => action.execute(preparedRequest, database, preparation);
+    const execute: OperationAction = typeof action === 'function' ? action : (preparedRequest, database) => action.execute(preparedRequest, database, preparation);
     try {
-      const result = operation.method === 'GET'
-        ? await this.read(request, execute)
-        : await this.write(request, execute);
-      return lifecycle?.finalize ? lifecycle.finalize(request, result, preparation) : result;
+      const result = operation.method === 'GET' ? await this.read(request, execute) : await this.write(request, execute, lifecycle?.durableFinalize === true);
+      if (!lifecycle?.finalize) return result;
+      const finalized = await lifecycle.finalize(request, result, preparation);
+      if (lifecycle.durableFinalize === true) await this.completeFinalization(request, finalized);
+      return finalized;
     } catch (cause) {
       await lifecycle?.discard?.(request, preparation, cause);
       throw cause;
@@ -107,33 +113,47 @@ export class ModuleOperations implements OperationUsecase {
     return this.query.run(transactionContext(request, this.module, 'query'), async (client) => {
       const result = await action(request, client);
       const operation = OperationCatalog.get(request.type);
-      if (request.access && operation.permission && ['high','critical'].includes(permissionDefinition(operation.permission).risk)) {
-        await this.audit.access(client, { scope:request.access.scope.id, actor:request.access.actor.id, actorType:request.access.actor.target,
-          resourceType:this.module, resource:Object.values(request.input.path)[0] ?? request.access.scope.id,
-          fields:{ operation:request.type, permission:operation.permission, projection:projection(result.body) }, purpose:request.type,
-          trace:request.access.trace });
+      const access = sessionAccess(request.security);
+      if (access && operation.permission && ['high', 'critical'].includes(permissionDefinition(operation.permission).risk)) {
+        await this.audit.access(client, {
+          scope: access.scope.id,
+          actor: access.actor.id,
+          actorType: access.actor.target,
+          resourceType: this.module,
+          resource: Object.values(request.input.path)[0] ?? access.scope.id,
+          fields: { operation: request.type, permission: operation.permission, projection: projection(result.body) },
+          purpose: request.type,
+          trace: access.trace,
+        });
       }
       return result;
     });
   }
 
-  private write(request: OperationRequest, action: OperationAction): Promise<OperationResult> {
+  private write(request: OperationRequest, action: OperationAction, durableFinalize: boolean): Promise<OperationResult> {
     const key = request.input.idempotency;
-    if (!key) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
+    if (!key) throw new DomainError('IDEMPOTENCY_KEY_REQUIRED');
     return this.command.run(transactionContext(request, this.module, 'command'), async (client) => {
       const hash = operationRequestHash(request);
-      const actor = request.access?.actor.id ?? `public:${request.type}`;
-      const scope = request.access?.scope.id ?? `public:${this.module}`;
-      await client.query(`insert into runtime.idempotency(scope,actor_id,key,request_hash,state,expires_at)
-        values($1,$2,$3,$4,'started',clock_timestamp()+interval '24 hours') on conflict do nothing`, [scope, actor, key, hash]);
+      const access = sessionAccess(request.security);
+      const actor = access?.actor.id ?? publicActor(request);
+      const scope = access?.scope.id ?? publicOperationScope(request, this.module);
+      await client.query(
+        `insert into runtime.idempotency(scope,actor_id,operation,key,request_hash,state,expires_at)
+        values($1,$2,$3,$4,$5,'started',clock_timestamp()+interval '24 hours') on conflict do nothing`,
+        [scope, actor, request.type, key, hash]
+      );
       const accepted = await client.query<{ request_hash: string; state: string; response: OperationResult | null }>(
-        'select request_hash,state,response from runtime.idempotency where scope=$1 and actor_id=$2 and key=$3 for update', [scope, actor, key],
+        'select request_hash,state,response from runtime.idempotency where scope=$1 and actor_id=$2 and operation=$3 and key=$4 for update',
+        [scope, actor, request.type, key]
       );
       const record = accepted.rows[0];
-      if (!record || record.request_hash !== hash) throw new Error('IDEMPOTENCY_KEY_REUSED');
+      if (!record || record.request_hash !== hash) throw new DomainError('IDEMPOTENCY_KEY_REUSED');
       if (record.state === 'completed' && record.response !== null) {
         return record.response;
       }
+      if (record.state === 'checkpointed' && record.response !== null) return record.response;
+      await this.makerChecker.consume(client, request);
       let result: OperationResult;
       try {
         result = await action(request, client);
@@ -143,65 +163,45 @@ export class ModuleOperations implements OperationUsecase {
       }
       await appendOperationAudit(this.audit, client, request, this.module, result, actor, scope, hash);
       const replay = idempotencyReplayResponse(request, result);
-      await client.query(`update runtime.idempotency set state='completed',response=$4::jsonb
-        where scope=$1 and actor_id=$2 and key=$3`, [scope, actor, key, JSON.stringify(replay)]);
+      const resource = operationResource(result);
+      if (durableFinalize) {
+        await client.query(
+          `update runtime.idempotency set state='checkpointed',response=$5::jsonb,checkpoint=$6::jsonb,
+          resource_type=$7,resource_id=$8,response_hash=$9
+          where scope=$1 and actor_id=$2 and operation=$3 and key=$4`,
+          [scope, actor, request.type, key, JSON.stringify(replay), JSON.stringify({ phase: 'committed', paymentId: resource.paymentId }), resource.type, resource.id, digest(JSON.stringify(replay))]
+        );
+      } else {
+        await client.query(
+          `update runtime.idempotency set state='completed',response=$5::jsonb,checkpoint=$6::jsonb,
+          resource_type=$7,resource_id=$8,response_hash=$9
+          where scope=$1 and actor_id=$2 and operation=$3 and key=$4`,
+          [scope, actor, request.type, key, JSON.stringify(replay), JSON.stringify({ phase: 'completed' }), resource.type, resource.id, digest(JSON.stringify(replay))]
+        );
+      }
       return result;
+    });
+  }
+
+  private async completeFinalization(request: OperationRequest, result: OperationResult): Promise<void> {
+    const access = sessionAccess(request.security);
+    const actor = access?.actor.id ?? publicActor(request);
+    const scope = access?.scope.id ?? publicOperationScope(request, this.module);
+    await this.command.run(transactionContext(request, this.module, 'command'), async (client) => {
+      const replay = idempotencyReplayResponse(request, result);
+      const changed = await client.query(
+        `update runtime.idempotency set state='completed',response=$5::jsonb,checkpoint=$6::jsonb,response_hash=$7
+        where scope=$1 and actor_id=$2 and operation=$3 and key=$4 and request_hash=$8 and state in('checkpointed','completed')`,
+        [scope, actor, request.type, request.input.idempotency!, JSON.stringify(replay), JSON.stringify({ phase: 'completed' }), digest(JSON.stringify(replay)), operationRequestHash(request)]
+      );
+      if ((changed.rowCount ?? 0) !== 1) throw new Error('IDEMPOTENCY_CHECKPOINT_MISSING');
     });
   }
 }
 
-export async function appendOperationAudit(audit: AuditSink, client: OperationDatabase, request: OperationRequest, module: string,
-  result: OperationResult, actor: string, scope: string, requestHashValue: string): Promise<void> {
-  const body = request.input.body && typeof request.input.body === 'object' && !Array.isArray(request.input.body)
-    ? request.input.body as Record<string, unknown> : {};
-  const resource = Object.values(request.input.path)[0] ?? null;
-  const operation = OperationCatalog.get(request.type);
-  const redactor = new Redactor();
-  const auditBody = operation.module === 'observability' ? { redacted: true }
-    : projectAuditBody(request.input.body, IDENTITY_AUDIT_INPUT_ALLOWLIST[operation.id]);
-  const auditResult = redactAuditFields(result.body, IDENTITY_AUDIT_OUTPUT_FIELDS[operation.id]);
-  const before = redactor.redact({ path:request.input.path, query:request.input.query, body:auditBody,
-    expectedVersion:request.input.expectedVersion ?? null });
-  const after = redactor.redact(auditResult ?? null);
-  const identitySensitive = IDENTITY_AUDIT_INPUT_ALLOWLIST[operation.id] !== undefined;
-  const auditRequestHash = identitySensitive ? digest(JSON.stringify({ operation:operation.id, before })) : requestHashValue;
-  const rawReason = typeof body.reason === 'string' ? body.reason.slice(0, 500) : null;
-  const reason = identitySensitive || rawReason === null ? null : redactor.redact(rawReason, 'reason');
-  const auditIdempotency = identitySensitive ? '[REDACTED]' : request.input.idempotency;
-  const auditTrace = identitySensitive ? `audit:${randomUUID()}` : request.access?.trace ?? requestHashValue;
-  await audit.record(client, { scope, actor, actorType:request.access?.actor.target ?? 'public', action:request.type, resourceType:module,
-    resource, before, after, evidence:{ status:result.status, idempotency:auditIdempotency, requestHash:auditRequestHash, reason,
-      permission:operation.permission ?? null, capabilities:request.access?.capabilities ?? [] },
-    trace:auditTrace });
-}
-
-function projectAuditBody(value: unknown, allowlist: readonly string[] | undefined): unknown {
-  if (allowlist === undefined) return value;
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return { redacted:true };
-  const record = value as Record<string, unknown>;
-  return Object.fromEntries([
-    ...allowlist.filter((key) => Object.hasOwn(record, key)).map((key) => [key, auditScalar(record[key])] as const),
-    ['redacted', true] as const,
-  ]);
-}
-
-function auditScalar(value: unknown): unknown {
-  return value === null || ['string', 'number', 'boolean'].includes(typeof value) ? value : '[REDACTED]';
-}
-
-function redactAuditFields(value: unknown, fields: readonly string[] | undefined): unknown {
-  if (fields === undefined || value === null || typeof value !== 'object') return value;
-  const names = new Set(fields);
-  if (Array.isArray(value)) return value.map((item) => redactAuditFields(item, fields));
-  return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => [
-    key,
-    names.has(key) ? '[REDACTED]' : redactAuditFields(item, fields),
-  ]));
-}
-
 export function rowResult<T extends QueryResultRow>(result: QueryResult<T>, status = 200): OperationResult {
   const row = result.rows[0];
-  if (!row) throw new Error('RESOURCE_NOT_FOUND');
+  if (!row) throw new DomainError('RESOURCE_NOT_FOUND');
   return { status, body: row, ...(Reflect.has(row, 'version') ? { headers: { etag: `\"${String(Reflect.get(row, 'version'))}\"` } } : {}) };
 }
 
@@ -209,40 +209,59 @@ export function pageResult<T extends QueryResultRow>(result: QueryResult<T>): Op
   return { status: 200, body: { items: result.rows, count: result.rows.length } };
 }
 
-
 export function requireAccess(request: OperationRequest) {
-  if (!request.access) throw new Error('AUTHENTICATION_REQUIRED');
-  return request.access;
+  return requireSession(request.security);
 }
 
 function transactionContext(request: OperationRequest, module: string, workload: 'query' | 'command') {
-  const access = request.access;
-  return { tenant: access?.scope.tenant ?? '', membership: access?.membership.id ?? '', scope: access?.scope.id ?? `public:${module}`,
-    actor: access?.actor.id ?? 'public', trace: access?.trace ?? `public:${request.type}`, workload } as const;
+  const access = sessionAccess(request.security);
+  const actor = access?.actor.id ?? (workload === 'command' ? publicActor(request) : 'public:query');
+  return { tenant: access?.scope.tenant ?? '', membership: access?.membership.id ?? '', scope: access?.scope.id ?? publicOperationScope(request, module), actor, trace: access?.trace ?? actor, operation: request.type, workload } as const;
 }
 
-export function operationRequestHash(request: OperationRequest): string {
-  return digest(JSON.stringify({
-    type: request.type,
-    path: request.input.path,
-    query: request.input.query,
-    body: request.input.body,
-    expectedVersion: request.input.expectedVersion ?? null,
-  }));
+function publicActor(request: OperationRequest): string {
+  const actor = request.input.publicActor;
+  if (!actor || !/^public:[0-9a-f]{64}$/.test(actor)) throw new Error('PUBLIC_IDEMPOTENCY_ACTOR_REQUIRED');
+  return actor;
 }
 
-function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }
+export function publicOperationScope(request: OperationRequest, module: string): string {
+  const target = request.security.kind === 'session' ? request.security.access.actor.target : request.security.target;
+  const partition = target ?? (request.security.kind === 'anonymous' ? request.security.channel : 'preauth');
+  return `public:${module}:${partition}`;
+}
+
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+function operationResource(result: OperationResult): Readonly<{ type: string | null; id: string | null; paymentId: string | null }> {
+  if (!result.body || typeof result.body !== 'object' || Array.isArray(result.body)) return Object.freeze({ type: null, id: null, paymentId: null });
+  const body = result.body as Readonly<Record<string, unknown>>;
+  const nested = body.order && typeof body.order === 'object' && !Array.isArray(body.order) ? (body.order as Readonly<Record<string, unknown>>) : body;
+  const payment = body.payment && typeof body.payment === 'object' && !Array.isArray(body.payment) ? (body.payment as Readonly<Record<string, unknown>>) : {};
+  const id = typeof nested.id === 'string' ? nested.id : null;
+  return Object.freeze({ type: id ? (id.includes(':') ? id.slice(0, id.indexOf(':')) : 'resource') : null, id, paymentId: typeof payment.paymentId === 'string' ? payment.paymentId : null });
+}
 
 function idempotencyReplayResponse(request: OperationRequest, result: OperationResult): OperationResult {
-  if (request.type === 'identity.sessions.create' || request.type === 'identity.tickets.exchange'
-    || request.type === 'identity.invitations.create') {
-    return { status: 409, body: { code: 'IDEMPOTENCY_KEY_REUSED', message: 'IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME' } };
+  if (
+    request.type === 'identity.sessions.create' ||
+    request.type === 'identity.sessions.complete' ||
+    request.type === 'identity.tickets.exchange' ||
+    request.type === 'identity.invitations.create' ||
+    request.type === 'identity.enrollments.complete' ||
+    request.type === 'identity.federations.start'
+  ) {
+    return { status: 409, body: { code: 'IDEMPOTENCY_REPLAY_FORBIDDEN' } };
   }
   return result;
 }
 
 function projection(value: unknown): readonly string[] {
-  if (!value || typeof value!=='object') return [];
-  if (Array.isArray(value)) return value.length===0 ? [] : projection(value[0]);
-  return Object.keys(value as Record<string, unknown>).sort().slice(0,100);
+  if (!value || typeof value !== 'object') return [];
+  if (Array.isArray(value)) return value.length === 0 ? [] : projection(value[0]);
+  return Object.keys(value as Record<string, unknown>)
+    .sort()
+    .slice(0, 100);
 }

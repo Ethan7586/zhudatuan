@@ -23,7 +23,9 @@
 }
 
 @media (max-width: 48rem) {
-  .consolelayout { grid-template-columns: minmax(0, 1fr); }
+  .consolelayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
   .consolesidebar,
   .consolesidebar.iscollapsed {
@@ -33,7 +35,9 @@
   }
 
   .sidebarbrand,
-  .sidebarmeta { display: none; }
+  .sidebarmeta {
+    display: none;
+  }
 
   .consolesidebar nav {
     display: flex;
@@ -59,11 +63,15 @@
 
   .consoleheader,
   .scopebar,
-  .workspacebody { padding-inline: var(--sw-space-2); }
+  .workspacebody {
+    padding-inline: var(--sw-space-2);
+  }
 
   .consolebreadcrumb > span,
   .consoleidentity time,
-  .consoleidentity > strong { display: none; }
+  .consoleidentity > strong {
+    display: none;
+  }
 
   .scopebar {
     align-items: stretch;
@@ -75,9 +83,13 @@
     flex-direction: column;
   }
 
-  .datasource { align-self: flex-start; }
+  .datasource {
+    align-self: flex-start;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .consolesidebar { transition: none; }
+  .consolesidebar {
+    transition: none;
+  }
 }

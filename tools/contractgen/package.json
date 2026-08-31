@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@shop/authz": "1.0.0",
-    "yaml": "2.9.0"
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "22.19.19",

@@ -15,12 +15,14 @@ const order = {
   scope_id: 'enterprise:1',
   member_id: 'member:verified-1',
   mall_id: 'mall:verified-1',
+  checkout_id: 'checkout:verified-1',
   total_minor: 12_800,
   currency: 'CNY',
   payment_state: 'paid',
   fulfillment_state: 'allocated',
   aftersale_state: 'none',
-  lifecycle_state: 'active',
+  lifecycle_state: 'paid',
+  evidence: {},
   created_at: '2026-08-26T08:30:00.000Z',
   updated_at: '2026-08-26T09:00:00.000Z',
   version: 11,
@@ -35,41 +37,38 @@ const order = {
       totalMinor: 12_800,
       discountMinor: 0,
       payableMinor: 12_800,
+      productType: 'physical',
+      category: 'category:office',
       provider: null,
       partner: null,
     },
   ],
-  preview: {
-    source: 'local-preview',
-    memberName: '不应泄漏的演示会员',
-    enterpriseName: '不应泄漏的演示企业',
-    mallName: '不应泄漏的演示商城',
-    paidMinor: 9_900,
-    paymentMethod: '不应泄漏的演示支付方式',
-    benefitMinor: 4_900,
-    wechatMinor: 5_000,
-    supplierName: '不应泄漏的演示供应商',
-    fulfillmentId: 'fulfillment:preview-only',
-    slaMinutes: 15,
-    addressSummary: '不应泄漏的演示地址',
-    summary: '不应泄漏的演示说明',
-    milestones: [],
-    operation: { id: 'operation:preview-only', label: '演示 Operation', status: 'succeeded', at: '2026-08-26T09:00:00.000Z' },
-    exception: false,
-  },
 } as const;
 
 const listPage = {
   items: [order],
   count: 1,
   nextCursor: 'cursor:next',
-  preview: {
-    source: 'local-preview',
-    total: 7,
-    updatedAt: '2026-08-26T09:00:00.000Z',
-    page: 1,
-    counts: { all: 7, unpaid: 1, unshipped: 2, active: 2, completed: 2, aftersale: 1, exception: 1 },
-  },
+} as const;
+
+const aftersale = {
+  id: 'aftersale:verified-1',
+  orderId: order.id,
+  state: 'reviewing',
+  reasonCode: 'damaged',
+  description: '外包装破损',
+  currency: 'CNY',
+  expectedRefundMinor: 6_400,
+  expectedRefund: { totalMinor: 6_400, currency: 'CNY', tenders: [{ kind: 'benefit', reference: null, amountMinor: 6_400 }] },
+  requiresReturn: true,
+  unavailableReason: null,
+  requestedBy: 'actor:member-1',
+  createdAt: '2026-08-27T08:30:00.000Z',
+  updatedAt: '2026-08-27T09:00:00.000Z',
+  version: 2,
+  lines: [],
+  attachments: [],
+  timeline: [{ sequence: 1, kind: 'application', previousState: null, state: 'applied', evidence: {}, occurredAt: '2026-08-27T08:30:00.000Z' }],
 } as const;
 
 const context: ConsoleContext = {
@@ -90,27 +89,25 @@ const context: ConsoleContext = {
   scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
 };
 
-const previewScope = { kind: 'platform', id: 'platform:preview' } as const;
-const previewContext: ConsoleContext = {
-  ...context,
-  session: { ...context.session, scope: previewScope, scopes: [previewScope] },
-  scope: previewScope,
-  scopes: [previewScope],
-};
-
 const getRequests: URL[] = [];
 const postRequests: URL[] = [];
 const server = setupServer(
   http.get('*/api/v1/orders', ({ request }) => {
     const url = new URL(request.url);
     getRequests.push(url);
-    if (!['enterprise:1', 'platform:preview'].includes(request.headers.get('x-scope-hint') ?? '') || request.headers.get('x-access-version') !== '7') {
+    if (request.headers.get('x-scope-hint') !== 'enterprise:1' || request.headers.get('x-access-version') !== '7') {
       return HttpResponse.json({ code: 'TEST_CONTEXT_MISSING', requestId: 'request:order-test' }, { status: 400 });
     }
     if (url.searchParams.get('limit') === '1') {
       return HttpResponse.json(url.searchParams.get('order') === order.id ? { items: [order], count: 1 } : { items: [], count: 0 });
     }
     return HttpResponse.json(listPage);
+  }),
+  http.get('*/api/v1/orders/aftersales', ({ request }) => {
+    const url = new URL(request.url);
+    getRequests.push(url);
+    expect(request.headers.get('x-scope-hint')).toBe('enterprise:1');
+    return HttpResponse.json({ items: [aftersale], count: 1, availableLines: [] });
   }),
   http.post('*', ({ request }) => {
     postRequests.push(new URL(request.url));
@@ -132,12 +129,12 @@ describe('Order route', () => {
     renderRoute();
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeTruthy();
-    expect(screen.getByRole('note').textContent).toContain('当前生产读合同仅保证');
+    expect(screen.getByRole('heading', { level: 1, name: '订单管理' })).toBeTruthy();
+    expect(screen.getByRole('note').textContent).toContain('商品订单与售后订单都由服务端按当前组织树或会员本人范围隔离');
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
     expect(screen.getByText('member:verified-1')).toBeTruthy();
-    expect(screen.getByText('企业显示名不可用')).toBeTruthy();
+    expect(screen.getByText('enterprise:1')).toBeTruthy();
     expect(screen.getByTitle('当前读模型未返回 SLA').textContent).toBe('未提供');
     expect(screen.queryByText('不应泄漏的演示会员')).toBeNull();
     expect(screen.queryByText('不应泄漏的演示支付方式')).toBeNull();
@@ -150,10 +147,30 @@ describe('Order route', () => {
 
     await userEvent.setup().click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
     const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
-    expect(within(dialog).getByText(/组织级完整性也未由当前 member audience 合同保证/)).toBeTruthy();
+    expect(within(dialog).getByText(/最终动作保持关闭/)).toBeTruthy();
     expect(within(dialog).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
     expect(within(dialog).getByText(/当前读模型未提供审计时间线/)).toBeTruthy();
     expect(within(dialog).queryByText('不应泄漏的演示说明')).toBeNull();
+  });
+
+  it('reads the authoritative aftersale model for the console scope instead of filtering order rows in the browser', async () => {
+    const user = userEvent.setup();
+    renderRoute('/orders?campaign=keep');
+    await screen.findByRole('table', { name: '订单列表' });
+
+    const tab = screen.getByRole<HTMLButtonElement>('button', { name: '售后与退款' });
+    expect(tab.disabled).toBe(false);
+    await user.click(tab);
+
+    expect(await screen.findByRole('table', { name: '售后订单列表' })).toBeTruthy();
+    expect(screen.getByText('aftersale:verified-1')).toBeTruthy();
+    expect(screen.getByText('外包装破损')).toBeTruthy();
+    expect(screen.getByText('需要退货')).toBeTruthy();
+    expect(currentParams().get('view')).toBe('aftersale');
+    expect(currentParams().get('campaign')).toBe('keep');
+    const read = getRequests.find((url) => url.pathname.endsWith('/api/v1/orders/aftersales'));
+    expect(read?.searchParams.get('limit')).toBe('50');
+    expect(read?.searchParams.has('order')).toBe(false);
   });
 
   it('normalizes preview-only URL filters out of a production scope before presenting results', async () => {
@@ -386,33 +403,7 @@ describe('Order route', () => {
     await user.click(fulfill);
     expect(postRequests).toHaveLength(0);
   });
-
-  it('opens and closes every preview-only order action without sending a write request', async () => {
-    const user = userEvent.setup();
-    renderRoute('/orders', previewContext);
-    await screen.findByRole('table', { name: '订单列表' });
-
-    await openAndCloseSafePreview(user, screen.getByRole('button', { name: '导出订单' }), '导出订单预览');
-    await openAndCloseSafePreview(user, screen.getByRole('button', { name: '更多筛选' }), '更多筛选');
-    await openAndCloseSafePreview(user, screen.getByRole('button', { name: `订单 ${order.order_number} 更多操作` }), `订单操作预览 ${order.order_number}`);
-
-    await user.click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
-    const drawer = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
-    await openAndCloseSafePreview(user, within(drawer).getByRole('button', { name: '更多' }), '更多订单操作');
-    await openAndCloseSafePreview(user, within(drawer).getByRole('button', { name: '确认发货' }), '确认发货预览');
-
-    expect(postRequests).toHaveLength(0);
-  });
 });
-
-async function openAndCloseSafePreview(user: ReturnType<typeof userEvent.setup>, trigger: HTMLElement, name: string) {
-  expect((trigger as HTMLButtonElement).disabled).toBe(false);
-  await user.click(trigger);
-  const dialog = await screen.findByRole('dialog', { name });
-  expect(within(dialog).getByText(/不会发起写操作/)).toBeTruthy();
-  await user.click(within(dialog).getByRole('button', { name: '关闭' }));
-  await waitFor(() => expect(screen.queryByRole('dialog', { name })).toBeNull());
-}
 
 function renderRoute(entry = '/orders', initialContext = context) {
   const client = new QueryClient({

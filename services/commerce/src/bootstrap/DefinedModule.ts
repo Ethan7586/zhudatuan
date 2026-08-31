@@ -1,43 +1,61 @@
-import { registerOperationRoutes, registerSelectedOperationRoutes } from '../foundation/interface/OperationController';
-import { OperationCatalog, type OperationId } from '@shop/contract';
-import { OperationHandler, type OperationUsecase } from '../foundation/application/OperationHandler';
-import { OPERATION_HANDLERS } from '../foundation/interface/OperationController';
-import type { CommerceModule, ModuleContext } from './ModuleRegistry';
+import { OperationCatalog, type OperationId, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
+import type { OperationContext } from '../foundation/application/OperationContext';
+import type { OperationUsecase as OperationExecutor } from '../foundation/application/OperationExecution';
+import type { OperationReply, TypedOperationUsecase } from '../foundation/application/OperationHandler';
+import { HANDLER_TYPES } from '../generated/HandlerCatalog';
+import type { CommerceModule, ModuleContext, ModuleManifest, PublicPortBinding } from './ModuleRegistry';
 
-export type OperationFactory = (context: ModuleContext) => OperationUsecase;
+export type OperationFactory = (context: ModuleContext) => OperationExecutor;
+export type PortFactory = (context: ModuleContext) => readonly PublicPortBinding[];
 
-export function defineModule(id: string, dependencies: readonly string[] = [], factory?: OperationFactory): CommerceModule {
-  return Object.freeze({ id, dependencies: Object.freeze([...dependencies]), register: (context: ModuleContext) => {
-    if (context.workload !== 'api') return;
-    const operations = OperationCatalog.all().filter((candidate) => candidate.module === id);
-    if (operations.length > 0) {
+export function defineModule(manifest: ModuleManifest, factory?: OperationFactory, ports: readonly PublicPortBinding[] | PortFactory = []): CommerceModule {
+  const { id, dependencies, services } = manifest;
+  return Object.freeze({
+    id,
+    dependencies: Object.freeze([...dependencies]),
+    services: Object.freeze([...services]),
+    bind(context: ModuleContext): readonly PublicPortBinding[] {
+      return Object.freeze([...(typeof ports === 'function' ? ports(context) : ports)]);
+    },
+    register(context: ModuleContext): void {
+      if (context.workload !== 'api') return;
+      const operations = OperationCatalog.all().filter((candidate) => candidate.module === id);
+      if (operations.length === 0) return;
       if (!factory) throw new Error(`MODULE_OPERATION_FACTORY_MISSING:${id}`);
-      const usecase = factory(context);
-      const handlers = context.container.get(OPERATION_HANDLERS);
-      for (const operation of operations) {
-        if (handlers.has(operation.id)) throw new Error(`OPERATION_HANDLER_DUPLICATE:${operation.id}`);
-        handlers.set(operation.id as OperationId, new OperationHandler(usecase));
-      }
-    }
-    registerOperationRoutes(id, context);
-  } });
+      const executor = factory(context);
+      for (const operation of operations) registerHandler(id, operation.id, executor, context);
+    },
+  });
 }
 
-export function defineSelectedModule(id: string, operationIds: readonly OperationId[], factory: OperationFactory,
-  dependencies: readonly string[] = []): CommerceModule {
-  const selected = Object.freeze([...operationIds]);
-  if (new Set(selected).size !== selected.length) throw new Error(`MODULE_OPERATION_DUPLICATE:${id}`);
-  for (const operation of selected.map((operationId) => OperationCatalog.get(operationId))) {
-    if (operation.module !== id) throw new Error(`MODULE_OPERATION_OWNER_MISMATCH:${operation.id}`);
-  }
-  return Object.freeze({ id, dependencies: Object.freeze([...dependencies]), register: (context: ModuleContext) => {
-    if (context.workload !== 'api') return;
-    const usecase = factory(context);
-    const handlers = context.container.get(OPERATION_HANDLERS);
-    for (const operationId of selected) {
-      if (handlers.has(operationId)) throw new Error(`OPERATION_HANDLER_DUPLICATE:${operationId}`);
-      handlers.set(operationId, new OperationHandler(usecase));
-    }
-    registerSelectedOperationRoutes(selected, context);
-  } });
+function registerHandler<TKey extends OperationId>(owner: string, operation: TKey, executor: OperationExecutor, context: ModuleContext): void {
+  const Handler = HANDLER_TYPES.get(operation);
+  if (!Handler) throw new Error(`HANDLER_TYPE_MISSING:${operation}`);
+  const usecase: TypedOperationUsecase<TKey> = {
+    async execute(input: OperationInputFor<TKey>, operationContext: OperationContext): Promise<OperationReply<OperationOutputFor<TKey>>> {
+      const wire = input as Readonly<{ path?: Readonly<Record<string, string>>; query?: Readonly<Record<string, string | readonly string[]>>; body?: unknown }>;
+      const result = await executor.invoke({
+        type: operation,
+        input: {
+          path: wire.path ?? {},
+          query: wire.query ?? {},
+          headers: operationContext.headers,
+          body: wire.body,
+          rawBody: operationContext.rawBody,
+          deadline: operationContext.deadline,
+          signal: operationContext.signal,
+          ...(operationContext.publicActor === undefined ? {} : { publicActor: operationContext.publicActor }),
+          ...(operationContext.idempotencyKey === undefined ? {} : { idempotency: operationContext.idempotencyKey }),
+          ...(operationContext.expectedVersion === undefined ? {} : { expectedVersion: operationContext.expectedVersion }),
+        },
+        security: operationContext.security,
+      });
+      return {
+        status: result.status,
+        body: result.body as OperationOutputFor<TKey>,
+        ...(result.headers === undefined ? {} : { headers: result.headers }),
+      };
+    },
+  };
+  context.handlers.add(owner, operation, new Handler(usecase as TypedOperationUsecase<OperationId>));
 }

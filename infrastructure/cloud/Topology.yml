@@ -1,0 +1,18 @@
+version: 1
+owner: reliability
+regions:
+  primary:
+    mode: active
+    zones: 2
+    api: { mode: activeactive, normalReplicas: 3, minimumReplicas: 2 }
+    jobs: { mode: activeactive, minimumReplicas: 2, lease: postgresql, fencing: monotonic }
+    provider: { mode: activeactive, zones: 2, minimumReplicas: 2, lease: postgresql, fencing: monotonic, autoscale: queueandratelimit }
+    postgresql: { writer: 1, synchronousStandby: true, readReplica: true }
+    redis: { primary: 1, replica: 1, authoritative: false }
+    queue: { quorum: 3 }
+    object: { private: true, versioned: true, crossRegionReplication: true }
+  recovery:
+    mode: warmstandby
+    separateRegion: true
+edge: { waf: multipop, cdn: multipop }
+secrets: { manager: managed, kms: managed, workloadIdentity: oidc }

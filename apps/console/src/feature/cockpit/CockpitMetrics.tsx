@@ -11,11 +11,13 @@ export function CockpitMetrics({ sales }: Readonly<{ sales: CockpitSales }>) {
   ];
   return (
     <section className="cockpitmetricband" aria-label="经营摘要">
-      {metrics.map((metric) => <article key={metric.label}>
-        <span>{metric.label}</span>
-        <strong>{metric.value}</strong>
-        <small className={metric.tone === 'neutral' ? undefined : metric.tone === 'negative' ? 'isnegative' : 'ispositive'}>{metric.delta}</small>
-      </article>)}
+      {metrics.map((metric) => (
+        <article key={metric.label}>
+          <span>{metric.label}</span>
+          <strong>{metric.value}</strong>
+          <small className={metric.tone === 'neutral' ? undefined : metric.tone === 'negative' ? 'isnegative' : 'ispositive'}>{metric.delta}</small>
+        </article>
+      ))}
     </section>
   );
 }

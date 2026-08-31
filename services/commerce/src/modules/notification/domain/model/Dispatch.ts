@@ -3,9 +3,18 @@ import type { DeliveryChannelId, DeliveryVariables } from './Template';
 export type DispatchState = 'queued' | 'sending' | 'sent' | 'failed' | 'cancelled';
 
 export class Dispatch {
-  constructor(readonly id: string, readonly scope: string, readonly member: string | null, readonly template: string,
-    readonly channel: DeliveryChannelId, readonly recipient: string, readonly variables: DeliveryVariables,
-    readonly subject: string | null, readonly body: string, readonly state: DispatchState) {
+  constructor(
+    readonly id: string,
+    readonly scope: string,
+    readonly member: string | null,
+    readonly template: string,
+    readonly channel: DeliveryChannelId,
+    readonly recipient: string,
+    readonly variables: DeliveryVariables,
+    readonly subject: string | null,
+    readonly body: string,
+    readonly state: DispatchState
+  ) {
     if (!id || !scope || !template || !recipient || !body || !['queued', 'sending', 'sent', 'failed', 'cancelled'].includes(state)) {
       throw new Error('NOTIFICATION_DISPATCH_INVALID');
     }

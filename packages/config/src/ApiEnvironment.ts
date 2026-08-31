@@ -13,13 +13,14 @@ export const API_ENVIRONMENT_KEYS = [
   'REDIS_CONNECTION_REF',
   'SESSION_KEY_REF',
   'IDENTITY_KEY_REF',
+  'INVITATION_KEY_REF',
+  'NAVIGATION_KEY_REF',
   'QUOTE_KEY_REF',
   'KMS_ENDPOINT',
   'KMS_BEARER_TOKEN',
   'PII_KEY_REF',
   'WECHAT_APPLICATION_CONFIG_REF',
   'WECHAT_PAYMENT_CONFIG_REF',
-  'WECHAT_IDENTITY_CONFIG_REF',
   'OBJECT_STORE_ENDPOINT',
   'OBJECT_STORE_TOKEN_REF',
   'EXTENSION_MANIFEST_KEY_REF',
@@ -48,9 +49,10 @@ export function apiBindHost(environment: ApiEnvironment): '127.0.0.1' | '0.0.0.0
 }
 
 export function apiAllowedOrigins(environment: ApiEnvironment): readonly string[] {
-  const values = requiredValue(environment.API_ALLOWED_ORIGINS, 'API_ALLOWED_ORIGINS_MISSING').split(',').map((value) => value.trim());
-  if (values.length === 0 || values.some((value) => !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value)
-    && !/^http:\/\/(localhost|127\.0\.0\.1)(?::\d+)?$/.test(value))) throw new Error('API_ALLOWED_ORIGINS_INVALID');
+  const values = requiredValue(environment.API_ALLOWED_ORIGINS, 'API_ALLOWED_ORIGINS_MISSING')
+    .split(',')
+    .map((value) => value.trim());
+  if (values.length === 0 || values.some((value) => !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value) && !/^http:\/\/(localhost|127\.0\.0\.1)(?::\d+)?$/.test(value))) throw new Error('API_ALLOWED_ORIGINS_INVALID');
   return Object.freeze([...new Set(values)]);
 }
 
@@ -59,10 +61,14 @@ export type AuthReturnTargets = Readonly<Record<AuthTarget, string>>;
 export function apiReturnTargets(environment: ApiEnvironment): AuthReturnTargets {
   const raw = requiredValue(environment.AUTH_RETURN_TARGETS, 'AUTH_RETURN_TARGETS_MISSING');
   let parsed: unknown;
-  try { parsed = JSON.parse(raw); } catch { throw new Error('AUTH_RETURN_TARGETS_INVALID'); }
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error('AUTH_RETURN_TARGETS_INVALID');
+  }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   const record = parsed as Readonly<Record<string, unknown>>;
-  const keys: readonly AuthTarget[] = ['console', 'storefront', 'store', 'supplier'];
+  const keys: readonly AuthTarget[] = ['console', 'storefront'];
   if (Object.keys(record).sort().join(',') !== [...keys].sort().join(',')) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   return Object.freeze(Object.fromEntries(keys.map((key) => [key, webUrl(record[key])])) as Record<AuthTarget, string>);
 }
@@ -79,25 +85,26 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
     ['REDIS_CONNECTION_REF', 'REDIS_CONNECTION_REF_MISSING'],
     ['SESSION_KEY_REF', 'SESSION_KEY_REF_MISSING'],
     ['IDENTITY_KEY_REF', 'IDENTITY_KEY_REF_MISSING'],
+    ['INVITATION_KEY_REF', 'INVITATION_KEY_REF_MISSING'],
+    ['NAVIGATION_KEY_REF', 'NAVIGATION_KEY_REF_MISSING'],
     ['QUOTE_KEY_REF', 'QUOTE_KEY_REF_MISSING'],
     ['PII_KEY_REF', 'PII_KEY_REF_MISSING'],
     ['WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_APPLICATION_CONFIG_REF_MISSING'],
     ['WECHAT_PAYMENT_CONFIG_REF', 'WECHAT_PAYMENT_CONFIG_REF_MISSING'],
-    ['WECHAT_IDENTITY_CONFIG_REF', 'WECHAT_IDENTITY_CONFIG_REF_MISSING'],
     ['OBJECT_STORE_ENDPOINT', 'OBJECT_STORE_ENDPOINT_MISSING'],
     ['OBJECT_STORE_TOKEN_REF', 'OBJECT_STORE_TOKEN_REF_MISSING'],
     ['EXTENSION_MANIFEST_KEY_REF', 'EXTENSION_MANIFEST_KEY_REF_MISSING'],
     ['KMS_ENDPOINT', 'KMS_ENDPOINT_MISSING'],
     ['SECRET_STORE_ENDPOINT', 'SECRET_STORE_ENDPOINT_MISSING'],
-  ] as const) requiredValue(source[key], code);
+  ] as const)
+    requiredValue(source[key], code);
   const kmsBearer = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
   const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
 }
 
 function webUrl(value: unknown): string {
-  if (typeof value !== 'string' || (!/^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/.*)?$/i.test(value)
-    && !/^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/.*)?$/.test(value))) throw new Error('AUTH_RETURN_TARGETS_INVALID');
+  if (typeof value !== 'string' || (!/^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/.*)?$/i.test(value) && !/^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/.*)?$/.test(value))) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   const url = new URL(value);
   if (url.username || url.password || url.hash) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   return url.toString().replace(/\/$/, '');

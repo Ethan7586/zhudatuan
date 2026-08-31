@@ -1,2 +1,4 @@
 import { FinanceProfessionalRoute } from './FinanceProfessionalRoute';
-export function Component() { return <FinanceProfessionalRoute section="reconciliations" />; }
+export function Component() {
+  return <FinanceProfessionalRoute section="reconciliations" />;
+}

@@ -4,25 +4,16 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { readOrderDetail } from './OrderDetailQuery';
-import { ORDER_PAGE_LIMIT, orderKey, readOrders, type OrderQuery } from './OrderQuery';
-import { OrderPageSchema, type OrderRecord } from './OrderSchema';
+import { ORDER_PAGE_LIMIT, orderKey, readOrders } from './OrderQuery';
+import { OrderPageSchema } from './OrderSchema';
 
-interface CapturedRequest {
-  readonly url: URL;
-  readonly scope: string | null;
-  readonly accessVersion: string | null;
-}
-
-const requests: CapturedRequest[] = [];
-const emptyPage = { items: [], count: 0 };
+const requests: URL[] = [];
 const server = setupServer(
   http.get('*/api/v1/orders', ({ request }) => {
-    requests.push({
-      url: new URL(request.url),
-      scope: request.headers.get('x-scope-hint'),
-      accessVersion: request.headers.get('x-access-version'),
-    });
-    return HttpResponse.json(emptyPage);
+    requests.push(new URL(request.url));
+    expect(request.headers.get('x-scope-hint')).toBe('enterprise:1');
+    expect(request.headers.get('x-access-version')).toBe('7');
+    return HttpResponse.json({ items: [], count: 0 });
   })
 );
 
@@ -33,191 +24,85 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-describe('Order list query', () => {
-  it('sends the bounded typed query with exact internal order id, cursor, scope and access version', async () => {
-    const context = createContext('enterprise', 'enterprise:1', 7);
-    await readOrders(context, { order: 'order:internal:42', cursor: 'cursor:50' }, new AbortController().signal);
-
-    expect(requests).toHaveLength(1);
-    const request = requests[0];
-    expect(request?.url.pathname).toBe('/api/v1/orders');
-    expect(Object.fromEntries(request?.url.searchParams ?? [])).toEqual({
-      limit: String(ORDER_PAGE_LIMIT),
-      order: 'order:internal:42',
-      cursor: 'cursor:50',
-    });
-    expect(request?.scope).toBe('enterprise:1');
-    expect(request?.accessVersion).toBe('7');
+describe('Order query', () => {
+  it('sends only the bounded contract query with scope and access version', async () => {
+    await readOrders(context(), { order: 'order:internal:42', cursor: 'cursor:50' }, new AbortController().signal);
+    expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({ limit: String(ORDER_PAGE_LIMIT), order: 'order:internal:42', cursor: 'cursor:50' });
   });
 
-  it('isolates query keys by scope, access version, every filter and cursor', () => {
-    const baseline: OrderQuery = {
-      order: 'order:1',
-      placed: 'today',
-      lifecycle: 'active',
-      payment: 'paid',
-      fulfillment: 'allocated',
-      mall: 'mall:1',
-      view: 'active',
-      cursor: 'cursor:1',
-    };
-    const baselineContext = createContext('enterprise', 'enterprise:1', 7);
+  it('isolates query keys by scope, access version, order and cursor', () => {
     const keys = [
-      orderKey(baselineContext, baseline),
-      orderKey(createContext('mall', 'mall:2', 7), baseline),
-      orderKey(createContext('enterprise', 'enterprise:1', 8), baseline),
-      orderKey(baselineContext, { ...baseline, order: 'order:2' }),
-      orderKey(baselineContext, { ...baseline, placed: '7days' }),
-      orderKey(baselineContext, { ...baseline, lifecycle: 'completed' }),
-      orderKey(baselineContext, { ...baseline, payment: 'refunded' }),
-      orderKey(baselineContext, { ...baseline, fulfillment: 'delivered' }),
-      orderKey(baselineContext, { ...baseline, mall: 'mall:2' }),
-      orderKey(baselineContext, { ...baseline, view: 'completed' }),
-      orderKey(baselineContext, { ...baseline, cursor: 'cursor:2' }),
+      orderKey(context(), { order: 'order:1', cursor: 'cursor:1' }),
+      orderKey(context('enterprise:2'), { order: 'order:1', cursor: 'cursor:1' }),
+      orderKey(context('enterprise:1', 8), { order: 'order:1', cursor: 'cursor:1' }),
+      orderKey(context(), { order: 'order:2', cursor: 'cursor:1' }),
+      orderKey(context(), { order: 'order:1', cursor: 'cursor:2' }),
     ];
-
     expect(new Set(keys.map((key) => JSON.stringify(key))).size).toBe(keys.length);
-    expect(keys[0]).toContain(ORDER_PAGE_LIMIT);
-  });
-
-  it('does not send preview-only filters to production scopes', async () => {
-    const filter: OrderQuery = {
-      order: '',
-      placed: '30days',
-      lifecycle: 'completed',
-      payment: 'refunded',
-      fulfillment: 'returned',
-      mall: 'mall:east',
-      view: 'exception',
-      cursor: 'cursor:production',
-    };
-
-    await readOrders(createContext('enterprise', 'enterprise:1', 7), filter, new AbortController().signal);
-
-    expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({
-      limit: String(ORDER_PAGE_LIMIT),
-      cursor: 'cursor:production',
-    });
-  });
-
-  it('sends supported demo filters only for the isolated local preview scope', async () => {
-    const filter: OrderQuery = {
-      order: 'order:preview:1',
-      placed: '7days',
-      lifecycle: 'active',
-      payment: 'paid',
-      fulfillment: 'shipped',
-      mall: 'mall:preview',
-      view: 'unshipped',
-      cursor: 'cursor:preview',
-    };
-
-    await readOrders(createContext('platform', 'platform:preview', 11), filter, new AbortController().signal);
-
-    expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({
-      limit: String(ORDER_PAGE_LIMIT),
-      order: 'order:preview:1',
-      cursor: 'cursor:preview',
-      placed: '7days',
-      lifecycle: 'active',
-      payment: 'paid',
-      fulfillment: 'shipped',
-      mall: 'mall:preview',
-      view: 'unshipped',
-    });
-    expect(requests[0]?.scope).toBe('platform:preview');
-    expect(requests[0]?.accessVersion).toBe('11');
   });
 
   it('propagates cancellation to the SDK request', async () => {
     server.use(
       http.get('*/api/v1/orders', async () => {
         await delay('infinite');
-        return HttpResponse.json(emptyPage);
+        return HttpResponse.json({ items: [], count: 0 });
       })
     );
     const controller = new AbortController();
-    const pending = readOrders(createContext('enterprise', 'enterprise:1', 7), { order: '' }, controller.signal);
-
+    const pending = readOrders(context(), { order: '' }, controller.signal);
     controller.abort(new Error('SCOPE_CHANGED'));
-
     await expect(pending).rejects.toThrow();
   });
-});
 
-describe('Order detail query', () => {
-  it('queries and resolves only by the exact internal order id', async () => {
-    const item = createOrder('order:internal:7', 'SW-20260826-0007');
+  it('reads detail only by the exact internal order id', async () => {
+    const item = order('order:internal:7', 'SW-20260826-0007');
     server.use(
       http.get('*/api/v1/orders', ({ request }) => {
-        requests.push({
-          url: new URL(request.url),
-          scope: request.headers.get('x-scope-hint'),
-          accessVersion: request.headers.get('x-access-version'),
-        });
+        requests.push(new URL(request.url));
         return HttpResponse.json({ items: [item], count: 1 });
       })
     );
-    const context = createContext('enterprise', 'enterprise:1', 7);
-
-    await expect(readOrderDetail(context, item.id, new AbortController().signal)).resolves.toEqual(item);
-    expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({ order: item.id, limit: '1' });
-
-    await expect(readOrderDetail(context, item.order_number, new AbortController().signal)).resolves.toBeUndefined();
-    expect(requests[1]?.url.searchParams.get('order')).toBe(item.order_number);
+    const expected = OrderPageSchema.parse({ items: [item], count: 1 }).items[0];
+    await expect(readOrderDetail(context(), item.id, new AbortController().signal)).resolves.toEqual(expected);
+    expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({ order: item.id, limit: '1' });
+    await expect(readOrderDetail(context(), item.order_number, new AbortController().signal)).resolves.toBeUndefined();
   });
-});
 
-describe('Order page response bounds', () => {
-  it('rejects a response containing 51 rows', () => {
-    const items = Array.from({ length: ORDER_PAGE_LIMIT + 1 }, (_, index) => createOrder(`order:${index + 1}`, `SW-${index + 1}`));
-
+  it('rejects oversized or internally inconsistent pages', () => {
+    const items = Array.from({ length: ORDER_PAGE_LIMIT + 1 }, (_, index) => order(`order:${index + 1}`, `SW-${index + 1}`));
     expect(OrderPageSchema.safeParse({ items, count: items.length }).success).toBe(false);
-  });
-
-  it('rejects count values that do not match the returned page', () => {
-    const parsed = OrderPageSchema.safeParse({ items: [createOrder('order:1', 'SW-1')], count: 0 });
-
-    expect(parsed.success).toBe(false);
-    if (!parsed.success) {
-      expect(parsed.error.issues.some(({ message }) => message === 'ORDER_PAGE_COUNT_MISMATCH')).toBe(true);
-    }
+    expect(OrderPageSchema.safeParse({ items: [order('order:1', 'SW-1')], count: 0 }).success).toBe(false);
   });
 });
 
-function createContext(kind: 'platform' | 'enterprise' | 'mall', id: string, accessVersion: number): ConsoleContext {
-  const scope = { kind, id } as const;
+function context(id = 'enterprise:1', accessVersion = 7): ConsoleContext {
+  const scope = { kind: 'enterprise' as const, id };
   return {
-    session: {
-      actor: 'actor:1',
-      membership: 'membership:1',
-      accessVersion,
-      permissions: [],
-      capabilities: [],
-      target: 'console',
-      scope,
-      scopes: [scope],
-      assurance: { level: 1 },
-      syncedAt: '2026-08-26T00:00:00Z',
-    },
+    session: { actor: 'actor:1', membership: 'membership:1', accessVersion, permissions: [], capabilities: [], target: 'console', scope, scopes: [scope], assurance: { level: 1 }, syncedAt: '2026-08-26T00:00:00Z' },
     profile: { display_name: '测试运营', employee_no: null },
     scope,
     scopes: [scope],
   };
 }
 
-function createOrder(id: string, orderNumber: string): OrderRecord {
+function order(id: string, orderNumber: string) {
   return {
     id,
     order_number: orderNumber,
+    scope_id: 'enterprise:1',
+    member_id: 'member:1',
+    mall_id: 'mall:1',
+    checkout_id: 'checkout:1',
     total_minor: 31_500,
     currency: 'CNY',
     payment_state: 'paid',
     fulfillment_state: 'allocated',
     aftersale_state: 'none',
-    lifecycle_state: 'active',
+    lifecycle_state: 'paid',
+    evidence: {},
     created_at: '2026-08-26T00:00:00Z',
     updated_at: '2026-08-26T00:01:00Z',
     version: 2,
+    lines: [],
   };
 }

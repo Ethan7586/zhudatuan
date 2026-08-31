@@ -16,17 +16,28 @@ describe('HttpClient', () => {
 
   it('does not retry an unsafe call', async () => {
     let calls = 0;
-    const client = new HttpClient(async () => { calls += 1; throw new Error('network'); });
+    const client = new HttpClient(async () => {
+      calls += 1;
+      throw new Error('network');
+    });
     await expect(client.send('https://dependency.example/write', { method: 'POST' }, { mode: 'none' })).rejects.toThrow('HTTP_TRANSPORT_FAILED');
     expect(calls).toBe(1);
   });
 
   it('preserves a no-content response without retrying the write', async () => {
     let calls = 0;
-    const client = new HttpClient(async () => { calls += 1; return new Response(null, { status: 204 }); });
+    const client = new HttpClient(async () => {
+      calls += 1;
+      return new Response(null, { status: 204 });
+    });
     const response = await client.send('https://dependency.example/write', { method: 'PUT' }, { mode: 'businesskeywrite' });
     expect(response.status).toBe(204);
     expect(await response.text()).toBe('');
     expect(calls).toBe(1);
+  });
+
+  it('rejects an oversized dependency response before materializing it', async () => {
+    const client = new HttpClient(async () => new Response('x'.repeat(2 * 1024 * 1024 + 1)));
+    await expect(client.send('https://dependency.example/large', {}, { mode: 'read' })).rejects.toThrow('HTTP_RESPONSE_TOO_LARGE');
   });
 });

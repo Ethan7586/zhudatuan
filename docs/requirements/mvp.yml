@@ -1,11 +1,21 @@
-source: RepositoryAuthority docs/福利商城功能清单260821.xlsx#MVP上线功能清单!A3:F23
-workbookSha256: 78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942
+source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
+workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
+navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
+contractSha256: e43962c59027687e19e380eb26298c55f53c0a461bb3c52405b9f27c749abd1d
 generated: true
-count: 21
+count: 22
 requirements:
-  - id: MVP03
+  - id: MVPPLATFORM
     row: 3
-    label: 平台层
+    title: 平台基础
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 3
+      range: A3:F3
+    label: |-
+      1.有预留的逻辑层级
+      2.商品池对接到该层级内
+      3.卡号库可以创建
     source:
       - 平台层
       - |-
@@ -15,65 +25,82 @@ requirements:
       - ""
       - ""
       - ""
-      - ""
-    route: /platform
+      - 忽略
+    release: nonblocking
+    providers: []
+    clarifications: []
+    navigation:
+      - platformcontrol
+      - platformcatalog
+      - platformvoucher
+      - groupcontrol
+      - mallcontrol
+    routes:
+      - /scopes/:scopeKind/:scopeId/control
+      - /scopes/:scopeKind/:scopeId/products
+      - /scopes/:scopeKind/:scopeId/vouchers
+      - /scopes/:scopeKind/:scopeId/control
+      - /scopes/:scopeKind/:scopeId/control
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - organization.layers.read
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - catalog.pools.attach
-      - catalog.pools.detach
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
-      - voucher.cardlibraries.create
-      - voucher.cardlibraries.allocate
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.pools.attach
+      - catalog.pools.detach
+      - catalog.pools.read
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.catalog.read
+      - navigation.health.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - organization.layers.read
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.cardlibraries.allocate
+      - voucher.cardlibraries.create
+      - voucher.cardlibraries.read
     modules:
       - audit
       - benefit
@@ -82,14 +109,13 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - organization
       - payment
-      - pricing
       - runtime
       - verification
       - voucher
@@ -105,14 +131,13 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/organization
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -120,14 +145,20 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp03_platform.spec.ts
+    journeyTest: tests/journey/PlatformJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: evidence/releases/MVP03.json
+    releaseEvidence: docs/evidence/releases/MVPPLATFORM.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP04
+  - id: MVPDISTRIBUTION
     row: 4
+    title: 分销层
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 4
+      range: A4:F4
     label: 分销层
     source:
       - 分销层
@@ -135,70 +166,95 @@ requirements:
       - ""
       - ""
       - ""
-      - ""
-    route: /distributors
+      - 忽略
+    release: nonblocking
+    providers: []
+    clarifications:
+      - distributiondefinition
+    navigation:
+      - distributioncontrol
+      - groupreferral
+      - mallreferral
+    routes:
+      - /scopes/:scopeKind/:scopeId/control
+      - /scopes/:scopeKind/:scopeId/referral
+      - /scopes/:scopeKind/:scopeId/referral
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - capability.assignments.read
-      - capability.assignments.manage
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - channel.distributors.create
-      - channel.distributors.read
-      - channel.distributors.update
-      - channel.distributors.disable
-      - channel.bindings.manage
-      - channel.quotas.manage
-      - catalog.pools.allocate
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
-      - voucher.cardlibraries.allocate
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - capability.assignments.manage
+      - capability.assignments.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.pools.allocate
+      - channel.bindings.manage
+      - channel.distributors.create
+      - channel.distributors.disable
+      - channel.distributors.read
+      - channel.distributors.update
+      - channel.quotas.manage
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - referral.bindings.create
+      - referral.bindings.read
+      - referral.commissions.read
+      - referral.earnings.read
+      - referral.links.read
+      - referral.members.apply
+      - referral.members.approve
+      - referral.members.disqualify
+      - referral.members.read
+      - referral.products.manage
+      - referral.products.read
+      - referral.settings.manage
+      - referral.settings.read
+      - referral.withdrawals.create
+      - referral.withdrawals.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.cardlibraries.allocate
     modules:
       - audit
       - benefit
@@ -209,20 +265,22 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
+      - organization
+      - partner
       - payment
-      - pricing
+      - referral
       - runtime
       - verification
       - voucher
     tables:
-      - channel.distributor
-      - channel.tenantbinding
-      - catalog.poolbinding
+      - organization.organization
+      - channel.connection
+      - capability.assignment
     moduleSources:
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
@@ -233,13 +291,13 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
+      - services/commerce/src/modules/referral
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -247,15 +305,21 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp04_distribution.spec.ts
+    journeyTest: tests/journey/DistributionJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: evidence/releases/MVP04.json
+    releaseEvidence: docs/evidence/releases/MVPDISTRIBUTION.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP05
+  - id: MVPGROUPDASHBOARD
     row: 5
-    label: 集团数据大屏
+    title: 集团数据大屏
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 5
+      range: A5:F5
+    label: 数据大屏
     source:
       - 集团层
       - 数据大屏
@@ -265,61 +329,66 @@ requirements:
         2.每个应用的数据
         3.实时数据、昨天、近7天、近30天的数据
       - ""
-      - ""
-    route: /enterprises/current/dashboard
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - groupdashboard
+    routes:
+      - /scopes/:scopeKind/:scopeId/cockpit
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - reporting.dashboard.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - reporting.dashboard.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -327,13 +396,12 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - reporting
       - runtime
       - verification
@@ -348,13 +416,12 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/reporting
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
@@ -362,99 +429,110 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp05_groupdashboard.spec.ts
+    journeyTest: tests/journey/GroupDashboardJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/projection.md
-    releaseEvidence: evidence/releases/MVP05.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPDASHBOARD.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP06
+  - id: MVPGROUPAPPLICATION
     row: 6
-    label: 集团应用
+    title: 集团应用管理
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 6
+      range: A6:F6
+    label: 应用(即商城)
     source:
       - ""
       - 应用(即商城)
       - ""
       - 实现多个应用的创建、复制、管理、装修
       - ""
-      - ""
-    route: /enterprises/current/applications
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - groupapplication
+    routes:
+      - /scopes/:scopeKind/:scopeId/experience
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - experience.applications.create
-      - experience.published.read
-      - experience.applications.copy
-      - experience.applications.read
-      - experience.applications.update
-      - experience.versions.save
-      - experience.versions.validate
-      - experience.versions.publish
-      - experience.versions.restore
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - experience.applications.copy
+      - experience.applications.create
+      - experience.applications.read
+      - experience.applications.update
+      - experience.versions.publish
+      - experience.versions.restore
+      - experience.versions.save
+      - experience.versions.validate
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
+      - capability
       - cart
       - checkout
       - experience
+      - extension
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
     tables:
@@ -470,28 +548,33 @@ requirements:
       - services/commerce/src/modules/experience
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp06_groupapplication.spec.ts
+    journeyTest: tests/journey/GroupApplicationJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/experiencepublish.md
-    releaseEvidence: evidence/releases/MVP06.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPAPPLICATION.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP07
+  - id: MVPGROUPPOOL
     row: 7
-    label: 集团商品池
+    title: 集团商品池
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 7
+      range: A7:F7
+    label: 商品池
     source:
       - ""
       - 商品池
@@ -502,74 +585,82 @@ requirements:
         3.加价商品池（H5形式对接）
         4.增删查改、批量上/下架、改价等
       - ""
-      - ""
-    route: /enterprises/current/products
+      - |-
+        1. 商品池可以投放到自营、分销等商城
+        2. 商品池与商城关系 M:N ，商品与商品池关系 M:N
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - groupproduct
+    routes:
+      - /scopes/:scopeKind/:scopeId/products
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - catalog.pools.read
-      - catalog.products.create
-      - catalog.products.update
-      - catalog.products.archive
-      - catalog.listings.read
-      - catalog.listings.publish
-      - catalog.listings.unpublish
-      - catalog.listings.batch
-      - catalog.imports.create
-      - catalog.imports.read
-      - pricing.rules.create
-      - pricing.rules.publish
-      - pricing.offers.read
-      - inventory.availability.read
-      - inventory.imports.create
-      - inventory.imports.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.imports.create
+      - catalog.imports.read
+      - catalog.listings.batch
+      - catalog.listings.publish
+      - catalog.listings.read
+      - catalog.listings.unpublish
+      - catalog.pools.read
+      - catalog.product.detail.read
+      - catalog.products.archive
+      - catalog.products.create
+      - catalog.products.update
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - inventory.imports.create
+      - inventory.imports.read
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - pricing.rules.create
+      - pricing.rules.publish
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -581,6 +672,7 @@ requirements:
       - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
@@ -603,6 +695,7 @@ requirements:
       - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
@@ -613,87 +706,99 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp07_groupproduct.spec.ts
+    journeyTest: tests/journey/GroupProductJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: evidence/releases/MVP07.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPPOOL.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP08
+  - id: MVPGROUPORDER
     row: 8
-    label: 集团订单
+    title: 集团订单管理
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 8
+      range: A8:F8
+    label: 订单管理
     source:
       - ""
       - 订单管理
       - ""
       - 商品订单、售后订单
       - ""
-      - ""
-    route: /enterprises/current/orders
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - grouporder
+    routes:
+      - /scopes/:scopeKind/:scopeId/orders
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.orders.read
-      - order.reminders.create
-      - order.orders.export
-      - order.aftersales.read
-      - order.aftersales.apply
-      - order.aftersales.approve
-      - order.aftersales.reject
-      - fulfillment.shipments.create
-      - fulfillment.tracking.read
-      - fulfillment.returns.receive
-      - fulfillment.returns.inspect
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
-      - payment.refunds.request
-      - payment.recoveries.read
-      - payment.recoveries.resolve
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.returns.inspect
+      - fulfillment.returns.receive
+      - fulfillment.shipments.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.aftersales.apply
+      - order.aftersales.approve
+      - order.aftersales.read
+      - order.aftersales.reject
+      - order.orders.create
+      - order.orders.export
+      - order.orders.read
+      - order.orders.receive
+      - order.reminders.create
+      - payment.intents.read
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+      - payment.refunds.request
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -701,13 +806,12 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
     tables:
@@ -722,28 +826,33 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp08_grouporder.spec.ts
+    journeyTest: tests/journey/GroupOrderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/fulfillment.md
-    releaseEvidence: evidence/releases/MVP08.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPORDER.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP09
+  - id: MVPGROUPVOUCHER
     row: 9
-    label: 集团卡券
+    title: 集团卡券中心
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 9
+      range: A9:F9
+    label: 卡券中心
     source:
       - ""
       - 卡券中心
@@ -755,79 +864,85 @@ requirements:
         4.券操作（激活、禁用、延期、作废-批量）、券查询（使用、绑定记录等）
         5.消费明细
       - ""
-      - ""
-    route: /enterprises/current/vouchers
+      - 第1点待确认
+    release: required
+    providers: []
+    clarifications:
+      - voucherarchive
+    navigation:
+      - groupvoucher
+    routes:
+      - /scopes/:scopeKind/:scopeId/vouchers
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
-      - voucher.cardlibraries.read
-      - voucher.cardlibraries.create
-      - voucher.cardlibraries.allocate
-      - voucher.imports.read
-      - voucher.programs.read
-      - voucher.programs.manage
-      - voucher.reserves.read
-      - voucher.reserves.request
-      - voucher.reserves.decide
-      - voucher.batches.read
-      - voucher.batches.issue
-      - voucher.batches.retry
-      - voucher.status.batch
-      - voucher.statusbatches.read
-      - voucher.bindings.read
-      - voucher.bindings.manage
-      - voucher.redemptions.read
-      - voucher.history.read
-      - voucher.redemptions.reverse
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.batches.issue
+      - voucher.batches.read
+      - voucher.batches.retry
+      - voucher.bindings.manage
+      - voucher.bindings.read
+      - voucher.cardlibraries.allocate
+      - voucher.cardlibraries.create
+      - voucher.cardlibraries.read
+      - voucher.history.read
+      - voucher.imports.read
+      - voucher.programs.manage
+      - voucher.programs.read
+      - voucher.redemptions.read
+      - voucher.redemptions.reverse
+      - voucher.reserves.decide
+      - voucher.reserves.read
+      - voucher.reserves.request
+      - voucher.status.batch
+      - voucher.statusbatches.read
     modules:
       - audit
       - benefit
@@ -835,13 +950,12 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
       - voucher
@@ -857,13 +971,12 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -871,15 +984,33 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp09_groupvoucher.spec.ts
+    journeyTest: tests/journey/GroupVoucherJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/benefitgrant.md
-    releaseEvidence: evidence/releases/MVP09.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPVOUCHER.json
+    releaseBlockers:
+      - &a1
+        id: voucherarchive
+        requirements:
+          - MVPGROUPVOUCHER
+          - MVPMALLVOUCHER
+        term: 客户管理与产品档案
+        status: open
+        blocking: true
+        owner: product
+        acceptance: null
+        resolvedby: null
+        reason: 工作簿明确标记第1点待确认，签字前不能标记Released
     status: Designed
     evidence: []
-  - id: MVP10
+  - id: MVPGROUPFINANCE
     row: 10
-    label: 集团财务
+    title: 集团财务
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 10
+      range: A10:F10
+    label: 财务
     source:
       - ""
       - 财务
@@ -891,86 +1022,98 @@ requirements:
         4账单列表
         5我的发票
       - ""
-      - ""
-    route: /enterprises/current/finance
+      - 忽略
+    release: nonblocking
+    providers: []
+    clarifications: []
+    navigation:
+      - groupfinance
+    routes:
+      - /scopes/:scopeKind/:scopeId/finance
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - finance.overview.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - finance.backfills.decide
+      - finance.backfills.read
       - finance.entries.read
-      - finance.statements.read
-      - finance.statements.export
+      - finance.holds.read
+      - finance.overview.read
+      - finance.periods.manage
+      - finance.periods.read
+      - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.reverse
+      - finance.reconciliationrepairs.submit
       - finance.reconciliations.manage
       - finance.reconciliations.read
-      - finance.settlements.read
-      - finance.settlements.decide
       - finance.settlements.adjust
-      - finance.withdrawals.read
+      - finance.settlements.decide
+      - finance.settlements.read
+      - finance.statements.export
+      - finance.statements.read
       - finance.withdrawals.create
       - finance.withdrawals.decide
+      - finance.withdrawals.read
       - finance.withdrawals.recover
-      - finance.holds.read
-      - finance.periods.read
-      - finance.periods.manage
-      - finance.backfills.read
-      - finance.backfills.decide
-      - finance.policies.manage
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
       - invoice.profiles.manage
       - invoice.profiles.read
-      - invoice.requests.create
-      - invoice.requests.read
       - invoice.requests.cancel
+      - invoice.requests.create
       - invoice.requests.decide
+      - invoice.requests.read
       - invoice.requests.red
-      - notification.preferences.read
-      - notification.preferences.manage
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -979,13 +1122,12 @@ requirements:
       - finance
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
     tables:
@@ -1001,100 +1143,110 @@ requirements:
       - services/commerce/src/modules/finance
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp10_groupfinance.spec.ts
+    journeyTest: tests/journey/GroupFinanceJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/reconciliation.md
-    releaseEvidence: evidence/releases/MVP10.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPFINANCE.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP11
+  - id: MVPGROUPREPORT
     row: 11
-    label: 集团数据统计
+    title: 集团数据统计
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 11
+      range: A11:F11
+    label: 数据统计
     source:
       - ""
       - 数据统计
       - ""
       - |-
         1.商品销售数据、商城销售数据、分类销售数据
-        2.供应链渠道数据、粉类销售数据
+        2.供应链渠道数据、分类销售数据
         3.卡券消费数据
       - ""
-      - ""
-    route: /enterprises/current/reports
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - groupreporting
+    routes:
+      - /scopes/:scopeKind/:scopeId/reporting
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - reporting.sales.read
-      - reporting.products.read
-      - reporting.malls.read
-      - reporting.categories.read
-      - reporting.channels.read
-      - reporting.powderclass.read
-      - reporting.voucherconsumption.read
-      - reporting.exports.create
-      - reporting.exports.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - reporting.categories.read
+      - reporting.channels.read
+      - reporting.exports.create
+      - reporting.exports.read
+      - reporting.malls.read
+      - reporting.powderclass.read
+      - reporting.products.read
+      - reporting.sales.read
+      - reporting.voucherconsumption.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -1102,13 +1254,12 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - reporting
       - runtime
       - verification
@@ -1123,13 +1274,12 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/reporting
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
@@ -1137,15 +1287,21 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp11_groupreport.spec.ts
+    journeyTest: tests/journey/GroupReportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/export.md
-    releaseEvidence: evidence/releases/MVP11.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPREPORT.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP12
+  - id: MVPGROUPSUPPORT
     row: 12
-    label: 集团客服
+    title: 集团客服中心
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 12
+      range: A12:F12
+    label: 客服中心
     source:
       - ""
       - 客服中心
@@ -1155,80 +1311,85 @@ requirements:
         客服聊天框
         客服聊天记录查询
       - ""
-      - ""
-    route: /enterprises/current/support
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - groupsupport
+    routes:
+      - /scopes/:scopeKind/:scopeId/support
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - support.cases.create
-      - support.cases.read
-      - support.cases.update
-      - support.cases.close
-      - support.cases.reopen
-      - support.messages.send
-      - support.messages.read
-      - support.attachments.create
-      - support.assignments.manage
-      - support.agents.manage
-      - support.agents.read
-      - support.accounts.manage
-      - support.accounts.read
-      - support.rules.read
-      - support.rules.manage
-      - support.slas.read
-      - support.slas.manage
-      - support.history.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - support.accounts.manage
+      - support.accounts.read
+      - support.agents.manage
+      - support.agents.read
+      - support.assignments.manage
+      - support.attachments.create
+      - support.cases.close
+      - support.cases.create
+      - support.cases.read
+      - support.cases.reopen
+      - support.cases.update
+      - support.history.read
+      - support.messages.read
+      - support.messages.send
+      - support.rules.manage
+      - support.rules.read
+      - support.slas.manage
+      - support.slas.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -1236,14 +1397,13 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - observability
       - order
       - payment
-      - pricing
       - runtime
       - support
       - verification
@@ -1259,14 +1419,13 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/observability
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/support
       - services/commerce/src/modules/verification
@@ -1274,15 +1433,21 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp12_groupsupport.spec.ts
+    journeyTest: tests/journey/GroupSupportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/supportsla.md
-    releaseEvidence: evidence/releases/MVP12.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPSUPPORT.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP13
+  - id: MVPGROUPSETTING
     row: 13
-    label: 集团设置
+    title: 集团设置
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 13
+      range: A13:F13
+    label: 设置
     source:
       - ""
       - 设置
@@ -1294,87 +1459,130 @@ requirements:
         4.短信设置
         5.风控设置（自动上下架等）
       - ""
-      - ""
-    route: /enterprises/current/settings
+      - 风控设置待确认
+    release: required
+    providers: []
+    clarifications:
+      - grouprisk
+    navigation:
+      - groupsettings
+      - groupadmin
+      - groupmemberdata
+      - grouppartner
+      - groupmessage
+      - grouprisk
+      - groupprovider
+      - groupdirectory
+    routes:
+      - /scopes/:scopeKind/:scopeId/settings
+      - /scopes/:scopeKind/:scopeId/settings/access
+      - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/messages
+      - /scopes/:scopeKind/:scopeId/settings/risk
+      - /scopes/:scopeKind/:scopeId/settings/login
+      - /scopes/:scopeKind/:scopeId/settings/directory
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.invitations.create
-      - identity.invitations.revoke
-      - identity.members.create
-      - identity.members.manage
-      - identity.password.change
-      - identity.password.verify
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
       - access.center.read
+      - access.overrides.manage
+      - access.owners.transfer
       - access.roles.manage
       - access.scopes.manage
-      - capability.assignments.read
-      - capability.assignments.manage
-      - partner.partners.read
-      - partner.partners.manage
-      - organization.stores.read
-      - organization.stores.manage
-      - member.members.read
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - member.imports.create
-      - member.imports.read
-      - qualification.center.read
-      - qualification.decisions.preview
-      - qualification.policies.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.notifications.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - capability.assignments.manage
+      - capability.assignments.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.enrollments.complete
+      - identity.enrollments.read
+      - identity.federations.callback
+      - identity.federations.complete
+      - identity.federations.selection.read
+      - identity.federations.start
+      - identity.invitations.create
+      - identity.invitations.read
+      - identity.invitations.resolve
+      - identity.invitations.revoke
+      - identity.links.create
+      - identity.links.read
+      - identity.links.revoke
+      - identity.members.manage
+      - identity.memberships.read
+      - identity.memberships.switch
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.password.verify
+      - identity.providers.manage
+      - identity.providers.read
+      - identity.providers.test
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.imports.create
+      - member.imports.read
+      - member.members.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.announcements.manage
+      - notification.announcements.read
       - notification.endpoints.manage
+      - notification.notifications.ack
+      - notification.notifications.read
+      - notification.preferences.manage
+      - notification.preferences.read
       - notification.templates.manage
       - notification.templates.read
-      - notification.announcements.read
-      - notification.announcements.manage
+      - order.orders.create
+      - order.reminders.create
+      - organization.directories.manage
+      - organization.directories.read
+      - organization.directories.sync
+      - organization.directories.syncruns.read
+      - organization.directoryevents.receive
+      - organization.stores.manage
+      - organization.stores.read
+      - partner.partners.manage
+      - partner.partners.read
+      - payment.intents.read
+      - qualification.center.read
+      - qualification.decisions.preview
+      - qualification.policies.manage
+      - risk.cases.review
       - risk.center.read
       - risk.policies.manage
-      - risk.cases.review
-      - audit.records.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - access
       - audit
@@ -1384,21 +1592,22 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
+      - organization
       - partner
       - payment
-      - pricing
       - qualification
       - risk
       - runtime
       - verification
     tables:
       - access.role
-      - member.membership
+      - access.membership
+      - member.profile
       - partner.partner
       - notification.template
       - risk.policy
@@ -1411,14 +1620,14 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/organization
       - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/qualification
       - services/commerce/src/modules/risk
       - services/commerce/src/modules/runtime
@@ -1427,15 +1636,31 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp13_groupsetting.spec.ts
+    journeyTest: tests/journey/GroupSettingJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/riskscan.md
-    releaseEvidence: evidence/releases/MVP13.json
+    releaseEvidence: docs/evidence/releases/MVPGROUPSETTING.json
+    releaseBlockers:
+      - id: grouprisk
+        requirements:
+          - MVPGROUPSETTING
+        term: 集团风控设置
+        status: open
+        blocking: true
+        owner: product
+        acceptance: null
+        resolvedby: null
+        reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限
     status: Designed
     evidence: []
-  - id: MVP14
+  - id: MVPMALLDASHBOARD
     row: 14
-    label: 商城数据大屏
+    title: 商城数据大屏
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 14
+      range: A14:F14
+    label: 数据
     source:
       - 商城层面
       - 数据
@@ -1444,61 +1669,68 @@ requirements:
         1.销售数据（金额、数量、退单、分应用等）
         2.实时数据、昨天、近7天、近30天的数据
       - ""
-      - ""
-    route: /malls/current/dashboard
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - malldashboard
+      - storehome
+    routes:
+      - /scopes/:scopeKind/:scopeId/cockpit
+      - /
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - reporting.dashboard.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - reporting.dashboard.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -1506,13 +1738,12 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - reporting
       - runtime
       - verification
@@ -1527,13 +1758,12 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/reporting
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
@@ -1541,84 +1771,97 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp14_malldashboard.spec.ts
+    journeyTest: tests/journey/MallDashboardJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/projection.md
-    releaseEvidence: evidence/releases/MVP14.json
+    releaseEvidence: docs/evidence/releases/MVPMALLDASHBOARD.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP15
+  - id: MVPMALLDESIGN
     row: 15
-    label: 商城装修
+    title: 商城装修
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 15
+      range: A15:F15
+    label: 装修
     source:
       - ""
       - 装修
       - ""
       - 商城装修
       - ""
-      - ""
-    route: /malls/current/design
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - malldesign
+      - storehome
+    routes:
+      - /scopes/:scopeKind/:scopeId/experience
+      - /
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - experience.applications.create
-      - experience.published.read
-      - experience.applications.copy
-      - experience.applications.read
-      - experience.applications.update
-      - experience.versions.save
-      - experience.versions.validate
-      - experience.versions.publish
-      - experience.versions.restore
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - experience.applications.copy
+      - experience.applications.create
+      - experience.applications.read
+      - experience.applications.update
+      - experience.versions.publish
+      - experience.versions.restore
+      - experience.versions.save
+      - experience.versions.validate
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - storefront.bootstrap.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -1627,13 +1870,12 @@ requirements:
       - experience
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
     tables:
@@ -1649,28 +1891,33 @@ requirements:
       - services/commerce/src/modules/experience
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp15_malldesign.spec.ts
+    journeyTest: tests/journey/MallDesignJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/experiencepublish.md
-    releaseEvidence: evidence/releases/MVP15.json
+    releaseEvidence: docs/evidence/releases/MVPMALLDESIGN.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP16
+  - id: MVPMALLPOOL
     row: 16
-    label: 商城商品池
+    title: 商城商品池
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 16
+      range: A16:F16
+    label: 商品池
     source:
       - ""
       - 商品池
@@ -1681,74 +1928,91 @@ requirements:
         3.加价商品池（H5形式对接）
         4.增删查改、批量上/下架、改价等
       - ""
-      - ""
-    route: /malls/current/products
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - mallproduct
+      - storecatalog
+      - storeproduct
+      - storeprofile
+    routes:
+      - /scopes/:scopeKind/:scopeId/products
+      - /products
+      - /products/:productId
+      - /profile
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - catalog.pools.read
-      - catalog.products.create
-      - catalog.products.update
-      - catalog.products.archive
-      - catalog.listings.read
-      - catalog.listings.publish
-      - catalog.listings.unpublish
-      - catalog.listings.batch
-      - catalog.imports.create
-      - catalog.imports.read
-      - pricing.rules.create
-      - pricing.rules.publish
-      - pricing.offers.read
-      - inventory.availability.read
-      - inventory.imports.create
-      - inventory.imports.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - catalog.imports.create
+      - catalog.imports.read
+      - catalog.listings.batch
+      - catalog.listings.publish
+      - catalog.listings.read
+      - catalog.listings.unpublish
+      - catalog.pools.read
+      - catalog.product.detail.read
+      - catalog.products.archive
+      - catalog.products.create
+      - catalog.products.update
+      - checkout.quote.create
+      - checkout.quotes.current.read
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - inventory.imports.create
+      - inventory.imports.read
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.favorites.put
+      - member.favorites.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - pricing.rules.create
+      - pricing.rules.publish
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - storefront.bootstrap.read
+      - storefront.catalog.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -1760,6 +2024,7 @@ requirements:
       - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
@@ -1781,6 +2046,7 @@ requirements:
       - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
@@ -1791,88 +2057,118 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp16_mallproduct.spec.ts
+    journeyTest: tests/journey/MallProductJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/pricesync.md
-    releaseEvidence: evidence/releases/MVP16.json
+    releaseEvidence: docs/evidence/releases/MVPMALLPOOL.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP17
+  - id: MVPMALLORDER
     row: 17
-    label: 商城订单
+    title: 商城订单管理
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 17
+      range: A17:F17
+    label: 订单管理
     source:
       - ""
       - 订单管理
       - ""
       - 商品订单、售后订单
       - ""
-      - ""
-    route: /malls/current/orders
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - mallorder
+      - storecart
+      - storecheckout
+      - storepayment
+      - storeorders
+      - storeorder
+      - storeaftersale
+      - storeprofile
+    routes:
+      - /scopes/:scopeKind/:scopeId/orders
+      - /cart
+      - /checkout
+      - /payments/:paymentId/result
+      - /orders
+      - /orders/:orderId
+      - /orders/:orderId/aftersales
+      - /profile
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.orders.read
-      - order.reminders.create
-      - order.orders.export
-      - order.aftersales.read
-      - order.aftersales.apply
-      - order.aftersales.approve
-      - order.aftersales.reject
-      - fulfillment.shipments.create
-      - fulfillment.tracking.read
-      - fulfillment.returns.receive
-      - fulfillment.returns.inspect
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
-      - payment.refunds.request
-      - payment.recoveries.read
-      - payment.recoveries.resolve
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - checkout.quotes.current.read
+      - finance.invoices.download
+      - finance.invoices.read
+      - fulfillment.returns.inspect
+      - fulfillment.returns.receive
+      - fulfillment.shipments.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
       - invoice.profiles.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.aftersales.apply
+      - order.aftersales.approve
+      - order.aftersales.read
+      - order.aftersales.reject
+      - order.orders.create
+      - order.orders.export
+      - order.orders.read
+      - order.orders.receive
+      - order.reminders.create
+      - payment.intents.read
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+      - payment.refunds.request
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - storefront.bootstrap.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -1881,13 +2177,12 @@ requirements:
       - finance
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
     tables:
@@ -1903,28 +2198,33 @@ requirements:
       - services/commerce/src/modules/finance
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp17_mallorder.spec.ts
+    journeyTest: tests/journey/MallOrderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/paymentrefund.md
-    releaseEvidence: evidence/releases/MVP17.json
+    releaseEvidence: docs/evidence/releases/MVPMALLORDER.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP18
+  - id: MVPMALLVOUCHER
     row: 18
-    label: 商城卡券
+    title: 商城卡券中心
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 18
+      range: A18:F18
+    label: 卡券中心
     source:
       - ""
       - 卡券中心
@@ -1936,79 +2236,89 @@ requirements:
         4.券操作（激活、禁用、延期、作废-批量）、券查询（使用、绑定记录等）
         5.消费明细
       - ""
-      - ""
-    route: /malls/current/vouchers
+      - 第1点待确认
+    release: required
+    providers: []
+    clarifications:
+      - voucherarchive
+    navigation:
+      - mallvoucher
+      - storevouchers
+      - storeprofile
+    routes:
+      - /scopes/:scopeKind/:scopeId/vouchers
+      - /vouchers
+      - /profile
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
-      - voucher.cardlibraries.read
-      - voucher.cardlibraries.create
-      - voucher.cardlibraries.allocate
-      - voucher.imports.read
-      - voucher.programs.read
-      - voucher.programs.manage
-      - voucher.reserves.read
-      - voucher.reserves.request
-      - voucher.reserves.decide
-      - voucher.batches.read
-      - voucher.batches.issue
-      - voucher.batches.retry
-      - voucher.status.batch
-      - voucher.statusbatches.read
-      - voucher.bindings.read
-      - voucher.bindings.manage
-      - voucher.redemptions.read
-      - voucher.history.read
-      - voucher.redemptions.reverse
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+      - voucher.batches.issue
+      - voucher.batches.read
+      - voucher.batches.retry
+      - voucher.bindings.manage
+      - voucher.bindings.read
+      - voucher.cardlibraries.allocate
+      - voucher.cardlibraries.create
+      - voucher.cardlibraries.read
+      - voucher.history.read
+      - voucher.imports.read
+      - voucher.programs.manage
+      - voucher.programs.read
+      - voucher.redemptions.read
+      - voucher.redemptions.reverse
+      - voucher.reserves.decide
+      - voucher.reserves.read
+      - voucher.reserves.request
+      - voucher.status.batch
+      - voucher.statusbatches.read
     modules:
       - audit
       - benefit
@@ -2016,13 +2326,12 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
       - voucher
@@ -2037,13 +2346,12 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -2051,15 +2359,22 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp18_mallvoucher.spec.ts
+    journeyTest: tests/journey/MallVoucherJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/voucherexpiry.md
-    releaseEvidence: evidence/releases/MVP18.json
+    releaseEvidence: docs/evidence/releases/MVPMALLVOUCHER.json
+    releaseBlockers:
+      - *a1
     status: Designed
     evidence: []
-  - id: MVP19
+  - id: MVPMALLFINANCE
     row: 19
-    label: 商城财务
+    title: 商城财务
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 19
+      range: A19:F19
+    label: 财务
     source:
       - ""
       - 财务
@@ -2071,86 +2386,102 @@ requirements:
         4账单列表
         5我的发票
       - ""
-      - ""
-    route: /malls/current/finance
+      - 忽略
+    release: nonblocking
+    providers: []
+    clarifications: []
+    navigation:
+      - mallfinance
+      - storebenefits
+    routes:
+      - /scopes/:scopeKind/:scopeId/finance
+      - /benefits
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - finance.overview.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - finance.backfills.decide
+      - finance.backfills.read
       - finance.entries.read
-      - finance.statements.read
-      - finance.statements.export
+      - finance.holds.read
+      - finance.invoices.download
+      - finance.invoices.read
+      - finance.overview.read
+      - finance.periods.manage
+      - finance.periods.read
+      - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.reverse
+      - finance.reconciliationrepairs.submit
       - finance.reconciliations.manage
       - finance.reconciliations.read
-      - finance.settlements.read
-      - finance.settlements.decide
       - finance.settlements.adjust
-      - finance.withdrawals.read
+      - finance.settlements.decide
+      - finance.settlements.read
+      - finance.statements.export
+      - finance.statements.read
       - finance.withdrawals.create
       - finance.withdrawals.decide
+      - finance.withdrawals.read
       - finance.withdrawals.recover
-      - finance.holds.read
-      - finance.periods.read
-      - finance.periods.manage
-      - finance.backfills.read
-      - finance.backfills.decide
-      - finance.policies.manage
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
       - invoice.profiles.manage
       - invoice.profiles.read
-      - invoice.requests.create
-      - invoice.requests.read
       - invoice.requests.cancel
+      - invoice.requests.create
       - invoice.requests.decide
+      - invoice.requests.read
       - invoice.requests.red
-      - notification.preferences.read
-      - notification.preferences.manage
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -2159,13 +2490,12 @@ requirements:
       - finance
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
     tables:
@@ -2180,28 +2510,33 @@ requirements:
       - services/commerce/src/modules/finance
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp19_mallfinance.spec.ts
+    journeyTest: tests/journey/MallFinanceJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/reconciliation.md
-    releaseEvidence: evidence/releases/MVP19.json
+    releaseEvidence: docs/evidence/releases/MVPMALLFINANCE.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP20
+  - id: MVPMALLREPORT
     row: 20
-    label: 商城数据统计
+    title: 商城数据统计
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 20
+      range: A20:F20
+    label: 数据统计
     source:
       - ""
       - 数据统计
@@ -2211,69 +2546,75 @@ requirements:
         2.供应链渠道数据、粉类销售数据
         3.卡券消费数据
       - ""
-      - ""
-    route: /malls/current/reports
+      - OK
+    release: required
+    providers: []
+    clarifications:
+      - powderclass
+    navigation:
+      - mallreporting
+    routes:
+      - /scopes/:scopeKind/:scopeId/reporting
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - reporting.sales.read
-      - reporting.products.read
-      - reporting.malls.read
-      - reporting.categories.read
-      - reporting.channels.read
-      - reporting.powderclass.read
-      - reporting.voucherconsumption.read
-      - reporting.exports.create
-      - reporting.exports.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - reporting.categories.read
+      - reporting.channels.read
+      - reporting.exports.create
+      - reporting.exports.read
+      - reporting.malls.read
+      - reporting.powderclass.read
+      - reporting.products.read
+      - reporting.sales.read
+      - reporting.voucherconsumption.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -2281,13 +2622,12 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - reporting
       - runtime
       - verification
@@ -2302,13 +2642,12 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/reporting
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
@@ -2316,15 +2655,31 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp20_mallreport.spec.ts
+    journeyTest: tests/journey/MallReportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/export.md
-    releaseEvidence: evidence/releases/MVP20.json
+    releaseEvidence: docs/evidence/releases/MVPMALLREPORT.json
+    releaseBlockers:
+      - id: powderclass
+        requirements:
+          - MVPMALLREPORT
+        term: 粉类
+        status: open
+        blocking: true
+        owner: product
+        acceptance: null
+        resolvedby: null
+        reason: 工作簿未定义业务口径，禁止开发阶段静默改义
     status: Designed
     evidence: []
-  - id: MVP21
+  - id: MVPMALLSUPPORT
     row: 21
-    label: 商城客服
+    title: 商城客服中心
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 21
+      range: A21:F21
+    label: 客服中心
     source:
       - ""
       - 客服中心
@@ -2334,83 +2689,94 @@ requirements:
         客服聊天框
         客服聊天记录查询
       - ""
-      - ""
-    route: /malls/current/support
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - mallsupport
+      - storesecurity
+      - storesupport
+      - storesupportcase
+    routes:
+      - /scopes/:scopeKind/:scopeId/support
+      - /profile/security
+      - /support
+      - /support/:caseId
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.sessions.read
-      - identity.sessions.revoke
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.ledgers.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
+      - benefit.ledgers.read
       - benefit.lots.read
-      - support.cases.create
-      - support.cases.read
-      - support.cases.update
-      - support.cases.close
-      - support.cases.reopen
-      - support.messages.send
-      - support.messages.read
-      - support.attachments.create
-      - support.assignments.manage
-      - support.agents.manage
-      - support.agents.read
-      - support.accounts.manage
-      - support.accounts.read
-      - support.rules.read
-      - support.rules.manage
-      - support.slas.read
-      - support.slas.manage
-      - support.history.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.sessions.read
+      - identity.sessions.revoke
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
       - notification.endpoints.manage
-      - audit.records.read
+      - notification.preferences.manage
+      - notification.preferences.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - support.accounts.manage
+      - support.accounts.read
+      - support.agents.manage
+      - support.agents.read
+      - support.assignments.manage
+      - support.attachments.create
+      - support.cases.close
+      - support.cases.create
+      - support.cases.read
+      - support.cases.reopen
+      - support.cases.update
+      - support.history.read
+      - support.messages.read
+      - support.messages.send
+      - support.rules.manage
+      - support.rules.read
+      - support.slas.manage
+      - support.slas.read
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -2418,14 +2784,13 @@ requirements:
       - checkout
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - observability
       - order
       - payment
-      - pricing
       - runtime
       - support
       - verification
@@ -2441,14 +2806,13 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/observability
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/support
       - services/commerce/src/modules/verification
@@ -2456,15 +2820,21 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp21_mallsupport.spec.ts
+    journeyTest: tests/journey/MallSupportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/supportsla.md
-    releaseEvidence: evidence/releases/MVP21.json
+    releaseEvidence: docs/evidence/releases/MVPMALLSUPPORT.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP22
+  - id: MVPMALLSETTING
     row: 22
-    label: 商城设置
+    title: 商城设置
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 22
+      range: A22:F22
+    label: 设置
     source:
       - ""
       - 设置
@@ -2476,89 +2846,133 @@ requirements:
         4.短信设置
         5.风控设置（自动上下架等）
       - ""
-      - ""
-    route: /malls/current/settings
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - mallsettings
+      - malladmin
+      - mallmemberdata
+      - mallpartner
+      - mallmessage
+      - mallrisk
+      - mallprovider
+      - malldirectory
+      - storenotifications
+    routes:
+      - /scopes/:scopeKind/:scopeId/settings
+      - /scopes/:scopeKind/:scopeId/settings/access
+      - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/messages
+      - /scopes/:scopeKind/:scopeId/settings/risk
+      - /scopes/:scopeKind/:scopeId/settings/login
+      - /scopes/:scopeKind/:scopeId/settings/directory
+      - /notifications
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.invitations.create
-      - identity.invitations.revoke
-      - identity.members.create
-      - identity.members.manage
-      - identity.password.change
-      - identity.password.verify
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
       - access.center.read
+      - access.overrides.manage
+      - access.owners.transfer
       - access.roles.manage
       - access.scopes.manage
-      - capability.assignments.read
-      - capability.assignments.manage
-      - partner.partners.read
-      - partner.partners.manage
-      - organization.stores.read
-      - organization.stores.manage
-      - member.members.read
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - member.imports.create
-      - member.imports.read
-      - qualification.center.read
-      - qualification.decisions.preview
-      - qualification.policies.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.notifications.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - capability.assignments.manage
+      - capability.assignments.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.enrollments.complete
+      - identity.enrollments.read
+      - identity.federations.callback
+      - identity.federations.complete
+      - identity.federations.selection.read
+      - identity.federations.start
+      - identity.invitations.create
+      - identity.invitations.read
+      - identity.invitations.resolve
+      - identity.invitations.revoke
+      - identity.links.create
+      - identity.links.read
+      - identity.links.revoke
+      - identity.members.manage
+      - identity.memberships.read
+      - identity.memberships.switch
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.password.verify
+      - identity.providers.manage
+      - identity.providers.read
+      - identity.providers.test
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.imports.create
+      - member.imports.read
+      - member.members.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.announcements.manage
+      - notification.announcements.read
       - notification.endpoints.manage
+      - notification.notifications.ack
+      - notification.notifications.read
+      - notification.preferences.manage
+      - notification.preferences.read
       - notification.templates.manage
       - notification.templates.read
-      - notification.announcements.read
-      - notification.announcements.manage
-      - risk.center.read
-      - risk.policies.manage
-      - risk.cases.review
-      - audit.records.read
       - observability.clienterrors.create
       - observability.clienterrors.read
+      - order.orders.create
+      - order.reminders.create
+      - organization.directories.manage
+      - organization.directories.read
+      - organization.directories.sync
+      - organization.directories.syncruns.read
+      - organization.directoryevents.receive
+      - organization.stores.manage
+      - organization.stores.read
+      - partner.partners.manage
+      - partner.partners.read
+      - payment.intents.read
+      - qualification.center.read
+      - qualification.decisions.preview
+      - qualification.policies.manage
+      - risk.cases.review
+      - risk.center.read
+      - risk.policies.manage
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - access
       - audit
@@ -2566,24 +2980,26 @@ requirements:
       - capability
       - cart
       - checkout
+      - experience
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - observability
       - order
+      - organization
       - partner
       - payment
-      - pricing
       - qualification
       - risk
       - runtime
       - verification
     tables:
       - access.role
-      - member.membership
+      - access.membership
+      - member.profile
       - partner.relationship
       - notification.template
       - risk.policy
@@ -2596,15 +3012,15 @@ requirements:
       - services/commerce/src/modules/checkout
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/observability
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/organization
       - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/qualification
       - services/commerce/src/modules/risk
       - services/commerce/src/modules/runtime
@@ -2613,93 +3029,239 @@ requirements:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
-    journeyTest: tests/journeys/mvp22_mallsetting.spec.ts
+    journeyTest: tests/journey/MallSettingJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/riskscan.md
-    releaseEvidence: evidence/releases/MVP22.json
+    releaseEvidence: docs/evidence/releases/MVPMALLSETTING.json
+    releaseBlockers: []
     status: Designed
     evidence: []
-  - id: MVP23
+  - id: MVPIDENTITY
     row: 23
-    label: 优先级1接口
+    title: 用户注册与登录
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 23
+      range: A23:F23
+    label: 用户注册/登录
     source:
       - 其他
-      - 确保接口表格里优先级为1的优先对接
+      - 用户注册/登录
       - ""
+      - 用户注册、登录（包括密码、验证码、邀请码登录）
       - ""
-      - ""
-      - ""
-    route: /channels
+      - OK
+    release: required
+    providers: []
+    clarifications: []
+    navigation:
+      - groupprovider
+      - mallprovider
+    routes:
+      - /scopes/:scopeKind/:scopeId/settings/login
+      - /scopes/:scopeKind/:scopeId/settings/login
     operations:
-      - runtime.health.live
-      - runtime.health.ready
-      - runtime.health.startup
-      - runtime.health.dependency
-      - identity.sessions.create
-      - identity.tickets.exchange
-      - identity.session.read
-      - identity.session.delete
-      - identity.challenges.create
-      - identity.invitations.read
-      - identity.members.create
-      - identity.password.change
-      - identity.password.reset
-      - identity.mobile.manage
-      - identity.stepup.start
-      - identity.stepup.complete
-      - identity.wechat.session
-      - identity.wechat.bind
-      - member.profile.read
-      - member.addresses.read
-      - member.addresses.manage
-      - pricing.offers.read
-      - inventory.availability.read
-      - marketing.campaigns.read
-      - cart.current.read
-      - cart.items.put
-      - cart.items.batch
-      - checkout.quote.create
-      - order.orders.create
-      - order.reminders.create
-      - fulfillment.tracking.read
-      - payment.intents.create
-      - verification.challenges.issue
-      - verification.sessions.read
-      - verification.challenges.verify
-      - verification.history.read
-      - verification.devices.read
-      - verification.devices.manage
-      - payment.recoveries.read
-      - payment.recoveries.resolve
-      - payment.webhooks.wechat
+      - audit.records.read
       - benefit.accounts.read
-      - benefit.plans.read
-      - benefit.plans.manage
-      - benefit.budgets.read
       - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
       - benefit.grants.create
       - benefit.grants.decide
       - benefit.grants.read
-      - benefit.grants.control
       - benefit.grants.revoke
       - benefit.lots.read
-      - notification.preferences.read
-      - notification.preferences.manage
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
+      - checkout.quote.create
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.enrollments.complete
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.providers.read
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
       - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
+    modules:
+      - audit
+      - benefit
+      - cart
+      - checkout
+      - fulfillment
+      - identity
+      - marketing
+      - member
+      - notification
+      - order
+      - payment
+      - runtime
+      - verification
+    tables:
+      - identity.principal
+      - identity.credential
+      - identity.session
+      - identity.invitation
+      - access.membership
+      - member.profile
+    moduleSources:
+      - services/commerce/src/modules/audit
+      - services/commerce/src/modules/benefit
+      - services/commerce/src/modules/cart
+      - services/commerce/src/modules/checkout
+      - services/commerce/src/modules/fulfillment
+      - services/commerce/src/modules/identity
+      - services/commerce/src/modules/marketing
+      - services/commerce/src/modules/member
+      - services/commerce/src/modules/notification
+      - services/commerce/src/modules/order
+      - services/commerce/src/modules/payment
+      - services/commerce/src/modules/runtime
+      - services/commerce/src/modules/verification
+    unitTests:
+      - services/commerce/src/modules/ModuleCatalog.test.ts
+      - services/commerce/src/modules/DomainPolicy.test.ts
+    contractTest: tests/integration/registry.spec.ts
+    journeyTest: tests/journey/IdentityJourney.spec.ts
+    dashboard: docs/metrics/catalog.md
+    runbook: docs/operations/identityrecovery.md
+    releaseEvidence: docs/evidence/releases/MVPIDENTITY.json
+    releaseBlockers: []
+    status: Designed
+    evidence: []
+  - id: MVPPROVIDER
+    row: 24
+    title: 优先级一接口接入
+    requirementSource:
+      sheet: MVP上线功能清单
+      row: 24
+      range: A24:F24
+    label: 注意事项
+    source:
+      - 注意事项
+      - ""
+      - ""
+      - 确保接口表格里优先级为1的优先对接，但不单独设立业务功能
+      - ""
+      - OK
+    release: required
+    providers:
+      - jdproduct
+      - jdfresh
+      - tmall
+      - supplier
+      - cake
+      - flower
+      - book
+      - charge
+      - foodvoucher
+      - movie
+      - meal
+    clarifications: []
+    navigation:
+      - groupchannel
+      - mallchannel
+      - platformchannel
+    routes:
+      - /scopes/:scopeKind/:scopeId/channels
+      - /scopes/:scopeKind/:scopeId/channels
+      - /scopes/:scopeKind/:scopeId/channels
+    operations:
       - audit.records.read
-      - channel.connections.read
+      - benefit.accounts.read
+      - benefit.budgets.manage
+      - benefit.budgets.read
+      - benefit.grants.control
+      - benefit.grants.create
+      - benefit.grants.decide
+      - benefit.grants.read
+      - benefit.grants.revoke
+      - benefit.lots.read
+      - benefit.plans.manage
+      - benefit.plans.read
+      - cart.current.read
+      - cart.items.batch
+      - cart.items.put
       - channel.connections.create
-      - channel.connections.update
-      - channel.connections.test
-      - channel.connections.enable
       - channel.connections.disable
-      - channel.webhooks.receive
-      - channel.syncruns.start
-      - channel.syncruns.read
-      - channel.syncruns.cancel
+      - channel.connections.enable
+      - channel.connections.read
+      - channel.connections.test
+      - channel.connections.update
       - channel.operations.read
       - channel.operations.replay
+      - channel.syncruns.cancel
+      - channel.syncruns.read
+      - channel.syncruns.start
+      - channel.webhooks.receive
+      - checkout.quote.create
       - extension.installations.read
+      - fulfillment.tracking.read
+      - identity.challenges.create
+      - identity.invitations.resolve
+      - identity.mobile.manage
+      - identity.password.change
+      - identity.password.reset
+      - identity.session.delete
+      - identity.session.read
+      - identity.sessions.complete
+      - identity.sessions.create
+      - identity.stepup.complete
+      - identity.stepup.start
+      - identity.tickets.exchange
+      - marketing.campaigns.read
+      - member.addresses.manage
+      - member.addresses.read
+      - member.profile.read
+      - navigation.tree.read
+      - notification.endpoints.manage
+      - notification.preferences.manage
+      - notification.preferences.read
+      - order.orders.create
+      - order.reminders.create
+      - payment.intents.read
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+      - payment.webhooks.wechat
+      - runtime.health.dependency
+      - runtime.health.live
+      - runtime.health.ready
+      - runtime.health.startup
+      - verification.challenges.issue
+      - verification.challenges.verify
+      - verification.devices.manage
+      - verification.devices.read
+      - verification.history.read
+      - verification.sessions.read
     modules:
       - audit
       - benefit
@@ -2709,13 +3271,12 @@ requirements:
       - extension
       - fulfillment
       - identity
-      - inventory
       - marketing
       - member
+      - navigation
       - notification
       - order
       - payment
-      - pricing
       - runtime
       - verification
     tables:
@@ -2732,22 +3293,22 @@ requirements:
       - services/commerce/src/modules/extension
       - services/commerce/src/modules/fulfillment
       - services/commerce/src/modules/identity
-      - services/commerce/src/modules/inventory
       - services/commerce/src/modules/marketing
       - services/commerce/src/modules/member
+      - services/commerce/src/modules/navigation
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
-      - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
       - services/commerce/src/modules/ModuleCatalog.test.ts
       - services/commerce/src/modules/DomainPolicy.test.ts
-    contractTest: tests/contracts/providers.spec.ts
-    journeyTest: tests/journeys/mvp23_providers.spec.ts
+    contractTest: tests/contract/providers.spec.ts
+    journeyTest: tests/journey/ProviderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: evidence/releases/MVP23.json
+    releaseEvidence: docs/evidence/releases/MVPPROVIDER.json
+    releaseBlockers: []
     status: Designed
     evidence: []

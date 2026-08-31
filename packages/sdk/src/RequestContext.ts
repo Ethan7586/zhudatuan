@@ -16,4 +16,9 @@ export interface RequestContext {
   readonly expectedVersion?: number;
   readonly proof?: string;
   readonly csrfToken?: string;
+  readonly deviceId?: string;
+  readonly target?: 'console' | 'storefront';
+  readonly catalogVersion?: string;
+  readonly ifNoneMatch?: string;
+  readonly cachedResponse?: unknown;
 }

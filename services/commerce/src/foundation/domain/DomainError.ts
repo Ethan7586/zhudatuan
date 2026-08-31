@@ -1,6 +1,9 @@
-export class DomainError extends Error {
-  constructor(readonly code: string, readonly details: Readonly<Record<string, unknown>> = {}) {
-    super(code);
+import type { ErrorCode } from '@shop/contract';
+import { ApplicationError, type ErrorDetail } from './ApplicationError';
+
+export class DomainError extends ApplicationError {
+  constructor(code: ErrorCode, details: Readonly<Record<string, ErrorDetail>> = {}) {
+    super(code, details);
     this.name = 'DomainError';
   }
 }

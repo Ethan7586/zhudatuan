@@ -19,11 +19,15 @@ export interface DataTableProps<T extends RowData> {
 export function DataTable<T extends RowData>({ caption, columns, rows, rowKey }: DataTableProps<T>) {
   const tableColumns = useMemo(() => {
     const helper = createColumnHelper<typeof features, T>();
-    return helper.columns(columns.map((column) => helper.accessor((row) => row, {
-      id: column.key,
-      header: column.label,
-      cell: ({ row }) => column.render(row.original),
-    })));
+    return helper.columns(
+      columns.map((column) =>
+        helper.accessor((row) => row, {
+          id: column.key,
+          header: column.label,
+          cell: ({ row }) => column.render(row.original),
+        })
+      )
+    );
   }, [columns]);
   const data = useMemo(() => [...rows], [rows]);
   const table = useTable({
@@ -37,16 +41,26 @@ export function DataTable<T extends RowData>({ caption, columns, rows, rowKey }:
       <table>
         <caption className="sr-only">{caption}</caption>
         <thead>
-          {table.getHeaderGroups().map((group) => <tr key={group.id}>
-            {group.headers.map((header) => <th key={header.id} scope="col" data-column={header.column.id}>
-              {header.isPlaceholder ? null : <table.FlexRender header={header} />}
-            </th>)}
-          </tr>)}
+          {table.getHeaderGroups().map((group) => (
+            <tr key={group.id}>
+              {group.headers.map((header) => (
+                <th key={header.id} scope="col" data-column={header.column.id}>
+                  {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+                </th>
+              ))}
+            </tr>
+          ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.map((row) => <tr key={row.id}>
-            {row.getAllCells().map((cell) => <td key={cell.id} data-column={cell.column.id}><table.FlexRender cell={cell} /></td>)}
-          </tr>)}
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id}>
+              {row.getAllCells().map((cell) => (
+                <td key={cell.id} data-column={cell.column.id}>
+                  <table.FlexRender cell={cell} />
+                </td>
+              ))}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

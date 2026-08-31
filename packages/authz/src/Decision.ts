@@ -9,6 +9,4 @@ export interface DecisionEvidence {
   readonly accessVersion: number;
 }
 
-export type Decision =
-  | Readonly<{ allowed: true; evidence: DecisionEvidence }>
-  | Readonly<{ allowed: false; reason: DenialReason }>;
+export type Decision = Readonly<{ allowed: true; evidence: DecisionEvidence }> | Readonly<{ allowed: false; reason: DenialReason }>;

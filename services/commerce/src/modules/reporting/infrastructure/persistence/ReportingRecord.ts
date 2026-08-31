@@ -1,0 +1,93 @@
+import type { ExportJob, ExportReport } from '../../domain/model/ExportJob';
+import type { CockpitSummary, Metric, MetricRow } from '../../domain/model/Metric';
+
+type DatabaseTime = string | Date;
+
+export interface MetricRecord {
+  readonly code: string;
+  readonly version: number;
+  readonly scope: string;
+  readonly period: { from: DatabaseTime; to: DatabaseTime; timezone: string };
+  readonly dimensions: Record<string, string>;
+  readonly value: number;
+  readonly unit: Metric['unit'];
+  readonly watermark: DatabaseTime;
+  readonly projectionVersion: number;
+  readonly cursorTime: DatabaseTime;
+  readonly cursorId: string;
+}
+
+export interface ExportRecord {
+  readonly id: string;
+  readonly scope: string;
+  readonly report: ExportReport;
+  readonly filter: Record<string, unknown>;
+  readonly state: ExportJob['state'];
+  readonly cursor: string | null;
+  readonly recordCount: number;
+  readonly objectReference: string | null;
+  readonly objectHash: string | null;
+  readonly objectSize: number | null;
+  readonly scanState: ExportJob['scanState'];
+  readonly expiresAt: DatabaseTime | null;
+  readonly createdAt: DatabaseTime;
+  readonly generatedAt: DatabaseTime | null;
+}
+
+export function exportSelect(): string {
+  return `select job.id,job.scope_id scope,job.report,job.filter,case when job.state='completed' and job.expires_at<=clock_timestamp()
+    then 'expired' else job.state end state,job.cursor,job.record_count "recordCount",job.object_ref "objectReference",job.sha256 "objectHash",
+    job.object_size "objectSize",job.scan_state "scanState",job.expires_at "expiresAt",job.created_at "createdAt",job.generated_at "generatedAt"
+    from reporting.export job`;
+}
+
+export function exportJob(row: ExportRecord): ExportJob {
+  return Object.freeze({
+    ...row,
+    expiresAt: optionalTime(row.expiresAt),
+    createdAt: utcTime(row.createdAt),
+    generatedAt: optionalTime(row.generatedAt),
+  });
+}
+
+export function metricRow(row: MetricRecord): MetricRow {
+  return Object.freeze({
+    ...row,
+    period: Object.freeze({ from: utcTime(row.period.from), to: utcTime(row.period.to), timezone: row.period.timezone }),
+    watermark: utcTime(row.watermark),
+    cursorTime: utcTime(row.cursorTime),
+  });
+}
+
+export function cockpitSummary(summary: CockpitSummary): CockpitSummary {
+  return Object.freeze({
+    ...summary,
+    sales: Object.freeze({ ...summary.sales, asOf: utcTime(summary.sales.asOf) }),
+  });
+}
+
+export function utcTime(value: DatabaseTime): string {
+  const parsed = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(parsed.getTime())) throw new Error('REPORT_TIME_INVALID');
+  return parsed.toISOString();
+}
+
+function optionalTime(value: DatabaseTime | null): string | null {
+  return value === null ? null : utcTime(value);
+}
+export function required<T>(value: T | undefined, code: string): T {
+  if (value === undefined) throw new Error(code);
+  return value;
+}
+export function object(value: unknown, code: string): Readonly<Record<string, unknown>> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error(code);
+  return value as Readonly<Record<string, unknown>>;
+}
+export function text(value: unknown, code: string): string {
+  if (typeof value !== 'string' || !value) throw new Error(code);
+  return value;
+}
+export function integer(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value)) throw new Error('REPORT_INTEGER_INVALID');
+  return value;
+}

@@ -1,11 +1,129 @@
-version: 1
+version: 3
 capabilities:
-  - code: runtime.health.read
+  - code: identity.federation
+    kind: entitlement
+    owner: identity
+    permission: null
+  - code: identity.directory
+    kind: entitlement
+    owner: organization
+    permission: null
+  - code: navigation.tree.read
+    kind: operation
+    owner: navigation
+    permission: null
+    audience: console
+  - code: navigation.catalog.read
+    kind: operation
+    owner: navigation
+    permission: navigation.catalog.read
+    audience: console
+  - code: navigation.health.read
+    kind: operation
+    owner: navigation
+    permission: runtime.health.read
+    audience: system
+  - code: identity.providers.read
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
+  - code: identity.federations.start
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
+  - code: identity.federations.callback
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
+  - code: identity.federations.selection.read
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
+  - code: identity.federations.complete
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
+  - code: identity.links.read
+    kind: operation
+    owner: identity
+    permission: identity.link.read
+    audience: public
+  - code: identity.links.create
+    kind: operation
+    owner: identity
+    permission: identity.link.manage
+    audience: public
+  - code: identity.links.revoke
+    kind: operation
+    owner: identity
+    permission: identity.link.manage
+    audience: public
+  - code: identity.providers.manage
+    kind: operation
+    owner: identity
+    permission: identity.provider.manage
+    audience: console
+  - code: identity.providers.test
+    kind: operation
+    owner: identity
+    permission: identity.provider.test
+    audience: console
+  - code: organization.directories.read
+    kind: operation
+    owner: organization
+    permission: organization.directory.read
+    audience: console
+  - code: organization.directories.manage
+    kind: operation
+    owner: organization
+    permission: organization.directory.manage
+    audience: console
+  - code: organization.directories.sync
+    kind: operation
+    owner: organization
+    permission: organization.directory.sync
+    audience: console
+  - code: organization.directories.syncruns.read
+    kind: operation
+    owner: organization
+    permission: organization.directory.read
+    audience: console
+  - code: organization.directoryevents.receive
+    kind: operation
+    owner: organization
+    permission: null
+    audience: webhook
+  - code: runtime.health.live
     kind: operation
     owner: runtime
     permission: null
-    audience: public
+    audience: system
+  - code: runtime.health.ready
+    kind: operation
+    owner: runtime
+    permission: null
+    audience: system
+  - code: runtime.health.startup
+    kind: operation
+    owner: runtime
+    permission: null
+    audience: system
+  - code: runtime.health.dependency
+    kind: operation
+    owner: runtime
+    permission: runtime.health.read
+    audience: console
   - code: identity.sessions.create
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
+  - code: identity.sessions.complete
     kind: operation
     owner: identity
     permission: null
@@ -18,23 +136,33 @@ capabilities:
   - code: identity.session.read
     kind: operation
     owner: identity
-    permission: null
-    audience: member
+    permission: identity.session.read
+    audience: public
   - code: identity.session.delete
     kind: operation
     owner: identity
-    permission: null
-    audience: member
+    permission: identity.session.manage
+    audience: public
   - code: identity.sessions.read
     kind: operation
     owner: identity
     permission: identity.session.read
-    audience: member
+    audience: public
   - code: identity.sessions.revoke
     kind: operation
     owner: identity
     permission: identity.session.manage
-    audience: member
+    audience: public
+  - code: identity.memberships.read
+    kind: operation
+    owner: identity
+    permission: identity.session.read
+    audience: storefront
+  - code: identity.memberships.switch
+    kind: operation
+    owner: identity
+    permission: identity.session.manage
+    audience: storefront
   - code: identity.challenges.create
     kind: operation
     owner: identity
@@ -43,19 +171,29 @@ capabilities:
   - code: identity.invitations.read
     kind: operation
     owner: identity
+    permission: identity.invitation.read
+    audience: console
+  - code: identity.invitations.resolve
+    kind: operation
+    owner: identity
     permission: null
     audience: public
   - code: identity.invitations.create
     kind: operation
     owner: identity
-    permission: identity.invitation.manage
-    audience: operator
+    permission: identity.invitation.issue
+    audience: console
   - code: identity.invitations.revoke
     kind: operation
     owner: identity
-    permission: identity.invitation.manage
-    audience: operator
-  - code: identity.members.create
+    permission: identity.invitation.revoke
+    audience: console
+  - code: identity.enrollments.read
+    kind: operation
+    owner: identity
+    permission: null
+    audience: public
+  - code: identity.enrollments.complete
     kind: operation
     owner: identity
     permission: null
@@ -64,17 +202,17 @@ capabilities:
     kind: operation
     owner: identity
     permission: member.manage
-    audience: operator
+    audience: console
   - code: identity.password.change
     kind: operation
     owner: identity
-    permission: null
-    audience: member
+    permission: identity.credential.manage
+    audience: public
   - code: identity.password.verify
     kind: operation
     owner: identity
     permission: identity.assurance.manage
-    audience: member
+    audience: public
   - code: identity.password.reset
     kind: operation
     owner: identity
@@ -84,848 +222,1030 @@ capabilities:
     kind: operation
     owner: identity
     permission: identity.mobile.manage
-    audience: member
+    audience: public
   - code: identity.stepup.start
     kind: operation
     owner: identity
-    permission: null
-    audience: member
+    permission: identity.assurance.manage
+    audience: public
   - code: identity.stepup.complete
     kind: operation
     owner: identity
-    permission: null
-    audience: member
+    permission: identity.assurance.manage
+    audience: public
   - code: organization.layers.read
     kind: operation
     owner: organization
     permission: organization.layer.read
-    audience: operator
+    audience: console
   - code: access.center.read
     kind: operation
     owner: access
     permission: access.center.read
-    audience: operator
+    audience: console
+  - code: access.owners.transfer
+    kind: operation
+    owner: access
+    permission: access.owner.transfer
+    audience: console
+  - code: access.overrides.manage
+    kind: operation
+    owner: access
+    permission: access.override.manage
+    audience: console
   - code: access.roles.manage
     kind: operation
     owner: access
     permission: access.role.manage
-    audience: operator
+    audience: console
   - code: access.scopes.manage
     kind: operation
     owner: access
     permission: access.scope.manage
-    audience: operator
+    audience: console
   - code: capability.assignments.read
     kind: operation
     owner: capability
     permission: capability.assignment.read
-    audience: operator
+    audience: console
   - code: capability.assignments.manage
     kind: operation
     owner: capability
     permission: capability.assignment.manage
-    audience: operator
+    audience: console
   - code: partner.partners.read
     kind: operation
     owner: partner
     permission: partner.read
-    audience: operator
+    audience: console
   - code: partner.partners.manage
     kind: operation
     owner: partner
     permission: partner.manage
-    audience: operator
+    audience: console
   - code: organization.stores.read
     kind: operation
     owner: partner
     permission: partner.read
-    audience: operator
+    audience: console
   - code: organization.stores.manage
     kind: operation
     owner: partner
     permission: partner.manage
-    audience: operator
+    audience: console
   - code: member.members.read
     kind: operation
     owner: member
     permission: member.read
-    audience: operator
+    audience: console
   - code: member.profile.read
     kind: operation
     owner: member
     permission: member.profile.read
-    audience: member
+    audience: public
   - code: member.addresses.read
     kind: operation
     owner: member
     permission: member.address.read
-    audience: member
+    audience: storefront
   - code: member.addresses.manage
     kind: operation
     owner: member
     permission: member.address.manage
-    audience: member
+    audience: storefront
+  - code: member.favorites.read
+    kind: operation
+    owner: member
+    permission: member.favorite.read
+    audience: storefront
+  - code: member.favorites.put
+    kind: operation
+    owner: member
+    permission: member.favorite.manage
+    audience: storefront
   - code: member.imports.create
     kind: operation
     owner: member
     permission: member.import
-    audience: operator
+    audience: console
+  - code: member.imports.read
+    kind: operation
+    owner: member
+    permission: member.import
+    audience: console
   - code: qualification.center.read
     kind: operation
     owner: qualification
     permission: qualification.read
-    audience: operator
+    audience: console
   - code: qualification.decisions.preview
     kind: operation
     owner: qualification
     permission: qualification.preview
-    audience: operator
+    audience: console
   - code: qualification.policies.manage
     kind: operation
     owner: qualification
     permission: qualification.manage
-    audience: operator
+    audience: console
   - code: channel.distributors.create
     kind: operation
     owner: channel
     permission: channel.distributor.manage
-    audience: operator
+    audience: console
   - code: channel.distributors.read
     kind: operation
     owner: channel
     permission: channel.distributor.read
-    audience: operator
+    audience: console
   - code: channel.distributors.update
     kind: operation
     owner: channel
     permission: channel.distributor.manage
-    audience: operator
+    audience: console
   - code: channel.distributors.disable
     kind: operation
     owner: channel
     permission: channel.distributor.manage
-    audience: operator
+    audience: console
   - code: channel.bindings.manage
     kind: operation
     owner: channel
     permission: channel.binding.manage
-    audience: operator
+    audience: console
   - code: channel.quotas.manage
     kind: operation
     owner: channel
     permission: channel.quota.manage
-    audience: operator
+    audience: console
   - code: catalog.pools.read
     kind: operation
     owner: catalog
     permission: catalog.pool.read
-    audience: operator
+    audience: console
   - code: catalog.pools.attach
     kind: operation
     owner: catalog
     permission: catalog.pool.manage
-    audience: operator
+    audience: console
   - code: catalog.pools.detach
     kind: operation
     owner: catalog
     permission: catalog.pool.manage
-    audience: operator
+    audience: console
   - code: catalog.pools.allocate
     kind: operation
     owner: catalog
     permission: catalog.pool.allocate
-    audience: operator
+    audience: console
+  - code: catalog.product.detail.read
+    kind: operation
+    owner: catalog
+    permission: catalog.product.read
+    audience: console
   - code: catalog.products.create
     kind: operation
     owner: catalog
     permission: catalog.product.manage
-    audience: operator
+    audience: console
   - code: catalog.products.update
     kind: operation
     owner: catalog
     permission: catalog.product.manage
-    audience: operator
+    audience: console
   - code: catalog.products.archive
     kind: operation
     owner: catalog
     permission: catalog.product.manage
-    audience: operator
+    audience: console
   - code: catalog.listings.read
     kind: operation
     owner: catalog
     permission: catalog.listing.read
-    audience: member
+    audience: console
   - code: catalog.listings.publish
     kind: operation
     owner: catalog
     permission: catalog.listing.manage
-    audience: operator
+    audience: console
   - code: catalog.listings.unpublish
     kind: operation
     owner: catalog
     permission: catalog.listing.manage
-    audience: operator
+    audience: console
   - code: catalog.listings.batch
     kind: operation
     owner: catalog
     permission: catalog.listing.manage
-    audience: operator
+    audience: console
   - code: catalog.imports.create
     kind: operation
     owner: catalog
     permission: catalog.import.manage
-    audience: operator
+    audience: console
   - code: catalog.imports.read
     kind: operation
     owner: catalog
     permission: catalog.import.read
-    audience: operator
+    audience: console
   - code: pricing.rules.create
     kind: operation
     owner: pricing
     permission: pricing.rule.manage
-    audience: operator
+    audience: console
   - code: pricing.rules.publish
     kind: operation
     owner: pricing
     permission: pricing.rule.manage
-    audience: operator
-  - code: pricing.offers.read
-    kind: operation
-    owner: pricing
-    permission: pricing.offer.read
-    audience: member
-  - code: inventory.availability.read
+    audience: console
+  - code: inventory.imports.create
     kind: operation
     owner: inventory
-    permission: inventory.read
-    audience: member
+    permission: inventory.import.manage
+    audience: console
+  - code: inventory.imports.read
+    kind: operation
+    owner: inventory
+    permission: inventory.import.read
+    audience: console
   - code: marketing.campaigns.read
     kind: operation
     owner: marketing
     permission: marketing.read
-    audience: operator
+    audience: console
   - code: reporting.dashboard.read
     kind: operation
     owner: reporting
     permission: reporting.dashboard.read
-    audience: operator
+    audience: console
   - code: reporting.sales.read
     kind: operation
     owner: reporting
     permission: reporting.sales.read
-    audience: operator
+    audience: console
   - code: reporting.products.read
     kind: operation
     owner: reporting
     permission: reporting.product.read
-    audience: operator
+    audience: console
   - code: reporting.malls.read
     kind: operation
     owner: reporting
     permission: reporting.mall.read
-    audience: operator
+    audience: console
   - code: reporting.categories.read
     kind: operation
     owner: reporting
     permission: reporting.category.read
-    audience: operator
+    audience: console
   - code: reporting.channels.read
     kind: operation
     owner: reporting
     permission: reporting.channel.read
-    audience: operator
+    audience: console
   - code: reporting.powderclass.read
     kind: operation
     owner: reporting
     permission: reporting.powderclass.read
-    audience: operator
+    audience: console
   - code: reporting.voucherconsumption.read
     kind: operation
     owner: reporting
     permission: reporting.voucher.read
-    audience: operator
+    audience: console
   - code: reporting.exports.create
     kind: operation
     owner: reporting
     permission: reporting.export.manage
-    audience: operator
+    audience: console
   - code: reporting.exports.read
     kind: operation
     owner: reporting
     permission: reporting.export.read
-    audience: operator
+    audience: console
   - code: experience.applications.create
     kind: operation
     owner: experience
     permission: experience.application.manage
-    audience: operator
+    audience: console
   - code: experience.applications.copy
     kind: operation
     owner: experience
     permission: experience.application.manage
-    audience: operator
+    audience: console
   - code: experience.applications.read
     kind: operation
     owner: experience
     permission: experience.application.read
-    audience: operator
+    audience: console
   - code: experience.applications.update
     kind: operation
     owner: experience
     permission: experience.application.manage
-    audience: operator
+    audience: console
   - code: experience.versions.save
     kind: operation
     owner: experience
     permission: experience.version.manage
-    audience: operator
+    audience: console
   - code: experience.versions.validate
     kind: operation
     owner: experience
     permission: experience.version.manage
-    audience: operator
+    audience: console
   - code: experience.versions.publish
     kind: operation
     owner: experience
     permission: experience.version.publish
-    audience: operator
+    audience: console
   - code: experience.versions.restore
     kind: operation
     owner: experience
     permission: experience.version.publish
-    audience: operator
+    audience: console
   - code: cart.current.read
     kind: operation
     owner: cart
     permission: cart.read
-    audience: member
+    audience: storefront
   - code: cart.items.put
     kind: operation
     owner: cart
     permission: cart.manage
-    audience: member
+    audience: storefront
   - code: cart.items.batch
     kind: operation
     owner: cart
     permission: cart.manage
-    audience: member
+    audience: storefront
   - code: checkout.quote.create
     kind: operation
     owner: checkout
     permission: checkout.create
-    audience: member
+    audience: storefront
   - code: order.orders.create
     kind: operation
     owner: order
     permission: order.create
-    audience: member
+    audience: storefront
   - code: order.orders.read
     kind: operation
     owner: order
     permission: order.read
-    audience: member
+    audience: public
   - code: order.reminders.create
     kind: operation
     owner: order
     permission: order.reminder.create
-    audience: member
+    audience: storefront
   - code: order.orders.export
     kind: operation
     owner: order
     permission: order.export
-    audience: operator
+    audience: console
   - code: order.aftersales.read
     kind: operation
     owner: order
     permission: order.aftersale.read
-    audience: member
+    audience: public
   - code: order.aftersales.apply
     kind: operation
     owner: order
     permission: order.aftersale.apply
-    audience: member
+    audience: storefront
   - code: order.aftersales.approve
     kind: operation
     owner: order
     permission: order.aftersale.decide
-    audience: operator
+    audience: console
   - code: order.aftersales.reject
     kind: operation
     owner: order
     permission: order.aftersale.decide
-    audience: operator
+    audience: console
   - code: fulfillment.shipments.create
     kind: operation
     owner: fulfillment
     permission: fulfillment.ship
-    audience: operator
+    audience: console
   - code: fulfillment.tracking.read
     kind: operation
     owner: fulfillment
     permission: fulfillment.read
-    audience: member
+    audience: storefront
   - code: fulfillment.returns.receive
     kind: operation
     owner: fulfillment
     permission: fulfillment.return.manage
-    audience: operator
+    audience: console
   - code: fulfillment.returns.inspect
     kind: operation
     owner: fulfillment
     permission: fulfillment.return.manage
-    audience: operator
-  - code: payment.intents.create
+    audience: console
+  - code: payment.intents.read
     kind: operation
     owner: payment
-    permission: payment.create
-    audience: member
+    permission: payment.read
+    audience: storefront
   - code: verification.challenges.issue
     kind: operation
     owner: verification
     permission: verification.issue
-    audience: operator
+    audience: console
   - code: verification.sessions.read
     kind: operation
     owner: verification
     permission: verification.issue
-    audience: member
+    audience: storefront
   - code: verification.challenges.verify
     kind: operation
     owner: verification
     permission: verification.verify
-    audience: operator
+    audience: console
+  - code: verification.history.read
+    kind: operation
+    owner: verification
+    permission: verification.verify
+    audience: console
+  - code: verification.devices.read
+    kind: operation
+    owner: verification
+    permission: verification.verify
+    audience: console
+  - code: verification.devices.manage
+    kind: operation
+    owner: verification
+    permission: verification.verify
+    audience: console
   - code: payment.refunds.request
     kind: operation
     owner: payment
     permission: payment.refund
-    audience: operator
+    audience: console
   - code: payment.recoveries.read
     kind: operation
     owner: payment
     permission: payment.recovery.read
-    audience: operator
+    audience: console
   - code: payment.recoveries.resolve
     kind: operation
     owner: payment
     permission: payment.recovery.manage
-    audience: operator
+    audience: console
+  - code: payment.webhooks.wechat
+    kind: operation
+    owner: payment
+    permission: null
+    audience: webhook
   - code: voucher.cardlibraries.read
     kind: operation
     owner: voucher
     permission: voucher.cardlibrary.read
-    audience: operator
+    audience: console
   - code: voucher.cardlibraries.create
     kind: operation
     owner: voucher
-    permission: voucher.cardlibrary.manage
-    audience: operator
+    permission: voucher.cardlibrary.create
+    audience: console
   - code: voucher.cardlibraries.allocate
     kind: operation
     owner: voucher
     permission: voucher.cardlibrary.allocate
-    audience: operator
+    audience: console
+  - code: voucher.imports.read
+    kind: operation
+    owner: voucher
+    permission: voucher.cardlibrary.read
+    audience: console
   - code: voucher.programs.read
     kind: operation
     owner: voucher
     permission: voucher.program.read
-    audience: operator
+    audience: console
   - code: voucher.programs.manage
     kind: operation
     owner: voucher
     permission: voucher.program.manage
-    audience: operator
+    audience: console
   - code: voucher.reserves.read
     kind: operation
     owner: voucher
     permission: voucher.reserve.read
-    audience: operator
+    audience: console
   - code: voucher.reserves.request
     kind: operation
     owner: voucher
     permission: voucher.reserve.request
-    audience: operator
+    audience: console
   - code: voucher.reserves.decide
     kind: operation
     owner: voucher
     permission: voucher.reserve.decide
-    audience: operator
+    audience: console
   - code: voucher.batches.read
     kind: operation
     owner: voucher
     permission: voucher.batch.read
-    audience: operator
+    audience: console
   - code: voucher.batches.issue
     kind: operation
     owner: voucher
     permission: voucher.issue
-    audience: operator
+    audience: console
   - code: voucher.batches.retry
     kind: operation
     owner: voucher
     permission: voucher.issue
-    audience: operator
+    audience: console
   - code: voucher.status.batch
     kind: operation
     owner: voucher
     permission: voucher.status.manage
-    audience: operator
+    audience: console
   - code: voucher.statusbatches.read
     kind: operation
     owner: voucher
     permission: voucher.history.read
-    audience: operator
+    audience: console
   - code: voucher.bindings.read
     kind: operation
     owner: voucher
     permission: voucher.binding.read
-    audience: member
+    audience: storefront
   - code: voucher.bindings.manage
     kind: operation
     owner: voucher
     permission: voucher.binding.manage
-    audience: operator
+    audience: console
   - code: voucher.redemptions.read
     kind: operation
     owner: voucher
     permission: voucher.redemption.read
-    audience: member
+    audience: storefront
   - code: voucher.history.read
     kind: operation
     owner: voucher
     permission: voucher.history.read
-    audience: operator
+    audience: console
   - code: voucher.redemptions.reverse
     kind: operation
     owner: voucher
     permission: voucher.redemption.reverse
-    audience: operator
+    audience: console
   - code: benefit.accounts.read
     kind: operation
     owner: benefit
     permission: benefit.read
-    audience: member
+    audience: storefront
   - code: benefit.ledgers.read
     kind: operation
     owner: benefit
     permission: benefit.read
-    audience: member
+    audience: storefront
   - code: benefit.plans.read
     kind: operation
     owner: benefit
     permission: benefit.plan.read
-    audience: operator
+    audience: console
   - code: benefit.plans.manage
     kind: operation
     owner: benefit
     permission: benefit.plan.manage
-    audience: operator
+    audience: console
   - code: benefit.budgets.read
     kind: operation
     owner: benefit
     permission: benefit.budget.read
-    audience: operator
+    audience: console
   - code: benefit.budgets.manage
     kind: operation
     owner: benefit
     permission: benefit.budget.manage
-    audience: operator
+    audience: console
   - code: benefit.grants.create
     kind: operation
     owner: benefit
     permission: benefit.grant
-    audience: operator
+    audience: console
   - code: benefit.grants.decide
     kind: operation
     owner: benefit
     permission: benefit.grant.decide
-    audience: operator
+    audience: console
   - code: benefit.grants.read
     kind: operation
     owner: benefit
     permission: benefit.grant.read
-    audience: operator
+    audience: console
   - code: benefit.grants.control
     kind: operation
     owner: benefit
     permission: benefit.grant.control
-    audience: operator
+    audience: console
   - code: benefit.grants.revoke
     kind: operation
     owner: benefit
     permission: benefit.revoke
-    audience: operator
+    audience: console
   - code: benefit.lots.read
     kind: operation
     owner: benefit
     permission: benefit.lot.read
-    audience: operator
+    audience: console
   - code: finance.overview.read
     kind: operation
     owner: finance
     permission: finance.overview.read
-    audience: operator
+    audience: console
   - code: finance.entries.read
     kind: operation
     owner: finance
     permission: finance.entry.read
-    audience: operator
-  - code: finance.settlements.adjust
-    kind: operation
-    owner: finance
-    permission: finance.settlement.adjust
-    audience: operator
+    audience: console
   - code: finance.statements.read
     kind: operation
     owner: finance
     permission: finance.statement.read
-    audience: operator
+    audience: console
   - code: finance.statements.export
     kind: operation
     owner: finance
     permission: finance.statement.export
-    audience: operator
+    audience: console
   - code: finance.reconciliations.manage
     kind: operation
     owner: finance
     permission: finance.reconciliation.manage
-    audience: operator
+    audience: console
+  - code: finance.reconciliations.read
+    kind: operation
+    owner: finance
+    permission: finance.reconciliation.read
+    audience: console
+  - code: finance.settlements.read
+    kind: operation
+    owner: finance
+    permission: finance.settlement.read
+    audience: console
+  - code: finance.settlements.decide
+    kind: operation
+    owner: finance
+    permission: finance.settlement.decide
+    audience: console
+  - code: finance.settlements.adjust
+    kind: operation
+    owner: finance
+    permission: finance.settlement.adjust
+    audience: console
+  - code: finance.withdrawals.read
+    kind: operation
+    owner: finance
+    permission: finance.withdrawal.read
+    audience: console
+  - code: finance.withdrawals.create
+    kind: operation
+    owner: finance
+    permission: finance.withdrawal.create
+    audience: console
+  - code: finance.withdrawals.decide
+    kind: operation
+    owner: finance
+    permission: finance.withdrawal.decide
+    audience: console
+  - code: finance.withdrawals.recover
+    kind: operation
+    owner: finance
+    permission: finance.withdrawal.recover
+    audience: console
+  - code: finance.holds.read
+    kind: operation
+    owner: finance
+    permission: finance.hold.read
+    audience: console
+  - code: finance.periods.read
+    kind: operation
+    owner: finance
+    permission: finance.period.read
+    audience: console
+  - code: finance.periods.manage
+    kind: operation
+    owner: finance
+    permission: finance.period.manage
+    audience: console
+  - code: finance.backfills.read
+    kind: operation
+    owner: finance
+    permission: finance.backfill.read
+    audience: console
+  - code: finance.backfills.decide
+    kind: operation
+    owner: finance
+    permission: finance.backfill.decide
+    audience: console
   - code: finance.policies.manage
     kind: operation
     owner: finance
     permission: finance.policy.manage
-    audience: operator
+    audience: console
   - code: invoice.profiles.manage
     kind: operation
     owner: finance
     permission: invoice.profile.manage
-    audience: operator
+    audience: console
   - code: invoice.profiles.read
     kind: operation
     owner: finance
     permission: invoice.profile.read
-    audience: member
+    audience: storefront
   - code: invoice.requests.create
     kind: operation
     owner: finance
     permission: invoice.request.create
-    audience: member
+    audience: storefront
   - code: invoice.requests.read
     kind: operation
     owner: finance
     permission: invoice.request.read
-    audience: operator
+    audience: console
   - code: invoice.requests.cancel
     kind: operation
     owner: finance
     permission: invoice.request.cancel
-    audience: operator
+    audience: console
+  - code: invoice.requests.decide
+    kind: operation
+    owner: finance
+    permission: invoice.request.decide
+    audience: console
+  - code: invoice.requests.red
+    kind: operation
+    owner: finance
+    permission: invoice.request.red
+    audience: console
+  - code: finance.invoices.read
+    kind: operation
+    owner: finance
+    permission: finance.invoice.read
+    audience: storefront
+  - code: finance.invoices.download
+    kind: operation
+    owner: finance
+    permission: finance.invoice.download
+    audience: storefront
   - code: support.cases.create
     kind: operation
     owner: support
     permission: support.case.create
-    audience: member
+    audience: storefront
   - code: support.cases.read
     kind: operation
     owner: support
     permission: support.case.read
-    audience: operator
+    audience: public
   - code: support.cases.update
     kind: operation
     owner: support
     permission: support.case.manage
-    audience: operator
+    audience: console
   - code: support.cases.close
     kind: operation
     owner: support
     permission: support.case.manage
-    audience: operator
+    audience: console
   - code: support.cases.reopen
     kind: operation
     owner: support
     permission: support.case.manage
-    audience: operator
+    audience: console
   - code: support.messages.send
     kind: operation
     owner: support
     permission: support.message.send
-    audience: operator
+    audience: public
   - code: support.messages.read
     kind: operation
     owner: support
     permission: support.message.read
-    audience: operator
+    audience: public
+  - code: support.attachments.create
+    kind: operation
+    owner: support
+    permission: support.message.send
+    audience: public
   - code: support.assignments.manage
     kind: operation
     owner: support
     permission: support.assignment.manage
-    audience: operator
+    audience: console
   - code: support.agents.manage
     kind: operation
     owner: support
     permission: support.agent.manage
-    audience: operator
+    audience: console
   - code: support.agents.read
     kind: operation
     owner: support
     permission: support.agent.read
-    audience: operator
+    audience: console
   - code: support.accounts.manage
     kind: operation
     owner: support
     permission: support.account.manage
-    audience: operator
+    audience: console
   - code: support.accounts.read
     kind: operation
     owner: support
     permission: support.account.read
-    audience: operator
+    audience: console
   - code: support.rules.read
     kind: operation
     owner: support
     permission: support.rule.read
-    audience: operator
+    audience: console
   - code: support.rules.manage
     kind: operation
     owner: support
     permission: support.rule.manage
-    audience: operator
+    audience: console
   - code: support.slas.read
     kind: operation
     owner: support
     permission: support.sla.read
-    audience: operator
+    audience: console
   - code: support.slas.manage
     kind: operation
     owner: support
     permission: support.sla.manage
-    audience: operator
+    audience: console
   - code: support.history.read
     kind: operation
     owner: support
     permission: support.history.read
-    audience: operator
+    audience: console
   - code: notification.notifications.read
     kind: operation
     owner: notification
     permission: notification.read
-    audience: member
+    audience: storefront
+  - code: notification.notifications.ack
+    kind: operation
+    owner: notification
+    permission: notification.ack
+    audience: storefront
   - code: notification.preferences.read
     kind: operation
     owner: notification
     permission: notification.preference.read
-    audience: member
+    audience: storefront
+  - code: notification.preferences.manage
+    kind: operation
+    owner: notification
+    permission: notification.preference.manage
+    audience: storefront
+  - code: notification.endpoints.manage
+    kind: operation
+    owner: notification
+    permission: notification.endpoint.manage
+    audience: storefront
   - code: notification.templates.manage
     kind: operation
     owner: notification
     permission: notification.template.manage
-    audience: operator
+    audience: console
   - code: notification.templates.read
     kind: operation
     owner: notification
     permission: notification.template.read
-    audience: operator
+    audience: console
   - code: notification.announcements.read
     kind: operation
     owner: notification
     permission: notification.announcement.read
-    audience: operator
+    audience: console
   - code: notification.announcements.manage
     kind: operation
     owner: notification
     permission: notification.announcement.manage
-    audience: operator
+    audience: console
   - code: risk.center.read
     kind: operation
     owner: risk
     permission: risk.read
-    audience: operator
+    audience: console
   - code: risk.policies.manage
     kind: operation
     owner: risk
     permission: risk.manage
-    audience: operator
+    audience: console
   - code: risk.cases.review
     kind: operation
     owner: risk
     permission: risk.manage
-    audience: operator
+    audience: console
   - code: audit.records.read
     kind: operation
     owner: audit
     permission: audit.read
-    audience: operator
+    audience: console
   - code: observability.clienterrors.create
     kind: operation
     owner: observability
     permission: observability.clienterror.create
-    audience: member
+    audience: storefront
   - code: observability.clienterrors.read
     kind: operation
     owner: observability
     permission: observability.clienterror.read
-    audience: operator
+    audience: console
   - code: channel.connections.read
     kind: operation
     owner: channel
     permission: channel.connection.read
-    audience: operator
+    audience: console
   - code: channel.connections.create
     kind: operation
     owner: channel
     permission: channel.connection.manage
-    audience: operator
+    audience: console
   - code: channel.connections.update
     kind: operation
     owner: channel
     permission: channel.connection.manage
-    audience: operator
+    audience: console
   - code: channel.connections.test
     kind: operation
     owner: channel
     permission: channel.connection.manage
-    audience: operator
+    audience: console
   - code: channel.connections.enable
     kind: operation
     owner: channel
     permission: channel.connection.manage
-    audience: operator
+    audience: console
   - code: channel.connections.disable
     kind: operation
     owner: channel
     permission: channel.connection.manage
-    audience: operator
+    audience: console
   - code: channel.webhooks.receive
     kind: operation
     owner: channel
-    audience: provider
+    permission: null
+    audience: webhook
   - code: channel.syncruns.start
     kind: operation
     owner: channel
     permission: channel.sync.manage
-    audience: operator
+    audience: console
   - code: channel.syncruns.read
     kind: operation
     owner: channel
     permission: channel.sync.read
-    audience: operator
+    audience: console
   - code: channel.syncruns.cancel
     kind: operation
     owner: channel
     permission: channel.sync.manage
-    audience: operator
+    audience: console
   - code: channel.operations.read
     kind: operation
     owner: channel
     permission: channel.operation.read
-    audience: operator
+    audience: console
   - code: channel.operations.replay
     kind: operation
     owner: channel
     permission: channel.operation.replay
-    audience: operator
+    audience: console
   - code: extension.installations.read
     kind: operation
     owner: extension
     permission: extension.installation.read
-    audience: operator
+    audience: console
+  - { code: referral.settings.read, kind: operation, owner: referral, permission: referral.setting.read, audience: console }
+  - { code: referral.settings.manage, kind: operation, owner: referral, permission: referral.setting.manage, audience: console }
+  - { code: referral.products.read, kind: operation, owner: referral, permission: referral.product.read, audience: console }
+  - { code: referral.products.manage, kind: operation, owner: referral, permission: referral.product.manage, audience: console }
+  - { code: referral.members.read, kind: operation, owner: referral, permission: referral.member.read, audience: console }
+  - { code: referral.members.apply, kind: operation, owner: referral, permission: referral.member.apply, audience: public }
+  - { code: referral.members.approve, kind: operation, owner: referral, permission: referral.member.decide, audience: console }
+  - { code: referral.members.disqualify, kind: operation, owner: referral, permission: referral.member.decide, audience: console }
+  - { code: referral.bindings.read, kind: operation, owner: referral, permission: referral.binding.read, audience: public }
+  - { code: referral.bindings.create, kind: operation, owner: referral, permission: referral.binding.create, audience: public }
+  - { code: referral.commissions.read, kind: operation, owner: referral, permission: referral.commission.read, audience: console }
+  - { code: referral.earnings.read, kind: operation, owner: referral, permission: referral.earning.readself, audience: public }
+  - { code: referral.links.read, kind: operation, owner: referral, permission: referral.binding.read, audience: public }
+  - { code: referral.withdrawals.read, kind: operation, owner: referral, permission: referral.withdrawal.readself, audience: public }
+  - { code: referral.withdrawals.create, kind: operation, owner: referral, permission: referral.withdrawal.create, audience: public }
+  - { code: finance.policies.read, kind: operation, owner: finance, permission: finance.policy.read, audience: console }
+  - { code: finance.policies.preview, kind: operation, owner: finance, permission: finance.policy.preview, audience: console }
+  - { code: finance.reconciliationrepairs.read, kind: operation, owner: finance, permission: finance.repair.read, audience: console }
+  - { code: finance.reconciliationrepairs.preview, kind: operation, owner: finance, permission: finance.repair.preview, audience: console }
+  - { code: finance.reconciliationrepairs.submit, kind: operation, owner: finance, permission: finance.repair.submit, audience: console }
+  - { code: finance.reconciliationrepairs.decide, kind: operation, owner: finance, permission: finance.repair.decide, audience: console }
+  - { code: finance.reconciliationrepairs.reverse, kind: operation, owner: finance, permission: finance.repair.reverse, audience: console }
+  - { code: order.orders.receive, kind: operation, owner: order, permission: order.receive, audience: public }
+  - { code: checkout.quotes.current.read, kind: operation, owner: checkout, permission: checkout.create, audience: storefront }
+  - { code: storefront.bootstrap.read, kind: operation, owner: navigation, permission: null, audience: storefront }
+  - { code: storefront.catalog.read, kind: operation, owner: navigation, permission: null, audience: storefront }

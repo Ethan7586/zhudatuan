@@ -19,5 +19,7 @@ export interface IssuedInvoice {
   readonly contentType: 'application/pdf';
 }
 
-export interface InvoiceIssuer { issue(input: InvoiceInput): Promise<IssuedInvoice> }
+export interface InvoiceIssuer {
+  issue(input: InvoiceInput): Promise<IssuedInvoice>;
+}
 export const INVOICE_ISSUER = token<InvoiceIssuer>('finance.invoiceissuer');

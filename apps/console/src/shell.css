@@ -1,19 +1,21 @@
-@import './shell/navigation.css';
-@import './shell/header.css';
+@import './shell/Navigation.css';
+@import './shell/Header.css';
 
 .consolelayout {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr);
   min-height: 100vh;
-  background: #f7f9fc;
+  background: var(--sw-surface-subtle);
   transition: grid-template-columns var(--sw-duration-standard) var(--sw-ease-standard);
 }
 
-.consolelayout[data-sidebar='collapsed'] { grid-template-columns: 64px minmax(0, 1fr); }
+.consolelayout[data-sidebar='collapsed'] {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
 
 .consoleworkspace {
   min-width: 0;
-  background: #f7f9fc;
+  background: var(--sw-surface-subtle);
 }
 
 .scopebar {
@@ -24,10 +26,10 @@
   justify-content: space-between;
   gap: 16px;
   overflow: hidden;
-  border-bottom: 1px solid #e5eaf1;
-  background: #fff;
+  border-bottom: 1px solid var(--sw-border);
+  background: var(--sw-surface);
   padding: 0 17px;
-  color: #697a94;
+  color: var(--sw-muted);
   font-size: 12px;
   line-height: 1;
   white-space: nowrap;
@@ -51,15 +53,26 @@
   outline-offset: 0;
   background: transparent;
   padding: 0 2px;
-  color: #60718c;
+  color: var(--sw-muted);
   font-size: 12px;
   cursor: pointer;
 }
 
-.scopecontext select:hover { background: #f4f7fb; }
-.scopedivider { color: #d7dee8; font-style: normal; }
-.scopestatus { margin-left: auto; justify-content: flex-end; }
-.scopestatus i { color: #c8d1de; font-style: normal; }
+.scopecontext select:hover {
+  background: var(--sw-background);
+}
+.scopedivider {
+  color: var(--sw-border-strong);
+  font-style: normal;
+}
+.scopestatus {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+.scopestatus i {
+  color: var(--sw-border-strong);
+  font-style: normal;
+}
 
 .workspacebody {
   width: min(100%, 100rem);
@@ -67,7 +80,9 @@
   padding: 10px 14px 28px;
 }
 
-.mobilebackdrop { display: none; }
+.mobilebackdrop {
+  display: none;
+}
 
 .sr-only {
   position: absolute;
@@ -80,21 +95,38 @@
 }
 
 @media (max-width: 68rem) {
-  .consolelayout .consoleheader { align-items: center; }
-  .consoleheader .commandtrigger span { max-width: 12rem; }
+  .consolelayout .consoleheader {
+    align-items: center;
+  }
+  .consoleheader .commandtrigger span {
+    max-width: 12rem;
+  }
 }
 
 @media (max-width: 54rem) {
-  .consoleheader .commandarea { justify-self: stretch; }
-  .consoleheader .commandtrigger { width: 100%; }
-  .consoleheader .taskbutton { width: 38px; font-size: 0; }
-  .consoleheader .taskbutton span { margin: 0; }
-  .scopebar .scopestatus { display: none; }
+  .consoleheader .commandarea {
+    justify-self: stretch;
+  }
+  .consoleheader .commandtrigger {
+    width: 100%;
+  }
+  .consoleheader .taskbutton {
+    width: 38px;
+    font-size: 0;
+  }
+  .consoleheader .taskbutton span {
+    margin: 0;
+  }
+  .scopebar .scopestatus {
+    display: none;
+  }
 }
 
 @media (max-width: 48rem) {
   .consolelayout,
-  .consolelayout[data-sidebar='collapsed'] { grid-template-columns: minmax(0, 1fr); }
+  .consolelayout[data-sidebar='collapsed'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
   .consolelayout[data-mobile-nav] .consolesidebar,
   .consolelayout[data-mobile-nav] .consolesidebar.iscollapsed {
@@ -110,10 +142,16 @@
     transition: transform var(--sw-duration-standard) var(--sw-ease-standard);
   }
 
-  .consolelayout[data-mobile-nav='open'] .consolesidebar { transform: translateX(0); }
-  .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrand { display: flex; }
+  .consolelayout[data-mobile-nav='open'] .consolesidebar {
+    transform: translateX(0);
+  }
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrand {
+    display: flex;
+  }
   .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrandcopy,
-  .consolelayout[data-mobile-nav] .consolesidebar .sidebarlabel { display: grid; }
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebarlabel {
+    display: grid;
+  }
 
   .consolelayout[data-mobile-nav] .consolesidebar .sidebarnavigation {
     display: grid;
@@ -134,7 +172,7 @@
     display: block;
     min-height: 0;
     border: 0;
-    background: rgb(3 16 34 / 48%);
+    background: color-mix(in srgb, var(--sw-brand-ink) 48%, transparent);
   }
 
   .consolelayout .consoleheader {
@@ -142,27 +180,56 @@
     padding-inline: 12px;
   }
 
-  .consoleheader .mobilemenubutton { display: grid; }
+  .consoleheader .mobilemenubutton {
+    display: grid;
+  }
   .consolebreadcrumb > span,
-  .consolebreadcrumb > i { display: none; }
-  .consoleheader .commandarea { grid-column: 2; }
-  .consoleheader .consoleactions { grid-column: 3; }
-  .consoleheader .taskbutton { display: none; }
-  .consoleworkspace .scopebar { flex-direction: row; padding-inline: 12px; }
+  .consolebreadcrumb > i {
+    display: none;
+  }
+  .consoleheader .commandarea {
+    grid-column: 2;
+  }
+  .consoleheader .consoleactions {
+    grid-column: 3;
+  }
+  .consoleheader .taskbutton {
+    display: none;
+  }
+  .consoleworkspace .scopebar {
+    flex-direction: row;
+    padding-inline: 12px;
+  }
   .scopecontext > span,
-  .scopecontext > i { display: none; }
-  .consoleworkspace .workspacebody { padding-inline: 12px; }
+  .scopecontext > i {
+    display: none;
+  }
+  .consoleworkspace .workspacebody {
+    padding-inline: 12px;
+  }
 }
 
 @media (max-width: 36rem) {
-  .consoleheader .commandarea { display: none; }
-  .consolelayout .consoleheader { grid-template-columns: minmax(0, 1fr) auto; }
-  .consoleheader .consolebreadcrumb { grid-column: 1; }
-  .consoleheader .consoleactions { grid-column: 2; }
-  .consoleworkspace .scopebar { display: none; }
+  .consoleheader .commandarea {
+    display: none;
+  }
+  .consolelayout .consoleheader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .consoleheader .consolebreadcrumb {
+    grid-column: 1;
+  }
+  .consoleheader .consoleactions {
+    grid-column: 2;
+  }
+  .consoleworkspace .scopebar {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .consolelayout,
-  .consolelayout .consolesidebar { transition: none; }
+  .consolelayout .consolesidebar {
+    transition: none;
+  }
 }

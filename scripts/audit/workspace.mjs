@@ -5,21 +5,7 @@ import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 export const ROOT = repositoryRoot;
 
 /** Directories that never participate in search, build, format, test or release. */
-export const EXCLUDED = new Set([
-  'node_modules',
-  '.git',
-  '.next',
-  '.open-next',
-  '.wrangler',
-  'dist',
-  'build',
-  'storybook-static',
-  'coverage',
-  '.vercel',
-  '.codex-temp',
-  'tmp',
-  'supabase/.temp',
-]);
+export const EXCLUDED = new Set(['node_modules', '.git', '.next', '.open-next', '.wrangler', 'dist', 'build', 'storybook-static', 'coverage', '.vercel', '.codex-temp', 'tmp', 'supabase/.temp']);
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']);
 export function isExcluded(path) {

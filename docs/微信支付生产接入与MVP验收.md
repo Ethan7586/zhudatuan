@@ -22,11 +22,11 @@
 
 ### 1.1 必须如实区分的三个“完成”
 
-| 层级 | 当前结论 | 能证明什么 | 不能证明什么 |
-| --- | --- | --- | --- |
-| 代码与协议 | 已实现，待本文件末尾全量门禁结果确认 | 请求签名、验签、解密、场景隔离、状态机、查关退与恢复设计真实存在 | 不能证明商户平台配置正确 |
-| 浏览器MVP编排 | 测试服务和页面链路已具备；本次浏览器工具因URL策略阻止导航，未形成截图和完整浏览器录制 | 可复现页面到API的完整编排 | 不能冒充微信客户端或真实资金流 |
-| 真实资金验收 | 尚未执行 | 只有真实商户配置下完成至少一笔¥0.01支付及退款才可通过 | 无真实凭据、无微信客户端、无商户账单时严禁宣称上线 |
+| 层级          | 当前结论                                                                              | 能证明什么                                                       | 不能证明什么                                       |
+| ------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------- |
+| 代码与协议    | 已实现，待本文件末尾全量门禁结果确认                                                  | 请求签名、验签、解密、场景隔离、状态机、查关退与恢复设计真实存在 | 不能证明商户平台配置正确                           |
+| 浏览器MVP编排 | 测试服务和页面链路已具备；本次浏览器工具因URL策略阻止导航，未形成截图和完整浏览器录制 | 可复现页面到API的完整编排                                        | 不能冒充微信客户端或真实资金流                     |
+| 真实资金验收  | 尚未执行                                                                              | 只有真实商户配置下完成至少一笔¥0.01支付及退款才可通过            | 无真实凭据、无微信客户端、无商户账单时严禁宣称上线 |
 
 因此，当前可以说“真实微信支付生产代码已接入”；在第18节生产验收全部打勾前，不可以说“真实微信支付已完成资金验收或已上线”。
 
@@ -36,45 +36,45 @@
 
 `MVP上线功能清单`中第3至23行是21条需求行；标题和表头不计为功能。它们与模块的唯一映射如下。
 
-| Excel行 | 层级/菜单 | 唯一负责模块 | 微信支付对该项的影响 |
-| --- | --- | --- | --- |
-| 3 | 平台层预留、商品池、卡号库 | `organization`、`catalog`、`voucher` | 无直接影响，支付只消费已发布商品和有效卡券 |
-| 4 | 分销层 | `organization`、`channel`、`partner` | 订单、支付和结算保留分销Scope |
-| 5 | 集团数据大屏 | `reporting` | 消费`payment.succeeded/refunded`投影，不直接查微信 |
-| 6 | 集团应用/商城创建复制装修 | `organization`、`experience` | AppID不属于商城装修数据，由平台配置统一管理 |
-| 7 | 集团商品池 | `catalog`、`pricing`、`channel` | 支付金额只能来自服务端报价快照 |
-| 8 | 集团订单与售后 | `order`、`aftersale`、`payment` | 支付、退款和售后金额强关联 |
-| 9 | 集团卡券中心 | `voucher` | 混合支付按tender拆分，退款按原路分摊 |
-| 10 | 集团财务 | `finance` | 只消费不可变支付事实和provider对账事实 |
-| 11 | 集团数据统计 | `reporting` | 支付事件驱动投影和异步导出 |
-| 12 | 集团客服中心 | `support` | 只读脱敏支付状态；退款需授权和审计 |
-| 13 | 集团设置 | `access`、`member`、`partner`、`notification`、`risk` | 支付权限、MFA、风控、通知统一生效 |
-| 14 | 商城销售数据 | `reporting` | 以商城Scope投影支付和退款 |
-| 15 | 商城装修 | `experience` | 前端支付入口来自发布体验，支付协议不由装修覆盖 |
-| 16 | 商城商品池 | `catalog`、`pricing`、`channel` | 下单时重新校验价格、可售性和库存 |
-| 17 | 商城订单与售后 | `order`、`aftersale`、`payment` | 同第8行，但限制在商城Scope |
-| 18 | 商城卡券中心 | `voucher` | 同第9行，但限制在商城Scope |
-| 19 | 商城财务 | `finance` | 同第10行，但限制在商城Scope |
-| 20 | 商城数据统计 | `reporting` | 同第11行，但限制在商城Scope |
-| 21 | 商城客服中心 | `support` | 同第12行，但限制在商城Scope |
-| 22 | 商城设置 | `access`、`member`、`partner`、`notification`、`risk` | 同第13行，但限制在商城Scope |
-| 23 | 接口表优先级1优先接入 | `channel`、`extension`及provider扩展 | 微信支付不替代供应链接入，二者共享订单事实源 |
+| Excel行 | 层级/菜单                  | 唯一负责模块                                          | 微信支付对该项的影响                               |
+| ------- | -------------------------- | ----------------------------------------------------- | -------------------------------------------------- |
+| 3       | 平台层预留、商品池、卡号库 | `organization`、`catalog`、`voucher`                  | 无直接影响，支付只消费已发布商品和有效卡券         |
+| 4       | 分销层                     | `organization`、`channel`、`partner`                  | 订单、支付和结算保留分销Scope                      |
+| 5       | 集团数据大屏               | `reporting`                                           | 消费`payment.succeeded/refunded`投影，不直接查微信 |
+| 6       | 集团应用/商城创建复制装修  | `organization`、`experience`                          | AppID不属于商城装修数据，由平台配置统一管理        |
+| 7       | 集团商品池                 | `catalog`、`pricing`、`channel`                       | 支付金额只能来自服务端报价快照                     |
+| 8       | 集团订单与售后             | `order`、`aftersale`、`payment`                       | 支付、退款和售后金额强关联                         |
+| 9       | 集团卡券中心               | `voucher`                                             | 混合支付按tender拆分，退款按原路分摊               |
+| 10      | 集团财务                   | `finance`                                             | 只消费不可变支付事实和provider对账事实             |
+| 11      | 集团数据统计               | `reporting`                                           | 支付事件驱动投影和异步导出                         |
+| 12      | 集团客服中心               | `support`                                             | 只读脱敏支付状态；退款需授权和审计                 |
+| 13      | 集团设置                   | `access`、`member`、`partner`、`notification`、`risk` | 支付权限、MFA、风控、通知统一生效                  |
+| 14      | 商城销售数据               | `reporting`                                           | 以商城Scope投影支付和退款                          |
+| 15      | 商城装修                   | `experience`                                          | 前端支付入口来自发布体验，支付协议不由装修覆盖     |
+| 16      | 商城商品池                 | `catalog`、`pricing`、`channel`                       | 下单时重新校验价格、可售性和库存                   |
+| 17      | 商城订单与售后             | `order`、`aftersale`、`payment`                       | 同第8行，但限制在商城Scope                         |
+| 18      | 商城卡券中心               | `voucher`                                             | 同第9行，但限制在商城Scope                         |
+| 19      | 商城财务                   | `finance`                                             | 同第10行，但限制在商城Scope                        |
+| 20      | 商城数据统计               | `reporting`                                           | 同第11行，但限制在商城Scope                        |
+| 21      | 商城客服中心               | `support`                                             | 同第12行，但限制在商城Scope                        |
+| 22      | 商城设置                   | `access`、`member`、`partner`、`notification`、`risk` | 同第13行，但限制在商城Scope                        |
+| 23      | 接口表优先级1优先接入      | `channel`、`extension`及provider扩展                  | 微信支付不替代供应链接入，二者共享订单事实源       |
 
 ### 2.2 Excel接口表优先级1的11项
 
-| Excel项 | Provider扩展 | Vendor适配器 | 生产准入要求 |
-| --- | --- | --- | --- |
-| 京东 | `jdproduct` | `jd` | 正式采购账号、clientId、token轮换、商品/库存/订单/售后联调 |
-| 京东生鲜 | `jdfresh` | `jd` | 独立provider配置与契约测试 |
-| 天猫超市 | `tmallmarket` | `tmall` | 正式应用授权及回调白名单 |
-| 自有供应商 | `private` | 自有协议 | 每个供应商独立Scope和幂等键 |
-| 蛋糕 | `cake` | `cakeuncle` | API凭据、门店/配送时段和退款联调 |
-| 鲜花 | `flower` | `cakeuncle` | 城市、时段、配送失败补偿联调 |
-| 图书 | `book` | `wenxuan` | 工作簿旧凭据不得使用，只从密钥库装配 |
-| 虚拟卡券/直充 | `directcharge` | `wanlian` | 卡密不落日志，发放回调幂等 |
-| 虚拟食品提货券 | `foodvoucher` | `cakeuncle` | 券码加密、核销与退款约束 |
-| 电影 | `movie` | `wanlian` | 场次锁定和出票补偿 |
-| 在线点餐 | `meal` | `cakeuncle` | 门店、菜单、时段和订单取消联调 |
+| Excel项        | Provider扩展   | Vendor适配器 | 生产准入要求                                               |
+| -------------- | -------------- | ------------ | ---------------------------------------------------------- |
+| 京东           | `jdproduct`    | `jd`         | 正式采购账号、clientId、token轮换、商品/库存/订单/售后联调 |
+| 京东生鲜       | `jdfresh`      | `jd`         | 独立provider配置与契约测试                                 |
+| 天猫超市       | `tmallmarket`  | `tmall`      | 正式应用授权及回调白名单                                   |
+| 自有供应商     | `private`      | 自有协议     | 每个供应商独立Scope和幂等键                                |
+| 蛋糕           | `cake`         | `cakeuncle`  | API凭据、门店/配送时段和退款联调                           |
+| 鲜花           | `flower`       | `cakeuncle`  | 城市、时段、配送失败补偿联调                               |
+| 图书           | `book`         | `wenxuan`    | 工作簿旧凭据不得使用，只从密钥库装配                       |
+| 虚拟卡券/直充  | `directcharge` | `wanlian`    | 卡密不落日志，发放回调幂等                                 |
+| 虚拟食品提货券 | `foodvoucher`  | `cakeuncle`  | 券码加密、核销与退款约束                                   |
+| 电影           | `movie`        | `wanlian`    | 场次锁定和出票补偿                                         |
+| 在线点餐       | `meal`         | `cakeuncle`  | 门店、菜单、时段和订单取消联调                             |
 
 这些扩展已经按provider/vendor两层拆分，符合即插即用方向；某个渠道只有在正式凭据、沙箱/生产契约、账单核对和运行告警都通过后，才可以把其状态标为Released。
 
@@ -202,22 +202,22 @@ flowchart LR
   Domain -.禁止依赖.-> Framework[HTTP/数据库/微信SDK]
 ```
 
-| 原则 | 具体实现 |
-| --- | --- |
-| 单一职责 | 微信协议放在`extensions/payment/wechat`；业务状态机放在`payment/domain`；装配只在`CommerceRuntime` |
-| 开闭原则 | `PaymentGateway`是小端口；新增支付渠道增加adapter，不修改支付聚合根规则 |
-| 里氏替换 | adapter必须通过同一查询、关闭、退款、通知语义，不得返回“看似成功”的渠道特例 |
-| 接口隔离 | 身份使用`WechatIdentity`，支付使用`PaymentGateway`；不暴露万能WechatClient |
-| 依赖倒置 | Application依赖port；真实微信adapter向内实现port |
-| 迪米特法则 | `PaymentOperations`不知道RSA/AES/header细节；前端不知道商户私钥、API v3密钥和订单结算SQL |
-| Repository | PostgreSQL持久化封装在模块infrastructure或模块应用服务，不让UI拼SQL |
-| Adapter | `WechatGateway`把微信交易语义映射到领域支付语义 |
-| Strategy | `AllocationPolicy`决定混合支付和退款腿分配 |
-| State Machine | `PaymentLifecycle`和数据库CHECK共同限制状态迁移 |
-| Outbox/Inbox | 事务内记录领域事实；provider回调先入Inbox再调度Job |
-| Saga/Process Manager | 支付成功后财务、履约、通知各自成为可重试effect |
-| Circuit/Retry | 只有明确可重试的读取调用按截止时间重试；创建预支付结果未知时进入查单，不盲重放 |
-| Idempotency | HTTP request claim、订单provider reference、回调event id、支付capture、退款号均有唯一键 |
+| 原则                 | 具体实现                                                                                           |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| 单一职责             | 微信协议放在`extensions/payment/wechat`；业务状态机放在`payment/domain`；装配只在`CommerceRuntime` |
+| 开闭原则             | `PaymentGateway`是小端口；新增支付渠道增加adapter，不修改支付聚合根规则                            |
+| 里氏替换             | adapter必须通过同一查询、关闭、退款、通知语义，不得返回“看似成功”的渠道特例                        |
+| 接口隔离             | 身份使用`WechatIdentity`，支付使用`PaymentGateway`；不暴露万能WechatClient                         |
+| 依赖倒置             | Application依赖port；真实微信adapter向内实现port                                                   |
+| 迪米特法则           | `PaymentOperations`不知道RSA/AES/header细节；前端不知道商户私钥、API v3密钥和订单结算SQL           |
+| Repository           | PostgreSQL持久化封装在模块infrastructure或模块应用服务，不让UI拼SQL                                |
+| Adapter              | `WechatGateway`把微信交易语义映射到领域支付语义                                                    |
+| Strategy             | `AllocationPolicy`决定混合支付和退款腿分配                                                         |
+| State Machine        | `PaymentLifecycle`和数据库CHECK共同限制状态迁移                                                    |
+| Outbox/Inbox         | 事务内记录领域事实；provider回调先入Inbox再调度Job                                                 |
+| Saga/Process Manager | 支付成功后财务、履约、通知各自成为可重试effect                                                     |
+| Circuit/Retry        | 只有明确可重试的读取调用按截止时间重试；创建预支付结果未知时进入查单，不盲重放                     |
+| Idempotency          | HTTP request claim、订单provider reference、回调event id、支付capture、退款号均有唯一键            |
 
 ## 5. 配置和密钥唯一来源
 
@@ -320,23 +320,23 @@ erDiagram
   RECOVERYCASE ||--o{ RECOVERYREQUEST : resolves
 ```
 
-| 表/事实 | 责任 | 关键不变量 |
-| --- | --- | --- |
-| `payment.intent` | 一张订单一次支付意图 | `provider_reference`唯一；金额为正；过期时间固定；状态受CHECK限制 |
-| `payment.intenttender` | 福利、券、微信等支付腿计划 | 各腿之和等于intent金额；sequence稳定 |
-| `payment.attempt` | 一次微信支付尝试 | 进行中的真实尝试必须有`scene`和`application_hash`；微信交易号唯一 |
-| `payment.prepay` | 客户端预支付参数 | 每个intent最多一份；只在服务端生成 |
-| `payment.observation` | 回调/查单/关单观测 | provider event唯一；保存payload hash，不把明文秘密复制到业务表 |
-| `payment.payment` | 最终支付聚合 | 每个intent最多一条；退款额不超过capture额 |
-| `payment.capture` | 不可变收款事实 | 每订单唯一；幂等键唯一 |
-| `payment.allocation` | 收款分配 | 按目标唯一，金额为正 |
-| `payment.refund` | 退款聚合 | provider reference、幂等键唯一；累计退款不超捕获金额 |
-| `payment.refundtender` | 原路退款腿 | 福利/券/微信各自按原支付腿退回 |
-| `payment.providerattempt` | 外部退款调用证据 | 递增sequence；unknown不得假装失败或成功 |
-| `payment.effect` | 财务/履约/通知后效应 | 各effect独立重试和死信，不回滚已确认支付 |
-| `runtime.providerinbox` | 回调原始证据 | provider + event id唯一；验签后才写入 |
-| `runtime.job` | 异步工作 | owner/kind/payload明确；租约、退避、最大尝试受控 |
-| `payment.recoverycase` | 人工恢复入口 | 资源维度唯一开放case；所有处理留request证据 |
+| 表/事实                   | 责任                       | 关键不变量                                                        |
+| ------------------------- | -------------------------- | ----------------------------------------------------------------- |
+| `payment.intent`          | 一张订单一次支付意图       | `provider_reference`唯一；金额为正；过期时间固定；状态受CHECK限制 |
+| `payment.intenttender`    | 福利、券、微信等支付腿计划 | 各腿之和等于intent金额；sequence稳定                              |
+| `payment.attempt`         | 一次微信支付尝试           | 进行中的真实尝试必须有`scene`和`application_hash`；微信交易号唯一 |
+| `payment.prepay`          | 客户端预支付参数           | 每个intent最多一份；只在服务端生成                                |
+| `payment.observation`     | 回调/查单/关单观测         | provider event唯一；保存payload hash，不把明文秘密复制到业务表    |
+| `payment.payment`         | 最终支付聚合               | 每个intent最多一条；退款额不超过capture额                         |
+| `payment.capture`         | 不可变收款事实             | 每订单唯一；幂等键唯一                                            |
+| `payment.allocation`      | 收款分配                   | 按目标唯一，金额为正                                              |
+| `payment.refund`          | 退款聚合                   | provider reference、幂等键唯一；累计退款不超捕获金额              |
+| `payment.refundtender`    | 原路退款腿                 | 福利/券/微信各自按原支付腿退回                                    |
+| `payment.providerattempt` | 外部退款调用证据           | 递增sequence；unknown不得假装失败或成功                           |
+| `payment.effect`          | 财务/履约/通知后效应       | 各effect独立重试和死信，不回滚已确认支付                          |
+| `runtime.providerinbox`   | 回调原始证据               | provider + event id唯一；验签后才写入                             |
+| `runtime.job`             | 异步工作                   | owner/kind/payload明确；租约、退避、最大尝试受控                  |
+| `payment.recoverycase`    | 人工恢复入口               | 资源维度唯一开放case；所有处理留request证据                       |
 
 支付状态机：
 
@@ -369,15 +369,15 @@ stateDiagram-v2
 
 ## 7. API合同
 
-| Operation | HTTP | 调用者 | 输入 | 成功输出/语义 |
-| --- | --- | --- | --- | --- |
-| `identity.wechat.session` | `POST /api/v1/identity/wechat/sessions` | 小程序/公众号回调页 | `authorize`: `scene=jsapi`；或`exchange`: `scene + code` | OAuth URL、登录session，或一次性binding token |
-| `identity.wechat.bind` | `POST /api/v1/identity/wechat/bindings` | 已登录会员 | `bindingToken` | 消费一次性凭据并绑定当前principal |
-| `payment.intents.create` | `POST /api/v1/payments/intents` | 小程序/H5 | `order + scene`，携带幂等键和Scope | `201 parameters`、`200 cached/captured`或`202 reconciling` |
-| `payment.webhooks.wechat` | `POST /api/v1/webhooks/wechat/payment` | 微信支付 | 原始body和Wechatpay签名头 | 固定`204`且无响应body |
-| `payment.refunds.request` | `POST /api/v1/payments/refunds` | 授权后台/售后流程 | `payment + amountMinor + reason` | `202`并异步执行原路退款 |
-| `payment.recoveries.read` | `GET /api/v1/payments/recoveries` | 有权限操作员 | keyset query | 恢复case列表 |
-| `payment.recoveries.resolve` | `POST .../{caseid}/resolutions` | MFA/权限满足的操作员 | `replay/requery/retryrefund/resolve + reason` | 记录不可变请求并异步处理 |
+| Operation                    | HTTP                                    | 调用者               | 输入                                                     | 成功输出/语义                                              |
+| ---------------------------- | --------------------------------------- | -------------------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| `identity.wechat.session`    | `POST /api/v1/identity/wechat/sessions` | 小程序/公众号回调页  | `authorize`: `scene=jsapi`；或`exchange`: `scene + code` | OAuth URL、登录session，或一次性binding token              |
+| `identity.wechat.bind`       | `POST /api/v1/identity/wechat/bindings` | 已登录会员           | `bindingToken`                                           | 消费一次性凭据并绑定当前principal                          |
+| `payment.intents.create`     | `POST /api/v1/payments/intents`         | 小程序/H5            | `order + scene`，携带幂等键和Scope                       | `201 parameters`、`200 cached/captured`或`202 reconciling` |
+| `payment.webhooks.wechat`    | `POST /api/v1/webhooks/wechat/payment`  | 微信支付             | 原始body和Wechatpay签名头                                | 固定`204`且无响应body                                      |
+| `payment.refunds.request`    | `POST /api/v1/payments/refunds`         | 授权后台/售后流程    | `payment + amountMinor + reason`                         | `202`并异步执行原路退款                                    |
+| `payment.recoveries.read`    | `GET /api/v1/payments/recoveries`       | 有权限操作员         | keyset query                                             | 恢复case列表                                               |
+| `payment.recoveries.resolve` | `POST .../{caseid}/resolutions`         | MFA/权限满足的操作员 | `replay/requery/retryrefund/resolve + reason`            | 记录不可变请求并异步处理                                   |
 
 预支付返回仅允许：
 
@@ -651,37 +651,37 @@ sequenceDiagram
 
 所有写模块共同执行：`HTTP/Job输入 -> exact validation -> 身份/Scope/能力/风险 -> application command -> domain policy -> repository/port -> transaction + outbox/audit -> response`。所有查询共同执行：`query validation -> Scope/RLS -> repository keyset query -> DTO脱敏 -> ETag/response`。下面列出每个限界上下文的独有内部流，不用重复实现通用逻辑。
 
-| 模块 | 输入 | 内部顺序 | 自有事实 | 输出 |
-| --- | --- | --- | --- | --- |
-| `identity` | 密码、OAuth code、ticket | 校验事务→交换微信code→应用哈希定位→KMS加密→会话/绑定凭据 | principal、credential、federatedidentity、session、wechatgrant | session、CSRF、脱敏主体 |
-| `access` | actor、membership、operation、scope | membership有效性→Scope锚点→角色能力→显式deny→MFA要求 | role、permission、membership授权 | authorization decision/evidence |
-| `capability` | operation和模块能力 | 合同注册→依赖闭包→target校验 | capability catalog | 可执行能力集合 |
-| `risk` | actor/device/amount/operation | 采集signal→RiskEngine→allow/challenge/review/deny→case | policy、signal、decision、case | 风险裁决 |
-| `organization` | 平台/分销/集团/商城命令 | 校验父子类型→维护closure/path→发出组织事件 | unit、relation、scope anchor | 组织树与Scope |
-| `partner` | 供应商/门店/渠道关系 | 主体校验→关系策略→合同状态→Scope绑定 | partner、agreement、store | 合作资源 |
-| `member` | 注册、资料、地址、资格 | 身份关联→字段规则→KMS加密PII→版本更新 | profile、address、preference | 脱敏会员视图 |
-| `qualification` | 企业、员工、商城资格 | 规则匹配→有效期→冲突决策→结果固化 | policy、grant | 购买资格 |
-| `catalog` | provider商品、人工商品命令 | 规范化→分类/品牌校验→SKU聚合→发布状态 | product、sku、listing | 可检索商品投影 |
-| `pricing` | listing、Scope、数量、时间 | 基础价→渠道/集团/商城价→促销→限购→取整 | pricebook、rule、offer | 服务端报价行 |
-| `inventory` | stock snapshot、reserve/release | 单一库存源→锁SKU→扣可用/加预留→写reservation | stock、reservation、movement | availability和预留结果 |
-| `experience` | 页面装修文档 | schema校验→组件白名单→引用检查→hash→发布快照 | draft、publication | 多端不可变体验文档 |
-| `cart` | listing、quantity、selection | Scope/会员购物车→商品可售校验→数量策略→版本CAS | cart、cartitem | 服务端购物车 |
-| `checkout` | cart、地址、配送、支付选择 | 并发读取价/库存/资格/券/福利→拒绝原因→tender plan→过期快照 | quote、quoteline | 权威报价 |
-| `order` | quote id、幂等键 | 固定锁序→重验quote→库存预留→订单聚合→支付intent→outbox | orderrecord、orderline、statehistory | order id/read model |
-| `payment` | order、scene、回调、退款 | 应用隔离→attempt→provider port→观测→状态机→结算/恢复 | 本文第6节支付表 | prepay、payment、refund、event |
-| `voucher` | 卡池导入、绑定、核销、冻结 | 批次校验→KMS加密券码→状态策略→账本→outbox | batch、voucher、binding、ledger | 可用券和核销事实 |
-| `benefit` | 企业福利入账、支付腿、退款腿 | 账户锁→余额/冻结校验→复式方向流水→幂等提交 | account、entry、allocation | 余额与流水 |
-| `fulfillment` | payment.succeeded、供应商回执 | 按商品类型路由→provider下单→状态归一→补偿/死信 | fulfillment、shipment、delivery | 履约状态/物流 |
-| `verification` | 动态会员码/核销码 | 签名校验→时窗/门店/次数规则→原子消费 | code、verification | 核销结果 |
-| `channel` | 同步、下单、取消、退款、对账任务 | registry选provider→小能力接口→vendor adapter→标准结果→checkpoint | connection、checkpoint、command | 渠道事件/标准错误 |
-| `extension` | manifest、版本、配置引用 | manifest校验→权限/契约校验→启停策略→registry装配 | extension、installation | 可用provider注册 |
-| `finance` | capture/refund/statement | 事件去重→分录规则→账期归集→差异匹配→结算/发票 | journal、entry、statement、settlement | 账单、结算、发票 |
-| `reporting` | 领域outbox | event projector→幂等offset→指标聚合→导出快照 | projection、metric、exportjob | 大屏、报表、导出 |
-| `support` | 会话、消息、工单 | 分配规则→会话聚合→SLA计时→脱敏资源关联 | conversation、message、ticket、sla | 客服工作台 |
-| `notification` | 领域事件/人工通知 | 偏好→模板→渠道选择→幂等dispatch→回执/退避 | template、preference、dispatch | 站内信/短信/微信/邮件 |
-| `audit` | 命令、授权、配置和恢复操作 | canonicalize→hash→append-only保存→异步归档 | auditevent、archive | 可验证审计证据 |
-| `runtime` | outbox、inbox、job | claim lease→心跳→执行→指数退避→deadletter | job、lease、inbox、outbox | 可恢复异步执行 |
-| `marketing` | 活动/促销规则 | 资格→时间窗→预算→叠加策略→命中证据 | campaign、rule、budget | pricing输入 |
+| 模块            | 输入                                | 内部顺序                                                         | 自有事实                                                       | 输出                            |
+| --------------- | ----------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------- |
+| `identity`      | 密码、OAuth code、ticket            | 校验事务→交换微信code→应用哈希定位→KMS加密→会话/绑定凭据         | principal、credential、federatedidentity、session、wechatgrant | session、CSRF、脱敏主体         |
+| `access`        | actor、membership、operation、scope | membership有效性→Scope锚点→角色能力→显式deny→MFA要求             | role、permission、membership授权                               | authorization decision/evidence |
+| `capability`    | operation和模块能力                 | 合同注册→依赖闭包→target校验                                     | capability catalog                                             | 可执行能力集合                  |
+| `risk`          | actor/device/amount/operation       | 采集signal→RiskEngine→allow/challenge/review/deny→case           | policy、signal、decision、case                                 | 风险裁决                        |
+| `organization`  | 平台/分销/集团/商城命令             | 校验父子类型→维护closure/path→发出组织事件                       | unit、relation、scope anchor                                   | 组织树与Scope                   |
+| `partner`       | 供应商/门店/渠道关系                | 主体校验→关系策略→合同状态→Scope绑定                             | partner、agreement、store                                      | 合作资源                        |
+| `member`        | 注册、资料、地址、资格              | 身份关联→字段规则→KMS加密PII→版本更新                            | profile、address、preference                                   | 脱敏会员视图                    |
+| `qualification` | 企业、员工、商城资格                | 规则匹配→有效期→冲突决策→结果固化                                | policy、grant                                                  | 购买资格                        |
+| `catalog`       | provider商品、人工商品命令          | 规范化→分类/品牌校验→SKU聚合→发布状态                            | product、sku、listing                                          | 可检索商品投影                  |
+| `pricing`       | listing、Scope、数量、时间          | 基础价→渠道/集团/商城价→促销→限购→取整                           | pricebook、rule、offer                                         | 服务端报价行                    |
+| `inventory`     | stock snapshot、reserve/release     | 单一库存源→锁SKU→扣可用/加预留→写reservation                     | stock、reservation、movement                                   | availability和预留结果          |
+| `experience`    | 页面装修文档                        | schema校验→组件白名单→引用检查→hash→发布快照                     | draft、publication                                             | 多端不可变体验文档              |
+| `cart`          | listing、quantity、selection        | Scope/会员购物车→商品可售校验→数量策略→版本CAS                   | cart、cartitem                                                 | 服务端购物车                    |
+| `checkout`      | cart、地址、配送、支付选择          | 并发读取价/库存/资格/券/福利→拒绝原因→tender plan→过期快照       | quote、quoteline                                               | 权威报价                        |
+| `order`         | quote id、幂等键                    | 固定锁序→重验quote→库存预留→订单聚合→支付intent→outbox           | orderrecord、orderline、statehistory                           | order id/read model             |
+| `payment`       | order、scene、回调、退款            | 应用隔离→attempt→provider port→观测→状态机→结算/恢复             | 本文第6节支付表                                                | prepay、payment、refund、event  |
+| `voucher`       | 卡池导入、绑定、核销、冻结          | 批次校验→KMS加密券码→状态策略→账本→outbox                        | batch、voucher、binding、ledger                                | 可用券和核销事实                |
+| `benefit`       | 企业福利入账、支付腿、退款腿        | 账户锁→余额/冻结校验→复式方向流水→幂等提交                       | account、entry、allocation                                     | 余额与流水                      |
+| `fulfillment`   | payment.succeeded、供应商回执       | 按商品类型路由→provider下单→状态归一→补偿/死信                   | fulfillment、shipment、delivery                                | 履约状态/物流                   |
+| `verification`  | 动态会员码/核销码                   | 签名校验→时窗/门店/次数规则→原子消费                             | code、verification                                             | 核销结果                        |
+| `channel`       | 同步、下单、取消、退款、对账任务    | registry选provider→小能力接口→vendor adapter→标准结果→checkpoint | connection、checkpoint、command                                | 渠道事件/标准错误               |
+| `extension`     | manifest、版本、配置引用            | manifest校验→权限/契约校验→启停策略→registry装配                 | extension、installation                                        | 可用provider注册                |
+| `finance`       | capture/refund/statement            | 事件去重→分录规则→账期归集→差异匹配→结算/发票                    | journal、entry、statement、settlement                          | 账单、结算、发票                |
+| `reporting`     | 领域outbox                          | event projector→幂等offset→指标聚合→导出快照                     | projection、metric、exportjob                                  | 大屏、报表、导出                |
+| `support`       | 会话、消息、工单                    | 分配规则→会话聚合→SLA计时→脱敏资源关联                           | conversation、message、ticket、sla                             | 客服工作台                      |
+| `notification`  | 领域事件/人工通知                   | 偏好→模板→渠道选择→幂等dispatch→回执/退避                        | template、preference、dispatch                                 | 站内信/短信/微信/邮件           |
+| `audit`         | 命令、授权、配置和恢复操作          | canonicalize→hash→append-only保存→异步归档                       | auditevent、archive                                            | 可验证审计证据                  |
+| `runtime`       | outbox、inbox、job                  | claim lease→心跳→执行→指数退避→deadletter                        | job、lease、inbox、outbox                                      | 可恢复异步执行                  |
+| `marketing`     | 活动/促销规则                       | 资格→时间窗→预算→叠加策略→命中证据                               | campaign、rule、budget                                         | pricing输入                     |
 
 支付模块内部的对象协作：
 
@@ -723,44 +723,44 @@ flowchart LR
 
 ## 10. 失败矩阵与恢复策略
 
-| 失败点 | 可观察状态 | 自动动作 | 人工动作 | 禁止动作 |
-| --- | --- | --- | --- | --- |
-| 身份code无效/过期 | `WECHAT_CODE_REJECTED` | 重新开始OAuth/wx.login | 查AppID/Secret配置 | 重用旧code |
-| OAuth state错误/重放 | 认证失败和安全审计 | 无 | 查可疑来源 | 跳过state |
-| OpenID属于另一AppID | `WECHAT_IDENTITY_REQUIRED`或context mismatch | 引导当前场景登录/绑定 | 查应用关系 | 借用另一个OpenID |
-| 预支付明确4xx | attempt failed | 允许新尝试 | 查请求字段/商户产品权限 | 标记paid |
-| 预支付超时/断连 | attempt unknown | 立即查单 | recovery requery | 直接重复创建订单 |
-| 微信响应签名未知serial | protocol error + 告警 | 不接受响应 | 同步公钥并双人复核 | 关闭验签 |
-| 回调签名错误/过期 | 4xx + 安全指标 | 无 | 查攻击/WAF/时钟 | 解密或入库 |
-| 回调重复 | inbox duplicate | 幂等204 | 无 | 重复结算 |
-| 同event id不同hash | 冲突告警 | 拒绝 | 安全事件处理 | 覆盖旧证据 |
-| 金额/币种/付款人/AppID不符 | integrity mismatch | 拒绝 | 冻结case并查商户记录 | “按本地金额修正” |
-| SUCCESS回调丢失 | intent pending | query job补偿 | recovery requery | 依赖客户端ok |
-| 关单与付款竞态 | 二次query | 承认SUCCESS或确认CLOSED | 查看observation | 仅凭close 204判未支付 |
-| 取消后迟到付款 | late capture | 全额原路退款 | 追踪退款异常 | 隐藏收款事实 |
-| 退款请求超时 | providerattempt unknown | query refund | retryrefund case | 创建新退款号重复退 |
-| 财务/履约/通知后效应失败 | effect retry/deadletter | 独立重试 | recovery replay | 回滚已确认支付 |
-| 数据库不可用 | API 5xx/not ready | 平台重启/故障转移 | 数据库runbook | 降级到内存成功 |
-| 密钥库不可用 | 启动失败或调用失败 | 告警/重试读取 | 恢复密钥服务 | 使用源码默认密钥 |
+| 失败点                     | 可观察状态                                   | 自动动作                | 人工动作                | 禁止动作              |
+| -------------------------- | -------------------------------------------- | ----------------------- | ----------------------- | --------------------- |
+| 身份code无效/过期          | `WECHAT_CODE_REJECTED`                       | 重新开始OAuth/wx.login  | 查AppID/Secret配置      | 重用旧code            |
+| OAuth state错误/重放       | 认证失败和安全审计                           | 无                      | 查可疑来源              | 跳过state             |
+| OpenID属于另一AppID        | `WECHAT_IDENTITY_REQUIRED`或context mismatch | 引导当前场景登录/绑定   | 查应用关系              | 借用另一个OpenID      |
+| 预支付明确4xx              | attempt failed                               | 允许新尝试              | 查请求字段/商户产品权限 | 标记paid              |
+| 预支付超时/断连            | attempt unknown                              | 立即查单                | recovery requery        | 直接重复创建订单      |
+| 微信响应签名未知serial     | protocol error + 告警                        | 不接受响应              | 同步公钥并双人复核      | 关闭验签              |
+| 回调签名错误/过期          | 4xx + 安全指标                               | 无                      | 查攻击/WAF/时钟         | 解密或入库            |
+| 回调重复                   | inbox duplicate                              | 幂等204                 | 无                      | 重复结算              |
+| 同event id不同hash         | 冲突告警                                     | 拒绝                    | 安全事件处理            | 覆盖旧证据            |
+| 金额/币种/付款人/AppID不符 | integrity mismatch                           | 拒绝                    | 冻结case并查商户记录    | “按本地金额修正”      |
+| SUCCESS回调丢失            | intent pending                               | query job补偿           | recovery requery        | 依赖客户端ok          |
+| 关单与付款竞态             | 二次query                                    | 承认SUCCESS或确认CLOSED | 查看observation         | 仅凭close 204判未支付 |
+| 取消后迟到付款             | late capture                                 | 全额原路退款            | 追踪退款异常            | 隐藏收款事实          |
+| 退款请求超时               | providerattempt unknown                      | query refund            | retryrefund case        | 创建新退款号重复退    |
+| 财务/履约/通知后效应失败   | effect retry/deadletter                      | 独立重试                | recovery replay         | 回滚已确认支付        |
+| 数据库不可用               | API 5xx/not ready                            | 平台重启/故障转移       | 数据库runbook           | 降级到内存成功        |
+| 密钥库不可用               | 启动失败或调用失败                           | 告警/重试读取           | 恢复密钥服务            | 使用源码默认密钥      |
 
 ## 11. 安全与隐私威胁模型
 
-| 威胁 | 控制 |
-| --- | --- |
-| 伪造微信回调 | 原始body + timestamp + nonce + serial按微信公钥RSA验签 |
-| 重放真实回调 | 时间容差、provider event唯一、body hash冲突检测 |
-| 回调密文篡改 | AES-256-GCM认证解密，associated data和nonce均参与 |
-| 跨AppID OpenID混用 | 共享App catalog + `scene/application_hash`持久化和回调比对 |
-| SSRF/恶意回调URL | 配置只接受公网HTTPS且启动期校验，不接受运行时URL |
-| 私钥泄漏 | Secret Manager/KMS引用、最小workload权限、日志脱敏、定期轮换 |
-| 客户端篡改金额 | 金额只来自服务端quote/order/payment intent |
-| 重复扣款 | request claim、provider reference、attempt状态和查单恢复 |
-| 重复退款 | refund idempotency、out_refund_no唯一、providerattempt序列 |
-| 越权退款/恢复 | membership + capability + Scope/RLS + MFA + audit |
-| SQL越权 | 请求事务设置数据库上下文，表启用Scope规则；provider callback只通过受控operation |
-| XSS窃取凭据 | HttpOnly/Secure/SameSite Cookie、短期CSRF、OAuth code一次性；不在localStorage存身份密钥 |
-| OAuth登录CSRF | state事务、PKCE、单次消费、回调URL固定 |
-| 供应链凭据泄漏 | Excel只视为需求文档，任何旧明文凭据必须轮换并从密钥库读取 |
+| 威胁               | 控制                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| 伪造微信回调       | 原始body + timestamp + nonce + serial按微信公钥RSA验签                                  |
+| 重放真实回调       | 时间容差、provider event唯一、body hash冲突检测                                         |
+| 回调密文篡改       | AES-256-GCM认证解密，associated data和nonce均参与                                       |
+| 跨AppID OpenID混用 | 共享App catalog + `scene/application_hash`持久化和回调比对                              |
+| SSRF/恶意回调URL   | 配置只接受公网HTTPS且启动期校验，不接受运行时URL                                        |
+| 私钥泄漏           | Secret Manager/KMS引用、最小workload权限、日志脱敏、定期轮换                            |
+| 客户端篡改金额     | 金额只来自服务端quote/order/payment intent                                              |
+| 重复扣款           | request claim、provider reference、attempt状态和查单恢复                                |
+| 重复退款           | refund idempotency、out_refund_no唯一、providerattempt序列                              |
+| 越权退款/恢复      | membership + capability + Scope/RLS + MFA + audit                                       |
+| SQL越权            | 请求事务设置数据库上下文，表启用Scope规则；provider callback只通过受控operation         |
+| XSS窃取凭据        | HttpOnly/Secure/SameSite Cookie、短期CSRF、OAuth code一次性；不在localStorage存身份密钥 |
+| OAuth登录CSRF      | state事务、PKCE、单次消费、回调URL固定                                                  |
+| 供应链凭据泄漏     | Excel只视为需求文档，任何旧明文凭据必须轮换并从密钥库读取                               |
 
 ## 12. 并发、性能与可用性
 
@@ -775,18 +775,18 @@ flowchart LR
 
 ### 12.2 目标SLO
 
-| 指标 | 目标 |
-| --- | --- |
-| 普通读取API p95 | ≤ 250ms（不含公网provider） |
-| 创建支付本地事务 p95 | ≤ 100ms |
-| 创建预支付端到端 p95 | ≤ 2s，p99 ≤ 5s |
-| 微信回调接收 p95 | ≤ 500ms |
-| SUCCESS回调至订单paid p95 | ≤ 3s |
-| 回调丢失时主动查单收敛 | ≤ 30s |
-| 同一订单重复扣款 | 0 |
-| 支付金额/币种完整性错误漏放 | 0 |
-| 支付后效应最终完成率 | ≥ 99.99%，剩余全部进入可见recovery |
-| 可用性 | API月度≥99.95%，支付异步收敛≥99.99% |
+| 指标                        | 目标                                |
+| --------------------------- | ----------------------------------- |
+| 普通读取API p95             | ≤ 250ms（不含公网provider）         |
+| 创建支付本地事务 p95        | ≤ 100ms                             |
+| 创建预支付端到端 p95        | ≤ 2s，p99 ≤ 5s                      |
+| 微信回调接收 p95            | ≤ 500ms                             |
+| SUCCESS回调至订单paid p95   | ≤ 3s                                |
+| 回调丢失时主动查单收敛      | ≤ 30s                               |
+| 同一订单重复扣款            | 0                                   |
+| 支付金额/币种完整性错误漏放 | 0                                   |
+| 支付后效应最终完成率        | ≥ 99.99%，剩余全部进入可见recovery  |
+| 可用性                      | API月度≥99.95%，支付异步收敛≥99.99% |
 
 ### 12.3 容量模型
 
@@ -812,12 +812,12 @@ flowchart LR
 
 告警分级：
 
-| 等级 | 条件示例 | 处置 |
-| --- | --- | --- |
-| P0 | 重复扣款、金额错配漏放、私钥疑似泄漏、账实不平 | 立即停止新支付、保留回调和查单、启动事件响应 |
-| P1 | 验签集中失败、unknown serial、pending持续增长、退款超SLA | 15分钟内响应，检查密钥/微信平台/网络 |
-| P2 | 单渠道错误率升高、少量effect deadletter | 当班处理并创建recovery |
-| P3 | 容量趋势、旧key仍有少量流量 | 计划调整 |
+| 等级 | 条件示例                                                 | 处置                                         |
+| ---- | -------------------------------------------------------- | -------------------------------------------- |
+| P0   | 重复扣款、金额错配漏放、私钥疑似泄漏、账实不平           | 立即停止新支付、保留回调和查单、启动事件响应 |
+| P1   | 验签集中失败、unknown serial、pending持续增长、退款超SLA | 15分钟内响应，检查密钥/微信平台/网络         |
+| P2   | 单渠道错误率升高、少量effect deadletter                  | 当班处理并创建recovery                       |
+| P3   | 容量趋势、旧key仍有少量流量                              | 计划调整                                     |
 
 ## 14. 代码目录与文件责任
 
@@ -914,7 +914,7 @@ smart-wing/
 │               │       ├── AllocationPolicy.ts
 │               │       └── PaymentLifecycle.ts
 │               └── infrastructure/adapter/WechatGateway.ts
-├── database/supabase/migrations/
+├── database/migrations/
 │   └── 20260821055000_isolate_wechat_payment_applications.sql
 ├── scripts/audit/database-contracts.mjs
 ├── tests/browser/MvpServer.mjs
@@ -985,21 +985,21 @@ npx vite --host 127.0.0.1 --port 4173 apps/storefront
 
 ## 16. 测试矩阵与质量门
 
-| 层级 | 必测项 |
-| --- | --- |
-| 配置单测 | exact shape、双AppID、重复场景、相同AppID、URL、PEM、32字节API v3密钥、active key唯一 |
-| 加密单测 | 商户RSA签名、客户端paySign、AES-GCM成功/篡改失败、OpenID hash |
-| HTTP协议单测 | Authorization canonical string、时间戳、nonce、body、超时、响应大小、redirect禁止 |
-| 响应验签 | active key、保留inactive key、未知serial、错误签名、过期时间戳 |
-| 通知单测 | payment/refund、mchid、AppID、金额、币种、payer、event type、重复、超大body |
-| 身份单测 | miniapp/JSAPI不同endpoint、固定callback、state、私网URL拒绝、UnionID自动关联 |
-| 支付领域单测 | 全状态迁移、混合支付分配、退款腿、迟到支付 |
-| 数据库契约 | 唯一键、CHECK、RLS、Inbox幂等、Job claim、迁移fresh replay |
-| 集成测试 | commit-before-provider、unknown查单、回调入Inbox、查单settle、关单竞态、退款查询 |
-| 前端组件 | 微信环境检查、bridge ready、cancel/fail、服务端轮询、SSR无window访问 |
-| 小程序 | `scene=miniapp`、requestPayment参数、结果回读 |
-| 浏览器journey | 第15节完整流程和证据 |
-| 生产验收 | 第18节真实¥0.01支付、回调、账单和退款 |
+| 层级          | 必测项                                                                                |
+| ------------- | ------------------------------------------------------------------------------------- |
+| 配置单测      | exact shape、双AppID、重复场景、相同AppID、URL、PEM、32字节API v3密钥、active key唯一 |
+| 加密单测      | 商户RSA签名、客户端paySign、AES-GCM成功/篡改失败、OpenID hash                         |
+| HTTP协议单测  | Authorization canonical string、时间戳、nonce、body、超时、响应大小、redirect禁止     |
+| 响应验签      | active key、保留inactive key、未知serial、错误签名、过期时间戳                        |
+| 通知单测      | payment/refund、mchid、AppID、金额、币种、payer、event type、重复、超大body           |
+| 身份单测      | miniapp/JSAPI不同endpoint、固定callback、state、私网URL拒绝、UnionID自动关联          |
+| 支付领域单测  | 全状态迁移、混合支付分配、退款腿、迟到支付                                            |
+| 数据库契约    | 唯一键、CHECK、RLS、Inbox幂等、Job claim、迁移fresh replay                            |
+| 集成测试      | commit-before-provider、unknown查单、回调入Inbox、查单settle、关单竞态、退款查询      |
+| 前端组件      | 微信环境检查、bridge ready、cancel/fail、服务端轮询、SSR无window访问                  |
+| 小程序        | `scene=miniapp`、requestPayment参数、结果回读                                         |
+| 浏览器journey | 第15节完整流程和证据                                                                  |
+| 生产验收      | 第18节真实¥0.01支付、回调、账单和退款                                                 |
 
 推荐门禁顺序：
 
@@ -1029,32 +1029,32 @@ npm run audit:prod
 
 ### 16.1 2026-08-21实际门禁证据
 
-| 门禁 | 实际结果 |
-| --- | --- |
-| 微信支付协议扩展 | 4个测试文件、27项测试通过，含保留旧公钥验签与固定通知路径 |
-| Commerce单元测试 | 28个测试文件、109项测试通过 |
-| 配置 | 7项通过，含双AppID、重复和私网地址拒绝 |
-| 认证前端 | 7项通过 |
-| Storefront | 4项通过，含`scene=jsapi`请求断言 |
-| 小程序 | 16项通过，含`scene=miniapp`、支付取消/失败和权威轮询 |
-| 全工作区单元测试 | 所有声明测试的workspace通过 |
-| 合同 | Commerce 7项及Excel优先级1 provider精确集合测试通过 |
-| 组件 | auth、console、miniapp、store、storefront、supplier、design全部通过 |
-| MVP旅程 | 127项通过，覆盖MVP03至MVP23及11个provider |
-| 安全 | 6项通过，覆盖跨Scope、MFA、Origin/CSRF、安全响应头和body上限 |
-| 性能 | 2项通过，路由预算与provider bulkhead并发上限均满足 |
-| 架构审计 | naming、boundary、ownership、duplicate、call、transaction、frontend、provider、extension、job、runtime graph、hard cut全部通过 |
-| 数据库轻量重放 | 140个迁移通过；历史94、repair 46；不安全库存切换被原子拒绝 |
-| 真实PostgreSQL 16重放 | 140个迁移与目标schema验证通过 |
-| 真实PostgreSQL集成 | repository/RLS/Inbox/Job租约通过；发布恢复12项通过 |
-| PostgreSQL + Redis适配器 | migration catalog、queue claim、NX/PX租约与重复拒绝通过 |
-| 类型检查 | 全workspace通过 |
-| 生产构建 | auth、console、miniapp、store、storefront、supplier、全部package与Api/Jobs/Migration/Smoke bundle通过 |
-| Bundle审计 | 7个产物存在，预算满足，无退役或simulation替代代码 |
-| MVP隔离API重放 | 16次调用通过，终态`paid`且支付scene为`jsapi` |
-| 浏览器点击录制 | 未通过：内置浏览器URL策略阻断 |
-| 真实微信资金 | 未执行：未提供商户凭据和微信客户端验收条件 |
-| 生产依赖漏洞在线审计 | 未执行：执行环境拒绝向npm上传私有依赖树；需用户明确批准元数据外发 |
+| 门禁                     | 实际结果                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| 微信支付协议扩展         | 4个测试文件、27项测试通过，含保留旧公钥验签与固定通知路径                                                                      |
+| Commerce单元测试         | 28个测试文件、109项测试通过                                                                                                    |
+| 配置                     | 7项通过，含双AppID、重复和私网地址拒绝                                                                                         |
+| 认证前端                 | 7项通过                                                                                                                        |
+| Storefront               | 4项通过，含`scene=jsapi`请求断言                                                                                               |
+| 小程序                   | 16项通过，含`scene=miniapp`、支付取消/失败和权威轮询                                                                           |
+| 全工作区单元测试         | 所有声明测试的workspace通过                                                                                                    |
+| 合同                     | Commerce 7项及Excel优先级1 provider精确集合测试通过                                                                            |
+| 组件                     | auth、console、miniapp、store、storefront、supplier、design全部通过                                                            |
+| MVP旅程                  | 127项通过，覆盖MVP03至MVP23及11个provider                                                                                      |
+| 安全                     | 6项通过，覆盖跨Scope、MFA、Origin/CSRF、安全响应头和body上限                                                                   |
+| 性能                     | 2项通过，路由预算与provider bulkhead并发上限均满足                                                                             |
+| 架构审计                 | naming、boundary、ownership、duplicate、call、transaction、frontend、provider、extension、job、runtime graph、hard cut全部通过 |
+| 数据库轻量重放           | 140个迁移通过；历史94、repair 46；不安全库存切换被原子拒绝                                                                     |
+| 真实PostgreSQL 16重放    | 140个迁移与目标schema验证通过                                                                                                  |
+| 真实PostgreSQL集成       | repository/RLS/Inbox/Job租约通过；发布恢复12项通过                                                                             |
+| PostgreSQL + Redis适配器 | migration catalog、queue claim、NX/PX租约与重复拒绝通过                                                                        |
+| 类型检查                 | 全workspace通过                                                                                                                |
+| 生产构建                 | auth、console、miniapp、store、storefront、supplier、全部package与Api/Jobs/Migration/Smoke bundle通过                          |
+| Bundle审计               | 7个产物存在，预算满足，无退役或simulation替代代码                                                                              |
+| MVP隔离API重放           | 16次调用通过，终态`paid`且支付scene为`jsapi`                                                                                   |
+| 浏览器点击录制           | 未通过：内置浏览器URL策略阻断                                                                                                  |
+| 真实微信资金             | 未执行：未提供商户凭据和微信客户端验收条件                                                                                     |
+| 生产依赖漏洞在线审计     | 未执行：执行环境拒绝向npm上传私有依赖树；需用户明确批准元数据外发                                                              |
 
 额外执行的仓库级`prettier --check`发现767个既有文件不符合Prettier默认格式。该命令不在项目`quality`门禁中，且直接全量格式化会制造大范围无关改动并可能破坏299行产品源码预算，所以本次未改写用户现有767个文件；代码质量以项目自有命名、边界、重复、行预算、类型和测试门禁为准。
 

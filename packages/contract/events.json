@@ -2,294 +2,1183 @@
   "events": [
     {
       "module": "identity",
+      "payload": {
+        "membershipId": "id",
+        "principalId": "id",
+        "provider": "string",
+        "scopeId": "id",
+        "subjectHash": "string"
+      },
+      "schema": "contract://events/identity.federation.linked/v1",
+      "type": "identity.federation.linked",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "provider": "string",
+        "reason": "string",
+        "scopeId": "id",
+        "traceId": "id"
+      },
+      "schema": "contract://events/identity.federation.rejected/v1",
+      "type": "identity.federation.rejected",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "providerId": "id",
+        "scopeId": "id",
+        "state": "string",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/identity.provider.changed/v1",
+      "type": "identity.provider.changed",
+      "version": 1
+    },
+    {
+      "module": "organization",
+      "payload": {
+        "changeId": "id",
+        "directoryId": "id",
+        "kind": "string",
+        "scopeId": "id",
+        "subjectId": "id"
+      },
+      "schema": "contract://events/organization.directory.changed/v1",
+      "type": "organization.directory.changed",
+      "version": 1
+    },
+    {
+      "module": "organization",
+      "payload": {
+        "accepted": "integer",
+        "directoryId": "id",
+        "rejected": "integer",
+        "runId": "id",
+        "scopeId": "id"
+      },
+      "schema": "contract://events/organization.directory.synced/v1",
+      "type": "organization.directory.synced",
+      "version": 1
+    },
+    {
+      "module": "organization",
+      "payload": {
+        "membershipId": "id",
+        "principalId": "id",
+        "scopeId": "id",
+        "state": "string",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/organization.membership.changed/v1",
+      "type": "organization.membership.changed",
+      "version": 1
+    },
+    {
+      "module": "capability",
+      "payload": {
+        "capability": "string",
+        "scopeId": "id",
+        "state": "string",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/capability.changed/v1",
+      "type": "capability.changed",
+      "version": 1
+    },
+    {
+      "module": "navigation",
+      "payload": {
+        "catalogVersion": "string",
+        "hash": "string"
+      },
+      "schema": "contract://events/navigation.catalog.changed/v1",
+      "type": "navigation.catalog.changed",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "assurance": "integer",
+        "membershipId": "id",
+        "principalId": "id"
+      },
+      "schema": "contract://events/identity.session.created/v1",
       "type": "identity.session.created",
       "version": 1
     },
     {
       "module": "identity",
+      "payload": {
+        "reason": "string",
+        "sessions": "idarray"
+      },
+      "schema": "contract://events/identity.session.revoked/v1",
       "type": "identity.session.revoked",
       "version": 1
     },
     {
       "module": "identity",
+      "payload": {
+        "membershipId": "id",
+        "previousMembershipId": "id",
+        "previousSessionId": "id",
+        "principalId": "id",
+        "sessionId": "id"
+      },
+      "schema": "contract://events/identity.membership.switched/v1",
+      "type": "identity.membership.switched",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "challenge": "id",
+        "destination": "optionalstring",
+        "purpose": "string"
+      },
+      "schema": "contract://events/identity.challenge.started/v1",
       "type": "identity.challenge.started",
       "version": 1
     },
     {
       "module": "identity",
+      "payload": {
+        "membershipId": "id",
+        "principalId": "id",
+        "scopeId": "id",
+        "target": "string"
+      },
+      "schema": "contract://events/identity.member.registered/v1",
       "type": "identity.member.registered",
       "version": 1
     },
     {
+      "module": "identity",
+      "payload": {
+        "invitationId": "id",
+        "kind": "string",
+        "membershipId": "nullableid",
+        "target": "string"
+      },
+      "schema": "contract://events/identity.invitation.issued/v1",
+      "type": "identity.invitation.issued",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "invitationId": "id",
+        "kind": "string",
+        "target": "string"
+      },
+      "schema": "contract://events/identity.invitation.reserved/v1",
+      "type": "identity.invitation.reserved",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "invitationId": "id",
+        "membershipId": "id",
+        "target": "string"
+      },
+      "schema": "contract://events/identity.invitation.redeemed/v1",
+      "type": "identity.invitation.redeemed",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "actorMembershipId": "id",
+        "invitationId": "id"
+      },
+      "schema": "contract://events/identity.invitation.revoked/v1",
+      "type": "identity.invitation.revoked",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "invitationId": "id",
+        "kind": "string",
+        "target": "string"
+      },
+      "schema": "contract://events/identity.invitation.expired/v1",
+      "type": "identity.invitation.expired",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "invitationId": "id",
+        "operation": "string",
+        "reason": "string"
+      },
+      "schema": "contract://events/identity.invitation.failed/v1",
+      "type": "identity.invitation.failed",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "invitationId": "id",
+        "membershipId": "id"
+      },
+      "schema": "contract://events/identity.enrollment.completed/v1",
+      "type": "identity.enrollment.completed",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "invitation": "id",
+        "linkCase": "id",
+        "reason": "string"
+      },
+      "schema": "contract://events/identity.link.required/v1",
+      "type": "identity.link.required",
+      "version": 1
+    },
+    {
       "module": "access",
+      "payload": {
+        "membership": "id",
+        "reason": "string",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/access.version.changed/v1",
       "type": "access.version.changed",
       "version": 1
     },
     {
+      "module": "access",
+      "payload": {
+        "invitationId": "id",
+        "membershipId": "id",
+        "scopeId": "id",
+        "target": "string"
+      },
+      "schema": "contract://events/access.membership.invited/v1",
+      "type": "access.membership.invited",
+      "version": 1
+    },
+    {
+      "module": "access",
+      "payload": {
+        "accessVersion": "positiveinteger",
+        "grantDigest": "string",
+        "invitationId": "id",
+        "membershipId": "id",
+        "target": "string"
+      },
+      "schema": "contract://events/access.membership.activated/v1",
+      "type": "access.membership.activated",
+      "version": 1
+    },
+    {
+      "module": "access",
+      "payload": {
+        "membership": "id",
+        "previousMembership": "id",
+        "scope": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/access.owner.transferred/v1",
+      "type": "access.owner.transferred",
+      "version": 1
+    },
+    {
       "module": "catalog",
+      "payload": {
+        "listing": "id",
+        "scope": "id",
+        "sku": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/catalog.listing.published/v1",
       "type": "catalog.listing.published",
       "version": 1
     },
     {
       "module": "inventory",
+      "payload": {
+        "available": "integer",
+        "reserved": "integer",
+        "sku": "id",
+        "stockitem": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/inventory.stock.changed/v1",
       "type": "inventory.stock.changed",
       "version": 1
     },
     {
       "module": "inventory",
+      "payload": {
+        "lines": "reservationlines",
+        "order": "id"
+      },
+      "schema": "contract://events/inventory.stock.reserved/v1",
       "type": "inventory.stock.reserved",
       "version": 1
     },
     {
       "module": "experience",
+      "payload": {
+        "application": "id",
+        "hash": "string",
+        "key": "string",
+        "release": "id",
+        "version": "id"
+      },
+      "schema": "contract://events/experience.published/v1",
       "type": "experience.published",
       "version": 1
     },
     {
       "module": "checkout",
+      "payload": {
+        "checkout": "id",
+        "currency": "currency",
+        "evidenceHash": "string",
+        "expiresAt": "iso8601utc",
+        "mall": "id",
+        "member": "id",
+        "payableMinor": "integer",
+        "personalMinor": "integer",
+        "quote": "id"
+      },
+      "schema": "contract://events/checkout.quote.created/v1",
       "type": "checkout.quote.created",
       "version": 1
     },
     {
       "module": "checkout",
+      "payload": {
+        "checkout": "id",
+        "intent": "id",
+        "order": "id",
+        "quote": "id"
+      },
+      "schema": "contract://events/checkout.quote.confirmed/v1",
       "type": "checkout.quote.confirmed",
       "version": 1
     },
     {
       "module": "order",
+      "payload": {
+        "application": "id",
+        "currency": "currency",
+        "evidenceHash": "string",
+        "lines": "orderlines",
+        "mall": "id",
+        "member": "id",
+        "number": "string",
+        "order": "id",
+        "scopes": "idarray",
+        "tenders": "ordertenders",
+        "timezone": "string",
+        "totalMinor": "integer"
+      },
+      "schema": "contract://events/order.placed/v1",
       "type": "order.placed",
       "version": 1
     },
     {
       "module": "order",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "member": "id",
+        "order": "id",
+        "payment": "id",
+        "snapshot": "nullableordersnapshot"
+      },
+      "schema": "contract://events/order.paid/v1",
       "type": "order.paid",
       "version": 1
     },
     {
       "module": "order",
+      "payload": {
+        "order": "id",
+        "providerState": "optionalstring",
+        "reason": "string"
+      },
+      "schema": "contract://events/order.cancelled/v1",
       "type": "order.cancelled",
       "version": 1
     },
     {
       "module": "payment",
-      "type": "payment.succeeded",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "member": "id",
+        "order": "id",
+        "payment": "id",
+        "snapshot": "nullableordersnapshot"
+      },
+      "schema": "contract://events/payment.captured/v1",
+      "type": "payment.captured",
+      "version": 1
+    },
+    {
+      "module": "order",
+      "payload": {
+        "aftersale": "id",
+        "amountMinor": "integer",
+        "currency": "currency",
+        "member": "id",
+        "order": "id",
+        "requiresReturn": "boolean",
+        "state": "string"
+      },
+      "schema": "contract://events/aftersale.applied/v1",
+      "type": "aftersale.applied",
+      "version": 1
+    },
+    {
+      "module": "order",
+      "payload": {
+        "aftersale": "id",
+        "member": "id",
+        "order": "id",
+        "previousState": "string",
+        "state": "string"
+      },
+      "schema": "contract://events/aftersale.changed/v1",
+      "type": "aftersale.changed",
+      "version": 1
+    },
+    {
+      "module": "fulfillment",
+      "payload": {
+        "accepted": "boolean",
+        "aftersale": "id",
+        "return": "id"
+      },
+      "schema": "contract://events/return.inspected/v1",
+      "type": "return.inspected",
       "version": 1
     },
     {
       "module": "payment",
-      "type": "payment.refunded",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "lineId": "nullableid",
+        "mall": "id",
+        "member": "id",
+        "order": "id",
+        "payment": "id",
+        "refund": "id",
+        "scopes": "idarray",
+        "tenders": "refundtenders",
+        "timezone": "string"
+      },
+      "schema": "contract://events/refund.completed/v1",
+      "type": "refund.completed",
       "version": 1
     },
     {
       "module": "payment",
+      "payload": {
+        "detectedAt": "iso8601utc",
+        "intent": "id",
+        "order": "id",
+        "payment": "id",
+        "providerMinor": "integer",
+        "refund": "id",
+        "transaction": "string"
+      },
+      "schema": "contract://events/payment.late.detected/v1",
       "type": "payment.late.detected",
       "version": 1
     },
     {
       "module": "payment",
+      "payload": {
+        "intent": "id",
+        "order": "id",
+        "providerState": "string"
+      },
+      "schema": "contract://events/payment.attempt.failed/v1",
       "type": "payment.attempt.failed",
       "version": 1
     },
     {
       "module": "payment",
+      "payload": {
+        "evidence": "providerevidence",
+        "kind": "string",
+        "providerEvent": "id"
+      },
+      "schema": "contract://events/payment.provider.observed/v1",
       "type": "payment.provider.observed",
       "version": 1
     },
     {
       "module": "payment",
+      "payload": {
+        "detectedAt": "iso8601utc",
+        "intent": "id",
+        "order": "id",
+        "payment": "id",
+        "providerMinor": "integer",
+        "refund": "id",
+        "transaction": "string"
+      },
+      "schema": "contract://events/payment.autorefund.requested/v1",
       "type": "payment.autorefund.requested",
       "version": 1
     },
     {
       "module": "payment",
+      "payload": {
+        "evidence": "recoveryevidence",
+        "reason": "string",
+        "recovery": "id"
+      },
+      "schema": "contract://events/payment.recovery.opened/v1",
       "type": "payment.recovery.opened",
       "version": 1
     },
     {
       "module": "fulfillment",
+      "payload": {
+        "fulfillment": "id",
+        "member": "id",
+        "order": "id",
+        "state": "string"
+      },
+      "schema": "contract://events/fulfillment.shipped/v1",
       "type": "fulfillment.shipped",
       "version": 1
     },
     {
       "module": "voucher",
+      "payload": {
+        "amountMinor": "integer",
+        "batch": "id",
+        "count": "integer"
+      },
+      "schema": "contract://events/voucher.issued/v1",
       "type": "voucher.issued",
       "version": 1
     },
     {
       "module": "voucher",
+      "payload": {
+        "batch": "id",
+        "error": "string"
+      },
+      "schema": "contract://events/voucher.issue.failed/v1",
       "type": "voucher.issue.failed",
       "version": 1
     },
     {
       "module": "voucher",
+      "payload": {
+        "error": "string",
+        "import": "id"
+      },
+      "schema": "contract://events/voucher.import.failed/v1",
       "type": "voucher.import.failed",
       "version": 1
     },
     {
       "module": "voucher",
+      "payload": {
+        "batch": "id",
+        "error": "string"
+      },
+      "schema": "contract://events/voucher.status.failed/v1",
       "type": "voucher.status.failed",
       "version": 1
     },
     {
       "module": "voucher",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "mall": "id",
+        "redemption": "id",
+        "scopes": "idarray",
+        "store": "id",
+        "timezone": "string",
+        "voucher": "id"
+      },
+      "schema": "contract://events/voucher.redeemed/v1",
       "type": "voucher.redeemed",
       "version": 1
     },
     {
       "module": "benefit",
+      "payload": {
+        "account": "id",
+        "amountMinor": "integer",
+        "batch": "id",
+        "currency": "currency",
+        "kind": "string",
+        "member": "id"
+      },
+      "schema": "contract://events/benefit.granted/v1",
       "type": "benefit.granted",
       "version": 1
     },
     {
       "module": "benefit",
+      "payload": {
+        "account": "id",
+        "amountMinor": "integer",
+        "batch": "id",
+        "currency": "currency",
+        "lot": "id",
+        "member": "id"
+      },
+      "schema": "contract://events/benefit.expired/v1",
       "type": "benefit.expired",
       "version": 1
     },
     {
       "module": "benefit",
+      "payload": {
+        "account": "id",
+        "batch": "id",
+        "currency": "currency",
+        "expiresAt": "iso8601utc",
+        "lot": "id",
+        "member": "id",
+        "remainingMinor": "integer"
+      },
+      "schema": "contract://events/benefit.expiry.reminded/v1",
       "type": "benefit.expiry.reminded",
       "version": 1
     },
     {
       "module": "benefit",
+      "payload": {
+        "batch": "id"
+      },
+      "schema": "contract://events/benefit.revoked/v1",
       "type": "benefit.revoked",
       "version": 1
     },
     {
       "module": "benefit",
+      "payload": {
+        "batch": "id",
+        "error": "string"
+      },
+      "schema": "contract://events/benefit.grant.failed/v1",
       "type": "benefit.grant.failed",
       "version": 1
     },
     {
       "module": "benefit",
+      "payload": {
+        "batch": "id",
+        "error": "string"
+      },
+      "schema": "contract://events/benefit.revoke.failed/v1",
       "type": "benefit.revoke.failed",
       "version": 1
     },
     {
       "module": "benefit",
+      "payload": {
+        "error": "string",
+        "job": "id"
+      },
+      "schema": "contract://events/benefit.expiry.failed/v1",
       "type": "benefit.expiry.failed",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "amountMinor": "integer",
+        "credit": "string",
+        "currency": "currency",
+        "debit": "string",
+        "journal": "id",
+        "referenceId": "id",
+        "referenceType": "string"
+      },
+      "schema": "contract://events/finance.entry.posted/v1",
       "type": "finance.entry.posted",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "differenceMinor": "integer",
+        "itemCount": "integer",
+        "reconciliation": "id"
+      },
+      "schema": "contract://events/finance.reconciliation.difference/v1",
       "type": "finance.reconciliation.difference",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "feeMinor": "integer",
+        "grossMinor": "integer",
+        "partner": "id",
+        "settlement": "id"
+      },
+      "schema": "contract://events/finance.settlement.approved/v1",
       "type": "finance.settlement.approved",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "adjustment": "id",
+        "amountMinor": "integer",
+        "direction": "string",
+        "feeMinor": "integer",
+        "grossMinor": "integer",
+        "netMinor": "integer",
+        "settlement": "id"
+      },
+      "schema": "contract://events/finance.settlement.adjusted/v1",
       "type": "finance.settlement.adjusted",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "close": "id",
+        "period": "string",
+        "sourceHash": "optionalstring",
+        "statementSnapshot": "statementsnapshot"
+      },
+      "schema": "contract://events/finance.period.closed/v1",
       "type": "finance.period.closed",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "settlement": "id",
+        "withdrawal": "id"
+      },
+      "schema": "contract://events/finance.withdrawal.paid/v1",
       "type": "finance.withdrawal.paid",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "deadletter": "id",
+        "error": "string",
+        "settlement": "id",
+        "withdrawal": "id"
+      },
+      "schema": "contract://events/finance.withdrawal.uncertain/v1",
       "type": "finance.withdrawal.uncertain",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "documentHash": "string",
+        "kind": "string",
+        "request": "id"
+      },
+      "schema": "contract://events/invoice.issued/v1",
       "type": "invoice.issued",
       "version": 1
     },
     {
       "module": "finance",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "documentHash": "string",
+        "kind": "string",
+        "request": "id"
+      },
+      "schema": "contract://events/invoice.red.issued/v1",
       "type": "invoice.red.issued",
       "version": 1
     },
     {
       "module": "support",
+      "payload": {
+        "authorType": "string",
+        "conversation": "id",
+        "member": "id",
+        "message": "id",
+        "ticket": "id"
+      },
+      "schema": "contract://events/support.message.sent/v1",
       "type": "support.message.sent",
       "version": 1
     },
     {
       "module": "support",
+      "payload": {
+        "agent": "id",
+        "conversation": "id",
+        "member": "id",
+        "ticket": "id"
+      },
+      "schema": "contract://events/support.ticket.assigned/v1",
       "type": "support.ticket.assigned",
       "version": 1
     },
     {
       "module": "support",
+      "payload": {
+        "escalation": "id",
+        "member": "id",
+        "reason": "string",
+        "ticket": "id"
+      },
+      "schema": "contract://events/support.sla.escalated/v1",
       "type": "support.sla.escalated",
       "version": 1
     },
     {
       "module": "channel",
+      "payload": {
+        "accepted": "integer",
+        "kind": "string",
+        "provider": "string",
+        "rejected": "integer",
+        "run": "id"
+      },
+      "schema": "contract://events/channel.sync.completed/v1",
       "type": "channel.sync.completed",
       "version": 1
     },
     {
       "module": "channel",
+      "payload": {
+        "internalReference": "nullableid",
+        "kind": "string",
+        "operation": "nullableid",
+        "provider": "string",
+        "reference": "nullablestring",
+        "state": "string",
+        "webhook": "id"
+      },
+      "schema": "contract://events/channel.webhook.applied/v1",
       "type": "channel.webhook.applied",
       "version": 1
     },
     {
       "module": "channel",
+      "payload": {
+        "internalReference": "nullableid",
+        "kind": "string",
+        "operation": "nullableid",
+        "provider": "string",
+        "reference": "nullablestring",
+        "state": "string",
+        "webhook": "id"
+      },
+      "schema": "contract://events/channel.refund.changed/v1",
       "type": "channel.refund.changed",
       "version": 1
     },
     {
       "module": "notification",
+      "payload": {
+        "channel": "string",
+        "dispatch": "id"
+      },
+      "schema": "contract://events/notification.delivered/v1",
       "type": "notification.delivered",
       "version": 1
     },
     {
       "module": "risk",
+      "payload": {
+        "policy": "id",
+        "rolloutPercent": "integer",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/risk.policy.activated/v1",
       "type": "risk.policy.activated",
       "version": 1
     },
     {
       "module": "catalog",
+      "payload": {
+        "decision": "id",
+        "listing": "id",
+        "reason": "string"
+      },
+      "schema": "contract://events/catalog.listing.unpublished/v1",
       "type": "catalog.listing.unpublished",
       "version": 1
     },
     {
       "module": "risk",
+      "payload": {
+        "case": "id",
+        "decision": "id",
+        "outcome": "string"
+      },
+      "schema": "contract://events/risk.case.opened/v1",
       "type": "risk.case.opened",
       "version": 1
     },
     {
       "module": "risk",
+      "payload": {
+        "case": "id",
+        "state": "string"
+      },
+      "schema": "contract://events/risk.case.resolved/v1",
       "type": "risk.case.resolved",
       "version": 1
     },
     {
       "module": "risk",
+      "payload": {
+        "decision": "id",
+        "operation": "string",
+        "reason": "string"
+      },
+      "schema": "contract://events/risk.transaction.blocked/v1",
       "type": "risk.transaction.blocked",
       "version": 1
     },
     {
       "module": "extension",
+      "payload": {
+        "installation": "id",
+        "provider": "string",
+        "state": "string",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/extension.enabled/v1",
       "type": "extension.enabled",
       "version": 1
     },
     {
       "module": "extension",
+      "payload": {
+        "installation": "id",
+        "provider": "string",
+        "state": "string",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/extension.disabled/v1",
       "type": "extension.disabled",
       "version": 1
     },
     {
       "module": "extension",
+      "payload": {
+        "installation": "id",
+        "provider": "string",
+        "state": "string",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/extension.degraded/v1",
       "type": "extension.degraded",
+      "version": 1
+    },
+    {
+      "module": "order",
+      "payload": {
+        "authorization": "authorizationsnapshot",
+        "export": "id",
+        "filter": "orderexportfilter",
+        "report": "string"
+      },
+      "schema": "contract://events/order.export.requested/v1",
+      "type": "order.export.requested",
+      "version": 1
+    },
+    {
+      "module": "finance",
+      "payload": {
+        "authorization": "authorizationsnapshot",
+        "export": "id",
+        "filter": "financeexportfilter",
+        "report": "string"
+      },
+      "schema": "contract://events/finance.export.requested/v1",
+      "type": "finance.export.requested",
+      "version": 1
+    },
+    {
+      "module": "identity",
+      "payload": {
+        "credentialVersion": "positiveinteger",
+        "memberId": "id",
+        "reason": "string"
+      },
+      "schema": "contract://events/identity.member.reset/v1",
+      "type": "identity.member.reset",
+      "version": 1
+    },
+    {
+      "module": "order",
+      "payload": {
+        "fulfillmentState": "string",
+        "orderId": "id",
+        "receivedAt": "iso8601utc"
+      },
+      "schema": "contract://events/order.received/v1",
+      "type": "order.received",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "enabled": "boolean",
+        "rateBasisPoints": "integer",
+        "settingId": "id"
+      },
+      "schema": "contract://events/referral.setting.changed/v1",
+      "type": "referral.setting.changed",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "enabled": "boolean",
+        "productId": "id",
+        "rateBasisPoints": "integer"
+      },
+      "schema": "contract://events/referral.product.changed/v1",
+      "type": "referral.product.changed",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "memberId": "id",
+        "referralMemberId": "id",
+        "status": "string"
+      },
+      "schema": "contract://events/referral.member.applied/v1",
+      "type": "referral.member.applied",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "approvedBy": "id",
+        "memberId": "id",
+        "referralMemberId": "id"
+      },
+      "schema": "contract://events/referral.member.approved/v1",
+      "type": "referral.member.approved",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "memberId": "id",
+        "reason": "string",
+        "referralMemberId": "id"
+      },
+      "schema": "contract://events/referral.member.disqualified/v1",
+      "type": "referral.member.disqualified",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "bindingId": "id",
+        "boundAt": "iso8601utc",
+        "memberId": "id",
+        "promoterId": "id"
+      },
+      "schema": "contract://events/referral.binding.created/v1",
+      "type": "referral.binding.created",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "amountMinor": "integer",
+        "commissionId": "id",
+        "currency": "currency",
+        "orderId": "id"
+      },
+      "schema": "contract://events/referral.commission.created/v1",
+      "type": "referral.commission.created",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "amountMinor": "integer",
+        "commissionId": "id",
+        "currency": "currency",
+        "settledAt": "iso8601utc"
+      },
+      "schema": "contract://events/referral.commission.settled/v1",
+      "type": "referral.commission.settled",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "amountMinor": "integer",
+        "commissionId": "id",
+        "currency": "currency",
+        "reason": "string",
+        "reversalId": "id"
+      },
+      "schema": "contract://events/referral.commission.reversed/v1",
+      "type": "referral.commission.reversed",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "amountMinor": "integer",
+        "currency": "currency",
+        "memberId": "id",
+        "withdrawalId": "id"
+      },
+      "schema": "contract://events/referral.withdrawal.requested/v1",
+      "type": "referral.withdrawal.requested",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "paidAt": "iso8601utc",
+        "providerReference": "string",
+        "withdrawalId": "id"
+      },
+      "schema": "contract://events/referral.withdrawal.paid/v1",
+      "type": "referral.withdrawal.paid",
+      "version": 1
+    },
+    {
+      "module": "referral",
+      "payload": {
+        "failedAt": "iso8601utc",
+        "reason": "string",
+        "withdrawalId": "id"
+      },
+      "schema": "contract://events/referral.withdrawal.failed/v1",
+      "type": "referral.withdrawal.failed",
       "version": 1
     }
   ],
-  "version": 1
+  "version": 3
 }

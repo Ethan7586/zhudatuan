@@ -21,6 +21,19 @@ export function directoryHash(directory) {
   return digest.digest('hex');
 }
 
+export function manifestHash(root, paths) {
+  const digest = createHash('sha256');
+  for (const path of [...new Set(paths)].sort()) {
+    const name = relative(root, path).split('\\').join('/');
+    if (name.startsWith('../') || name === '..') throw new Error(`RELEASE_FILE_OUTSIDE_ROOT:${name}`);
+    digest.update(name);
+    digest.update('\0');
+    digest.update(readFileSync(path));
+    digest.update('\0');
+  }
+  return digest.digest('hex');
+}
+
 export function files(directory, result = []) {
   for (const entry of readdirSync(directory, { withFileTypes: true }).sort((left, right) => left.name.localeCompare(right.name))) {
     const path = join(directory, entry.name);
@@ -30,4 +43,3 @@ export function files(directory, result = []) {
   }
   return result;
 }
-

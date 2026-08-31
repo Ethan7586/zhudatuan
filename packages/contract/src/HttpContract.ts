@@ -1,0 +1,42 @@
+export const HttpHeader = Object.freeze({
+  accept: 'accept',
+  authorization: 'authorization',
+  contentType: 'content-type',
+  idempotencyKey: 'idempotency-key',
+  ifMatch: 'if-match',
+  ifNoneMatch: 'if-none-match',
+  location: 'location',
+  accessVersion: 'x-access-version',
+  actionProof: 'x-action-proof',
+  clientTarget: 'x-client-target',
+  clientVersion: 'x-client-version',
+  contractVersion: 'x-contract-version',
+  csrfToken: 'x-csrf-token',
+  deviceId: 'x-device-id',
+  navigationCatalog: 'x-navigation-catalog',
+  requestId: 'x-request-id',
+  scopeHint: 'x-scope-hint',
+  traceId: 'x-trace-id',
+} as const);
+
+export const BrowserRequestHeaders = Object.freeze([
+  HttpHeader.accept,
+  HttpHeader.authorization,
+  HttpHeader.contentType,
+  HttpHeader.idempotencyKey,
+  HttpHeader.ifMatch,
+  HttpHeader.ifNoneMatch,
+  HttpHeader.accessVersion,
+  HttpHeader.actionProof,
+  HttpHeader.clientTarget,
+  HttpHeader.clientVersion,
+  HttpHeader.contractVersion,
+  HttpHeader.csrfToken,
+  HttpHeader.deviceId,
+  HttpHeader.navigationCatalog,
+  HttpHeader.requestId,
+  HttpHeader.scopeHint,
+  HttpHeader.traceId,
+] as const);
+
+export const BrowserResponseHeaders = Object.freeze([HttpHeader.location, HttpHeader.requestId, HttpHeader.contractVersion, HttpHeader.navigationCatalog, 'etag'] as const);

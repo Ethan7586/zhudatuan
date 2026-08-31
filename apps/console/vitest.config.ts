@@ -7,6 +7,7 @@ export default defineConfig({
     'import.meta.env.VITE_CLIENT_VERSION': JSON.stringify('0.0.0-test'),
   },
   test: {
+    execArgv: ['--no-experimental-webstorage'],
     include: ['src/**/*.test.{ts,tsx}'],
     environment: 'jsdom',
   },

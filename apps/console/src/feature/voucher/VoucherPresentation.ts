@@ -26,10 +26,26 @@ export const voucherLifecycle = Object.freeze([
 export type VoucherTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
 const stateLabels: Readonly<Record<string, string>> = Object.freeze({
-  active: '进行中', ready: '可用', approved: '已审批', completed: '已完成', fulfilled: '已履约',
-  draft: '草稿', submitted: '待审批', approval: '待审核', scheduled: '待开始', issuing: '发行中',
-  paused: '已暂停', retired: '已结束', depleted: '已用尽', disabled: '已停用', rejected: '已驳回',
-  failed: '失败', cancelled: '已取消', imported: '已导入', generated: '系统生成', processing: '处理中',
+  active: '进行中',
+  ready: '可用',
+  approved: '已审批',
+  completed: '已完成',
+  fulfilled: '已履约',
+  draft: '草稿',
+  submitted: '待审批',
+  approval: '待审核',
+  scheduled: '待开始',
+  issuing: '发行中',
+  paused: '已暂停',
+  retired: '已结束',
+  depleted: '已用尽',
+  disabled: '已停用',
+  rejected: '已驳回',
+  failed: '失败',
+  cancelled: '已取消',
+  imported: '已导入',
+  generated: '系统生成',
+  processing: '处理中',
 });
 
 const successStates = new Set(['active', 'ready', 'approved', 'completed', 'fulfilled', 'imported', 'generated']);
@@ -64,7 +80,7 @@ export function voucherSummary(view: VoucherView, rows: readonly VoucherRecord[]
   return Object.freeze([
     Object.freeze({ label: '本页记录', value: formatCount(rows.length), hint: voucherViewMeta[view].description, tone: 'info' as const }),
     Object.freeze({ label: '可用 / 完成', value: formatCount(healthy), hint: '按服务端状态归类', tone: 'success' as const }),
-    Object.freeze({ label: '待处理 / 异常', value: formatCount(pending), hint: '含审核、处理中与失败', tone: pending > 0 ? 'warning' as const : 'neutral' as const }),
+    Object.freeze({ label: '待处理 / 异常', value: formatCount(pending), hint: '含审核、处理中与失败', tone: pending > 0 ? ('warning' as const) : ('neutral' as const) }),
     business,
   ]);
 }
@@ -73,9 +89,15 @@ function businessMetric(view: VoucherView, rows: readonly VoucherRecord[]): Vouc
   if (view === 'programs') {
     const amounts = rows.filter((row) => row.amountMinor !== null && row.currency !== null);
     const currencies = new Set(amounts.map((row) => row.currency));
-    const value = currencies.size === 1
-      ? formatMinor(amounts.reduce((sum, row) => sum + (row.amountMinor ?? 0), 0), amounts[0]?.currency ?? 'CNY')
-      : currencies.size > 1 ? '多币种' : '—';
+    const value =
+      currencies.size === 1
+        ? formatMinor(
+            amounts.reduce((sum, row) => sum + (row.amountMinor ?? 0), 0),
+            amounts[0]?.currency ?? 'CNY'
+          )
+        : currencies.size > 1
+          ? '多币种'
+          : '—';
     return Object.freeze({ label: '本页面值合计', value, hint: '仅汇总当前页同币种面值', tone: 'neutral' });
   }
   const quantity = rows.reduce((sum, row) => sum + (row.quantity ?? 0), 0);

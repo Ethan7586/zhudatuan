@@ -1,14 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Button, Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
-import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '../../shared/api/QueryState';
-import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
+import { Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
-import { formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone, previewRecord } from './OrderPresentation';
-import { OrderPreviewAction } from './OrderPreviewAction';
-import { OrderDetailTabSchema, type OrderDetailTab } from './OrderSchema';
+import { formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone } from './OrderPresentation';
+import type { OrderDetailTab, OrderRecord } from './OrderSchema';
 
 const tabs: readonly Readonly<{ key: OrderDetailTab; label: string }>[] = Object.freeze([
   { key: 'overview', label: '订单概览' },
@@ -21,26 +16,18 @@ const tabs: readonly Readonly<{ key: OrderDetailTab; label: string }>[] = Object
 export function OrderDrawer({
   orderId,
   tab,
-  previewEnabled,
+  query,
   onTab,
   onClose,
 }: Readonly<{
   orderId: string;
   tab: OrderDetailTab;
-  previewEnabled: boolean;
+  query: Readonly<{ data: OrderRecord | undefined; isPending: boolean; isError: boolean; error: string | undefined; refetch: () => void }>;
   onTab: (tab: OrderDetailTab) => void;
   onClose: () => void;
 }>) {
-  const context = useConsoleContext();
   const [copied, setCopied] = useState(false);
-  const query = useQuery({
-    queryKey: orderDetailKey(context, orderId),
-    queryFn: ({ signal }) => readOrderDetail(context, orderId, signal),
-    enabled: orderId !== '',
-  });
   const order = query.data;
-  const preview = order === undefined ? undefined : previewRecord(order, previewEnabled);
-  const error = safeQueryError(query.error);
 
   const copyNumber = () => {
     if (order === undefined || navigator.clipboard === undefined) return;
@@ -84,7 +71,7 @@ export function OrderDrawer({
                     <span className={`orderstatuspill tone-${fulfillmentTone(order.fulfillment_state)}`}>{fulfillmentLabel(order.fulfillment_state)}</span>
                   </div>
                   <span className="ordermutetext">
-                    {preview?.mallName ?? order.mall_id ?? '商城显示名不可用'} · {formatOrderTime(order.created_at)}
+                    {order.mall_id ?? '商城 ID 不可用'} · {formatOrderTime(order.created_at)}
                   </span>
                 </>
               )}
@@ -98,8 +85,8 @@ export function OrderDrawer({
             className="orderdrawertabsystem"
             selectedKey={tab}
             onSelectionChange={(key) => {
-              const parsed = OrderDetailTabSchema.safeParse(key);
-              if (parsed.success) onTab(parsed.data);
+              const selected = tabs.find((item) => item.key === key)?.key;
+              if (selected !== undefined) onTab(selected);
             }}
           >
             <TabList className="orderdrawertabs" aria-label="订单详情分类">
@@ -118,11 +105,11 @@ export function OrderDrawer({
               {query.isError ? (
                 <section className="orderdrawererror" role="alert">
                   <strong>订单详情读取失败</strong>
-                  <p>{error}</p>
+                  <p>{query.error ?? 'REQUEST_FAILED'}</p>
                   <button
                     type="button"
                     onClick={() => {
-                      void query.refetch();
+                      query.refetch();
                     }}
                   >
                     重试
@@ -135,7 +122,7 @@ export function OrderDrawer({
                   <p>当前详情读取只支持内部订单 ID 精确匹配，不支持使用展示订单号反查。</p>
                 </section>
               ) : null}
-              {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} previewEnabled={previewEnabled} />}
+              {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} />}
             </TabPanel>
           </Tabs>
 
@@ -146,46 +133,13 @@ export function OrderDrawer({
             <button type="button" onClick={onClose}>
               关闭
             </button>
-            <OrderPreviewAction
-              ariaLabel="更多"
-              title="更多订单操作"
-              disabled={!previewEnabled || order === undefined}
-              describedBy="orderactionboundary"
-              placement="top end"
-              triggerTitle={previewEnabled ? '打开更多订单操作预览' : '等待最终动作合同'}
-              trigger="更多"
-            >
-              {(close) => (
-                <div className="orderpreviewoptions">
-                  <Button
-                    type="button"
-                    onPress={() => {
-                      close();
-                      onTab('operations');
-                    }}
-                  >
-                    查看操作记录
-                  </Button>
-                </div>
-              )}
-            </OrderPreviewAction>
-            <OrderPreviewAction
-              ariaLabel="确认发货"
-              title="确认发货预览"
-              disabled={!previewEnabled || order === undefined}
-              describedBy="orderactionboundary"
-              placement="top end"
-              triggerClassName="orderconfirmbutton"
-              triggerTitle={previewEnabled ? '查看发货前安全校验' : '等待最终动作合同'}
-              trigger={
-                <>
-                  <OrderIcon name="truck" />
-                  确认发货
-                </>
-              }
-            >
-              {() => <p className="orderpreviewdetail">订单版本 {order?.version ?? '不可用'} 已读取；正式执行仍需 Preview → Confirm → Step-up → Execute → Reread → Receipt。</p>}
-            </OrderPreviewAction>
+            <button type="button" disabled aria-describedby="orderactionboundary" title="等待最终动作合同">
+              更多
+            </button>
+            <button className="orderconfirmbutton" type="button" disabled aria-describedby="orderactionboundary" title="等待最终动作合同">
+              <OrderIcon name="truck" />
+              确认发货
+            </button>
           </footer>
         </AriaDialog>
       </Modal>

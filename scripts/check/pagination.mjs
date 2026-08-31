@@ -18,9 +18,14 @@ for (const file of files) {
   if (/keysetResult\(/.test(source) && !/queryPage\(/.test(source)) violations.push(`${name}:KEYSET_PAGE_INPUT_MISSING`);
 }
 
-const pricing = readFileSync(join(moduleRoot, 'pricing/PricingOperations.ts'), 'utf8');
-if (!/queryValues\(request\.input\.query\.sku, 100\)/.test(pricing) || !/limit 100/.test(pricing)) {
-  violations.push('services/commerce/src/modules/pricing/PricingOperations.ts:BOUNDED_BATCH_PROOF_MISSING');
+for (const [module, method] of [
+  ['pricing', 'prices'],
+  ['inventory', 'availability'],
+]) {
+  const source = readFileSync(join(moduleRoot, module, 'public', `${module === 'pricing' ? 'Pricing' : 'Inventory'}ReadPort.ts`), 'utf8');
+  if (!new RegExp(`${method}\\(scope: ReadScope, mall: string, skus: readonly string\\[\\]\\)`).test(source) || !/boundedIdentifiers\(skus, 50, 'STOREFRONT_[A-Z]+_SKUS_INVALID'\)/.test(source) || !/any\(\$2::text\[\]\)/i.test(source)) {
+    violations.push(`services/commerce/src/modules/${module}/public/${module === 'pricing' ? 'Pricing' : 'Inventory'}ReadPort.ts:BOUNDED_BATCH_PROOF_MISSING`);
+  }
 }
 
 if (violations.length > 0) {
@@ -35,7 +40,7 @@ function sources(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) values.push(...sources(path));
-    else if (entry.isFile() && path.endsWith('Operations.ts')) values.push(path);
+    else if (entry.isFile() && path.endsWith('.ts') && !path.endsWith('.test.ts')) values.push(path);
   }
   return values.sort();
 }

@@ -44,9 +44,8 @@ export function auditBoundaries() {
         const targetBackend = targetPath.match(BACKEND_LAYER);
         const targetModuleFile = targetPath.match(BACKEND_MODULE);
         if (targetModuleFile && targetModuleFile[1] !== moduleName) {
-          const publicRoot = !targetModuleFile[2].includes('/') && targetModuleFile[2].endsWith('Module.ts');
-          if (!publicRoot) findings.push({ kind: 'crossmodule', file: path,
-            detail: `${moduleName} -> ${targetModuleFile[1]}/${targetModuleFile[2]} must use target Module root` });
+          const publicRoot = targetModuleFile[2] === 'public/index.ts';
+          if (!publicRoot) findings.push({ kind: 'crossmodule', file: path, detail: `${moduleName} -> ${targetModuleFile[1]}/${targetModuleFile[2]} must use target public index` });
           continue;
         }
         if (targetBackend) {
@@ -83,8 +82,9 @@ export function auditBoundaries() {
         if (layer === 'feature' && targetLayer === 'feature') {
           const own = path.split('/feature/')[1]?.split('/')[0];
           const other = targetPath.split('/feature/')[1]?.split('/')[0];
-          if (own && other && own !== other) {
-            findings.push({ kind: 'crossfeature', file: path, detail: `feature/${own} -> feature/${other}` });
+          const publicPort = targetPath.includes(`/feature/${other}/public/`);
+          if (own && other && own !== other && !publicPort) {
+            findings.push({ kind: 'crossfeature', file: path, detail: `feature/${own} -> feature/${other} must use target public port` });
           }
         }
       }

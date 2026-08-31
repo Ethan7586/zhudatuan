@@ -2,20 +2,7 @@ import type { ReactNode } from 'react';
 import { Empty } from './Empty';
 import { ErrorView } from './Error';
 
-export const resourceConditions = [
-  'loading',
-  'empty',
-  'ready',
-  'refreshing',
-  'stale',
-  'denied',
-  'notfound',
-  'conflict',
-  'ratelimited',
-  'offline',
-  'failure',
-  'retry',
-] as const;
+export const resourceConditions = ['loading', 'empty', 'ready', 'refreshing', 'stale', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry'] as const;
 
 export type ResourceCondition = (typeof resourceConditions)[number];
 
@@ -34,12 +21,21 @@ export function resourceCondition(data: unknown, rowCount: number, error?: strin
 
 export function ResourceState({ condition, error, retry, children }: ResourceStateProps) {
   if (condition === 'ready') return children;
-  if (condition === 'loading') return <p role="status" aria-live="polite">正在加载…</p>;
+  if (condition === 'loading')
+    return (
+      <p role="status" aria-live="polite">
+        正在加载…
+      </p>
+    );
   if (condition === 'empty') return <Empty title="暂无数据" description="当前范围内没有符合条件的记录。" />;
   if (condition === 'refreshing') return <BusyState label="正在刷新最新数据…">{children}</BusyState>;
   if (condition === 'retry') return <BusyState label="正在重试…">{children}</BusyState>;
   if (condition === 'stale') {
-    return <StateWithContent title="数据可能已过期" message={error ?? '当前展示的是最近一次成功读取的数据。'} {...(retry === undefined ? {} : { retry })}>{children}</StateWithContent>;
+    return (
+      <StateWithContent title="数据可能已过期" message={error ?? '当前展示的是最近一次成功读取的数据。'} {...(retry === undefined ? {} : { retry })}>
+        {children}
+      </StateWithContent>
+    );
   }
   const message = error ?? 'UNKNOWN_RESOURCE_ERROR';
   if (condition === 'denied') return <ErrorView title="无权访问" message={message} />;
@@ -51,10 +47,22 @@ export function ResourceState({ condition, error, retry, children }: ResourceSta
 }
 
 function BusyState({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
-  return <div className="resourcestatebusy" aria-busy="true"><p className="sr-only" role="status" aria-live="polite">{label}</p>{children}</div>;
+  return (
+    <div className="resourcestatebusy" aria-busy="true">
+      <p className="sr-only" role="status" aria-live="polite">
+        {label}
+      </p>
+      {children}
+    </div>
+  );
 }
 
-function StateWithContent({ title, message, retry, children }: Readonly<{
+function StateWithContent({
+  title,
+  message,
+  retry,
+  children,
+}: Readonly<{
   title: string;
   message: string;
   retry?: () => void;
@@ -65,7 +73,11 @@ function StateWithContent({ title, message, retry, children }: Readonly<{
       <section role="status">
         <h2>{title}</h2>
         <p>{message}</p>
-        {retry === undefined ? null : <button className="shopbutton shopbuttondefault" type="button" onClick={retry}>刷新</button>}
+        {retry === undefined ? null : (
+          <button className="shopbutton shopbuttondefault" type="button" onClick={retry}>
+            刷新
+          </button>
+        )}
       </section>
       {children}
     </div>

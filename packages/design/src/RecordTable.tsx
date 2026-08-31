@@ -18,17 +18,41 @@ export interface RecordTableProps<T extends Readonly<Record<string, unknown>>> {
 
 export function RecordTable<T extends Readonly<Record<string, unknown>>>({ caption, rows, columns, rowKey }: RecordTableProps<T>) {
   const data = useMemo(() => [...rows], [rows]);
-  const definitions: ColumnDef<typeof features, T>[] = useMemo(() => columns.map((column) => ({
-    id: column.key,
-    header: column.label,
-    cell: (info) => column.value(info.row.original),
-  })), [columns]);
+  const definitions: ColumnDef<typeof features, T>[] = useMemo(
+    () =>
+      columns.map((column) => ({
+        id: column.key,
+        header: column.label,
+        cell: (info) => column.value(info.row.original),
+      })),
+    [columns]
+  );
   const table = useTable({ features, data, columns: definitions, getRowId: (row, index) => rowKey(row, index) });
   return (
     <table>
       <caption>{caption}</caption>
-      <thead>{table.getHeaderGroups().map((group) => <tr key={group.id}>{group.headers.map((header) => <th key={header.id} scope="col">{header.isPlaceholder ? null : <table.FlexRender header={header} />}</th>)}</tr>)}</thead>
-      <tbody>{table.getRowModel().rows.map((row) => <tr key={row.id}>{row.getAllCells().map((cell) => <td key={cell.id}><table.FlexRender cell={cell} /></td>)}</tr>)}</tbody>
+      <thead>
+        {table.getHeaderGroups().map((group) => (
+          <tr key={group.id}>
+            {group.headers.map((header) => (
+              <th key={header.id} scope="col">
+                {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+              </th>
+            ))}
+          </tr>
+        ))}
+      </thead>
+      <tbody>
+        {table.getRowModel().rows.map((row) => (
+          <tr key={row.id}>
+            {row.getAllCells().map((cell) => (
+              <td key={cell.id}>
+                <table.FlexRender cell={cell} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
     </table>
   );
 }
@@ -47,7 +71,5 @@ function displayItem(value: unknown): string {
 }
 
 export function money(value: unknown): ReactNode {
-  return typeof value === 'number'
-    ? new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(value / 100)
-    : display(value);
+  return typeof value === 'number' ? new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(value / 100) : display(value);
 }

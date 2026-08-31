@@ -1,0 +1,18 @@
+export const StorefrontQuery = Object.freeze({
+  bootstrap: () => Object.freeze(['storefront', 'bootstrap'] as const),
+  catalog: (scope: string, input: Readonly<Record<string, unknown>> = {}) => Object.freeze(['storefront', scope, 'catalog', input] as const),
+  product: (scope: string, productId: string) => Object.freeze(['storefront', scope, 'product', productId] as const),
+  profile: (scope: string) => Object.freeze(['storefront', scope, 'profile'] as const),
+  cart: (scope: string) => Object.freeze(['storefront', scope, 'cart'] as const),
+  orders: (scope: string) => Object.freeze(['storefront', scope, 'orders'] as const),
+  order: (scope: string, orderId: string) => Object.freeze(['storefront', scope, 'order', orderId] as const),
+  addresses: (scope: string) => Object.freeze(['storefront', scope, 'addresses'] as const),
+  memberships: (scope: string) => Object.freeze(['storefront', scope, 'memberships'] as const),
+  benefits: (scope: string) => Object.freeze(['storefront', scope, 'benefits'] as const),
+  aftersale: (scope: string, order: string) => Object.freeze(['storefront', scope, 'aftersale', order] as const),
+  favorites: (scope: string) => Object.freeze(['storefront', scope, 'favorites'] as const),
+  notifications: (scope: string) => Object.freeze(['storefront', scope, 'notifications'] as const),
+  security: (scope: string) => Object.freeze(['storefront', scope, 'security'] as const),
+  vouchers: (scope: string) => Object.freeze(['storefront', scope, 'vouchers'] as const),
+  support: (scope: string, id?: string) => Object.freeze(['storefront', scope, 'support', id ?? 'all'] as const),
+});

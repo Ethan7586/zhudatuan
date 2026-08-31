@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { parseCsv } from './Csv';
 import type { ObjectStore, StoredObject } from './ObjectStore';
+import { ApplicationError } from '../domain/ApplicationError';
 
 export interface ImportFailure {
   readonly row: number;
@@ -9,8 +10,7 @@ export interface ImportFailure {
   readonly detail: string;
 }
 
-export async function readImportFile(objects: ObjectStore, reference: string, sha256: string,
-  maximumBytes = 32 * 1024 * 1024, maximumRows = 100_000): Promise<readonly Readonly<Record<string, string>>[]> {
+export async function readImportFile(objects: ObjectStore, reference: string, sha256: string, maximumBytes = 32 * 1024 * 1024, maximumRows = 100_000): Promise<readonly Readonly<Record<string, string>>[]> {
   const metadata = await objects.inspect(reference);
   if (metadata.scan !== 'clean' || metadata.contentType !== 'text/csv' || metadata.sha256 !== sha256 || metadata.size > maximumBytes) {
     throw new Error('IMPORT_OBJECT_INVALID');
@@ -20,8 +20,7 @@ export async function readImportFile(objects: ObjectStore, reference: string, sh
   return parseCsv(bytes, maximumRows);
 }
 
-export async function saveImportReport(objects: ObjectStore, owner: 'catalog' | 'inventory' | 'member' | 'voucher', id: string,
-  failures: readonly ImportFailure[]): Promise<StoredObject> {
+export async function saveImportReport(objects: ObjectStore, owner: 'catalog' | 'inventory' | 'member' | 'voucher', id: string, failures: readonly ImportFailure[]): Promise<StoredObject> {
   const bytes = reportBytes(failures);
   const sha256 = createHash('sha256').update(bytes).digest('hex');
   const identity = createHash('sha256').update(id).digest('hex').slice(0, 32);
@@ -46,12 +45,13 @@ export async function saveImportReport(objects: ObjectStore, owner: 'catalog' | 
 }
 
 export function importCode(cause: unknown, fallback: string): string {
-  const value = cause instanceof Error ? cause.message : fallback;
-  return value.replace(/[^A-Z0-9_:.-]/g, '_').slice(0, 100) || fallback;
+  if (cause instanceof ApplicationError) return cause.code;
+  if (cause instanceof Error && /^[A-Z][A-Z0-9_:.-]{0,99}$/.test(cause.message)) return cause.message;
+  return fallback;
 }
 
 export function importDetail(cause: unknown): string {
-  return (cause instanceof Error ? cause.message : 'row rejected').replace(/[\r\n\t]/g, ' ').slice(0, 500);
+  return cause instanceof ApplicationError || (cause instanceof Error && /^[A-Z][A-Z0-9_:.-]{0,99}$/.test(cause.message)) ? cause.message : 'row rejected';
 }
 
 export function importId(payload: unknown, code: string): string {

@@ -27,7 +27,7 @@ export class RedisCache implements Cache {
     if (!this.ready()) return null;
     try {
       const value = await this.client!.get(key);
-      return value === null ? null : JSON.parse(value) as T;
+      return value === null ? null : (JSON.parse(value) as T);
     } catch (cause) {
       this.degrade(cause);
       return null;
@@ -46,6 +46,27 @@ export class RedisCache implements Cache {
     }
   }
 
+  async setnx<T>(key: string, value: T, seconds: number): Promise<boolean> {
+    if (!Number.isSafeInteger(seconds) || seconds < 1) throw new Error('CACHE_TTL_INVALID');
+    if (!this.ready()) return false;
+    try {
+      return (await this.client!.set(key, JSON.stringify(value), { EX: seconds, NX: true })) === 'OK';
+    } catch (cause) {
+      this.degrade(cause);
+      return false;
+    }
+  }
+
+  async compareDelete<T>(key: string, expected: T): Promise<boolean> {
+    if (!this.ready()) return false;
+    try {
+      return (await this.client!.eval("if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end", { keys: [key], arguments: [JSON.stringify(expected)] })) === 1;
+    } catch (cause) {
+      this.degrade(cause);
+      return false;
+    }
+  }
+
   async remove(...keys: readonly string[]): Promise<boolean> {
     if (keys.length === 0) return true;
     if (!this.ready()) return false;
@@ -58,7 +79,9 @@ export class RedisCache implements Cache {
     }
   }
 
-  state(): CacheState { return this.status; }
+  state(): CacheState {
+    return this.status;
+  }
 
   async close(): Promise<void> {
     const client = this.client;
@@ -72,7 +95,7 @@ export class RedisCache implements Cache {
   }
 
   private degrade(cause: unknown): void {
-    const code = cause instanceof Error ? cause.message.split(':', 1)[0]!.slice(0, 120) : 'CACHE_UNAVAILABLE';
+    const code = cause instanceof Error ? cause.name.slice(0, 120) : 'CACHE_UNAVAILABLE';
     this.status = Object.freeze({ available: false, reason: code });
   }
 }

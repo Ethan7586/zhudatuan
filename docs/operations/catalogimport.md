@@ -11,7 +11,7 @@
 - Escalation: supplier owner for source error; security for unsafe content.
 - Audit: store source hash, actor, mapping version and row disposition.
 - Postmortem: document schema change and contract action.
-Owner: Catalog. Queue: `import`. The source must be a private, malware-clean `text/csv` object whose SHA-256 matches the command.
+  Owner: Catalog. Queue: `import`. The source must be a private, malware-clean `text/csv` object whose SHA-256 matches the command.
 
 The worker stages at most 100,000 rows and applies stable 500-row shards with a durable cursor. Every row runs behind a savepoint. Completion requires a private CSV report containing every rejected row number and normalized error; the read operation issues only a five-minute signed URL. Retries resume from the committed cursor and exhausted jobs enter `runtime.deadletter`.
 

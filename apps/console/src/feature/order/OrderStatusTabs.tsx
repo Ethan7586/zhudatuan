@@ -1,4 +1,4 @@
-import type { OrderPage, OrderView } from './OrderSchema';
+import type { OrderView } from './OrderSchema';
 
 interface StatusTab {
   readonly key: OrderView;
@@ -17,25 +17,18 @@ const tabs: readonly StatusTab[] = Object.freeze([
 
 export function OrderStatusTabs({
   active,
-  previewEnabled,
-  page,
   onChange,
 }: Readonly<{
   active: OrderView;
-  previewEnabled: boolean;
-  page: OrderPage | undefined;
   onChange: (view: OrderView) => void;
 }>) {
-  const counts = previewEnabled && page?.preview?.source === 'local-preview' ? page.preview.counts : undefined;
   return (
     <nav className="orderstatustabs" aria-label="订单状态">
       {tabs.map((tab) => {
-        const disabled = !previewEnabled && tab.key !== 'all';
-        const count = counts?.[tab.key];
+        const disabled = tab.key !== 'all' && tab.key !== 'aftersale';
         return (
           <button key={tab.key} type="button" aria-pressed={active === tab.key} disabled={disabled} title={disabled ? '等待服务端状态筛选与全量计数合同' : undefined} onClick={() => onChange(tab.key)}>
             {tab.label}
-            {count === undefined ? null : <span className={tab.key === 'exception' ? 'isexception' : undefined}>{count}</span>}
           </button>
         );
       })}

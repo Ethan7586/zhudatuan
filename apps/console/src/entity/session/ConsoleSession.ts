@@ -1,6 +1,7 @@
-import { SCOPE_KINDS, type ScopeKind } from '@shop/authz';
+import { SCOPE_KINDS, type ConsoleScopeKind, type ScopeKind } from '@shop/authz';
 import { z } from 'zod';
 import { DatabaseIntegerSchema } from '../../shared/schema/DatabaseInteger';
+import { NavigationNodeSchema, NavigationTreeSchema, type NavigationNode } from '../../shared/navigation/NavigationContract';
 
 export const ScopeSchema = z.object({
   kind: z.enum(SCOPE_KINDS),
@@ -9,6 +10,9 @@ export const ScopeSchema = z.object({
   name: z.string().min(1).optional(),
   path: z.array(z.object({ kind: z.enum(SCOPE_KINDS), id: z.string().min(1) })).optional(),
 });
+
+export { NavigationNodeSchema, NavigationTreeSchema };
+export type ConsoleNavigationNode = NavigationNode;
 
 export const SessionSchema = z.object({
   actor: z.string().min(1),
@@ -38,7 +42,7 @@ export const ScopePageSchema = z.object({
   nextCursor: z.string().min(1).optional(),
 });
 
-export type ConsoleScope = z.infer<typeof ScopeSchema> & Readonly<{ kind: ScopeKind }>;
+export type ConsoleScope = Omit<z.infer<typeof ScopeSchema>, 'kind'> & Readonly<{ kind: ConsoleScopeKind }>;
 export type ConsoleSession = z.infer<typeof SessionSchema>;
 export type ConsoleProfile = z.infer<typeof ProfileSchema>;
 
@@ -47,12 +51,12 @@ export interface ConsoleContext {
   readonly profile: ConsoleProfile;
   readonly scopes: readonly ConsoleScope[];
   readonly scope: ConsoleScope;
+  readonly navigation?: z.infer<typeof NavigationTreeSchema>;
 }
 
 export function uniqueScopes(scopes: readonly ConsoleScope[]): readonly ConsoleScope[] {
   const unique = [...new Map(scopes.map((scope) => [`${scope.kind}:${scope.id}`, scope] as const)).values()];
-  unique.sort((left, right) => scopeRank(left.kind) - scopeRank(right.kind)
-    || (left.name ?? left.id).localeCompare(right.name ?? right.id));
+  unique.sort((left, right) => scopeRank(left.kind) - scopeRank(right.kind) || (left.name ?? left.id).localeCompare(right.name ?? right.id));
   return Object.freeze(unique);
 }
 

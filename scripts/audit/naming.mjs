@@ -48,7 +48,6 @@ const EXEMPT_FILES = new Set([
 
 /** Directories whose contents are exempt by the project's own naming rule. */
 const EXEMPT_PREFIXES = [
-  'apps/miniapp/miniprogram/custom-tab-bar/', // WeChat requires this exact directory name.
   'scripts/', // scripts and audit code are explicitly exempt
   'config/', // operator-owned configuration follows YAML/vendor naming conventions
   'database/', // SQL migrations keep timestamp_snake naming
@@ -61,7 +60,7 @@ const EXEMPT_PREFIXES = [
   '.pnpm-store/', // package-manager cache is not product source
 ];
 
-const EXEMPT_EXTENSIONS = new Set(['.sql', '.md', '.lock', '.svg', '.png', '.jpg', '.webp', '.ico', '.xlsx', '.docx', '.pdf', '.zip', '.csv', '.cmd', '.py']);
+const EXEMPT_EXTENSIONS = new Set(['.sql', '.json', '.yml', '.yaml', '.toml', '.md', '.lock', '.svg', '.png', '.jpg', '.webp', '.ico', '.xlsx', '.docx', '.pdf', '.zip', '.csv', '.cmd', '.py']);
 
 const BAD_CHARACTER = /[_\- ]/;
 function isExempt(path) {
@@ -71,7 +70,6 @@ function isExempt(path) {
   if (name.startsWith('.')) return true;
   if (EXEMPT_EXTENSIONS.has(extname(name))) return true;
   if (/\.(?:test|spec)\.[^.]+$/.test(name)) return true;
-  if (/\.generated\.[^.]+$/.test(name)) return true;
   return false;
 }
 

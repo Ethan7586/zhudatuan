@@ -1,14 +1,7 @@
 import type { ReportingPort } from '../port/ReportingPort';
 import { projectedMetric, type ProjectionEvent } from '../../domain/model/Projection';
 import type { Metric } from '../../domain/model/Metric';
-
-const SNAPSHOT_ONLY_EVENTS = new Set([
-  'identity.session.created','identity.member.registered','access.version.changed','catalog.listing.published','inventory.stock.changed',
-  'inventory.stock.reserved','experience.published','checkout.quote.confirmed','voucher.issued','benefit.granted','benefit.expired',
-  'benefit.revoked','finance.entry.posted','finance.settlement.approved','finance.settlement.adjusted','finance.withdrawal.paid',
-  'invoice.issued','invoice.red.issued','support.message.sent','support.ticket.assigned','channel.sync.completed','channel.webhook.applied',
-  'channel.refund.changed','notification.delivered','risk.policy.activated',
-]);
+import { PROJECTION_EVENTS } from '../../../../generated/EventHandlers';
 
 export class ProjectEvent {
   constructor(private readonly repository: ReportingPort) {}
@@ -16,14 +9,15 @@ export class ProjectEvent {
   async execute(event: ProjectionEvent): Promise<readonly Readonly<{ scope: string; version: number }>[]> {
     const affected = new Set([event.scope]);
     if (event.version !== 1) throw new Error(`REPORT_EVENT_VERSION_UNSUPPORTED:${event.type}:${event.version}`);
-    if (event.type === 'order.placed') await this.placed(event, affected);
+    if (event.type === 'order.export.requested' || event.type === 'finance.export.requested') await this.repository.createRequestedExport(event);
+    else if (event.type === 'order.placed') await this.placed(event, affected);
     else if (event.type === 'order.paid') await this.paid(event, affected);
     else if (event.type === 'order.cancelled') await this.cancelled(event);
     else if (event.type === 'fulfillment.shipped') await this.shipped(event);
-    else if (event.type === 'payment.refunded') await this.refunded(event, affected);
+    else if (event.type === 'refund.completed') await this.refunded(event, affected);
     else if (event.type === 'voucher.redeemed') await this.voucher(event, affected);
     else if (event.type === 'finance.period.closed') await this.statement(event);
-    else if (!SNAPSHOT_ONLY_EVENTS.has(event.type)) throw new Error(`REPORT_EVENT_MAPPING_MISSING:${event.type}`);
+    else if (!PROJECTION_EVENTS.has(event.type)) throw new Error(`REPORT_EVENT_MAPPING_MISSING:${event.type}`);
     return this.repository.completeEvent(event, [...affected]);
   }
 
@@ -32,9 +26,15 @@ export class ProjectEvent {
     const mall = text(payload.mall, 'REPORT_MALL_REQUIRED');
     const scopeSnapshot = scopes(payload.scopes, mall);
     scopeSnapshot.forEach((scope) => affected.add(scope));
-    await this.repository.createOrder({ order: text(payload.order, 'REPORT_ORDER_REQUIRED'), scopes: scopeSnapshot,
-      number: text(payload.number, 'REPORT_ORDER_NUMBER_REQUIRED'), totalMinor: integer(payload.totalMinor, 'REPORT_AMOUNT_INVALID'),
-      currency: text(payload.currency, 'REPORT_CURRENCY_REQUIRED'), occurredAt: event.occurredAt, snapshot: payload });
+    await this.repository.createOrder({
+      order: text(payload.order, 'REPORT_ORDER_REQUIRED'),
+      scopes: scopeSnapshot,
+      number: text(payload.number, 'REPORT_ORDER_NUMBER_REQUIRED'),
+      totalMinor: integer(payload.totalMinor, 'REPORT_AMOUNT_INVALID'),
+      currency: text(payload.currency, 'REPORT_CURRENCY_REQUIRED'),
+      occurredAt: event.occurredAt,
+      snapshot: payload,
+    });
   }
 
   private async paid(event: ProjectionEvent, affected: Set<string>): Promise<void> {
@@ -51,29 +51,31 @@ export class ProjectEvent {
     const metrics: Metric[] = [];
     scopeSnapshot.forEach((scope) => affected.add(scope));
     for (const scope of scopeSnapshot) {
-      metrics.push(projectedMetric('sales.amount', scope, range, { mall, application }, amount, 'minor', event.occurredAt),
+      metrics.push(
+        projectedMetric('sales.amount', scope, range, { mall, application }, amount, 'minor', event.occurredAt),
         projectedMetric('sales.orders', scope, range, { mall, application }, 1, 'count', event.occurredAt),
-        projectedMetric('mall.amount', scope, range, { mall, application }, amount, 'minor', event.occurredAt));
+        projectedMetric('mall.amount', scope, range, { mall, application }, amount, 'minor', event.occurredAt)
+      );
     }
     const lines = array(snapshot.lines, 'REPORT_LINES_REQUIRED').map((line) => object(line, 'REPORT_LINE_INVALID'));
     for (const line of lines) {
-      for (const scope of lineScopes(scopeSnapshot, line.partner)) { affected.add(scope); metrics.push(...this.line(scope, mall, application, range, line, event.occurredAt)); }
+      for (const scope of lineScopes(scopeSnapshot, line.partner)) {
+        affected.add(scope);
+        metrics.push(...this.line(scope, mall, application, range, line, event.occurredAt));
+      }
     }
     await this.repository.addMetrics(metrics);
     await this.repository.payOrder(text(payload.order, 'REPORT_ORDER_REQUIRED'), amount, currency, snapshot, event.occurredAt);
   }
 
-  private line(scope: string, mall: string, application: string, period: Readonly<{ from: string; to: string; timezone: string }>,
-    line: Readonly<Record<string, unknown>>, watermark: string): readonly Metric[] {
+  private line(scope: string, mall: string, application: string, period: Readonly<{ from: string; to: string; timezone: string }>, line: Readonly<Record<string, unknown>>, watermark: string): readonly Metric[] {
     const amount = integer(line.payableMinor, 'REPORT_LINE_AMOUNT_INVALID');
     const common = { mall, application };
     return Object.freeze([
       projectedMetric('product.amount', scope, period, { ...common, product: text(line.product, 'REPORT_PRODUCT_REQUIRED') }, amount, 'minor', watermark),
       projectedMetric('category.amount', scope, period, { ...common, category: text(line.category, 'REPORT_CATEGORY_REQUIRED') }, amount, 'minor', watermark),
-      projectedMetric('channel.amount', scope, period,
-        { ...common, channel: typeof line.provider === 'string' && line.provider ? line.provider : 'internal' }, amount, 'minor', watermark),
-      projectedMetric('powderclass.amount', scope, period,
-        { ...common, powderclass: text(line.powderclass, 'REPORT_POWDERCLASS_REQUIRED') }, amount, 'minor', watermark),
+      projectedMetric('channel.amount', scope, period, { ...common, channel: typeof line.provider === 'string' && line.provider ? line.provider : 'internal' }, amount, 'minor', watermark),
+      projectedMetric('powderclass.amount', scope, period, { ...common, powderclass: text(line.powderclass, 'REPORT_POWDERCLASS_REQUIRED') }, amount, 'minor', watermark),
     ]);
   }
 
@@ -95,8 +97,7 @@ export class ProjectEvent {
     const metrics: Metric[] = [];
     for (const scope of scopes(payload.scopes, mall)) {
       affected.add(scope);
-      metrics.push(projectedMetric('refund.amount', scope, range, { mall }, amount, 'minor', event.occurredAt),
-        projectedMetric('refund.orders', scope, range, { mall }, 1, 'count', event.occurredAt));
+      metrics.push(projectedMetric('refund.amount', scope, range, { mall }, amount, 'minor', event.occurredAt), projectedMetric('refund.orders', scope, range, { mall }, 1, 'count', event.occurredAt));
     }
     await this.repository.addMetrics(metrics);
   }
@@ -112,8 +113,7 @@ export class ProjectEvent {
     const metrics: Metric[] = [];
     for (const scope of scopes(payload.scopes, mall, store)) {
       affected.add(scope);
-      metrics.push(projectedMetric('voucher.amount', scope, range, { mall, store }, amount, 'minor', event.occurredAt),
-        projectedMetric('voucher.redemptions', scope, range, { mall, store }, 1, 'count', event.occurredAt));
+      metrics.push(projectedMetric('voucher.amount', scope, range, { mall, store }, amount, 'minor', event.occurredAt), projectedMetric('voucher.redemptions', scope, range, { mall, store }, 1, 'count', event.occurredAt));
     }
     await this.repository.addMetrics(metrics);
   }
@@ -128,9 +128,18 @@ function object(value: unknown, code: string): Readonly<Record<string, unknown>>
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error(code);
   return value as Readonly<Record<string, unknown>>;
 }
-function array(value: unknown, code: string): readonly unknown[] { if (!Array.isArray(value)) throw new Error(code); return value; }
-function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value || value.length > 255) throw new Error(code); return value; }
-function integer(value: unknown, code: string): number { if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) throw new Error(code); return value; }
+function array(value: unknown, code: string): readonly unknown[] {
+  if (!Array.isArray(value)) throw new Error(code);
+  return value;
+}
+function text(value: unknown, code: string): string {
+  if (typeof value !== 'string' || !value || value.length > 255) throw new Error(code);
+  return value;
+}
+function integer(value: unknown, code: string): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) throw new Error(code);
+  return value;
+}
 function scopes(value: unknown, ...required: string[]): readonly string[] {
   if (!Array.isArray(value) || value.some((scope) => typeof scope !== 'string' || !scope)) throw new Error('REPORT_AUTHORIZATION_SNAPSHOT_REQUIRED');
   return Object.freeze([...new Set([...(value as string[]), ...required])]);

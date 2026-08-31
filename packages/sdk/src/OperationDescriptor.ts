@@ -1,12 +1,5 @@
-import type {
-  HttpMethod,
-  OperationAudience,
-  OperationId,
-  OperationInputFor,
-  OperationOutputFor,
-  Schema,
-} from '@shop/contract';
-import { structuralOperationInput, structuralOperationOutput } from '@shop/contract/schema';
+import type { HttpMethod, OperationAudience, OperationTarget, OperationId, OperationInputFor, OperationOutputFor, OperationResponseMode, Schema } from '@shop/contract';
+import { operationSchema } from '@shop/contract';
 import type { RequestContext } from './RequestContext';
 
 export interface OperationDescriptor<TKey extends OperationId> {
@@ -14,46 +7,46 @@ export interface OperationDescriptor<TKey extends OperationId> {
   readonly method: HttpMethod;
   readonly path: `/api/v1/${string}` | `/health/${string}`;
   readonly audience: OperationAudience;
+  readonly targets: readonly OperationTarget[];
+  readonly responseMode: OperationResponseMode;
   readonly idempotent: boolean;
+  readonly timeout: number;
   readonly input: Schema<OperationInputFor<TKey>>;
   readonly output: Schema<OperationOutputFor<TKey>>;
 }
 
 export interface OperationExecutor {
-  execute<TKey extends OperationId>(
-    operation: OperationDescriptor<TKey>,
-    input: OperationInputFor<TKey>,
-    context: RequestContext,
-  ): Promise<OperationOutputFor<TKey>>;
+  execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>>;
 }
 
-export type OperationMethod<TKey extends OperationId> = (
-  input: OperationInputFor<TKey>,
-  context: RequestContext,
-) => Promise<OperationOutputFor<TKey>>;
+export type OperationMethod<TKey extends OperationId> = (input: OperationInputFor<TKey>, context: RequestContext) => Promise<OperationOutputFor<TKey>>;
 
-export function defineStructuralOperation<TKey extends OperationId>(definition: Readonly<{
-  id: TKey;
-  method: HttpMethod;
-  path: `/api/v1/${string}` | `/health/${string}`;
-  audience: OperationAudience;
-  idempotent: boolean;
-  pathKeys: readonly string[];
-}>): OperationDescriptor<TKey> {
+export function defineOperation<TKey extends OperationId>(
+  definition: Readonly<{
+    id: TKey;
+    method: HttpMethod;
+    path: `/api/v1/${string}` | `/health/${string}`;
+    audience: OperationAudience;
+    targets: readonly OperationTarget[];
+    responseMode: OperationResponseMode;
+    idempotent: boolean;
+    timeout: number;
+  }>
+): OperationDescriptor<TKey> {
   return Object.freeze({
     id: definition.id,
     method: definition.method,
     path: definition.path,
     audience: definition.audience,
+    targets: Object.freeze([...definition.targets]),
+    responseMode: definition.responseMode,
     idempotent: definition.idempotent,
-    input: structuralOperationInput(definition.pathKeys) as Schema<OperationInputFor<TKey>>,
-    output: structuralOperationOutput() as Schema<OperationOutputFor<TKey>>,
+    timeout: definition.timeout,
+    input: operationSchema(definition.id).input as Schema<OperationInputFor<TKey>>,
+    output: operationSchema(definition.id).output as unknown as Schema<OperationOutputFor<TKey>>,
   });
 }
 
-export function bindOperation<TKey extends OperationId>(
-  client: OperationExecutor,
-  operation: OperationDescriptor<TKey>,
-): OperationMethod<TKey> {
+export function bindOperation<TKey extends OperationId>(client: OperationExecutor, operation: OperationDescriptor<TKey>): OperationMethod<TKey> {
   return (input, context) => client.execute(operation, input, context);
 }

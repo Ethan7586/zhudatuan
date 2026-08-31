@@ -14,5 +14,27 @@ export interface TableProps<T> {
 }
 
 export function Table<T>({ caption, columns, rows, rowKey }: TableProps<T>) {
-  return <table><caption>{caption}</caption><thead><tr>{columns.map((column) => <th key={column.key} scope="col">{column.label}</th>)}</tr></thead><tbody>{rows.map((row) => <tr key={rowKey(row)}>{columns.map((column) => <td key={column.key}>{column.render(row)}</td>)}</tr>)}</tbody></table>;
+  return (
+    <table>
+      <caption>{caption}</caption>
+      <thead>
+        <tr>
+          {columns.map((column) => (
+            <th key={column.key} scope="col">
+              {column.label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={rowKey(row)}>
+            {columns.map((column) => (
+              <td key={column.key}>{column.render(row)}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }

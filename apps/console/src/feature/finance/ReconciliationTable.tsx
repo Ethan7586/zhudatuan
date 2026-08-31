@@ -9,7 +9,6 @@ export const defaultFinanceColumns: ReadonlySet<FinanceColumnKey> = new Set(['ch
 
 export function ReconciliationTable({
   page,
-  previewEnabled,
   visible,
   selected,
   onToggle,
@@ -17,7 +16,6 @@ export function ReconciliationTable({
   onOpen,
 }: Readonly<{
   page: FinanceReconciliationPage;
-  previewEnabled: boolean;
   visible: ReadonlySet<FinanceColumnKey>;
   selected: ReadonlySet<string>;
   onToggle: (id: string) => void;
@@ -50,7 +48,7 @@ export function ReconciliationTable({
         </thead>
         <tbody>
           {page.items.map((row) => (
-            <ReconciliationRow key={row.id} row={row} previewEnabled={previewEnabled} visible={visible} checked={selected.has(row.id)} onToggle={() => onToggle(row.id)} onOpen={() => onOpen(row.id)} />
+            <ReconciliationRow key={row.id} row={row} visible={visible} checked={selected.has(row.id)} onToggle={() => onToggle(row.id)} onOpen={() => onOpen(row.id)} />
           ))}
         </tbody>
       </table>
@@ -60,44 +58,41 @@ export function ReconciliationTable({
 
 function ReconciliationRow({
   row,
-  previewEnabled,
   visible,
   checked,
   onToggle,
   onOpen,
 }: Readonly<{
   row: FinanceReconciliation;
-  previewEnabled: boolean;
   visible: ReadonlySet<FinanceColumnKey>;
   checked: boolean;
   onToggle: () => void;
   onOpen: () => void;
 }>) {
-  const preview = previewEnabled && row.preview?.source === 'local-preview' ? row.preview : undefined;
   const canOpen = row.items.length > 0;
   return (
     <tr className={row.state === 'difference' || row.state === 'resolutionpending' ? 'hasdifference' : undefined} onClick={canOpen ? onOpen : undefined}>
       <td className="financecheckcell" onClick={(event) => event.stopPropagation()}>
-        <input type="checkbox" aria-label={`选择对账批次 ${preview?.batchId ?? row.id}`} checked={checked} onChange={onToggle} />
+        <input type="checkbox" aria-label={`选择对账批次 ${row.id}`} checked={checked} onChange={onToggle} />
       </td>
       <td>
         <span className="financecellpair">
-          <strong>{preview?.batchId ?? row.id}</strong>
-          <small>{preview?.accountingDate ?? row.period}</small>
+          <strong>{row.id}</strong>
+          <small>{row.period}</small>
         </span>
       </td>
       {visible.has('channel') ? (
         <td>
           <span className="financecellpair">
-            <strong>{preview?.channelLabel ?? row.provider}</strong>
-            <small>{preview?.dataSourceLabel ?? row.statement_ref ?? '数据源未提供'}</small>
+            <strong>{row.provider}</strong>
+            <small>{row.statement_ref ?? '数据源未提供'}</small>
           </span>
         </td>
       ) : null}
-      {visible.has('scope') ? <td>{preview?.scopeLabel ?? row.partner_id}</td> : null}
-      {visible.has('expected') ? <td>{count(preview?.expectedCount)}</td> : null}
-      {visible.has('matched') ? <td>{count(preview?.matchedCount ?? row.item_counts.matched)}</td> : null}
-      {visible.has('differences') ? <td>{count(preview?.differenceCount ?? row.item_counts.difference, true)}</td> : null}
+      {visible.has('scope') ? <td>{row.partner_id}</td> : null}
+      {visible.has('expected') ? <td>—</td> : null}
+      {visible.has('matched') ? <td>{count(row.item_counts.matched)}</td> : null}
+      {visible.has('differences') ? <td>{count(row.item_counts.difference, true)}</td> : null}
       {visible.has('channelAmount') ? <td className="financemoney">{formatMinor(row.debit_minor)}</td> : null}
       {visible.has('ledgerAmount') ? <td className="financemoney">{formatMinor(row.credit_minor)}</td> : null}
       {visible.has('differenceAmount') ? <td className={row.difference_minor === 0 ? 'financemoney' : 'financemoney financedifference'}>{formatMinor(row.difference_minor)}</td> : null}
@@ -106,7 +101,7 @@ function ReconciliationRow({
           <FinanceState state={row.state} />
         </td>
       ) : null}
-      {visible.has('time') ? <td>{formatTime(preview?.completedAt ?? row.updated_at)}</td> : null}
+      {visible.has('time') ? <td>{formatTime(row.updated_at)}</td> : null}
       <td>
         <button
           className="financeviewbutton"
@@ -137,23 +132,18 @@ export function FinanceState({ state }: Readonly<{ state: string }>) {
 
 export function FinancePagination({
   page,
-  previewEnabled,
   limit,
   onLimit,
   onCursor,
 }: Readonly<{
   page: FinanceReconciliationPage;
-  previewEnabled: boolean;
   limit: number;
   onLimit: (limit: number) => void;
   onCursor: (cursor?: string) => void;
 }>) {
-  const preview = previewEnabled && page.preview?.source === 'local-preview' ? page.preview : undefined;
-  const start = preview === undefined || page.count === 0 ? undefined : (preview.page - 1) * limit + 1;
-  const end = start === undefined ? undefined : start + page.count - 1;
   return (
     <footer className="financepagination">
-      <span>{preview === undefined ? `本页 ${page.count} 笔` : `${start}–${end} / 共 ${preview.total} 笔`}</span>
+      <span>本页 {page.count} 笔</span>
       <label>
         每页{' '}
         <select value={limit} onChange={(event) => onLimit(Number(event.target.value))}>
@@ -162,10 +152,10 @@ export function FinancePagination({
         </select>
       </label>
       <div>
-        <button type="button" aria-label="上一页" disabled={preview?.previousCursor === undefined} onClick={() => onCursor(preview?.previousCursor)}>
+        <button type="button" aria-label="上一页" disabled>
           <FinanceIcon name="arrowLeft" />
         </button>
-        <span aria-label={`第 ${preview?.page ?? 1} 页`}>{preview?.page ?? 1}</span>
+        <span aria-label="第 1 页">1</span>
         <button type="button" aria-label="下一页" disabled={page.nextCursor === undefined} onClick={() => onCursor(page.nextCursor)}>
           <FinanceIcon name="arrowRight" />
         </button>

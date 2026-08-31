@@ -7,8 +7,14 @@ export class QueueJob implements Job<void> {
   readonly id: string;
   private readonly runner: JobRunner;
 
-  constructor(id: string, pool: DatabasePool, config: JobRunnerConfig, private readonly processor: JobProcessor, deadletter?: JobDeadletter,
-    metrics?: JobMetrics) {
+  constructor(
+    id: string,
+    pool: DatabasePool,
+    config: JobRunnerConfig,
+    private readonly processor: JobProcessor,
+    deadletter?: JobDeadletter,
+    metrics?: JobMetrics
+  ) {
     this.id = id;
     this.runner = new JobRunner(pool, config, deadletter, metrics);
   }

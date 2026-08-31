@@ -1,7 +1,11 @@
 export type RiskCaseState = 'open' | 'reviewing' | 'cleared' | 'confirmed' | 'closed';
 
 export class RiskCase {
-  constructor(readonly id: string, readonly state: RiskCaseState, readonly decisionActor: string | null) {
+  constructor(
+    readonly id: string,
+    readonly state: RiskCaseState,
+    readonly decisionActor: string | null
+  ) {
     if (!id) throw new Error('RISK_CASE_INVALID');
   }
 

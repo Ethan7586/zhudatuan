@@ -1,6 +1,6 @@
 import type { CommerceModule } from '../bootstrap/ModuleRegistry';
-import { RuntimeModule } from '../modules/RuntimeModule';
-import { ObservabilityModule } from '../modules/observability/ObservabilityModule';
+import { RuntimeModule } from '../foundation/application/RuntimeModule';
+import { ObservabilityModule } from '../foundation/telemetry/ObservabilityModule';
 import { AccessModule } from '../modules/access/AccessModule';
 import { AuditModule } from '../modules/audit/AuditModule';
 import { BenefitModule } from '../modules/benefit/BenefitModule';
@@ -25,20 +25,49 @@ import { PaymentModule } from '../modules/payment/PaymentModule';
 import { PricingModule } from '../modules/pricing/PricingModule';
 import { QualificationModule } from '../modules/qualification/QualificationModule';
 import { ReportingModule } from '../modules/reporting/ReportingModule';
+import { ReferralModule } from '../modules/referral/ReferralModule';
 import { RiskModule } from '../modules/risk/RiskModule';
 import { SupportModule } from '../modules/support/SupportModule';
 import { VerificationModule } from '../modules/verification/VerificationModule';
 import { VoucherModule } from '../modules/voucher/VoucherModule';
+import { NavigationModule } from '../modules/navigation/NavigationModule';
 import { EVENT_SCHEMA_TYPES } from './events';
 
 export const BUSINESS_MODULES: readonly CommerceModule[] = Object.freeze([
-  IdentityModule, OrganizationModule, AccessModule, CapabilityModule, PartnerModule, MemberModule, QualificationModule,
-  CatalogModule, PricingModule, InventoryModule, ExperienceModule, MarketingModule, CartModule, CheckoutModule, OrderModule,
-  FulfillmentModule, VerificationModule, PaymentModule, VoucherModule, BenefitModule, FinanceModule, ChannelModule, SupportModule,
-  NotificationModule, ReportingModule, RiskModule, AuditModule, ExtensionModule,
+  IdentityModule,
+  OrganizationModule,
+  AccessModule,
+  CapabilityModule,
+  PartnerModule,
+  MemberModule,
+  QualificationModule,
+  CatalogModule,
+  PricingModule,
+  InventoryModule,
+  ExperienceModule,
+  MarketingModule,
+  CartModule,
+  CheckoutModule,
+  OrderModule,
+  FulfillmentModule,
+  VerificationModule,
+  PaymentModule,
+  VoucherModule,
+  BenefitModule,
+  FinanceModule,
+  ChannelModule,
+  SupportModule,
+  NotificationModule,
+  ReportingModule,
+  ReferralModule,
+  RiskModule,
+  AuditModule,
+  ExtensionModule,
 ]);
 
-export const COMMERCE_MODULES: readonly CommerceModule[] = Object.freeze([RuntimeModule, ObservabilityModule, ...BUSINESS_MODULES]);
+export const SUPPORT_MODULES: readonly CommerceModule[] = Object.freeze([NavigationModule]);
+export const COMMERCE_MODULES: readonly CommerceModule[] = Object.freeze([RuntimeModule, ObservabilityModule, ...SUPPORT_MODULES, ...BUSINESS_MODULES]);
 
-if (BUSINESS_MODULES.length !== 28 || new Set(BUSINESS_MODULES.map(({ id }) => id)).size !== 28) throw new Error('BUSINESS_MODULE_CATALOG_INVALID');
+if (BUSINESS_MODULES.length !== 29 || new Set(BUSINESS_MODULES.map(({ id }) => id)).size !== 29) throw new Error('BUSINESS_MODULE_CATALOG_INVALID');
+if (SUPPORT_MODULES.length !== 1 || new Set(SUPPORT_MODULES.map(({ id }) => id)).size !== 1) throw new Error('SUPPORT_MODULE_CATALOG_INVALID');
 if (new Set<string>(EVENT_SCHEMA_TYPES).size !== EVENT_SCHEMA_TYPES.length) throw new Error('EVENT_SCHEMA_CATALOG_DUPLICATE');

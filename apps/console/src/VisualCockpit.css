@@ -1,0 +1,128 @@
+/* Cockpit and control room: premium executive surfaces without changing data. */
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpithero, .controlhero) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--sw-disabled) 18%, transparent);
+  background: radial-gradient(circle at 85% 130%, color-mix(in srgb, var(--sw-brand) 24%, transparent), transparent 17rem), linear-gradient(135deg, var(--sw-brand) 0%, var(--sw-brand-dark) 58%, var(--sw-brand-ink) 100%);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--sw-brand-ink) 15%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpithero, .controlhero)::after {
+  position: absolute;
+  z-index: -1;
+  top: -70px;
+  right: 11%;
+  width: 220px;
+  height: 220px;
+  border: 1px solid color-mix(in srgb, var(--sw-disabled) 12%, transparent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 34px color-mix(in srgb, var(--sw-disabled) 4%, transparent),
+    0 0 0 70px color-mix(in srgb, var(--sw-disabled) 2%, transparent);
+  content: '';
+}
+
+.consolelayout[data-visual-theme='console-v1'] .cockpithero h1,
+.consolelayout[data-visual-theme='console-v1'] .controlhero h1 {
+  letter-spacing: -0.025em;
+  text-shadow: 0 2px 9px color-mix(in srgb, var(--sw-brand-ink) 18%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article,
+.consolelayout[data-visual-theme='console-v1'] .cockpitcard,
+.consolelayout[data-visual-theme='console-v1'] .controlcard {
+  position: relative;
+  border-color: var(--vi-line);
+  box-shadow: var(--vi-shadow-card);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article {
+  overflow: hidden;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--vi-brand);
+  content: '';
+  opacity: 0.88;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article:nth-child(2)::before {
+  opacity: 0.68;
+}
+.consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article:nth-child(3)::before {
+  opacity: 0.48;
+}
+.consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article:nth-child(4)::before {
+  opacity: 0.3;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .cockpitmetricband strong {
+  letter-spacing: -0.025em;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpitcard, .controlcard) {
+  border-radius: var(--vi-radius-card);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpitcard, .controlcard) h2 {
+  color: var(--vi-ink);
+  letter-spacing: -0.015em;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .cockpitchart {
+  height: auto;
+  aspect-ratio: 560 / 224;
+  filter: drop-shadow(0 3px 5px color-mix(in srgb, var(--sw-brand) 5%, transparent));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .malltrack {
+  background: var(--sw-brand-light);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .malltrack i {
+  background: linear-gradient(135deg, var(--sw-brand) 0%, var(--sw-brand-dark) 100%);
+  box-shadow: 0 2px 5px color-mix(in srgb, var(--sw-brand) 16%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .businessinsights article {
+  border-color: var(--sw-border-strong);
+  background: linear-gradient(135deg, var(--sw-surface-subtle), var(--sw-surface));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .businessinsights article[data-tone='warning'] {
+  border-color: var(--sw-border-strong);
+  background: linear-gradient(135deg, var(--sw-danger-surface), var(--sw-surface));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .incidentqueue article {
+  border-color: var(--vi-line);
+  border-radius: 9px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 3%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .incidentqueue article[data-selected='true'] {
+  border-color: var(--sw-border-strong);
+  background: var(--sw-surface-subtle);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-brand) 7%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] article[data-priority='P2'] .prioritytag {
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .capabilitynode {
+  border-color: var(--sw-border-strong);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 3%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .capabilitynode[data-affected='true'] {
+  transform: none;
+}

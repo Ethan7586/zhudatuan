@@ -12,20 +12,21 @@ export class CreateExport {
   execute(request: OperationRequest, database: OperationDatabase, report: ExportReport, filter: Readonly<Record<string, unknown>>) {
     if (JSON.stringify(filter).length > 16_384) throw new Error('REPORT_FILTER_TOO_LARGE');
     const access = requireAccess(request);
-    return this.factory(database).createExport({ id: `export:${randomUUID()}`, scope: access.scope.id, report, filter,
-      actor: access.actor.id, membership: access.membership.id, trace: access.trace });
+    return this.factory(database).createExport({ id: `export:${randomUUID()}`, scope: access.scope.id, report, filter, actor: access.actor.id, membership: access.membership.id, trace: access.trace });
   }
 }
 
 export function createExportOperations(factory: ReportingFactory<OperationDatabase>): OperationActions {
   const usecase = new CreateExport(factory);
-  return { 'reporting.exports.create': async (request, database) => {
-    const body = bodyRecord(request);
-    const report = exportReport(typeof body.report === 'string' ? body.report : 'metrics');
-    const filter = record(body.filter ?? {});
-    const job = await usecase.execute(request, database, report, filter);
-    return { status: 202, body: job };
-  } };
+  return {
+    'reporting.exports.create': async (request, database) => {
+      const body = bodyRecord(request);
+      const report = exportReport(typeof body.report === 'string' ? body.report : 'metrics');
+      const filter = record(body.filter ?? {});
+      const job = await usecase.execute(request, database, report, filter);
+      return { status: 202, body: job };
+    },
+  };
 }
 
 function record(value: unknown): Readonly<Record<string, unknown>> {

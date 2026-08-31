@@ -9,4 +9,4 @@ Catalog 与 Experience 是商品和商城装修真值；OSS/CDN 只保存已发�
 - Storefront 与 Miniapp 读取同一 Version/Hash；Checkout 仍通过 Commerce 重验资格、价格、库存和有效期。
 - 图片上传执行大小、MIME、Magic Bytes、恶意软件、Image Bomb 与 Scope 校验；私有对象只返回短期签名 URL。
 
-生产静态发布由签名 Release Bundle 和 `infrastructure/aliyun/deploy.sh` 完成，不保留独立发布脚本、浏览器直传、测试 Bucket 默认值或本地文件回退。
+生产静态发布由签名 Release Bundle 和 `infrastructure/cloud/Deploy.sh` 完成，不保留独立发布脚本、浏览器直传、测试 Bucket 默认值或本地文件回退。

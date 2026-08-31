@@ -4,4 +4,3 @@ import { report } from './report.mjs';
 
 const context = graphContext();
 report('operations', auditOperations(context.production, context.tests));
-

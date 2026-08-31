@@ -1,2 +1,1 @@
 import '../check/generated.mjs';
-

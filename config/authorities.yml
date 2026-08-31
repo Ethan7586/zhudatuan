@@ -1,9 +1,40 @@
-version: 1
+version: 3
 requirements:
-  logicalSource: RepositoryAuthority docs/福利商城功能清单260821.xlsx
-  repositoryRelativePath: docs/福利商城功能清单260821.xlsx
-  sha256: 78cfc3b350ced633afd6bfc951f2d2a94991780fa1d4b6d571e9f1d3df322942
+  logicalSource: RepositoryAuthority docs/福利商城功能清单.xlsx
+  repositoryRelativePath: docs/福利商城功能清单.xlsx
+  sha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
+  sheet: MVP上线功能清单
+  range: A1:F24
+  parserVersion: 3
+  generatorVersion: 3
+  generatedAt: 2026-08-31T12:35:48.000Z
   sheets:
     requirements: 296
-    mvp: 21
+    mvp: 22
     providers: 20
+architecture:
+  logicalSource: RepositoryAuthority docs/architecture/商城优化方案.md
+  repositoryRelativePath: docs/architecture/商城优化方案.md
+  sha256: c8bab35c0b67e59b972f99f5be80bb799265f6eb53e7a6505ae12353a695d8d7
+visuals:
+  logicalSource: RepositoryAuthority config/visuals.yml
+  repositoryRelativePath: config/visuals.yml
+  sha256: 48a0c65900ac1eb4933d5328333be9f945603eee4881e6412ff4b9d5dd43926d
+navigation:
+  logicalSource: RepositoryAuthority config/navigation.yml
+  repositoryRelativePath: config/navigation.yml
+  generator: tools/navigationgen
+  outputs:
+    - services/commerce/src/modules/navigation/infrastructure/catalog/NavigationCatalog.ts
+    - apps/console/src/generated/NavigationBinding.ts
+    - apps/storefront/src/generated/NavigationBinding.ts
+    - evidence/navigation/catalog.json
+contract:
+  logicalSource: RepositoryAuthority packages/contract/definitions
+  repositoryRelativePath: packages/contract/definitions
+  generator: tools/contractgen
+  version: 3.0.0
+  outputs:
+    - packages/contract/src/generated
+    - packages/sdk/src/generated
+    - services/commerce/src/generated

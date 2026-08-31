@@ -6,8 +6,12 @@
   box-shadow: var(--sw-shadow-card);
 }
 
-.resourcepanel > .resourceactions { margin-top: var(--sw-space-2); }
-.resourceheading h1 { margin-bottom: var(--sw-space-0-5); }
+.resourcepanel > .resourceactions {
+  margin-top: var(--sw-space-2);
+}
+.resourceheading h1 {
+  margin-bottom: var(--sw-space-0-5);
+}
 
 .resourceheading p {
   max-width: 70rem;
@@ -36,7 +40,9 @@
 }
 
 .metriccard > span,
-.metriccard > small { color: var(--sw-muted); }
+.metriccard > small {
+  color: var(--sw-muted);
+}
 
 .metriccard > strong {
   color: var(--sw-text);
@@ -44,9 +50,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.metricsuccess { border-color: var(--sw-success); }
-.metricwarning { border-color: var(--sw-warning); }
-.metricdanger { border-color: var(--sw-danger); }
+.metricsuccess {
+  border-color: var(--sw-success);
+}
+.metricwarning {
+  border-color: var(--sw-warning);
+}
+.metricdanger {
+  border-color: var(--sw-danger);
+}
 
 .capabilitynote {
   border: 0.0625rem solid var(--sw-warning);

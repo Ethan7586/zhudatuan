@@ -1,4 +1,5 @@
 import type { CockpitSales } from './CockpitSchema';
+import { useRouteTitle } from '../../shared/ui/RouteTitle';
 
 export interface CockpitHeroProps {
   readonly sales: CockpitSales;
@@ -6,11 +7,12 @@ export interface CockpitHeroProps {
 
 export function CockpitHero({ sales }: CockpitHeroProps) {
   const period = sales.period;
+  const title = useRouteTitle('经营驾驶舱');
   return (
     <section className="cockpithero" aria-labelledby="cockpittitle">
       <div>
         <p className="cockpiteyebrow">BUSINESS PERFORMANCE</p>
-        <h1 id="cockpittitle">经营驾驶舱</h1>
+        <h1 id="cockpittitle">{title}</h1>
         <p className="cockpitconclusion">{sales.conclusion ?? '经营结论等待服务端权威读模型。'}</p>
         <p className="cockpitperiod">{period === undefined ? '统计周期未返回' : `${period.from}—${period.to}`}</p>
       </div>

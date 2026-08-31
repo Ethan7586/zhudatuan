@@ -17,10 +17,10 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
   postgresPassword: 'POSTGRES_PASSWORD',
   postgresApiPassword: 'SHOPAPP_PASSWORD',
   postgresJobsPassword: 'SHOPJOB_PASSWORD',
+  postgresProviderPassword: 'SHOPPROVIDER_PASSWORD',
   postgresMigrationPassword: 'SHOPMIGRATION_PASSWORD',
   redisPassword: 'REDIS_PASSWORD',
   nodeExtraCaCertificates: 'NODE_EXTRA_CA_CERTS',
-  runtimeProfile: 'LOCAL_RUNTIME_PROFILE',
   adminDatabaseConnectionRef: 'LOCAL_ADMIN_DATABASE_CONNECTION_REF',
   migrationDatabaseConnectionRef: 'MIGRATION_DATABASE_CONNECTION_REF',
   ethanPasswordRef: 'LOCAL_ETHAN_PASSWORD_REF',
@@ -53,7 +53,7 @@ export interface LocalSeedEnvironment {
   readonly secretStoreBearerToken: string;
 }
 
-export interface LocalIdentityInfrastructureEnvironment {
+export interface LocalSecurityEnvironment {
   readonly kmsBearerToken: string;
   readonly kmsMasterKey: string;
   readonly kmsPort: number;
@@ -64,20 +64,7 @@ export interface LocalIdentityInfrastructureEnvironment {
   readonly tlsKeyFile: string;
 }
 
-const IDENTITY_INFRASTRUCTURE_KEYS = new Set([
-  'APP_ENV','LOCAL_RUNTIME_PROFILE','LOCAL_TLS_KEY_FILE','LOCAL_TLS_CERT_FILE','LOCAL_SECRETS_FILE','LOCAL_SECRETS_PORT',
-  'LOCAL_KMS_PORT','LOCAL_KMS_MASTER_KEY','LOCAL_KMS_BEARER_TOKEN','LOCAL_SECRET_STORE_BEARER_TOKEN','NODE_EXTRA_CA_CERTS',
-]);
-const LOCAL_CONFIGURATION_KEY = /^(?:APP_ENV$|LOCAL_|NODE_EXTRA_CA_CERTS$|OBJECT_|REDIS_)/;
-
-export function localIdentityInfrastructureEnvironment(
-  source: EnvironmentSource = processEnvironment(),
-): LocalIdentityInfrastructureEnvironment {
-  if (source.LOCAL_RUNTIME_PROFILE === 'registration-only') {
-    for (const key of Object.keys(source).filter((candidate) => LOCAL_CONFIGURATION_KEY.test(candidate)
-      && !IDENTITY_INFRASTRUCTURE_KEYS.has(candidate)).sort()) throw new Error(`IDENTITY_INTERNAL_RUNTIME_KEY_FORBIDDEN:${key}`);
-    if (source.APP_ENV !== 'production') throw new Error('IDENTITY_INTERNAL_RUNTIME_PRODUCTION_REQUIRED');
-  } else if (source.LOCAL_RUNTIME_PROFILE !== undefined) throw new Error('IDENTITY_INTERNAL_RUNTIME_PROFILE_INVALID');
+export function localSecurityEnvironment(source: EnvironmentSource = processEnvironment()): LocalSecurityEnvironment {
   const kmsBearerToken = bearerToken(source.LOCAL_KMS_BEARER_TOKEN, 'LOCAL_KMS_BEARER_TOKEN_INVALID');
   const secretStoreBearerToken = bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearerToken, secretStoreBearerToken, 'LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');

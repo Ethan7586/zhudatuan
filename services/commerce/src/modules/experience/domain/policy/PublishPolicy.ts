@@ -11,7 +11,9 @@ export interface PublicationEvidence {
 
 export class PublishPolicy {
   assertPublishable(evidence: PublicationEvidence): void {
-    const failed = Object.entries(evidence).filter(([, valid]) => !valid).map(([name]) => name);
+    const failed = Object.entries(evidence)
+      .filter(([, valid]) => !valid)
+      .map(([name]) => name);
     if (failed.length > 0) throw new DomainError('EXPERIENCE_PUBLICATION_INVALID', { failed });
   }
 }

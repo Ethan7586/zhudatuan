@@ -23,12 +23,21 @@ export function sandboxCatalogBootstrapEnvironment(source: NodeJS.ProcessEnv): S
   }
   const connectionString = required(source.ZHUDATUAN_SANDBOX_CATALOG_DATABASE_URL, 'SANDBOX_CATALOG_DATABASE_URL_REQUIRED');
   let databaseUrl: URL;
-  try { databaseUrl = new URL(connectionString); }
-  catch { throw new Error('SANDBOX_CATALOG_DATABASE_URL_INVALID'); }
-  if (!['postgres:', 'postgresql:'].includes(databaseUrl.protocol) || databaseUrl.hash || databaseUrl.search
-    || databaseUrl.hostname !== DATABASE_HOST || databaseUrl.port !== DATABASE_PORT
-    || decodeURIComponent(databaseUrl.pathname.slice(1)) !== DATABASE_NAME
-    || decodeURIComponent(databaseUrl.username) !== DATABASE_ROLE || databaseUrl.password.length < 16) {
+  try {
+    databaseUrl = new URL(connectionString);
+  } catch {
+    throw new Error('SANDBOX_CATALOG_DATABASE_URL_INVALID');
+  }
+  if (
+    !['postgres:', 'postgresql:'].includes(databaseUrl.protocol) ||
+    databaseUrl.hash ||
+    databaseUrl.search ||
+    databaseUrl.hostname !== DATABASE_HOST ||
+    databaseUrl.port !== DATABASE_PORT ||
+    decodeURIComponent(databaseUrl.pathname.slice(1)) !== DATABASE_NAME ||
+    decodeURIComponent(databaseUrl.username) !== DATABASE_ROLE ||
+    databaseUrl.password.length < 16
+  ) {
     throw new Error('SANDBOX_CATALOG_DATABASE_ENDPOINT_INVALID');
   }
   const expectedDatabase = required(source.ZHUDATUAN_SANDBOX_CATALOG_DATABASE_NAME, 'SANDBOX_CATALOG_DATABASE_NAME_REQUIRED');

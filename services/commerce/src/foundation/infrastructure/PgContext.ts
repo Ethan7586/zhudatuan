@@ -1,4 +1,4 @@
-import type { Transaction, TransactionContext } from '../application/UnitOfWork';
+import type { Transaction, TransactionContext } from '../persistence/UnitOfWork';
 import { applyApiDatabaseContext, applyJobDatabaseContext } from './DatabaseContext';
 
 export class PgContext {

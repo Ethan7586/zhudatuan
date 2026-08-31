@@ -99,8 +99,7 @@ function validatePrepayInput(input: WechatPayPrepayInput): void {
   if (!/^[A-Za-z0-9_-]{8,128}$/.test(input.payerOpenid)) {
     throw new WechatPayProtocolError('WECHAT_PAY_PAYER_OPENID_INVALID');
   }
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?[+-]\d{2}:\d{2}$/.test(input.expiresAt)
-    || !Number.isFinite(Date.parse(input.expiresAt))) throw new WechatPayProtocolError('WECHAT_PAY_EXPIRES_AT_INVALID');
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?[+-]\d{2}:\d{2}$/.test(input.expiresAt) || !Number.isFinite(Date.parse(input.expiresAt))) throw new WechatPayProtocolError('WECHAT_PAY_EXPIRES_AT_INVALID');
 }
 
 function validateRefundInput(input: WechatPayRefundInput): void {

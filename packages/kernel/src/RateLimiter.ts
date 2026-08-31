@@ -6,7 +6,11 @@ export class RateLimiter {
   private updatedAt: number;
   private chain = Promise.resolve();
 
-  constructor(private readonly ratePerSecond: number, private readonly capacity = Math.max(1, ratePerSecond), private readonly now: () => number = Date.now) {
+  constructor(
+    private readonly ratePerSecond: number,
+    private readonly capacity = Math.max(1, ratePerSecond),
+    private readonly now: () => number = Date.now
+  ) {
     if (!Number.isFinite(ratePerSecond) || ratePerSecond <= 0 || !Number.isSafeInteger(capacity) || capacity < 1) throw new Error('RATE_LIMITER_INVALID');
     this.tokens = capacity;
     this.updatedAt = now();
@@ -23,13 +27,13 @@ export class RateLimiter {
       deadline.throwIfExpired();
       const now = this.now();
       const elapsed = Math.max(0, now - this.updatedAt);
-      this.tokens = Math.min(this.capacity, this.tokens + elapsed * this.ratePerSecond / 1000);
+      this.tokens = Math.min(this.capacity, this.tokens + (elapsed * this.ratePerSecond) / 1000);
       this.updatedAt = now;
       if (this.tokens >= 1) {
         this.tokens -= 1;
         return;
       }
-      const delay = Math.ceil((1 - this.tokens) * 1000 / this.ratePerSecond);
+      const delay = Math.ceil(((1 - this.tokens) * 1000) / this.ratePerSecond);
       if (delay > deadline.remaining()) throw new Error('DEADLINE_EXCEEDED');
       await wait(delay, deadline.signal);
     }

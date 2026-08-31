@@ -9,6 +9,8 @@ export interface Cache {
   start(): Promise<void>;
   get<T>(key: string): Promise<T | null>;
   put<T>(key: string, value: T, seconds: number): Promise<boolean>;
+  setnx<T>(key: string, value: T, seconds: number): Promise<boolean>;
+  compareDelete<T>(key: string, expected: T): Promise<boolean>;
   remove(...keys: readonly string[]): Promise<boolean>;
   state(): CacheState;
   close(): Promise<void>;

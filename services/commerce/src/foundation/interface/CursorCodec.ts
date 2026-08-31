@@ -27,7 +27,6 @@ export class CursorCodec {
   }
 
   private validate(position: Readonly<{ sort: unknown; id: unknown }>): void {
-    if (typeof position.sort !== 'string' || position.sort.length === 0 || position.sort.length > 512
-      || typeof position.id !== 'string' || position.id.length === 0 || position.id.length > 512) throw new Error('CURSOR_POSITION_INVALID');
+    if (typeof position.sort !== 'string' || position.sort.length === 0 || position.sort.length > 512 || typeof position.id !== 'string' || position.id.length === 0 || position.id.length > 512) throw new Error('CURSOR_POSITION_INVALID');
   }
 }

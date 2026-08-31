@@ -1,0 +1,248 @@
+.consolelayout[data-route='applications'] {
+  --vi-route-accent: var(--sw-brand);
+  --vi-route-soft: var(--sw-brand-light);
+}
+
+.commerceworkspace {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.commerceworkspace .resourcepanel {
+  overflow: visible;
+}
+
+.commercecontent {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+}
+
+.commerceownership,
+.commerceboundarybanner {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--sw-border);
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--sw-surface-subtle), var(--sw-surface));
+  padding: 10px 14px;
+}
+
+.commerceownershipicon,
+.commerceboundaryicon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: var(--vi-route-soft);
+  color: var(--vi-route-accent);
+  font-size: 12px;
+  font-weight: 800;
+  place-items: center;
+}
+
+.commerceownership div,
+.commerceboundarybanner div {
+  min-width: 0;
+  flex: 1;
+}
+.commerceownership strong,
+.commerceboundarybanner strong {
+  display: block;
+  color: var(--vi-ink);
+  font-size: 12px;
+  line-height: 19px;
+}
+.commerceownership p,
+.commerceboundarybanner p {
+  margin: 1px 0 0;
+  color: var(--sw-muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.commerceversionrule {
+  display: inline-flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 9px;
+  background: var(--sw-surface);
+  padding: 0 11px;
+  color: var(--vi-brand);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.commercesummary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.commercesummary article {
+  position: relative;
+  display: grid;
+  min-height: 106px;
+  align-content: center;
+  overflow: hidden;
+  border: 1px solid var(--vi-line);
+  border-radius: 14px;
+  background: var(--sw-surface);
+  padding: 14px 16px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 3%, transparent);
+}
+
+.commercesummary article::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--sw-disabled);
+  content: '';
+}
+
+.commercesummary article.is-success::before {
+  background: var(--vi-success);
+}
+.commercesummary article.is-warning::before {
+  background: var(--vi-warning);
+}
+.commercesummary article.is-danger::before {
+  background: var(--vi-danger);
+}
+.commercesummary article.is-info::before {
+  background: var(--vi-brand);
+}
+.commercesummary span {
+  color: var(--sw-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+.commercesummary strong {
+  margin-top: 6px;
+  color: var(--vi-ink);
+  font-size: clamp(21px, 1.7vw, 27px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.commercesummary small {
+  margin-top: 7px;
+  overflow: hidden;
+  color: var(--sw-disabled);
+  font-size: 10px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commerceboundarybanner {
+  border-color: var(--sw-border-strong);
+  background: linear-gradient(90deg, var(--sw-warning-surface), var(--sw-surface));
+}
+
+.commerceboundaryicon {
+  border-radius: 50%;
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+.commerceboundarybanner strong {
+  color: var(--sw-warning-strong);
+}
+.commerceboundarybanner p {
+  color: var(--sw-warning-strong);
+}
+.commerceboundarybanner button,
+.commerceempty button {
+  min-height: 32px;
+  border: 1px solid currentColor;
+  border-radius: 9px;
+  background: var(--sw-surface);
+  padding: 0 11px;
+  color: var(--sw-warning-strong);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.commerceflow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.commerceflow li {
+  position: relative;
+  display: flex;
+  min-height: 66px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--vi-line);
+  border-radius: 11px;
+  background: var(--sw-surface);
+  padding: 10px 11px;
+}
+
+.commerceflow li:not(:last-child)::after {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: -7px;
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid var(--sw-disabled);
+  border-right: 1px solid var(--sw-disabled);
+  content: '';
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.commerceflow li > span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--sw-brand-light);
+  color: var(--vi-brand);
+  font-size: 10px;
+  font-weight: 800;
+  place-items: center;
+}
+.commerceflow li:last-child {
+  border-color: var(--sw-border-strong);
+  background: var(--sw-background);
+}
+.commerceflow li:last-child > span {
+  background: var(--sw-border);
+  color: var(--sw-success-strong);
+}
+.commerceflow div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.commerceflow strong {
+  color: var(--sw-sidebar-top);
+  font-size: 11px;
+}
+.commerceflow small {
+  overflow: hidden;
+  color: var(--sw-disabled);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

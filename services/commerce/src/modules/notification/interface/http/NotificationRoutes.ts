@@ -10,13 +10,23 @@ import { getAnnouncementOperations } from '../../application/query/GetAnnounceme
 import { getNotificationsOperations } from '../../application/query/GetNotifications';
 import { getTemplateOperations } from '../../application/query/GetTemplates';
 import { PgNotificationRepository } from '../../infrastructure/persistence/PgNotificationRepository';
+import { NOTIFICATION_IDENTITY_PORT } from '../../../identity/public/index';
+import { MEMBER_ACCESS_PORT } from '../../../access/public';
+import { ORGANIZATION_READ_PORT } from '../../../organization/public';
 
 export function notificationRoutes(context: ModuleContext): ModuleOperations {
-  const pool = context.container.get(DATABASE_POOL); const kms = context.container.get(KMS_CLIENT);
-  const repositories = (database: ConstructorParameters<typeof PgNotificationRepository>[0]) => new PgNotificationRepository(database);
-  return new ModuleOperations('notification', pool, context.container.get(AUDIT_SINK), {
-    ...getNotificationsOperations(repositories), ...changePreferenceOperations(kms, pool, repositories),
-    ...getTemplateOperations(repositories), ...saveTemplateOperations(repositories),
-    ...getAnnouncementOperations(repositories), ...saveAnnouncementOperations(repositories),
+  const pool = context.service(DATABASE_POOL);
+  const kms = context.service(KMS_CLIENT);
+  const identity = context.ports.get(NOTIFICATION_IDENTITY_PORT);
+  const members = context.ports.get(MEMBER_ACCESS_PORT);
+  const organizations = context.ports.get(ORGANIZATION_READ_PORT);
+  const repositories = (database: ConstructorParameters<typeof PgNotificationRepository>[0]) => new PgNotificationRepository(database, identity, members, organizations);
+  return new ModuleOperations('notification', pool, context.service(AUDIT_SINK), {
+    ...getNotificationsOperations(repositories),
+    ...changePreferenceOperations(kms, repositories),
+    ...getTemplateOperations(repositories),
+    ...saveTemplateOperations(repositories),
+    ...getAnnouncementOperations(repositories),
+    ...saveAnnouncementOperations(repositories),
   });
 }

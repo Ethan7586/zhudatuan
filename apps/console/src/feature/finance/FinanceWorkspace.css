@@ -10,11 +10,15 @@
    changing the shell's global presentation for other consoles. */
 body:has(.financeworkspace) .commandtrigger > span,
 body:has(.financeworkspace) .commandtrigger > kbd {
-  color: var(--sw-muted);
+  color: var(--sw-text-secondary);
 }
 
 body:has(.financeworkspace) .scopestatus > span {
-  color: var(--sw-muted);
+  color: var(--sw-text-secondary);
+}
+
+body:has(.financeworkspace) .financeimmutablealert > p {
+  color: var(--sw-warning-strong);
 }
 
 .financeprofessionalworkspace {

@@ -16,15 +16,24 @@ test('every contract operation has one executable route and path parameters roun
   assert.equal(routes.match('GET', '/api/v1/not-declared'), null);
 });
 
-test('all twenty-eight bounded contexts plus runtime and observability have a deterministic dependency order', async () => {
-  assert.equal(BUSINESS_MODULES.length, 28);
-  assert.equal(COMMERCE_MODULES.length, 30);
+test('all bounded contexts, support modules, runtime and observability have a deterministic dependency order', async () => {
+  assert.equal(BUSINESS_MODULES.length, 29);
+  assert.equal(COMMERCE_MODULES.length, 32);
   const registry = new ModuleRegistry();
   const loaded: string[] = [];
-  for (const module of COMMERCE_MODULES) registry.add({ id: module.id, dependencies: module.dependencies, register: () => { loaded.push(module.id); } });
+  for (const module of COMMERCE_MODULES)
+    registry.add({
+      id: module.id,
+      dependencies: module.dependencies,
+      services: [],
+      bind: () => [],
+      register: () => {
+        loaded.push(module.id);
+      },
+    });
   await registry.load({} as never);
-  assert.equal(loaded.length, 30);
-  assert.equal(new Set(loaded).size, 30);
+  assert.equal(loaded.length, COMMERCE_MODULES.length);
+  assert.equal(new Set(loaded).size, COMMERCE_MODULES.length);
   for (const module of COMMERCE_MODULES) for (const dependency of module.dependencies) assert.ok(loaded.indexOf(dependency) < loaded.indexOf(module.id));
 });
 
@@ -39,5 +48,5 @@ test('module dependency cycle and missing dependency both fail startup', async (
 });
 
 function module(id: string, dependencies: readonly string[]): CommerceModule {
-  return { id, dependencies, register: () => undefined };
+  return { id, dependencies, services: [], bind: () => [], register: () => undefined };
 }

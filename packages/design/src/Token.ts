@@ -4,6 +4,7 @@
 export const token = Object.freeze({
   color: Object.freeze({
     brand: '#1F5EFF',
+    brandDark: '#143A8F',
     danger: '#B91C1C',
     warning: '#92400E',
     success: '#087A55',

@@ -147,10 +147,7 @@ function declaresBusinessIdentifier(node, sourceFile) {
   if (ts.isEnumMember(node)) return true;
   if (ts.isPropertyAssignment(node)) return false;
   const name = declarationName(node, sourceFile);
-  return (
-    /(?:^|_)(?:codes|types|operations|errors|capabilities|events|permissions|catalog|definitions)$/i.test(name) ||
-    /(?:Codes|Types|Operations|Errors|Capabilities|Events|Permissions|Catalog|Definitions)$/.test(name)
-  );
+  return /(?:^|_)(?:codes|types|operations|errors|capabilities|events|permissions|catalog|definitions)$/i.test(name) || /(?:Codes|Types|Operations|Errors|Capabilities|Events|Permissions|Catalog|Definitions)$/.test(name);
 }
 
 function packageManifests(directory, values) {

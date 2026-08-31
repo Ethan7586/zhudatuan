@@ -29,12 +29,16 @@ interface UploadState {
 export class LocalObjects {
   private readonly uploads = new Map<string, UploadState>();
 
-  constructor(private readonly directory: string, private readonly token: string, private readonly publicEndpoint: string) {
+  constructor(
+    private readonly directory: string,
+    private readonly token: string,
+    private readonly publicEndpoint: string
+  ) {
     if (token.length < 16 || !publicEndpoint.startsWith('https://')) throw new Error('LOCAL_OBJECTS_CONFIGURATION_INVALID');
   }
 
   async initialize(): Promise<void> {
-    await Promise.all(['objects', 'metadata', 'paths', 'temporary'].map(name => mkdir(join(this.directory, name), { recursive: true })));
+    await Promise.all(['objects', 'metadata', 'paths', 'temporary'].map((name) => mkdir(join(this.directory, name), { recursive: true })));
   }
 
   authorizeHeader(header: string | undefined): void {
@@ -66,11 +70,10 @@ export class LocalObjects {
 
   async complete(id: string, parts: unknown, expectedHash: unknown, expectedSize: unknown): Promise<ObjectMetadata> {
     const upload = this.upload(id);
-    if (!Number.isSafeInteger(parts) || parts !== upload.parts.length || parts === 0 || !Number.isSafeInteger(expectedSize)
-      || expectedSize !== upload.size || typeof expectedHash !== 'string' || !/^[a-f0-9]{64}$/.test(expectedHash)) {
+    if (!Number.isSafeInteger(parts) || parts !== upload.parts.length || parts === 0 || !Number.isSafeInteger(expectedSize) || expectedSize !== upload.size || typeof expectedHash !== 'string' || !/^[a-f0-9]{64}$/.test(expectedHash)) {
       throw new LocalHttpError(400, 'OBJECT_UPLOAD_INTEGRITY_INVALID');
     }
-    const bytes = Buffer.concat(upload.parts.map(part => Buffer.from(part)));
+    const bytes = Buffer.concat(upload.parts.map((part) => Buffer.from(part)));
     const sha256 = createHash('sha256').update(bytes).digest('hex');
     if (sha256 !== expectedHash) throw new LocalHttpError(400, 'OBJECT_UPLOAD_INTEGRITY_INVALID');
     const reference = `local:object:${sha256}`;
@@ -151,8 +154,12 @@ export class LocalObjects {
     return reference.slice('local:object:'.length);
   }
 
-  private metadataFile(hash: string): string { return join(this.directory, 'metadata', `${hash}.json`); }
-  private pathFile(path: string): string { return join(this.directory, 'paths', createHash('sha256').update(path).digest('hex')); }
+  private metadataFile(hash: string): string {
+    return join(this.directory, 'metadata', `${hash}.json`);
+  }
+  private pathFile(path: string): string {
+    return join(this.directory, 'paths', createHash('sha256').update(path).digest('hex'));
+  }
   private signature(reference: string, expires: number): string {
     return createHmac('sha256', this.token).update(`${reference}\n${expires}`).digest('base64url');
   }
@@ -161,11 +168,19 @@ export class LocalObjects {
 function validMetadata(value: unknown): value is ObjectMetadata {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
   const item = value as Readonly<Record<string, unknown>>;
-  return typeof item.contentType === 'string' && CONTENT_TYPE.test(item.contentType)
-    && typeof item.path === 'string' && OBJECT_PATH.test(item.path)
-    && typeof item.reference === 'string' && REFERENCE.test(item.reference)
-    && item.scan === 'clean' && typeof item.sha256 === 'string' && /^[a-f0-9]{64}$/.test(item.sha256)
-    && Number.isSafeInteger(item.size) && (item.size as number) > 0;
+  return (
+    typeof item.contentType === 'string' &&
+    CONTENT_TYPE.test(item.contentType) &&
+    typeof item.path === 'string' &&
+    OBJECT_PATH.test(item.path) &&
+    typeof item.reference === 'string' &&
+    REFERENCE.test(item.reference) &&
+    item.scan === 'clean' &&
+    typeof item.sha256 === 'string' &&
+    /^[a-f0-9]{64}$/.test(item.sha256) &&
+    Number.isSafeInteger(item.size) &&
+    (item.size as number) > 0
+  );
 }
 
 function isMissing(cause: unknown): boolean {

@@ -15,41 +15,6 @@ export const OrderListFilterSchema = z.object({
 export const OrderViewSchema = z.enum(['all', 'unpaid', 'unshipped', 'active', 'completed', 'aftersale', 'exception']);
 export const OrderDetailTabSchema = z.enum(['overview', 'products', 'payment', 'aftersale', 'operations']);
 
-const PreviewMilestoneSchema = z.object({
-  key: z.enum(['placed', 'paid', 'reserved', 'unshipped', 'shipping', 'completed']),
-  label: z.string().check(z.minLength(1)),
-  state: z.enum(['complete', 'current', 'pending', 'warning']),
-  at: z.optional(z.string().check(z.minLength(1))),
-});
-
-const PreviewOperationSchema = z.object({
-  id: z.string().check(z.minLength(1)),
-  label: z.string().check(z.minLength(1)),
-  status: z.enum(['succeeded', 'pending', 'failed']),
-  at: z.string().check(z.minLength(1)),
-});
-
-const OrderPreviewSchema = z
-  .object({
-    source: z.enum(['local-preview']),
-    memberName: z.string().check(z.minLength(1)),
-    enterpriseName: z.string().check(z.minLength(1)),
-    mallName: z.string().check(z.minLength(1)),
-    paidMinor: DatabaseIntegerSchema,
-    paymentMethod: z.string().check(z.minLength(1)),
-    benefitMinor: DatabaseIntegerSchema,
-    wechatMinor: DatabaseIntegerSchema,
-    supplierName: z.string().check(z.minLength(1)),
-    fulfillmentId: z.string().check(z.minLength(1)),
-    slaMinutes: z.optional(DatabaseIntegerSchema),
-    addressSummary: z.string().check(z.minLength(1)),
-    summary: z.string().check(z.minLength(1)),
-    milestones: z.array(PreviewMilestoneSchema),
-    operation: z.optional(PreviewOperationSchema),
-    exception: z.boolean(),
-  })
-  .check(z.refine((preview) => preview.benefitMinor + preview.wechatMinor === preview.paidMinor, { message: 'ORDER_PREVIEW_PAYMENT_SPLIT_MISMATCH' }));
-
 export const OrderSchema = z.object({
   id: z.string().check(z.minLength(1)),
   order_number: z.string().check(z.minLength(1)),
@@ -59,9 +24,9 @@ export const OrderSchema = z.object({
   total_minor: DatabaseIntegerSchema,
   currency: z.string().check(z.minLength(3), z.maxLength(3)),
   payment_state: z.enum(['unpaid', 'authorizing', 'paid', 'partially_refunded', 'refunded', 'failed']),
-  fulfillment_state: z.enum(['unallocated', 'allocated', 'processing', 'shipped', 'delivered', 'cancelled', 'returned']),
-  aftersale_state: z.enum(['none', 'requested', 'processing', 'resolved', 'rejected']),
-  lifecycle_state: z.enum(['created', 'active', 'completed', 'cancelled', 'closed']),
+  fulfillment_state: z.enum(['unallocated', 'allocated', 'processing', 'shipped', 'delivered', 'received', 'cancelled', 'returned']),
+  aftersale_state: z.enum(['none', 'applied', 'reviewing', 'approved', 'returning', 'received', 'refunding', 'resolved', 'rejected']),
+  lifecycle_state: z.enum(['created', 'awaitingpayment', 'paid', 'fulfilling', 'shipped', 'received', 'completed', 'cancelled']),
   created_at: z.string().check(z.minLength(1)),
   updated_at: z.string().check(z.minLength(1)),
   version: DatabaseIntegerSchema,
@@ -77,12 +42,13 @@ export const OrderSchema = z.object({
         totalMinor: DatabaseIntegerSchema,
         discountMinor: DatabaseIntegerSchema,
         payableMinor: DatabaseIntegerSchema,
+        productType: z.string().check(z.minLength(1)),
+        category: z.string().check(z.minLength(1)),
         provider: z.optional(z.nullable(z.string())),
         partner: z.optional(z.nullable(z.string())),
       })
     )
   ),
-  preview: z.optional(OrderPreviewSchema),
 });
 
 export const OrderPageSchema = z
@@ -90,29 +56,8 @@ export const OrderPageSchema = z
     items: z.array(OrderSchema).check(z.maxLength(50)),
     count: z.int().check(z.nonnegative()),
     nextCursor: z.optional(z.string().check(z.minLength(1))),
-    preview: z.optional(
-      z.object({
-        source: z.enum(['local-preview']),
-        total: z.int().check(z.nonnegative()),
-        updatedAt: z.string().check(z.minLength(1)),
-        page: z.int().check(z.positive()),
-        previousCursor: z.optional(z.string().check(z.minLength(1))),
-        counts: z.object({
-          all: z.int().check(z.nonnegative()),
-          unpaid: z.int().check(z.nonnegative()),
-          unshipped: z.int().check(z.nonnegative()),
-          active: z.int().check(z.nonnegative()),
-          completed: z.int().check(z.nonnegative()),
-          aftersale: z.int().check(z.nonnegative()),
-          exception: z.int().check(z.nonnegative()),
-        }),
-      })
-    ),
   })
-  .check(
-    z.refine((page) => page.count === page.items.length, { message: 'ORDER_PAGE_COUNT_MISMATCH' }),
-    z.refine((page) => page.preview === undefined || page.preview.total >= page.count, { message: 'ORDER_PREVIEW_TOTAL_INVALID' })
-  );
+  .check(z.refine((page) => page.count === page.items.length, { message: 'ORDER_PAGE_COUNT_MISMATCH' }));
 
 export type OrderFilter = z.infer<typeof OrderFilterSchema>;
 export type OrderListFilter = z.infer<typeof OrderListFilterSchema>;

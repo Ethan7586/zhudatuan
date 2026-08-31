@@ -2,9 +2,9 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
-export const CAPABILITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
+export const CAPABILITY_OPERATION_IDS = Object.freeze([
   "capability.assignments.read",
   "capability.assignments.manage",
 ] as const satisfies readonly OperationId[]);
@@ -14,29 +14,17 @@ export interface CapabilityOperations {
   readonly assignmentsManage: OperationMethod<"capability.assignments.manage">;
 }
 
-export function createFetchCapability(baseUrl: string): CapabilityOperations {
-  return createCapabilityOperations(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchCapability(baseUrl: string): CapabilityOperations { return createCapabilityOperations(new ApiClient(baseUrl, new FetchTransport())); }
 
-export function createCapabilityOperations(client: OperationExecutor): CapabilityOperations {
-  return Object.freeze({
+export function createCapabilityOperations(client: OperationExecutor): CapabilityOperations { return Object.freeze({
     assignmentsRead: bindAssignmentsRead(client),
     assignmentsManage: bindAssignmentsManage(client),
-  });
-}
+  }); }
 
-export function createFetchCapabilityAssignmentsRead(baseUrl: string): OperationMethod<"capability.assignments.read"> {
-  return bindAssignmentsRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchCapabilityAssignmentsRead(baseUrl: string): OperationMethod<"capability.assignments.read"> { return bindAssignmentsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindAssignmentsRead(client: OperationExecutor): OperationMethod<"capability.assignments.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"capability.assignments.read","method":"GET","path":"/api/v1/capabilities/assignments","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindAssignmentsRead(client: OperationExecutor): OperationMethod<"capability.assignments.read"> { return bindOperation(client, defineOperation({"id":"capability.assignments.read","method":"GET","path":"/api/v1/capabilities/assignments","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchCapabilityAssignmentsManage(baseUrl: string): OperationMethod<"capability.assignments.manage"> {
-  return bindAssignmentsManage(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchCapabilityAssignmentsManage(baseUrl: string): OperationMethod<"capability.assignments.manage"> { return bindAssignmentsManage(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindAssignmentsManage(client: OperationExecutor): OperationMethod<"capability.assignments.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"capability.assignments.manage","method":"PUT","path":"/api/v1/capabilities/assignments/{assignmentid}","audience":"operator","idempotent":true,"pathKeys":["assignmentid"]}));
-}
+function bindAssignmentsManage(client: OperationExecutor): OperationMethod<"capability.assignments.manage"> { return bindOperation(client, defineOperation({"id":"capability.assignments.manage","method":"PUT","path":"/api/v1/capabilities/assignments/{assignmentid}","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":800})); }

@@ -1,105 +1,145 @@
+import { toJSONSchema, type ZodMiniType } from 'zod/mini';
+import { definedOperationBodySchema, definedOperationOutputSchema, definedOperationQuerySchema } from '../../../packages/contract/src/schema/index';
+
 export interface OperationDefinition {
   readonly id: string;
   readonly owner: string;
   readonly method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   readonly path: `/api/v1/${string}` | `/health/${string}`;
-  readonly audience: 'public' | 'member' | 'operator' | 'provider';
-  readonly permission?: string;
+  readonly audience: 'public' | 'console' | 'storefront' | 'system' | 'webhook';
+  readonly targets: readonly ('console' | 'storefront')[];
+  readonly permission: string | null;
+  readonly capability: string;
+  readonly scopeKinds: readonly string[];
+  readonly assuranceLevel: 'anonymous' | 'optional' | 'preauth' | 'session' | 'mfa' | 'stepup' | 'service' | 'signed';
+  readonly makerChecker: boolean;
+  readonly originPolicy: 'none' | 'sameorigin' | 'service' | 'signed';
+  readonly csrfPolicy: 'none' | 'required';
+  readonly responseMode: 'json' | 'redirect' | 'empty';
+  readonly cachePolicy: 'none' | 'private' | 'etag';
+  readonly targetPolicy: 'public' | 'exact' | 'service' | 'webhook';
+  readonly idempotencyPolicy: 'none' | 'required' | 'provider';
+  readonly requestSchema: string;
+  readonly responseSchema: string;
+  readonly errorUnion: readonly string[];
+  readonly idempotencyScope: 'none' | 'actor-operation-scope' | 'provider-operation';
+  readonly expectedVersion: 'none' | 'required';
+  readonly timeout: number;
+  readonly rateClass: 'health' | 'identity' | 'read' | 'write' | 'critical' | 'webhook';
+  readonly risk: 'low' | 'elevated' | 'high' | 'critical';
+  readonly resourceResolver: string;
+  readonly resourceParameter: string | null;
   readonly idempotent: boolean;
-  readonly schema: 'exact' | 'structural';
   readonly requirements: readonly string[];
+  readonly controller: string;
+  readonly handler: string;
   readonly sdk: string;
 }
 
-export interface PermissionMetadata {
-  readonly risk: string;
-  readonly stepup: boolean;
-  readonly scopes: readonly string[];
-}
-
-export function buildOpenapi(
-  operations: readonly OperationDefinition[],
-  permissions: ReadonlyMap<string, PermissionMetadata>,
-): unknown {
+export function buildOpenapi(operations: readonly OperationDefinition[], errorCatalog: ReadonlyMap<string, number>, version: string): unknown {
   const paths: Record<string, Record<string, unknown>> = {};
+  const schemas: Record<string, unknown> = { Error: errorSchema() };
   for (const operation of operations) {
-    const metadata = operation.permission === undefined ? undefined : permissions.get(operation.permission);
-    const success = response('Success', 'JsonValue');
-    const failure = response('Error Contract', 'Error');
+    schemas[operation.requestSchema] = requestSchema(operation);
+    schemas[operation.responseSchema] = responseSchema(operation);
+    const responses: Record<string, unknown> =
+      operation.responseMode === 'redirect'
+        ? { '303': { description: 'Validated same-site redirect', headers: { Location: { required: true, schema: { type: 'string', format: 'uri' } } } } }
+        : operation.responseMode === 'empty'
+          ? { '204': { description: 'Success without a response body' } }
+          : { '200': response('Success', operation.responseSchema) };
+    if (operation.cachePolicy === 'etag') responses['304'] = { description: 'Not modified', headers: { ETag: { required: true, schema: { type: 'string' } } } };
+    for (const status of errorStatuses(operation.errorUnion, errorCatalog)) responses[String(status)] = response('Typed operation error', 'Error');
     paths[operation.path] ??= {};
     paths[operation.path]![operation.method.toLowerCase()] = compact({
       operationId: operation.id,
       tags: [operation.owner],
-      parameters: pathKeys(operation.path).map((name) => ({
-        name,
-        in: 'path',
-        required: true,
-        schema: { type: 'string', minLength: 1 },
-      })),
-      requestBody: operation.method === 'GET' ? undefined : {
-        required: operation.schema === 'exact',
-        content: { 'application/json': { schema: reference('JsonValue') } },
-      },
+      parameters: [...pathKeys(operation.path).map((name) => ({ name, in: 'path', required: true, schema: { type: 'string', minLength: 1 } })), ...(operation.method === 'GET' ? queryParameters(operation.requestSchema) : [])],
+      requestBody:
+        operation.method === 'GET'
+          ? undefined
+          : {
+              required: true,
+              content: { 'application/json': { schema: bodySchema(operation.requestSchema) } },
+            },
       'x-audience': operation.audience,
-      'x-idempotency': operation.method === 'GET' || operation.audience === 'provider' ? 'none' : 'required',
-      'x-idempotent': operation.idempotent,
-      'x-expected-version': operation.method === 'GET' ? 'none' : 'optional',
-      'x-permission': operation.permission ?? null,
+      'x-targets': operation.targets,
+      'x-assurance-level': operation.assuranceLevel,
+      'x-capability': operation.capability,
+      'x-error-union': operation.errorUnion,
+      'x-expected-version': operation.expectedVersion,
+      'x-idempotency-scope': operation.idempotencyScope,
+      'x-maker-checker': operation.makerChecker,
+      'x-origin-policy': operation.originPolicy,
+      'x-csrf-policy': operation.csrfPolicy,
+      'x-response-mode': operation.responseMode,
+      'x-cache-policy': operation.cachePolicy,
+      'x-target-policy': operation.targetPolicy,
+      'x-idempotency-policy': operation.idempotencyPolicy,
+      'x-permission': operation.permission,
+      'x-rate-class': operation.rateClass,
       'x-requirements': operation.requirements,
-      'x-risk': metadata?.risk ?? 'low',
-      'x-schema-fidelity': operation.schema,
-      'x-scope-kinds': metadata?.scopes ?? [],
-      'x-stepup': metadata?.stepup ?? false,
-      security: operation.audience === 'public' || operation.audience === 'provider' ? [] : [{ session: [] }],
-      responses: {
-        '200': success,
-        '204': { description: 'Success without content' },
-        '400': failure,
-        '401': failure,
-        '403': failure,
-        '404': failure,
-        '409': failure,
-        '422': failure,
-        '429': failure,
-        '500': failure,
-      },
+      'x-resource-resolver': operation.resourceResolver,
+      'x-resource-parameter': operation.resourceParameter,
+      'x-risk': operation.risk,
+      'x-scope-kinds': operation.scopeKinds,
+      'x-timeout-ms': operation.timeout,
+      security: operation.assuranceLevel === 'anonymous' || operation.audience === 'webhook' ? [] : operation.assuranceLevel === 'optional' ? [{}, { session: [] }] : [{ session: [] }],
+      responses,
     });
   }
   return stable({
     openapi: '3.1.0',
-    info: { title: 'Shop Commerce API', version: '1.0.0' },
+    info: { title: 'Shop Commerce API', version },
     servers: [{ url: '/' }],
     paths,
-    components: {
-      schemas: componentSchemas(),
-      securitySchemes: { session: { type: 'http', scheme: 'bearer' } },
-    },
+    components: { schemas, securitySchemes: { session: { type: 'apiKey', in: 'cookie', name: '__Host-console-session' } } },
   });
 }
 
-export function operationSource(
-  values: readonly OperationDefinition[],
-  permissions: ReadonlyMap<string, PermissionMetadata>,
-): string {
-  const rows = values.map((item) => {
-    const metadata = item.permission === undefined ? undefined : permissions.get(item.permission);
-    return `  ${JSON.stringify([
-    item.id, item.method, item.path, item.owner, item.audience, item.permission ?? null,
-    item.idempotent,
-    item.method === 'GET' || item.audience === 'provider' ? 'none' : 'required',
-    item.method === 'GET' ? 'none' : 'optional',
-    metadata?.risk ?? 'low', metadata?.stepup ?? false, metadata?.scopes ?? [], item.schema, item.requirements,
-  ])},`;
-  }).join('\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport { operation, type HttpMethod, type OperationAudience, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';\n\ntype Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];\n\nconst rows = [\n${rows}\n] as const satisfies readonly Row[];\n\nexport const COMMERCE_OPERATIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], risk: row[9], stepup: row[10], scopeKinds: row[11], schema: row[12], requirements: row[13] })));\n`;
+export function operationSource(values: readonly OperationDefinition[]): string {
+  const definitions = values.map((item) => ({
+    id: item.id,
+    method: item.method,
+    path: item.path,
+    module: item.owner,
+    audience: item.audience,
+    targets: item.targets,
+    permission: item.permission,
+    capability: item.capability,
+    scopeKinds: item.scopeKinds,
+    assuranceLevel: item.assuranceLevel,
+    makerChecker: item.makerChecker,
+    originPolicy: item.originPolicy,
+    csrfPolicy: item.csrfPolicy,
+    responseMode: item.responseMode,
+    cachePolicy: item.cachePolicy,
+    targetPolicy: item.targetPolicy,
+    idempotencyPolicy: item.idempotencyPolicy,
+    requestSchema: item.requestSchema,
+    responseSchema: item.responseSchema,
+    errorUnion: item.errorUnion,
+    idempotencyScope: item.idempotencyScope,
+    expectedVersion: item.expectedVersion,
+    timeout: item.timeout,
+    rateClass: item.rateClass,
+    risk: item.risk,
+    resourceResolver: item.resourceResolver,
+    resourceParameter: item.resourceParameter,
+    idempotent: item.idempotent,
+    requirements: item.requirements,
+  }));
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport { operation, type Operation } from '../Operation';\n\nconst definitions = ${JSON.stringify(definitions, null, 2)} as const satisfies readonly Operation[];\n\nexport const COMMERCE_OPERATIONS = Object.freeze(definitions.map(operation));\n`;
 }
 
 export function schemaSource(values: readonly OperationDefinition[]): string {
-  const rows = values.map((item) => {
-    const keys = JSON.stringify(pathKeys(item.path));
-    return `  ${JSON.stringify(item.id)}: Object.freeze({ input: structuralOperationInput(${keys} as const), output: structuralOperationOutput(), fidelity: ${JSON.stringify(item.schema)} }),`;
-  }).join('\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '../OperationCatalog';\nimport { structuralOperationInput, structuralOperationOutput, type SchemaOutput } from '../schema';\n\nexport const OPERATION_SCHEMAS = Object.freeze({\n${rows}\n});\n\nexport type OperationInputFor<TKey extends OperationId> = SchemaOutput<(typeof OPERATION_SCHEMAS)[TKey]['input']>;\nexport type OperationOutputFor<TKey extends OperationId> = SchemaOutput<(typeof OPERATION_SCHEMAS)[TKey]['output']>;\n\nexport function operationSchema<TKey extends OperationId>(id: TKey): (typeof OPERATION_SCHEMAS)[TKey] {\n  return OPERATION_SCHEMAS[id];\n}\n`;
+  const rows = values
+    .map((item) => {
+      const keys = JSON.stringify(pathKeys(item.path));
+      return `  ${JSON.stringify(item.id)}: Object.freeze({ input: exactOperationInput(${JSON.stringify(item.requestSchema)}, ${keys} as const, ${item.method !== 'GET'}), output: exactOperationOutput(${JSON.stringify(item.responseSchema)}) }),`;
+    })
+    .join('\n');
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '../OperationCatalog';\nimport type { IdentityOperationInputs } from '../IdentityInput';\nimport { exactOperationInput, exactOperationOutput, type SchemaOutput } from '../schema';\n\nexport const OPERATION_SCHEMAS = Object.freeze({\n${rows}\n});\n\ntype StrictOperationInput<TKey extends OperationId> = TKey extends keyof IdentityOperationInputs\n  ? IdentityOperationInputs[TKey]\n  : SchemaOutput<(typeof OPERATION_SCHEMAS)[TKey]['input']>;\nexport type OperationInputFor<TKey extends OperationId> = StrictOperationInput<TKey>;\nexport type OperationOutputFor<TKey extends OperationId> = SchemaOutput<(typeof OPERATION_SCHEMAS)[TKey]['output']>;\n\nexport function operationSchema<TKey extends OperationId>(id: TKey): (typeof OPERATION_SCHEMAS)[TKey] { return OPERATION_SCHEMAS[id]; }\n`;
 }
 
 export function sdkSource(values: readonly OperationDefinition[]): string {
@@ -109,7 +149,7 @@ export function sdkSource(values: readonly OperationDefinition[]): string {
   const clientFields = [...groups].map(([domain]) => `  readonly ${domain}: ${typeName(domain)}Operations;`).join('\n');
   const factories = [...groups].map(([domain]) => `    ${domain}: create${typeName(domain)}Operations(client),`).join('\n');
   const ids = values.map(({ id }) => `  ${JSON.stringify(id)},`).join('\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport type { OperationExecutor } from '../OperationDescriptor';\n${imports}\n\n${exports}\nexport type { OperationMethod } from '../OperationDescriptor';\n\nexport const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface CommerceClient {\n${clientFields}\n}\n\nexport function createCommerceClient(client: OperationExecutor): CommerceClient {\n  return Object.freeze({\n${factories}\n  });\n}\n`;
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport type { OperationExecutor } from '../OperationDescriptor';\n${imports}\n\n${exports}\nexport type { OperationMethod } from '../OperationDescriptor';\n\nexport const SDK_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface CommerceClient {\n${clientFields}\n}\n\nexport function createCommerceClient(client: OperationExecutor): CommerceClient { return Object.freeze({\n${factories}\n  }); }\n`;
 }
 
 export function sdkDomainSources(values: readonly OperationDefinition[]): ReadonlyMap<string, string> {
@@ -121,85 +161,137 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
   const ids = operations.map(({ id }) => `  ${JSON.stringify(id)},`).join('\n');
   const methods = operations.map((operation) => `  readonly ${methodName(operation.id)}: OperationMethod<${JSON.stringify(operation.id)}>;`).join('\n');
   const bindings = operations.map((operation) => `    ${methodName(operation.id)}: bind${typeName(methodName(operation.id))}(client),`).join('\n');
-  const operationFactories = operations.map((operation) => {
-    const method = typeName(methodName(operation.id));
-    const descriptor = JSON.stringify({
-      id: operation.id,
-      method: operation.method,
-      path: operation.path,
-      audience: operation.audience,
-      idempotent: operation.idempotent,
-      pathKeys: pathKeys(operation.path),
-    });
-    return `export function createFetch${name}${method}(baseUrl: string): OperationMethod<${JSON.stringify(operation.id)}> {\n  return bind${method}(new ApiClient(baseUrl, new FetchTransport()));\n}\n\nfunction bind${method}(client: OperationExecutor): OperationMethod<${JSON.stringify(operation.id)}> {\n  return bindOperation(client, defineStructuralOperation(${descriptor}));\n}`;
-  }).join('\n\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = /* @__PURE__ */ Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations {\n  return create${name}Operations(new ApiClient(baseUrl, new FetchTransport()));\n}\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations {\n  return Object.freeze({\n${bindings}\n  });\n}\n\n${operationFactories}\n`;
+  const factories = operations
+    .map((operation) => {
+      const method = typeName(methodName(operation.id));
+      const descriptor = JSON.stringify({
+        id: operation.id,
+        method: operation.method,
+        path: operation.path,
+        audience: operation.audience,
+        targets: operation.targets,
+        responseMode: operation.responseMode,
+        idempotent: operation.idempotent,
+        timeout: operation.timeout,
+      });
+      return `export function createFetch${name}${method}(baseUrl: string): OperationMethod<${JSON.stringify(operation.id)}> { return bind${method}(new ApiClient(baseUrl, new FetchTransport())); }\n\nfunction bind${method}(client: OperationExecutor): OperationMethod<${JSON.stringify(operation.id)}> { return bindOperation(client, defineOperation(${descriptor})); }`;
+    })
+    .join('\n\n');
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
 }
 
-function componentSchemas(): Readonly<Record<string, unknown>> {
+function requestSchema(operation: OperationDefinition): unknown {
+  const properties: Record<string, unknown> = {};
+  const required: string[] = [];
+  const keys = pathKeys(operation.path);
+  if (keys.length) {
+    properties.path = { type: 'object', additionalProperties: false, required: keys, properties: Object.fromEntries(keys.map((key) => [key, { type: 'string', minLength: 1 }])) };
+    required.push('path');
+  }
+  if (operation.method === 'GET') properties.query = querySchema(operation.requestSchema);
+  else {
+    properties.body = bodySchema(operation.requestSchema);
+    required.push('body');
+  }
+  return { type: 'object', additionalProperties: false, required, properties };
+}
+
+function bodySchema(name: string): unknown {
+  const schema = jsonSchema(definedOperationBodySchema(name));
+  if (schema === undefined) throw new Error(`OPENAPI_BODY_SCHEMA_MISSING:${name}`);
+  return schema;
+}
+
+function querySchema(name: string): unknown {
+  const schema = jsonSchema(definedOperationQuerySchema(name));
+  if (schema === undefined) throw new Error(`OPENAPI_QUERY_SCHEMA_MISSING:${name}`);
+  return schema;
+}
+
+function queryParameters(name: string): readonly unknown[] {
+  const schema = querySchema(name) as Readonly<{ properties?: Readonly<Record<string, unknown>>; required?: readonly string[] }>;
+  const required = new Set(schema.required ?? []);
+  return Object.entries(schema.properties ?? {}).map(([parameter, value]) => ({
+    name: parameter,
+    in: 'query',
+    required: required.has(parameter),
+    schema: value,
+  }));
+}
+
+function responseSchema(operation: OperationDefinition): unknown {
+  if (operation.responseMode === 'empty') return { type: 'null' };
+  const schema = jsonSchema(definedOperationOutputSchema(operation.responseSchema));
+  if (schema === undefined) throw new Error(`OPENAPI_OUTPUT_SCHEMA_MISSING:${operation.id}:${operation.responseSchema}`);
+  return schema;
+}
+
+function jsonSchema(schema: ZodMiniType | undefined): unknown | undefined {
+  if (schema === undefined) return undefined;
+  const { $schema: _ignored, ...value } = toJSONSchema(schema, { target: 'draft-2020-12' });
+  return value;
+}
+
+function errorSchema(): unknown {
   return {
-    Error: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['code', 'message', 'requestId'],
-      properties: {
-        code: { type: 'string', minLength: 1 },
-        message: { type: 'string', minLength: 1 },
-        requestId: { type: 'string', minLength: 1 },
-        retryable: { type: 'boolean' },
-        details: { type: 'object', additionalProperties: reference('JsonValue') },
-      },
-    },
-    JsonValue: {
-      oneOf: [
-        { type: 'string' }, { type: 'number' }, { type: 'boolean' }, { type: 'null' },
-        { type: 'array', items: reference('JsonValue') },
-        { type: 'object', additionalProperties: reference('JsonValue') },
-      ],
+    type: 'object',
+    additionalProperties: false,
+    required: ['code', 'message', 'requestId', 'retryable'],
+    properties: {
+      code: { type: 'string', minLength: 1 },
+      message: { type: 'string', minLength: 1 },
+      requestId: { type: 'string', minLength: 1 },
+      retryable: { type: 'boolean' },
+      details: { type: 'object', additionalProperties: false, required: ['field'], properties: { field: { type: 'string', minLength: 1 } } },
     },
   };
+}
+
+function errorStatuses(codes: readonly string[], catalog: ReadonlyMap<string, number>): readonly number[] {
+  const statuses = new Set(
+    codes.map((code) => {
+      const status = catalog.get(code);
+      if (status === undefined) throw new Error(`OPENAPI_ERROR_UNKNOWN:${code}`);
+      return status;
+    })
+  );
+  return [...statuses].sort();
 }
 
 function response(description: string, schema: string): unknown {
   return { description, content: { 'application/json': { schema: reference(schema) } } };
 }
-
 function reference(name: string): Readonly<{ $ref: string }> {
   return { $ref: `#/components/schemas/${name}` };
 }
-
 function pathKeys(path: string): readonly string[] {
   return [...path.matchAll(/\{([a-z][a-z0-9]*)\}/g)].map((match) => match[1]!);
 }
-
 function groupOperations(values: readonly OperationDefinition[]): ReadonlyMap<string, readonly OperationDefinition[]> {
   const result = new Map<string, OperationDefinition[]>();
   for (const operation of values) {
     const domain = operation.id.split('.')[0]!;
-    const current = result.get(domain) ?? [];
-    current.push(operation);
-    result.set(domain, current);
+    result.set(domain, [...(result.get(domain) ?? []), operation]);
   }
   return result;
 }
-
 function methodName(id: string): string {
   const [, ...segments] = id.split('.');
-  return segments.map((segment, index) => index === 0 ? segment : `${segment[0]!.toUpperCase()}${segment.slice(1)}`).join('');
+  return segments.map((segment, index) => (index === 0 ? segment : `${segment[0]!.toUpperCase()}${segment.slice(1)}`)).join('');
 }
-
 function typeName(value: string): string {
   return `${value[0]!.toUpperCase()}${value.slice(1)}`;
 }
-
 function compact(value: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
   return Object.fromEntries(Object.entries(value).filter(([, child]) => child !== undefined));
 }
-
 export function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
-  if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, stable(child)]));
-  }
+  if (value !== null && typeof value === 'object')
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, child]) => [key, stable(child)])
+    );
   return value;
 }

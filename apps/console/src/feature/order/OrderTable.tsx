@@ -1,8 +1,6 @@
-import { Button } from 'react-aria-components';
 import { formatMinor } from '../../shared/ui/Format';
 import { OrderIcon } from './OrderIcon';
-import { OrderPreviewAction } from './OrderPreviewAction';
-import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone, previewRecord, productSummary } from './OrderPresentation';
+import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone, productSummary } from './OrderPresentation';
 import type { OrderRecord } from './OrderSchema';
 
 export type OrderColumnKey = 'member' | 'product' | 'payment' | 'fulfillment' | 'aftersale' | 'sla';
@@ -11,7 +9,6 @@ export const defaultOrderColumns: ReadonlySet<OrderColumnKey> = new Set(['member
 
 export function OrderTable({
   rows,
-  previewEnabled,
   visible,
   checked,
   activeOrder,
@@ -20,7 +17,6 @@ export function OrderTable({
   onOpen,
 }: Readonly<{
   rows: readonly OrderRecord[];
-  previewEnabled: boolean;
   visible: ReadonlySet<OrderColumnKey>;
   checked: ReadonlySet<string>;
   activeOrder?: string;
@@ -50,7 +46,7 @@ export function OrderTable({
         </thead>
         <tbody>
           {rows.map((order) => (
-            <OrderRow key={order.id} order={order} previewEnabled={previewEnabled} visible={visible} checked={checked.has(order.id)} active={activeOrder === order.id} onCheck={() => onCheck(order.id)} onOpen={() => onOpen(order.id)} />
+            <OrderRow key={order.id} order={order} visible={visible} checked={checked.has(order.id)} active={activeOrder === order.id} onCheck={() => onCheck(order.id)} onOpen={() => onOpen(order.id)} />
           ))}
         </tbody>
       </table>
@@ -60,7 +56,6 @@ export function OrderTable({
 
 function OrderRow({
   order,
-  previewEnabled,
   visible,
   checked,
   active,
@@ -68,16 +63,13 @@ function OrderRow({
   onOpen,
 }: Readonly<{
   order: OrderRecord;
-  previewEnabled: boolean;
   visible: ReadonlySet<OrderColumnKey>;
   checked: boolean;
   active: boolean;
   onCheck: () => void;
   onOpen: () => void;
 }>) {
-  const preview = previewRecord(order, previewEnabled);
   const product = productSummary(order);
-  const paidMinor = preview?.paidMinor ?? order.total_minor;
   return (
     <tr
       className={active ? 'isactive' : undefined}
@@ -103,8 +95,8 @@ function OrderRow({
       {visible.has('member') ? (
         <td>
           <div className="orderprimarycell">
-            <strong>{preview?.memberName ?? order.member_id ?? '会员显示名不可用'}</strong>
-            <span>{preview?.enterpriseName ?? '企业显示名不可用'}</span>
+            <strong>{order.member_id ?? '会员 ID 不可用'}</strong>
+            <span>{order.scope_id ?? '组织范围不可用'}</span>
           </div>
         </td>
       ) : null}
@@ -124,10 +116,10 @@ function OrderRow({
       {visible.has('payment') ? (
         <td>
           <div className="orderprimarycell">
-            <strong>{formatMinor(paidMinor, order.currency)}</strong>
+            <strong>{formatMinor(order.total_minor, order.currency)}</strong>
             <span className={`orderstatustext tone-${paymentTone(order.payment_state)}`}>
               <i />
-              {preview?.paymentMethod ?? paymentLabel(order.payment_state)}
+              {paymentLabel(order.payment_state)}
             </span>
           </div>
         </td>
@@ -142,16 +134,9 @@ function OrderRow({
       ) : null}
       {visible.has('sla') ? (
         <td>
-          {preview?.slaMinutes === undefined ? (
-            <span className="ordermutetext" title="当前读模型未返回 SLA">
-              未提供
-            </span>
-          ) : (
-            <span className={`ordersla ${preview.slaMinutes <= 20 ? 'tone-warning' : 'tone-danger'}`}>
-              <OrderIcon name="clock" />
-              剩余 {preview.slaMinutes} 分钟
-            </span>
-          )}
+          <span className="ordermutetext" title="当前读模型未返回 SLA">
+            未提供
+          </span>
         </td>
       ) : null}
       <td>
@@ -166,29 +151,9 @@ function OrderRow({
           >
             查看
           </button>
-          <OrderPreviewAction
-            ariaLabel={`订单 ${order.order_number} 更多操作`}
-            title={`订单操作预览 ${order.order_number}`}
-            disabled={!previewEnabled}
-            describedBy="orderwriteboundary"
-            triggerClassName="ordermorebutton"
-            triggerTitle={previewEnabled ? '打开订单操作预览' : '最终动作等待 Preview 与 action-bound proof'}
-            trigger={<OrderIcon name="more" />}
-          >
-            {(close) => (
-              <div className="orderpreviewoptions">
-                <Button
-                  type="button"
-                  onPress={() => {
-                    close();
-                    onOpen();
-                  }}
-                >
-                  查看订单详情
-                </Button>
-              </div>
-            )}
-          </OrderPreviewAction>
+          <button className="ordermorebutton" type="button" disabled aria-label={`订单 ${order.order_number} 更多操作`} title="最终动作等待服务端合同" aria-describedby="orderwriteboundary">
+            <OrderIcon name="more" />
+          </button>
         </div>
       </td>
     </tr>

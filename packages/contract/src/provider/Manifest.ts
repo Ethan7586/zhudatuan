@@ -1,6 +1,5 @@
 import type { ProviderCapability } from './Capability';
 
-export type ProviderPriority = 1 | 3 | 4;
 export type ProviderKind = 'channel';
 export const PROVIDER_API_VERSION = '2026-08-21' as const;
 
@@ -18,7 +17,6 @@ export interface ProviderLimit {
 export interface ProviderManifest {
   readonly id: string;
   readonly kind: ProviderKind;
-  readonly priority: ProviderPriority;
   readonly version: string;
   readonly apiVersion: string;
   readonly contractVersion: string;
@@ -28,19 +26,36 @@ export interface ProviderManifest {
   readonly configSchema: string;
   readonly eventSubscriptions: readonly string[];
   readonly secretRefs: readonly string[];
-  readonly limits: ProviderLimit;
+  readonly rateLimits: Readonly<{ requestsPerSecond: number; maxConcurrency: number }>;
+  readonly timeout: Readonly<{ connectionMs: number; responseMs: number; totalMs: number }>;
+  readonly retryPolicy: Readonly<{ maxAttempts: number }>;
+  readonly circuitPolicy: Readonly<{ failureThreshold: number; recoveryMs: number }>;
+  readonly webhookContract: string | null;
   readonly signature: string;
 }
 
 export type UnsignedProviderManifest = Omit<ProviderManifest, 'signature'>;
 
 export function manifestPayload(manifest: ProviderManifest): string {
-  return JSON.stringify({
-    ...manifest,
-    capabilities: [...manifest.capabilities].sort(),
-    eventSubscriptions: [...manifest.eventSubscriptions].sort(),
-    permissions: [...manifest.permissions].sort(),
-    secretRefs: [...manifest.secretRefs].sort(),
-    signature: undefined,
-  });
+  return JSON.stringify(
+    stable({
+      ...manifest,
+      capabilities: [...manifest.capabilities].sort(),
+      eventSubscriptions: [...manifest.eventSubscriptions].sort(),
+      permissions: [...manifest.permissions].sort(),
+      secretRefs: [...manifest.secretRefs].sort(),
+      signature: undefined,
+    })
+  );
+}
+
+function stable(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stable);
+  if (value !== null && typeof value === 'object')
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, child]) => [key, stable(child)])
+    );
+  return value;
 }

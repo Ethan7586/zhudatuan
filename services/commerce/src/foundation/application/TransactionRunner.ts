@@ -1,4 +1,4 @@
-import type { Transaction, TransactionContext, UnitOfWork } from './UnitOfWork';
+import type { Transaction, TransactionContext, UnitOfWork } from '../persistence/UnitOfWork';
 
 export class TransactionRunner {
   constructor(private readonly unit: UnitOfWork) {}

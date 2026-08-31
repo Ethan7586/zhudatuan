@@ -115,9 +115,12 @@ function isPlatformKeyId(value: string): boolean {
 
 function validateNotifyUrl(value: string): string {
   let url: URL;
-  try { url = new URL(value); } catch { fail('WECHAT_PAY_NOTIFY_URL_INVALID'); }
-  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash
-    || url.pathname !== '/api/v1/webhooks/wechat/payment') fail('WECHAT_PAY_NOTIFY_URL_INVALID');
+  try {
+    url = new URL(value);
+  } catch {
+    fail('WECHAT_PAY_NOTIFY_URL_INVALID');
+  }
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.pathname !== '/api/v1/webhooks/wechat/payment') fail('WECHAT_PAY_NOTIFY_URL_INVALID');
   if (url.hostname === 'localhost' || url.hostname.endsWith('.localhost') || isPrivateIpv4Host(url.hostname)) fail('WECHAT_PAY_NOTIFY_URL_NOT_PUBLIC');
   return url.toString();
 }

@@ -1,0 +1,104 @@
+.consolelayout[data-visual-theme='console-v1'] :where(.producttablecard, .productpagination, .ordertablewrap, .financetablewrap) {
+  border-color: var(--vi-line);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.producttablewrap, .ordertablewrap) {
+  max-height: clamp(20rem, 50dvh, 42rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .orderlistpanel {
+  overflow: hidden;
+  margin: 14px 16px 0;
+  border: 1px solid var(--vi-line);
+  border-radius: var(--vi-radius-panel);
+  background: var(--sw-surface);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 3%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .orderworkspace {
+  min-height: 0;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.producttablewrap th, .ordertable th, .financetable th) {
+  background: var(--sw-background);
+  color: var(--sw-text-secondary);
+  font-weight: 700;
+  letter-spacing: 0.012em;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.producttablewrap tbody tr, .ordertable tbody tr, .financetable tbody tr) {
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.producttablewrap tbody tr:hover, .ordertable tbody tr:hover, .financetable tbody tr:hover) {
+  background: var(--sw-background);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--sw-brand) 48%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .producttablewrap tbody tr[data-active='true'] {
+  background: var(--vi-brand-soft);
+  box-shadow:
+    inset 3px 0 0 var(--vi-brand),
+    inset 0 0 0 1px var(--sw-border-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.productstatus, .orderstatuspill, .financestate) {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .productstatus[data-tone='success'] {
+  background: var(--sw-success-surface);
+  padding: 3px 8px 3px 4px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .productstatus[data-tone='warning'] {
+  background: var(--sw-warning-surface);
+  padding: 3px 8px 3px 4px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .productstatus[data-tone='info'] {
+  background: var(--vi-brand-soft);
+  padding: 3px 8px 3px 4px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.productidentity span, .productcellpair small, .productfacts dt, .productlistingversion) {
+  color: var(--sw-muted);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .productstatus[data-tone='success'] {
+  color: var(--sw-success-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .productstatus[data-tone='warning'] {
+  color: var(--sw-warning-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.productpagination, .orderpagination, .financepagination) {
+  background: var(--sw-surface-subtle);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.productpagebuttons button, .orderpagination button, .financepagination button):hover:not(:disabled) {
+  border-color: var(--sw-disabled);
+  background: var(--vi-brand-soft);
+  color: var(--vi-brand-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.financetable, .financetable th, .financetable td, .financepagination, .financefilters input, .financefilters select, .financefilters button) {
+  font-size: 12px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.financecellpair strong, .financemoney) {
+  font-size: 12px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.financecellpair small, .financestate, .financeviewbutton) {
+  font-size: 11px;
+}

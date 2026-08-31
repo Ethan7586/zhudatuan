@@ -1,0 +1,177 @@
+/* Responsive refinement for the same information hierarchy. */
+@media (max-width: 1220px) {
+  .consolelayout[data-visual-theme='console-v1'] .workspacebody {
+    padding: 20px 16px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .consoleheader {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourceheading {
+    padding-inline: 20px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel > .resourceactions {
+    padding-inline: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel {
+    min-height: calc(100dvh - 160px);
+    border-radius: 12px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourceheading {
+    min-height: 0;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px 16px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourceheading::after {
+    display: none;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourceheading h1 {
+    font-size: 24px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .datasource {
+    align-self: flex-start;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel > .resourceactions {
+    justify-content: flex-start;
+    padding-inline: 16px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .featurestack {
+    padding: 12px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .featurestack .pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdraweroverlay, .orderdraweroverlay, .financedraweroverlay) {
+    inset: 0;
+  }
+
+  body:has(.consolelayout[data-visual-theme='console-v1']) .orderdrawermodal {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .consolelayout[data-visual-theme='console-v1'] .consoleheader {
+    height: 52px;
+    min-height: 52px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .workspacebody {
+    padding: 12px 9px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel > .resourceactions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .inlinefield {
+    justify-content: space-between;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel > p[role='status'],
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel > section[role='status'],
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel > section[role='alert'] {
+    min-height: 180px;
+    margin: 12px;
+    padding: 24px 16px;
+  }
+
+  body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productfacts, .productdetailunavailable dl, .orderdetailgrid) {
+    grid-template-columns: 1fr;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .controlhero {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .controlhero > div {
+    max-width: none;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .controlhero > button {
+    position: static;
+    min-height: 44px;
+    align-self: flex-start;
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button,
+  .consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button::after,
+  .consolelayout[data-visual-theme='console-v1'] .shopbutton,
+  .consolelayout[data-visual-theme='console-v1'] :where(.productactionprimary, .orderconfirmbutton, .financeprimarybutton, .financesubmitreview),
+  .consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article,
+  .consolelayout[data-visual-theme='console-v1'] :where(.cockpitcard, .controlcard) {
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .consolelayout[data-visual-theme='console-v1'] .cockpitmetricband article:hover,
+  .consolelayout[data-visual-theme='console-v1'] :where(.cockpitcard, .controlcard):hover {
+    border-color: var(--sw-border-strong);
+    box-shadow: var(--vi-shadow-raised);
+    transform: translateY(-1px);
+  }
+
+  body:has(.consolelayout[data-visual-theme='console-v1']) :where(.productdrawer, .orderdrawer, .financedrawer) {
+    animation: vi-drawer-in 180ms cubic-bezier(0.2, 0.75, 0.3, 1) both;
+  }
+}
+
+@keyframes vi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes vi-progress {
+  from {
+    background-position: -60% 0;
+  }
+  to {
+    background-position: 160% 0;
+  }
+}
+
+@keyframes vi-drawer-in {
+  from {
+    opacity: 0.75;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consolelayout[data-visual-theme='console-v1'] .resourcepanel > p[role='status']::before,
+  .consolelayout[data-visual-theme='console-v1'] .resourcestatebusy::after {
+    animation: none;
+  }
+}

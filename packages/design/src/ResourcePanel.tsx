@@ -42,7 +42,11 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
           {sourceLabels[condition]}
         </span>
       </header>
-      {actions === undefined ? null : <div className="resourceactions" role="group" aria-label={`${title}操作`}>{actions}</div>}
+      {actions === undefined ? null : (
+        <div className="resourceactions" role="group" aria-label={`${title}操作`}>
+          {actions}
+        </div>
+      )}
       <ResourceState condition={condition} {...(error === undefined ? {} : { error })} {...(retry === undefined ? {} : { retry })}>
         {children}
       </ResourceState>

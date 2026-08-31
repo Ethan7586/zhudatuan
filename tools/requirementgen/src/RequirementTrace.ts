@@ -23,7 +23,7 @@ export const TABLE_BY_MODULE: Readonly<Record<string, string>> = Object.freeze({
   identity: 'identity.membersession',
   inventory: 'inventory.stock',
   marketing: 'marketing.campaign',
-  member: 'member.membership',
+  member: 'member.profile',
   notification: 'notification.template',
   order: 'ordering.orderrecord',
   organization: 'organization.organization',
@@ -31,6 +31,7 @@ export const TABLE_BY_MODULE: Readonly<Record<string, string>> = Object.freeze({
   payment: 'payment.paymentintent',
   pricing: 'pricing.rule',
   qualification: 'qualification.policy',
+  referral: 'referral.binding',
   reporting: 'reporting.metric',
   risk: 'risk.policy',
   support: 'support.case',
@@ -70,56 +71,63 @@ export function moduleFor(prefix: string, value: string): string {
 export function operationFor(operations: readonly OperationDefinition[], module: string, text: string): OperationDefinition {
   const candidates = operations.filter(({ owner, path }) => owner === module && path.startsWith('/api/v1'));
   if (candidates.length === 0) throw new Error('REQUIREMENT_OWNER_WITHOUT_OPERATION:' + module);
-  const readOnly = /查询|查看|列表|详情|统计|大屏|总览|记录|汇总|排行|展示|搜索/.test(text)
-    && !/增删|创建|新增|修改|设置|管理|操作|审核|绑定|配置|上传|下架|充值|提现|核销/.test(text);
-  const preferred = candidates.filter(({ method }) => readOnly ? method === 'GET' : method !== 'GET');
+  const readOnly = /查询|查看|列表|详情|统计|大屏|总览|记录|汇总|排行|展示|搜索/.test(text) && !/增删|创建|新增|修改|设置|管理|操作|审核|绑定|配置|上传|下架|充值|提现|核销/.test(text);
+  const preferred = candidates.filter(({ method }) => (readOnly ? method === 'GET' : method !== 'GET'));
   return preferred[0] ?? candidates.find(({ method }) => method === 'GET') ?? candidates[0]!;
 }
 
 export function routeFor(prefix: string, module: string): string {
-  if (prefix === 'PLAT') return module === 'channel' || module === 'extension' ? '/channels' : '/platform';
-  if (prefix === 'DIST') return '/distributors';
-  if (prefix === 'STORE') return '/stores/current/' + (module === 'verification' ? 'verification' : module);
-  if (prefix === 'SUPPLY') return '/suppliers/current/' + module;
-  if (prefix === 'CHAIN' || prefix === 'INTEG') return '/channels';
-  const base = prefix === 'GROUP' ? '/enterprises/current' : '/malls/current';
-  if (module === 'reporting') return base + '/dashboard';
-  if (module === 'experience') return base + (prefix === 'GROUP' ? '/applications' : '/design');
-  if (['catalog', 'pricing', 'inventory', 'channel'].includes(module)) return base + '/products';
+  const base = '/scopes/:scopeKind/:scopeId';
+  if (prefix === 'CHAIN' || prefix === 'INTEG' || module === 'channel' || module === 'extension') return base + '/channels';
+  if (module === 'reporting') return base + '/reporting';
+  if (module === 'experience') return base + '/experience';
+  if (['catalog', 'pricing', 'inventory'].includes(module)) return base + '/products';
   if (['order', 'fulfillment', 'payment', 'checkout'].includes(module)) return base + '/orders';
   if (['voucher', 'verification', 'benefit'].includes(module)) return base + '/vouchers';
   if (module === 'finance') return base + '/finance';
   if (module === 'support') return base + '/support';
-  return base + '/settings';
+  if (['access', 'member', 'partner', 'qualification', 'notification', 'risk', 'capability'].includes(module)) return base + '/settings';
+  return base + '/control';
 }
 
 export function journeyFor(prefix: string, module: string): string {
-  if (prefix === 'PLAT' || prefix === 'STORE') return 'tests/journeys/mvp03_platform.spec.ts';
-  if (prefix === 'DIST') return 'tests/journeys/mvp04_distribution.spec.ts';
-  if (prefix === 'INTEG' || prefix === 'CHAIN' || prefix === 'SUPPLY') return 'tests/journeys/mvp23_providers.spec.ts';
-  const group = prefix === 'GROUP';
-  const number = group ? groupMvp(module) : mallMvp(module);
-  const name = group ? groupJourney(module) : mallJourney(module);
-  return 'tests/journeys/mvp' + number + '_' + name + '.spec.ts';
-}
-
-function groupMvp(module: string): string {
-  return ({ reporting: '05', experience: '06', catalog: '07', pricing: '07', inventory: '07', channel: '07', order: '08', fulfillment: '08',
-    payment: '08', voucher: '09', verification: '09', benefit: '09', finance: '10', support: '12' } as Record<string, string>)[module] ?? '13';
-}
-function groupJourney(module: string): string {
-  return ({ reporting: 'groupdashboard', experience: 'groupapplication', catalog: 'groupproduct', pricing: 'groupproduct', inventory: 'groupproduct',
-    channel: 'groupproduct', order: 'grouporder', fulfillment: 'grouporder', payment: 'grouporder', voucher: 'groupvoucher',
-    verification: 'groupvoucher', benefit: 'groupvoucher', finance: 'groupfinance', support: 'groupsupport' } as Record<string, string>)[module] ?? 'groupsetting';
-}
-function mallMvp(module: string): string {
-  return ({ reporting: '14', experience: '15', catalog: '16', pricing: '16', inventory: '16', channel: '16', order: '17', fulfillment: '17',
-    payment: '17', voucher: '18', verification: '18', benefit: '18', finance: '19', support: '21' } as Record<string, string>)[module] ?? '22';
-}
-function mallJourney(module: string): string {
-  return ({ reporting: 'malldashboard', experience: 'malldesign', catalog: 'mallproduct', pricing: 'mallproduct', inventory: 'mallproduct',
-    channel: 'mallproduct', order: 'mallorder', fulfillment: 'mallorder', payment: 'mallorder', voucher: 'mallvoucher',
-    verification: 'mallvoucher', benefit: 'mallvoucher', finance: 'mallfinance', support: 'mallsupport' } as Record<string, string>)[module] ?? 'mallsetting';
+  if (prefix === 'PLAT' || prefix === 'STORE') return 'tests/journey/PlatformJourney.spec.ts';
+  if (prefix === 'DIST') return 'tests/journey/DistributionJourney.spec.ts';
+  if (prefix === 'INTEG' || prefix === 'CHAIN' || prefix === 'SUPPLY') return 'tests/journey/ProviderJourney.spec.ts';
+  const groupJourneys: Readonly<Record<string, string>> = Object.freeze({
+    reporting: 'GroupDashboardJourney',
+    experience: 'GroupApplicationJourney',
+    catalog: 'GroupProductJourney',
+    pricing: 'GroupProductJourney',
+    inventory: 'GroupProductJourney',
+    channel: 'GroupProductJourney',
+    order: 'GroupOrderJourney',
+    fulfillment: 'GroupOrderJourney',
+    payment: 'GroupOrderJourney',
+    voucher: 'GroupVoucherJourney',
+    verification: 'GroupVoucherJourney',
+    benefit: 'GroupVoucherJourney',
+    finance: 'GroupFinanceJourney',
+    support: 'GroupSupportJourney',
+  });
+  const mallJourneys: Readonly<Record<string, string>> = Object.freeze({
+    reporting: 'MallDashboardJourney',
+    experience: 'MallDesignJourney',
+    catalog: 'MallProductJourney',
+    pricing: 'MallProductJourney',
+    inventory: 'MallProductJourney',
+    channel: 'MallProductJourney',
+    order: 'MallOrderJourney',
+    fulfillment: 'MallOrderJourney',
+    payment: 'MallOrderJourney',
+    voucher: 'MallVoucherJourney',
+    verification: 'MallVoucherJourney',
+    benefit: 'MallVoucherJourney',
+    finance: 'MallFinanceJourney',
+    support: 'MallSupportJourney',
+  });
+  const journey = prefix === 'GROUP' ? (groupJourneys[module] ?? 'GroupSettingJourney') : (mallJourneys[module] ?? 'MallSettingJourney');
+  return `tests/journey/${journey}.spec.ts`;
 }
 
 export function priorityFrom(value: string): string {

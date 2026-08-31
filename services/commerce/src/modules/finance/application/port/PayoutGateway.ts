@@ -13,5 +13,7 @@ export interface PayoutResult {
   readonly reason?: string;
 }
 
-export interface PayoutGateway { submit(input: PayoutInput): Promise<PayoutResult> }
+export interface PayoutGateway {
+  submit(input: PayoutInput): Promise<PayoutResult>;
+}
 export const PAYOUT_GATEWAY = token<PayoutGateway>('finance.payoutgateway');

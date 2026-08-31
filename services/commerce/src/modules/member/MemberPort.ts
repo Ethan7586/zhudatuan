@@ -1,10 +1,7 @@
+import { DomainError } from '../../foundation/domain/DomainError';
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
-
-export interface MemberInvite {
-  readonly organization_id: string;
-  readonly role_id: string;
-  readonly terms_hash: string;
-}
+import type { IdentityMemberPort } from './public/IdentityMemberPort';
+import type { InvitationMemberPort, InvitationMobileOwner, PendingInvitationMember } from './public/InvitationMemberPort';
 
 export interface MemberProfile {
   readonly member: string;
@@ -16,85 +13,97 @@ export interface MemberProfile {
   readonly mobileMasked?: string;
 }
 
-export class MemberPort {
-  async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ mobileCiphertext: string | null }>> {
-    const result = await database.query<{ mobile_ciphertext: string | null }>(`select mobile_ciphertext from member.profile
-      where principal_id=$1 and status='active'`, [principal]);
-    return { mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null };
+export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
+  async pending(database: OperationDatabase, member: string): Promise<PendingInvitationMember> {
+    const result = await database.query<Readonly<{ member: string; principal: string; mobile_ciphertext: string | null }>>(
+      `select profile.id member,
+      profile.principal_id principal,profile.mobile_ciphertext from member.profile profile
+      where profile.id=$1 and profile.status='pending' for update`,
+      [member]
+    );
+    const row = result.rows[0];
+    if (!row) throw new DomainError('MEMBERSHIP_NOT_INVITED');
+    return Object.freeze({ member: row.member, principal: row.principal, mobileCiphertext: row.mobile_ciphertext });
   }
 
-  invite(database: OperationDatabase, token: string) {
-    return database.query(`select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,invite.effective_at,invite.expires_at
-      from member.invite invite join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
-      join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
-      where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
-        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
-        and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
-        and policy.terms_hash=invite.terms_hash`, [token]);
+  async assertMobileAvailable(database: OperationDatabase, fingerprint: string, exceptMember?: string): Promise<void> {
+    if (await this.mobileOwner(database, fingerprint, exceptMember)) throw new DomainError('REGISTRATION_REJECTED');
   }
 
-  async assertRegistrationInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<void> {
-    const result = await database.query<{ id: string }>(`select invite.id from member.invite invite
-      join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
-      join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
-      where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
-        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
-        and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
-        and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
-        and policy.terms_hash=invite.terms_hash`, [token, destinationHash]);
-    if (!result.rows[0]) throw new Error('INVITE_INVALID');
+  async mobileOwner(database: OperationDatabase, fingerprint: string, exceptMember?: string): Promise<InvitationMobileOwner | null> {
+    const existing = await database.query<{ id: string; principal_id: string }>(
+      `select id,principal_id from member.profile
+      where mobile_token=$1 and status in('pending','active') and ($2::text is null or id<>$2) order by id limit 1`,
+      [fingerprint, exceptMember ?? null]
+    );
+    const row = existing.rows[0];
+    return row ? Object.freeze({ member: row.id, principal: row.principal_id }) : null;
   }
 
-  async consumeInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<MemberInvite> {
-    const result = await database.query<MemberInvite>(`with candidate as materialized(
-      select invite.id,invite.organization_id,invite.role_id,invite.terms_hash from member.invite invite
-      join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
-      join organization.organization organization on organization.id=invite.organization_id
-      join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
-      where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
-        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
-        and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
-        and invite.role_id='role-zhudatuan-storefront-member' and role.status='active'
-        and organization.kind='mall' and organization.status='active'
-        and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
-        and policy.terms_hash=invite.terms_hash for update of invite
-    ), consumed as(update member.invite invite set use_count=invite.use_count+1,
-      accepted_at=case when invite.use_count+1=invite.max_uses then clock_timestamp() else invite.accepted_at end,version=invite.version+1
-      from candidate where invite.id=candidate.id
-      returning candidate.organization_id,candidate.role_id,candidate.terms_hash)
-      select organization_id,role_id,terms_hash from consumed`, [token, destinationHash]);
-    const invitation = result.rows[0];
-    if (!invitation) throw new Error('INVITE_INVALID');
-    return invitation;
+  async createPending(database: OperationDatabase, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void> {
+    const created = await database.query(
+      `insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,
+      mobile_masked,created_at,updated_at,version) values($1,$2,$3,'pending',$4,$5,$6,clock_timestamp(),clock_timestamp(),1)
+      returning id`,
+      [input.member, input.principal, input.display, input.mobileCiphertext, input.mobileFingerprint, input.mobileMasked]
+    );
+    if (!created.rows[0]) throw new Error('MEMBER_PROFILE_CREATE_FAILED');
   }
 
-  async create(database: OperationDatabase, input: MemberProfile): Promise<void> {
-    await database.query(`insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,mobile_masked,created_at,updated_at)
-      values($1,$2,$3,$4,$5,$6,$7,clock_timestamp(),clock_timestamp())`, [input.member, input.principal, input.display,
-      input.status, input.mobileCiphertext ?? null, input.mobileFingerprint ?? null, input.mobileMasked ?? '***']);
+  async memberForPrincipal(database: OperationDatabase, principal: string): Promise<string> {
+    const result = await database.query<{ id: string }>('select id from member.profile where principal_id=$1 and status=$2', [principal, 'active']);
+    if (!result.rows[0]) throw new Error('MEMBER_PROFILE_NOT_FOUND');
+    return result.rows[0].id;
+  }
+
+  async activate(database: OperationDatabase, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void> {
+    const result = await database.query(
+      `update member.profile set display_name=$3,mobile_ciphertext=$4,mobile_token=$5,mobile_masked=$6,
+      status='active',version=version+1,updated_at=clock_timestamp() where id=$1 and principal_id=$2 and status='pending' returning id`,
+      [input.member, input.principal, input.display, input.mobileCiphertext, input.mobileFingerprint, input.mobileMasked]
+    );
+    if (!result.rows[0]) throw new DomainError('MEMBERSHIP_NOT_INVITED');
+  }
+  async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ mobileCiphertext: string | null; mobileFingerprint: string | null }>> {
+    const result = await database.query<{ mobile_ciphertext: string | null; mobile_token: string | null }>(
+      `select mobile_ciphertext,mobile_token from member.profile
+      where principal_id=$1 and status='active'`,
+      [principal]
+    );
+    return {
+      mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null,
+      mobileFingerprint: result.rows[0]?.mobile_token ?? null,
+    };
+  }
+
+  async updateDisplay(database: OperationDatabase, member: string, display: string): Promise<Readonly<Record<string, unknown>>> {
+    const result = await database.query(
+      `update member.profile set display_name=$2,version=version+1,updated_at=clock_timestamp()
+      where id=$1 returning id,display_name,version`,
+      [member, display]
+    );
+    if (!result.rows[0]) throw new Error('MEMBER_PROFILE_NOT_FOUND');
+    return result.rows[0];
   }
 
   async ensureImported(database: OperationDatabase, input: MemberProfile): Promise<void> {
-    await database.query(`insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
+    await database.query(
+      `insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
       values($1,$2,$3,$4,clock_timestamp(),clock_timestamp()) on conflict(id) do update set
       display_name=excluded.display_name,updated_at=clock_timestamp(),version=member.profile.version+1`,
-    [input.member, input.principal, input.display, input.status]);
+      [input.member, input.principal, input.display, input.status]
+    );
   }
 
   async changeMobile(database: OperationDatabase, principal: string, ciphertext: string, fingerprint: string, masked: string): Promise<Readonly<Record<string, unknown>>> {
-    const result = await database.query(`update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked=$4,
+    const result = await database.query(
+      `update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked=$4,
       version=version+1,updated_at=clock_timestamp()
-      where principal_id=$1 returning id,display_name,mobile_masked,version`, [principal, ciphertext, fingerprint, masked]);
+      where principal_id=$1 returning id,display_name,mobile_masked,version`,
+      [principal, ciphertext, fingerprint, masked]
+    );
     const row = result.rows[0];
     if (!row) throw new Error('MEMBER_PROFILE_NOT_FOUND');
     return row;
   }
 }
-
-export const memberPort = new MemberPort();

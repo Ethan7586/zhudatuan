@@ -1,7 +1,10 @@
 import type { Money } from '@shop/kernel';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 
-export interface Posting { readonly side: 'debit' | 'credit'; readonly amount: Money }
+export interface Posting {
+  readonly side: 'debit' | 'credit';
+  readonly amount: Money;
+}
 
 export class PostingPolicy {
   assertBalanced(entries: readonly Posting[]): void {

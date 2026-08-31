@@ -22,10 +22,14 @@ const server = setupServer(
   }),
   http.get('*/api/v1/vouchers/reserves', () => HttpResponse.json({ items: [], count: 0 })),
   http.get('*/api/v1/vouchers/batches', () => HttpResponse.json({ items: [], count: 0 })),
+  http.post('*/api/v1/vouchers/cardlibraries', async ({ request }) => {
+    writes.push(`${request.method}:${JSON.stringify(await request.json())}`);
+    return HttpResponse.json({ id: 'cardpool:test', scope_id: 'platform:commerce', code_prefix: 'MVP2026', next_sequence: 1, provider: null, mode: 'generated', status: 'ready', version: 0 }, { status: 201 });
+  }),
   http.all('*/api/v1/vouchers/**', ({ request }) => {
     writes.push(request.method);
     return HttpResponse.json({ code: 'UNEXPECTED_VOUCHER_WRITE' }, { status: 500 });
-  }),
+  })
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -43,7 +47,7 @@ describe('Voucher governance workspace', () => {
     const user = userEvent.setup();
     renderRoute('/vouchers');
     expect(await screen.findByRole('table', { name: '卡券方案' })).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 1, name: '卡券治理台' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: '卡券中心' })).toBeTruthy();
     expect(screen.getByText('当前网站归属：鸿泰集团')).toBeTruthy();
     expect(screen.getByText('¥70.00')).toBeTruthy();
 
@@ -53,7 +57,7 @@ describe('Voucher governance workspace', () => {
     expect(requests).toContain('/api/v1/vouchers/cardlibraries');
   });
 
-  it('filters the current page, opens a read-only summary and keeps the create flow non-mutating', async () => {
+  it('filters the current page, opens a read-only summary and creates a card library through the canonical command', async () => {
     const user = userEvent.setup();
     renderRoute('/vouchers?view=programs&campaign=keep');
     await screen.findByRole('table', { name: '卡券方案' });
@@ -70,9 +74,13 @@ describe('Voucher governance workspace', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
     await user.click(screen.getByRole('button', { name: '新建卡券' }));
-    const creator = await screen.findByRole('dialog', { name: '新建卡券 · 安全预览' });
-    expect(within(creator).getByText(/当前不会创建方案/)).toBeTruthy();
-    expect(writes).toHaveLength(0);
+    const creator = await screen.findByRole('dialog', { name: '新建卡号库' });
+    await user.clear(within(creator).getByRole('textbox', { name: '卡号前缀' }));
+    await user.type(within(creator).getByRole('textbox', { name: '卡号前缀' }), 'MVP2026');
+    await user.click(within(creator).getByRole('button', { name: '确认创建' }));
+    await waitFor(() => expect(writes).toEqual(['POST:{"mode":"generated","prefix":"MVP2026","provider":null}']));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡号库' })).toBeNull());
+    expect(new URLSearchParams(currentSearch).get('view')).toBe('libraries');
   });
 });
 
@@ -93,36 +101,55 @@ function renderRoute(entry: string) {
           <Component />
         </ConsoleContextProvider>
       </QueryClientProvider>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
 }
 
 const context: ConsoleContext = {
   session: {
-    actor: 'actor:voucher', membership: 'membership:voucher', accessVersion: 7,
-    permissions: ['voucher.program.read', 'voucher.cardlibrary.read'],
-    capabilities: ['voucher.programs.read', 'voucher.cardlibraries.read'], target: 'console',
-    scope: { kind: 'platform', id: 'platform:preview', name: '鸿泰集团' },
-    scopes: [{ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' }],
-    assurance: { level: 2 }, syncedAt: '2026-08-27T05:00:00.000Z',
+    actor: 'actor:voucher',
+    membership: 'membership:voucher',
+    accessVersion: 7,
+    permissions: ['voucher.program.read', 'voucher.cardlibrary.read', 'voucher.cardlibrary.create'],
+    capabilities: ['voucher.programs.read', 'voucher.cardlibraries.read', 'voucher.cardlibraries.create'],
+    target: 'console',
+    scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' },
+    scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }],
+    assurance: { level: 2 },
+    csrf: 'csrf-token-at-least-sixteen-characters',
+    syncedAt: '2026-08-27T05:00:00.000Z',
   },
   profile: { display_name: '测试卡券运营', employee_no: null },
-  scope: { kind: 'platform', id: 'platform:preview', name: '鸿泰集团' },
-  scopes: [{ kind: 'platform', id: 'platform:preview', name: '鸿泰集团' }],
+  scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' },
+  scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }],
 };
 
 const programs = {
   items: [
-    { id: 'voucher-program:new-employee', name: '新员工入职礼包', value_minor: 3_000, currency: 'CNY', status: 'active', approval_required: true, version: 12 },
-    { id: 'voucher-program:summer-care', name: '夏季高温关怀券', value_minor: 4_000, currency: 'CNY', status: 'draft', approval_required: true, version: 7 },
+    { id: 'voucher-program:new-employee', scope_id: 'platform:commerce', name: '新员工入职礼包', value_minor: 3_000, currency: 'CNY', default_valid_days: 365, status: 'active', approval_required: true, version: 12, versions: [] },
+    { id: 'voucher-program:summer-care', scope_id: 'platform:commerce', name: '夏季高温关怀券', value_minor: 4_000, currency: 'CNY', default_valid_days: 90, status: 'draft', approval_required: true, version: 7, versions: [] },
   ],
   count: 2,
 };
 
 const libraries = {
   items: [
-    { id: 'cardlibrary:employee-202608', code_prefix: 'SW-EMP-2608', mode: 'generated', status: 'ready', version: 5,
-      import_state: null, total_count: 5_000, success_count: 5_000, failure_count: 0 },
+    {
+      id: 'cardlibrary:employee-202608',
+      scope_id: 'platform:commerce',
+      code_prefix: 'SW-EMP-2608',
+      next_sequence: 5_001,
+      provider: null,
+      mode: 'generated',
+      status: 'ready',
+      version: 5,
+      import_state: null,
+      total_count: 5_000,
+      success_count: 5_000,
+      failure_count: 0,
+      allocations: [],
+      errors: [],
+    },
   ],
   count: 1,
 };

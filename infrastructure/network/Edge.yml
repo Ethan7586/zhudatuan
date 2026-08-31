@@ -1,0 +1,23 @@
+version: 1
+owner: platform
+edge:
+  waf: aliyun
+  cdn: aliyun
+  apiOrigin: alb
+  staticOrigin: oss
+routes:
+  api:
+    host: api.hbbtzn.com
+    service: shop-api
+    paths: [/api/v1, /health]
+  storefront: { host: hbbtzn.com, artifact: storefront }
+  auth: { host: auth.hbbtzn.com, artifact: auth }
+  console: { host: smart.hbbtzn.com, artifact: console }
+headers:
+  hsts: max-age=63072000; includeSubDomains
+  csp: default-src 'none'; frame-ancestors 'none'
+  permissions: camera=(), microphone=(), geolocation=()
+  referrer: no-referrer
+cors:
+  credentials: true
+  wildcard: false

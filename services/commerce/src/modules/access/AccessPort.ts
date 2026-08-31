@@ -1,52 +1,104 @@
+import { DomainError } from '../../foundation/domain/DomainError';
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
+import type { IdentityAccessPort } from './public/IdentityAccessPort';
+import type { ImportedMembership, MemberImportAccessPort } from './public/MemberImportAccessPort';
+import type { AccessVersionService } from './application/service/AccessVersionService';
+import type { AccessMember, MemberAccessPort } from './public/MemberAccessPort';
+import type { AccessRepository } from './application/port/AccessRepository';
 
-export interface RegistrationMembership {
-  readonly membership: string;
-  readonly member: string;
-  readonly principal: string;
-  readonly organization: string;
-  readonly role: string;
-  readonly scopeKind: string;
-  readonly scopes: readonly [string, string, string];
-}
+export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberImportAccessPort {
+  constructor(
+    private readonly repository: AccessRepository,
+    private readonly versions: AccessVersionService
+  ) {}
+  async memberships(database: OperationDatabase, member: string, target: 'console' | 'storefront'): Promise<readonly Readonly<{ id: string; target: 'console' | 'storefront'; organization: string; accessVersion: number }>[]> {
+    const result = await this.repository.activeMemberships(database, member, target);
+    return Object.freeze(result.map(({ id, client, organization, accessVersion }) => Object.freeze({ id, target: client, organization, accessVersion })));
+  }
 
-export interface ImportedMembership {
-  readonly membership: string;
-  readonly member: string;
-  readonly organization: string;
-  readonly client: string;
-  readonly employee: string;
-}
+  async session(database: OperationDatabase, membership: string, target: 'console' | 'storefront'): Promise<Readonly<{ accessVersion: number; client: 'console' | 'storefront' }>> {
+    const accessVersion = await this.repository.lockSession(database, membership, target);
+    if (accessVersion === null) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
+    return Object.freeze({ accessVersion, client: target });
+  }
 
-export class AccessPort {
-  async createRegistration(database: OperationDatabase, input: RegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
-    const membership = await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
-      values($1,$2,$3,'storefront','active',1,clock_timestamp()) returning *`, [input.membership, input.member, input.organization]);
-    await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
-      ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp())`, [input.membership, input.role]);
-    await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
-      ($1,$2,$3,$4,$4,'allow',clock_timestamp(),1),($5,$2,'owner',$6,$6,'allow',clock_timestamp(),1),($7,$2,'self',$8,$8,'allow',clock_timestamp(),1)`,
-    [input.scopes[0], input.membership, input.scopeKind, input.organization, input.scopes[1], input.member, input.scopes[2], input.principal]);
-    const row = membership.rows[0];
-    if (!row) throw new Error('MEMBERSHIP_CREATE_FAILED');
-    return row;
+  async directoryMemberships(
+    database: OperationDatabase,
+    memberships: readonly string[]
+  ): Promise<Readonly<{ principal: string | null; memberships: readonly Readonly<{ id: string; target: 'console' | 'storefront' }>[]; conflict: boolean }>> {
+    if (memberships.length === 0) return Object.freeze({ principal: null, memberships: Object.freeze([]), conflict: false });
+    const unique = Object.freeze([...new Set(memberships)].sort());
+    const result = await this.repository.directoryMemberships(database, unique);
+    const principals = [...new Set(result.map((row) => row.principal))];
+    if (principals.length !== 1) return Object.freeze({ principal: null, memberships: Object.freeze([]), conflict: principals.length > 1 });
+    return Object.freeze({ principal: principals[0]!, memberships: Object.freeze(result.map((row) => Object.freeze({ id: row.id, target: row.client }))), conflict: false });
   }
 
   async ensureImported(database: OperationDatabase, input: ImportedMembership): Promise<void> {
-    await database.query(`insert into access.membership(id,member_id,organization_id,client,employee_no,status,access_version)
-      values($1,$2,$3,$4,$5,'invited',1) on conflict(member_id,organization_id,client) do update set employee_no=excluded.employee_no`,
-    [input.membership, input.member, input.organization, input.client, input.employee]);
+    await this.repository.ensureImported(database, {
+      membership: input.membership,
+      member: input.member,
+      principal: input.principal,
+      organization: input.organization,
+      client: input.client === 'storefront' ? 'storefront' : 'operator',
+      employee: input.employee,
+    });
   }
 
   async member(database: OperationDatabase, membership: string): Promise<string> {
-    const owner = await database.query<{ member_id: string }>(`select member_id from access.membership where id=$1 and status='active'`, [membership]);
-    if (!owner.rows[0]) throw new Error('MEMBERSHIP_NOT_FOUND');
-    return owner.rows[0].member_id;
+    const member = await this.repository.activeMember(database, membership);
+    if (member === null) throw new Error('MEMBERSHIP_NOT_FOUND');
+    return member;
   }
 
-  async revokeSessions(database: OperationDatabase, membership: string): Promise<void> {
-    await database.query(`update access.membership set access_version=access_version+1 where id=$1`, [membership]);
+  activeIn(database: OperationDatabase, member: string, organizations: readonly string[]): Promise<boolean> {
+    return this.repository.activeMemberIn(database, member, organizations);
+  }
+
+  async members(database: OperationDatabase, organization: string, after: string | null, limit: number): Promise<readonly AccessMember[]> {
+    return Object.freeze((await this.repository.memberPage(database, organization, after, limit)).map(mapAccessMember));
+  }
+
+  async profile(database: OperationDatabase, membership: string): Promise<AccessMember> {
+    const row = await this.repository.memberProfile(database, membership);
+    if (!row) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
+    return mapAccessMember(row);
+  }
+
+  async setEmployeeNumber(database: OperationDatabase, membership: string, employee: string | null): Promise<void> {
+    if (!(await this.repository.setEmployeeNumber(database, membership, employee))) throw new Error('MEMBERSHIP_NOT_FOUND');
+  }
+
+  async memberForManagement(database: OperationDatabase, membership: string): Promise<Readonly<{ member: string; accessVersion: number }>> {
+    const target = await this.repository.managementMember(database, membership);
+    if (target === null) throw new Error('MEMBERSHIP_NOT_FOUND');
+    return target;
+  }
+
+  async changeStatus(database: OperationDatabase, membership: string, status: 'active' | 'suspended' | 'left') {
+    if (!(await this.repository.setMembershipStatus(database, membership, status))) throw new Error('MEMBERSHIP_NOT_FOUND');
+    const version = await this.versions.bump(database, membership, `membership${status}`, 'access:memberstatus');
+    return Object.freeze({ accessVersion: version });
+  }
+
+  async replaceDepartment(database: OperationDatabase, input: Readonly<{ membership: string; department: string; path: string; grant: string }>): Promise<void> {
+    await this.repository.replaceDepartment(database, input);
+    await this.versions.bump(database, input.membership, 'departmentscopechanged', 'access:department');
+  }
+
+  async applyDirectoryLifecycle(
+    database: OperationDatabase,
+    input: Readonly<{ membership: string; status: 'active' | 'suspended' | 'left'; department: string | null; grant: string; scope: string; trace: string; reason: 'directoryfreeze' | 'directoryrestore' | 'directoryupdate' }>
+  ): Promise<number> {
+    const current = await this.repository.applyDirectoryState(database, { membership: input.membership, status: input.status });
+    if (current === null) throw new Error('MEMBERSHIP_NOT_FOUND');
+    if (input.department !== null) {
+      await this.repository.replaceDirectoryDepartment(database, { membership: input.membership, department: input.department, grant: input.grant, accessVersion: current });
+    }
+    return this.versions.bump(database, input.membership, input.reason, input.trace);
   }
 }
 
-export const accessPort = new AccessPort();
+function mapAccessMember(row: Readonly<{ id: string; member: string; organization: string; employee: string | null; status: string; accessVersion: number; joinedAt: Date | null }>): AccessMember {
+  return Object.freeze({ id: row.id, member: row.member, organization: row.organization, employee: row.employee, status: row.status, accessversion: row.accessVersion, joinedat: row.joinedAt });
+}

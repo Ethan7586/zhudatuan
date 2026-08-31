@@ -7,7 +7,7 @@ export class CdnPublisher {
 
   async publish(path: string, document: unknown, expectedHash: string, signal: AbortSignal): Promise<StoredObject> {
     if (signal.aborted) throw signal.reason;
-    if (!/^experience\/[a-zA-Z0-9:.-]+\/[a-f0-9]{64}\.json$/.test(path)) throw new Error('EXPERIENCE_OBJECT_PATH_INVALID');
+    if (!/^experience\/[a-z0-9][a-z0-9.-]{2,47}\/[a-f0-9]{64}\.json$/.test(path)) throw new Error('EXPERIENCE_OBJECT_PATH_INVALID');
     const bytes = new TextEncoder().encode(serializeExperience(document));
     const hash = createHash('sha256').update(bytes).digest('hex');
     if (hash !== expectedHash) throw new Error('EXPERIENCE_CONTENT_HASH_MISMATCH');

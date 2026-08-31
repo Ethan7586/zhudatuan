@@ -36,6 +36,6 @@ Member
 
 - 注册：`POST /api/v1/auth/register/username`
 - 登录：原有密码登录接口同时支持 `local_username` 和已绑定的 `local_phone`
-- 生产迁移：`database/supabase/migrations/20260812250000_username_password_registration.sql`
+- 生产迁移：`database/migrations/20260812250000_username_password_registration.sql`
 
 本期不启用真实短信、微信或企业微信 OAuth。启用这些能力时，需同时补充绑定冲突处理、身份合并、解绑二次验证和审计流程。

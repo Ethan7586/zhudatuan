@@ -1,74 +1,127 @@
 // Generated from definitions/events.yml. Do not edit.
-import type { EventContract } from './EventContract';
+import { z } from 'zod';
 
-export const SERIALIZED_EVENT_TYPES = Object.freeze([
-  'identity.session.created',
-  'identity.session.revoked',
-  'identity.challenge.started',
-  'identity.member.registered',
-  'access.version.changed',
-  'catalog.listing.published',
-  'inventory.stock.changed',
-  'inventory.stock.reserved',
-  'experience.published',
-  'checkout.quote.created',
-  'checkout.quote.confirmed',
-  'order.placed',
-  'order.paid',
-  'order.cancelled',
-  'payment.succeeded',
-  'payment.refunded',
-  'payment.late.detected',
-  'payment.attempt.failed',
-  'payment.provider.observed',
-  'payment.autorefund.requested',
-  'payment.recovery.opened',
-  'fulfillment.shipped',
-  'voucher.issued',
-  'voucher.issue.failed',
-  'voucher.import.failed',
-  'voucher.status.failed',
-  'voucher.redeemed',
-  'benefit.granted',
-  'benefit.expired',
-  'benefit.expiry.reminded',
-  'benefit.revoked',
-  'benefit.grant.failed',
-  'benefit.revoke.failed',
-  'benefit.expiry.failed',
-  'finance.entry.posted',
-  'finance.reconciliation.difference',
-  'finance.settlement.approved',
-  'finance.settlement.adjusted',
-  'finance.period.closed',
-  'finance.withdrawal.paid',
-  'finance.withdrawal.uncertain',
-  'invoice.issued',
-  'invoice.red.issued',
-  'support.message.sent',
-  'support.ticket.assigned',
-  'support.sla.escalated',
-  'channel.sync.completed',
-  'channel.webhook.applied',
-  'channel.refund.changed',
-  'notification.delivered',
-  'risk.policy.activated',
-  'catalog.listing.unpublished',
-  'risk.case.opened',
-  'risk.case.resolved',
-  'risk.transaction.blocked',
-  'extension.enabled',
-  'extension.disabled',
-  'extension.degraded',
-] as const);
-
-export interface SerializedEvent {
-  readonly type: string;
-  readonly version: number;
-  readonly module: string;
-  readonly payload: unknown;
-}
-
-export function serializeEvent(contract: EventContract, payload: unknown): SerializedEvent {
-  return Object.freeze({ type: contract.type, version: contract.version, module: contract.module, payload });
-}
+const EventIdSchema = z.string().trim().min(1).max(255);
+const MoneySchema = z.number().int().safe();
+const CurrencySchema = z.string().regex(/^[A-Z]{3}$/);
+const TimeSchema = z.iso.datetime({ offset: true });
+const OrderTenderSchema = z.strictObject({ kind: z.enum(['benefit','voucher','wechat']), reference: EventIdSchema.nullable(), amountMinor: MoneySchema });
+const OrderLineSchema = z.strictObject({ line: EventIdSchema, sku: EventIdSchema, product: EventIdSchema, category: EventIdSchema, powderclass: EventIdSchema, provider: EventIdSchema.nullable(), partner: EventIdSchema.nullable(), totalMinor: MoneySchema, discountMinor: MoneySchema, payableMinor: MoneySchema });
+const OrderSnapshotSchema = z.strictObject({ order: EventIdSchema, number: z.string().min(1).max(255), member: EventIdSchema, mall: EventIdSchema, application: EventIdSchema, scopes: z.array(EventIdSchema), timezone: z.string().min(1).max(255), totalMinor: MoneySchema, currency: CurrencySchema, evidenceHash: z.string().min(1).max(255), tenders: z.array(OrderTenderSchema), lines: z.array(OrderLineSchema) });
+const ReservationLineSchema = z.strictObject({ sku: EventIdSchema, stockitem: EventIdSchema.nullable(), quantity: z.number().int().positive().safe() });
+const RefundTenderSchema = z.strictObject({ sequence: z.number().int().positive().safe(), kind: z.enum(['wechat','benefit','voucher']), reference_id: EventIdSchema.nullable(), amount_minor: MoneySchema });
+const StatementSnapshotSchema = z.strictObject({ statement: EventIdSchema, periodStart: z.string().min(1).max(32), periodEnd: z.string().min(1).max(32), currency: CurrencySchema, openingMinor: MoneySchema, debitMinor: MoneySchema, creditMinor: MoneySchema, closingMinor: MoneySchema, state: z.string().min(1).max(64) });
+const PaymentEvidenceSchema = z.strictObject({ notificationId: EventIdSchema, eventType: z.literal('TRANSACTION.SUCCESS'), createTime: TimeSchema, resourceType: z.literal('encrypt-resource'), transactionId: EventIdSchema, outTradeNo: EventIdSchema, tradeState: z.literal('SUCCESS'), successTime: TimeSchema, totalCents: MoneySchema, currency: z.literal('CNY') });
+const RefundEvidenceSchema = z.strictObject({ notificationId: EventIdSchema, eventType: z.enum(['REFUND.SUCCESS','REFUND.ABNORMAL','REFUND.CLOSED']), createTime: TimeSchema, resourceType: z.literal('encrypt-resource'), mchId: EventIdSchema, refundId: EventIdSchema, outRefundNo: EventIdSchema, transactionId: EventIdSchema, outTradeNo: EventIdSchema, refundStatus: z.enum(['SUCCESS','ABNORMAL','CLOSED']), successTime: TimeSchema.nullable(), refundCents: MoneySchema, totalCents: MoneySchema, payerRefundCents: MoneySchema, payerTotalCents: MoneySchema });
+const ProviderEvidenceSchema = z.union([PaymentEvidenceSchema, RefundEvidenceSchema]);
+const RecoveryEvidenceSchema = z.union([z.strictObject({ intent: EventIdSchema, order: EventIdSchema, providerState: z.string().min(1).max(64), amountMinor: MoneySchema, transaction: EventIdSchema.nullable(), detectedAt: TimeSchema }),z.strictObject({ deadletter: EventIdSchema, job: EventIdSchema, kind: z.string().min(1).max(64), payload: z.record(z.string(), z.unknown()), error: z.string().min(1).max(255) })]);
+const OrderExportFilterSchema = z.strictObject({ order: EventIdSchema.optional(), placed: TimeSchema.optional(), lifecycle: z.string().max(64).optional(), payment: z.string().max(64).optional(), fulfillment: z.string().max(64).optional(), mall: EventIdSchema.optional() });
+const FinanceExportFilterSchema = z.strictObject({ periodStart: z.string().max(32).optional(), periodEnd: z.string().max(32).optional(), currency: CurrencySchema.optional(), state: z.enum(['draft','final']).optional() });
+const AuthorizationSnapshotSchema = z.strictObject({ actor: EventIdSchema, membership: EventIdSchema, scope: EventIdSchema, trace: EventIdSchema });
+const EventEnvelopeSchema = z.strictObject({ eventId: EventIdSchema, eventType: EventIdSchema, occurredAt: TimeSchema, aggregateId: EventIdSchema, aggregateVersion: z.number().int().positive().safe(), scopeId: EventIdSchema, actorId: EventIdSchema, correlationId: EventIdSchema, causationId: EventIdSchema, payloadVersion: z.number().int().positive().safe(), payload: z.record(z.string(), z.unknown()) });
+export const EVENT_PAYLOAD_SCHEMAS = Object.freeze({
+  "identity.federation.linked": z.strictObject({ "principalId": EventIdSchema, "membershipId": EventIdSchema, "scopeId": EventIdSchema, "provider": z.string().max(16384), "subjectHash": z.string().max(16384) }),
+  "identity.federation.rejected": z.strictObject({ "scopeId": EventIdSchema, "provider": z.string().max(16384), "reason": z.string().max(16384), "traceId": EventIdSchema }),
+  "identity.provider.changed": z.strictObject({ "providerId": EventIdSchema, "scopeId": EventIdSchema, "state": z.string().max(16384), "version": z.number().int().positive().safe() }),
+  "organization.directory.changed": z.strictObject({ "scopeId": EventIdSchema, "directoryId": EventIdSchema, "changeId": EventIdSchema, "subjectId": EventIdSchema, "kind": z.string().max(16384) }),
+  "organization.directory.synced": z.strictObject({ "scopeId": EventIdSchema, "directoryId": EventIdSchema, "runId": EventIdSchema, "accepted": z.number().int().safe(), "rejected": z.number().int().safe() }),
+  "organization.membership.changed": z.strictObject({ "scopeId": EventIdSchema, "membershipId": EventIdSchema, "principalId": EventIdSchema, "state": z.string().max(16384), "version": z.number().int().positive().safe() }),
+  "capability.changed": z.strictObject({ "scopeId": EventIdSchema, "capability": z.string().max(16384), "state": z.string().max(16384), "version": z.number().int().positive().safe() }),
+  "navigation.catalog.changed": z.strictObject({ "catalogVersion": z.string().max(16384), "hash": z.string().max(16384) }),
+  "identity.session.created": z.strictObject({ "principalId": EventIdSchema, "membershipId": EventIdSchema, "assurance": z.number().int().safe() }),
+  "identity.session.revoked": z.strictObject({ "sessions": z.array(EventIdSchema), "reason": z.string().max(16384) }),
+  "identity.membership.switched": z.strictObject({ "principalId": EventIdSchema, "previousMembershipId": EventIdSchema, "membershipId": EventIdSchema, "previousSessionId": EventIdSchema, "sessionId": EventIdSchema }),
+  "identity.challenge.started": z.strictObject({ "challenge": EventIdSchema, "destination": z.string().max(16384).optional(), "purpose": z.string().max(16384) }),
+  "identity.member.registered": z.strictObject({ "principalId": EventIdSchema, "membershipId": EventIdSchema, "scopeId": EventIdSchema, "target": z.string().max(16384) }),
+  "identity.invitation.issued": z.strictObject({ "invitationId": EventIdSchema, "kind": z.string().max(16384), "target": z.string().max(16384), "membershipId": EventIdSchema.nullable() }),
+  "identity.invitation.reserved": z.strictObject({ "invitationId": EventIdSchema, "target": z.string().max(16384), "kind": z.string().max(16384) }),
+  "identity.invitation.redeemed": z.strictObject({ "invitationId": EventIdSchema, "membershipId": EventIdSchema, "target": z.string().max(16384) }),
+  "identity.invitation.revoked": z.strictObject({ "invitationId": EventIdSchema, "actorMembershipId": EventIdSchema }),
+  "identity.invitation.expired": z.strictObject({ "invitationId": EventIdSchema, "kind": z.string().max(16384), "target": z.string().max(16384) }),
+  "identity.invitation.failed": z.strictObject({ "invitationId": EventIdSchema, "operation": z.string().max(16384), "reason": z.string().max(16384) }),
+  "identity.enrollment.completed": z.strictObject({ "invitationId": EventIdSchema, "membershipId": EventIdSchema }),
+  "identity.link.required": z.strictObject({ "linkCase": EventIdSchema, "invitation": EventIdSchema, "reason": z.string().max(16384) }),
+  "access.version.changed": z.strictObject({ "membership": EventIdSchema, "version": z.number().int().positive().safe(), "reason": z.string().max(16384) }),
+  "access.membership.invited": z.strictObject({ "membershipId": EventIdSchema, "scopeId": EventIdSchema, "invitationId": EventIdSchema, "target": z.string().max(16384) }),
+  "access.membership.activated": z.strictObject({ "membershipId": EventIdSchema, "accessVersion": z.number().int().positive().safe(), "invitationId": EventIdSchema, "target": z.string().max(16384), "grantDigest": z.string().max(16384) }),
+  "access.owner.transferred": z.strictObject({ "scope": EventIdSchema, "previousMembership": EventIdSchema, "membership": EventIdSchema, "version": z.number().int().positive().safe() }),
+  "catalog.listing.published": z.strictObject({ "listing": EventIdSchema, "sku": EventIdSchema, "scope": EventIdSchema, "version": z.number().int().positive().safe() }),
+  "inventory.stock.changed": z.strictObject({ "stockitem": EventIdSchema, "sku": EventIdSchema, "available": z.number().int().safe(), "reserved": z.number().int().safe(), "version": z.number().int().positive().safe() }),
+  "inventory.stock.reserved": z.strictObject({ "order": EventIdSchema, "lines": z.array(ReservationLineSchema) }),
+  "experience.published": z.strictObject({ "release": EventIdSchema, "application": EventIdSchema, "version": EventIdSchema, "hash": z.string().max(16384), "key": z.string().max(16384) }),
+  "checkout.quote.created": z.strictObject({ "checkout": EventIdSchema, "quote": EventIdSchema, "member": EventIdSchema, "mall": EventIdSchema, "payableMinor": z.number().int().safe(), "personalMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "expiresAt": z.iso.datetime({ offset: true }), "evidenceHash": z.string().max(16384) }),
+  "checkout.quote.confirmed": z.strictObject({ "checkout": EventIdSchema, "quote": EventIdSchema, "order": EventIdSchema, "intent": EventIdSchema }),
+  "order.placed": z.strictObject({ "order": EventIdSchema, "number": z.string().max(16384), "member": EventIdSchema, "mall": EventIdSchema, "application": EventIdSchema, "scopes": z.array(EventIdSchema), "timezone": z.string().max(16384), "totalMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "evidenceHash": z.string().max(16384), "tenders": z.array(OrderTenderSchema), "lines": z.array(OrderLineSchema) }),
+  "order.paid": z.strictObject({ "payment": EventIdSchema, "order": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "member": EventIdSchema, "snapshot": OrderSnapshotSchema.nullable() }),
+  "order.cancelled": z.strictObject({ "order": EventIdSchema, "reason": z.string().max(16384), "providerState": z.string().max(16384).optional() }),
+  "payment.captured": z.strictObject({ "payment": EventIdSchema, "order": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "member": EventIdSchema, "snapshot": OrderSnapshotSchema.nullable() }),
+  "aftersale.applied": z.strictObject({ "aftersale": EventIdSchema, "order": EventIdSchema, "member": EventIdSchema, "state": z.string().max(16384), "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "requiresReturn": z.boolean() }),
+  "aftersale.changed": z.strictObject({ "aftersale": EventIdSchema, "order": EventIdSchema, "member": EventIdSchema, "previousState": z.string().max(16384), "state": z.string().max(16384) }),
+  "return.inspected": z.strictObject({ "return": EventIdSchema, "aftersale": EventIdSchema, "accepted": z.boolean() }),
+  "refund.completed": z.strictObject({ "refund": EventIdSchema, "payment": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "member": EventIdSchema, "order": EventIdSchema, "mall": EventIdSchema, "tenders": z.array(RefundTenderSchema), "lineId": EventIdSchema.nullable(), "scopes": z.array(EventIdSchema), "timezone": z.string().max(16384) }),
+  "payment.late.detected": z.strictObject({ "intent": EventIdSchema, "order": EventIdSchema, "payment": EventIdSchema, "refund": EventIdSchema, "transaction": z.string().max(16384), "providerMinor": z.number().int().safe(), "detectedAt": z.iso.datetime({ offset: true }) }),
+  "payment.attempt.failed": z.strictObject({ "intent": EventIdSchema, "order": EventIdSchema, "providerState": z.string().max(16384) }),
+  "payment.provider.observed": z.strictObject({ "providerEvent": EventIdSchema, "kind": z.string().max(16384), "evidence": ProviderEvidenceSchema }),
+  "payment.autorefund.requested": z.strictObject({ "intent": EventIdSchema, "order": EventIdSchema, "payment": EventIdSchema, "refund": EventIdSchema, "transaction": z.string().max(16384), "providerMinor": z.number().int().safe(), "detectedAt": z.iso.datetime({ offset: true }) }),
+  "payment.recovery.opened": z.strictObject({ "recovery": EventIdSchema, "reason": z.string().max(16384), "evidence": RecoveryEvidenceSchema }),
+  "fulfillment.shipped": z.strictObject({ "fulfillment": EventIdSchema, "order": EventIdSchema, "member": EventIdSchema, "state": z.string().max(16384) }),
+  "voucher.issued": z.strictObject({ "batch": EventIdSchema, "count": z.number().int().safe(), "amountMinor": z.number().int().safe() }),
+  "voucher.issue.failed": z.strictObject({ "batch": EventIdSchema, "error": z.string().max(16384) }),
+  "voucher.import.failed": z.strictObject({ "import": EventIdSchema, "error": z.string().max(16384) }),
+  "voucher.status.failed": z.strictObject({ "batch": EventIdSchema, "error": z.string().max(16384) }),
+  "voucher.redeemed": z.strictObject({ "voucher": EventIdSchema, "redemption": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "mall": EventIdSchema, "store": EventIdSchema, "scopes": z.array(EventIdSchema), "timezone": z.string().max(16384) }),
+  "benefit.granted": z.strictObject({ "batch": EventIdSchema, "account": EventIdSchema, "member": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "kind": z.string().max(16384) }),
+  "benefit.expired": z.strictObject({ "lot": EventIdSchema, "batch": EventIdSchema, "account": EventIdSchema, "member": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/) }),
+  "benefit.expiry.reminded": z.strictObject({ "lot": EventIdSchema, "batch": EventIdSchema, "account": EventIdSchema, "member": EventIdSchema, "remainingMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "expiresAt": z.iso.datetime({ offset: true }) }),
+  "benefit.revoked": z.strictObject({ "batch": EventIdSchema }),
+  "benefit.grant.failed": z.strictObject({ "batch": EventIdSchema, "error": z.string().max(16384) }),
+  "benefit.revoke.failed": z.strictObject({ "batch": EventIdSchema, "error": z.string().max(16384) }),
+  "benefit.expiry.failed": z.strictObject({ "job": EventIdSchema, "error": z.string().max(16384) }),
+  "finance.entry.posted": z.strictObject({ "journal": EventIdSchema, "referenceType": z.string().max(16384), "referenceId": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "debit": z.string().max(16384), "credit": z.string().max(16384) }),
+  "finance.reconciliation.difference": z.strictObject({ "reconciliation": EventIdSchema, "differenceMinor": z.number().int().safe(), "itemCount": z.number().int().safe() }),
+  "finance.settlement.approved": z.strictObject({ "settlement": EventIdSchema, "partner": EventIdSchema, "amountMinor": z.number().int().safe(), "grossMinor": z.number().int().safe(), "feeMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/) }),
+  "finance.settlement.adjusted": z.strictObject({ "settlement": EventIdSchema, "adjustment": EventIdSchema, "direction": z.string().max(16384), "amountMinor": z.number().int().safe(), "grossMinor": z.number().int().safe(), "netMinor": z.number().int().safe(), "feeMinor": z.number().int().safe() }),
+  "finance.period.closed": z.strictObject({ "period": z.string().max(16384), "close": EventIdSchema, "sourceHash": z.string().max(16384).optional(), "statementSnapshot": StatementSnapshotSchema }),
+  "finance.withdrawal.paid": z.strictObject({ "withdrawal": EventIdSchema, "settlement": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/) }),
+  "finance.withdrawal.uncertain": z.strictObject({ "withdrawal": EventIdSchema, "settlement": EventIdSchema, "error": z.string().max(16384), "deadletter": EventIdSchema }),
+  "invoice.issued": z.strictObject({ "request": EventIdSchema, "kind": z.string().max(16384), "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "documentHash": z.string().max(16384) }),
+  "invoice.red.issued": z.strictObject({ "request": EventIdSchema, "kind": z.string().max(16384), "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "documentHash": z.string().max(16384) }),
+  "support.message.sent": z.strictObject({ "ticket": EventIdSchema, "conversation": EventIdSchema, "message": EventIdSchema, "authorType": z.string().max(16384), "member": EventIdSchema }),
+  "support.ticket.assigned": z.strictObject({ "ticket": EventIdSchema, "conversation": EventIdSchema, "agent": EventIdSchema, "member": EventIdSchema }),
+  "support.sla.escalated": z.strictObject({ "ticket": EventIdSchema, "member": EventIdSchema, "reason": z.string().max(16384), "escalation": EventIdSchema }),
+  "channel.sync.completed": z.strictObject({ "run": EventIdSchema, "kind": z.string().max(16384), "provider": z.string().max(16384), "accepted": z.number().int().safe(), "rejected": z.number().int().safe() }),
+  "channel.webhook.applied": z.strictObject({ "webhook": EventIdSchema, "provider": z.string().max(16384), "kind": z.string().max(16384), "reference": z.string().max(16384).nullable(), "operation": EventIdSchema.nullable(), "internalReference": EventIdSchema.nullable(), "state": z.string().max(16384) }),
+  "channel.refund.changed": z.strictObject({ "webhook": EventIdSchema, "provider": z.string().max(16384), "kind": z.string().max(16384), "reference": z.string().max(16384).nullable(), "operation": EventIdSchema.nullable(), "internalReference": EventIdSchema.nullable(), "state": z.string().max(16384) }),
+  "notification.delivered": z.strictObject({ "dispatch": EventIdSchema, "channel": z.string().max(16384) }),
+  "risk.policy.activated": z.strictObject({ "policy": EventIdSchema, "version": z.number().int().positive().safe(), "rolloutPercent": z.number().int().safe() }),
+  "catalog.listing.unpublished": z.strictObject({ "listing": EventIdSchema, "reason": z.string().max(16384), "decision": EventIdSchema }),
+  "risk.case.opened": z.strictObject({ "case": EventIdSchema, "decision": EventIdSchema, "outcome": z.string().max(16384) }),
+  "risk.case.resolved": z.strictObject({ "case": EventIdSchema, "state": z.string().max(16384) }),
+  "risk.transaction.blocked": z.strictObject({ "decision": EventIdSchema, "operation": z.string().max(16384), "reason": z.string().max(16384) }),
+  "extension.enabled": z.strictObject({ "installation": EventIdSchema, "provider": z.string().max(16384), "state": z.string().max(16384), "version": z.number().int().positive().safe() }),
+  "extension.disabled": z.strictObject({ "installation": EventIdSchema, "provider": z.string().max(16384), "state": z.string().max(16384), "version": z.number().int().positive().safe() }),
+  "extension.degraded": z.strictObject({ "installation": EventIdSchema, "provider": z.string().max(16384), "state": z.string().max(16384), "version": z.number().int().positive().safe() }),
+  "order.export.requested": z.strictObject({ "export": EventIdSchema, "report": z.string().max(16384), "filter": OrderExportFilterSchema, "authorization": AuthorizationSnapshotSchema }),
+  "finance.export.requested": z.strictObject({ "export": EventIdSchema, "report": z.string().max(16384), "filter": FinanceExportFilterSchema, "authorization": AuthorizationSnapshotSchema }),
+  "identity.member.reset": z.strictObject({ "memberId": EventIdSchema, "credentialVersion": z.number().int().positive().safe(), "reason": z.string().max(16384) }),
+  "order.received": z.strictObject({ "orderId": EventIdSchema, "receivedAt": z.iso.datetime({ offset: true }), "fulfillmentState": z.string().max(16384) }),
+  "referral.setting.changed": z.strictObject({ "settingId": EventIdSchema, "enabled": z.boolean(), "rateBasisPoints": z.number().int().safe() }),
+  "referral.product.changed": z.strictObject({ "productId": EventIdSchema, "enabled": z.boolean(), "rateBasisPoints": z.number().int().safe() }),
+  "referral.member.applied": z.strictObject({ "referralMemberId": EventIdSchema, "memberId": EventIdSchema, "status": z.string().max(16384) }),
+  "referral.member.approved": z.strictObject({ "referralMemberId": EventIdSchema, "memberId": EventIdSchema, "approvedBy": EventIdSchema }),
+  "referral.member.disqualified": z.strictObject({ "referralMemberId": EventIdSchema, "memberId": EventIdSchema, "reason": z.string().max(16384) }),
+  "referral.binding.created": z.strictObject({ "bindingId": EventIdSchema, "promoterId": EventIdSchema, "memberId": EventIdSchema, "boundAt": z.iso.datetime({ offset: true }) }),
+  "referral.commission.created": z.strictObject({ "commissionId": EventIdSchema, "orderId": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/) }),
+  "referral.commission.settled": z.strictObject({ "commissionId": EventIdSchema, "settledAt": z.iso.datetime({ offset: true }), "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/) }),
+  "referral.commission.reversed": z.strictObject({ "commissionId": EventIdSchema, "reversalId": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/), "reason": z.string().max(16384) }),
+  "referral.withdrawal.requested": z.strictObject({ "withdrawalId": EventIdSchema, "memberId": EventIdSchema, "amountMinor": z.number().int().safe(), "currency": z.string().regex(/^[A-Z]{3}$/) }),
+  "referral.withdrawal.paid": z.strictObject({ "withdrawalId": EventIdSchema, "providerReference": z.string().max(16384), "paidAt": z.iso.datetime({ offset: true }) }),
+  "referral.withdrawal.failed": z.strictObject({ "withdrawalId": EventIdSchema, "reason": z.string().max(16384), "failedAt": z.iso.datetime({ offset: true }) }),
+});
+export type EventType = keyof typeof EVENT_PAYLOAD_SCHEMAS;
+export type EventPayload<TKey extends EventType> = z.infer<(typeof EVENT_PAYLOAD_SCHEMAS)[TKey]>;
+export interface SerializedEvent<TKey extends EventType = EventType> { readonly eventId: string; readonly eventType: TKey; readonly occurredAt: string; readonly aggregateId: string; readonly aggregateVersion: number; readonly scopeId: string; readonly actorId: string; readonly correlationId: string; readonly causationId: string; readonly payloadVersion: number; readonly payload: EventPayload<TKey> }
+export function parseEventPayload<TKey extends EventType>(type: TKey, payload: unknown): EventPayload<TKey>;
+export function parseEventPayload(type: string, payload: unknown): Readonly<Record<string, unknown>>;
+export function parseEventPayload(type: string, payload: unknown): Readonly<Record<string, unknown>> { const schema=EVENT_PAYLOAD_SCHEMAS[type as EventType]; if(schema===undefined) throw new Error(`EVENT_SCHEMA_UNKNOWN:${type}`); return schema.parse(payload); }
+export function serializeEvent<TKey extends EventType>(event: SerializedEvent<TKey>): SerializedEvent<TKey> { const payload=parseEventPayload(event.eventType,event.payload); const parsed=EventEnvelopeSchema.parse({ ...event, payload }); return Object.freeze({ ...parsed, eventType: event.eventType, payload: Object.freeze(payload) }) as SerializedEvent<TKey>; }

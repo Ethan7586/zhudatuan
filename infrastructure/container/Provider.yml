@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop-provider
+  namespace: SHOP_NAMESPACE
+  labels: { app.kubernetes.io/name: shop-provider, shop.release/id: SHOP_RELEASE_ID, shop.workload/kind: provider }
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  selector:
+    matchLabels: { app.kubernetes.io/name: shop-provider }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: shop-provider, shop.release/id: SHOP_RELEASE_ID, shop.workload/kind: provider }
+    spec:
+      serviceAccountName: shop-provider
+      terminationGracePeriodSeconds: 90
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels: { app.kubernetes.io/name: shop-provider }
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels: { app.kubernetes.io/name: shop-provider }
+      containers:
+        - name: provider
+          image: SHOP_COMMERCE_IMAGE
+          imagePullPolicy: IfNotPresent
+          args: ['services/commerce/dist/ProviderMain.js']
+          envFrom:
+            - configMapRef: { name: shop-provider }
+            - secretRef: { name: shop-provider-identity }
+          readinessProbe:
+            exec: { command: ['node', '-e', 'process.kill(1,0)'] }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec: { command: ['node', '-e', 'process.kill(1,0)'] }
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 500m, memory: 512Mi }
+            limits: { cpu: '2', memory: 1Gi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile: { type: RuntimeDefault }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: shop-provider
+  namespace: SHOP_NAMESPACE
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: shop-provider }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: shop-provider
+  namespace: SHOP_NAMESPACE
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: shop-provider }
+  minReplicas: 2
+  maxReplicas: 30
+  behavior:
+    scaleUp: { stabilizationWindowSeconds: 30, policies: [{ type: Percent, value: 100, periodSeconds: 60 }] }
+    scaleDown: { stabilizationWindowSeconds: 300, policies: [{ type: Percent, value: 25, periodSeconds: 60 }] }
+  metrics:
+    - type: External
+      external:
+        metric: { name: shop_provider_queue_depth }
+        target: { type: AverageValue, averageValue: '100' }
+    - type: External
+      external:
+        metric: { name: shop_provider_oldest_message_seconds }
+        target: { type: AverageValue, averageValue: '30' }
+    - type: External
+      external:
+        metric: { name: shop_provider_execution_concurrency }
+        target: { type: AverageValue, averageValue: '12' }
+    - type: External
+      external:
+        metric: { name: shop_provider_rate_limit_saturation }
+        target: { type: AverageValue, averageValue: '70' }

@@ -6,8 +6,8 @@ export interface ReportingPort {
   metrics(query: MetricQuery): Promise<readonly MetricRow[]>;
   cockpit(scope: string): Promise<CockpitSummary>;
   export(id: string, scope: string): Promise<ExportJob | null>;
-  createExport(input: Readonly<{ id: string; scope: string; report: ExportReport; filter: Readonly<Record<string, unknown>>;
-    actor: string; membership: string; trace: string }>): Promise<ExportJob>;
+  createExport(input: Readonly<{ id: string; scope: string; report: ExportReport; filter: Readonly<Record<string, unknown>>; actor: string; membership: string; trace: string }>): Promise<ExportJob>;
+  createRequestedExport(event: ProjectionEvent): Promise<void>;
   claimEvent(event: string): Promise<ProjectionEvent | null>;
   period(occurredAt: string, timezone: string): Promise<Readonly<{ from: string; to: string }>>;
   addMetrics(metrics: readonly Metric[]): Promise<void>;
@@ -16,7 +16,7 @@ export interface ReportingPort {
   cancelOrder(order: string, watermark: string): Promise<void>;
   shipOrder(order: string, state: string, watermark: string): Promise<void>;
   saveStatement(scope: string, payload: Readonly<Record<string, unknown>>, watermark: string): Promise<void>;
-  completeEvent(event: ProjectionEvent, scopes: readonly string[]): Promise<readonly Readonly<{ scope: string; version: number }>[] >;
+  completeEvent(event: ProjectionEvent, scopes: readonly string[]): Promise<readonly Readonly<{ scope: string; version: number }>[]>;
   claimExport(id: string): Promise<ExportJob | null>;
   exportRows(id: string, report: ExportReport, cursor: string | null, fetch: number): Promise<readonly ExportRow[]>;
   advanceExport(id: string, cursor: string, count: number): Promise<void>;

@@ -1,0 +1,48 @@
+generated: true
+source: config/requirements.yml#providers
+workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
+providers:
+  - id: jdproduct
+    package: '@shop/providerjdproduct'
+    factory: JdproductProvider
+    core: jdcore
+  - id: jdfresh
+    package: '@shop/providerjdfresh'
+    factory: JdfreshProvider
+    core: jdcore
+  - id: tmall
+    package: '@shop/providertmall'
+    factory: TmallProvider
+    core: tmallcore
+  - id: supplier
+    package: '@shop/providersupplier'
+    factory: SupplierProvider
+    core: local
+  - id: cake
+    package: '@shop/providercake'
+    factory: CakeProvider
+    core: cakecore
+  - id: flower
+    package: '@shop/providerflower'
+    factory: FlowerProvider
+    core: cakecore
+  - id: book
+    package: '@shop/providerbook'
+    factory: BookProvider
+    core: bookcore
+  - id: charge
+    package: '@shop/providercharge'
+    factory: ChargeProvider
+    core: wanliancore
+  - id: foodvoucher
+    package: '@shop/providerfoodvoucher'
+    factory: FoodvoucherProvider
+    core: cakecore
+  - id: movie
+    package: '@shop/providermovie'
+    factory: MovieProvider
+    core: wanliancore
+  - id: meal
+    package: '@shop/providermeal'
+    factory: MealProvider
+    core: cakecore

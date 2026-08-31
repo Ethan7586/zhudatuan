@@ -4,13 +4,13 @@ import path from 'node:path';
 import { relative, root, ts } from '../source.mjs';
 import { literalText, objectProperties, unique, violation } from './catalog.mjs';
 
-const providerRoot = path.join(root, 'extensions/providers');
-const vendorRoot = path.join(root, 'extensions/vendors');
-const catalogFile = path.join(root, 'packages/contract/src/RequirementCatalog.generated.ts');
+const providerRoot = path.join(root, 'extensions/channel');
+const catalogFile = path.join(root, 'packages/contract/src/RequirementCatalog.ts');
 const registryFile = path.join(root, 'services/commerce/src/bootstrap/ProviderFactories.ts');
-const skeleton = ['manifest.ts', 'Provider.ts', 'Mapper.ts', 'ErrorMap.ts', 'Webhook.ts', 'index.ts'];
-const manifestFields = ['id', 'kind', 'priority', 'version', 'apiVersion', 'contractVersion', 'capabilities', 'permissions', 'configSchema', 'eventSubscriptions', 'secretRefs', 'limits'];
-const vendorFiles = ['Client.ts', 'Auth.ts', 'Signer.ts', 'RatePolicy.ts', 'CircuitPolicy.ts', 'index.ts'];
+const skeleton = ['Manifest.ts', 'Factory.ts', 'Config.ts', 'Mapper.ts', 'Client.ts', 'Health.ts', 'index.ts'];
+const directories = ['capability', 'integration'];
+const manifestFields = ['id', 'kind', 'version', 'apiVersion', 'contractVersion', 'capabilities', 'permissions', 'configSchema', 'eventSubscriptions', 'secretRefs', 'healthOperation', 'webhookContract'];
+const resilienceFields = ['rateLimits', 'timeout', 'retryPolicy', 'circuitPolicy'];
 
 function arrayInitializer(sourceFile, variableName) {
   let found;
@@ -88,7 +88,15 @@ export function auditExtensions(sourceFiles) {
       const target = path.join(directory, file);
       if (!sourceFiles.has(target)) values.push(violation('PROVIDER_FILE_MISSING', relative(target), entry.id));
     }
-    const manifestFile = path.join(directory, 'manifest.ts');
+    for (const name of directories) {
+      const target = path.join(directory, name);
+      if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) values.push(violation('PROVIDER_DIRECTORY_MISSING', relative(target), entry.id));
+    }
+    for (const retired of ['Provider.ts', 'manifest.ts']) {
+      const target = path.join(directory, retired);
+      if (fs.readdirSync(directory).includes(retired)) values.push(violation('PROVIDER_RETIRED_FILE_PRESENT', relative(target), entry.id));
+    }
+    const manifestFile = path.join(directory, 'Manifest.ts');
     const manifestSource = sourceFiles.get(manifestFile);
     const definition = manifestSource && objectInitializer(manifestSource, 'definition');
     if (!manifestSource || !definition) {
@@ -96,24 +104,74 @@ export function auditExtensions(sourceFiles) {
     } else {
       const properties = objectProperties(definition, manifestSource);
       for (const field of manifestFields) if (!properties.has(field)) values.push(violation('PROVIDER_FIELD_MISSING', relative(manifestFile), `${entry.id}:${field}`));
+      if (properties.has('priority')) values.push(violation('PROVIDER_PRIORITY_DUPLICATED', relative(manifestFile), entry.id));
       if (literalText(properties.get('id')) !== entry.id) values.push(violation('PROVIDER_ID_MISMATCH', relative(manifestFile), entry.id));
       if (!/function\s+manifest\s*\([^)]*signature/.test(manifestSource.text) || !/\bsignature\b/.test(manifestSource.text)) values.push(violation('PROVIDER_SIGNATURE_INJECTION_MISSING', relative(manifestFile), entry.id));
+      if (!/\bSTANDARD_PROVIDER_POLICY\b/.test(manifestSource.text) && !resilienceFields.every((field) => properties.has(field))) {
+        values.push(violation('PROVIDER_RESILIENCE_POLICY_MISSING', relative(manifestFile), entry.id));
+      }
     }
     if (!registryText.includes(`@shop/provider${entry.id}`)) values.push(violation('PROVIDER_NOT_REGISTERED', relative(registryFile), entry.id));
     const testDirectory = path.join(directory, 'tests');
     const hasTest = fs.existsSync(testDirectory) && fs.readdirSync(testDirectory).some((name) => name.endsWith('.test.ts'));
     if (!hasTest) values.push(violation('PROVIDER_CONTRACT_TEST_MISSING', relative(testDirectory), entry.id));
+    const tests = hasTest
+      ? fs
+          .readdirSync(testDirectory)
+          .filter((name) => name.endsWith('.test.ts'))
+          .map((name) => fs.readFileSync(path.join(testDirectory, name), 'utf8'))
+          .join('\n')
+      : '';
+    if (!tests.includes('assertProviderCapabilities')) values.push(violation('PROVIDER_CAPABILITY_TEST_MISSING', relative(testDirectory), entry.id));
+    if (!tests.includes('assertProviderQuality')) values.push(violation('PROVIDER_QUALITY_TEST_MISSING', relative(testDirectory), entry.id));
+    const factoryText = sourceFiles.get(path.join(directory, 'Factory.ts'))?.text ?? '';
+    if (!factoryText.includes('definition') || (entry.id !== 'supplier' && !factoryText.includes('Mapper'))) {
+      values.push(violation('PROVIDER_FACTORY_INCOMPLETE', relative(path.join(directory, 'Factory.ts')), entry.id));
+    }
+    const integrationText = [...sourceFiles.entries()]
+      .filter(([file]) => file.startsWith(`${path.join(directory, 'integration')}${path.sep}`))
+      .map(([, source]) => source.text)
+      .join('\n');
+    if (entry.id !== 'supplier' && !/create[A-Za-z]+Client/.test(integrationText)) {
+      values.push(violation('PROVIDER_INTEGRATION_CLIENT_MISSING', relative(path.join(directory, 'integration')), entry.id));
+    }
+    for (const [file, source] of sourceFiles) {
+      if (!file.startsWith(`${directory}${path.sep}`)) continue;
+      if (/\b(?:DatabasePool|PoolClient|PgUnitOfWork)\b|\b(?:insert|update|delete)\s+(?:catalog|inventory|order|payment|finance)\./i.test(source.text)) {
+        values.push(violation('PROVIDER_DATABASE_ACCESS_FORBIDDEN', relative(file), entry.id));
+      }
+      if (!file.includes(`${path.sep}integration${path.sep}`) && /\.json\s*\(\s*\)/.test(source.text)) {
+        values.push(violation('PROVIDER_RAW_RESPONSE_OUTSIDE_INTEGRATION', relative(file), entry.id));
+      }
+    }
   }
   for (const entry of parsed.entries.filter(({ delivery }) => delivery === 'deferred-contract')) {
     if (fs.existsSync(path.join(providerRoot, entry.id))) values.push(violation('DEFERRED_PROVIDER_CODE_FORBIDDEN', relative(path.join(providerRoot, entry.id)), entry.id));
   }
-  for (const vendor of new Set(required.map(({ vendor }) => vendor).filter(Boolean))) {
-    for (const file of vendorFiles) {
-      const target = path.join(vendorRoot, vendor, file);
-      if (!sourceFiles.has(target)) values.push(violation('VENDOR_FILE_MISSING', relative(target), vendor));
-    }
-  }
   const hostProvider = path.join(providerRoot, 'core/src/Provider.ts');
   if (!sourceFiles.get(hostProvider)?.text.includes('health()')) values.push(violation('PROVIDER_HEALTH_MISSING', relative(hostProvider), 'host provider health contract'));
+  const hostClient = sourceFiles.get(path.join(providerRoot, 'core/src/integration/Client.ts'))?.text ?? '';
+  for (const primitive of ['RatePolicy', 'ConcurrencyPolicy', 'CircuitPolicy', 'Deadline', 'retry']) {
+    if (!hostClient.includes(primitive)) values.push(violation('PROVIDER_RESILIENCE_PRIMITIVE_MISSING', relative(path.join(providerRoot, 'core/src/integration/Client.ts')), primitive));
+  }
+  const coreSources = [...sourceFiles.entries()].filter(([file]) => file.startsWith(`${path.join(providerRoot, 'core')}${path.sep}`));
+  for (const [file, source] of coreSources) {
+    if (/\bif\s*\([^)]*provider\s*===?\s*['"]/i.test(source.text)) values.push(violation('PROVIDER_BRANCH_IN_CORE', relative(file), 'provider-specific branch'));
+  }
+  for (const retired of ['extensions/providers', 'extensions/vendors']) {
+    const target = path.join(root, retired);
+    if (fs.existsSync(target)) values.push(violation('PROVIDER_RETIRED_DIRECTORY_PRESENT', relative(target), retired));
+  }
+  for (const name of ['sms', 'inapp']) {
+    const directory = path.join(root, 'extensions/notification', name);
+    for (const file of ['Manifest.ts', 'Factory.ts', 'Config.ts', 'Client.ts', 'Health.ts', 'index.ts']) {
+      const target = path.join(directory, 'src', file);
+      if (!sourceFiles.has(target)) values.push(violation('NOTIFICATION_EXTENSION_FILE_MISSING', relative(target), name));
+    }
+  }
+  const runtime = sourceFiles.get(path.join(root, 'services/commerce/src/bootstrap/CommerceRuntime.ts'))?.text ?? '';
+  for (const retired of ['AliyunSmsChannel', 'InappChannel']) {
+    if (runtime.includes(retired)) values.push(violation('NOTIFICATION_RUNTIME_ADAPTER_PRESENT', relative(path.join(root, 'services/commerce/src/bootstrap/CommerceRuntime.ts')), retired));
+  }
   return values;
 }

@@ -33,16 +33,22 @@ export async function retry<T>(operation: (attempt: number, signal: AbortSignal)
 }
 
 export function retryDelay(attempt: number, minimumMilliseconds: number, maximumMilliseconds: number, random: () => number = Math.random): number {
-  if (!Number.isSafeInteger(attempt) || attempt < 1 || !Number.isSafeInteger(minimumMilliseconds) || minimumMilliseconds < 0
-    || !Number.isSafeInteger(maximumMilliseconds) || maximumMilliseconds < minimumMilliseconds) throw new Error('RETRY_DELAY_INVALID');
+  if (!Number.isSafeInteger(attempt) || attempt < 1 || !Number.isSafeInteger(minimumMilliseconds) || minimumMilliseconds < 0 || !Number.isSafeInteger(maximumMilliseconds) || maximumMilliseconds < minimumMilliseconds)
+    throw new Error('RETRY_DELAY_INVALID');
   const ceiling = Math.min(maximumMilliseconds, minimumMilliseconds * 2 ** Math.min(20, attempt - 1));
-  return Math.floor(minimumMilliseconds + random() * Math.max(1, ceiling - minimumMilliseconds));
+  return Math.floor(random() * (ceiling + 1));
 }
 
 function validate(policy: RetryPolicy): void {
-  if (!['read', 'businesskeywrite'].includes(policy.mode) || !Number.isSafeInteger(policy.attempts) || policy.attempts < 1
-    || !Number.isSafeInteger(policy.minimumDelayMilliseconds) || policy.minimumDelayMilliseconds < 0
-    || !Number.isSafeInteger(policy.maximumDelayMilliseconds) || policy.maximumDelayMilliseconds < policy.minimumDelayMilliseconds) {
+  if (
+    !['read', 'businesskeywrite'].includes(policy.mode) ||
+    !Number.isSafeInteger(policy.attempts) ||
+    policy.attempts < 1 ||
+    !Number.isSafeInteger(policy.minimumDelayMilliseconds) ||
+    policy.minimumDelayMilliseconds < 0 ||
+    !Number.isSafeInteger(policy.maximumDelayMilliseconds) ||
+    policy.maximumDelayMilliseconds < policy.minimumDelayMilliseconds
+  ) {
     throw new Error('RETRY_POLICY_INVALID');
   }
 }

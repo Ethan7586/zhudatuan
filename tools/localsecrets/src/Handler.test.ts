@@ -4,7 +4,7 @@ import { LocalHttpError, type LocalRequest } from '../../localinfra/src/Http';
 import { secretStoreHandler } from './Handler';
 
 const token = 's'.repeat(43);
-const handler = secretStoreHandler({ get: reference => reference === 'secret/example' ? 'protected-value' : undefined }, token);
+const handler = secretStoreHandler({ get: (reference) => (reference === 'secret/example' ? 'protected-value' : undefined) }, token);
 
 describe('local Secret Store workload authentication', () => {
   it('keeps health ready unauthenticated', async () => {
@@ -20,7 +20,11 @@ describe('local Secret Store workload authentication', () => {
   it('returns a secret only for the correct bearer', async () => {
     const response = await handler(request('/v1/secrets/secret%2Fexample', 'GET', token));
     assert.equal(response.status, 200);
-    assert.deepEqual(JSON.parse(new TextDecoder().decode(response.body)), { value: 'protected-value' });
+    assert.deepEqual(JSON.parse(new TextDecoder().decode(response.body)), {
+      value: 'protected-value',
+      version: '62367aa94674932986ead8154ff8f63a1dd17ce94c4f07855e59370fc0b57b83',
+      expiresAt: null,
+    });
   });
 });
 
@@ -34,6 +38,5 @@ function request(path: string, method = 'GET', bearer?: string): LocalRequest {
 }
 
 async function assertAuthenticationRequired(operation: () => Promise<unknown>): Promise<void> {
-  await assert.rejects(operation, (cause: unknown) => cause instanceof LocalHttpError
-    && cause.status === 401 && cause.code === 'WORKLOAD_AUTHENTICATION_REQUIRED');
+  await assert.rejects(operation, (cause: unknown) => cause instanceof LocalHttpError && cause.status === 401 && cause.code === 'WORKLOAD_AUTHENTICATION_REQUIRED');
 }

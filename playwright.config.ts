@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN } from '@shop/config/client';
 
-const apiOrigin = 'http://127.0.0.1:4311';
-const authOrigin = 'http://127.0.0.1:4176';
+const apiOrigin = LOCAL_API_ORIGIN;
+const authOrigin = LOCAL_AUTH_ORIGIN;
 const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
 
 function webServer(workspace: string, port: number) {
@@ -34,6 +35,6 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-  webServer: [webServer('@shop/auth', 4176), webServer('@shop/console', 4173), webServer('@shop/store', 4174), webServer('@shop/supplier', 4175), webServer('@shop/storefront', 4177)],
+  webServer: [webServer('@shop/auth', 3002), webServer('@shop/console', 4173), webServer('@shop/storefront', 4177)],
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

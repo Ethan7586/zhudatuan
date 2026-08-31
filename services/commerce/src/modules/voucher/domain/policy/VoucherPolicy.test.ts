@@ -5,19 +5,30 @@ describe('VoucherPolicy', () => {
   const policy = new VoucherPolicy();
 
   it.each([
-    ['created', 'active'], ['created', 'expired'], ['created', 'void'],
-    ['active', 'bound'], ['active', 'reserved'], ['active', 'disabled'], ['active', 'redeemed'], ['active', 'expired'], ['active', 'void'],
-    ['bound', 'active'], ['bound', 'reserved'], ['bound', 'disabled'], ['bound', 'redeemed'], ['bound', 'expired'], ['bound', 'void'],
-    ['reserved', 'active'], ['reserved', 'bound'], ['reserved', 'redeemed'], ['reserved', 'expired'],
-    ['disabled', 'active'], ['disabled', 'bound'], ['disabled', 'expired'], ['disabled', 'void'],
-  ] satisfies readonly [VoucherState, VoucherState][])(
-    'allows %s to %s', (current, next) => expect(() => policy.assertTransition(current, next)).not.toThrow(),
-  );
+    ['inactive', 'active'],
+    ['inactive', 'expired'],
+    ['inactive', 'void'],
+    ['active', 'held'],
+    ['active', 'disabled'],
+    ['active', 'redeemed'],
+    ['active', 'expired'],
+    ['active', 'void'],
+    ['held', 'active'],
+    ['held', 'redeemed'],
+    ['held', 'expired'],
+    ['redeemed', 'reversed'],
+    ['disabled', 'expired'],
+    ['disabled', 'void'],
+  ] satisfies readonly [VoucherState, VoucherState][])('allows %s to %s', (current, next) => expect(() => policy.assertTransition(current, next)).not.toThrow());
 
   it.each([
-    ['created', 'redeemed'], ['reserved', 'disabled'], ['reserved', 'void'],
-    ['redeemed', 'active'], ['expired', 'active'], ['void', 'active'],
-  ] satisfies readonly [VoucherState, VoucherState][])(
-    'rejects %s to %s', (current, next) => expect(() => policy.assertTransition(current, next)).toThrow('VOUCHER_STATE_INVALID'),
-  );
+    ['inactive', 'redeemed'],
+    ['held', 'disabled'],
+    ['held', 'void'],
+    ['redeemed', 'active'],
+    ['reversed', 'active'],
+    ['disabled', 'active'],
+    ['expired', 'active'],
+    ['void', 'active'],
+  ] satisfies readonly [VoucherState, VoucherState][])('rejects %s to %s', (current, next) => expect(() => policy.assertTransition(current, next)).toThrow('VOUCHER_STATE_INVALID'));
 });

@@ -26,27 +26,29 @@ export interface PaymentGateway {
   verifyNotification(headers: Readonly<Record<string, string>>, body: string): Promise<PaymentNotification>;
 }
 
-export type PaymentNotification = Readonly<{
-  kind: 'payment';
-  id: string;
-  providerReference: string;
-  transaction: string;
-  amountMinor: number;
-  currency: 'CNY';
-  payerHash: string;
-  application: PaymentApplication;
-  occurredAt: string;
-  evidence: object;
-}> | Readonly<{
-  kind: 'refund';
-  id: string;
-  providerReference: string;
-  transaction: string;
-  amountMinor: number;
-  totalMinor: number;
-  state: 'succeeded' | 'failed';
-  occurredAt: string;
-  evidence: object;
-}>;
+export type PaymentNotification =
+  | Readonly<{
+      kind: 'payment';
+      id: string;
+      providerReference: string;
+      transaction: string;
+      amountMinor: number;
+      currency: 'CNY';
+      payerHash: string;
+      application: PaymentApplication;
+      occurredAt: string;
+      evidence: object;
+    }>
+  | Readonly<{
+      kind: 'refund';
+      id: string;
+      providerReference: string;
+      transaction: string;
+      amountMinor: number;
+      totalMinor: number;
+      state: 'succeeded' | 'failed';
+      occurredAt: string;
+      evidence: object;
+    }>;
 
 export const PAYMENT_GATEWAY = token<PaymentGateway>('payment.gateway');

@@ -8,8 +8,7 @@ import { getRiskCenterOperations } from '../../application/query/GetRiskCenter';
 import { PgRiskRepository } from '../../infrastructure/persistence/PgRiskRepository';
 
 export function riskRoutes(context: ModuleContext): ModuleOperations {
-  const pool = context.container.get(DATABASE_POOL);
+  const pool = context.service(DATABASE_POOL);
   const repository = (database: OperationDatabase) => new PgRiskRepository(database);
-  return new ModuleOperations('risk', pool, context.container.get(AUDIT_SINK), { ...getRiskCenterOperations(repository), ...manageRiskPolicyOperations(repository),
-    ...reviewRiskCaseOperations(repository) });
+  return new ModuleOperations('risk', pool, context.service(AUDIT_SINK), { ...getRiskCenterOperations(repository), ...manageRiskPolicyOperations(repository), ...reviewRiskCaseOperations(repository) });
 }

@@ -10,14 +10,14 @@ import { CockpitMetrics } from './CockpitMetrics';
 import { cockpitKey, cockpitPeriods, readCockpit, type CockpitPeriod } from './CockpitQuery';
 import type { BusinessInsight, CockpitSales } from './CockpitSchema';
 import { CockpitTrend } from './CockpitTrend';
-import './cockpit.css';
+import './Cockpit.css';
 
 export function Component() {
   const context = useConsoleContext();
   const navigate = useNavigate();
   const [search] = useSearchParams();
   const requested = search.get('period');
-  const period: CockpitPeriod = cockpitPeriods.includes(requested as CockpitPeriod) ? requested as CockpitPeriod : '30days';
+  const period: CockpitPeriod = cockpitPeriods.includes(requested as CockpitPeriod) ? (requested as CockpitPeriod) : '30days';
   const query = useQuery({
     queryKey: cockpitKey(context, period),
     queryFn: ({ signal }) => readCockpit(context, period, signal),
@@ -28,7 +28,7 @@ export function Component() {
     fetching: query.isFetching,
     error: query.error,
     hasData: query.data !== undefined,
-    empty: query.data?.summary.orderCount === 0 && query.data.summary.catalogCount === 0,
+    empty: false,
     stale: query.isStale,
   });
   const openInsight = (insight: BusinessInsight) => {
@@ -36,14 +36,23 @@ export function Component() {
   };
   return (
     <section className="cockpitpage" aria-label="经营驾驶舱">
-      <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+      <ResourceState
+        condition={condition}
+        {...(error === undefined ? {} : { error })}
+        retry={() => {
+          void query.refetch();
+        }}
+      >
         {query.data === undefined ? <span /> : <CockpitContent sales={query.data.summary.sales} onOpenInsight={openInsight} />}
       </ResourceState>
     </section>
   );
 }
 
-function CockpitContent({ sales, onOpenInsight }: Readonly<{
+function CockpitContent({
+  sales,
+  onOpenInsight,
+}: Readonly<{
   sales: CockpitSales;
   onOpenInsight: (insight: BusinessInsight) => void;
 }>) {

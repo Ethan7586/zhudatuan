@@ -2,7 +2,7 @@ import type { DatabasePool } from '../persistence/Pool';
 import { LeaseStore } from './LeaseStore';
 
 interface Schedule {
-  readonly kind: 'orderexpiry' | 'voucherexpiry' | 'benefitexpiry' | 'cleanup';
+  readonly kind: 'orderexpiry' | 'voucherexpiry' | 'benefitexpiry' | 'cleanup' | 'federationcleanup' | 'providerhealth' | 'directoryreconcile' | 'invitationcleanup';
   readonly owner: string;
   readonly seconds: number;
   readonly priority: number;
@@ -13,11 +13,18 @@ const schedules: readonly Schedule[] = Object.freeze([
   { kind: 'voucherexpiry', owner: 'voucher', seconds: 300, priority: 90 },
   { kind: 'benefitexpiry', owner: 'benefit', seconds: 300, priority: 90 },
   { kind: 'cleanup', owner: 'runtime', seconds: 3600, priority: 100 },
+  { kind: 'federationcleanup', owner: 'identity', seconds: 3600, priority: 90 },
+  { kind: 'providerhealth', owner: 'identity', seconds: 300, priority: 80 },
+  { kind: 'directoryreconcile', owner: 'organization', seconds: 86_400, priority: 100 },
+  { kind: 'invitationcleanup', owner: 'identity', seconds: 300, priority: 90 },
 ]);
 
 export class RuntimeScheduler {
   private readonly leases: LeaseStore;
-  constructor(private readonly pool: DatabasePool, private readonly owner: string) {
+  constructor(
+    private readonly pool: DatabasePool,
+    private readonly owner: string
+  ) {
     this.leases = new LeaseStore(pool);
   }
 
@@ -25,7 +32,11 @@ export class RuntimeScheduler {
     while (!signal.aborted) {
       const lease = await this.leases.acquire('runtime:scheduler', this.owner, 45);
       if (lease) {
-        try { await this.ensure(new Date()); } finally { await this.leases.release(lease); }
+        try {
+          await this.ensure(new Date());
+        } finally {
+          await this.leases.release(lease);
+        }
       }
       await wait(30_000, signal);
     }
@@ -35,9 +46,11 @@ export class RuntimeScheduler {
     const seconds = Math.floor(now.getTime() / 1000);
     for (const schedule of schedules) {
       const bucket = Math.floor(seconds / schedule.seconds) * schedule.seconds;
-      await this.pool.query(`insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
+      await this.pool.query(
+        `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
         values($1,$2,$3,'{}'::jsonb,'queued',$4,to_timestamp($5),clock_timestamp(),clock_timestamp()) on conflict(id) do nothing`,
-      [`schedule:${schedule.kind}:${bucket}`, schedule.kind, schedule.owner, schedule.priority, bucket]);
+        [`schedule:${schedule.kind}:${bucket}`, schedule.kind, schedule.owner, schedule.priority, bucket]
+      );
     }
   }
 }
@@ -46,6 +59,13 @@ function wait(milliseconds: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     if (signal.aborted) return resolve();
     const timer = setTimeout(resolve, milliseconds);
-    signal.addEventListener('abort', () => { clearTimeout(timer); resolve(); }, { once: true });
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true }
+    );
   });
 }

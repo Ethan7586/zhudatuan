@@ -8,17 +8,14 @@ describe('CommerceClient', () => {
     const client = createCommerce('https://shop.example', {
       send: (value) => {
         request = value;
-        return Promise.resolve({ status: 200, headers: {}, body: '{"items":[]}' });
+        return Promise.resolve({ status: 200, headers: {}, body: '{"items":[],"count":0}' });
       },
     });
 
-    const result = await client.catalog.listingsRead(
-      { query: { page: 1, pagesize: 50 } },
-      createRequestContext('1.0.0', { scope: { kind: 'mall', id: 'mall:1' }, traceId: 'trace:1' }),
-    );
+    const result = await client.catalog.listingsRead({ query: { limit: 50 } }, createRequestContext('1.0.0', { scope: { kind: 'mall', id: 'mall:1' }, traceId: 'trace:1' }));
 
-    expect(request?.url).toBe('https://shop.example/api/v1/catalog/listings?page=1&pagesize=50');
-    expect(result).toEqual({ items: [] });
+    expect(request?.url).toBe('https://shop.example/api/v1/catalog/listings?limit=50');
+    expect(result).toEqual({ items: [], count: 0 });
     expect('call' in client).toBe(false);
   });
 });

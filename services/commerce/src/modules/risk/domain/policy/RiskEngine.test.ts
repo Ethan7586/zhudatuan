@@ -6,17 +6,15 @@ import { RiskEngine } from './RiskEngine';
 
 const evaluate = (rule: unknown, input: Partial<Parameters<RiskEngine['evaluate']>[1]> = {}) => {
   const policy = new RiskPolicy('policy', 7, rule, 100);
-  return new RiskEngine().evaluate(policy.rule, { actor: 'actor', operation: 'payment.intents.create', amountMinor: null,
-    velocity: 0, blocked: false, signals: [], ...input });
+  return new RiskEngine().evaluate(policy.rule, { actor: 'actor', operation: 'order.orders.create', amountMinor: null, velocity: 0, blocked: false, signals: [], ...input });
 };
 
 describe('RiskEngine', () => {
   it('applies hard deterministic limits before scoring and never lowers their outcome', () => {
-    expect(evaluate({ maximumAmountMinor: 100, scores: [{ signal: 'trust.score', minimum: 1, points: 1 }],
-      thresholds: { challenge: 1, review: 2, deny: 3 } }, { amountMinor: 101, signals: [signal('trust.score', 0, '2026-08-21T00:00:00Z')] }))
-      .toMatchObject({ outcome: 'deny', reason: 'amount' });
-    expect(evaluate({ reviewOperations: ['payment.intents.create'], scores: [], thresholds: { challenge: 1, review: 2, deny: 3 } }).outcome)
-      .toBe('review');
+    expect(
+      evaluate({ maximumAmountMinor: 100, scores: [{ signal: 'trust.score', minimum: 1, points: 1 }], thresholds: { challenge: 1, review: 2, deny: 3 } }, { amountMinor: 101, signals: [signal('trust.score', 0, '2026-08-21T00:00:00Z')] })
+    ).toMatchObject({ outcome: 'deny', reason: 'amount' });
+    expect(evaluate({ reviewOperations: ['order.orders.create'], scores: [], thresholds: { challenge: 1, review: 2, deny: 3 } }).outcome).toBe('review');
   });
 
   it('uses stable actor bucketing and rejects unknown policy fields', () => {

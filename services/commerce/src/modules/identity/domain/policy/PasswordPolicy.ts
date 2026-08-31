@@ -1,5 +1,6 @@
 import { randomBytes, scrypt as derive, timingSafeEqual } from 'node:crypto';
 import type { Specification } from '../../../../foundation/domain/Specification';
+import { DomainError } from '../../../../foundation/domain/DomainError';
 const VERSION = 'v1';
 const COST = 32_768;
 const BLOCK = 8;
@@ -14,14 +15,13 @@ const PASSWORD_RULES: readonly Specification<string>[] = Object.freeze([
 ]);
 
 function scrypt(password: string, salt: Buffer, length: number): Promise<Buffer> {
-  return new Promise((resolve, reject) => derive(password, salt, length, { N: COST, r: BLOCK, p: PARALLEL, maxmem: MAX_MEMORY },
-    (cause, result) => cause ? reject(cause) : resolve(result)));
+  return new Promise((resolve, reject) => derive(password, salt, length, { N: COST, r: BLOCK, p: PARALLEL, maxmem: MAX_MEMORY }, (cause, result) => (cause ? reject(cause) : resolve(result))));
 }
 
 export class PasswordPolicy {
   validate(password: string): void {
     if (!PASSWORD_RULES.every((rule) => rule.satisfiedBy(password))) {
-      throw new Error('PASSWORD_POLICY_REJECTED');
+      throw new DomainError('PASSWORD_POLICY_REJECTED');
     }
   }
 

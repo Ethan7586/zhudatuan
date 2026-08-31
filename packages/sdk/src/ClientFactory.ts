@@ -2,7 +2,7 @@ import { ApiClient } from './ApiClient';
 import { FetchTransport } from './FetchTransport';
 import type { Transport } from './Transport';
 import { WechatTransport, type WechatRequester } from './WechatTransport';
-import { createCommerceClient, type CommerceClient } from './operations/CommerceClient.generated';
+import { createCommerceClient, type CommerceClient } from './operations/CommerceClient';
 
 export function createFetchCommerce(baseUrl: string): CommerceClient {
   return createCommerce(baseUrl, new FetchTransport());

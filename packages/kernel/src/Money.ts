@@ -1,7 +1,10 @@
 import { Currency, type CurrencyCode } from './Currency';
 
 export class Money {
-  private constructor(readonly minor: number, readonly currency: Currency) {
+  private constructor(
+    readonly minor: number,
+    readonly currency: Currency
+  ) {
     Object.freeze(this);
   }
 
@@ -29,6 +32,15 @@ export class Money {
     const value = this.minor * factor;
     if (!Number.isSafeInteger(value)) throw new Error('MONEY_OVERFLOW');
     return Money.of(value, this.currency.code);
+  }
+
+  multiplyRatio(numerator: number, denominator: number): Money {
+    if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator) || denominator <= 0) {
+      throw new Error('MONEY_RATIO_INVALID');
+    }
+    const value = (BigInt(this.minor) * BigInt(numerator)) / BigInt(denominator);
+    if (value > BigInt(Number.MAX_SAFE_INTEGER) || value < BigInt(Number.MIN_SAFE_INTEGER)) throw new Error('MONEY_OVERFLOW');
+    return Money.of(Number(value), this.currency.code);
   }
 
   equals(other: Money): boolean {

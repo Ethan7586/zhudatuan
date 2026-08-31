@@ -5,37 +5,46 @@ const environment = localInfrastructureEnvironment();
 const secretAuthorization = { authorization: `Bearer ${environment.secretStoreBearerToken}` };
 const kmsAuthorization = { authorization: `Bearer ${environment.kmsBearerToken}` };
 
-await Promise.all([8443, 8444, 8445].map(async port => {
-  const response = await fetch(`https://127.0.0.1:${port}/health/ready`, { redirect: 'error' });
-  if (!response.ok) throw new Error(`LOCAL_SERVICE_HEALTH_FAILED:${port}:${response.status}`);
-}));
+await Promise.all(
+  [8443, 8444, 8445].map(async (port) => {
+    const response = await fetch(`https://127.0.0.1:${port}/health/ready`, { redirect: 'error' });
+    if (!response.ok) throw new Error(`LOCAL_SERVICE_HEALTH_FAILED:${port}:${response.status}`);
+  })
+);
 
 const objectToken = await secret('shop/local/objects/api');
 await secret('shop/local/database/api');
 const context = { verification: randomUUID() };
 const encrypted = await json('https://127.0.0.1:8444/v1/envelopes', {
-  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
-  body: JSON.stringify({ context, keyRef: 'local/verification', plaintext: 'verified' }),
+  method: 'POST',
+  headers: { ...kmsAuthorization, 'content-type': 'application/json' },
+  body: JSON.stringify({ context, keyRef: 'local/verification', purpose: 'evidence', plaintext: 'verified' }),
 });
 if (typeof encrypted.ciphertext !== 'string' || typeof encrypted.fingerprint !== 'string') throw new Error('LOCAL_KMS_ENVELOPE_INVALID');
 const decrypted = await json('https://127.0.0.1:8444/v1/plaintexts', {
-  method: 'POST', headers: { ...kmsAuthorization, 'content-type': 'application/json' },
-  body: JSON.stringify({ context, keyRef: 'local/verification', ciphertext: encrypted.ciphertext }),
+  method: 'POST',
+  headers: { ...kmsAuthorization, 'content-type': 'application/json' },
+  body: JSON.stringify({ context, keyRef: 'local/verification', purpose: 'evidence', ciphertext: encrypted.ciphertext }),
 });
 if (decrypted.plaintext !== 'verified') throw new Error('LOCAL_KMS_ROUNDTRIP_FAILED');
 
 const authorization = { authorization: `Bearer ${objectToken}` };
 const path = `verification/${randomUUID()}.txt`;
 const created = await json('https://127.0.0.1:8445/v1/uploads', {
-  method: 'POST', headers: { ...authorization, 'content-type': 'application/json' }, body: JSON.stringify({ path, contentType: 'text/plain' }),
+  method: 'POST',
+  headers: { ...authorization, 'content-type': 'application/json' },
+  body: JSON.stringify({ path, contentType: 'text/plain' }),
 });
 if (typeof created.id !== 'string') throw new Error('LOCAL_OBJECT_UPLOAD_INVALID');
 const bytes = new TextEncoder().encode('verified');
 await ok(`https://127.0.0.1:8445/v1/uploads/${encodeURIComponent(created.id)}/parts/0`, {
-  method: 'PUT', headers: { ...authorization, 'content-type': 'application/octet-stream' }, body: bytes,
+  method: 'PUT',
+  headers: { ...authorization, 'content-type': 'application/octet-stream' },
+  body: bytes,
 });
 const completed = await json(`https://127.0.0.1:8445/v1/uploads/${encodeURIComponent(created.id)}/completion`, {
-  method: 'POST', headers: { ...authorization, 'content-type': 'application/json' },
+  method: 'POST',
+  headers: { ...authorization, 'content-type': 'application/json' },
   body: JSON.stringify({ parts: 1, sha256: createHash('sha256').update(bytes).digest('hex'), size: bytes.byteLength }),
 });
 if (typeof completed.reference !== 'string') throw new Error('LOCAL_OBJECT_COMPLETION_INVALID');

@@ -15,7 +15,9 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
     const event = `repository:${suffix}`;
     const harness = new DatabaseHarness({
       name: 'postgres-target',
-      apply: async () => { await Promise.all([client.connect(), second.connect()]); },
+      apply: async () => {
+        await Promise.all([client.connect(), second.connect()]);
+      },
       reset: async () => {
         await client.query('rollback').catch(() => undefined);
         await second.query('rollback').catch(() => undefined);
@@ -25,16 +27,19 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
       },
     });
     await harness.run(async () => {
-      const firstInbox = await client.query<{ accepted: boolean }>("select runtime.accept_inbox('repository-contract',$1,'payment.succeeded',1,'trace', '{}'::jsonb) accepted", [event]);
-      const replayedInbox = await client.query<{ accepted: boolean }>("select runtime.accept_inbox('repository-contract',$1,'payment.succeeded',1,'trace', '{}'::jsonb) accepted", [event]);
+      const firstInbox = await client.query<{ accepted: boolean }>("select runtime.accept_inbox('internal',$1,'repository-contract','payment.captured',1,'trace', '{}'::jsonb) accepted", [event]);
+      const replayedInbox = await client.query<{ accepted: boolean }>("select runtime.accept_inbox('internal',$1,'repository-contract','payment.captured',1,'trace', '{}'::jsonb) accepted", [event]);
       expect(firstInbox.rows[0]?.accepted).toBe(true);
       expect(replayedInbox.rows[0]?.accepted).toBe(false);
 
-      await client.query(`insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-        values($1,'repositorycontract','runtime','{}','queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`, [job]);
+      await client.query(
+        `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
+        values($1,'repositorycontract','runtime','{}','queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+        [job]
+      );
       await client.query('begin');
-      const firstClaim = await client.query<{ id: string }>("select id from runtime.claim_job('repositorycontract','worker-one',1,30)");
-      const competingClaim = await second.query<{ id: string }>("select id from runtime.claim_job('repositorycontract','worker-two',1,30)");
+      const firstClaim = await client.query<{ id: string }>("select id from runtime.claim_job('repositorycontract','worker-one',1,30,'jobs')");
+      const competingClaim = await second.query<{ id: string }>("select id from runtime.claim_job('repositorycontract','worker-two',1,30,'jobs')");
       expect(firstClaim.rows.map(({ id }) => id)).toContain(job);
       expect(competingClaim.rows.map(({ id }) => id)).not.toContain(job);
       await client.query('rollback');

@@ -5,8 +5,26 @@ import { test } from 'node:test';
 import { JOB_CATALOG } from '../../services/commerce/src/app/jobs';
 
 const root = process.cwd();
-const incidents = ['databasefailover', 'migrationrollback', 'paymentincident', 'refundrepair', 'inventoryrepair', 'ledgerrepair', 'outboxreplay',
-  'deadletterreplay', 'channeldegrade', 'credentialrotation', 'crosstenantincident', 'databackfill', 'mallrollback', 'releaserollback'];
+const incidents = [
+  'databasefailover',
+  'migrationrollback',
+  'paymentincident',
+  'refundrepair',
+  'inventoryrepair',
+  'ledgerrepair',
+  'outboxreplay',
+  'deadletterreplay',
+  'channeldegrade',
+  'credentialrotation',
+  'crosstenantincident',
+  'databackfill',
+  'mallrollback',
+  'releaserollback',
+  'cachefailure',
+  'queuebacklog',
+  'workloadloss',
+  'zonefailure',
+];
 const topics = ['trigger', 'impact', 'owner', 'stop loss', 'diagnosis', 'recovery', 'data repair', 'validation', 'escalation', 'audit', 'postmortem'];
 
 test('every registered job links to a complete owner runbook', () => {
@@ -35,4 +53,10 @@ test('recovery configuration declares the required RPO, RTO and immutable eviden
   assert.match(telemetry, /rtoMinutes: 30/);
   assert.match(readFileSync(join(root, 'runbooks/databasefailover.md'), 'utf8'), /LSN|RPO/);
   assert.match(readFileSync(join(root, 'runbooks/migrationrollback.md'), 'utf8'), /94 historical hashes/);
+  const topology = readFileSync(join(root, 'infrastructure/cloud/Topology.yml'), 'utf8');
+  const backup = readFileSync(join(root, 'infrastructure/backup/Policy.yml'), 'utf8');
+  assert.match(topology, /synchronousStandby: true/);
+  assert.match(topology, /separateRegion: true/);
+  assert.match(backup, /continuousWalArchive: true/);
+  assert.match(backup, /pointInTimeRecovery: true/);
 });

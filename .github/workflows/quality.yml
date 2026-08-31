@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
 
 permissions:
+  attestations: write
   contents: read
+  id-token: write
 
 concurrency:
   group: zhudatuan-main-${{ github.workflow }}-${{ github.ref }}
@@ -56,44 +58,108 @@ jobs:
           node-version: 22.22.0
           cache: npm
 
-      - name: Install and verify selected source set
+      - name: Install locked dependencies
         run: |
           npm ci
+
+      - name: ci/01_generate_zero_diff
+        run: |
+          npm run generate --workspace @shop/requirementgen
+          npm run generate:design
+          npm run generate:runtime
+          npm run generate:clients
+          npm run generate:frontendmanifest
+          npm run check:generated
+          npm run check:requirements
+          git diff --exit-code
+
+      - name: ci/02_naming_boundary_ownership
+        run: |
           npm run check:cleaninstall
           npm run check:artifacts
-          npm run check:approved-ui
-          npm run check:registration-deployment
-          npm run check:purchase-deployment
+          npm run check:errors
+          npm run audit:architecture
 
-      - name: Verify immutable migrations and MVP kernel
+      - name: ci/03_unit
+        run: |
+          npm run typecheck
+          npm run test:unit
+
+      - name: ci/04_contract
+        run: |
+          npm run test:contract
+
+      - name: ci/05_integration
         run: |
           npm run check:migrations
           npm run test:sql
           npm run test:mvp
-
-      - name: Typecheck and deterministic tests
-        run: |
-          npm run typecheck
-          npm run test:unit
-          npm run test:contract
-          npm run test:component
-          npm run test:journey
-          npm run test:security
-          npm run test:performance
-
-      - name: Verify real PostgreSQL and Redis adapters
-        run: |
           npm run replay:postgres
           npm run test:integration
           npm run test:adapters
 
-      - name: Build locked applications and services
+      - name: ci/06_journey
+        run: |
+          npm run test:component
+          npm run test:journey
+          npm run test:e2e
+
+      - name: ci/07_security_sast_secret
+        run: |
+          npm run lint
+          npm run test:security
+          npm run check:supplychain
+
+      - name: ci/08_sbom_license
+        run: |
+          npm run check:supplychain
+          npm sbom --sbom-format cyclonedx --omit dev > "$RUNNER_TEMP/sbom.cdx.json"
+
+      - name: ci/09_performance_soak
+        run: |
+          npm run check:performance
+          npm run test:performance
+
+      - name: ci/10_failure_recovery
+        run: |
+          node --import tsx --test tests/recovery/*.spec.ts
+
+      - name: ci/11_immutable_build
         run: |
           npm run build
-          docker build --file infrastructure/aliyun/Dockerfile --tag zhudatuan-commerce:${{ github.sha }} .
-          npm audit --omit=dev --audit-level=high
+          docker build --file infrastructure/container/Dockerfile --tag zhudatuan-commerce:${{ github.sha }} .
+          docker save --output "$RUNNER_TEMP/commerce.oci.tar" zhudatuan-commerce:${{ github.sha }}
+
+      - uses: sigstore/cosign-installer@v3.9.2
+
+      - name: ci/12_sign_provenance
+        run: |
+          image="oci-layout@sha256:$(sha256sum "$RUNNER_TEMP/commerce.oci.tar" | cut -d ' ' -f 1)"
+          node scripts/release/provenance.mjs "$RUNNER_TEMP/provenance.intoto.jsonl" "${{ github.sha }}" "$image" "$RUNNER_TEMP/sbom.cdx.json"
+          node --import tsx scripts/release/candidate.mjs "$RUNNER_TEMP/release-candidate" "${{ github.sha }}" "$image" "$RUNNER_TEMP/commerce.oci.tar" "$RUNNER_TEMP/sbom.cdx.json" "$RUNNER_TEMP/provenance.intoto.jsonl"
+
+      - name: Sign candidate with workload identity
+        if: github.event_name != 'pull_request'
+        run: |
+          cosign sign-blob --yes --bundle "$RUNNER_TEMP/candidate.sigstore.json" "$RUNNER_TEMP/release-candidate/candidate.json"
+
+      - name: ci/13_migration_verify
+        run: |
+          npm run check:migrations
+          npm run replay:postgres
+
+      - name: ci/14_deploy
+        run: |
+          npm run check:deployment
+          test -x infrastructure/cloud/Deploy.sh
+
+      - name: ci/15_canary
+        run: |
+          node --import tsx --test tests/recovery/release.spec.ts
+          rg 'for percentage in 1 10 50 100' infrastructure/cloud/Deploy.sh
 
       - name: Ensure verification produced no source drift
         run: |
+          npm audit --omit=dev --audit-level=high
           git diff --exit-code
           test -z "$(git status --porcelain)"

@@ -25,20 +25,16 @@ export interface LocalTls {
 }
 
 export class LocalHttpError extends Error {
-  constructor(readonly status: number, readonly code: string) {
+  constructor(
+    readonly status: number,
+    readonly code: string
+  ) {
     super(code);
     this.name = 'LocalHttpError';
   }
 }
 
-export async function startLocalHttps(
-  name: string,
-  port: number,
-  handler: LocalHandler,
-  tls: LocalTls,
-  maximumBodyBytes = 9 * 1024 * 1024,
-  preflight?: LocalPreflight,
-): Promise<HttpsServer> {
+export async function startLocalHttps(name: string, port: number, handler: LocalHandler, tls: LocalTls, maximumBodyBytes = 9 * 1024 * 1024, preflight?: LocalPreflight): Promise<HttpsServer> {
   if (!/^[a-z][a-z0-9]{2,31}$/.test(name) || !Number.isSafeInteger(port) || port < 1024 || port > 65_535) {
     throw new Error('LOCAL_HTTPS_CONFIGURATION_INVALID');
   }
@@ -73,14 +69,19 @@ export function jsonBody(request: LocalRequest): Readonly<Record<string, unknown
     throw new LocalHttpError(415, 'CONTENT_TYPE_UNSUPPORTED');
   }
   let value: unknown;
-  try { value = JSON.parse(new TextDecoder().decode(request.body)); }
-  catch { throw new LocalHttpError(400, 'JSON_INVALID'); }
+  try {
+    value = JSON.parse(new TextDecoder().decode(request.body));
+  } catch {
+    throw new LocalHttpError(400, 'JSON_INVALID');
+  }
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new LocalHttpError(400, 'JSON_OBJECT_REQUIRED');
   return value as Readonly<Record<string, unknown>>;
 }
 
 export function equalSecret(actual: string | undefined, expected: string): boolean {
-  const left = createHash('sha256').update(actual ?? '').digest();
+  const left = createHash('sha256')
+    .update(actual ?? '')
+    .digest();
   const right = createHash('sha256').update(expected).digest();
   return timingSafeEqual(left, right) && actual !== undefined;
 }
@@ -92,7 +93,7 @@ export function requireBearerAuthorization(headers: Readonly<Record<string, stri
 }
 
 export function workloadBearerPreflight(expected: string): LocalPreflight {
-  return request => {
+  return (request) => {
     if (request.url.pathname !== '/health/ready') requireBearerAuthorization(request.headers, expected);
   };
 }
@@ -106,13 +107,7 @@ export function canonicalRecord(value: unknown): string {
   return JSON.stringify(Object.fromEntries(entries));
 }
 
-async function dispatch(
-  request: IncomingMessage,
-  response: ServerResponse,
-  handler: LocalHandler,
-  maximumBodyBytes: number,
-  preflight?: LocalPreflight,
-): Promise<void> {
+async function dispatch(request: IncomingMessage, response: ServerResponse, handler: LocalHandler, maximumBodyBytes: number, preflight?: LocalPreflight): Promise<void> {
   try {
     const metadata = {
       headers: normalizeHeaders(request.headers),
@@ -158,8 +153,12 @@ async function readBody(request: IncomingMessage, maximum: number): Promise<Uint
 }
 
 function normalizeHeaders(headers: IncomingHttpHeaders): Readonly<Record<string, string>> {
-  return Object.freeze(Object.fromEntries(Object.entries(headers).flatMap(([name, value]) => {
-    if (value === undefined) return [];
-    return [[name.toLowerCase(), Array.isArray(value) ? value.join(',') : value]];
-  })));
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(headers).flatMap(([name, value]) => {
+        if (value === undefined) return [];
+        return [[name.toLowerCase(), Array.isArray(value) ? value.join(',') : value]];
+      })
+    )
+  );
 }

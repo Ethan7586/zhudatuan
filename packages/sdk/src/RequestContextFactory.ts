@@ -12,6 +12,11 @@ export interface RequestContextOptions {
   readonly expectedVersion?: number;
   readonly proof?: string;
   readonly csrfToken?: string;
+  readonly deviceId?: string;
+  readonly target?: 'console' | 'storefront';
+  readonly catalogVersion?: string;
+  readonly ifNoneMatch?: string;
+  readonly cachedResponse?: unknown;
 }
 
 export function createRequestContext(clientVersion: string, options: RequestContextOptions = {}): RequestContext {
@@ -24,7 +29,7 @@ export function createRequestContext(clientVersion: string, options: RequestCont
     required(options.scope.id, 'SDK_SCOPE_ID_REQUIRED');
     required(options.scope.kind, 'SDK_SCOPE_KIND_REQUIRED');
   }
-  const csrfToken = options.csrfToken ?? browserCookie('shop_csrf');
+  const csrfToken = options.csrfToken;
   return Object.freeze({
     clientVersion,
     contractVersion: CONTRACT_VERSION,
@@ -36,20 +41,16 @@ export function createRequestContext(clientVersion: string, options: RequestCont
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
     ...(options.proof === undefined ? {} : { proof: required(options.proof, 'SDK_ACTION_PROOF_INVALID') }),
     ...(csrfToken === undefined ? {} : { csrfToken: required(csrfToken, 'SDK_CSRF_TOKEN_INVALID') }),
+    ...(options.deviceId === undefined ? {} : { deviceId: required(options.deviceId, 'SDK_DEVICE_ID_INVALID') }),
+    ...(options.target === undefined ? {} : { target: options.target }),
+    ...(options.catalogVersion === undefined ? {} : { catalogVersion: required(options.catalogVersion, 'SDK_CATALOG_VERSION_INVALID') }),
+    ...(options.ifNoneMatch === undefined ? {} : { ifNoneMatch: required(options.ifNoneMatch, 'SDK_ETAG_INVALID') }),
+    ...(options.cachedResponse === undefined ? {} : { cachedResponse: options.cachedResponse }),
   });
 }
 
 export function createIdempotencyKey(): string {
   return randomId();
-}
-
-function browserCookie(name: string): string | undefined {
-  if (typeof document === 'undefined') return undefined;
-  for (const part of document.cookie.split(';')) {
-    const separator = part.indexOf('=');
-    if (separator > 0 && part.slice(0, separator).trim() === name) return decodeURIComponent(part.slice(separator + 1).trim());
-  }
-  return undefined;
 }
 
 function randomId(): string {

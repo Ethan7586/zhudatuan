@@ -39,7 +39,7 @@ export class MigrationRunner {
     private readonly pool: DatabasePool,
     private readonly kms: KmsClient,
     private readonly directory: string,
-    private readonly secrets: MigrationSecrets,
+    private readonly secrets: MigrationSecrets
   ) {}
 
   async run(): Promise<void> {
@@ -56,15 +56,9 @@ export class MigrationRunner {
         if (file === BACKFILL) await this.stageSecrets(client);
         const sql = await readFile(join(this.directory, file), 'utf8');
         await client.query(sql);
-        await client.query(
-          'insert into supabase_migrations.schema_migrations(version,statements,name) values($1,$2,$3)',
-          [version, [], file],
-        );
+        await client.query('insert into supabase_migrations.schema_migrations(version,statements,name) values($1,$2,$3)', [version, [], file]);
       }
-      const result = await client.query<{ readonly valid: boolean }>(
-        `select exists(select 1 from runtime.schemaversion where version=$1) and not exists(select 1 from pg_tables where schemaname='public') valid`,
-        [TARGET_SCHEMA_HEAD],
-      );
+      const result = await client.query<{ readonly valid: boolean }>(`select exists(select 1 from runtime.schemaversion where version=$1) and not exists(select 1 from pg_tables where schemaname='public') valid`, [TARGET_SCHEMA_HEAD]);
       if (result.rows[0]?.valid !== true) throw new Error('MIGRATION_TARGET_INVALID');
     } finally {
       await client.query("select pg_advisory_unlock(hashtext('shop-domain-hard-cut'))").catch(() => undefined);
@@ -75,18 +69,20 @@ export class MigrationRunner {
   private async assertRole(client: PoolClient): Promise<void> {
     const result = await client.query<{ readonly allowed: boolean; readonly bypass: boolean }>(
       `select pg_has_role(current_user,'shopmigration','member') allowed,
-        coalesce((select rolbypassrls from pg_roles where rolname=current_user),false) bypass`,
+        coalesce((select rolbypassrls from pg_roles where rolname=current_user),false) bypass`
     );
     if (result.rows[0]?.allowed !== true || result.rows[0].bypass) throw new Error('MIGRATION_ROLE_INVALID');
   }
 
   private async assertHistory(files: readonly string[]): Promise<void> {
-    const contract = JSON.parse(await readFile(join(this.directory, '..', '..', 'contracts', 'history.json'), 'utf8')) as HistoryContract;
-    if (contract.algorithm !== 'sha256' || contract.count !== 94 || contract.migrations.length !== 94) throw new Error('MIGRATION_HISTORY_CONTRACT_INVALID');
+    const contract = JSON.parse(await readFile(join(this.directory, '..', 'contracts', 'history.json'), 'utf8')) as HistoryContract;
+    if (contract.algorithm !== 'sha256' || contract.count !== contract.migrations.length || contract.count < 1 || contract.migrations.at(-1)?.file.slice(0, 14) !== contract.head) throw new Error('MIGRATION_HISTORY_CONTRACT_INVALID');
     const historical = files.filter((file) => file.slice(0, 14) <= contract.head);
     if (historical.join('\n') !== contract.migrations.map((migration) => migration.file).join('\n')) throw new Error('MIGRATION_HISTORY_FILESET_DRIFT');
     for (const migration of contract.migrations) {
-      const digest = createHash('sha256').update(await readFile(join(this.directory, migration.file))).digest('hex');
+      const digest = createHash('sha256')
+        .update(await readFile(join(this.directory, migration.file)))
+        .digest('hex');
       if (digest !== migration.sha256) throw new Error(`MIGRATION_HISTORY_HASH_DRIFT:${basename(migration.file)}`);
     }
   }
@@ -99,34 +95,46 @@ export class MigrationRunner {
   private async stageSecrets(client: PoolClient): Promise<void> {
     const sources = await this.secretSources(client);
     const semaphore = new Semaphore(8);
-    const envelopes = await Promise.all(sources.map((source) => semaphore.use(async () => ({
-      envelope: await this.kms.encrypt(source.keyRef, source.plaintext, source.context),
-      source,
-      unionToken: source.union === undefined ? null : (await this.kms.encrypt(source.keyRef, source.union, { ...source.context, value: 'union' })).fingerprint,
-    }))));
+    const envelopes = await Promise.all(
+      sources.map((source) =>
+        semaphore.use(async () => ({
+          envelope: await this.kms.encrypt('pii', source.keyRef, source.plaintext, source.context),
+          source,
+          unionToken: source.union === undefined ? null : (await this.kms.encrypt('pii', source.keyRef, source.union, { ...source.context, value: 'union' })).fingerprint,
+        }))
+      )
+    );
     await client.query('begin');
     try {
       for (const { envelope, source, unionToken } of envelopes) {
         if (source.target === 'voucher') {
-          await client.query(`insert into runtime.vouchersecretstage(voucher_id,code_ciphertext,code_fingerprint,key_version,staged_at)
+          await client.query(
+            `insert into runtime.vouchersecretstage(voucher_id,code_ciphertext,code_fingerprint,key_version,staged_at)
             values($1,$2,$3,$4,$5) on conflict(voucher_id) do update set code_ciphertext=excluded.code_ciphertext,
             code_fingerprint=excluded.code_fingerprint,key_version=excluded.key_version,staged_at=excluded.staged_at`,
-          [source.id, envelope.ciphertext, envelope.fingerprint, envelope.keyVersion, source.createdAt]);
+            [source.id, envelope.ciphertext, envelope.fingerprint, envelope.keyVersion, source.createdAt]
+          );
         } else if (source.target === 'identity') {
-          await client.query(`insert into runtime.wechatidentitystage(identity_id,subject_ciphertext,subject_token,union_token,key_version,staged_at)
+          await client.query(
+            `insert into runtime.wechatidentitystage(identity_id,subject_ciphertext,subject_token,union_token,key_version,staged_at)
             values($1,$2,$3,$4,$5,$6) on conflict(identity_id) do update set subject_ciphertext=excluded.subject_ciphertext,
             subject_token=excluded.subject_token,union_token=excluded.union_token,key_version=excluded.key_version,staged_at=excluded.staged_at`,
-          [source.id, envelope.ciphertext, envelope.fingerprint, unionToken, envelope.keyVersion, source.createdAt]);
+            [source.id, envelope.ciphertext, envelope.fingerprint, unionToken, envelope.keyVersion, source.createdAt]
+          );
         } else if (source.target === 'partner') {
-          await client.query(`insert into runtime.partneraddressstage(store_id,address_ciphertext,address_token,key_version,staged_at)
+          await client.query(
+            `insert into runtime.partneraddressstage(store_id,address_ciphertext,address_token,key_version,staged_at)
             values($1,$2,$3,$4,$5) on conflict(store_id) do update set address_ciphertext=excluded.address_ciphertext,
             address_token=excluded.address_token,key_version=excluded.key_version,staged_at=excluded.staged_at`,
-          [source.id, envelope.ciphertext, envelope.fingerprint, envelope.keyVersion, source.createdAt]);
+            [source.id, envelope.ciphertext, envelope.fingerprint, envelope.keyVersion, source.createdAt]
+          );
         } else {
-          await client.query(`insert into runtime.distributorcontactstage(distributor_id,contact_ciphertext,contact_token,key_version,staged_at)
+          await client.query(
+            `insert into runtime.distributorcontactstage(distributor_id,contact_ciphertext,contact_token,key_version,staged_at)
             values($1,$2,$3,$4,$5) on conflict(distributor_id) do update set contact_ciphertext=excluded.contact_ciphertext,
             contact_token=excluded.contact_token,key_version=excluded.key_version,staged_at=excluded.staged_at`,
-          [source.id, envelope.ciphertext, envelope.fingerprint, envelope.keyVersion, source.createdAt]);
+            [source.id, envelope.ciphertext, envelope.fingerprint, envelope.keyVersion, source.createdAt]
+          );
         }
       }
       await client.query('commit');
@@ -147,8 +155,15 @@ export class MigrationRunner {
       ...vouchers.rows.map((row) => ({ context: { domain: 'voucher', voucherId: row.id }, createdAt: row.created_at, id: row.id, keyRef: this.secrets.voucherKeyRef, plaintext: row.plaintext, target: 'voucher' as const })),
       ...stores.rows.map((row) => ({ context: { domain: 'partner', storeId: row.id }, createdAt: row.created_at, id: row.id, keyRef: this.secrets.partnerKeyRef, plaintext: row.plaintext, target: 'partner' as const })),
       ...distributors.rows.map((row) => ({ context: { distributorId: row.id, domain: 'channel' }, createdAt: row.created_at, id: row.id, keyRef: this.secrets.distributorKeyRef, plaintext: row.plaintext, target: 'distributor' as const })),
-      ...identities.rows.map((row) => ({ context: { domain: 'identity', identity: row.id }, createdAt: row.created_at, id: row.id,
-        keyRef: this.secrets.identityKeyRef, plaintext: row.plaintext, target: 'identity' as const, ...(row.union_id === null ? {} : { union: row.union_id }) })),
+      ...identities.rows.map((row) => ({
+        context: { domain: 'identity', identity: row.id },
+        createdAt: row.created_at,
+        id: row.id,
+        keyRef: this.secrets.identityKeyRef,
+        plaintext: row.plaintext,
+        target: 'identity' as const,
+        ...(row.union_id === null ? {} : { union: row.union_id }),
+      })),
     ];
   }
 }

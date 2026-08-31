@@ -20,25 +20,25 @@ Owner 指示先完成登錄系統，再完成註冊，最後一次性推送與�
 
 ## 已完成的註冊鏈路
 
-- 新用戶註冊依次調用 `identity.invitations.read`、`identity.challenges.create` 與 `identity.members.create`。
+- 新用戶註冊依次調用 `identity.invitations.resolve`、`identity.challenges.create`、`identity.enrollments.read` 與 `identity.enrollments.complete`；已刪除可直接建立成員的舊公開入口。
 - 僅接受中國大陸 11 位手機號或標準 E.164 國際手機號；不接受郵箱替代手機。
 - 邀請碼必須有效、已生效、未過期，並與允許的手機目的地綁定。
 - OTP Challenge 綁定 `purpose=registration` 與手機 Hash，不能跨用途或換手機重放。
 - 密碼要求 12–128 位，且同時包含大寫字母、小寫字母、數字和符號。
 - 條款與隱私政策由服務端邀請返回，建立會員時提交並核對該版本的 `termsHash`。
 - 同一手機建立身份前取得鎖並檢查重複 Subject；重複註冊返回 409，不覆蓋既有帳號。
-- 公開註冊使用 `credentials: omit`；若瀏覽器意外帶入舊 API Cookie，仍須通過 CSRF，不會受舊會話影響。
+- 第一階段公開解析不依賴既有 Session；後續註冊只接受 Target、Device 綁定且一次性的 HttpOnly PreAuth Cookie。
 - 新註冊固定建立 `storefront` Membership，不會自動授予 Console 權限。
 
 ## 視覺邊界
 
 - 主登錄頁、左右布局、品牌、色彩、字體、四種入口與三階段骨架均保持已批准的 3003 版本。
 - 註冊仍使用原有白色單卡 Modal、圓角、間距、按鈕、錯誤提示與協議 Modal 語言；只增加完成真實註冊必需的邀請驗證、手機 OTP、強密碼及條款校驗。
-- `config/owner-approved-ui.json` 鎖定本次正式 Auth 文件 Hash；部署前必須通過 Owner UI 門禁。
+- `config/artifacts.json` 只声明 Auth、Console、Storefront 三个正式制品；部署前必须通过不可变制品哈希、需求证据与签名发布门禁。
 
 ## 已知邊界
 
-- Canonical 註冊已能建立員工商城身份，但現有消費 Web 仍使用 Compatibility Session／業務 BFF。兩套合同未建立正式 Adapter 前，註冊成功不會假裝成消費 Web 已自動登錄。
+- Campaign 註冊完成后不直接建立 Session；個人 Enrollment 經完整 Recipient Proof、條款 Hash、Membership 激活和 Receipt 事务后才进入统一会话流程。
 - 新帳號如需進入 Console，必須在後續權限系統中由管理員明確授予 Console Membership；不得由自助註冊越權完成。
 - 真實短信是否可投遞取決於 JobsMain、通知配置及阿里雲 SMS 憑據、簽名和模板。HTTP 202 只代表排隊，不等於投遞成功；正式驗收必須看到供應商回執。
 - 真 PostgreSQL Migration／Seed／瀏覽器 E2E 必須使用隔離的築大團資料庫；不得借用 `hbbtzn` 或舊 Smart Wing Runtime。

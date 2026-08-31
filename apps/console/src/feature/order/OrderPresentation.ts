@@ -17,24 +17,32 @@ const fulfillmentLabels: Readonly<Record<string, string>> = Object.freeze({
   processing: '履约中',
   shipped: '已发货',
   delivered: '已完成',
+  received: '已收货',
   cancelled: '已取消',
   returned: '已退回',
 });
 
 const aftersaleLabels: Readonly<Record<string, string>> = Object.freeze({
   none: '无售后',
-  requested: '申请中',
-  processing: '处理中',
+  applied: '已申请',
+  reviewing: '审核中',
+  approved: '已批准',
+  returning: '退货中',
+  received: '已收货',
+  refunding: '退款中',
   resolved: '已完成',
   rejected: '已驳回',
 });
 
 const lifecycleLabels: Readonly<Record<string, string>> = Object.freeze({
   created: '已创建',
-  active: '进行中',
+  awaitingpayment: '待支付',
+  paid: '已支付',
+  fulfilling: '履约中',
+  shipped: '已发货',
+  received: '已收货',
   completed: '已完成',
   cancelled: '已取消',
-  closed: '已关闭',
 });
 
 export const paymentLabel = (value: string): string => paymentLabels[value] ?? value;
@@ -62,10 +70,6 @@ export function aftersaleTone(value: string): OrderTone {
   if (value === 'resolved') return 'success';
   if (value === 'rejected') return 'danger';
   return 'warning';
-}
-
-export function previewRecord(order: OrderRecord, enabled: boolean): OrderRecord['preview'] | undefined {
-  return enabled && order.preview?.source === 'local-preview' ? order.preview : undefined;
 }
 
 export function formatOrderTime(value: string): string {

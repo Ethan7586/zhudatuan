@@ -1,9 +1,4 @@
-import {
-  createProgram,
-  productionSources,
-  sourceFileMap,
-  testSources,
-} from '../check/source.mjs';
+import { createProgram, productionSources, sourceFileMap, testSources } from '../check/source.mjs';
 
 export function graphContext() {
   const production = productionSources();
@@ -15,4 +10,3 @@ export function graphContext() {
     sourceFiles: sourceFileMap(program),
   });
 }
-

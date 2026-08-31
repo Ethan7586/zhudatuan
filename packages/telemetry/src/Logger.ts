@@ -14,7 +14,10 @@ export interface LogSink {
 }
 
 export class Logger {
-  constructor(private readonly sink: LogSink, private readonly redactor = new Redactor()) {}
+  constructor(
+    private readonly sink: LogSink,
+    private readonly redactor = new Redactor()
+  ) {}
 
   write(record: LogRecord): void | Promise<void> {
     return this.sink.write(Object.freeze(this.redactor.redact(record) as Readonly<Record<string, unknown>>));

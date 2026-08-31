@@ -22,9 +22,12 @@ export interface BatchImportPort {
 }
 
 export class BatchImportProcessor implements JobProcessor {
-  constructor(private readonly kind: 'catalogimport' | 'inventoryimport' | 'memberimport' | 'voucherimport',
+  constructor(
+    private readonly kind: 'catalogimport' | 'inventoryimport' | 'memberimport' | 'voucherimport',
     private readonly owner: 'catalog' | 'inventory' | 'member' | 'voucher',
-    private readonly objects: ObjectStore, private readonly port: BatchImportPort) {}
+    private readonly objects: ObjectStore,
+    private readonly port: BatchImportPort
+  ) {}
 
   async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
     if (job.kind !== this.kind) throw new Error('JOB_KIND_MISMATCH');
@@ -41,7 +44,7 @@ export class BatchImportProcessor implements JobProcessor {
         state = 'ready';
       }
       if (state === 'ready' || state === 'running') {
-        if (!await this.port.process(target, signal)) return;
+        if (!(await this.port.process(target, signal))) return;
         state = 'reporting';
       }
       if (state !== 'reporting') throw new Error('IMPORT_STATE_INVALID');
@@ -50,14 +53,14 @@ export class BatchImportProcessor implements JobProcessor {
     } catch (cause) {
       const code = importCode(cause, 'IMPORT_PROCESSING_FAILED');
       const detail = importDetail(cause);
-      if (PERMANENT.has(code)) { await this.port.reject(target, code, detail); return; }
+      if (PERMANENT.has(code)) {
+        await this.port.reject(target, code, detail);
+        return;
+      }
       await this.port.fault(target, detail);
       throw cause;
     }
   }
 }
 
-const PERMANENT = new Set([
-  'IMPORT_OBJECT_INVALID', 'IMPORT_HASH_MISMATCH', 'IMPORT_FILE_EMPTY', 'CSV_ROW_LIMIT_EXCEEDED',
-  'CSV_QUOTE_UNTERMINATED', 'CSV_HEADER_INVALID', 'CSV_COLUMN_COUNT_INVALID',
-]);
+const PERMANENT = new Set(['IMPORT_OBJECT_INVALID', 'IMPORT_HASH_MISMATCH', 'IMPORT_FILE_EMPTY', 'CSV_ROW_LIMIT_EXCEEDED', 'CSV_QUOTE_UNTERMINATED', 'CSV_HEADER_INVALID', 'CSV_COLUMN_COUNT_INVALID']);

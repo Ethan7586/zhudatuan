@@ -3,11 +3,16 @@ import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectSt
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { exportHeader } from '../../domain/model/ExportJob';
 import { PgReportingRepository } from '../../infrastructure/persistence/PgReportingRepository';
+import { safeErrorCode } from '../../../../foundation/domain/SafeError';
 
 const PAGE_SIZE = 1000;
 
 export class ExportJobRunner implements JobProcessor {
-  constructor(private readonly pool: DatabasePool, private readonly objects: ObjectStore, private readonly maximumAttempts: number) {
+  constructor(
+    private readonly pool: DatabasePool,
+    private readonly objects: ObjectStore,
+    private readonly maximumAttempts: number
+  ) {
     if (!Number.isSafeInteger(maximumAttempts) || maximumAttempts < 1) throw new Error('REPORT_EXPORT_ATTEMPTS_INVALID');
   }
 
@@ -27,7 +32,10 @@ export class ExportJobRunner implements JobProcessor {
         const page = await repository.exportRows(id, selected.report, cursor, PAGE_SIZE);
         if (page.length === 0) break;
         const lines: string[] = [];
-        for (const row of page) { cursor = row.key; lines.push(row.values.map(csv).join(',')); }
+        for (const row of page) {
+          cursor = row.key;
+          lines.push(row.values.map(csv).join(','));
+        }
         await upload.append(encode(`${lines.join('\n')}\n`));
         await repository.advanceExport(id, cursor!, page.length);
       }
@@ -39,7 +47,7 @@ export class ExportJobRunner implements JobProcessor {
       await repository.completeExport(id, stored);
     } catch (cause) {
       await upload.abort();
-      const code = cause instanceof Error ? cause.message.slice(0, 200) : 'REPORT_EXPORT_FAILED';
+      const code = safeErrorCode(cause, 'REPORT_EXPORT_FAILED');
       await repository.failExport(id, code, job.attempts >= this.maximumAttempts);
       throw cause;
     }
@@ -49,8 +57,16 @@ export class ExportJobRunner implements JobProcessor {
 function csv(value: unknown): string {
   const raw = value === null || value === undefined ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value);
   const safe = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
-  return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"','""')}"` : safe;
+  return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
 }
-function encode(value: string): Uint8Array { return new TextEncoder().encode(value); }
-function object(value: unknown): Record<string, unknown> { if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID'); return value as Record<string, unknown>; }
-function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
+function encode(value: string): Uint8Array {
+  return new TextEncoder().encode(value);
+}
+function object(value: unknown): Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID');
+  return value as Record<string, unknown>;
+}
+function text(value: unknown, code: string): string {
+  if (typeof value !== 'string' || !value) throw new Error(code);
+  return value;
+}

@@ -18,7 +18,12 @@ export class RiskPolicy {
   readonly rule: RiskRule;
   readonly hash: string;
 
-  constructor(readonly id: string, readonly version: number, value: unknown, readonly rolloutPercent: number) {
+  constructor(
+    readonly id: string,
+    readonly version: number,
+    value: unknown,
+    readonly rolloutPercent: number
+  ) {
     if (!id || !Number.isSafeInteger(version) || version < 1 || !Number.isSafeInteger(rolloutPercent) || rolloutPercent < 0 || rolloutPercent > 100) {
       throw new Error('RISK_POLICY_IDENTITY_INVALID');
     }
@@ -37,20 +42,25 @@ export class RiskPolicy {
 
 function parseRule(value: unknown): RiskRule {
   const source = record(value, 'RISK_POLICY_RULE_INVALID');
-  keys(source, ['blockedActors','denyOperations','reviewOperations','challengeOperations','maximumAmountMinor','reviewAmountMinor','velocity','scores','thresholds']);
+  keys(source, ['blockedActors', 'denyOperations', 'reviewOperations', 'challengeOperations', 'maximumAmountMinor', 'reviewAmountMinor', 'velocity', 'scores', 'thresholds']);
   const velocity = source.velocity === undefined ? null : velocityRule(source.velocity);
   const thresholds = thresholdsRule(source.thresholds);
   return Object.freeze({
-    blockedActors: strings(source.blockedActors), denyOperations: strings(source.denyOperations),
-    reviewOperations: strings(source.reviewOperations), challengeOperations: strings(source.challengeOperations),
-    maximumAmountMinor: optionalInteger(source.maximumAmountMinor), reviewAmountMinor: optionalInteger(source.reviewAmountMinor), velocity,
-    scores: scoresRule(source.scores), thresholds,
+    blockedActors: strings(source.blockedActors),
+    denyOperations: strings(source.denyOperations),
+    reviewOperations: strings(source.reviewOperations),
+    challengeOperations: strings(source.challengeOperations),
+    maximumAmountMinor: optionalInteger(source.maximumAmountMinor),
+    reviewAmountMinor: optionalInteger(source.reviewAmountMinor),
+    velocity,
+    scores: scoresRule(source.scores),
+    thresholds,
   });
 }
 
 function velocityRule(value: unknown): RiskRule['velocity'] {
   const item = record(value, 'RISK_POLICY_VELOCITY_INVALID');
-  keys(item, ['windowSeconds','maximum','outcome']);
+  keys(item, ['windowSeconds', 'maximum', 'outcome']);
   const outcome = item.outcome;
   if (outcome !== 'challenge' && outcome !== 'review' && outcome !== 'deny') throw new Error('RISK_POLICY_VELOCITY_OUTCOME_INVALID');
   return Object.freeze({ windowSeconds: bounded(item.windowSeconds, 60, 86_400), maximum: bounded(item.maximum, 1, 100_000), outcome });
@@ -59,17 +69,22 @@ function velocityRule(value: unknown): RiskRule['velocity'] {
 function scoresRule(value: unknown): RiskRule['scores'] {
   if (value === undefined) return Object.freeze([]);
   if (!Array.isArray(value) || value.length > 100) throw new Error('RISK_POLICY_SCORES_INVALID');
-  return Object.freeze(value.map((candidate) => { const item = record(candidate, 'RISK_POLICY_SCORE_INVALID');
-    keys(item, ['signal','minimum','points']);
-    if (typeof item.signal !== 'string' || !/^[a-z][a-z0-9.]{1,63}$/.test(item.signal)) throw new Error('RISK_POLICY_SCORE_SIGNAL_INVALID');
-    return Object.freeze({ signal: item.signal, minimum: bounded(item.minimum, 0, 1_000_000), points: bounded(item.points, 1, 10_000) }); }));
+  return Object.freeze(
+    value.map((candidate) => {
+      const item = record(candidate, 'RISK_POLICY_SCORE_INVALID');
+      keys(item, ['signal', 'minimum', 'points']);
+      if (typeof item.signal !== 'string' || !/^[a-z][a-z0-9.]{1,63}$/.test(item.signal)) throw new Error('RISK_POLICY_SCORE_SIGNAL_INVALID');
+      return Object.freeze({ signal: item.signal, minimum: bounded(item.minimum, 0, 1_000_000), points: bounded(item.points, 1, 10_000) });
+    })
+  );
 }
 
 function thresholdsRule(value: unknown): RiskRule['thresholds'] {
   if (value === undefined) return Object.freeze({ challenge: 100, review: 200, deny: 300 });
   const item = record(value, 'RISK_POLICY_THRESHOLDS_INVALID');
-  keys(item, ['challenge','review','deny']);
-  const challenge = bounded(item.challenge, 1, 1_000_000); const review = bounded(item.review, challenge, 1_000_000);
+  keys(item, ['challenge', 'review', 'deny']);
+  const challenge = bounded(item.challenge, 1, 1_000_000);
+  const review = bounded(item.review, challenge, 1_000_000);
   const deny = bounded(item.deny, review, 1_000_000);
   return Object.freeze({ challenge, review, deny });
 }
@@ -81,7 +96,9 @@ function strings(value: unknown): readonly string[] {
   }
   return Object.freeze([...new Set(value as string[])]);
 }
-function optionalInteger(value: unknown): number | null { return value === undefined || value === null ? null : bounded(value, 0, Number.MAX_SAFE_INTEGER); }
+function optionalInteger(value: unknown): number | null {
+  return value === undefined || value === null ? null : bounded(value, 0, Number.MAX_SAFE_INTEGER);
+}
 function bounded(value: unknown, minimum: number, maximum: number): number {
   if (!Number.isSafeInteger(value) || (value as number) < minimum || (value as number) > maximum) throw new Error('RISK_POLICY_NUMBER_INVALID');
   return value as number;
@@ -95,7 +112,10 @@ function keys(value: Readonly<Record<string, unknown>>, allowed: readonly string
 }
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  if (value && typeof value === 'object') return `{${Object.entries(value as Record<string, unknown>).sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(',')}}`;
+  if (value && typeof value === 'object')
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`)
+      .join(',')}}`;
   return JSON.stringify(value);
 }

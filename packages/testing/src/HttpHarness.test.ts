@@ -28,6 +28,7 @@ describe('HttpHarness', () => {
       code: 'VERSION_CONFLICT',
       message: '数据版本已变化',
       requestId: 'REQ-1',
+      retryable: false,
     });
     expect(response.headers['x-request-id']).toBe('REQ-1');
     expect(JSON.parse(response.body)).toMatchObject({ code: 'VERSION_CONFLICT' });

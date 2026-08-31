@@ -23,9 +23,19 @@ export class QueryMetrics {
   }
 
   snapshot(): readonly QueryMetric[] {
-    return Object.freeze([...this.values].sort(([left], [right]) => left.localeCompare(right)).map(([workload, value]) => Object.freeze({
-      workload, count: value.count, failures: value.failures, totalMilliseconds: value.total, maximumMilliseconds: value.maximum,
-    })));
+    return Object.freeze(
+      [...this.values]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([workload, value]) =>
+          Object.freeze({
+            workload,
+            count: value.count,
+            failures: value.failures,
+            totalMilliseconds: value.total,
+            maximumMilliseconds: value.maximum,
+          })
+        )
+    );
   }
 }
 

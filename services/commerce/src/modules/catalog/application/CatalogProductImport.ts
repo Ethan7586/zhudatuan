@@ -13,19 +13,28 @@ export async function importProduct(database: OperationDatabase, scope: string, 
   const product = `product:import:${key}`;
   const sku = `sku:import:${key}`;
   const attributes = attributesOf(row.attributes);
-  await database.query(`insert into catalog.product(id,owner_partner_id,category_id,title,product_type,attributes,status,created_at,updated_at)
-    values($1,$2,$3,$4,$5,$6::jsonb,'draft',clock_timestamp(),clock_timestamp()) on conflict(id) do update set
+  await database.query(
+    `insert into catalog.product(id,scope_id,owner_partner_id,category_id,title,product_type,attributes,status,created_at,updated_at)
+    values($1,$2,null,$3,$4,$5,$6::jsonb,'draft',clock_timestamp(),clock_timestamp()) on conflict(id) do update set
     category_id=excluded.category_id,title=excluded.title,product_type=excluded.product_type,attributes=excluded.attributes,
     updated_at=clock_timestamp(),version=catalog.product.version+1`,
-  [product, scope, selected.rows[0].id, title, kind, JSON.stringify(attributes)]);
-  await database.query(`insert into catalog.sku(id,product_id,code,specifications,status,version) values($1,$2,$3,'{}','draft',0)
-    on conflict(id) do update set code=excluded.code,version=catalog.sku.version+1`, [sku, product, skuCode]);
+    [product, scope, selected.rows[0].id, title, kind, JSON.stringify(attributes)]
+  );
+  await database.query(
+    `insert into catalog.sku(id,product_id,code,specifications,status,version) values($1,$2,$3,'{}','draft',0)
+    on conflict(id) do update set code=excluded.code,version=catalog.sku.version+1`,
+    [sku, product, skuCode]
+  );
 }
 
 function attributesOf(value: string | undefined): Readonly<Record<string, unknown>> {
   if (!value) return {};
   let parsed: unknown;
-  try { parsed = JSON.parse(value); } catch { throw new Error('CATALOG_ATTRIBUTES_INVALID'); }
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error('CATALOG_ATTRIBUTES_INVALID');
+  }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('CATALOG_ATTRIBUTES_INVALID');
   return parsed as Readonly<Record<string, unknown>>;
 }

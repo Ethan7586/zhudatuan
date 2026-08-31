@@ -7,7 +7,7 @@
 正式邊界固定為：
 
 - `services/commerce`：唯一目標 API 與 Canonical 權限模型。
-- `services/commerce-api`：`apps/storefront-web` 暫時使用的隔離相容 BFF。
+- `services/commerce-api`：`apps/storefront` 暫時使用的隔離相容 BFF。
 - `archives/smart-wing-20260826/smart-wing`：8 月 21 日行為、工作台覆蓋和測試需求的歷史參考，不是部署來源。
 
 兩條 API 在真資料庫、身份、支付與合同 Adapter 完成前均保持 `releaseEligible=false`，真值見 [`config/artifacts.json`](../../config/artifacts.json)。

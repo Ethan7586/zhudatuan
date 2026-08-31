@@ -1,0 +1,40 @@
+{
+  "name": "@shop/auth",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3002 --host=0.0.0.0",
+    "build": "vite build",
+    "test": "vitest run --config vitest.config.ts",
+    "test:component": "vitest run --config vitest.config.ts src/App.component.test.tsx",
+    "preview": "vite preview",
+    "clean": "rm -rf dist server.js",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shop/config": "1.0.0",
+    "@shop/contract": "1.0.0",
+    "@shop/design": "1.0.0",
+    "@shop/sdk": "1.0.0",
+    "@tailwindcss/vite": "4.3.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "lucide-react": "^0.546.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vite": "8.1.5",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "autoprefixer": "10.4.21",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  },
+  "optionalDependencies": {
+    "@esbuild/linux-x64": "0.25.12"
+  }
+}

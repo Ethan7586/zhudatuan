@@ -11,8 +11,7 @@ describe('batch import lifecycle', () => {
     const port = importPort();
     const processor = new BatchImportProcessor('catalogimport', 'catalog', objects.store, port.value);
     await processor.process(job('catalogimport'), new AbortController().signal);
-    expect(port.stage).toHaveBeenCalledWith(expect.objectContaining({ scope: 'supplier:test' }),
-      [{ title: 'Product', sku: 'SKU-1', category: 'CATEGORY-1' }]);
+    expect(port.stage).toHaveBeenCalledWith(expect.objectContaining({ scope: 'supplier:test' }), [{ title: 'Product', sku: 'SKU-1', category: 'CATEGORY-1' }]);
     expect(port.process).toHaveBeenCalledOnce();
     expect(port.complete).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ scan: 'clean' }));
     expect(new TextDecoder().decode(objects.report())).toContain("'=HYPERLINK");
@@ -49,9 +48,13 @@ function importPort(candidate = target('catalogimport')) {
   const complete = vi.fn(async () => undefined);
   const reject = vi.fn(async () => undefined);
   const value: BatchImportPort = {
-    find: async () => candidate, stage, process,
+    find: async () => candidate,
+    stage,
+    process,
     failures: async () => [{ row: 2, reason: 'ROW_INVALID', field: 'title', detail: '=HYPERLINK("unsafe")' }],
-    complete, reject, fault: vi.fn(async () => undefined),
+    complete,
+    reject,
+    fault: vi.fn(async () => undefined),
   };
   return { value, stage, process, complete, reject };
 }
@@ -59,32 +62,36 @@ function importPort(candidate = target('catalogimport')) {
 type ImportKind = 'catalogimport' | 'inventoryimport' | 'memberimport' | 'voucherimport';
 
 function target(kind: ImportKind, source?: Uint8Array): ImportTarget {
-  const bytes = source ?? (kind === 'catalogimport'
-    ? new TextEncoder().encode('title,sku,category\nProduct,SKU-1,CATEGORY-1\n')
-    : new TextEncoder().encode('sku,location,onhand\nSKU-1,MAIN,10\n'));
-  return { id: `${kind}:00000000-0000-4000-8000-000000000001`, scope: 'supplier:test', reference: 'object:source',
-    sha256: createHash('sha256').update(bytes).digest('hex'), state: 'uploaded' };
+  const bytes = source ?? (kind === 'catalogimport' ? new TextEncoder().encode('title,sku,category\nProduct,SKU-1,CATEGORY-1\n') : new TextEncoder().encode('sku,location,onhand\nSKU-1,MAIN,10\n'));
+  return { id: `${kind}:00000000-0000-4000-8000-000000000001`, scope: 'supplier:test', reference: 'object:source', sha256: createHash('sha256').update(bytes).digest('hex'), state: 'uploaded' };
 }
 
 function job(kind: ImportKind): ClaimedJob {
-  return { id: `job:${kind}`, kind, scope_id: 'supplier:test', payload: { import: `${kind}:00000000-0000-4000-8000-000000000001` }, attempts: 1 };
+  return { id: `job:${kind}`, kind, scope_id: 'supplier:test', payload: { import: `${kind}:00000000-0000-4000-8000-000000000001` }, attempts: 1, fencing_token: 1 };
 }
 
 function objectStore(source: Uint8Array) {
   let report = new Uint8Array();
   const sha256 = createHash('sha256').update(source).digest('hex');
   const store: ObjectStore = {
-    inspect: async () => ({ reference: 'object:source', sha256, size: source.byteLength, scan: 'clean', contentType: 'text/csv' }),
+    inspect: async () => ({ reference: 'object:source', sha256, size: source.byteLength, scan: 'clean', contentType: 'text/csv', path: 'imports/source.csv' }),
     read: async () => source,
     find: async () => null,
     create: async () => {
       const chunks: Uint8Array[] = [];
       const upload: ObjectUpload = {
-        append: async (bytes) => { chunks.push(bytes); }, abort: async () => undefined,
+        append: async (bytes) => {
+          chunks.push(bytes);
+        },
+        abort: async () => undefined,
         complete: async (): Promise<StoredObject> => {
           const size = chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
-          report = new Uint8Array(size); let offset = 0;
-          for (const chunk of chunks) { report.set(chunk, offset); offset += chunk.byteLength; }
+          report = new Uint8Array(size);
+          let offset = 0;
+          for (const chunk of chunks) {
+            report.set(chunk, offset);
+            offset += chunk.byteLength;
+          }
           return { reference: 'object:report', sha256: createHash('sha256').update(report).digest('hex'), size, scan: 'clean' };
         },
       };

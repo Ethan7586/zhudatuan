@@ -1,92 +1,58 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { cleanup, render, screen } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
-import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
 import { Component } from './ControlRoute';
 
-const context: ConsoleContext = {
-  session: {
-    actor: 'actor:1',
-    membership: 'membership:1',
-    accessVersion: 7,
-    permissions: [],
-    capabilities: [],
-    target: 'console',
-    scope: { kind: 'enterprise', id: 'enterprise:1' },
-    scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
-    assurance: { level: 2 },
-    syncedAt: '2026-08-26T00:00:00Z',
-  },
-  profile: { display_name: '测试运维', employee_no: null },
-  scope: { kind: 'enterprise', id: 'enterprise:1' },
-  scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
-};
-
-const controlHealth = {
-  status: 'degraded',
-  queue: { queued: 12, running: 3, deadletters: 1, oldest_seconds: 720 },
-  cache: { available: true },
-  databaseQueries: [],
-  compatibility: {
-    healthy: true,
-    contract: { checksum: 'contract:control', matches: true },
-    schema: { version: 'schema:control', matches: true },
-    registries: { operations: 204, events: 55, jobs: 18 },
-    database: { writable: true, schema: true, contract: true, operations: 204, capabilities: 96, events: 55 },
-  },
-  controlPlane: {
-    evaluatedAt: '2026-08-26T00:00:00Z',
-    coverageRatio: 0.96,
-    region: '华北',
-    cell: 'Cell C03',
-    assurance: 'AAL2',
-    conclusion: '平台整体稳定，但有 1 项需要立即处置。',
-    summary: '当前覆盖 11/12 项能力；其他 Cell 正常。',
-    incidents: [
-      {
-        id: 'OP-240824-1042',
-        priority: 'P1',
-        title: '商品同步连续失败',
-        impact: '影响：2 个商城 · 436 个商品',
-        startedAt: '20:47',
-        retryCount: 2,
-        cause: '供应商授权凭证过期',
-        owner: '张睿',
-        slaMinutes: 18,
-        action: '执行恢复',
-        affectedCapabilities: ['catalog', 'supplier'],
-      },
-    ],
-    capabilities: [
-      { id: 'identity', title: '身份与 Scope', status: 'stable', group: 'core' },
-      { id: 'catalog', title: '商品能力', status: 'action', group: 'core' },
-      { id: 'supplier', title: '供应商协同', status: 'attention', group: 'side' },
-    ],
-    changes: [
-      {
-        id: 'change:v34',
-        title: '配置版本 v34 · 灰度 10%',
-        target: '鸿泰集团 2 个商城',
-        stopCondition: '失败率 ≥ 1%',
-        rollbackEstimate: '2 分钟',
-        status: 'running',
-      },
-    ],
-    audits: [{ id: 'audit:1', time: '20:47', title: '供应商授权校验失败', detail: 'OP-240824-1042', status: 'failed' }],
-  },
-} as const;
-
 const server = setupServer(
+  http.get('*/api/v1/organizations/layers', ({ request }) => {
+    expect(request.headers.get('x-scope-hint')).toBe('platform:one');
+    expect(request.headers.get('x-access-version')).toBe('7');
+    return HttpResponse.json({ items: [{ id: 'enterprise:one', kind: 'enterprise', parent_id: 'platform:one', name: '鸿泰集团', timezone: 'Asia/Shanghai', status: 'active', version: 2 }], count: 1 });
+  }),
+  http.get('*/api/v1/channels/distributors', ({ request }) => {
+    expect(request.headers.get('x-scope-hint')).toBe('distributor:root');
+    return HttpResponse.json({
+      items: [
+        {
+          id: 'distributor:one',
+          organization_id: 'distributor:one',
+          code: 'D001',
+          name: '华东分销',
+          settlement_mode: 'monthly',
+          metadata: {},
+          status: 'active',
+          tenant_count: 3,
+          created_at: '2026-08-29T00:00:00Z',
+          updated_at: '2026-08-30T00:00:00Z',
+        },
+      ],
+      count: 1,
+    });
+  }),
   http.get('*/health/dependency', ({ request }) => {
-    if (request.headers.get('x-scope-hint') !== 'enterprise:1' || request.headers.get('x-access-version') !== '7') {
-      return HttpResponse.json({ code: 'TEST_CONTEXT_MISSING', requestId: 'request:control' }, { status: 400 });
-    }
-    return HttpResponse.json(controlHealth);
+    expect(request.headers.get('x-scope-hint')).toBe('enterprise:one');
+    return HttpResponse.json({
+      status: 'available',
+      queue: { queued: 2, running: 1, deadletters: 0, oldest_seconds: 3 },
+      cache: { available: true },
+      databaseQueries: [],
+      readiness: {
+        healthy: true,
+        condition: 'ready',
+        degraded: [],
+        configuration: { checksum: 'config', matches: true },
+        contract: { checksum: 'contract-checksum', matches: true },
+        migration: { head: '20260831045000', matches: true },
+        registries: { operations: 269, events: 100, jobs: 30, checksum: 'registry' },
+        database: { writable: true, migration: true, contract: true, role: true, operations: 269, capabilities: 269, events: 100, invitationKeys: true },
+        extensions: { registered: 11, healthy: 11, unhealthy: 0, checksum: 'extensions' },
+      },
+    });
   })
 );
 
@@ -98,41 +64,43 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('Control route', () => {
-  it('renders authority health, evidence, and the Preview → Confirm → Step-up → Receipt boundary', async () => {
-    const user = userEvent.setup();
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
-    render(
-      <MemoryRouter>
-        <QueryClientProvider client={client}>
-          <ConsoleContextProvider value={context}>
-            <Component />
-          </ConsoleContextProvider>
-        </QueryClientProvider>
-      </MemoryRouter>
-    );
+  it('reads platform organization layers instead of runtime health', async () => {
+    renderRoute({ kind: 'platform', id: 'platform:one' });
+    expect(await screen.findByRole('heading', { level: 1, name: '平台层' })).toBeTruthy();
+    expect(await screen.findByText('鸿泰集团')).toBeTruthy();
+    expect(screen.getByText('enterprise')).toBeTruthy();
+  });
 
+  it('reads distributors for the distribution scope', async () => {
+    renderRoute({ kind: 'distributor', id: 'distributor:root' });
+    expect(await screen.findByRole('heading', { level: 1, name: '分销层' })).toBeTruthy();
+    expect(await screen.findByText('华东分销')).toBeTruthy();
+    expect(screen.getByText('monthly')).toBeTruthy();
+  });
+
+  it('preserves the enterprise Smart Wing control workstation with authoritative dependency data', async () => {
+    renderRoute({ kind: 'enterprise', id: 'enterprise:one' });
     expect(await screen.findByRole('heading', { level: 1, name: '智慧翼中控台' })).toBeTruthy();
-    expect(screen.getByText('平台整体稳定，但有 1 项需要立即处置。')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '优先处置' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '平台能力链' })).toBeTruthy();
-    expect(screen.getByText('商品能力')).toBeTruthy();
-
-    await user.click(screen.getByRole('button', { name: '查看证据' }));
-    const evidence = await screen.findByRole('dialog', { name: '处置证据' });
-    expect(within(evidence).getByText('供应商授权凭证过期')).toBeTruthy();
-    expect(within(evidence).getByText('catalog、supplier')).toBeTruthy();
-    expect(within(evidence).getByText(/不在浏览器补造诊断结论/)).toBeTruthy();
-    await user.click(within(evidence).getByRole('button', { name: '关闭' }));
-    expect(screen.queryByRole('dialog', { name: '处置证据' })).toBeNull();
-
-    await user.click(screen.getByRole('button', { name: '执行恢复' }));
-    const preview = await screen.findByRole('dialog', { name: '恢复影响预览' });
-    expect(within(preview).getByText('PREVIEW → CONFIRM → STEP-UP')).toBeTruthy();
-    expect(within(preview).getByText(/执行前将重新读取状态并要求 Step-up/)).toBeTruthy();
-    await user.click(within(preview).getByRole('button', { name: '确认并进入 Step-up' }));
-
-    const receipt = await screen.findByRole('dialog', { name: '恢复请求待执行' });
-    expect(within(receipt).getByRole('status').textContent).toContain('预览与确认已完成');
-    expect(within(receipt).getByText(/正式 Execute 必须由 action-bound proof/)).toBeTruthy();
+    expect(await screen.findByText('任务队列')).toBeTruthy();
+    expect(screen.getByText('迁移 20260831045000 · 合同 contract-che')).toBeTruthy();
   });
 });
+
+function renderRoute(scope: ConsoleScope) {
+  const context: ConsoleContext = {
+    session: { actor: 'actor:one', membership: 'membership:one', accessVersion: 7, permissions: [], capabilities: [], target: 'console', scope, scopes: [scope], assurance: { level: 2 }, syncedAt: '2026-08-30T00:00:00Z' },
+    profile: { display_name: '平台管理员', employee_no: null },
+    scope,
+    scopes: [scope],
+  };
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+  render(
+    <MemoryRouter>
+      <QueryClientProvider client={client}>
+        <ConsoleContextProvider value={context}>
+          <Component />
+        </ConsoleContextProvider>
+      </QueryClientProvider>
+    </MemoryRouter>
+  );
+}

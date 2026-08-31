@@ -5,41 +5,24 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const output = join(root, 'docs/evidence/frontend/files.json');
-const sourceRoots = [
-  'apps/console',
-  'apps/auth',
-  'apps/store',
-  'apps/supplier',
-  'apps/storefront',
-  'apps/miniapp',
-  'packages/design',
-  'packages/sdk',
-  'packages/contract',
-  'packages/testing',
-  'packages/authz',
-  'packages/config',
-  'packages/telemetry',
-];
-const excludedDirectories = new Set([
-  '.next',
-  '.vinext',
-  '.wrangler',
-  'coverage',
-  'dist',
-  'node_modules',
-  'storybook-static',
-]);
+const sourceRoots = ['apps/console', 'apps/auth', 'apps/storefront', 'packages/design', 'packages/sdk', 'packages/contract', 'packages/testing', 'packages/authz', 'packages/config', 'packages/telemetry'];
+const authorityFiles = ['config/visuals.yml', 'config/navigation.yml'];
+const excludedDirectories = new Set(['.next', '.vinext', '.wrangler', 'coverage', 'dist', 'node_modules', 'storybook-static']);
 
 const entries = [];
 for (const sourceRoot of sourceRoots) {
   await visit(join(root, sourceRoot));
 }
+for (const authorityFile of authorityFiles) {
+  await record(join(root, authorityFile));
+}
 entries.sort((left, right) => left.path.localeCompare(right.path));
 
 const canonical = entries.map((entry) => [entry.path, entry.sha256, entry.size, entry.mode].join('\0')).join('\n');
 const document = {
-  version: 1,
+  version: 2,
   roots: sourceRoots,
+  authorities: authorityFiles,
   count: entries.length,
   treeSha256: sha256(Buffer.from(canonical)),
   entries,
@@ -62,14 +45,18 @@ async function visit(directory) {
       continue;
     }
     if (!child.isFile() || child.name.endsWith('.tsbuildinfo')) continue;
-    const [bytes, metadata] = await Promise.all([readFile(absolute), stat(absolute)]);
-    entries.push({
-      path: relative(root, absolute).split(sep).join('/'),
-      sha256: sha256(bytes),
-      size: bytes.length,
-      mode: (metadata.mode & 0o777).toString(8).padStart(4, '0'),
-    });
+    await record(absolute);
   }
+}
+
+async function record(absolute) {
+  const [bytes, metadata] = await Promise.all([readFile(absolute), stat(absolute)]);
+  entries.push({
+    path: relative(root, absolute).split(sep).join('/'),
+    sha256: sha256(bytes),
+    size: bytes.length,
+    mode: (metadata.mode & 0o777).toString(8).padStart(4, '0'),
+  });
 }
 
 function sha256(bytes) {

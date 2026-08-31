@@ -1,101 +1,82 @@
 import { expect, test, type Page } from '@playwright/test';
+import { createConsoleMock } from './ConsoleMock';
 import { consoleSession } from './Fixtures';
-import { OperationMock, type OperationCall } from './OperationMock';
-import { ORDER_PREVIEW_TOTAL, orderPaginationOrders, orderPreviewOrders, orderPreviewPage, type OrderPreviewRecord } from './OrderPreviewFixtures';
+import { orderRecord } from './OrderFixtures';
+import type { OperationCall, OperationMock } from './OperationMock';
 
-const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
-const previewSession = Object.freeze({
-  ...consoleSession,
-  scope: previewScope,
-  scopes: Object.freeze([previewScope]),
-});
-const ordersUrl = 'http://127.0.0.1:4173/scopes/platform/platform%3Apreview/orders';
+const ordersUrl = 'http://127.0.0.1:4173/scopes/enterprise/enterprise%3Ae2e/orders';
+const orders = Object.freeze(Array.from({ length: 55 }, (_, index) => orderRecord(index + 1, `权威商品 ${index + 1}`)));
 
-test('Console 5000 订单只按服务端游标分页且 DOM 保持单页', async ({ page }) => {
-  const api = consoleOrderApi(page, (call) => orderPreviewPage(new URLSearchParams(call.query), orderPaginationOrders));
+test('Console 订单列表只保留单页 DOM 并以服务端游标前进', async ({ page }) => {
+  const api = consoleOrderApi(page, orderPage);
   await api.install();
   await page.goto(ordersUrl);
 
   const table = page.getByRole('table', { name: '订单列表' });
-  await expect(page.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeVisible();
-  await expect(table.getByText('SW202608240001', { exact: true })).toBeVisible();
   await expect(table.locator('tbody tr')).toHaveCount(50);
-  await expect(page.getByText(`1–50 / 共 ${ORDER_PREVIEW_TOTAL} 笔`, { exact: true })).toBeVisible();
+  await expect(table.getByText(orders[0]!.order_number, { exact: true })).toBeVisible();
+  await expect(page.getByText('本页 50 条 · 全量总数不可用', { exact: true })).toBeVisible();
   expect(orderCalls(api).every((call) => new URLSearchParams(call.query).get('limit') === '50')).toBe(true);
 
   await page.getByRole('button', { name: '下一页' }).click();
-  await expect(page).toHaveURL(/cursor=/);
-  await expect(table.getByText('SW-PREVIEW-00051', { exact: true })).toBeVisible();
-  await expect(table.getByText('SW202608240001', { exact: true })).toHaveCount(0);
-  await expect(table.locator('tbody tr')).toHaveCount(50);
-  await expect(page.getByText(`51–100 / 共 ${ORDER_PREVIEW_TOTAL} 笔`, { exact: true })).toBeVisible();
-  const cursorCalls = orderCalls(api).filter((call) => new URLSearchParams(call.query).has('cursor'));
-  expect(cursorCalls.length).toBeGreaterThan(0);
-  expect(cursorCalls.every((call) => new URLSearchParams(call.query).get('limit') === '50')).toBe(true);
-
-  await page.getByRole('button', { name: '上一页' }).click();
-  await expect(page).not.toHaveURL(/cursor=/);
-  await expect(table.getByText('SW202608240001', { exact: true })).toBeVisible();
-  await expect(table.locator('tbody tr')).toHaveCount(50);
+  await expect.poll(() => new URL(page.url()).searchParams.get('cursor')).toBe('orders:50');
+  await expect(table.locator('tbody tr')).toHaveCount(5);
+  await expect(table.getByText(orders[50]!.order_number, { exact: true })).toBeVisible();
+  await expect(table.getByText(orders[0]!.order_number, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '下一页' })).toBeDisabled();
   expectOrderReadsOnly(api);
-  expect(api.unmatched).toEqual([]);
 });
 
-test('Console 迟到的旧订单 URL 响应不得覆盖较新的筛选结果', async ({ page }) => {
+test('Console 迟到订单响应不得覆盖更新的 URL 查询', async ({ page }) => {
   let slowResponded = false;
-  const oldOrder = renamedOrder(orderPreviewOrders[0]!, '迟到旧订单 LOSER', '迟到旧筛选商品');
-  const newOrder = renamedOrder(orderPreviewOrders[1]!, '新筛选结果 WINNER', '新筛选结果商品');
+  const oldOrder = orderRecord(101, '迟到旧筛选商品');
+  const newOrder = orderRecord(102, '新筛选结果商品');
   const api = consoleOrderApi(page, async (call) => {
     const query = new URLSearchParams(call.query);
     if (query.get('order') === 'old') {
       await delay(1_200);
       slowResponded = true;
-      return orderPreviewPage(new URLSearchParams('limit=50'), [oldOrder]);
+      return { items: [oldOrder], count: 1 };
     }
-    if (query.get('order') === 'new') return orderPreviewPage(new URLSearchParams('limit=50'), [newOrder]);
-    return orderPreviewPage(new URLSearchParams('limit=50'), []);
+    if (query.get('order') === 'new') return { items: [newOrder], count: 1 };
+    return { items: [], count: 0 };
   });
   await api.install();
   await page.goto(`${ordersUrl}?order=old`);
   await expect.poll(() => orderCalls(api).some((call) => new URLSearchParams(call.query).get('order') === 'old')).toBe(true);
 
-  await page.getByLabel('订单搜索').fill('new');
+  await page.getByRole('textbox', { name: '订单搜索' }).fill('new');
   await page.getByRole('button', { name: '筛选订单' }).click();
-  await expect(page).toHaveURL(/order=new/);
-  await expect(page.getByText('新筛选结果 WINNER', { exact: true })).toBeVisible();
+  await expect.poll(() => new URL(page.url()).searchParams.get('order')).toBe('new');
+  await expect(page.getByText('新筛选结果商品', { exact: true })).toBeVisible();
   await expect.poll(() => slowResponded, { timeout: 3_000 }).toBe(true);
-  await expect(page.getByText('新筛选结果 WINNER', { exact: true })).toBeVisible();
-  await expect(page.getByText('迟到旧订单 LOSER', { exact: true })).toHaveCount(0);
-  const terms = new Set(orderCalls(api).map((call) => new URLSearchParams(call.query).get('order')));
-  expect(terms).toEqual(new Set(['old', 'new']));
+  await expect(page.getByText('新筛选结果商品', { exact: true })).toBeVisible();
+  await expect(page.getByText('迟到旧筛选商品', { exact: true })).toHaveCount(0);
   expectOrderReadsOnly(api);
-  expect(api.unmatched).toEqual([]);
 });
 
-function consoleOrderApi(page: Page, orders: (call: OperationCall) => unknown): OperationMock {
-  return new OperationMock(page).get('/api/v1/identity/session', previewSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' }).get('/api/v1/orders', orders);
+function orderPage(call: OperationCall) {
+  const query = new URLSearchParams(call.query);
+  const offset = query.get('cursor') === null ? 0 : Number(query.get('cursor')?.replace('orders:', ''));
+  const items = orders.slice(offset, offset + 50);
+  return Object.freeze({ items, count: items.length, ...(offset + items.length < orders.length ? { nextCursor: `orders:${offset + items.length}` } : {}) });
 }
 
-function renamedOrder(source: OrderPreviewRecord, orderNumber: string, productTitle: string): OrderPreviewRecord {
-  const firstLine = source.lines[0]!;
-  return Object.freeze({
-    ...source,
-    order_number: orderNumber,
-    lines: Object.freeze([Object.freeze({ ...firstLine, title: productTitle })]),
-  });
+function consoleOrderApi(page: Page, responder: (call: OperationCall) => unknown): OperationMock {
+  return createConsoleMock(page, consoleSession).get('/api/v1/orders', responder);
 }
 
 function orderCalls(api: OperationMock): readonly OperationCall[] {
-  return api.calls.filter((call) => call.path.startsWith('/api/v1/orders'));
+  return api.calls.filter((call) => call.path === '/api/v1/orders');
 }
 
 function expectOrderReadsOnly(api: OperationMock): void {
   const calls = orderCalls(api);
   expect(calls.length).toBeGreaterThan(0);
   expect(new Set(calls.map((call) => call.method))).toEqual(new Set(['GET']));
-  expect(new Set(calls.map((call) => call.path))).toEqual(new Set(['/api/v1/orders']));
-  expect(calls.every((call) => call.headers['x-scope-hint'] === 'platform:preview')).toBe(true);
+  expect(calls.every((call) => call.headers['x-scope-hint'] === 'enterprise:e2e')).toBe(true);
   expect(calls.every((call) => call.headers['x-access-version'] === '1')).toBe(true);
+  expect(api.unmatched).toEqual([]);
 }
 
 function delay(milliseconds: number): Promise<void> {

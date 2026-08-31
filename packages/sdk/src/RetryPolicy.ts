@@ -4,7 +4,10 @@ export interface RetryDecision {
 }
 
 export class RetryPolicy {
-  constructor(private readonly attempts = 3, private readonly baseDelayMs = 80) {
+  constructor(
+    private readonly attempts = 3,
+    private readonly baseDelayMs = 80
+  ) {
     if (!Number.isSafeInteger(attempts) || attempts < 1 || attempts > 5) throw new Error('RETRY_ATTEMPTS_INVALID');
   }
 

@@ -1,5 +1,5 @@
 export const DELIVERY_CHANNELS = ['sms', 'email', 'wechat', 'inapp'] as const;
-export type DeliveryChannelId = typeof DELIVERY_CHANNELS[number];
+export type DeliveryChannelId = (typeof DELIVERY_CHANNELS)[number];
 export type VariableType = 'string' | 'number' | 'boolean' | 'date' | 'money';
 export type VariableSchema = Readonly<Record<string, VariableType>>;
 export type DeliveryVariables = Readonly<Record<string, string | number | boolean>>;
@@ -7,14 +7,23 @@ export type DeliveryVariables = Readonly<Record<string, string | number | boolea
 export class Template {
   readonly variables: VariableSchema;
 
-  constructor(readonly id: string, readonly scope: string, readonly channel: DeliveryChannelId, readonly event: string,
-    readonly version: number, variables: Readonly<Record<string, unknown>>, readonly providerTemplate: string | null,
-    readonly subject: string | null, readonly body: string, readonly state: 'draft' | 'active' | 'retired') {
+  constructor(
+    readonly id: string,
+    readonly scope: string,
+    readonly channel: DeliveryChannelId,
+    readonly event: string,
+    readonly version: number,
+    variables: Readonly<Record<string, unknown>>,
+    readonly providerTemplate: string | null,
+    readonly subject: string | null,
+    readonly body: string,
+    readonly state: 'draft' | 'active' | 'retired'
+  ) {
     if (!id || !scope || !DELIVERY_CHANNELS.includes(channel)) throw new Error('NOTIFICATION_TEMPLATE_INVALID');
     if (!/^[a-z][a-z0-9.]{1,127}$/.test(event) || !Number.isSafeInteger(version) || version < 1) {
       throw new Error('NOTIFICATION_TEMPLATE_INVALID');
     }
-    if (!body.trim() || body.length > 10_000 || subject !== null && subject.length > 500) throw new Error('NOTIFICATION_TEMPLATE_INVALID');
+    if (!body.trim() || body.length > 10_000 || (subject !== null && subject.length > 500)) throw new Error('NOTIFICATION_TEMPLATE_INVALID');
     if (channel !== 'inapp' && !providerTemplate?.trim()) throw new Error('NOTIFICATION_PROVIDER_TEMPLATE_REQUIRED');
     this.variables = variableSchema(variables);
     assertPlaceholders(subject ?? '', this.variables);

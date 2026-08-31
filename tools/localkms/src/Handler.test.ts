@@ -18,14 +18,24 @@ describe('local KMS workload authentication', () => {
   });
 
   it('encrypts and decrypts only for the correct bearer', async () => {
-    const encrypted = await handler(jsonRequest('/v1/envelopes', token, {
-      context: { principal: 'principal:one' }, keyRef: 'identity/mobile', plaintext: '13800138000',
-    }));
+    const encrypted = await handler(
+      jsonRequest('/v1/envelopes', token, {
+        context: { principal: 'principal:one' },
+        keyRef: 'identity/mobile',
+        plaintext: '13800138000',
+        purpose: 'pii',
+      })
+    );
     assert.equal(encrypted.status, 200);
     const envelope = JSON.parse(new TextDecoder().decode(encrypted.body)) as { ciphertext: string };
-    const decrypted = await handler(jsonRequest('/v1/plaintexts', token, {
-      context: { principal: 'principal:one' }, keyRef: 'identity/mobile', ciphertext: envelope.ciphertext,
-    }));
+    const decrypted = await handler(
+      jsonRequest('/v1/plaintexts', token, {
+        context: { principal: 'principal:one' },
+        keyRef: 'identity/mobile',
+        ciphertext: envelope.ciphertext,
+        purpose: 'pii',
+      })
+    );
     assert.deepEqual(JSON.parse(new TextDecoder().decode(decrypted.body)), { plaintext: '13800138000' });
   });
 });
@@ -44,6 +54,5 @@ function request(path: string, method: string, bearer?: string, body = new Uint8
 }
 
 async function assertAuthenticationRequired(operation: () => Promise<unknown>): Promise<void> {
-  await assert.rejects(operation, (cause: unknown) => cause instanceof LocalHttpError
-    && cause.status === 401 && cause.code === 'WORKLOAD_AUTHENTICATION_REQUIRED');
+  await assert.rejects(operation, (cause: unknown) => cause instanceof LocalHttpError && cause.status === 401 && cause.code === 'WORKLOAD_AUTHENTICATION_REQUIRED');
 }

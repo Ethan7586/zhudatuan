@@ -7,6 +7,11 @@ export interface RequirementAuthority {
   readonly logicalSource: string;
   readonly repositoryRelativePath: string;
   readonly sha256: string;
+  readonly sheet: string;
+  readonly range: string;
+  readonly parserVersion: number;
+  readonly generatorVersion: number;
+  readonly generatedAt: string;
   readonly sheets: Readonly<{
     requirements: number;
     mvp: number;
@@ -18,11 +23,13 @@ interface AuthorityDocument {
   readonly requirements?: RequirementAuthority;
 }
 
-export async function loadRequirementAuthority(root: string): Promise<Readonly<{
-  authority: RequirementAuthority;
-  bytes: Uint8Array;
-  path: string;
-}>> {
+export async function loadRequirementAuthority(root: string): Promise<
+  Readonly<{
+    authority: RequirementAuthority;
+    bytes: Uint8Array;
+    path: string;
+  }>
+> {
   const repositoryRoot = await realpath(root);
   const configPath = await realpath(resolve(repositoryRoot, 'config/authorities.yml'));
   assertInsideRepository(repositoryRoot, configPath);
@@ -35,6 +42,9 @@ export async function loadRequirementAuthority(root: string): Promise<Readonly<{
   assertInsideRepository(repositoryRoot, candidatePath);
   const path = await realpath(candidatePath);
   assertInsideRepository(repositoryRoot, path);
+  if (authority.sheet !== 'MVP上线功能清单' || authority.range !== 'A1:F24' || authority.sheets.mvp !== 22 || authority.parserVersion !== 3 || authority.generatorVersion !== 3) {
+    throw new Error('REQUIREMENT_AUTHORITY_BASELINE_INVALID');
+  }
   const bytes = new Uint8Array(await readFile(path));
   const actualHash = createHash('sha256').update(bytes).digest('hex');
   if (actualHash !== authority.sha256) {

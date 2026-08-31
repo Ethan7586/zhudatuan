@@ -2,9 +2,9 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
-export const REPORTING_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
+export const REPORTING_OPERATION_IDS = Object.freeze([
   "reporting.dashboard.read",
   "reporting.sales.read",
   "reporting.products.read",
@@ -30,12 +30,9 @@ export interface ReportingOperations {
   readonly exportsRead: OperationMethod<"reporting.exports.read">;
 }
 
-export function createFetchReporting(baseUrl: string): ReportingOperations {
-  return createReportingOperations(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReporting(baseUrl: string): ReportingOperations { return createReportingOperations(new ApiClient(baseUrl, new FetchTransport())); }
 
-export function createReportingOperations(client: OperationExecutor): ReportingOperations {
-  return Object.freeze({
+export function createReportingOperations(client: OperationExecutor): ReportingOperations { return Object.freeze({
     dashboardRead: bindDashboardRead(client),
     salesRead: bindSalesRead(client),
     productsRead: bindProductsRead(client),
@@ -46,85 +43,44 @@ export function createReportingOperations(client: OperationExecutor): ReportingO
     voucherconsumptionRead: bindVoucherconsumptionRead(client),
     exportsCreate: bindExportsCreate(client),
     exportsRead: bindExportsRead(client),
-  });
-}
+  }); }
 
-export function createFetchReportingDashboardRead(baseUrl: string): OperationMethod<"reporting.dashboard.read"> {
-  return bindDashboardRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingDashboardRead(baseUrl: string): OperationMethod<"reporting.dashboard.read"> { return bindDashboardRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindDashboardRead(client: OperationExecutor): OperationMethod<"reporting.dashboard.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.dashboard.read","method":"GET","path":"/api/v1/reports/dashboard","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindDashboardRead(client: OperationExecutor): OperationMethod<"reporting.dashboard.read"> { return bindOperation(client, defineOperation({"id":"reporting.dashboard.read","method":"GET","path":"/api/v1/reports/dashboard","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingSalesRead(baseUrl: string): OperationMethod<"reporting.sales.read"> {
-  return bindSalesRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingSalesRead(baseUrl: string): OperationMethod<"reporting.sales.read"> { return bindSalesRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindSalesRead(client: OperationExecutor): OperationMethod<"reporting.sales.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.sales.read","method":"GET","path":"/api/v1/reports/sales","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindSalesRead(client: OperationExecutor): OperationMethod<"reporting.sales.read"> { return bindOperation(client, defineOperation({"id":"reporting.sales.read","method":"GET","path":"/api/v1/reports/sales","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingProductsRead(baseUrl: string): OperationMethod<"reporting.products.read"> {
-  return bindProductsRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingProductsRead(baseUrl: string): OperationMethod<"reporting.products.read"> { return bindProductsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindProductsRead(client: OperationExecutor): OperationMethod<"reporting.products.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.products.read","method":"GET","path":"/api/v1/reports/products","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindProductsRead(client: OperationExecutor): OperationMethod<"reporting.products.read"> { return bindOperation(client, defineOperation({"id":"reporting.products.read","method":"GET","path":"/api/v1/reports/products","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingMallsRead(baseUrl: string): OperationMethod<"reporting.malls.read"> {
-  return bindMallsRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingMallsRead(baseUrl: string): OperationMethod<"reporting.malls.read"> { return bindMallsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindMallsRead(client: OperationExecutor): OperationMethod<"reporting.malls.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.malls.read","method":"GET","path":"/api/v1/reports/malls","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindMallsRead(client: OperationExecutor): OperationMethod<"reporting.malls.read"> { return bindOperation(client, defineOperation({"id":"reporting.malls.read","method":"GET","path":"/api/v1/reports/malls","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingCategoriesRead(baseUrl: string): OperationMethod<"reporting.categories.read"> {
-  return bindCategoriesRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingCategoriesRead(baseUrl: string): OperationMethod<"reporting.categories.read"> { return bindCategoriesRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindCategoriesRead(client: OperationExecutor): OperationMethod<"reporting.categories.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.categories.read","method":"GET","path":"/api/v1/reports/categories","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindCategoriesRead(client: OperationExecutor): OperationMethod<"reporting.categories.read"> { return bindOperation(client, defineOperation({"id":"reporting.categories.read","method":"GET","path":"/api/v1/reports/categories","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingChannelsRead(baseUrl: string): OperationMethod<"reporting.channels.read"> {
-  return bindChannelsRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingChannelsRead(baseUrl: string): OperationMethod<"reporting.channels.read"> { return bindChannelsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindChannelsRead(client: OperationExecutor): OperationMethod<"reporting.channels.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.channels.read","method":"GET","path":"/api/v1/reports/channels","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindChannelsRead(client: OperationExecutor): OperationMethod<"reporting.channels.read"> { return bindOperation(client, defineOperation({"id":"reporting.channels.read","method":"GET","path":"/api/v1/reports/channels","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingPowderclassRead(baseUrl: string): OperationMethod<"reporting.powderclass.read"> {
-  return bindPowderclassRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingPowderclassRead(baseUrl: string): OperationMethod<"reporting.powderclass.read"> { return bindPowderclassRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindPowderclassRead(client: OperationExecutor): OperationMethod<"reporting.powderclass.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.powderclass.read","method":"GET","path":"/api/v1/reports/powderclass","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindPowderclassRead(client: OperationExecutor): OperationMethod<"reporting.powderclass.read"> { return bindOperation(client, defineOperation({"id":"reporting.powderclass.read","method":"GET","path":"/api/v1/reports/powderclass","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingVoucherconsumptionRead(baseUrl: string): OperationMethod<"reporting.voucherconsumption.read"> {
-  return bindVoucherconsumptionRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingVoucherconsumptionRead(baseUrl: string): OperationMethod<"reporting.voucherconsumption.read"> { return bindVoucherconsumptionRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindVoucherconsumptionRead(client: OperationExecutor): OperationMethod<"reporting.voucherconsumption.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.voucherconsumption.read","method":"GET","path":"/api/v1/reports/voucherconsumption","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindVoucherconsumptionRead(client: OperationExecutor): OperationMethod<"reporting.voucherconsumption.read"> { return bindOperation(client, defineOperation({"id":"reporting.voucherconsumption.read","method":"GET","path":"/api/v1/reports/voucherconsumption","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchReportingExportsCreate(baseUrl: string): OperationMethod<"reporting.exports.create"> {
-  return bindExportsCreate(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingExportsCreate(baseUrl: string): OperationMethod<"reporting.exports.create"> { return bindExportsCreate(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindExportsCreate(client: OperationExecutor): OperationMethod<"reporting.exports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.exports.create","method":"POST","path":"/api/v1/reports/exports","audience":"operator","idempotent":false,"pathKeys":[]}));
-}
+function bindExportsCreate(client: OperationExecutor): OperationMethod<"reporting.exports.create"> { return bindOperation(client, defineOperation({"id":"reporting.exports.create","method":"POST","path":"/api/v1/reports/exports","audience":"console","targets":["console"],"responseMode":"json","idempotent":false,"timeout":800})); }
 
-export function createFetchReportingExportsRead(baseUrl: string): OperationMethod<"reporting.exports.read"> {
-  return bindExportsRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchReportingExportsRead(baseUrl: string): OperationMethod<"reporting.exports.read"> { return bindExportsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindExportsRead(client: OperationExecutor): OperationMethod<"reporting.exports.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.exports.read","method":"GET","path":"/api/v1/reports/exports/{exportid}","audience":"operator","idempotent":true,"pathKeys":["exportid"]}));
-}
+function bindExportsRead(client: OperationExecutor): OperationMethod<"reporting.exports.read"> { return bindOperation(client, defineOperation({"id":"reporting.exports.read","method":"GET","path":"/api/v1/reports/exports/{exportid}","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }

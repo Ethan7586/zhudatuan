@@ -19,10 +19,16 @@ describe('internal workload clients', () => {
       calls += 1;
       input = requestInput;
       init = requestInit;
-      return new Response(JSON.stringify({ value: 'database-connection' }), { status: 200 });
+      return new Response(JSON.stringify({ value: 'database-connection', version: 'version:7', expiresAt: null }), { status: 200 });
     };
-    const store = new WorkloadSecretStore('https://secrets.internal', secretStoreBearer, fetcher);
-    await expect(store.read('secret/database/api')).resolves.toBe('database-connection');
+    const accesses: unknown[] = [];
+    const store = new WorkloadSecretStore('https://secrets.internal', secretStoreBearer, fetcher, (event) => accesses.push(event));
+    const secret = await store.resolve('secret/database/api');
+    expect(secret.version).toBe('version:7');
+    expect(secret.reveal('database')).toBe('database-connection');
+    expect(() => String(secret)).toThrow('SECRET_COERCION_FORBIDDEN');
+    expect(() => JSON.stringify(secret)).toThrow('SECRET_SERIALIZATION_FORBIDDEN');
+    expect(accesses).toEqual([expect.objectContaining({ version: 'version:7', purpose: 'database' })]);
     expect(calls).toBe(1);
     expect(String(input)).not.toContain(secretStoreBearer);
     expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${secretStoreBearer}`);
@@ -35,13 +41,11 @@ describe('internal workload clients', () => {
     const fetcher = async (_input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       authorizations.push(new Headers(init?.headers).get('authorization'));
       calls += 1;
-      return calls === 1
-        ? new Response(JSON.stringify({ ciphertext, fingerprint: 'f'.repeat(64), keyVersion: 'local-v1' }), { status: 200 })
-        : new Response(JSON.stringify({ plaintext: '13800138000' }), { status: 200 });
+      return calls === 1 ? new Response(JSON.stringify({ ciphertext, fingerprint: 'f'.repeat(64), keyVersion: 'local-v1' }), { status: 200 }) : new Response(JSON.stringify({ plaintext: '13800138000' }), { status: 200 });
     };
     const kms = new KmsClient('https://kms.internal', kmsBearer, fetcher);
-    const envelope = await kms.encrypt('identity/mobile', '13800138000', { principal: 'principal:one' });
-    await expect(kms.decrypt('identity/mobile', envelope.ciphertext, { principal: 'principal:one' })).resolves.toBe('13800138000');
+    const envelope = await kms.encrypt('pii', 'identity/mobile', '13800138000', { principal: 'principal:one' });
+    await expect(kms.decrypt('pii', 'identity/mobile', envelope.ciphertext, { principal: 'principal:one' })).resolves.toBe('13800138000');
     expect(calls).toBe(2);
     expect(authorizations).toEqual([`Bearer ${kmsBearer}`, `Bearer ${kmsBearer}`]);
   });

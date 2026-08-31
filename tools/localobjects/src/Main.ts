@@ -4,14 +4,10 @@ import { LocalObjects } from './LocalObjects';
 
 const environment = localInfrastructureEnvironment();
 const port = environment.objectsPort;
-const objects = new LocalObjects(
-  environment.objectsDirectory,
-  environment.objectsToken,
-  `https://127.0.0.1:${port}`,
-);
+const objects = new LocalObjects(environment.objectsDirectory, environment.objectsToken, `https://127.0.0.1:${port}`);
 await objects.initialize();
 
-const handler: LocalHandler = async request => {
+const handler: LocalHandler = async (request) => {
   if (request.url.pathname === '/health/ready') {
     return request.method === 'GET' ? jsonResponse(200, { status: 'ready' }) : jsonResponse(405, { code: 'METHOD_NOT_ALLOWED' });
   }

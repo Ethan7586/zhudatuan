@@ -2,9 +2,9 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
-export const QUALIFICATION_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
+export const QUALIFICATION_OPERATION_IDS = Object.freeze([
   "qualification.center.read",
   "qualification.decisions.preview",
   "qualification.policies.manage",
@@ -16,38 +16,22 @@ export interface QualificationOperations {
   readonly policiesManage: OperationMethod<"qualification.policies.manage">;
 }
 
-export function createFetchQualification(baseUrl: string): QualificationOperations {
-  return createQualificationOperations(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchQualification(baseUrl: string): QualificationOperations { return createQualificationOperations(new ApiClient(baseUrl, new FetchTransport())); }
 
-export function createQualificationOperations(client: OperationExecutor): QualificationOperations {
-  return Object.freeze({
+export function createQualificationOperations(client: OperationExecutor): QualificationOperations { return Object.freeze({
     centerRead: bindCenterRead(client),
     decisionsPreview: bindDecisionsPreview(client),
     policiesManage: bindPoliciesManage(client),
-  });
-}
+  }); }
 
-export function createFetchQualificationCenterRead(baseUrl: string): OperationMethod<"qualification.center.read"> {
-  return bindCenterRead(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchQualificationCenterRead(baseUrl: string): OperationMethod<"qualification.center.read"> { return bindCenterRead(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindCenterRead(client: OperationExecutor): OperationMethod<"qualification.center.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"qualification.center.read","method":"GET","path":"/api/v1/qualifications","audience":"operator","idempotent":true,"pathKeys":[]}));
-}
+function bindCenterRead(client: OperationExecutor): OperationMethod<"qualification.center.read"> { return bindOperation(client, defineOperation({"id":"qualification.center.read","method":"GET","path":"/api/v1/qualifications","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
-export function createFetchQualificationDecisionsPreview(baseUrl: string): OperationMethod<"qualification.decisions.preview"> {
-  return bindDecisionsPreview(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchQualificationDecisionsPreview(baseUrl: string): OperationMethod<"qualification.decisions.preview"> { return bindDecisionsPreview(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindDecisionsPreview(client: OperationExecutor): OperationMethod<"qualification.decisions.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"qualification.decisions.preview","method":"POST","path":"/api/v1/qualifications/decisions/preview","audience":"operator","idempotent":false,"pathKeys":[]}));
-}
+function bindDecisionsPreview(client: OperationExecutor): OperationMethod<"qualification.decisions.preview"> { return bindOperation(client, defineOperation({"id":"qualification.decisions.preview","method":"POST","path":"/api/v1/qualifications/decisions/preview","audience":"console","targets":["console"],"responseMode":"json","idempotent":false,"timeout":800})); }
 
-export function createFetchQualificationPoliciesManage(baseUrl: string): OperationMethod<"qualification.policies.manage"> {
-  return bindPoliciesManage(new ApiClient(baseUrl, new FetchTransport()));
-}
+export function createFetchQualificationPoliciesManage(baseUrl: string): OperationMethod<"qualification.policies.manage"> { return bindPoliciesManage(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindPoliciesManage(client: OperationExecutor): OperationMethod<"qualification.policies.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"qualification.policies.manage","method":"PUT","path":"/api/v1/qualifications/policies/{policyid}","audience":"operator","idempotent":true,"pathKeys":["policyid"]}));
-}
+function bindPoliciesManage(client: OperationExecutor): OperationMethod<"qualification.policies.manage"> { return bindOperation(client, defineOperation({"id":"qualification.policies.manage","method":"PUT","path":"/api/v1/qualifications/policies/{policyid}","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":800})); }

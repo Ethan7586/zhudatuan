@@ -23,8 +23,11 @@ export class GrantPolicy {
 
   assertValidity(effective: Date, expires: Date, timezone: string): void {
     if (expires <= effective) throw new Error('BENEFIT_VALIDITY_INVALID');
-    try { new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(effective); }
-    catch { throw new Error('BENEFIT_TIMEZONE_INVALID'); }
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(effective);
+    } catch {
+      throw new Error('BENEFIT_TIMEZONE_INVALID');
+    }
   }
 
   assertControl(state: GrantBatchState, action: GrantControl): void {

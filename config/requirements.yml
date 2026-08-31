@@ -1,0 +1,333 @@
+version: 3
+sheets:
+  - { name: 1-平台层, label: 平台层, prefix: PLAT, start: 4, end: 71, level: platform, role: platformoperator, scope: platform }
+  - { name: 2-分销层, label: 分销层, prefix: DIST, start: 4, end: 44, level: distribution, role: distributoroperator, scope: distributor }
+  - { name: 3-集团, label: 集团, prefix: GROUP, start: 4, end: 71, level: enterprise, role: enterpriseoperator, scope: enterprise }
+  - { name: 4-、商城, label: 商城, prefix: MALL, start: 4, end: 56, skip: [54], level: mall, role: malloperator, scope: mall }
+  - { name: 门店后台, label: 门店后台, prefix: STORE, start: 4, end: 23, level: store, role: storeoperator, scope: store }
+  - { name: 供应链后台, label: 供应链后台, prefix: SUPPLY, start: 4, end: 24, skip: [22], level: partner, role: supplieroperator, scope: partner }
+  - { name: 供应链平台, label: 供应链平台, prefix: CHAIN, rows: [7, 8, 10, 11, 12, 13, 14], level: platform, role: platformoperator, scope: platform }
+  - { name: 接口, label: 接口, prefix: INTEG, start: 2, end: 21, level: platform, role: integrationoperator, scope: platform }
+providers:
+  - { id: jdproduct, row: 2, core: jdcore }
+  - { id: jdfresh, row: 3, core: jdcore }
+  - { id: tmall, row: 4, core: tmallcore }
+  - { id: supplier, row: 5, core: local }
+  - { id: cake, row: 6, core: cakecore }
+  - { id: flower, row: 7, core: cakecore }
+  - { id: book, row: 8, core: bookcore }
+  - { id: charge, row: 9, core: wanliancore }
+  - { id: foodvoucher, row: 10, core: cakecore }
+  - { id: movie, row: 11, core: wanliancore }
+  - { id: meal, row: 12, core: cakecore }
+  - { id: taobaonow, row: 13 }
+  - { id: elephantmarket, row: 14 }
+  - { id: meituan, row: 15 }
+  - { id: privatehome, row: 16 }
+  - { id: jdhome, row: 17 }
+  - { id: laundry, row: 18 }
+  - { id: errand, row: 19 }
+  - { id: carservice, row: 20 }
+  - { id: show, row: 21 }
+mvp:
+  - id: MVPPLATFORM
+    title: 平台基础
+    source: { sheet: MVP上线功能清单, row: 3, range: A3:F3 }
+    status: Designed
+    release: nonblocking
+    modules: [organization, catalog, voucher]
+    operations: [organization.layers.read, catalog.pools.read, voucher.cardlibraries.read, voucher.cardlibraries.create]
+    journeys: [tests/journey/PlatformJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: catalogsync
+    tables: [organization.organization, catalog.poolbinding, voucher.cardpool]
+  - id: MVPDISTRIBUTION
+    title: 分销层
+    source: { sheet: MVP上线功能清单, row: 4, range: A4:F4 }
+    status: Designed
+    release: nonblocking
+    modules: [organization, channel, capability, partner, referral]
+    operations: [channel.distributors.read]
+    journeys: [tests/journey/DistributionJourney.spec.ts]
+    providers: []
+    clarifications: [distributiondefinition]
+    runbook: catalogsync
+    tables: [organization.organization, channel.connection, capability.assignment]
+  - id: MVPGROUPDASHBOARD
+    title: 集团数据大屏
+    source: { sheet: MVP上线功能清单, row: 5, range: A5:F5 }
+    status: Designed
+    release: required
+    modules: [reporting]
+    operations: [reporting.dashboard.read]
+    journeys: [tests/journey/GroupDashboardJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: projection
+    tables: [reporting.metric, reporting.fact, reporting.orderprojection]
+  - id: MVPGROUPAPPLICATION
+    title: 集团应用管理
+    source: { sheet: MVP上线功能清单, row: 6, range: A6:F6 }
+    status: Designed
+    release: required
+    modules: [experience, capability, extension]
+    operations: [experience.applications.read]
+    journeys: [tests/journey/GroupApplicationJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: experiencepublish
+    tables: [experience.application, experience.version, experience.release, experience.publication]
+  - id: MVPGROUPPOOL
+    title: 集团商品池
+    source: { sheet: MVP上线功能清单, row: 7, range: A7:F7 }
+    status: Designed
+    release: required
+    modules: [catalog, pricing, inventory]
+    operations: [catalog.pools.read]
+    journeys: [tests/journey/GroupProductJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: catalogsync
+    tables: [catalog.pool, catalog.product, catalog.listing, pricing.rule]
+  - id: MVPGROUPORDER
+    title: 集团订单管理
+    source: { sheet: MVP上线功能清单, row: 8, range: A8:F8 }
+    status: Designed
+    release: required
+    modules: [order, fulfillment, payment]
+    operations: [order.orders.read]
+    journeys: [tests/journey/GroupOrderJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: fulfillment
+    tables: [ordering.orderrecord, ordering.aftersale, fulfillment.fulfillmentorder, payment.refund]
+  - id: MVPGROUPVOUCHER
+    title: 集团卡券中心
+    source: { sheet: MVP上线功能清单, row: 9, range: A9:F9 }
+    status: Designed
+    release: required
+    modules: [voucher, benefit]
+    operations: [voucher.cardlibraries.read]
+    journeys: [tests/journey/GroupVoucherJourney.spec.ts]
+    providers: []
+    clarifications: [voucherarchive]
+    runbook: benefitgrant
+    tables: [voucher.program, voucher.reserverequest, voucher.voucher, voucher.redemption]
+  - id: MVPGROUPFINANCE
+    title: 集团财务
+    source: { sheet: MVP上线功能清单, row: 10, range: A10:F10 }
+    status: Designed
+    release: nonblocking
+    modules: [finance]
+    operations: [finance.overview.read]
+    journeys: [tests/journey/GroupFinanceJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: reconciliation
+    tables: [finance.journal, finance.entry, finance.statement, invoice.request]
+  - id: MVPGROUPREPORT
+    title: 集团数据统计
+    source: { sheet: MVP上线功能清单, row: 11, range: A11:F11 }
+    status: Designed
+    release: required
+    modules: [reporting]
+    operations: [reporting.sales.read]
+    journeys: [tests/journey/GroupReportJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: export
+    tables: [reporting.metric, reporting.fact, reporting.export]
+  - id: MVPGROUPSUPPORT
+    title: 集团客服中心
+    source: { sheet: MVP上线功能清单, row: 12, range: A12:F12 }
+    status: Designed
+    release: required
+    modules: [support, notification]
+    operations: [support.cases.read]
+    journeys: [tests/journey/GroupSupportJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: supportsla
+    tables: [support.case, support.message, support.assignment, support.sla]
+  - id: MVPGROUPSETTING
+    title: 集团设置
+    source: { sheet: MVP上线功能清单, row: 13, range: A13:F13 }
+    status: Designed
+    release: required
+    modules: [access, member, partner, notification, risk, identity, organization]
+    operations: [access.center.read]
+    journeys: [tests/journey/GroupSettingJourney.spec.ts]
+    providers: []
+    clarifications: [grouprisk]
+    runbook: riskscan
+    tables: [access.role, access.membership, member.profile, partner.partner, notification.template, risk.policy]
+  - id: MVPMALLDASHBOARD
+    title: 商城数据大屏
+    source: { sheet: MVP上线功能清单, row: 14, range: A14:F14 }
+    status: Designed
+    release: required
+    modules: [reporting]
+    operations: [reporting.dashboard.read]
+    journeys: [tests/journey/MallDashboardJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: projection
+    tables: [reporting.metric, reporting.fact, reporting.orderprojection]
+  - id: MVPMALLDESIGN
+    title: 商城装修
+    source: { sheet: MVP上线功能清单, row: 15, range: A15:F15 }
+    status: Designed
+    release: required
+    modules: [experience]
+    operations: [experience.applications.read]
+    journeys: [tests/journey/MallDesignJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: experiencepublish
+    tables: [experience.application, experience.version, experience.release, experience.publication]
+  - id: MVPMALLPOOL
+    title: 商城商品池
+    source: { sheet: MVP上线功能清单, row: 16, range: A16:F16 }
+    status: Designed
+    release: required
+    modules: [catalog, pricing, inventory]
+    operations: [catalog.pools.read]
+    journeys: [tests/journey/MallProductJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: pricesync
+    tables: [catalog.product, catalog.listing, pricing.rule]
+  - id: MVPMALLORDER
+    title: 商城订单管理
+    source: { sheet: MVP上线功能清单, row: 17, range: A17:F17 }
+    status: Designed
+    release: required
+    modules: [order, fulfillment, payment]
+    operations: [order.orders.read]
+    journeys: [tests/journey/MallOrderJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: paymentrefund
+    tables: [ordering.orderrecord, ordering.aftersale, fulfillment.fulfillmentorder, payment.refund]
+  - id: MVPMALLVOUCHER
+    title: 商城卡券中心
+    source: { sheet: MVP上线功能清单, row: 18, range: A18:F18 }
+    status: Designed
+    release: required
+    modules: [voucher, benefit]
+    operations: [voucher.cardlibraries.read]
+    journeys: [tests/journey/MallVoucherJourney.spec.ts]
+    providers: []
+    clarifications: [voucherarchive]
+    runbook: voucherexpiry
+    tables: [voucher.voucher, voucher.redemption, voucher.reversal]
+  - id: MVPMALLFINANCE
+    title: 商城财务
+    source: { sheet: MVP上线功能清单, row: 19, range: A19:F19 }
+    status: Designed
+    release: nonblocking
+    modules: [finance]
+    operations: [finance.overview.read]
+    journeys: [tests/journey/MallFinanceJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: reconciliation
+    tables: [finance.account, finance.statement, invoice.request]
+  - id: MVPMALLREPORT
+    title: 商城数据统计
+    source: { sheet: MVP上线功能清单, row: 20, range: A20:F20 }
+    status: Designed
+    release: required
+    modules: [reporting]
+    operations: [reporting.sales.read]
+    journeys: [tests/journey/MallReportJourney.spec.ts]
+    providers: []
+    clarifications: [powderclass]
+    runbook: export
+    tables: [reporting.metric, reporting.fact, reporting.export]
+  - id: MVPMALLSUPPORT
+    title: 商城客服中心
+    source: { sheet: MVP上线功能清单, row: 21, range: A21:F21 }
+    status: Designed
+    release: required
+    modules: [support, notification]
+    operations: [support.cases.read]
+    journeys: [tests/journey/MallSupportJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: supportsla
+    tables: [support.case, support.message, support.assignment, support.sla]
+  - id: MVPMALLSETTING
+    title: 商城设置
+    source: { sheet: MVP上线功能清单, row: 22, range: A22:F22 }
+    status: Designed
+    release: required
+    modules: [access, member, partner, notification, risk, identity, organization, experience]
+    operations: [access.center.read]
+    journeys: [tests/journey/MallSettingJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: riskscan
+    tables: [access.role, access.membership, member.profile, partner.relationship, notification.template, risk.policy]
+  - id: MVPIDENTITY
+    title: 用户注册与登录
+    source: { sheet: MVP上线功能清单, row: 23, range: A23:F23 }
+    status: Designed
+    release: required
+    modules: [identity, member]
+    operations: [identity.sessions.create, identity.sessions.complete, identity.challenges.create, identity.invitations.resolve, identity.enrollments.complete, identity.password.reset]
+    journeys: [tests/journey/IdentityJourney.spec.ts]
+    providers: []
+    clarifications: []
+    runbook: identityrecovery
+    tables: [identity.principal, identity.credential, identity.session, identity.invitation, access.membership, member.profile]
+  - id: MVPPROVIDER
+    title: 优先级一接口接入
+    source: { sheet: MVP上线功能清单, row: 24, range: A24:F24 }
+    status: Designed
+    release: required
+    modules: [channel, extension]
+    operations: [channel.connections.read]
+    journeys: [tests/journey/ProviderJourney.spec.ts]
+    providers: [jdproduct, jdfresh, tmall, supplier, cake, flower, book, charge, foodvoucher, movie, meal]
+    clarifications: []
+    runbook: catalogsync
+    tables: [channel.connection, channel.syncrun, channel.provideroperation, extension.installation]
+clarifications:
+  - id: distributiondefinition
+    requirements: [MVPDISTRIBUTION]
+    term: 分销层
+    status: open
+    blocking: false
+    owner: product
+    acceptance: null
+    resolvedby: null
+    reason: 工作簿功能说明为空且备注为忽略，只记录定义缺口，不阻塞本次MVP发布
+  - id: voucherarchive
+    requirements: [MVPGROUPVOUCHER, MVPMALLVOUCHER]
+    term: 客户管理与产品档案
+    status: open
+    blocking: true
+    owner: product
+    acceptance: null
+    resolvedby: null
+    reason: 工作簿明确标记第1点待确认，签字前不能标记Released
+  - id: grouprisk
+    requirements: [MVPGROUPSETTING]
+    term: 集团风控设置
+    status: open
+    blocking: true
+    owner: product
+    acceptance: null
+    resolvedby: null
+    reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限
+  - id: powderclass
+    requirements: [MVPMALLREPORT]
+    term: 粉类
+    status: open
+    blocking: true
+    owner: product
+    acceptance: null
+    resolvedby: null
+    reason: 工作簿未定义业务口径，禁止开发阶段静默改义

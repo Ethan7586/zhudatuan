@@ -15,14 +15,17 @@ insert into access.permission(id,code,risk,status) values
 {{PERMISSIONS}}
 on conflict(code) do nothing;
 
-insert into access.role(id,scope_id,name,status,version) values('role:self','self','Self Service','active',1)
+insert into access.role(id,scope_id,name,status,version,kind) values('role:self','self','Self Service','active',1,'system')
 on conflict(id) do nothing;
 insert into access.rolepermission(role_id,permission_id,effect)
 select 'role:self',permission.id,'allow' from access.permission permission where permission.code in(
   'identity.session.read','identity.session.manage','identity.credential.manage','identity.mobile.manage','identity.assurance.manage',
-  'cart.read','cart.manage','checkout.create','order.create','order.read','order.aftersale.read','order.aftersale.apply',
-  'payment.create','verification.issue','benefit.read','invoice.profile.manage','invoice.profile.read','invoice.request.create','invoice.request.read','invoice.request.cancel',
-  'support.case.create','support.case.read','support.message.send','support.message.read','notification.read','notification.preference.manage','notification.endpoint.manage')
+  'identity.link.read','identity.link.manage','cart.read','cart.manage','checkout.create','order.create','order.read',
+  'order.receive','order.reminder.create','order.aftersale.read','order.aftersale.apply','payment.read','verification.issue',
+  'benefit.read','invoice.profile.read','invoice.request.create','finance.invoice.read','finance.invoice.download','member.address.read','member.address.manage',
+  'member.favorite.read','member.favorite.manage','member.profile.read','support.case.create','support.case.read',
+  'support.message.send','support.message.read','notification.read','notification.ack','notification.preference.read',
+  'notification.preference.manage','notification.endpoint.manage','fulfillment.read','voucher.binding.read','voucher.redemption.read')
   or permission.code='observability.clienterror.create'
 on conflict do nothing;
 insert into access.membershiprole(membership_id,role_id,effective_at)
@@ -56,6 +59,24 @@ language sql stable security definer set search_path=identity,member,pg_temp as 
     and (session.assurance_level<3 or assurance.verified_at is not null)
 $function$;
 
+create or replace function experience.resolve_storefront_host(p_domain text)
+returns table(application text,mall text,pool text,release text,version text,tenant text)
+language sql stable security definer set search_path=experience,organization,pg_temp as $function$
+  select application.id,binding.mall_id,binding.pool_id,release.id,version.id,tenant.id
+  from experience.binding binding
+  join experience.application application on application.id=binding.application_id and application.status='active'
+  join lateral(select ancestor.id from organization.unitclosure closure
+    join organization.organization ancestor on ancestor.id=closure.ancestor_id and ancestor.kind='tenant'
+    where closure.descendant_id=application.scope_id order by closure.depth limit 1) tenant on true
+  join lateral(select item.id,item.version_id from experience.release item where item.application_id=application.id
+    and item.state='active' and item.effective_at<=clock_timestamp()
+    order by item.effective_at desc,item.id desc limit 1) release on true
+  join experience.version version on version.id=release.version_id and version.validation_state='valid'
+  where lower(binding.domain)=lower(p_domain)
+$function$;
+revoke all on function experience.resolve_storefront_host(text) from public;
+grant execute on function experience.resolve_storefront_host(text) to shopapp,shopjob;
+
 create or replace function access.scope_object(p_scope_id text)
 returns jsonb language plpgsql stable security definer set search_path=organization,partner,member,pg_temp as $function$
 declare value jsonb;
@@ -84,29 +105,41 @@ begin
 end
 $function$;
 
-create or replace function access.resolve_membership(p_membership_id text)
-returns table(id text,active boolean,access_version bigint,denies text[],grants jsonb)
-language sql stable security definer set search_path=access,member,organization,pg_temp as $function$
-  select membership.id,membership.status='active',membership.access_version,
-    coalesce((select array_agg(distinct permission.code order by permission.code)
-      from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='deny'
-      join access.permission permission on permission.id=mapping.permission_id
-      where assignment.membership_id=membership.id and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())),array[]::text[]),
-    coalesce((select jsonb_agg(jsonb_build_object(
-      'scope',access.scope_object(scopegrant.scope_id),
-      'permissions',coalesce((select jsonb_agg(distinct permission.code order by permission.code)
-        from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='allow'
-        join access.permission permission on permission.id=mapping.permission_id
-        where assignment.membership_id=membership.id and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())), '[]'::jsonb),
-      'effective',scopegrant.effective_at,'expires',scopegrant.expires_at) order by scopegrant.scope_path)
-      from access.scopegrant scopegrant where scopegrant.membership_id=membership.id and scopegrant.effect='allow'
-        and scopegrant.effective_at<=clock_timestamp() and (scopegrant.expires_at is null or scopegrant.expires_at>clock_timestamp())), '[]'::jsonb)
-  from access.membership membership where membership.id=p_membership_id
+create or replace function access.effective_permissions(p_membership_id text)
+returns table(permission_code text,effect text)
+language sql stable security definer set search_path=access,pg_temp as $function$
+  with candidates as (
+    select permission.code,mapping.effect
+    from access.membershiprole assignment
+    join access.role role on role.id=assignment.role_id and role.status='active'
+    join access.rolepermission mapping on mapping.role_id=role.id
+    join access.permission permission on permission.id=mapping.permission_id and permission.status='active'
+    where assignment.membership_id=p_membership_id and assignment.effective_at<=clock_timestamp()
+      and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+    union all
+    select permission.code,override.effect
+    from access.membershipoverride override
+    join access.permission permission on permission.id=override.permission_id and permission.status='active'
+    where override.membership_id=p_membership_id and override.revoked_at is null
+      and override.effective_at<=clock_timestamp()
+      and (override.expires_at is null or override.expires_at>clock_timestamp())
+  ), resolved as (
+    select code,bool_or(effect='deny') denied,bool_or(effect='allow') allowed from candidates group by code
+  )
+  select code,case when denied then 'deny' else 'allow' end
+  from resolved where denied or allowed order by code
 $function$;
 
-create or replace function access.membership_version(p_membership_id text)
-returns bigint language sql stable security definer set search_path=member,pg_temp as $function$
-  select access_version from access.membership where id=p_membership_id and status='active'
+create or replace function access.effective_scopes(p_membership_id text)
+returns table(scope jsonb,effect text,effective_at timestamptz,expires_at timestamptz)
+language sql stable security definer set search_path=access,pg_temp as $function$
+  select coalesce(access.scope_object(grantrow.scope_id),jsonb_build_object(
+      'kind',grantrow.scope_kind,'id',grantrow.scope_id,'path','[]'::jsonb)),
+    grantrow.effect,grantrow.effective_at,grantrow.expires_at
+  from access.scopegrant grantrow
+  where grantrow.membership_id=p_membership_id and grantrow.effective_at<=clock_timestamp()
+    and (grantrow.expires_at is null or grantrow.expires_at>clock_timestamp())
+  order by grantrow.effect desc,grantrow.scope_path,grantrow.scope_id
 $function$;
 
 create or replace function access.resource_scope(p_operation text,p_resource text,p_membership_id text)
@@ -120,12 +153,14 @@ begin
   elsif p_operation='identity.invitations.create' then
     select organization_id into resolved from access.membership where id=p_membership_id;
   elsif p_operation='identity.invitations.revoke' then
-    select organization_id into resolved from member.invite where id=p_resource;
+    select organization_id into resolved from identity.invitation where id=p_resource;
+  elsif p_operation='identity.members.manage' then
+    select organization_id into resolved from access.membership where id=p_resource;
   elsif p_operation like 'identity.%' then
     select 'self:'||profile.principal_id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
-  elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='member')
+  elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='storefront')
       or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
-      'order.orders.create','order.aftersales.apply','payment.intents.create','benefit.accounts.read','invoice.profiles.manage',
+      'order.orders.create','order.aftersales.apply','benefit.accounts.read','invoice.profiles.manage',
       'invoice.requests.create','invoice.requests.read','invoice.requests.cancel',
       'notification.notifications.read','notification.preferences.manage','notification.endpoints.manage') then
     select profile.id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
@@ -177,26 +212,86 @@ begin
   return resolved;
 end $function$;
 
-create or replace function access.resolve_scope(p_membership_id text,p_operation text,p_resource text)
-returns table(scope jsonb) language sql stable security definer set search_path=access,pg_temp as $function$
-  select access.scope_object(access.resource_scope(p_operation,p_resource,p_membership_id))
-$function$;
-
 create or replace function capability.membership_operations(p_membership_id text)
 returns table(operation_id text) language sql stable security definer
-set search_path=capability,access,member,organization,runtime,pg_temp as $function$
-  select operation.operation_id from capability.operation operation
-  where operation.audience<>'public'
-    and exists(select 1 from access.membership membership join organization.unitclosure closure on closure.descendant_id=membership.organization_id
+set search_path=capability,access,organization,pg_temp as $function$
+  with subject as (
+    select membership.organization_id,case membership.client when 'operator' then 'console' else membership.client end target
+    from access.membership membership where membership.id=p_membership_id and membership.status='active'
+  ), permissions as materialized (
+    select permission_code,effect from access.effective_permissions(p_membership_id)
+  )
+  select operation.operation_id from subject
+  join capability.operation operation on operation.audience=subject.target
+  where exists(select 1 from organization.unitclosure closure
       join capability.entitlement entitlement on entitlement.scope_id=closure.ancestor_id and entitlement.capability_id=operation.capability_id
-      where membership.id=p_membership_id and membership.status='active' and entitlement.state='enabled'
+      where closure.descendant_id=subject.organization_id and entitlement.state='enabled'
         and entitlement.effective_at<=clock_timestamp() and (entitlement.expires_at is null or entitlement.expires_at>clock_timestamp()))
     and (operation.permission_code is null or exists(
-      select 1 from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='allow'
-      join access.permission permission on permission.id=mapping.permission_id and permission.code=operation.permission_code
-      where assignment.membership_id=p_membership_id and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())))
-    and not exists(select 1 from access.membershiprole assignment join access.rolepermission mapping on mapping.role_id=assignment.role_id and mapping.effect='deny'
-      join access.permission permission on permission.id=mapping.permission_id and permission.code=operation.permission_code where assignment.membership_id=p_membership_id)
+      select 1 from permissions permission where permission.permission_code=operation.permission_code and permission.effect='allow'))
+  order by operation.operation_id
+$function$;
+
+create or replace function capability.membership_authorization(p_membership_id text)
+returns table(operation_ids text[],capability_version bigint)
+language sql stable security definer set search_path=capability,access,organization,pg_temp as $function$
+  with membership_scope as (
+    select membership.organization_id from access.membership membership
+    where membership.id=p_membership_id and membership.status='active'
+  ), current_version as (
+    select coalesce(max(greatest(entitlement.version,capability.version)),0)::bigint value
+    from membership_scope membership
+    join organization.unitclosure closure on closure.descendant_id=membership.organization_id
+    join capability.entitlement entitlement on entitlement.scope_id=closure.ancestor_id
+      and entitlement.state='enabled' and entitlement.effective_at<=clock_timestamp()
+      and (entitlement.expires_at is null or entitlement.expires_at>clock_timestamp())
+    join capability.capability capability on capability.id=entitlement.capability_id
+  )
+  select coalesce(array_agg(available.operation_id order by available.operation_id)
+    filter(where available.operation_id is not null),'{}'::text[]),current_version.value
+  from current_version left join capability.membership_operations(p_membership_id) available on true
+  group by current_version.value
+$function$;
+
+create or replace function access.authorization_snapshot(p_membership_id text,p_target text,p_operation text,p_resource text)
+returns table(membership_id text,membership_active boolean,access_version bigint,
+  credential_version bigint,organization_id text,target text,role_assignments jsonb,
+  permission_allows text[],permission_denies text[],scopes jsonb,resource_scope jsonb,
+  operation_ids text[],capability_version bigint)
+language sql stable security definer set search_path=access,capability,pg_temp as $function$
+  with subject as materialized (
+    select membership.id,membership.status='active' and principal.status='active' active,membership.access_version,
+      principal.credential_version,membership.organization_id,
+      case membership.client when 'operator' then 'console' else membership.client end target
+    from access.membership membership join identity.principal principal on principal.id=membership.principal_id
+    where membership.id=p_membership_id
+      and case membership.client when 'operator' then 'console' else membership.client end=p_target
+  ), roles as (
+    select coalesce(jsonb_agg(jsonb_build_object('id',role.id,'kind',role.kind,'status',role.status,'version',role.version,
+      'effectiveAt',assignment.effective_at,'expiresAt',assignment.expires_at,
+      'active',role.status='active' and assignment.effective_at<=clock_timestamp()
+        and (assignment.expires_at is null or assignment.expires_at>clock_timestamp()))
+      order by role.id,assignment.effective_at),'[]'::jsonb) value
+    from access.membershiprole assignment join access.role role on role.id=assignment.role_id
+    where assignment.membership_id=p_membership_id
+  ), permissions as materialized (
+    select permission_code,effect from access.effective_permissions(p_membership_id)
+  ), permission_set as (
+    select coalesce(array_agg(permission_code order by permission_code) filter(where effect='allow'),'{}'::text[]) allows,
+      coalesce(array_agg(permission_code order by permission_code) filter(where effect='deny'),'{}'::text[]) denies
+    from permissions
+  ), scope_set as (
+    select coalesce(jsonb_agg(jsonb_build_object('scope',scope,'effect',effect,'effective',effective_at,'expires',expires_at)
+      order by effect,scope->>'kind',scope->>'id'),'[]'::jsonb) value from access.effective_scopes(p_membership_id)
+  ), capability_set as (
+    select available.operation_ids,available.capability_version
+    from capability.membership_authorization(p_membership_id) available
+  )
+  select subject.id,subject.active,subject.access_version,subject.credential_version,subject.organization_id,subject.target,
+    roles.value,permission_set.allows,permission_set.denies,
+    scope_set.value,access.scope_object(access.resource_scope(p_operation,p_resource,p_membership_id)),
+    capability_set.operation_ids,capability_set.capability_version
+  from subject cross join roles cross join permission_set cross join scope_set cross join capability_set
 $function$;
 
 create or replace function runtime.accept_inbox(p_consumer text,p_event_id text,p_event_type text,p_event_version integer,p_trace_id text,p_payload jsonb)
@@ -249,77 +344,77 @@ returns setof extension.installation language sql stable security definer set se
   select installation.* from extension.installation installation where installation.status in('testing','enabled','degraded') order by installation.extension_id,installation.scope_id
 $function$;
 
-create or replace function channel.private_enabled(p_scope text)
+create or replace function channel.supplier_enabled(p_scope text)
 returns boolean language sql stable security definer set search_path=channel,pg_temp as $function$
-  select exists(select 1 from channel.connection where provider='private' and scope_id=p_scope and status='enabled')
+  select exists(select 1 from channel.connection where provider='supplier' and scope_id=p_scope and status='enabled')
 $function$;
 
-create or replace function channel.pull_private_catalog(p_scope text,p_cursor text)
+create or replace function channel.pull_supplier_catalog(p_scope text,p_cursor text)
 returns jsonb language sql stable security definer set search_path=channel,catalog,pg_temp as $function$
   with batch as (select external_id,source_version,source_payload from catalog.sourcelisting
-    where provider='private' and scope_id=p_scope and status<>'retired' and (p_cursor is null or external_id>p_cursor)
+    where provider='supplier' and scope_id=p_scope and status<>'retired' and (p_cursor is null or external_id>p_cursor)
     order by external_id limit 500)
   select jsonb_build_object('records',coalesce(jsonb_agg(jsonb_build_object('externalId',external_id,'version',source_version,'payload',source_payload) order by external_id),'[]'::jsonb),
     'errors','[]'::jsonb,'complete',(select count(*)<500 from batch))||(case when count(*)=500 then jsonb_build_object('nextCursor',max(external_id)) else '{}'::jsonb end) from batch
 $function$;
 
-create or replace function channel.pull_private_stock(p_scope text,p_keys jsonb)
+create or replace function channel.pull_supplier_stock(p_scope text,p_keys jsonb)
 returns jsonb language sql stable security definer set search_path=channel,catalog,inventory,pg_temp as $function$
   select jsonb_build_object('records',coalesce(jsonb_agg(jsonb_build_object('externalId',listing.external_id,'onhand',stock.onhand,'safety',stock.safety,'version',stock.version,'status',stock.status)),'[]'::jsonb))
-  from jsonb_array_elements(p_keys) key join catalog.sourcelisting listing on listing.provider='private' and listing.scope_id=p_scope and listing.external_id=key->>'externalId'
+  from jsonb_array_elements(p_keys) key join catalog.sourcelisting listing on listing.provider='supplier' and listing.scope_id=p_scope and listing.external_id=key->>'externalId'
   join inventory.stockitem stock on stock.sku_id=listing.sku_id and stock.scope_id=p_scope
 $function$;
 
-create or replace function channel.submit_private_order(p_scope text,p_key text,p_reference text,p_payload jsonb)
+create or replace function channel.submit_supplier_order(p_scope text,p_key text,p_reference text,p_payload jsonb)
 returns jsonb language plpgsql security definer set search_path=channel,pg_temp as $function$
 declare operation channel.provideroperation%rowtype; request_digest text;
 begin
-  if not exists(select 1 from channel.connection where provider='private' and scope_id=p_scope and status='enabled') then raise exception 'PRIVATE_PROVIDER_DISABLED'; end if;
+  if not exists(select 1 from channel.connection where provider='supplier' and scope_id=p_scope and status='enabled') then raise exception 'SUPPLIER_PROVIDER_DISABLED'; end if;
   request_digest=encode(digest(p_reference||':'||p_payload::text,'sha256'),'hex');
   insert into channel.provideroperation(id,provider,scope_id,kind,idempotency_key,internal_reference,external_reference,state,request_hash,response,created_at,updated_at)
-  values('private-order:'||md5(p_scope||':'||p_key),'private',p_scope,'order',p_key,p_reference,p_reference,'succeeded',request_digest,
+  values('supplier-order:'||md5(p_scope||':'||p_key),'supplier',p_scope,'order',p_key,p_reference,p_reference,'succeeded',request_digest,
     jsonb_build_object('externalReference',p_reference,'state','accepted','rawReference','local:'||p_reference),clock_timestamp(),clock_timestamp())
   on conflict(provider,kind,idempotency_key) do nothing;
-  select * into strict operation from channel.provideroperation where provider='private' and kind='order' and idempotency_key=p_key;
+  select * into strict operation from channel.provideroperation where provider='supplier' and kind='order' and idempotency_key=p_key;
   if operation.request_hash<>request_digest then raise exception 'IDEMPOTENCY_PAYLOAD_MISMATCH'; end if;
   return operation.response;
 end $function$;
 
-create or replace function channel.cancel_private_order(p_scope text,p_key text,p_reference text,p_reason text)
+create or replace function channel.cancel_supplier_order(p_scope text,p_key text,p_reference text,p_reason text)
 returns jsonb language plpgsql security definer set search_path=channel,pg_temp as $function$
 declare response jsonb; request_digest text;
 begin
   request_digest=encode(digest(p_reference||':'||p_reason,'sha256'),'hex'); response=jsonb_build_object('externalReference',p_reference,'state','cancelled');
   insert into channel.provideroperation(id,provider,scope_id,kind,idempotency_key,internal_reference,external_reference,state,request_hash,response,created_at,updated_at)
-  values('private-cancel:'||md5(p_scope||':'||p_key),'private',p_scope,'cancel',p_key,p_reference,p_reference,'succeeded',request_digest,response,clock_timestamp(),clock_timestamp())
+  values('supplier-cancel:'||md5(p_scope||':'||p_key),'supplier',p_scope,'cancel',p_key,p_reference,p_reference,'succeeded',request_digest,response,clock_timestamp(),clock_timestamp())
   on conflict(provider,kind,idempotency_key) do update set updated_at=channel.provideroperation.updated_at
   where channel.provideroperation.request_hash=excluded.request_hash;
   if not found then raise exception 'IDEMPOTENCY_PAYLOAD_MISMATCH'; end if; return response;
 end $function$;
 
-create or replace function channel.pull_private_tracking(p_scope text,p_reference text)
+create or replace function channel.pull_supplier_tracking(p_scope text,p_reference text)
 returns jsonb language sql stable security definer set search_path=channel,ordering,fulfillment,pg_temp as $function$
   select jsonb_build_object('externalReference',p_reference,'milestones',coalesce(jsonb_agg(jsonb_build_object('kind',milestone.kind,'state',milestone.state,'occurredAt',milestone.occurred_at) order by milestone.occurred_at) filter(where milestone.id is not null),'[]'::jsonb))
   from fulfillment.fulfillmentorder target left join fulfillment.milestone milestone on milestone.fulfillment_id=target.id
   where target.external_reference=p_reference and exists(select 1 from ordering.orderrecord source where source.id=target.order_id and source.scope_id=p_scope)
 $function$;
 
-create or replace function channel.submit_private_refund(p_scope text,p_key text,p_request jsonb)
+create or replace function channel.submit_supplier_refund(p_scope text,p_key text,p_request jsonb)
 returns jsonb language plpgsql security definer set search_path=channel,pg_temp as $function$
 declare response jsonb; request_digest text; reference text;
 begin
-  reference=p_request->>'reference'; if reference is null then raise exception 'PRIVATE_REFUND_REFERENCE_REQUIRED'; end if;
+  reference=p_request->>'reference'; if reference is null then raise exception 'SUPPLIER_REFUND_REFERENCE_REQUIRED'; end if;
   request_digest=encode(digest(p_request::text,'sha256'),'hex'); response=jsonb_build_object('externalReference','refund:'||reference,'state','submitted');
   insert into channel.provideroperation(id,provider,scope_id,kind,idempotency_key,internal_reference,external_reference,state,request_hash,response,created_at,updated_at)
-  values('private-refund:'||md5(p_scope||':'||p_key),'private',p_scope,'refund',p_key,reference,'refund:'||reference,'submitted',request_digest,response,clock_timestamp(),clock_timestamp())
+  values('supplier-refund:'||md5(p_scope||':'||p_key),'supplier',p_scope,'refund',p_key,reference,'refund:'||reference,'submitted',request_digest,response,clock_timestamp(),clock_timestamp())
   on conflict(provider,kind,idempotency_key) do update set updated_at=channel.provideroperation.updated_at where channel.provideroperation.request_hash=excluded.request_hash;
   if not found then raise exception 'IDEMPOTENCY_PAYLOAD_MISMATCH'; end if; return response;
 end $function$;
 
-create or replace function channel.build_private_statement(p_scope text,p_period jsonb)
+create or replace function channel.build_supplier_statement(p_scope text,p_period jsonb)
 returns jsonb language sql stable security definer set search_path=channel,pg_temp as $function$
   select jsonb_build_object('objectRef',statement.object_ref,'sha256',statement.sha256) from channel.statement statement
-  where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
+  where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
 insert into runtime.schemaversion(version,checksum) values('20260821032000','{{CONTRACTCHECKSUM}}');

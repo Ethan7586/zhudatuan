@@ -1,0 +1,121 @@
+.commerceboard {
+  overflow: hidden;
+  border: 1px solid var(--vi-line);
+  border-radius: 14px;
+  background: var(--sw-surface);
+}
+.commercetabs {
+  display: flex;
+  min-height: 48px;
+  align-items: stretch;
+  gap: 26px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--vi-line);
+  padding: 0 16px;
+}
+.commercetabs button {
+  position: relative;
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  padding: 0 2px;
+  color: var(--sw-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.commercetabs button[aria-pressed='true'] {
+  color: var(--vi-brand);
+  font-weight: 800;
+}
+.commercetabs button[aria-pressed='true']::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--vi-brand);
+  content: '';
+}
+
+.commercefilterbar {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px 6px;
+}
+.commercefilterbar > div {
+  display: grid;
+  gap: 3px;
+}
+.commercefilterbar strong {
+  color: var(--vi-ink);
+  font-size: 12px;
+}
+.commercefilterbar span {
+  color: var(--sw-disabled);
+  font-size: 9px;
+}
+.commercesearch {
+  display: block;
+  width: min(310px, 38%);
+}
+.commercesearch input {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--sw-border);
+  border-radius: 9px;
+  outline: none;
+  background: var(--sw-surface);
+  padding: 0 12px;
+  color: var(--vi-ink);
+  font: inherit;
+  font-size: 11px;
+}
+.commercesearch input:focus {
+  border-color: var(--vi-brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-brand) 10%, transparent);
+}
+.commercefiltermeta {
+  margin: 0;
+  padding: 0 14px 10px;
+  color: var(--sw-disabled);
+  font-size: 9px;
+}
+.commerceempty {
+  display: grid;
+  min-height: 180px;
+  place-content: center;
+  justify-items: center;
+  padding: 28px;
+  text-align: center;
+}
+.commerceempty strong {
+  color: var(--sw-text-secondary);
+  font-size: 13px;
+}
+.commerceempty p {
+  max-width: 470px;
+  margin: 7px 0 12px;
+  color: var(--sw-muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+.commerceempty button {
+  color: var(--vi-brand);
+}
+.commercepagination {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--vi-line);
+  padding: 10px 14px;
+}
+.commercepagination > span {
+  color: var(--sw-muted);
+  font-size: 10px;
+}

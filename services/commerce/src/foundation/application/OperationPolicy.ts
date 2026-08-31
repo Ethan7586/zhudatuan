@@ -1,0 +1,96 @@
+import { DomainError } from '../domain/DomainError';
+import type { Operation } from '@shop/contract';
+import type { Scope } from '@shop/authz';
+import { token } from '../../bootstrap/Container';
+import type { Actor } from '../security/AccessContext';
+import type { AccessPipeline } from '../security/AccessPipeline';
+import type { DecisionSink } from '../security/DecisionSink';
+import type { OperationSecurityContext } from '../security/OperationSecurityContext';
+import type { PreauthResolver } from '../security/PreauthResolver';
+import { assertRiskAllowed, type RiskGate } from '../security/RiskGate';
+import { ResourceResolver } from './ResourceResolver';
+
+export interface OperationPolicyInput {
+  readonly operation: Operation;
+  readonly input: Readonly<object>;
+  readonly headers: Readonly<Record<string, string>>;
+}
+
+export interface OperationPolicy {
+  authorize(input: OperationPolicyInput): Promise<OperationSecurityContext>;
+}
+
+export const OPERATION_POLICY = token<OperationPolicy>('operation.policy');
+
+export class SecureOperationPolicy implements OperationPolicy {
+  constructor(
+    private readonly access: AccessPipeline,
+    private readonly preauth: PreauthResolver,
+    private readonly risk: RiskGate,
+    private readonly decisions: DecisionSink,
+    private readonly resources = new ResourceResolver()
+  ) {}
+
+  async authorize({ operation, input, headers }: OperationPolicyInput): Promise<OperationSecurityContext> {
+    if (operation.assuranceLevel === 'preauth') {
+      const context = await this.preauth.resolve(headers, operation);
+      await this.authorizePublic(operation, headers, context.principal ?? `preauth:${context.id}`, context.target, context.trace);
+      return context;
+    }
+    if (operation.assuranceLevel === 'anonymous' || operation.audience === 'system' || operation.audience === 'webhook') {
+      const channel = operation.audience === 'system' ? 'system' : operation.audience === 'webhook' ? 'webhook' : 'public';
+      const requested = headers['x-client-target'];
+      const target = requested === 'console' || requested === 'storefront' ? requested : null;
+      assertTarget(operation, target);
+      const trace = headers['x-trace-id'] ?? headers['x-request-id'] ?? `anonymous:${operation.id}`;
+      if (channel === 'public' && target !== null) await this.authorizePublic(operation, headers, `anonymous:${target}`, target, trace);
+      return Object.freeze({ kind: 'anonymous', channel, target, trace });
+    }
+    if (operation.assuranceLevel === 'optional') {
+      const target = exactBrowserTarget(operation, headers);
+      if (hasSessionCredential(headers, target)) {
+        const resource = this.resources.resolve(operation, input);
+        const access = await this.access.authorize(headers, operation.id, operation.permission, resource);
+        return Object.freeze({ kind: 'session', access });
+      }
+      const trace = headers['x-trace-id'] ?? headers['x-request-id'] ?? `anonymous:${operation.id}`;
+      await this.authorizePublic(operation, headers, `anonymous:${target}`, target, trace);
+      return Object.freeze({ kind: 'anonymous', channel: 'public', target, trace });
+    }
+    const resource = this.resources.resolve(operation, input);
+    const access = await this.access.authorize(headers, operation.id, operation.permission, resource);
+    return Object.freeze({ kind: 'session', access });
+  }
+
+  private async authorizePublic(operation: Operation, headers: Readonly<Record<string, string>>, principal: string, target: 'console' | 'storefront', trace: string): Promise<void> {
+    const actor: Actor = Object.freeze({ id: principal, session: trace, membership: 'public', credentialVersion: 0, accessVersion: 0, target, assurance: { level: 0 } });
+    try {
+      const assessment = await this.risk.evaluate({ actor, operation: operation.id, scope: PUBLIC_SCOPE, trace, signals: { anonymous: principal.startsWith('anonymous:') ? 1 : 0, device: headers['x-device-id'] === undefined ? 1 : 0 } });
+      assertRiskAllowed(assessment.outcome);
+      await this.decisions.append({ actor, operation: operation.id, scope: PUBLIC_SCOPE, outcome: 'allow', reason: 'POLICY_ALLOWED', trace });
+    } catch (cause) {
+      await this.decisions.append({ actor, operation: operation.id, scope: PUBLIC_SCOPE, outcome: 'deny', reason: 'RISK_DENIED', trace });
+      throw cause;
+    }
+  }
+}
+
+function exactBrowserTarget(operation: Operation, headers: Readonly<Record<string, string>>): 'console' | 'storefront' {
+  const requested = headers['x-client-target'];
+  if (requested !== 'console' && requested !== 'storefront') throw new DomainError('AUTHORIZATION_DENIED');
+  assertTarget(operation, requested);
+  return requested;
+}
+
+function hasSessionCredential(headers: Readonly<Record<string, string>>, target: 'console' | 'storefront'): boolean {
+  if (/^Bearer\s+/i.test(headers.authorization ?? '')) return true;
+  const expected = `__Host-${target}-session=`;
+  return (headers.cookie ?? '').split(';').some((part) => part.trim().startsWith(expected));
+}
+
+const PUBLIC_SCOPE: Scope = Object.freeze({ kind: 'platform', id: 'organization-platform-root', path: Object.freeze([]) });
+
+function assertTarget(operation: Operation, target: 'console' | 'storefront' | null): void {
+  const targets = operation.targets as readonly string[];
+  if (targets.length === 0 ? target !== null : target === null || !targets.includes(target)) throw new DomainError('AUTHORIZATION_DENIED');
+}

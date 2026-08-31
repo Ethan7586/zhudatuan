@@ -1,0 +1,130 @@
+version: 1
+authority:
+  owner: Ethan
+  approvedAt: 2026-08-28T15:59:46+08:00
+  source: /Users/changshengwang/Workspace/zhudatuan-li
+  policy:
+    preserveLayout: true
+    preserveInteraction: true
+    preserveNavigationTitles: true
+    requireRealData: true
+    requireTypedSdk: true
+    forbidMockRoutes: true
+    forbidShowcaseRoutes: true
+    forbidDeviceShells: true
+defaults:
+  theme: light
+  locale: zh-CN
+  seed: visualv1
+  data: deterministic
+  motion: reduced
+viewports:
+  desktop1920: { width: 1920, height: 1080 }
+  desktop1440: { width: 1440, height: 900 }
+  desktop1366: { width: 1366, height: 768 }
+  tabletlandscape: { width: 1024, height: 768 }
+  tabletportrait: { width: 768, height: 1024 }
+  mobile390: { width: 390, height: 844 }
+  mobile375: { width: 375, height: 812 }
+  mobile360: { width: 360, height: 800 }
+states: [loading, empty, error, denied, expired, partial, success]
+interactions: [hover, focus, selected, disabled, submitting, success]
+accessibility:
+  keyboard: complete
+  focusVisible: required
+  screenReaderLabels: required
+  contrast: wcagaa
+  reducedMotion: supported
+navigationTitles:
+  console:
+    workstations:
+      cockpit: 经营驾驶舱
+      control: 智慧翼中控台
+      products: 商品治理台
+      orders: 订单管理系统
+      finance: 财务与对账台
+    professional:
+      applications: 築店 · 商城管理
+      vouchers: 卡券治理台
+      reports: 数据报表
+      support: 客服系统
+      channels: 渠道接入系统
+      entries: 财务分录
+      statements: 账单
+      reconciliations: 对账
+      settlements: 结算
+      withdrawals: 提现
+      invoices: 发票
+      access: 权限中心
+      members: 成员管理
+      qualification: 资格管理
+      notification: 通知管理
+      productdetail: 商品详情
+      orderdetail: 订单详情
+    referral:
+      system: 分销返佣系统
+      settings: 分销设定
+      products: 分销商品
+      review: 分销审核
+      bindings: 分销关系
+      withdrawals: 佣金提现
+      promotion: 推广详情
+    membership: 会员与权限
+  storefront:
+    primary: [首页, 企业福利专区, 生活缴费, 电影票务, 虚拟卡券, 附近门店核销]
+    utility: [我的订单, 客服中心, 登录 / 注册, 购物车]
+surfaces:
+  auth:
+    source: apps/auth-web/src/screens/LoginPage.tsx
+    routes:
+      - { route: /, baseline: authlogin, states: [loading, error, expired, success] }
+      - { route: /invitation, baseline: authinvitation, states: [loading, error, expired, success] }
+      - { route: /membership, baseline: authmembership, states: [loading, error, success] }
+      - { route: /callback, baseline: authcallback, states: [loading, error, success] }
+  console:
+    source: apps/console/src
+    routes:
+      - { route: /scopes/:scopeKind/:scopeId/cockpit, baseline: consolecockpit }
+      - { route: /scopes/:scopeKind/:scopeId/control, baseline: consolecontrol }
+      - { route: /scopes/:scopeKind/:scopeId/products, baseline: consoleproducts }
+      - { route: /scopes/:scopeKind/:scopeId/orders, baseline: consoleorders }
+      - { route: /scopes/:scopeKind/:scopeId/finance, baseline: consolefinance }
+      - { route: /scopes/:scopeKind/:scopeId/experience, baseline: consoleapplications }
+      - { route: /scopes/:scopeKind/:scopeId/vouchers, baseline: consolevouchers }
+      - { route: /scopes/:scopeKind/:scopeId/reporting, baseline: consolereports }
+      - { route: /scopes/:scopeKind/:scopeId/support, baseline: consolesupport }
+      - { route: /scopes/:scopeKind/:scopeId/referral/settings, baseline: referralsettings }
+      - { route: /scopes/:scopeKind/:scopeId/referral/products, baseline: referralproducts }
+      - { route: /scopes/:scopeKind/:scopeId/referral/review, baseline: referralreview }
+      - { route: /scopes/:scopeKind/:scopeId/referral/bindings, baseline: referralbindings }
+      - { route: /scopes/:scopeKind/:scopeId/referral/withdrawals, baseline: referralwithdrawals }
+      - { route: /scopes/:scopeKind/:scopeId/referral/promotion, baseline: referralpromotion }
+      - { route: /scopes/:scopeKind/:scopeId/settings/access, baseline: consoleaccess }
+      - { route: /scopes/:scopeKind/:scopeId/settings/members, baseline: consolemembers }
+  storefront:
+    source: apps/storefront/src
+    routes:
+      - { route: /, baseline: storefrontdesktop, responsive: true }
+      - { route: /products, baseline: storefrontcatalog, responsive: true }
+      - { route: /products/:productId, baseline: storefrontproduct, responsive: true }
+      - { route: /cart, baseline: storefrontcart, responsive: true }
+      - { route: /checkout, baseline: storefrontcheckout, responsive: true }
+      - { route: /payments/:paymentId/result, baseline: storefrontpayment, responsive: true }
+      - { route: /orders, baseline: storefrontorders, responsive: true }
+      - { route: /orders/:orderId, baseline: storefrontorder, responsive: true }
+      - { route: /orders/:orderId/aftersales, baseline: storefrontaftersale, responsive: true }
+      - { route: /vouchers, baseline: storefrontvouchers, responsive: true }
+      - { route: /benefits, baseline: storefrontbenefits, responsive: true }
+      - { route: /profile, baseline: storefrontaccount, responsive: true }
+      - { route: /profile/security, baseline: storefrontsecurity, responsive: true }
+      - { route: /support, baseline: storefrontsupport, responsive: true }
+      - { route: /support/:caseId, baseline: storefrontcase, responsive: true }
+      - { route: /notifications, baseline: storefrontnotifications, responsive: true }
+masks:
+  - currenttime
+  - generatedidentifier
+  - requesttrace
+  - rotatingbanner
+tolerance:
+  pixelRatio: 0.001
+  textShiftPixels: 1

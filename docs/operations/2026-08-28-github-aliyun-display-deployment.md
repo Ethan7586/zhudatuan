@@ -19,11 +19,11 @@
 
 ## 已部署入口
 
-| 域名 | 当前内容 | 验收结果 |
-| --- | --- | --- |
-| <https://zhudatuan.com/> | 业主确认的消费者 Web／27 吋标准 VI | 200；首页目视通过；旧阶段验收登录不存在 |
-| <https://accounts.zhudatuan.com/> | 业主确认的完整统一登录 | 200；密码、企微扫码、企业 SSO 与注册入口可见 |
-| <https://console.zhudatuan.com/scopes/platform/platform%3Apreview/cockpit> | 业主确认的 4173 后台 VI | 200；经营驾驶舱完整渲染；数据为只读 Fixture |
+| 域名                                                                       | 当前内容                           | 验收结果                                     |
+| -------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------- |
+| <https://zhudatuan.com/>                                                   | 业主确认的消费者 Web／27 吋标准 VI | 200；首页目视通过；旧阶段验收登录不存在      |
+| <https://accounts.zhudatuan.com/>                                          | 业主确认的完整统一登录             | 200；密码、企微扫码、企业 SSO 与注册入口可见 |
+| <https://console.zhudatuan.com/scopes/platform/platform%3Apreview/cockpit> | 业主确认的 4173 后台 VI            | 200；经营驾驶舱完整渲染；数据为只读 Fixture  |
 
 收口结果：
 
@@ -37,7 +37,7 @@
 
 - Storefront service：`zhudatuan-storefront.service`，监听 `127.0.0.1:4310`。
 - Console Preview service：`zhudatuan-console-preview.service`，监听 `127.0.0.1:4312`。
-- Storefront WorkingDirectory：`/srv/zhudatuan-display/releases/e29ce3d6912d206df0558305bcaa1d063de272d2/apps/storefront-web`
+- Storefront WorkingDirectory：`/srv/zhudatuan-display/releases/e29ce3d6912d206df0558305bcaa1d063de272d2/apps/storefront`
 - Console Preview source：同一只读 release checkout。
 - Console 展示制品：88 个文件。
 - Console 制品清单 SHA-256：`5ffc3b4e73e14d1cdeebb96d580159149e8997d1a40a0235eb474f05bf263c3b`

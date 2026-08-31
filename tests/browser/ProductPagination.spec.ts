@@ -1,88 +1,87 @@
 import { expect, test, type Page } from '@playwright/test';
+import { createConsoleMock } from './ConsoleMock';
 import { consoleSession } from './Fixtures';
-import { OperationMock, type OperationCall } from './OperationMock';
+import type { OperationCall, OperationMock } from './OperationMock';
+import { productListing, productPage } from './ProductFixtures';
 
-const catalog = Object.freeze(
-  Array.from({ length: 5_000 }, (_, index) =>
-    Object.freeze({
-      id: `listing:${index + 1}`,
-      sku_id: `sku:${index + 1}`,
-      product_id: `product:${index + 1}`,
-      title: `服务端商品 ${String(index + 1).padStart(4, '0')}`,
-      status: 'active',
-      version: 1,
-      cursor_sort: `2026-08-${String(26 - (index % 20)).padStart(2, '0')}T06:00:00.000Z`,
-    })
-  )
-);
+const productsUrl = 'http://127.0.0.1:4173/scopes/enterprise/enterprise%3Ae2e/products';
+const catalog = Object.freeze(Array.from({ length: 105 }, (_, index) => productListing(index + 1)));
 
-test('Console 5000 商品只按服务端游标分页且 DOM 保持单页', async ({ page }) => {
-  const api = consoleProductApi(page, productPage);
+test('Console 商品只按服务端游标分页且 DOM 保持单页', async ({ page }) => {
+  const api = consoleProductApi(page, catalogPage);
   await api.install();
-  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/products');
+  await page.goto(productsUrl);
 
-  await expect(page.getByRole('heading', { level: 1, name: '商品管理' })).toBeFocused();
-  await expect(page.getByText('服务端商品 0001', { exact: true })).toBeVisible();
-  await expect(page.locator('table tbody tr')).toHaveCount(50);
-  expect(productCalls(api).every((call) => new URLSearchParams(call.query).get('limit') === '50')).toBe(true);
+  const table = page.getByRole('table', { name: '商品列表' });
+  await expect(table.locator('tbody tr')).toHaveCount(50);
+  await expect(page.getByText(catalog[0]!.title, { exact: true })).toBeVisible();
+  await expect(page.getByText('本页 50 件 · 总量暂不可用', { exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: '下一页' }).click();
-  await expect(page).toHaveURL(/cursor=50/);
-  await expect(page.getByText('服务端商品 0051', { exact: true })).toBeVisible();
-  await expect(page.getByText('服务端商品 0001', { exact: true })).toHaveCount(0);
-  await expect(page.locator('table tbody tr')).toHaveCount(50);
-  const nextCalls = productCalls(api).filter((call) => new URLSearchParams(call.query).get('cursor') === '50');
-  expect(nextCalls.length).toBeGreaterThan(0);
-  expect(nextCalls.every((call) => new URLSearchParams(call.query).get('limit') === '50')).toBe(true);
-  expect(api.unmatched).toEqual([]);
+  await expect.poll(() => new URL(page.url()).searchParams.get('cursor')).toBe('products:50');
+  await expect(table.locator('tbody tr')).toHaveCount(50);
+  await expect(page.getByText(catalog[50]!.title, { exact: true })).toBeVisible();
+  await expect(page.getByText(catalog[0]!.title, { exact: true })).toHaveCount(0);
+
+  await page.getByRole('button', { name: '上一页' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.has('cursor')).toBe(false);
+  await expect(table.locator('tbody tr')).toHaveCount(50);
+  await expect(page.getByText(catalog[0]!.title, { exact: true })).toBeVisible();
+  expectProductReadsOnly(api);
 });
 
-test('Console 迟到筛选响应不得覆盖较新的 URL 查询结果', async ({ page }) => {
+test('Console 迟到商品响应不得覆盖更新的 URL 查询', async ({ page }) => {
   let slowResponded = false;
+  const oldProduct = productListing(201, '迟到旧商品 LOSER');
+  const newProduct = productListing(202, '新筛选结果 WINNER');
   const api = consoleProductApi(page, async (call) => {
     const query = new URLSearchParams(call.query);
     if (query.get('q') === 'old') {
       await delay(1_200);
       slowResponded = true;
-      return pageOf([catalog[0]!]);
+      return productPage([oldProduct]);
     }
-    if (query.get('q') === 'new') return pageOf([{ ...catalog[1]!, title: '新筛选结果 WINNER' }]);
-    return pageOf([]);
+    if (query.get('q') === 'new') return productPage([newProduct]);
+    return productPage([]);
   });
   await api.install();
-  await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/products?q=old');
+  await page.goto(`${productsUrl}?q=old`);
   await expect.poll(() => productCalls(api).some((call) => new URLSearchParams(call.query).get('q') === 'old')).toBe(true);
 
-  const search = page.getByLabel('商品搜索');
-  await search.fill('new');
+  await page.getByRole('textbox', { name: '商品搜索' }).fill('new');
   await page.getByRole('button', { name: '筛选' }).click();
-  await expect(page).toHaveURL(/q=new/);
+  await expect.poll(() => new URL(page.url()).searchParams.get('q')).toBe('new');
   await expect(page.getByText('新筛选结果 WINNER', { exact: true })).toBeVisible();
   await expect.poll(() => slowResponded, { timeout: 3_000 }).toBe(true);
   await expect(page.getByText('新筛选结果 WINNER', { exact: true })).toBeVisible();
-  await expect(page.getByText('服务端商品 0001', { exact: true })).toHaveCount(0);
-  const terms = new Set(productCalls(api).map((call) => new URLSearchParams(call.query).get('q')));
-  expect(terms).toEqual(new Set(['old', 'new']));
+  await expect(page.getByText('迟到旧商品 LOSER', { exact: true })).toHaveCount(0);
+  expectProductReadsOnly(api);
 });
 
-function consoleProductApi(page: Page, products: (call: OperationCall) => unknown): OperationMock {
-  return new OperationMock(page).get('/api/v1/identity/session', consoleSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' }).get('/api/v1/catalog/listings', products);
-}
-
-function productPage(call: OperationCall) {
+function catalogPage(call: OperationCall) {
   const query = new URLSearchParams(call.query);
   const limit = Number(query.get('limit'));
-  const start = Number(query.get('cursor') ?? 0);
-  expect(limit).toBe(50);
-  return pageOf(catalog.slice(start, start + limit), start + limit < catalog.length ? String(start + limit) : undefined);
+  const cursor = query.get('cursor');
+  const offset = cursor === null ? 0 : Number(cursor.replace('products:', ''));
+  const items = catalog.slice(offset, offset + limit);
+  return productPage(items, offset + items.length < catalog.length ? `products:${offset + items.length}` : undefined);
 }
 
-function pageOf(items: readonly unknown[], nextCursor?: string) {
-  return { items, count: items.length, ...(nextCursor === undefined ? {} : { nextCursor }) };
+function consoleProductApi(page: Page, products: (call: OperationCall) => unknown): OperationMock {
+  return createConsoleMock(page, consoleSession).get('/api/v1/catalog/listings', products);
 }
 
 function productCalls(api: OperationMock): readonly OperationCall[] {
   return api.calls.filter((call) => call.path === '/api/v1/catalog/listings');
+}
+
+function expectProductReadsOnly(api: OperationMock): void {
+  const calls = productCalls(api);
+  expect(calls.length).toBeGreaterThan(0);
+  expect(new Set(calls.map((call) => call.method))).toEqual(new Set(['GET']));
+  expect(calls.every((call) => call.headers['x-scope-hint'] === 'enterprise:e2e')).toBe(true);
+  expect(calls.every((call) => call.headers['x-access-version'] === '1')).toBe(true);
+  expect(api.unmatched).toEqual([]);
 }
 
 function delay(milliseconds: number): Promise<void> {

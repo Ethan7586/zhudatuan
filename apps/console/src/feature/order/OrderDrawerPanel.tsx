@@ -1,35 +1,32 @@
 import type { ReactNode } from 'react';
 import { formatMinor } from '../../shared/ui/Format';
 import { OrderIcon } from './OrderIcon';
-import { aftersaleLabel, formatOrderTime, fulfillmentLabel, lifecycleLabel, paymentLabel, previewRecord } from './OrderPresentation';
+import { aftersaleLabel, formatOrderTime, fulfillmentLabel, lifecycleLabel, paymentLabel } from './OrderPresentation';
 import type { OrderDetailTab, OrderRecord } from './OrderSchema';
 
 export function OrderDrawerPanel({
   order,
   tab,
-  previewEnabled,
 }: Readonly<{
   order: OrderRecord;
   tab: OrderDetailTab;
-  previewEnabled: boolean;
 }>) {
   if (tab === 'products') return <ProductsPanel order={order} />;
-  if (tab === 'payment') return <PaymentPanel order={order} previewEnabled={previewEnabled} />;
+  if (tab === 'payment') return <PaymentPanel order={order} />;
   if (tab === 'aftersale') return <AftersalePanel order={order} />;
-  if (tab === 'operations') return <OperationsPanel order={order} previewEnabled={previewEnabled} />;
-  return <OverviewPanel order={order} previewEnabled={previewEnabled} />;
+  if (tab === 'operations') return <OperationsPanel />;
+  return <OverviewPanel order={order} />;
 }
 
-function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
-  const preview = previewRecord(order, previewEnabled);
+function OverviewPanel({ order }: Readonly<{ order: OrderRecord }>) {
   const lines = [...(order.lines ?? [])].sort((left, right) => left.id.localeCompare(right.id));
   return (
     <div className="orderdrawerstack">
       <section className="ordersummarynote">
-        <p>{preview?.summary ?? `订单为${lifecycleLabel(order.lifecycle_state)}状态；支付、履约与售后字段来自当前订单快照。`}</p>
-        {!previewEnabled ? <small>状态链为聚合状态的展示映射；除下单外的里程碑时间不可用，组织级完整性也未由当前 member audience 合同保证。</small> : <small>本地预览数据 · 不作为生产业务真值</small>}
+        <p>订单为{lifecycleLabel(order.lifecycle_state)}状态；支付、履约与售后字段来自当前订单快照。</p>
+        <small>状态链为聚合状态的展示映射；除下单外的里程碑时间尚未由当前读合同提供，最终动作保持关闭。</small>
       </section>
-      <MilestoneChain order={order} previewEnabled={previewEnabled} />
+      <MilestoneChain order={order} />
 
       <DetailSection title="商品明细">
         <div className="orderlinepreview">
@@ -58,47 +55,35 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
         <div className="orderdetailgrid">
           <Info label="订单应付" value={formatMinor(order.total_minor, order.currency)} />
           <Info label="支付状态" value={paymentLabel(order.payment_state)} />
-          <Info label="实付金额" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.paidMinor, order.currency)} />
-          <Info label="支付拆分" value={preview === undefined ? '当前读模型未提供' : `${preview.paymentMethod} · 已对齐`} />
+          <Info label="实付金额" value="当前读模型未提供" />
+          <Info label="支付拆分" value="当前读模型未提供" />
         </div>
       </DetailSection>
 
       <DetailSection title="履约">
         <div className="orderdetailgrid">
           <Info label="履约状态" value={fulfillmentLabel(order.fulfillment_state)} />
-          <Info label="履约 ID" value={preview?.fulfillmentId ?? '当前读模型未提供'} />
-          <Info label="供应方" value={preview?.supplierName ?? '当前读模型未提供'} />
-          <Info label="收货信息" value={preview?.addressSummary ?? '当前读模型未提供'} />
+          <Info label="履约 ID" value="当前读模型未提供" />
+          <Info label="供应方" value={order.lines?.[0]?.provider ?? order.lines?.[0]?.partner ?? '当前读模型未提供'} />
+          <Info label="收货信息" value="当前读模型未提供" />
         </div>
       </DetailSection>
 
-      <p className="orderrecentoperation">
-        最近 Operation：
-        {preview?.operation === undefined ? (
-          '当前读模型未提供审计时间线'
-        ) : (
-          <>
-            <strong>{preview.operation.id}</strong> · {preview.operation.label}
-          </>
-        )}
-      </p>
+      <p className="orderrecentoperation">最近 Operation： 当前读模型未提供审计时间线</p>
     </div>
   );
 }
 
-function MilestoneChain({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
-  const preview = previewRecord(order, previewEnabled);
+function MilestoneChain({ order }: Readonly<{ order: OrderRecord }>) {
   const paid = ['paid', 'partially_refunded', 'refunded'].includes(order.payment_state);
-  const milestones =
-    preview?.milestones ??
-    ([
-      { key: 'placed', label: '下单', state: 'complete', at: formatOrderTime(order.created_at) },
-      { key: 'paid', label: '支付', state: paid ? 'complete' : 'current', at: undefined },
-      { key: 'reserved', label: '库存锁定', state: 'pending', at: undefined },
-      { key: 'unshipped', label: '待发货', state: order.fulfillment_state === 'allocated' ? 'current' : 'pending', at: undefined },
-      { key: 'shipping', label: '待收货', state: order.fulfillment_state === 'shipped' ? 'current' : 'pending', at: undefined },
-      { key: 'completed', label: '完成', state: order.lifecycle_state === 'completed' ? 'complete' : 'pending', at: undefined },
-    ] as const);
+  const milestones = [
+    { key: 'placed', label: '下单', state: 'complete', at: formatOrderTime(order.created_at) },
+    { key: 'paid', label: '支付', state: paid ? 'complete' : 'current', at: undefined },
+    { key: 'reserved', label: '库存锁定', state: 'pending', at: undefined },
+    { key: 'unshipped', label: '待发货', state: order.fulfillment_state === 'allocated' ? 'current' : 'pending', at: undefined },
+    { key: 'shipping', label: '待收货', state: order.fulfillment_state === 'shipped' ? 'current' : 'pending', at: undefined },
+    { key: 'completed', label: '完成', state: order.lifecycle_state === 'completed' ? 'complete' : 'pending', at: undefined },
+  ] as const;
   return (
     <ol className="ordermilestones" aria-label="订单状态链">
       {milestones.map((item) => (
@@ -107,7 +92,7 @@ function MilestoneChain({ order, previewEnabled }: Readonly<{ order: OrderRecord
             <OrderIcon name={item.state === 'complete' ? 'check' : item.key === 'unshipped' ? 'truck' : 'package'} />
           </span>
           <strong>{item.label}</strong>
-          <small>{item.at === undefined ? (preview === undefined && item.key === 'reserved' ? '不可用' : '—') : formatOrderTime(item.at)}</small>
+          <small>{item.at === undefined ? (item.key === 'reserved' ? '不可用' : '—') : formatOrderTime(item.at)}</small>
         </li>
       ))}
     </ol>
@@ -149,18 +134,17 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
   );
 }
 
-function PaymentPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
-  const preview = previewRecord(order, previewEnabled);
+function PaymentPanel({ order }: Readonly<{ order: OrderRecord }>) {
   return (
     <div className="orderdrawerstack">
       <DetailSection title="支付快照">
         <div className="orderdetailgrid">
           <Info label="订单应付" value={formatMinor(order.total_minor, order.currency)} />
           <Info label="支付状态" value={paymentLabel(order.payment_state)} />
-          <Info label="实付金额" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.paidMinor, order.currency)} />
-          <Info label="支付方式" value={preview?.paymentMethod ?? '当前读模型未提供'} />
-          <Info label="福利账户" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.benefitMinor, order.currency)} />
-          <Info label="微信支付" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.wechatMinor, order.currency)} />
+          <Info label="实付金额" value="当前读模型未提供" />
+          <Info label="支付方式" value="当前读模型未提供" />
+          <Info label="福利账户" value="当前读模型未提供" />
+          <Info label="微信支付" value="当前读模型未提供" />
         </div>
       </DetailSection>
       <Unavailable text="支付 ID、可退余额与退款明细未由当前订单读合同提供；退款动作保持关闭。" />
@@ -182,24 +166,11 @@ function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {
   );
 }
 
-function OperationsPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
-  const operation = previewRecord(order, previewEnabled)?.operation;
-  const icon = operation?.status === 'failed' ? 'close' : operation?.status === 'pending' ? 'clock' : 'check';
+function OperationsPanel() {
   return (
     <div className="orderdrawerstack">
       <DetailSection title="最近 Operation">
-        {operation === undefined ? (
-          <Unavailable text="当前订单读模型没有 Operation 或审计时间线。" />
-        ) : (
-          <article className={`orderoperation is-${operation.status}`}>
-            <OrderIcon name={icon} />
-            <div>
-              <strong>{operation.id}</strong>
-              <span>{operation.label}</span>
-              <small>{formatOrderTime(operation.at)}</small>
-            </div>
-          </article>
-        )}
+        <Unavailable text="当前订单读模型没有 Operation 或审计时间线。" />
       </DetailSection>
       <Unavailable text="生产最终动作必须完成 Preview → Confirm → Step-up → Execute → Reread → Receipt 后才能写入这里。" />
     </div>

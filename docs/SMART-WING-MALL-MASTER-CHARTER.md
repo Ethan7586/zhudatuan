@@ -26,7 +26,7 @@ Owner：Ethan（全系统唯一 Owner）
 - 数值与颜色以 `packages/design-system` 的令牌为准。
 - 权限编码以 `packages/api-contract/src/permissions.ts` 为准。
 - 实际鉴权以 `packages/authz` 与数据库约束为准。
-- 数据结构以 `database/supabase/migrations` 的追加迁移为准。
+- 数据结构以 `database/migrations` 的追加迁移为准。
 - 接口行为以 `services/commerce-api` 为准。
 - 已批准页面构图以 `docs/mobile/design-previews` 为准。
 
@@ -610,7 +610,7 @@ smart-wing-membership-permissions/
 │  ├─ api-contract/       共享接口、权限、会员和范围类型
 │  ├─ authz/              纯授权决策引擎
 │  └─ design-system/      VI 令牌与 SVG 品牌资产
-├─ database/supabase/     PostgreSQL 迁移、RPC、约束与审计
+├─ database/     PostgreSQL 迁移、RPC、约束与审计
 ├─ infrastructure/
 │  ├─ aliyun/             Caddy、PM2 和发布流程
 │  └─ cloudflare/         DNS、代理和边缘职责
@@ -620,7 +620,7 @@ smart-wing-membership-permissions/
 
 ### 13.2 前端职责
 
-#### `apps/storefront-web`
+#### `apps/storefront`
 
 已包含首页、分类、商品详情、购物车、结算、订单、支付结果、余额、流水、卡券、用户中心和售后等页面。浏览器只访问同源 `/api`，不接触数据库管理密钥。
 
@@ -628,7 +628,7 @@ smart-wing-membership-permissions/
 
 包含经营驾驶舱、商品治理、订单履约、企业福利、财务对账、会员运营、会员权限、自定义角色、商业资源、员工资格、审批、历史、模拟和系统控制等工作台。前端隐藏不作为权限边界，所有读取和写入由服务端再次裁剪与鉴权。
 
-#### `apps/auth-web`
+#### `apps/auth`
 
 负责账号登录、会员关系/主体选择、注册、忘记密码和二次验证界面。真实认证结果必须来自 Commerce API，任何演示万能密码、固定验证码或会员回退数据都不得进入正式流程。
 
@@ -960,7 +960,7 @@ Web 可用 Host-only HttpOnly Cookie；微信小程序使用独立短期令牌�
 - `packages/design-system/src/tokens.json`
 - `packages/design-system/src/mobile-platforms.json`
 - `packages/design-system/src/brand/`
-- `database/supabase/migrations/`
+- `database/migrations/`
 - `services/commerce-api/src/api/`
 
 ---

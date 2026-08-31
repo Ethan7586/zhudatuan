@@ -2,14 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
-const migration = await readFile(new URL(
-  '../../../database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql', import.meta.url,
-), 'utf8');
+const migration = await readFile(new URL('../../../database/migrations/20260828180000_zhudatuan_purchase_access.sql', import.meta.url), 'utf8');
 const runner = await readFile(new URL('./BootstrapSandboxWelfare.ts', import.meta.url), 'utf8');
-const boundary = migration.slice(
-  migration.indexOf('create or replace function deployment.sandbox_member_welfare_bootstrap'),
-  migration.indexOf('revoke all on function access.purchase_session_context'),
-);
+const boundary = migration.slice(migration.indexOf('create or replace function deployment.sandbox_member_welfare_bootstrap'), migration.indexOf('revoke all on function access.purchase_session_context'));
 
 test('welfare one-shot is explicit, exact-idempotent and audit chained', () => {
   assert.match(boundary, /sandbox_member_welfare_bootstrap\([\s\S]+p_amount bigint,p_currency text,p_confirmation text/);
@@ -30,6 +25,6 @@ test('welfare CLI is test-only, direct-role and checks it has no finance or bene
   assert.match(runner, /begin isolation level serializable/);
   assert.match(runner, /sandbox_member_welfare_bootstrap\(\$1,\$2,\$3,\$4,\$5\)/);
   assert.match(runner, /database_role !== 'zhudatuansandboxbootstrap'/);
-  assert.match(runner, /benefit_usage !== false \|\| row\.finance_usage !== false/);
+  assert.match(runner, /row\.benefit_usage !== false \|\|\s*row\.finance_usage !== false/);
   assert.doesNotMatch(runner, /\/api\/|listen\(|createServer\(/);
 });

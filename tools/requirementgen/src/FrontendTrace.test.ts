@@ -4,26 +4,26 @@ import { executionTrace } from './FrontendTrace';
 
 describe('frontend execution trace', () => {
   it.each([
-    ['GROUP', 'reporting', 'console', 'enterprise/reporting'],
-    ['STORE', 'verification', 'store', 'store/verification'],
-    ['SUPPLY', 'catalog', 'supplier', 'supplier/catalog'],
-  ] as const)('maps %s ownership without claiming evidence', (prefix, module, client, feature) => {
+    ['GROUP', 'reporting', 'enterprise/reporting'],
+    ['STORE', 'verification', 'store/verification'],
+    ['SUPPLY', 'catalog', 'supplier/catalog'],
+  ] as const)('maps %s ownership into the canonical console without claiming evidence', (prefix, module, feature) => {
     const trace = executionTrace({
       prefix,
       module,
       route: '/target',
       operation: 'domain.operation.read',
-      test: 'tests/journeys/target.spec.ts',
+      test: 'tests/journey/target.spec.ts',
     });
 
     expect(trace).toMatchObject({
-      client,
+      client: 'console',
       feature,
       route: '/target',
       operation: 'domain.operation.read',
-      status: 'Missing',
+      status: 'Designed',
       evidence: [],
-      files: { route: `apps/${client}/src/route/routes.tsx`, feature: `apps/${client}/src/feature/${module}` },
+      files: { route: 'apps/console/src/route/Router.tsx', feature: `apps/console/src/feature/${module}` },
     });
   });
 });

@@ -6,10 +6,7 @@ import { ResourceState, resourceCondition, resourceConditions, type ResourceCond
 
 describe('resource state contract', () => {
   it('exposes the complete asynchronous state union', () => {
-    expect(resourceConditions).toEqual([
-      'loading', 'empty', 'ready', 'refreshing', 'stale', 'denied',
-      'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry',
-    ]);
+    expect(resourceConditions).toEqual(['loading', 'empty', 'ready', 'refreshing', 'stale', 'denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry']);
   });
 
   it.each([
@@ -23,16 +20,13 @@ describe('resource state contract', () => {
     expect(resourceCondition(data, rows, error)).toBe(expected);
   });
 
-  it.each(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)(
-    'renders %s as an explicit error boundary',
-    (condition: ResourceCondition) => {
-      const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
-      expect(isValidElement(result)).toBe(true);
-      if (!isValidElement<{ message: string }>(result)) throw new Error('RESOURCE_STATE_ELEMENT_REQUIRED');
-      expect(result.type).toBe(ErrorView);
-      expect(result.props.message).toBe('FAILURE_CODE');
-    },
-  );
+  it.each(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)('renders %s as an explicit error boundary', (condition: ResourceCondition) => {
+    const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
+    expect(isValidElement(result)).toBe(true);
+    if (!isValidElement<{ message: string }>(result)) throw new Error('RESOURCE_STATE_ELEMENT_REQUIRED');
+    expect(result.type).toBe(ErrorView);
+    expect(result.props.message).toBe('FAILURE_CODE');
+  });
 
   it('announces loading, renders empty and preserves ready children', () => {
     const loading = ResourceState({ condition: 'loading', children: 'ready' });

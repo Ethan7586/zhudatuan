@@ -6,7 +6,10 @@ import { ProjectEvent } from '../../application/command/ProjectEvent';
 import { PgReportingRepository } from '../../infrastructure/persistence/PgReportingRepository';
 
 export class ProjectionJobProcessor implements JobProcessor {
-  constructor(private readonly pool: DatabasePool, private readonly cache: Cache) {}
+  constructor(
+    private readonly pool: DatabasePool,
+    private readonly cache: Cache
+  ) {}
 
   async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
     if (job.kind !== 'projection') throw new Error('JOB_KIND_MISMATCH');
@@ -26,7 +29,7 @@ export class ProjectionJobProcessor implements JobProcessor {
     } finally {
       client.release();
     }
-    const keys = projected.filter(({ version }) => version > 1).flatMap(({ scope, version }) => cacheKeys(scope, version-1));
+    const keys = projected.filter(({ version }) => version > 1).flatMap(({ scope, version }) => cacheKeys(scope, version - 1));
     if (keys.length > 0) await this.cache.remove(...keys);
   }
 }
@@ -35,9 +38,12 @@ function object(value: unknown): Record<string, unknown> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID');
   return value as Record<string, unknown>;
 }
-function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
+function text(value: unknown, code: string): string {
+  if (typeof value !== 'string' || !value) throw new Error(code);
+  return value;
+}
 function cacheKeys(scope: string, projectionversion: number): readonly string[] {
-  const metrics = ['dashboard','sales','product','mall','category','channel','powderclass','voucher'] as const;
-  const periods = ['realtime','yesterday','7days','30days'] as const;
+  const metrics = ['dashboard', 'sales', 'product', 'mall', 'category', 'channel', 'powderclass', 'voucher'] as const;
+  const periods = ['realtime', 'yesterday', '7days', '30days'] as const;
   return metrics.flatMap((metric) => periods.map((period) => VersionedKey.create('reporting', { scope, metric, period, projectionversion })));
 }

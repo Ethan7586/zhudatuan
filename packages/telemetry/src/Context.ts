@@ -19,6 +19,7 @@ export interface TelemetryContext {
   readonly dependencyDurationMs?: number;
   readonly version?: string;
   readonly provider?: string;
+  readonly target?: string;
   readonly job?: string;
   readonly attempt?: number;
 }

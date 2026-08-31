@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { jsonResponse, requireBearerAuthorization, type LocalHandler } from '../../localinfra/src/Http';
 
 export interface SecretReader {
@@ -5,7 +6,7 @@ export interface SecretReader {
 }
 
 export function secretStoreHandler(catalog: SecretReader, bearerToken: string): LocalHandler {
-  return async request => {
+  return async (request) => {
     if (request.url.pathname === '/health/ready') {
       return request.method === 'GET' ? jsonResponse(200, { status: 'ready' }) : jsonResponse(405, { code: 'METHOD_NOT_ALLOWED' });
     }
@@ -14,9 +15,12 @@ export function secretStoreHandler(catalog: SecretReader, bearerToken: string): 
     if (!match) return jsonResponse(404, { code: 'SECRET_NOT_FOUND' });
     if (request.method !== 'GET') return jsonResponse(405, { code: 'METHOD_NOT_ALLOWED' });
     let reference: string;
-    try { reference = decodeURIComponent(match[1] ?? ''); }
-    catch { return jsonResponse(404, { code: 'SECRET_NOT_FOUND' }); }
+    try {
+      reference = decodeURIComponent(match[1] ?? '');
+    } catch {
+      return jsonResponse(404, { code: 'SECRET_NOT_FOUND' });
+    }
     const value = catalog.get(reference);
-    return value === undefined ? jsonResponse(404, { code: 'SECRET_NOT_FOUND' }) : jsonResponse(200, { value });
+    return value === undefined ? jsonResponse(404, { code: 'SECRET_NOT_FOUND' }) : jsonResponse(200, { value, version: createHash('sha256').update(value).digest('hex'), expiresAt: null });
   };
 }

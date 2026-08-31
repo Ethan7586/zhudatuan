@@ -19,7 +19,7 @@ export function readCatalog(relativeName, keys, required = true) {
   }
   let payload;
   try {
-    payload = parse(fs.readFileSync(file, 'utf8'));
+    payload = parse(fs.readFileSync(file, 'utf8'), { merge: true });
   } catch (error) {
     return { entries: [], file, violations: [violation('CATALOG_INVALID', relativeName, error.message)] };
   }

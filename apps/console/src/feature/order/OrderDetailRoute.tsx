@@ -6,6 +6,7 @@ import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { DataTable, type DataColumn } from '../../shared/ui/DataTable';
 import { formatDate, formatMinor } from '../../shared/ui/Format';
 import { MetricCards } from '../../shared/ui/MetricCards';
+import { useRouteTitle } from '../../shared/ui/RouteTitle';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import type { OrderLine } from './OrderSchema';
 
@@ -21,6 +22,7 @@ const columns: readonly DataColumn<OrderLine>[] = [
 
 export function Component() {
   const context = useConsoleContext();
+  const routeTitle = useRouteTitle('订单管理');
   const orderId = useParams().orderId ?? '';
   const query = useQuery({ queryKey: orderDetailKey(context, orderId), queryFn: ({ signal }) => readOrderDetail(context, orderId, signal), enabled: orderId !== '' });
   const data = query.data;
@@ -28,7 +30,7 @@ export function Component() {
   const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data === undefined && !query.isPending && query.error === null, stale: query.isStale });
   return (
     <ResourcePanel
-      title="订单详情"
+      title={routeTitle}
       eyebrow="SMART WING ORDER DETAIL"
       description={`内部订单 ID ${orderId} 的权威快照；当前合同不支持使用展示订单号反查。`}
       condition={state}

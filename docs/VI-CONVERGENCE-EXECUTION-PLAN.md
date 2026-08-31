@@ -7,7 +7,7 @@
 
 ## 0. 这份文件是什么
 
-两份独立评估都得出同一个方向：**主 Shop（`apps/storefront-web`）偏离统一 VI，微信小程序更接近 VI**。本文件把结论转成可执行任务，并给出每一项的验收标准。
+两份独立评估都得出同一个方向：**主 Shop（`apps/storefront`）偏离统一 VI，微信小程序更接近 VI**。本文件把结论转成可执行任务，并给出每一项的验收标准。
 
 **执行前必须先读：**
 
@@ -24,7 +24,7 @@
 
 以下数字均在 2026-08-14 复核通过，可作为执行前的基线。复核命令见第 7 节。
 
-### 1.1 `apps/storefront-web/src`
+### 1.1 `apps/storefront/src`
 
 | 项目                            |                                            实测 | VI 规定                                   |
 | ------------------------------- | ----------------------------------------------: | ----------------------------------------- |
@@ -137,7 +137,7 @@ pages/profile/              16 行    ⬜ 阶段 5
 
 **改动**
 
-- 以 `scripts/check-miniapp-vi.mjs` 为模板，新建 `scripts/check-vi.mjs`，覆盖 `apps/storefront-web`、`apps/admin-web`、`apps/auth-web`
+- 以 `scripts/check-miniapp-vi.mjs` 为模板，新建 `scripts/check-vi.mjs`，覆盖 `apps/storefront`、`apps/admin-web`、`apps/auth`
 - 规则：
   | 规则 | 拦什么 |
   | --- | --- |
@@ -185,7 +185,7 @@ pages/profile/              16 行    ⬜ 阶段 5
 
 **执行方要做的**
 
-1. 打开 `apps/storefront-web/src/components/common/ProductCard.tsx` 与 `HeaderBar.tsx`，确认这两色的实际语义（促销标签？主按钮？强调文字？）
+1. 打开 `apps/storefront/src/components/common/ProductCard.tsx` 与 `HeaderBar.tsx`，确认这两色的实际语义（促销标签？主按钮？强调文字？）
 2. 写成一页说明交 Ethan 裁决，**不要自行决定**
 3. 两种结果的处理方式：
    - **是活动色** → 写入 VI 作为受控活动色，限定使用位置与生效期，不做一刀切收敛
@@ -203,7 +203,7 @@ pages/profile/              16 行    ⬜ 阶段 5
 
 **改动**
 
-- `apps/storefront-web/src/components/common/MobileBottomNav.tsx`
+- `apps/storefront/src/components/common/MobileBottomNav.tsx`
 - 五栏固定为 `首页 / 分类 / 会员码 / 订单 / 我的`，与 `tokens.json` 的 `wingCode.navigation` 逐字一致
 - 中央会员码：白色圆形承载、品牌蓝图标、上浮、克制阴影。尺寸取 `mobile-platforms.json` 的 iOS/Android 档位
 - 购物车移出底栏，改为常驻右上角全局入口（首页、分类、搜索、列表、详情都要有，带角标）
@@ -274,7 +274,7 @@ Web 用 `__Host-` Cookie 会话，小程序没有 cookie 容器，因此账号�
 
 **优先级说明：这一项比配色紧急，但它是架构任务不是设计任务。**
 
-**现状**：`apps/storefront-web` 的 10 个业务页面没有一个直接调用 `/api/v1`，全部经由 `MallContext → mallService → MallState → localStorage + MOCK 数据`。`useProductionSync` 只覆盖 user/余额/mall/orders/ledger/products 六项；卡券、售后、收藏、地址仍由 localStorage 承担。`/home` 请求失败时 `setSessionStatus('guest')`，页面继续渲染 `MOCK_USER` 的余额与 `MOCK_ORDERS` 的订单，**无任何降级提示**。
+**现状**：`apps/storefront` 的 10 个业务页面没有一个直接调用 `/api/v1`，全部经由 `MallContext → mallService → MallState → localStorage + MOCK 数据`。`useProductionSync` 只覆盖 user/余额/mall/orders/ledger/products 六项；卡券、售后、收藏、地址仍由 localStorage 承担。`/home` 请求失败时 `setSessionStatus('guest')`，页面继续渲染 `MOCK_USER` 的余额与 `MOCK_ORDERS` 的订单，**无任何降级提示**。
 
 **要求**
 
@@ -331,7 +331,7 @@ npm run quality
 复核第 1 节基线数字：
 
 ```bash
-cd apps/storefront-web/src
+cd apps/storefront/src
 grep -rhoE 'font-size:\s*(8|9|10|11)px|text-\[(8|9|10|11)px\]' . --include=*.tsx --include=*.css | wc -l
 grep -rhoE 'font-(black|extrabold)' . --include=*.tsx | wc -l
 grep -rhoE '#[0-9a-fA-F]{6}\b' . --include=*.tsx --include=*.css | wc -l

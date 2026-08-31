@@ -16,7 +16,9 @@ export class PaymentReference extends ValueObject<Readonly<{ reference: string; 
     return new PaymentReference(reference('refund', refund, 48), 'refund');
   }
 
-  get text(): string { return this.value.reference; }
+  get text(): string {
+    return this.value.reference;
+  }
 }
 
 function reference(kind: ReferenceKind, value: string, length: number): string {

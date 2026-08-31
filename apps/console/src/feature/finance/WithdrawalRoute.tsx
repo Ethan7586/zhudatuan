@@ -1,2 +1,4 @@
 import { FinanceProfessionalRoute } from './FinanceProfessionalRoute';
-export function Component() { return <FinanceProfessionalRoute section="withdrawals" />; }
+export function Component() {
+  return <FinanceProfessionalRoute section="withdrawals" />;
+}

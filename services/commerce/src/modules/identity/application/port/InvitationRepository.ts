@@ -1,0 +1,88 @@
+import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { Invitation, InvitationKind, InvitationStatus, InvitationTarget } from '../../domain/model/Invitation';
+import type { InvitationClaim } from '../../domain/model/InvitationClaim';
+import type { InvitationReceipt } from '../../domain/model/InvitationReceipt';
+import type { InvitationDigest } from './InvitationSecurity';
+
+export interface NewInvitation {
+  readonly id: string;
+  readonly kind: 'signin' | 'enrollment' | 'campaign';
+  readonly target: 'console' | 'storefront';
+  readonly organization: string;
+  readonly membership: string | null;
+  readonly principal: string | null;
+  readonly recipientHash: Buffer | null;
+  readonly token: InvitationDigest;
+  readonly issuer: string;
+  readonly issuerAccessVersion: number;
+  readonly grantDigest: string;
+  readonly assurance: 1 | 2 | 3;
+  readonly maxUses: number;
+  readonly expiresAt: Date;
+  readonly policy: string | null;
+  readonly termsHash: string | null;
+  readonly reason: string;
+}
+
+export interface InvitationFilter {
+  readonly scope: string;
+  readonly target: 'console' | 'storefront' | null;
+  readonly kind: 'signin' | 'enrollment' | 'campaign' | null;
+  readonly status: 'draft' | 'active' | 'exhausted' | 'revoked' | 'expired' | null;
+  readonly cursor: string | null;
+  readonly limit: number;
+}
+
+export interface InvitationCreatedRecord {
+  readonly id: string;
+  readonly kind: InvitationKind;
+  readonly target: InvitationTarget;
+  readonly organization_id: string;
+  readonly membership_id: string | null;
+  readonly minimum_assurance: 1 | 2 | 3;
+  readonly max_uses: number;
+  readonly use_count: number;
+  readonly not_before: string;
+  readonly expires_at: string;
+  readonly status: InvitationStatus;
+  readonly reason: string;
+  readonly created_at: string;
+  readonly version: number;
+}
+
+export interface InvitationListRecord extends InvitationCreatedRecord {
+  readonly recipient: string | null;
+  readonly issuer_membership_id: string;
+  readonly issuer_access_version: number;
+  readonly revoked_at: string | null;
+  readonly revoked_by: string | null;
+  readonly revoke_reason: string | null;
+}
+
+export interface InvitationRevokedRecord {
+  readonly id: string;
+  readonly kind: InvitationKind;
+  readonly target: InvitationTarget;
+  readonly status: 'revoked';
+  readonly revoked_at: string;
+  readonly revoked_by: string;
+  readonly revoke_reason: string;
+  readonly version: number;
+}
+
+export interface InvitationRepository {
+  find(database: OperationDatabase, hashes: readonly InvitationDigest[], target: 'console' | 'storefront', lock: boolean): Promise<Invitation>;
+  claimed(database: OperationDatabase, claim: string, target: 'console' | 'storefront', lock: boolean): Promise<Invitation>;
+  claim(database: OperationDatabase, id: string): Promise<InvitationClaim>;
+  bindRecipient(database: OperationDatabase, id: string, recipient: Buffer): Promise<InvitationClaim>;
+  create(database: OperationDatabase, invitation: NewInvitation): Promise<InvitationCreatedRecord>;
+  read(database: OperationDatabase, filter: InvitationFilter): Promise<readonly InvitationListRecord[]>;
+  revoke(database: OperationDatabase, id: string, actor: string, reason: string, version: number): Promise<InvitationRevokedRecord>;
+  reserve(
+    database: OperationDatabase,
+    invitation: Invitation,
+    input: Readonly<{ claim: string; preauth: Buffer; browser: Buffer; device: Buffer; recipient: Buffer | null; principal: string | null; proof: 'otp' | 'sso' | 'terms' }>
+  ): Promise<InvitationClaim>;
+  consume(database: OperationDatabase, invitation: Invitation, input: Readonly<{ session: string | null; assurance: 1 | 2 | 3; trace: string; principal?: string; membership?: string }>): Promise<InvitationReceipt>;
+  consumeClaim(database: OperationDatabase, claim: string, version: number): Promise<void>;
+}

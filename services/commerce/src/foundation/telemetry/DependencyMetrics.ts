@@ -1,4 +1,5 @@
 import type { Telemetry, TelemetryContext } from '@shop/telemetry';
+import { ApplicationError } from '../domain/ApplicationError';
 
 export class DependencyMetrics {
   constructor(private readonly telemetry: Telemetry) {}
@@ -6,10 +7,10 @@ export class DependencyMetrics {
     const started = performance.now();
     try {
       const result = await action();
-      this.observe(dependency, context, performance.now()-started, 'success');
+      this.observe(dependency, context, performance.now() - started, 'success');
       return result;
     } catch (cause) {
-      this.observe(dependency, context, performance.now()-started, 'failure', cause instanceof Error ? cause.message : 'DEPENDENCY_FAILED');
+      this.observe(dependency, context, performance.now() - started, 'failure', cause instanceof ApplicationError ? cause.code : 'DEPENDENCY_FAILED');
       throw cause;
     }
   }

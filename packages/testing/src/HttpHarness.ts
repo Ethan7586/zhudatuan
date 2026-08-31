@@ -46,7 +46,7 @@ function withAbort<T>(start: () => Promise<T>, signal?: AbortSignal): Promise<T>
       (error: unknown) => {
         signal.removeEventListener('abort', abort);
         reject(error);
-      },
+      }
     );
   });
 }

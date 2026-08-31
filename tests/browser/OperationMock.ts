@@ -1,4 +1,5 @@
 import type { Page, Request, Route } from '@playwright/test';
+import { LOCAL_API_ORIGIN } from '@shop/config/client';
 
 export interface OperationCall {
   readonly method: string;
@@ -38,7 +39,7 @@ export class OperationMock {
   }
 
   async install(): Promise<void> {
-    await this.page.route('http://127.0.0.1:4311/api/v1/**', (route) => this.dispatch(route));
+    await this.page.route(`${LOCAL_API_ORIGIN}/api/v1/**`, (route) => this.dispatch(route));
   }
 
   private register(method: string, path: string, body: unknown, status: number): this {

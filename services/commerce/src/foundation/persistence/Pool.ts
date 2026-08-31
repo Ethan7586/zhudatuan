@@ -1,8 +1,12 @@
 import { performance } from 'node:perf_hooks';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import { Pool as PgPool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
+import { Pool as PgPool, types as pgTypes, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { token } from '../../bootstrap/Container';
+import { databaseSafeInteger } from './DatabaseInteger';
 import { QueryMetrics, type DatabaseWorkload } from './QueryMetrics';
+
+const POSTGRES_BIGINT = 20;
+pgTypes.setTypeParser(POSTGRES_BIGINT, databaseSafeInteger);
 
 export interface DatabasePool {
   connect(): Promise<PoolClient>;
@@ -22,7 +26,11 @@ export function createPool(connection: string, profile: PoolProfile, metrics = n
 }
 
 export function poolConfiguration(workload: DatabaseWorkload): Readonly<{
-  max: number; connectionTimeoutMillis: number; idleTimeoutMillis: number; application_name: string; options: string;
+  max: number;
+  connectionTimeoutMillis: number;
+  idleTimeoutMillis: number;
+  application_name: string;
+  options: string;
 }> {
   const limits = RUNTIME_LIMITS.pool[workload];
   return Object.freeze({
@@ -35,8 +43,12 @@ export function poolConfiguration(workload: DatabaseWorkload): Readonly<{
 }
 
 class PoolSet implements DatabasePool {
-  constructor(private readonly pools: ReadonlyMap<DatabaseWorkload, PgPool>, private readonly selected: DatabaseWorkload,
-    private readonly metrics: QueryMetrics, private readonly owner = true) {}
+  constructor(
+    private readonly pools: ReadonlyMap<DatabaseWorkload, PgPool>,
+    private readonly selected: DatabaseWorkload,
+    private readonly metrics: QueryMetrics,
+    private readonly owner = true
+  ) {}
 
   async connect(): Promise<PoolClient> {
     const pool = this.selectedPool();

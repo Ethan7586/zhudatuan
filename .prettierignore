@@ -20,3 +20,27 @@ apps/wechat-miniapp/miniprogram/data/catalog-taxonomy.generated.js
 apps/wechat-miniapp/miniprogram/styles/icons.wxss
 apps/wechat-miniapp/miniprogram/styles/tokens.wxss
 packages/design-system/src/tokens.css
+
+# Canonical generated artifacts are formatted by their generators and must never be rewritten in place.
+apps/console/src/generated/
+apps/storefront/src/generated/
+docs/evidence/frontend/files.json
+docs/requirements/mapping.json
+docs/requirements/mvp.yml
+docs/requirements/providers.yml
+evidence/navigation/catalog.json
+packages/authz/src/PermissionCatalog.ts
+packages/config/src/RuntimeCatalog.ts
+packages/contract/openapi.json
+packages/contract/src/ContractIdentity.ts
+packages/contract/src/ErrorContract.ts
+packages/contract/src/EventSerializer.ts
+packages/contract/src/RequirementCatalog.ts
+packages/contract/src/events/
+packages/contract/src/operations/
+packages/design/src/tokens.css
+packages/sdk/src/operations/
+services/commerce/src/app/events.ts
+services/commerce/src/foundation/interface/OperationController.ts
+services/commerce/src/generated/
+services/commerce/src/modules/navigation/infrastructure/catalog/NavigationCatalog.ts

@@ -1,0 +1,265 @@
+/*
+ * Smart Wing Console VI refinement.
+ *
+ * This layer is deliberately presentation-only. It builds on the recovered
+ * console visual language while preserving the current permission model,
+ * queries, commands and route behavior.
+ */
+
+body:has(.consolelayout[data-visual-theme='console-v1']) {
+  background: radial-gradient(circle at 82% -12%, color-mix(in srgb, var(--sw-brand) 7%, transparent), transparent 28rem), var(--sw-background);
+  color: var(--sw-text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+}
+
+.consolelayout[data-visual-theme='console-v1'] {
+  --vi-brand: var(--sw-brand);
+  --vi-brand-strong: var(--sw-brand-hover);
+  --vi-brand-soft: var(--sw-brand-light);
+  --vi-ink: var(--sw-brand-ink);
+  --vi-text: var(--sw-text);
+  --vi-muted: var(--sw-muted);
+  --vi-line: var(--sw-border);
+  --vi-line-strong: var(--sw-border-strong);
+  --vi-canvas: var(--sw-background);
+  --vi-surface: var(--sw-surface);
+  --vi-success: var(--sw-success);
+  --vi-warning: var(--sw-warning);
+  --vi-danger: var(--sw-danger);
+  --vi-route-accent: var(--vi-brand);
+  --vi-route-soft: var(--vi-brand-soft);
+  --vi-radius-card: 16px;
+  --vi-radius-panel: 12px;
+  --vi-radius-control: 12px;
+  --vi-shadow-card: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 4%, transparent), 0 8px 24px color-mix(in srgb, var(--sw-brand-ink) 5%, transparent);
+  --vi-shadow-raised: 0 2px 5px color-mix(in srgb, var(--sw-brand-ink) 7%, transparent), 0 16px 38px color-mix(in srgb, var(--sw-brand-ink) 8%, transparent);
+  --vi-shadow-focus: 0 0 0 3px color-mix(in srgb, var(--sw-brand) 12%, transparent);
+  --legacy-brand: var(--vi-brand);
+  --legacy-brand-hover: var(--vi-brand-strong);
+  --legacy-ink: var(--vi-ink);
+  --legacy-canvas: var(--vi-canvas);
+  --legacy-line: var(--vi-line);
+  --legacy-muted: var(--vi-muted);
+  --legacy-success: var(--vi-success);
+  --legacy-warning: var(--vi-warning);
+  --legacy-danger: var(--vi-danger);
+  --legacy-card-radius: var(--vi-radius-card);
+  --legacy-control-radius: var(--vi-radius-control);
+  background: var(--vi-canvas);
+  line-height: 1.4;
+}
+
+/* Shell: calmer hierarchy, stronger brand recognition and complete states. */
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar {
+  isolation: isolate;
+  border-right-color: color-mix(in srgb, var(--sw-disabled) 14%, transparent);
+  background: radial-gradient(circle at 28px 26px, color-mix(in srgb, var(--sw-brand) 22%, transparent), transparent 105px), linear-gradient(180deg, var(--sw-sidebar-top) 0%, var(--sw-brand-ink) 100%);
+  box-shadow: 10px 0 32px color-mix(in srgb, var(--sw-brand-ink) 9%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolesidebar::after {
+  position: absolute;
+  z-index: -1;
+  right: 0;
+  bottom: 56px;
+  left: 0;
+  height: 190px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--sw-brand) 5%, transparent));
+  content: '';
+  pointer-events: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrand {
+  border-bottom-color: color-mix(in srgb, var(--sw-surface) 8%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrand .swbrand-mark img {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--sw-surface) 10%, transparent),
+    0 8px 20px color-mix(in srgb, var(--sw-brand-hover) 34%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarbrandcopy strong {
+  letter-spacing: -0.025em;
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 16%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation {
+  overflow-y: auto;
+  scrollbar-color: color-mix(in srgb, var(--sw-disabled) 24%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button {
+  position: relative;
+  overflow: hidden;
+  color: var(--sw-border-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button::after {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 0;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--sw-disabled);
+  content: '';
+  opacity: 0;
+  transform: scaleY(0.35);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--sw-surface) 7%, transparent), color-mix(in srgb, var(--sw-surface) 3%, transparent));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--sw-brand) 28%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--sw-brand) 27%, transparent), color-mix(in srgb, var(--sw-brand) 15%, transparent));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--sw-surface) 5%, transparent),
+    0 8px 20px color-mix(in srgb, var(--sw-brand-dark) 14%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button[aria-current='page']::after {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarnavigation button[aria-current='page'] > svg {
+  color: var(--sw-border-strong);
+  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--sw-brand) 35%, transparent));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofile {
+  height: 56px;
+  min-height: 56px;
+  border-top-color: color-mix(in srgb, var(--sw-surface) 8%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sw-brand-ink) 10%, transparent), color-mix(in srgb, var(--sw-brand-ink) 22%, transparent));
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy strong {
+  line-height: 16px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofilecopy small {
+  line-height: 14px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .sidebarprofileavatar {
+  border-color: color-mix(in srgb, var(--sw-surface) 25%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--sw-sidebar-top) 32%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consoleheader {
+  border-bottom-color: color-mix(in srgb, var(--sw-border-strong) 84%, transparent);
+  background: color-mix(in srgb, var(--sw-surface) 94%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--sw-brand-ink) 3%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolebreadcrumb > strong {
+  color: var(--vi-ink);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consoleheadersummary {
+  color: var(--sw-muted);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .commandtrigger {
+  border-color: var(--sw-border);
+  border-radius: var(--vi-radius-control);
+  background: var(--sw-surface-subtle);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--sw-surface) 70%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .commandtrigger:hover {
+  border-color: var(--sw-border-strong);
+  background: var(--sw-surface);
+  box-shadow: var(--vi-shadow-focus);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .taskbutton {
+  border-color: color-mix(in srgb, var(--sw-warning) 24%, transparent);
+  background: var(--sw-commerce-warm);
+  color: var(--sw-warning-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .taskbutton span {
+  width: 6px;
+  height: 6px;
+  background: var(--sw-warning-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .taskbutton span::after {
+  content: none;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .avatarbutton {
+  border-color: color-mix(in srgb, var(--sw-brand) 25%, transparent);
+  background: linear-gradient(145deg, var(--sw-background), var(--sw-brand-light));
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--sw-brand) 12%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .operatorcopy strong {
+  line-height: 16px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .operatorcopy em,
+.consolelayout[data-visual-theme='console-v1'] .operatorcopy small {
+  line-height: 14px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopebar {
+  border-bottom-color: var(--sw-border);
+  background: color-mix(in srgb, var(--sw-surface) 88%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopecontext select:hover {
+  background: var(--vi-brand-soft);
+  color: var(--vi-brand-strong);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .scopecontext select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sw-brand) 38%, transparent);
+  outline-offset: 1px;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .workspacebody {
+  background: radial-gradient(circle at 92% 0, color-mix(in srgb, var(--sw-brand) 4%, transparent), transparent 24rem), var(--vi-canvas);
+  scrollbar-color: var(--sw-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooter {
+  border-top-color: var(--sw-border);
+  background: color-mix(in srgb, var(--sw-surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.consolelayout[data-visual-theme='console-v1'] .consolefooterstatus i {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-success) 10%, transparent);
+}
+
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpitpage, .controlpage) > p[role='status'],
+.consolelayout[data-visual-theme='console-v1'] :where(.cockpitpage, .controlpage) > section[role='alert'] {
+  display: grid;
+  min-height: 220px;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid var(--vi-line);
+  border-radius: var(--vi-radius-card);
+  background: var(--sw-surface);
+  color: var(--vi-muted);
+  padding: 32px;
+  text-align: center;
+  box-shadow: var(--vi-shadow-card);
+}

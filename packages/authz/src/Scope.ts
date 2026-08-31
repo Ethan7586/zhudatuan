@@ -8,8 +8,8 @@ export interface Scope {
 }
 
 export interface ScopeGrant {
+  readonly effect: 'allow' | 'deny';
   readonly scope: Scope;
-  readonly permissions: readonly string[];
   readonly effective: string;
   readonly expires: string | null;
 }

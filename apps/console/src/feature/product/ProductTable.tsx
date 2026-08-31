@@ -6,17 +6,16 @@ export type ProductColumnKey = 'category' | 'sku' | 'malls' | 'price' | 'stock' 
 
 interface ProductTableProps {
   readonly rows: readonly Listing[];
-  readonly previewEnabled: boolean;
   readonly visibleColumns: ReadonlySet<ProductColumnKey>;
   readonly selected: ReadonlySet<string>;
   readonly activeId?: string;
   readonly onToggle: (id: string) => void;
   readonly onToggleAll: () => void;
   readonly onOpen: (row: Listing) => void;
-  readonly onBatchPreview: () => void;
+  readonly onBatch: (published: boolean) => void;
 }
 
-export function ProductTable({ rows, previewEnabled, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen, onBatchPreview }: ProductTableProps) {
+export function ProductTable({ rows, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen, onBatch }: ProductTableProps) {
   const allSelected = rows.length > 0 && rows.every((row) => selected.has(row.id));
   return (
     <section className="producttablecard" aria-labelledby="productlisttitle">
@@ -28,12 +27,12 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
           <span>
             已选择当前页 <strong>{selected.size}</strong> 项
           </span>
-          <span>跨页批量仍需 Filter Snapshot 与 action-bound proof</span>
-          <button type="button" onClick={onBatchPreview}>
-            预览影响
+          <span>仅处理当前页已选记录，服务端按可见范围再次收敛</span>
+          <button type="button" onClick={() => onBatch(true)}>
+            批量上架
           </button>
-          <button type="button" disabled title="批量执行合同尚未闭合">
-            批量执行
+          <button type="button" onClick={() => onBatch(false)}>
+            批量下架
           </button>
         </div>
       )}
@@ -56,63 +55,84 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
-              const preview = previewEnabled && row.preview?.kind === 'console-product-v1' ? row.preview : undefined;
-              return (
-                <tr key={row.id} data-active={activeId === row.id ? 'true' : undefined} onClick={() => onOpen(row)}>
-                  <td className="productcheckcell">
-                    <input type="checkbox" aria-label={`选择 ${row.title}`} checked={selected.has(row.id)} onClick={stopClick} onChange={() => onToggle(row.id)} />
-                  </td>
+            {rows.map((row) => (
+              <tr key={row.id} data-active={activeId === row.id ? 'true' : undefined} onClick={() => onOpen(row)}>
+                <td className="productcheckcell">
+                  <input type="checkbox" aria-label={`选择 ${row.title}`} checked={selected.has(row.id)} onClick={stopClick} onChange={() => onToggle(row.id)} />
+                </td>
+                <td>
+                  <div className="productidentity">
+                    <ProductThumbnail row={row} />
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpen(row);
+                      }}
+                    >
+                      <strong>{row.title}</strong>
+                      <span>{row.product_id}</span>
+                    </button>
+                  </div>
+                </td>
+                {visibleColumns.has('category') ? (
                   <td>
-                    <div className="productidentity">
-                      <ProductThumbnail row={row} {...(preview?.tone === undefined ? {} : { tone: preview.tone })} />
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onOpen(row);
-                        }}
-                      >
-                        <strong>{row.title}</strong>
-                        <span>{preview?.spu ?? row.product_id}</span>
-                      </button>
-                    </div>
+                    <CellPair primary={productType(row.product_type)} secondary="供应商合同待补" unavailable />
                   </td>
-                  {visibleColumns.has('category') ? (
-                    <td>
-                      <CellPair primary={preview?.categoryName ?? productType(row.product_type)} secondary={preview?.supplier.name ?? '供应商合同待补'} unavailable={preview === undefined} />
-                    </td>
-                  ) : null}
-                  {visibleColumns.has('sku') ? <td>{preview === undefined ? <Unavailable /> : `${preview.skuCount}/${preview.skuTotal}`}</td> : null}
-                  {visibleColumns.has('malls') ? <td>{preview === undefined ? <Unavailable /> : `${preview.mallCount}/${preview.mallTotal}`}</td> : null}
-                  {visibleColumns.has('price') ? <td className="productmoney">{preview?.priceCents == null ? <Unavailable /> : formatMoney(preview.priceCents)}</td> : null}
-                  {visibleColumns.has('stock') ? <td>{preview?.inventory == null ? <Unavailable /> : formatCount(preview.inventory)}</td> : null}
-                  {visibleColumns.has('status') ? (
-                    <td>
-                      <StatusBadge status={row.status} />
-                    </td>
-                  ) : null}
-                  {visibleColumns.has('updated') ? <td className="producttime">{formatTime(row.cursor_sort)}</td> : null}
+                ) : null}
+                {visibleColumns.has('sku') ? (
                   <td>
-                    <div className="productrowactions">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onOpen(row);
-                        }}
-                      >
-                        <ProductIcon name="eye" />
-                        查看
-                      </button>
-                      <button type="button" aria-label={`${row.title}更多操作`} disabled title="商品写操作尚未闭合" onClick={stopClick}>
-                        <ProductIcon name="more" />
-                      </button>
-                    </div>
+                    <Unavailable />
                   </td>
-                </tr>
-              );
-            })}
+                ) : null}
+                {visibleColumns.has('malls') ? (
+                  <td>
+                    <Unavailable />
+                  </td>
+                ) : null}
+                {visibleColumns.has('price') ? (
+                  <td className="productmoney">
+                    <Unavailable />
+                  </td>
+                ) : null}
+                {visibleColumns.has('stock') ? (
+                  <td>
+                    <Unavailable />
+                  </td>
+                ) : null}
+                {visibleColumns.has('status') ? (
+                  <td>
+                    <StatusBadge status={row.status} />
+                  </td>
+                ) : null}
+                {visibleColumns.has('updated') ? <td className="producttime">{formatTime(row.cursor_sort)}</td> : null}
+                <td>
+                  <div className="productrowactions">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpen(row);
+                      }}
+                    >
+                      <ProductIcon name="eye" />
+                      查看
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`${row.title}更多操作`}
+                      title="打开商品管理操作"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpen(row);
+                      }}
+                    >
+                      <ProductIcon name="more" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -120,9 +140,9 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
   );
 }
 
-function ProductThumbnail({ row, tone }: Readonly<{ row: Listing; tone?: string }>) {
+function ProductThumbnail({ row }: Readonly<{ row: Listing }>) {
   return (
-    <span className="productthumbnail" data-tone={tone ?? 'neutral'}>
+    <span className="productthumbnail" data-tone="neutral">
       {row.cover_url == null || row.cover_url === '' ? <ProductIcon name="cube" /> : <img src={row.cover_url} alt="" />}
     </span>
   );
@@ -184,14 +204,6 @@ function productType(value: string | null | undefined): string {
   if (value === 'physical') return '实物商品';
   if (value === 'digital') return '数字商品';
   return value ?? '分类合同待补';
-}
-
-function formatMoney(cents: number): string {
-  return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(cents / 100);
-}
-
-function formatCount(value: number): string {
-  return new Intl.NumberFormat('zh-CN').format(value);
 }
 
 function formatTime(value: string | undefined): string {

@@ -42,8 +42,7 @@ export class WechatApplicationCatalog {
 function parseApplication(value: unknown): WechatApplication {
   const source = object(value, 'WECHAT_APPLICATION_CONFIG_INVALID');
   exactKeys(source, ['appId', 'scene'], 'WECHAT_APPLICATION_CONFIG_INVALID');
-  if ((source.scene !== 'miniapp' && source.scene !== 'jsapi') || typeof source.appId !== 'string'
-    || !/^wx[A-Za-z0-9]{16}$/.test(source.appId)) invalid();
+  if ((source.scene !== 'miniapp' && source.scene !== 'jsapi') || typeof source.appId !== 'string' || !/^wx[A-Za-z0-9]{16}$/.test(source.appId)) invalid();
   return Object.freeze({ scene: source.scene, appId: source.appId });
 }
 

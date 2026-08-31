@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run typecheck",
     "lint": "npm run typecheck",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --config vitest.config.ts --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
   "exports": {

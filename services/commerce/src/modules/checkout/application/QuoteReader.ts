@@ -1,8 +1,27 @@
-import { createHash } from 'node:crypto';
+import { Money } from '@shop/kernel';
+import { DomainError } from '../../../foundation/domain/DomainError';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { CheckoutQuote, CheckoutSelection, QuoteLine } from '../domain/model/CheckoutQuote';
-import { CheckoutPolicy, type CampaignRule } from '../domain/policy/CheckoutPolicy';
-import type { BenefitChoice, BenefitGateway } from '../../benefit/application/port/BenefitPort';
+import { allParallel } from '../../../foundation/performance/Parallel';
+import type { MemberAccessPort } from '../../access/public';
+import type { BenefitChoice, BenefitGateway } from '../../benefit/public';
+import type { CartReadPort } from '../../cart/public';
+import type { CheckoutCatalogPort } from '../../catalog/public';
+import type { CheckoutExperiencePort } from '../../experience/public';
+import type { CheckoutInvoicePort } from '../../finance/public';
+import type { CheckoutInventoryPort } from '../../inventory/public';
+import type { CheckoutMarketingPort } from '../../marketing/public';
+import type { CheckoutOrderPort } from '../../order/public';
+import type { CheckoutPricingPort } from '../../pricing/public';
+import type { CheckoutQualificationPort } from '../../qualification/public';
+import type { CheckoutQuote } from '../domain/model/CheckoutQuote';
+import type { CheckoutSelection } from '../domain/model/CheckoutSelection';
+import { quoteConflict } from '../domain/error/CheckoutError';
+import { CheckoutPolicy } from '../domain/policy/CheckoutPolicy';
+import type { CheckoutAddressSnapshotPort } from '../public';
+import { allocateLineDiscount, campaignRule, quoteDigest, type CampaignRow, type CartRow, type LineRow, type PolicyRow, type PriceRuleRow, type PurchaseRow } from './QuotePolicySupport';
+import { evaluateLine } from './QuoteLineFactory';
+
+export { quoteDigest } from './QuotePolicySupport';
 
 export interface QuoteVoucherChoice {
   readonly id: string;
@@ -10,259 +29,233 @@ export interface QuoteVoucherChoice {
   readonly version: number;
   readonly program: string;
 }
-
 export interface QuoteVoucherGateway {
   preview(database: OperationDatabase, vouchers: readonly string[], member: string, scope: string): Promise<readonly QuoteVoucherChoice[]>;
 }
-
-interface CartRow {
-  readonly id: string; readonly member_id: string; readonly mall_id: string; readonly application_id: string; readonly version: number;
-  readonly profile_status: string | null; readonly profile_version: number | null; readonly city_code: string | null;
-  readonly address_version: number | null; readonly address_region: string | null; readonly invoice_version: number | null;
-  readonly experience_version: string | null; readonly experience_hash: string | null;
+export interface QuoteReaderDependencies {
+  readonly access: MemberAccessPort;
+  readonly address: CheckoutAddressSnapshotPort;
+  readonly benefit: Pick<BenefitGateway, 'preview'>;
+  readonly cart: CartReadPort;
+  readonly catalog: CheckoutCatalogPort;
+  readonly experience: CheckoutExperiencePort;
+  readonly invoice: CheckoutInvoicePort;
+  readonly inventory: CheckoutInventoryPort;
+  readonly marketing: CheckoutMarketingPort;
+  readonly orders: CheckoutOrderPort;
+  readonly pricing: CheckoutPricingPort;
+  readonly qualification: CheckoutQualificationPort;
+  readonly voucher: QuoteVoucherGateway;
 }
-interface LineRow {
-  readonly listing_id: string; readonly sku_id: string; readonly quantity: number; readonly cart_listing_version: string;
-  readonly listing_title: string | null; readonly listing_version: number | null; readonly listing_status: string | null;
-  readonly product_id: string | null; readonly product_type: string | null; readonly category_id: string | null;
-  readonly product_version: number | null; readonly sku_version: number | null; readonly unit_minor: number | null;
-  readonly price_version: string | null; readonly stockitem_id: string | null; readonly onhand: number | null;
-  readonly safety: number | null; readonly reserved: number | null; readonly stock_version: number | null; readonly provider: string | null;
-  readonly partner_id: string | null;
-}
-interface PolicyRow {
-  readonly id: string; readonly version: number; readonly rule_hash: string; readonly rule: Record<string, unknown>;
-  readonly resources: readonly Readonly<{ kind: string; id: string }>[]; readonly subjects: readonly Readonly<Record<string, unknown>>[];
-  readonly period: string | null; readonly quantity: number | null; readonly amount_minor: number | null;
-}
-interface PurchaseRow { readonly listing_id: string; readonly day_quantity: number; readonly week_quantity: number; readonly month_quantity: number; readonly lifetime_quantity: number; readonly day_minor: number; readonly week_minor: number; readonly month_minor: number; readonly lifetime_minor: number }
-interface CampaignRow { readonly id: string; readonly version: number; readonly rule: Record<string, unknown>; readonly remaining_budget: number }
-interface PriceRuleRow { readonly id: string; readonly version: number; readonly priority: number; readonly kind: string; readonly condition: unknown; readonly effect: unknown }
 
 export class QuoteReader {
   constructor(
-    private readonly benefit: BenefitGateway,
-    private readonly voucher: QuoteVoucherGateway,
-    private readonly policy = new CheckoutPolicy(),
+    private readonly dependencies: QuoteReaderDependencies,
+    private readonly policy = new CheckoutPolicy()
   ) {}
 
-  async read(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CheckoutQuote> {
-    const cart = await this.cart(database, membership, selection);
-    const [lines, policies, purchases, tags, campaigns, priceRules, vouchers, benefits] = await Promise.all([
-      this.lines(database, cart), this.policies(database, cart.mall_id), this.purchases(database, cart.member_id), this.tags(database, cart.member_id),
-      this.campaigns(database, cart.mall_id), this.priceRules(database, cart.mall_id), this.vouchers(database, cart, selection), this.benefits(database, cart, selection),
-    ]);
-    if (lines.length === 0) throw new Error('CART_EMPTY');
-    const evaluated = lines.map((line) => this.line(line, cart, policies, purchases, tags));
-    const subtotal = evaluated.filter(({ accepted }) => accepted).reduce((sum, line) => sum + line.totalMinor, 0);
+  async read(database: OperationDatabase, membership: string, selection: CheckoutSelection, context: Readonly<{ expiresAt: number; signal: AbortSignal }>): Promise<CheckoutQuote> {
+    const cart = await this.cart(database, membership, selection, context);
+    const [lines, policies, purchases, tags, campaigns, priceRules, vouchers, benefits] = await allParallel(
+      [
+        () => this.lines(database, cart, context),
+        () => this.policies(database, cart.mall_id),
+        () => this.purchases(database, cart.member_id),
+        () => this.tags(database, cart.member_id),
+        () => this.campaigns(database, cart.mall_id),
+        () => this.priceRules(database, cart.mall_id),
+        () => this.vouchers(database, cart, selection),
+        () => this.benefits(database, cart, selection),
+      ] as const,
+      { concurrency: 4, ...context }
+    );
+    if (lines.length === 0) throw new DomainError('CART_EMPTY');
+    const evaluated = lines.map((line) => evaluateLine(line, cart, policies, purchases, tags));
+    const subtotal = evaluated.filter(({ accepted }) => accepted).reduce((sum, line) => sum.add(Money.of(line.totalMinor)), Money.zero());
     const promotion = this.policy.promotionDiscount(subtotal, campaigns.map(campaignRule));
     const priced = allocateLineDiscount(evaluated, promotion.amount, subtotal);
-    const payable = subtotal - promotion.amount;
-    const allocation = this.policy.allocateTenders(payable,
-      vouchers.map(({ id, remaining_minor }) => ({ id, amount: remaining_minor })),
-      benefits.map(({ id, available_minor }) => ({ id, amount: selection.benefits.find(({ account }) => account === id)!.amountMinor })));
+    const payable = subtotal.subtract(promotion.amount);
+    const allocation = this.policy.allocateTenders(
+      payable,
+      vouchers.map(({ id, remaining_minor }) => ({ id, amount: Money.of(remaining_minor) })),
+      benefits.map(({ id }) => ({ id, amount: Money.of(selection.benefits.find(({ accountId }) => accountId === id)!.amountMinor) }))
+    );
     const evidence = Object.freeze({
-      cart: { version: cart.version }, profile: { version: cart.profile_version, city: cart.city_code },
-      address: selection.address === null ? null : { id: selection.address, version: cart.address_version, region: cart.address_region },
-      invoice: selection.invoice === null ? null : { id: selection.invoice, version: cart.invoice_version },
+      cart: { version: cart.version, lines: cart.items.map(({ listing, quantity, version }) => ({ listing, quantity, version })) },
+      profile: { version: cart.profile_version, city: cart.city_code },
+      address: selection.addressId === null ? null : { id: selection.addressId, version: cart.address_version, region: cart.address_region },
+      invoice: selection.invoiceId === null ? null : { id: selection.invoiceId, version: cart.invoice_version },
       experience: { version: cart.experience_version, hash: cart.experience_hash },
       qualification: policies.map(({ id, version, rule_hash }) => ({ id, version, hash: rule_hash })),
-      pricing: priceRules, marketing: promotion.evidence,
+      pricing: priceRules,
+      marketing: promotion.evidence,
       vouchers: vouchers.map(({ id, version, program, remaining_minor }) => ({ id, version, program, remainingMinor: remaining_minor })),
       benefits: benefits.map(({ id, version, kind, available_minor }) => ({ id, version, kind, availableMinor: available_minor })),
     });
-    return Object.freeze({ cart: Object.freeze({ id: cart.id, member: cart.member_id, mall: cart.mall_id, application: cart.application_id, version: cart.version }),
-      selection, lines: priced, subtotalMinor: subtotal, discountMinor: promotion.amount, payableMinor: payable,
-      personalMinor: allocation.personal, currency: 'CNY', tenders: Object.freeze(allocation.tenders.map(({ kind, reference, amount }) => ({ kind, reference, amountMinor: amount }))),
-      evidence, rejections: Object.freeze(priced.filter(({ accepted }) => !accepted).map(({ listing, reasons }) => Object.freeze({ listing, reasons }))) });
+    return Object.freeze({
+      cart: Object.freeze({ id: cart.id, member: cart.member_id, mall: cart.mall_id, application: cart.application_id, version: cart.version }),
+      selection,
+      lines: priced,
+      subtotalMinor: subtotal.minor,
+      discountMinor: promotion.amount.minor,
+      payableMinor: payable.minor,
+      personalMinor: allocation.personal.minor,
+      currency: 'CNY',
+      tenders: Object.freeze(allocation.tenders.map(({ kind, reference, amount }) => ({ kind, reference, amountMinor: amount.minor }))),
+      evidence,
+      rejections: Object.freeze(priced.filter(({ accepted }) => !accepted).map(({ listing, reasons }) => Object.freeze({ listing, reasons }))),
+    });
   }
 
-  private async cart(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CartRow> {
-    const result = await database.query<CartRow>(`select cart.id,cart.member_id,cart.mall_id,cart.application_id,cart.version::float8 version,
-      profile.status profile_status,qualification.version::float8 profile_version,qualification.city_code,
-      address.version::float8 address_version,address.region_code address_region,invoice.version::float8 invoice_version,
-      publication.version_id experience_version,publication.content_hash experience_hash
-      from access.membership membership join member.profile profile on profile.id=membership.member_id
-      join cart.cart cart on cart.member_id=profile.id and cart.mall_id=membership.organization_id and cart.state='active'
-      left join qualification.profile qualification on qualification.member_id=profile.id and qualification.scope_id=cart.mall_id
-      left join checkout.address address on address.id=$2 and address.member_id=profile.id and address.status='active'
-      left join invoice.profile invoice on invoice.id=$3 and invoice.owner_id=profile.id and invoice.status='active'
-      left join experience.publication publication on publication.application_id=cart.application_id and publication.state='active'
-      where membership.id=$1`, [membership, selection.address, selection.invoice]);
-    const row = result.rows[0];
-    if (!row) throw new Error('CART_EMPTY');
-    if (selection.address !== null && row.address_version === null) throw new Error('CHECKOUT_ADDRESS_INVALID');
-    if (selection.invoice !== null && row.invoice_version === null) throw new Error('CHECKOUT_INVOICE_INVALID');
-    return row;
+  private async cart(database: OperationDatabase, membership: string, selection: CheckoutSelection, context: Readonly<{ expiresAt: number; signal: AbortSignal }>): Promise<CartRow> {
+    const owner = await this.dependencies.access.profile(database, membership);
+    const cart = await this.dependencies.cart.current(database, owner.member, owner.organization);
+    const [profile, address, invoice, experience] = await allParallel(
+      [
+        () => this.dependencies.qualification.profile(database, owner.member, owner.organization),
+        () => this.dependencies.address.snapshot(database, selection.addressId, owner.member),
+        () => this.dependencies.invoice.snapshot(database, selection.invoiceId, owner.member),
+        () => this.dependencies.experience.published(database, cart.application),
+      ] as const,
+      { concurrency: 4, ...context }
+    );
+    if (selection.addressId !== null && address === null) throw new Error('CHECKOUT_ADDRESS_INVALID');
+    if (selection.invoiceId !== null && invoice === null) throw new Error('CHECKOUT_INVOICE_INVALID');
+    if (cart.version !== selection.cartVersion) return quoteConflict();
+    const byListing = new Map(cart.items.map((line) => [line.listing, line]));
+    const selected = selection.lines.map((line) => {
+      const current = byListing.get(line.listingId);
+      if (!current || current.quantity !== line.quantity || current.version !== line.lineVersion) return quoteConflict();
+      return current;
+    });
+    return Object.freeze({
+      id: cart.id,
+      member_id: owner.member,
+      mall_id: owner.organization,
+      application_id: cart.application,
+      version: cart.version,
+      profile_status: owner.status,
+      qualification_status: profile?.status ?? null,
+      profile_version: profile?.version ?? null,
+      city_code: profile?.city ?? null,
+      address_version: numeric(address, 'version'),
+      address_region: textual(address, 'region_code'),
+      invoice_version: numeric(invoice, 'version'),
+      experience_version: experience?.version ?? null,
+      experience_hash: experience?.hash ?? null,
+      items: Object.freeze(selected),
+    });
   }
 
-  private async lines(database: OperationDatabase, cart: CartRow): Promise<readonly LineRow[]> {
-    const result = await database.query<LineRow>(`select item.listing_id,item.sku_id,item.quantity::float8 quantity,item.listing_version cart_listing_version,
-      listing.title listing_title,listing.version::float8 listing_version,listing.status listing_status,product.id product_id,product.product_type,
-      product.category_id,product.version::float8 product_version,sku.version::float8 sku_version,price.amount_minor::float8 unit_minor,
-      price.effective_at::text price_version,stock.id stockitem_id,stock.onhand::float8 onhand,stock.safety::float8 safety,
-      stock.reserved::float8 reserved,stock.version::float8 stock_version,source.provider,product.owner_partner_id partner_id
-      from cart.item item left join catalog.listing listing on listing.id=item.listing_id and listing.scope_id=$2
-        and listing.status='published' and (listing.effective_at is null or listing.effective_at<=clock_timestamp())
-        and (listing.expires_at is null or listing.expires_at>clock_timestamp())
-      left join catalog.sku sku on sku.id=item.sku_id and sku.id=listing.sku_id and sku.status='active'
-      left join catalog.product product on product.id=sku.product_id and product.status='active'
-      left join lateral(select price.amount_minor,price.effective_at from pricing.pricebook book join pricing.price price on price.book_id=book.id
-        where book.scope_id=$2 and book.status='active' and price.sku_id=item.sku_id and price.effective_at<=clock_timestamp()
-          and (price.expires_at is null or price.expires_at>clock_timestamp()) order by price.effective_at desc,book.id limit 1) price on true
-      left join lateral(select candidate.id,candidate.onhand,candidate.safety,candidate.version,coalesce(sum(reservation.quantity)
-        filter(where reservation.state='active' and reservation.expires_at>clock_timestamp()),0) reserved
-        from inventory.stockitem candidate left join inventory.reservation reservation on reservation.stockitem_id=candidate.id
-        where candidate.scope_id=$2 and candidate.sku_id=item.sku_id and candidate.status='active' group by candidate.id
-        order by candidate.onhand-candidate.safety-coalesce(sum(reservation.quantity) filter(where reservation.state='active'
-          and reservation.expires_at>clock_timestamp()),0) desc,candidate.id limit 1) stock on true
-      left join lateral(select provider from catalog.sourcelisting where sku_id=item.sku_id and scope_id=$2 and status='mapped'
-        order by observed_at desc,id limit 1) source on true where item.cart_id=$1 order by item.sku_id,item.listing_id`, [cart.id, cart.mall_id]);
-    return result.rows;
-  }
-
-  private line(source: LineRow, cart: CartRow, policies: readonly PolicyRow[], purchases: ReadonlyMap<string, PurchaseRow>, tags: ReadonlySet<string>): QuoteLine {
-    const reasons: string[] = [];
-    if (!source.listing_id || source.listing_status !== 'published' || source.product_id === null) reasons.push('LISTING_NOT_PURCHASABLE');
-    if (source.listing_version === null || source.cart_listing_version !== String(source.listing_version)) reasons.push('LISTING_VERSION_CHANGED');
-    if (source.unit_minor === null) reasons.push('PRICE_UNAVAILABLE');
-    if (source.stockitem_id === null) reasons.push('INVENTORY_UNAVAILABLE');
-    else if ((source.onhand ?? 0) - (source.safety ?? 0) - (source.reserved ?? 0) < source.quantity) reasons.push('INVENTORY_INSUFFICIENT');
-    if (cart.profile_status !== 'active' || cart.profile_version === null) reasons.push('QUALIFICATION_PROFILE_INACTIVE');
-    if (cart.experience_version === null) reasons.push('EXPERIENCE_NOT_PUBLISHED');
-    if (source.product_type === 'physical' && cart.address_version === null) reasons.push('ADDRESS_REQUIRED');
-    for (const policy of policies) if (applies(policy, source) && !eligible(policy, source, cart, purchases.get(source.listing_id), tags)) reasons.push(`QUALIFICATION_DENIED:${policy.id}`);
-    const unit = source.unit_minor ?? 0;
-    return Object.freeze({ listing: source.listing_id, sku: source.sku_id, product: source.product_id ?? '', productType: source.product_type ?? 'unknown',
-      category: source.category_id ?? '', title: source.listing_title ?? source.listing_id, quantity: source.quantity, unitMinor: unit,
-      totalMinor: unit * source.quantity, discountMinor: 0, payableMinor: unit * source.quantity, provider: source.provider,
-      partner: source.partner_id, stockitem: source.stockitem_id,
-      versions: Object.freeze({ listing: source.listing_version ?? -1, product: source.product_version ?? -1, sku: source.sku_version ?? -1,
-        price: source.price_version ?? '', stock: source.stock_version ?? -1 }), accepted: reasons.length === 0, reasons: Object.freeze(reasons) });
+  private async lines(database: OperationDatabase, cart: CartRow, context: Readonly<{ expiresAt: number; signal: AbortSignal }>): Promise<readonly LineRow[]> {
+    const listings = cart.items.map(({ listing }) => listing);
+    const skus = cart.items.map(({ sku }) => sku);
+    const [catalog, prices, stocks] = await allParallel(
+      [() => this.dependencies.catalog.items(database, cart.mall_id, listings), () => this.dependencies.pricing.offers(database, cart.mall_id, skus), () => this.dependencies.inventory.availability(database, cart.mall_id, skus)] as const,
+      { concurrency: 4, ...context }
+    );
+    const catalogByListing = new Map(catalog.map((item) => [item.listing, item]));
+    const pricesBySku = new Map(prices.map((price) => [price.sku, price]));
+    const stocksBySku = new Map(stocks.map((stock) => [stock.sku, stock]));
+    return Object.freeze(
+      cart.items.map((item) => {
+        const rawCatalog = catalogByListing.get(item.listing);
+        const product = rawCatalog?.sku === item.sku ? rawCatalog : undefined;
+        const price = pricesBySku.get(item.sku);
+        const stock = stocksBySku.get(item.sku);
+        return Object.freeze({
+          listing_id: item.listing,
+          sku_id: item.sku,
+          quantity: item.quantity,
+          cart_listing_version: item.listingVersion,
+          cart_line_version: item.version,
+          cart_price_version: item.priceVersion,
+          cart_unit_minor: item.unitMinor,
+          listing_title: product?.title ?? item.title,
+          listing_version: product?.listingVersion ?? null,
+          listing_status: product?.listingStatus ?? null,
+          product_id: product?.product ?? null,
+          product_type: product?.productType ?? null,
+          category_id: product?.category ?? null,
+          product_version: product?.productVersion ?? null,
+          sku_version: product?.skuVersion ?? null,
+          unit_minor: price?.amountMinor ?? null,
+          price_version: price?.version ?? null,
+          currency: price?.currency ?? null,
+          stockitem_id: stock?.stockitem ?? null,
+          onhand: stock?.onhand ?? null,
+          safety: stock?.safety ?? null,
+          reserved: stock?.reserved ?? null,
+          stock_version: stock?.version ?? null,
+          provider: product?.provider ?? null,
+          partner_id: product?.partner ?? null,
+        });
+      })
+    );
   }
 
   private async policies(database: OperationDatabase, scope: string): Promise<readonly PolicyRow[]> {
-    return (await database.query<PolicyRow>(`select policy.id,policy.active_version version,version.rule_hash,version.rule,
-      coalesce((select jsonb_agg(jsonb_build_object('kind',resource.kind,'id',resource.resource_id) order by resource.kind,resource.resource_id)
-        from qualification.resource resource where resource.policy_id=policy.id and resource.policy_version=policy.active_version),'[]') resources,
-      coalesce((select jsonb_agg(subject.selector order by subject.kind,subject.selector::text) from qualification.subject subject
-        where subject.policy_id=policy.id and subject.policy_version=policy.active_version),'[]') subjects,
-      limits.period,limits.quantity::float8 quantity,limits.amount_minor::float8 amount_minor from qualification.policy policy
-      join qualification.policyversion version on version.policy_id=policy.id and version.version=policy.active_version
-      left join lateral(select period,quantity,amount_minor from qualification.purchaselimit where policy_id=policy.id
-        and policy_version=policy.active_version order by period limit 1) limits on true
-      where policy.scope_id=$1 and policy.status='published' order by policy.id`, [scope])).rows;
+    return Object.freeze((await this.dependencies.qualification.policies(database, scope)).map((row) => Object.freeze({ ...row, rule_hash: row.hash, amount_minor: row.amountMinor })));
   }
 
   private async purchases(database: OperationDatabase, member: string): Promise<ReadonlyMap<string, PurchaseRow>> {
-    const rows = (await database.query<PurchaseRow>(`select line.listing_id,
-      coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('day',clock_timestamp())),0)::float8 day_quantity,
-      coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('week',clock_timestamp())),0)::float8 week_quantity,
-      coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('month',clock_timestamp())),0)::float8 month_quantity,
-      coalesce(sum(line.quantity),0)::float8 lifetime_quantity,
-      coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('day',clock_timestamp())),0)::float8 day_minor,
-      coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('week',clock_timestamp())),0)::float8 week_minor,
-      coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('month',clock_timestamp())),0)::float8 month_minor,
-      coalesce(sum(line.payable_minor),0)::float8 lifetime_minor from ordering.orderrecord orders join ordering.line line on line.order_id=orders.id
-      where orders.member_id=$1 and orders.lifecycle_state not in('cancelled','closed') group by line.listing_id`, [member])).rows;
-    return new Map(rows.map((row) => [row.listing_id, row]));
+    const rows = await this.dependencies.orders.purchases(database, member);
+    return new Map(
+      rows.map((row) => [
+        row.listing,
+        Object.freeze({
+          listing_id: row.listing,
+          day_quantity: row.dayQuantity,
+          week_quantity: row.weekQuantity,
+          month_quantity: row.monthQuantity,
+          lifetime_quantity: row.lifetimeQuantity,
+          day_minor: row.dayMinor,
+          week_minor: row.weekMinor,
+          month_minor: row.monthMinor,
+          lifetime_minor: row.lifetimeMinor,
+        }),
+      ])
+    );
   }
 
   private async tags(database: OperationDatabase, member: string): Promise<ReadonlySet<string>> {
-    return new Set((await database.query<{ code: string }>(`select code from qualification.tag where member_id=$1
-      and (effective_at is null or effective_at<=clock_timestamp()) and (expires_at is null or expires_at>clock_timestamp()) order by code`, [member])).rows.map(({ code }) => code));
+    return new Set(await this.dependencies.qualification.tags(database, member));
   }
 
   private async campaigns(database: OperationDatabase, scope: string): Promise<readonly CampaignRow[]> {
-    return (await database.query<CampaignRow>(`select id,version::float8 version,rule,(budget_minor-spent_minor)::float8 remaining_budget
-      from marketing.campaign where scope_id=$1 and state='active' and effective_at<=clock_timestamp()
-      and (expires_at is null or expires_at>clock_timestamp()) and budget_minor>spent_minor order by id`, [scope])).rows;
+    return Object.freeze((await this.dependencies.marketing.campaigns(database, scope)).map((row) => Object.freeze({ id: row.id, version: row.version, rule: row.rule, remaining_budget: row.remainingBudget })));
   }
 
   private async priceRules(database: OperationDatabase, scope: string): Promise<readonly PriceRuleRow[]> {
-    return (await database.query<PriceRuleRow>(`select id,version,priority,kind,condition,effect from pricing.rule where scope_id=$1 and status='published'
-      and (effective_at is null or effective_at<=clock_timestamp()) order by priority,id`, [scope])).rows;
+    return this.dependencies.pricing.rules(database, scope);
   }
 
   private async vouchers(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly QuoteVoucherChoice[]> {
-    if (selection.vouchers.length === 0) return [];
-    const rows = await this.voucher.preview(database, selection.vouchers, cart.member_id, cart.mall_id);
-    if (rows.length !== selection.vouchers.length) throw new Error('VOUCHER_NOT_USABLE');
+    if (selection.voucherIds.length === 0) return [];
+    const rows = await this.dependencies.voucher.preview(database, selection.voucherIds, cart.member_id, cart.mall_id);
+    if (rows.length !== selection.voucherIds.length) throw new Error('VOUCHER_NOT_USABLE');
     return rows;
   }
 
   private async benefits(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly BenefitChoice[]> {
     if (selection.benefits.length === 0) return [];
-    const ids = selection.benefits.map(({ account }) => account);
-    const rows = await this.benefit.preview(database, cart.member_id, cart.mall_id, ids);
-    if (rows.length !== ids.length || rows.some((row) => row.available_minor < selection.benefits.find(({ account }) => account === row.id)!.amountMinor)) throw new Error('BENEFIT_BALANCE_INSUFFICIENT');
+    const ids = selection.benefits.map(({ accountId }) => accountId);
+    const rows = await this.dependencies.benefit.preview(database, cart.member_id, cart.mall_id, ids);
+    if (rows.length !== ids.length || rows.some((row) => row.available_minor < selection.benefits.find(({ accountId }) => accountId === row.id)!.amountMinor)) {
+      throw new DomainError('BENEFIT_BALANCE_INSUFFICIENT');
+    }
     return rows;
   }
 }
 
-function campaignRule(row: CampaignRow): CampaignRule {
-  const rule = row.rule;
-  return { id: row.id, version: row.version, fixedMinor: integer(rule.fixedMinor, 0, 0), basisPoints: integer(rule.basisPoints, 0, 10_000),
-    minimumSubtotal: integer(rule.minimumSubtotal, 0, 0), maximumMinor: rule.maximumMinor === undefined ? null : integer(rule.maximumMinor, 0, 0),
-    remainingBudget: row.remaining_budget, stackable: rule.stackable === true, group: typeof rule.exclusiveGroup === 'string' ? rule.exclusiveGroup : row.id };
+function numeric(value: unknown, key: string): number | null {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
+  const result = (value as Readonly<Record<string, unknown>>)[key];
+  return typeof result === 'number' && Number.isSafeInteger(result) ? result : null;
 }
 
-function applies(policy: PolicyRow, line: LineRow): boolean {
-  return policy.resources.length === 0 || policy.resources.some((resource) => resource.id === line.listing_id || resource.id === line.sku_id || resource.id === line.product_id);
-}
-
-function eligible(policy: PolicyRow, line: LineRow, cart: CartRow, purchase: PurchaseRow | undefined, tags: ReadonlySet<string>): boolean {
-  const rule = policy.rule;
-  if (rule.effect === 'deny' || rule.allowed === false) return false;
-  const cities = strings(rule.cityCodes);
-  if (cities.length > 0 && !cities.includes(cart.address_region ?? cart.city_code ?? '')) return false;
-  const required = [...strings(rule.requiredTags), ...policy.subjects.flatMap((subject) => typeof subject.tag === 'string' ? [subject.tag] : [])];
-  if (required.some((tag) => !tags.has(tag)) || strings(rule.excludedTags).some((tag) => tags.has(tag))) return false;
-  if (policy.period === null) return true;
-  const priorQuantity = period(purchase, policy.period, 'quantity');
-  const priorMinor = period(purchase, policy.period, 'minor');
-  return (policy.quantity === null || priorQuantity + line.quantity <= policy.quantity)
-    && (policy.amount_minor === null || priorMinor + (line.unit_minor ?? 0) * line.quantity <= policy.amount_minor);
-}
-
-function period(row: PurchaseRow | undefined, value: string, kind: 'quantity' | 'minor'): number {
-  if (!row || value === 'order') return 0;
-  const key = `${value}_${kind}` as keyof PurchaseRow;
-  const result = row[key];
-  return typeof result === 'number' ? result : 0;
-}
-
-function strings(value: unknown): readonly string[] { return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []; }
-function integer(value: unknown, fallback: number, maximum: number): number {
-  if (value === undefined) return fallback;
-  if (!Number.isSafeInteger(value) || (value as number) < 0 || maximum > 0 && (value as number) > maximum) throw new Error('MARKETING_RULE_INVALID');
-  return value as number;
-}
-
-export function quoteDigest(value: unknown): string { return createHash('sha256').update(JSON.stringify(value)).digest('hex'); }
-
-function allocateLineDiscount(lines: readonly QuoteLine[], discount: number, subtotal: number): readonly QuoteLine[] {
-  if (discount === 0) return Object.freeze(lines.map((line) => Object.freeze({ ...line })));
-  if (subtotal <= 0 || discount < 0 || discount > subtotal) throw new Error('CHECKOUT_DISCOUNT_INVALID');
-  const allocations = lines.map((line, index) => {
-    if (!line.accepted) return { index, amount: 0, remainder: 0 };
-    const numerator = line.totalMinor * discount;
-    return { index, amount: Math.floor(numerator / subtotal), remainder: numerator % subtotal };
-  });
-  let remaining = discount - allocations.reduce((sum, allocation) => sum + allocation.amount, 0);
-  const priority = allocations.filter(({ index }) => lines[index]!.accepted)
-    .sort((left, right) => right.remainder - left.remainder
-      || lines[left.index]!.sku.localeCompare(lines[right.index]!.sku)
-      || lines[left.index]!.listing.localeCompare(lines[right.index]!.listing));
-  if (remaining > priority.length) throw new Error('CHECKOUT_DISCOUNT_ALLOCATION_FAILED');
-  for (let index = 0; index < remaining; index += 1) priority[index]!.amount += 1;
-  const result = lines.map((line, index) => {
-    const lineDiscount = allocations[index]!.amount;
-    return Object.freeze({ ...line, discountMinor: lineDiscount, payableMinor: line.totalMinor - lineDiscount });
-  });
-  remaining = result.reduce((sum, line) => sum + line.discountMinor, 0);
-  if (remaining !== discount || result.reduce((sum, line) => sum + (line.accepted ? line.payableMinor : 0), 0) !== subtotal - discount) {
-    throw new Error('CHECKOUT_DISCOUNT_ALLOCATION_FAILED');
-  }
-  return Object.freeze(result);
+function textual(value: unknown, key: string): string | null {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
+  const result = (value as Readonly<Record<string, unknown>>)[key];
+  return typeof result === 'string' ? result : null;
 }

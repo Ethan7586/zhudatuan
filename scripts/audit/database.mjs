@@ -7,4 +7,3 @@ const result = spawnSync(process.execPath, [join(root, 'scripts/audit/database-c
 process.stdout.write(result.stdout);
 process.stderr.write(result.stderr);
 if (result.status !== 0) process.exitCode = result.status ?? 1;
-

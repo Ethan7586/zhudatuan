@@ -1,11 +1,13 @@
 import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { IdentityPrincipal } from '../../identity/IdentityModule';
-import type { AccessPort } from '../../access/AccessModule';
-import { memberPort } from '../MemberPort';
+import type { IdentityPrincipal } from '../../identity/public/index';
+import type { MemberImportAccessPort } from '../../access/public/index';
 
-export async function importMember(database: OperationDatabase, identities: IdentityPrincipal, access: AccessPort, organization: string,
-  row: Readonly<Record<string, string>>): Promise<void> {
+export interface MemberProfileWriter {
+  ensureImported(database: OperationDatabase, input: Readonly<{ member: string; principal: string; display: string; status: 'active' | 'pending' }>): Promise<void>;
+}
+
+export async function importMember(database: OperationDatabase, identities: IdentityPrincipal, access: MemberImportAccessPort, members: MemberProfileWriter, organization: string, row: Readonly<Record<string, string>>): Promise<void> {
   const display = required(row.displayName, 'DISPLAY_NAME_REQUIRED', 128);
   const employee = required(row.employeeNo, 'EMPLOYEE_NUMBER_REQUIRED', 128);
   const client = row.client || 'storefront';
@@ -15,8 +17,8 @@ export async function importMember(database: OperationDatabase, identities: Iden
   const member = `member:import:${key}`;
   const membership = `membership:import:${key}:${client}`;
   await identities.ensurePending(database, principal);
-  await memberPort.ensureImported(database, { member, principal, display, status: 'pending' });
-  await access.ensureImported(database, { membership, member, organization, client, employee });
+  await members.ensureImported(database, { member, principal, display, status: 'pending' });
+  await access.ensureImported(database, { membership, member, principal, organization, client, employee });
 }
 
 function required(value: string | undefined, code: string, maximum: number): string {

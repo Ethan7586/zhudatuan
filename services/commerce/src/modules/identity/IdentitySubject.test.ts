@@ -18,6 +18,6 @@ describe('canonical identity subjects', () => {
 
   it('preserves normalized non-mobile usernames and rejects malformed phone-like values', () => {
     expect(canonicalIdentitySubject(' Ethan ')).toBe('ethan');
-    expect(() => canonicalMobile('01234')).toThrow('MOBILE_INVALID');
+    expect(() => canonicalMobile('01234')).toThrow('VALIDATION_FAILED');
   });
 });

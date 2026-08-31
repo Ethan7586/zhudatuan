@@ -5,7 +5,7 @@ import { relative, root, ts } from '../source.mjs';
 import { literalText, objectProperties, target, unique, violation } from './catalog.mjs';
 
 export function auditJobs(sourceFiles, sourceSet) {
-  const registryName = path.join(root, 'services/commerce/src/app/jobs.ts');
+  const registryName = path.join(root, 'services/commerce/src/app/JobCatalog.ts');
   if (!fs.existsSync(registryName)) return [violation('JOB_REGISTRY_MISSING', relative(registryName), 'jobs')];
   const sourceFile = sourceFiles.get(registryName);
   if (!sourceFile) return [violation('JOB_REGISTRY_UNPARSED', relative(registryName), 'not in TypeScript program')];
@@ -24,6 +24,10 @@ export function auditJobs(sourceFiles, sourceSet) {
         if (!unique(values, seen, 'JOB', location, id)) return;
         for (const field of ['owner', 'queue', 'concurrency', 'timeout', 'retry', 'lease', 'idempotency', 'deadLetter', 'runbook', 'worker']) {
           if (!properties.has(field)) values.push(violation('JOB_FIELD_MISSING', location, `${id}:${field}`));
+        }
+        const runbook = literalText(properties.get('runbook'));
+        if (!runbook || !runbook.startsWith('docs/operations/') || !fs.existsSync(path.join(root, runbook))) {
+          values.push(violation('JOB_RUNBOOK_INVALID', location, `${id}:${runbook ?? 'missing'}`));
         }
         const worker = literalText(properties.get('worker'));
         if (worker) target(values, 'JOB_WORKER', location, id, worker, sourceSet, { name: 'worker', bind: false });

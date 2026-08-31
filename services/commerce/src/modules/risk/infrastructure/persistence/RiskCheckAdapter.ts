@@ -12,15 +12,26 @@ export class RiskCheckAdapter implements RiskGate {
     const client = await this.pool.connect();
     try {
       await client.query('begin');
-      await applyApiDatabaseContext(client, { tenant: input.scope.tenant ?? '', membership: input.actor.membership,
-        scope: input.scope.id, actor: input.actor.id, trace: input.trace });
+      await applyApiDatabaseContext(client, { tenant: input.scope.tenant ?? '', membership: input.actor.membership, scope: input.scope.id, actor: input.actor.id, trace: input.trace });
       const hierarchy = [...input.scope.path.map(({ id }) => id), input.scope.id];
       if (input.actor.membership === 'public') hierarchy.push('organization-platform-root');
-      const outcome = await new EvaluateRisk(new PgRiskRepository(client)).check({ actor: input.actor.id, operation: input.operation,
-        resource: input.resource ?? null, scope: input.scope.id, scopes: Object.freeze([...new Set(hierarchy)]),
-        trace: input.trace, amountMinor: input.amountMinor ?? null, signals: Object.entries(input.signals ?? {}).map(([type, value]) => signal(type, value, new Date().toISOString())) });
+      const outcome = await new EvaluateRisk(new PgRiskRepository(client)).check({
+        actor: input.actor.id,
+        operation: input.operation,
+        resource: input.resource ?? null,
+        scope: input.scope.id,
+        scopes: Object.freeze([...new Set(hierarchy)]),
+        trace: input.trace,
+        amountMinor: input.amountMinor ?? null,
+        signals: Object.entries(input.signals ?? {}).map(([type, value]) => signal(type, value, new Date().toISOString())),
+      });
       await client.query('commit');
       return outcome;
-    } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
+    } catch (cause) {
+      await client.query('rollback');
+      throw cause;
+    } finally {
+      client.release();
+    }
   }
 }

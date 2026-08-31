@@ -25,9 +25,26 @@ describe('high-risk domain invariants', () => {
 
   it('preserves finance balance and original-tender refund limits', () => {
     const cny = (minor: number) => Money.of(minor, 'CNY');
-    expect(() => new PostingPolicy().assertBalanced([{ side: 'debit', amount: cny(100) }, { side: 'credit', amount: cny(99) }])).toThrow('FINANCE_JOURNAL_UNBALANCED');
-    expect(new AllocationPolicy().allocateRefund([{ tender: 'benefit', amount: cny(80), refundable: cny(50) }, { tender: 'wechat', amount: cny(20), refundable: cny(20) }], cny(60))
-      .map(({ tender, amount }) => [tender, amount.minor])).toEqual([['wechat', 20], ['benefit', 40]]);
+    expect(() =>
+      new PostingPolicy().assertBalanced([
+        { side: 'debit', amount: cny(100) },
+        { side: 'credit', amount: cny(99) },
+      ])
+    ).toThrow('FINANCE_JOURNAL_UNBALANCED');
+    expect(
+      new AllocationPolicy()
+        .allocateRefund(
+          [
+            { tender: 'benefit', amount: cny(80), refundable: cny(50) },
+            { tender: 'wechat', amount: cny(20), refundable: cny(20) },
+          ],
+          cny(60)
+        )
+        .map(({ tender, amount }) => [tender, amount.minor])
+    ).toEqual([
+      ['wechat', 20],
+      ['benefit', 40],
+    ]);
     expect(() => new AllocationPolicy().allocateRefund([{ tender: 'wechat', amount: cny(20), refundable: cny(20) }], cny(21))).toThrow('PAYMENT_REFUND_EXCEEDS_AVAILABLE');
   });
 
@@ -42,31 +59,32 @@ describe('high-risk domain invariants', () => {
 
   it('uses deterministic risk precedence and least-loaded support assignment', () => {
     const engine = new RiskEngine();
-    const decision = (rule: unknown, actor: string, operation: string) => engine.evaluate(new RiskPolicy('policy', 1, rule, 100).rule,
-      { actor, operation, amountMinor: null, velocity: 0, blocked: false, signals: [] }).outcome;
+    const decision = (rule: unknown, actor: string, operation: string) => engine.evaluate(new RiskPolicy('policy', 1, rule, 100).rule, { actor, operation, amountMinor: null, velocity: 0, blocked: false, signals: [] }).outcome;
     expect(decision({ blockedActors: ['actor'], challengeOperations: ['payment'] }, 'actor', 'payment')).toBe('deny');
     expect(decision({ reviewOperations: ['refund'], challengeOperations: ['refund'] }, 'other', 'refund')).toBe('review');
-    const selected = new AssignmentPolicy().decide({ agents: [{ id: 'b', online: true, load: 1, skills: ['order'], scopes: ['mall'] },
-      { id: 'a', online: true, load: 1, skills: ['order'], scopes: ['mall'] }], scope: 'mall', skill: 'order' });
+    const selected = new AssignmentPolicy().decide({
+      agents: [
+        { id: 'b', online: true, load: 1, skills: ['order'], scopes: ['mall'] },
+        { id: 'a', online: true, load: 1, skills: ['order'], scopes: ['mall'] },
+      ],
+      scope: 'mall',
+      skill: 'order',
+    });
     expect(selected?.id).toBe('a');
     const rules = [new AssignmentRule('rule', 'mall', 'order', ['urgent'], 100, true)];
-    expect(new AssignmentPolicy().decide({ agents: [{ id: 'a', online: true, load: 0, skills: ['order'], scopes: ['mall'] }],
-      rules, scope: 'mall', skill: 'order', priority: 'normal' })).toBeNull();
+    expect(new AssignmentPolicy().decide({ agents: [{ id: 'a', online: true, load: 0, skills: ['order'], scopes: ['mall'] }], rules, scope: 'mall', skill: 'order', priority: 'normal' })).toBeNull();
     const ticket = new Ticket('ticket', 'conversation', 'mall', 'urgent', 'resolved', 1);
     ticket.requireTransition('closed');
     expect(() => ticket.requireTransition('assigned')).toThrow('SUPPORT_TICKET_TRANSITION_INVALID');
   });
 
   it('validates notification schemas, redacts undeclared event data and enforces explicit subscription consent', () => {
-    const template = new Template('template', 'mall', 'inapp', 'order.paid', 1, { order: 'string', amount: 'number' }, null,
-      '订单 {{order}}', '已支付 {{amount}} 分', 'active');
+    const template = new Template('template', 'mall', 'inapp', 'order.paid', 1, { order: 'string', amount: 'number' }, null, '订单 {{order}}', '已支付 {{amount}} 分', 'active');
     expect(template.select({ order: 'O1', amount: 100, mobile: '13800000000' })).toEqual({ order: 'O1', amount: 100 });
     expect(template.render(template.body, template.select({ order: 'O1', amount: 100 }))).toBe('已支付 100 分');
-    expect(() => new Template('template', 'mall', 'sms', 'order.paid', 1, {}, null, null, '正文', 'active'))
-      .toThrow('NOTIFICATION_PROVIDER_TEMPLATE_REQUIRED');
+    expect(() => new Template('template', 'mall', 'sms', 'order.paid', 1, {}, null, null, '正文', 'active')).toThrow('NOTIFICATION_PROVIDER_TEMPLATE_REQUIRED');
     expect(() => new Preference('member', 'wechat', 'order.paid', true, 'rejected')).toThrow('NOTIFICATION_SUBSCRIPTION_REJECTED');
-    expect(new Announcement('announcement', 'mall', '公告', '正文', { kind: 'members', members: ['member'] },
-      '2026-08-21T00:00:00Z', '2026-08-22T00:00:00Z', 'published', 0).audience.kind).toBe('members');
+    expect(new Announcement('announcement', 'mall', '公告', '正文', { kind: 'members', members: ['member'] }, '2026-08-21T00:00:00Z', '2026-08-22T00:00:00Z', 'published', 0).audience.kind).toBe('members');
   });
 
   it('hashes passwords with a versioned strong KDF and constant-work missing-user verification', async () => {

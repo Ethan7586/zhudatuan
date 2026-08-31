@@ -1,0 +1,12 @@
+version: 1
+owner: platform
+network: infrastructure/network/Edge.yml
+topology: infrastructure/cloud/Topology.yml
+release:
+  clients: [auth, console, storefront]
+  staticPrefix: releases/{releaseId}/{client}
+  evidencePrefix: production-evidence/{releaseId}
+  pointer: releases/current.json
+  immutableCache: public,max-age=31536000,immutable
+  pointerCache: no-store
+  canaryPercent: [1, 10, 50, 100]

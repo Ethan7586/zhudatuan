@@ -1,0 +1,10 @@
+{
+  "schema": "zhudatuan.releaseeligibility.v1",
+  "derived": true,
+  "releaseEligible": false,
+  "requirements": {
+    "released": 0,
+    "required": 21
+  },
+  "blockers": ["MVP04_ACCEPTANCE_REQUIRED", "MVP11_POWDERCLASS_DEFINITION_REQUIRED", "MVP20_POWDERCLASS_DEFINITION_REQUIRED", "SIGNED_RELEASE_EVIDENCE_REQUIRED"]
+}

@@ -1,0 +1,38 @@
+version: 1
+types:
+  password:
+    callback: false
+    timeout: 3000
+    circuit: { failures: 5, reset: 30000 }
+  otp:
+    callback: false
+    timeout: 5000
+    circuit: { failures: 5, reset: 30000 }
+  wechat:
+    callback: true
+    timeout: 5000
+    circuit: { failures: 5, reset: 30000 }
+  wecomcorp:
+    callback: true
+    timeout: 5000
+    circuit: { failures: 5, reset: 30000 }
+  wecomsuite:
+    callback: true
+    timeout: 5000
+    circuit: { failures: 5, reset: 30000 }
+  oidc:
+    callback: true
+    timeout: 5000
+    circuit: { failures: 5, reset: 30000 }
+security:
+  callbackbases:
+    - https://auth.zhuda.example
+  discoverycache: 3600
+  jwkscache: 900
+  clockskew: 60
+  transactionttl: 300
+  ticketttl: 60
+  preauthttl: 300
+  pkce: S256
+  secretref: ^[a-z][a-z0-9./]{2,127}$
+  redirectref: ^[a-z][a-z0-9]{2,63}$

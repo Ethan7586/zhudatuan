@@ -4,13 +4,13 @@ const CHINA_COUNTRY = /^86(1[3-9][0-9]{9})$/;
 
 export function canonicalMobile(value: string): string {
   const compact = value.trim().replace(/[\s()-]/g, '');
-  if (!MOBILE.test(compact)) throw new Error('MOBILE_INVALID');
+  if (!MOBILE.test(compact)) throw new DomainError('VALIDATION_FAILED');
   if (CHINA_NATIONAL.test(compact)) return `+86${compact}`;
   const withoutPlus = compact.startsWith('+') ? compact.slice(1) : compact;
   const china = CHINA_COUNTRY.exec(withoutPlus);
   if (china) return `+86${china[1]}`;
   const canonical = compact.startsWith('+') ? compact : `+${compact}`;
-  if (!MOBILE.test(canonical)) throw new Error('MOBILE_INVALID');
+  if (!MOBILE.test(canonical)) throw new DomainError('VALIDATION_FAILED');
   return canonical;
 }
 
@@ -18,7 +18,7 @@ export function canonicalIdentitySubject(value: string): string {
   const normalized = value.trim().toLowerCase();
   const compact = normalized.replace(/[\s()-]/g, '');
   if (MOBILE.test(compact)) return canonicalMobile(normalized);
-  if (!normalized) throw new Error('IDENTITY_SUBJECT_INVALID');
+  if (!normalized) throw new DomainError('VALIDATION_FAILED');
   return normalized;
 }
 
@@ -29,3 +29,4 @@ export function identitySubjectVariants(value: string): readonly string[] {
   if (/^\+861[3-9][0-9]{9}$/.test(canonical)) variants.add(canonical.slice(3));
   return Object.freeze([...variants]);
 }
+import { DomainError } from '../../foundation/domain/DomainError';

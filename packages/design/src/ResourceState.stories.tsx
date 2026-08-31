@@ -21,11 +21,7 @@ export const Matrix: Story = {
       {resourceConditions.map((condition) => (
         <section key={condition} aria-label={condition}>
           <h2>{condition}</h2>
-          <ResourceState
-            condition={condition}
-            {...(failureStates.has(condition) ? { error: 'EXPLICIT_ERROR_CONTRACT' } : {})}
-            retry={() => undefined}
-          >
+          <ResourceState condition={condition} {...(failureStates.has(condition) ? { error: 'EXPLICIT_ERROR_CONTRACT' } : {})} retry={() => undefined}>
             <p>最近一次成功读取的数据。</p>
           </ResourceState>
         </section>

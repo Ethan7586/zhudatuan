@@ -6,6 +6,7 @@ export * from './Button';
 export * from './Empty';
 export * from './Error';
 export * from './Form';
+export * from './NavigationIcon';
 export * from './QueryState';
 export * from './RecordTable';
 export * from './ResourcePanel';
