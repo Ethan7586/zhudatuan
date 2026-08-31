@@ -43,7 +43,7 @@ flowchart LR
 
 ### 3.1 契约组织
 
-所有操作定义保存在 `packages/contracts/src/definitions`，由契约生成器产生 SDK、服务端路由注册和前端调用类型。操作标识只在定义层出现一次，禁止在 Console、服务端和测试中各维护一份字符串清单。
+所有操作定义保存在 `packages/contract/definitions/operations.yml`，由契约生成器产生 Contract、OpenAPI、SDK、服务端运行态注册和数据库契约。操作标识只在定义层出现一次；SDK 文件由标识首段推导，服务端归属由 `owner` 推导，禁止在 Console、服务端和测试中各维护字符串清单或产物路径。
 
 契约按以下资源命名：
 
@@ -55,7 +55,7 @@ flowchart LR
 - `issueorder`：发行订单、发行批次和发行明细。
 - `voucher`：单张卡券生命周期。
 - `actionbatch`：批量禁用、启用、作废和延期。
-- `redemption`：金额预占、消费、释放、退款与冲正。
+- `redemption`：金额预占、消费、释放与退款。
 - `vouchersearch`：统一查询、详情、时间线和导出。
 
 ### 3.2 通用请求规则
@@ -78,23 +78,16 @@ flowchart LR
 ### 3.3 标准错误模型
 
 ```ts
-type Problem = {
+type ErrorContract = {
   code: string
   message: string
-  traceId: string
-  fields?: Array<{
-    path: string
-    code: string
-    message: string
-  }>
-  conflict?: {
-    resourceId: string
-    expectedVersion?: number
-    actualVersion?: number
-    currentState?: string
-  }
+  requestId: string
+  retryable?: boolean
+  details?: Record<string, JsonValue>
 }
 ```
+
+字段错误和版本冲突信息统一放入 `details`，字段名由对应操作契约定义；不再建立第二个 Problem DTO。
 
 稳定错误码至少覆盖：
 
@@ -118,159 +111,41 @@ type Problem = {
 
 ### 3.4 目标操作目录
 
-#### 3.4.1 客户档案
+目标操作的唯一机器事实位于 `packages/contract/definitions/operations.yml`；逐项的设计意图、规范 ID、完整路由、权限、策略、MVP 证据、生成模块和验证方式统一记录在 [Operations.md](./Operations.md)。本文只冻结分组与行为规则，避免再复制一份会漂移的操作表。
 
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `PartnerCustomerCreate` | `POST /partner/customers` | Command | 新增客户及联系人 |
-| `PartnerCustomerUpdate` | `PATCH /partner/customers/{id}` | Command | 更新客户和联系人集合 |
-| `PartnerCustomerEnable` | `POST /partner/customers/{id}/enable` | Command | 启用客户 |
-| `PartnerCustomerDisable` | `POST /partner/customers/{id}/disable` | Command | 停用客户，不影响历史发行记录 |
-| `PartnerCustomerGet` | `GET /partner/customers/{id}` | Query | 客户详情 |
-| `PartnerCustomerList` | `GET /partner/customers` | Query | 多条件检索 |
-| `PartnerCustomerOptions` | `GET /partner/customer-options` | Query | 供表单选择的轻量结果 |
+| owner | 资源组 | 规范命名空间 | 数量 |
+| --- | --- | --- | ---: |
+| `partner` | Partner Customer | `partner.customers.*`、`partner.customeroptions.*` | 7 |
+| `approval` | Approval Template、Task、Instance | `approval.templates.*`、`approval.tasks.*`、`approval.instances.*` | 10 |
+| `voucher` | Voucher Product | `voucher.products.*`、`voucher.productoptions.*` | 7 |
+| `voucher` | Credential Pool、Credential、Job | `voucher.credentialpools.*`、`voucher.credentials.*`、`voucher.credentialexports.*`、`voucher.jobs.*` | 10 |
+| `voucher` | Stock Request | `voucher.stockrequests.*`、`voucher.stockrequestoptions.*` | 7 |
+| `voucher` | Issue Order、Issue Batch | `voucher.issueorders.*`、`voucher.issuebatches.*`、`voucher.issueorderexports.*` | 9 |
+| `voucher` | Action Batch | `voucher.actionbatches.*`、`voucher.actionexports.*` | 5 |
+| `voucher` | Activation、Voucher Detail | `voucher.activations.*`、`voucher.vouchers.*` | 7 |
+| `voucher` | Redemption、Tender Hold、Refund | `voucher.redemptions.*`、`voucher.tenderholds.*`、`voucher.refunds.*` | 7 |
+| `voucher` | Search Document、Export Job | `voucher.search.*`、`voucher.searchfacets.*`、`voucher.searchsnapshots.*`、`voucher.searchexports.*`、`voucher.exports.*` | 5 |
+|  | **合计** |  | **74** |
 
-`PartnerCustomerUpdate` 对联系人采用完整意图命令：每项携带 `id` 或为空，服务端在一个事务中计算新增、修改、删除，不让前端逐行调用多个接口。
+冻结规则：
 
-#### 3.4.2 产品档案
+1. 每项必须显式定义 `id`、`owner`、`method`、完整 `/api/v1/**` 路径、`audience`、`permission`、`idempotent`、`idempotency`、`expectedVersion`、`execution`、`availability`、`summary`、`schema` 和 `requirements`。
+2. 74 项在批次 0 全部为 `availability=frozen`。它们生成 Contract、OpenAPI、Schema 和 SDK，但 SDK 的真实 HTTP 执行、服务端路由注册、数据库能力发布和小程序运行态清单均拒绝或排除 frozen 操作。
+3. 对应业务批次实现完成并通过验收后，只把该项切为 `runtime`；不得变更 ID、方法、路径、owner 或重建别名。
+4. 既有 19 个 voucher 操作仍是旧页面和服务的运行态契约，只在批次 6 一次性切换时删除。目标操作不转发、不映射、不复用这些旧路由。
+5. `controller`、`handler` 和 SDK 文件路径不写入 YAML。运行态注册文件由生成器固定，SDK 文件由 ID 首段推导，服务端模块由 `owner` 推导。
 
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `VoucherProductCreate` | `POST /voucher/products` | Command | 创建产品及首个版本 |
-| `VoucherProductRevise` | `POST /voucher/products/{id}/versions` | Command | 创建新版本 |
-| `VoucherProductEnable` | `POST /voucher/products/{id}/enable` | Command | 启用产品 |
-| `VoucherProductDisable` | `POST /voucher/products/{id}/disable` | Command | 停用新业务选择 |
-| `VoucherProductGet` | `GET /voucher/products/{id}` | Query | 产品与版本详情 |
-| `VoucherProductList` | `GET /voucher/products` | Query | 列表检索 |
-| `VoucherProductOptions` | `GET /voucher/product-options` | Query | 仅返回当前可选版本 |
+行为规则：
 
-产品类型使用 `typeCode`，MVP 只有 `storedvalue`。新增积分券或礼包时由类型插件补充规则与表单，不修改发行和审批主流程。
-
-#### 3.4.3 卡号资源
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `CredentialPoolCreate` | `POST /voucher/credential-pools` | Command | 建立资源池 |
-| `CredentialGenerate` | `POST /voucher/credential-pools/{id}/generate` | Async command | 生成卡号和券密 |
-| `CredentialImport` | `POST /voucher/credential-pools/{id}/imports` | Async command | 导入实体卡号 |
-| `CredentialPoolClose` | `POST /voucher/credential-pools/{id}/close` | Command | 关闭未分配资源 |
-| `CredentialPoolGet` | `GET /voucher/credential-pools/{id}` | Query | 资源池统计 |
-| `CredentialPoolList` | `GET /voucher/credential-pools` | Query | 资源池列表 |
-| `CredentialList` | `GET /voucher/credentials` | Query | 单卡号检索 |
-| `CredentialGet` | `GET /voucher/credentials/{id}` | Query | 单卡号详情 |
-| `CredentialExport` | `POST /voucher/credential-exports` | Async query | 导出资源 |
-| `VoucherJobGet` | `GET /voucher/jobs/{id}` | Query | 作业进度和失败摘要 |
-
-生成命令只接收数量、兑换方式和备注；编号规则由 `CredentialGenerator` 配置统一生成，页面不能传编号模板。
-
-#### 3.4.4 备券申请
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `StockRequestCreate` | `POST /voucher/stock-requests` | Command | 新建草稿 |
-| `StockRequestUpdate` | `PATCH /voucher/stock-requests/{id}` | Command | 编辑草稿或驳回单 |
-| `StockRequestSubmit` | `POST /voucher/stock-requests/{id}/submit` | Command | 提交审批并冻结业务快照 |
-| `StockRequestCancel` | `POST /voucher/stock-requests/{id}/cancel` | Command | 取消未通过申请 |
-| `StockRequestGet` | `GET /voucher/stock-requests/{id}` | Query | 详情、额度和审批轨迹 |
-| `StockRequestList` | `GET /voucher/stock-requests` | Query | 列表检索 |
-| `StockRequestOptions` | `GET /voucher/stock-request-options` | Query | 发行订单选择可用额度 |
-
-提交后不允许原地改已审批事实。被驳回的申请可修改后再次提交，形成新的审批实例；旧实例永久保留。
-
-#### 3.4.5 审批配置与待办
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `ApprovalTemplateCreate` | `POST /approval/templates` | Command | 创建模板和首个版本 |
-| `ApprovalTemplateRevise` | `POST /approval/templates/{id}/versions` | Command | 创建新版本 |
-| `ApprovalTemplateEnable` | `POST /approval/templates/{id}/enable` | Command | 启用模板 |
-| `ApprovalTemplateDisable` | `POST /approval/templates/{id}/disable` | Command | 停用模板 |
-| `ApprovalTemplateGet` | `GET /approval/templates/{id}` | Query | 模板详情 |
-| `ApprovalTemplateList` | `GET /approval/templates` | Query | 模板列表 |
-| `ApprovalTaskList` | `GET /approval/tasks` | Query | 我的待办与已办 |
-| `ApprovalTaskApprove` | `POST /approval/tasks/{id}/approve` | Command | 同意 |
-| `ApprovalTaskReject` | `POST /approval/tasks/{id}/reject` | Command | 驳回并填写原因 |
-| `ApprovalInstanceGet` | `GET /approval/instances/{id}` | Query | 审批实例和节点轨迹 |
-
-模板版本通过 `contextType=stockrequest` 与条件规则选择。任务处理由审批模块完成，审批模块只发出结果事件，不直接更新卡券表。
-
-#### 3.4.6 发行订单与批次
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `IssueOrderCreate` | `POST /voucher/issue-orders` | Command | 创建发行订单草稿 |
-| `IssueOrderUpdate` | `PATCH /voucher/issue-orders/{id}` | Command | 编辑草稿 |
-| `IssueOrderSubmit` | `POST /voucher/issue-orders/{id}/submit` | Async command | 占用额度并启动发行 |
-| `IssueOrderCancel` | `POST /voucher/issue-orders/{id}/cancel` | Command | 取消草稿 |
-| `IssueOrderGet` | `GET /voucher/issue-orders/{id}` | Query | 订单、批次和失败明细 |
-| `IssueOrderList` | `GET /voucher/issue-orders` | Query | 实体券/电子券分页列表 |
-| `IssueBatchRetry` | `POST /voucher/issue-batches/{id}/retry` | Async command | 仅重试失败明细 |
-| `IssueBatchGet` | `GET /voucher/issue-batches/{id}` | Query | 批次与逐项结果 |
-| `IssueOrderExport` | `POST /voucher/issue-order-exports` | Async query | 导出订单与发行结果 |
-
-`IssueOrderSubmit` 在同步事务中只完成状态校验、额度提交、实体卡号占用、发行明细创建和作业入队。电子券密钥生成、卡券落库、图片快照处理、投影和通知在作业中完成。
-
-#### 3.4.7 批量操作
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `VoucherActionCreate` | `POST /voucher/action-batches` | Async command | 创建禁用、启用、作废或延期任务 |
-| `VoucherActionGet` | `GET /voucher/action-batches/{id}` | Query | 批次和逐卡结果 |
-| `VoucherActionList` | `GET /voucher/action-batches` | Query | 操作记录列表 |
-| `VoucherActionRetry` | `POST /voucher/action-batches/{id}/retry` | Async command | 重试可重试失败项 |
-| `VoucherActionExport` | `POST /voucher/action-exports` | Async query | 导出操作明细 |
-
-选择方式统一为判别联合：
-
-```ts
-type VoucherSelection =
-  | { mode: 'numbers'; numbers: string[] }
-  | { mode: 'range'; poolId: string; start: string; end: string }
-  | { mode: 'issuebatch'; issueBatchId: string }
-  | { mode: 'query'; searchSnapshotId: string }
-```
-
-MVP 页面开放原型要求的前三种；`query` 为架构内置能力，可以在确认需要后直接开放，无需改领域层。
-
-#### 3.4.8 激活、绑定与单卡查询
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `VoucherActivateSecret` | `POST /voucher/activation/secret` | Command | 仅券密激活 |
-| `VoucherActivateNumberSecret` | `POST /voucher/activation/number-secret` | Command | 券号加券密激活 |
-| `VoucherBind` | `POST /voucher/vouchers/{id}/bind` | Command | 绑定最终用户 |
-| `VoucherUnbind` | `POST /voucher/vouchers/{id}/unbind` | Command | 业务允许时解绑 |
-| `VoucherGet` | `GET /voucher/vouchers/{id}` | Query | 单卡完整详情 |
-| `VoucherGetByNumber` | `GET /voucher/vouchers/by-number/{number}` | Query | 按券号定位 |
-| `VoucherTimeline` | `GET /voucher/vouchers/{id}/timeline` | Query | 全生命周期事件 |
-
-激活不是布尔字段更新，而是状态机命令；绑定同理。接口返回当前状态、用户标识、余额、有效期和版本。
-
-#### 3.4.9 消费、释放、退款与冲正
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `RedemptionQuote` | `POST /voucher/redemptions/quote` | Query | 校验门店、状态、有效期和可用余额 |
-| `TenderHoldCreate` | `POST /voucher/tender-holds` | Command | 创建金额预占 |
-| `TenderHoldConsume` | `POST /voucher/tender-holds/{id}/consume` | Command | 将预占转为消费 |
-| `TenderHoldRelease` | `POST /voucher/tender-holds/{id}/release` | Command | 释放预占 |
-| `RedemptionCreate` | `POST /voucher/redemptions` | Command | 无预占直接核销 |
-| `RedemptionReverse` | `POST /voucher/redemptions/{id}/reversals` | Command | 部分或全额冲正 |
-| `RedemptionGet` | `GET /voucher/redemptions/{id}` | Query | 消费与退款详情 |
-
-所有消费类命令携带外部订单号、外部请求号、门店、金额和币种。相同外部请求号重放返回原收据；请求号相同但参数不同返回 `REDEMPTION_DUPLICATE`。
-
-#### 3.4.10 统一查询与导出
-
-| 操作标识 | 方法与路径 | 类型 | 说明 |
-| --- | --- | --- | --- |
-| `VoucherSearch` | `GET /voucher/search` | Query | 17 类条件统一查询 |
-| `VoucherSearchFacet` | `GET /voucher/search/facets` | Query | 状态、类型、商城等筛选项计数 |
-| `VoucherSearchSnapshot` | `POST /voucher/search-snapshots` | Command | 冻结批量操作的查询范围 |
-| `VoucherSearchExport` | `POST /voucher/search-exports` | Async query | 按同一过滤器导出 |
-| `VoucherExportGet` | `GET /voucher/exports/{id}` | Query | 导出状态及对象地址 |
-
-查询接口只读 `voucher.searchdocument` 及必要的详情表，不跨模块现场联表。所有列表与导出共用同一个 `VoucherFilter` 解析器。
+- `partner.customers.update` 对联系人采用完整意图命令；服务端在单事务内计算新增、修改和删除。
+- Voucher Product 以不可变版本承载面值、有效期和适用范围；MVP 类型仅为 `storedvalue`。
+- Credential 生成命令只接收数量、兑换方式和备注；编号及密钥规则由领域配置统一产生。
+- Stock Request 提交后冻结快照；驳回后修改会创建新的 Approval Instance，历史实例不覆盖。
+- Approval 只推进模板、实例和任务并发布结果，不直接更新 Voucher 存储。
+- Issue Order 提交、Credential 生成/导入、Action Batch 和导出均按矩阵返回 `202` 异步回执；目标集合在入队前冻结，逐项结果可精确重试。
+- 激活、绑定、禁用、作废、过期和退款是状态机命令，不是相互独立的布尔字段更新。
+- Redemption 与 Refund 以外部请求号幂等；重复键且载荷一致返回原收据，载荷不同返回 `REDEMPTION_DUPLICATE`。
+- 搜索、筛选计数和导出共用 Search Document 投影与同一过滤器语义，不跨模块现场联表。
 
 ## 4. 数据一致性与并发设计
 
@@ -286,7 +161,7 @@ MVP 页面开放原型要求的前三种；`query` 为架构内置能力，可�
 | 提交发行 | 锁定额度、增加 committed、占用实体卡号、创建发行批次与明细、入队作业 |
 | 单卡激活/绑定/禁用 | 聚合状态、版本、状态事件、出站事件 |
 | 消费 | 余额、预占/消费记录、状态事件、财务事实、操作收据 |
-| 退款 | 原消费累计冲正、余额恢复、冲正记录、财务事实、收据 |
+| 退款 | 原消费累计退款、余额恢复、退款记录、财务事实、收据 |
 
 跨模块更新通过事务外事件衔接；消费与财务的可靠交付使用现有 Outbox，禁止同步调用另一个模块后同时提交两个数据库事务。
 
@@ -489,7 +364,7 @@ Console 用退避轮询或现有事件通道更新进度；离开页面后重新
 - 资源：可用/占用/已发行卡号数，备券剩余额度。
 - 发行：排队时长、处理速度、失败率、重试次数。
 - 生命周期：激活、绑定、禁用、作废、过期数量。
-- 金额：发行面值、当前负债余额、预占、核销、退款和冲正金额。
+- 金额：发行面值、当前负债余额、预占、核销和退款金额。
 - 作业：队列深度、租约超时、死信数、最老任务年龄。
 - 投影：检查点延迟、失败事件、重建进度。
 - 外部依赖：KMS、对象存储、财务消费者的延迟与失败率。
@@ -505,7 +380,7 @@ Console 用退避轮询或现有事件通道更新进度；离开页面后重新
 3. 每个成功发行明细恰好对应一张 voucher。
 4. voucher 当前余额等于发行面值减净核销金额。
 5. 活跃预占总额不超过卡券余额。
-6. 消费累计冲正不超过原消费。
+6. 消费累计退款不超过原消费。
 7. 状态事件最后版本与聚合版本一致。
 8. 财务事实与发行、核销、退款、作废和过期事件逐项对应。
 9. 搜索投影状态和余额与主表一致。
@@ -544,7 +419,7 @@ Console 用退避轮询或现有事件通道更新进度；离开页面后重新
 | `voucher.statusevent` | `voucher.lifecycleevent` | 规范化事件类型并保留原时间与操作者 |
 | `voucher.reserve` | `voucher.tenderhold` | 仅转换仍有效且语义一致的金额预占 |
 | `voucher.redemption` | `voucher.redemption` | 保留原核销事实与外部订单引用 |
-| `voucher.reversal` | `voucher.reversal` | 支持累计部分冲正 |
+| `voucher.reversal` | `voucher.refund` | 一次迁移并支持累计部分退款 |
 | `voucher.hold` | 不迁移 | 先与 reserve/余额事实对账；确认无独立语义后删除 |
 
 若旧字段不能无歧义映射，迁移生成差异报告并停止切换，不能猜测填充。允许的显式默认值必须在迁移决策记录中逐项列出。
@@ -588,7 +463,7 @@ sequenceDiagram
 | 发行 | 批次数、发行明细数、成功/失败数一致 |
 | 卡券 | 总数、按状态数、面值和余额合计一致 |
 | 用户绑定 | 已绑定卡数及用户分布一致 |
-| 核销 | 笔数、原始金额、净冲正金额一致 |
+| 核销 | 笔数、原始金额、净退款金额一致 |
 | 预占 | 活跃笔数和金额一致 |
 | 事件 | 每卡最后状态可由事件重放得到 |
 | 财务事实 | 发行、核销、退款、作废、过期均有唯一事实 |
@@ -614,20 +489,26 @@ sequenceDiagram
 
 **范围**
 
-- 确认本文和另外三份设计文档。
+- 确认 README、Architecture、Domain、Flows 与本文五份目标设计文档，并建立 Operations 追踪矩阵。
 - 冻结名词、状态机、编号规则、金额口径和 MVP 边界。
-- 在 contracts 中建立目标资源和操作定义。
-- 生成 SDK 和服务端操作注册。
+- 在 `packages/contract` 中建立目标资源和操作定义。
+- 生成 Contract、OpenAPI、SDK；目标操作以 `frozen` 进入契约，但在对应业务批次实现前不进入服务端路由、数据库能力或小程序运行态清单。
 
 **允许文件**
 
 - `docs/voucher/**`
-- `packages/contracts/**`
-- `packages/sdk/**` 中生成代码及生成器必要改动
+- `packages/contract/**`
+- `packages/authz/src/PermissionCatalog.ts`，仅补充现有目录无法表达的审批读取、模板管理和任务决策权限
+- `packages/sdk/**`
+- `tools/contractgen/**`
+- `scripts/check/callgraph/operations.mjs`
+- 生成器直接维护的 `services/commerce/src/foundation/application/OperationHandler.ts`、`services/commerce/src/foundation/interface/OperationController.ts`、`services/commerce/src/app/events.ts` 与 `database/contracts/current.sql`
+- `apps/miniapp/miniprogram/api/identity.js` 和 `operations.js` 仅在该既有目录存在时生成；不得为此新建小程序目录
 
 **验收**
 
 - 操作定义只有一个事实来源。
+- 74 个目标操作全部可由 Contract/OpenAPI/SDK 发现，且全部处于不可路由的 `frozen` 生命周期。
 - 契约生成、类型检查和现有契约测试通过。
 - 旧 voucher 操作不再被新页面引用。
 
@@ -645,7 +526,7 @@ sequenceDiagram
 
 - `services/commerce/src/modules/partner/**`
 - `services/commerce/src/modules/approval/**`
-- 对应 contracts、SDK、迁移和测试
+- 对应 `packages/contract`、SDK、迁移和测试
 
 **验收**
 
@@ -684,7 +565,7 @@ sequenceDiagram
 **范围**
 
 - 生成、导入、发行和批量操作工作者。
-- 激活、绑定、预占、消费、释放、部分退款和冲正。
+- 激活、绑定、预占、消费、释放和部分退款。
 - FinancePort 事实补齐和统一 Outbox 交付。
 - 搜索投影与导出。
 

@@ -54,7 +54,7 @@ export function createFetchReportingDashboardRead(baseUrl: string): OperationMet
 }
 
 function bindDashboardRead(client: OperationExecutor): OperationMethod<"reporting.dashboard.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.dashboard.read","method":"GET","path":"/api/v1/reports/dashboard","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.dashboard.read","method":"GET","path":"/api/v1/reports/dashboard","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingSalesRead(baseUrl: string): OperationMethod<"reporting.sales.read"> {
@@ -62,7 +62,7 @@ export function createFetchReportingSalesRead(baseUrl: string): OperationMethod<
 }
 
 function bindSalesRead(client: OperationExecutor): OperationMethod<"reporting.sales.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.sales.read","method":"GET","path":"/api/v1/reports/sales","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.sales.read","method":"GET","path":"/api/v1/reports/sales","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingProductsRead(baseUrl: string): OperationMethod<"reporting.products.read"> {
@@ -70,7 +70,7 @@ export function createFetchReportingProductsRead(baseUrl: string): OperationMeth
 }
 
 function bindProductsRead(client: OperationExecutor): OperationMethod<"reporting.products.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.products.read","method":"GET","path":"/api/v1/reports/products","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.products.read","method":"GET","path":"/api/v1/reports/products","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingMallsRead(baseUrl: string): OperationMethod<"reporting.malls.read"> {
@@ -78,7 +78,7 @@ export function createFetchReportingMallsRead(baseUrl: string): OperationMethod<
 }
 
 function bindMallsRead(client: OperationExecutor): OperationMethod<"reporting.malls.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.malls.read","method":"GET","path":"/api/v1/reports/malls","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.malls.read","method":"GET","path":"/api/v1/reports/malls","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingCategoriesRead(baseUrl: string): OperationMethod<"reporting.categories.read"> {
@@ -86,7 +86,7 @@ export function createFetchReportingCategoriesRead(baseUrl: string): OperationMe
 }
 
 function bindCategoriesRead(client: OperationExecutor): OperationMethod<"reporting.categories.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.categories.read","method":"GET","path":"/api/v1/reports/categories","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.categories.read","method":"GET","path":"/api/v1/reports/categories","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingChannelsRead(baseUrl: string): OperationMethod<"reporting.channels.read"> {
@@ -94,7 +94,7 @@ export function createFetchReportingChannelsRead(baseUrl: string): OperationMeth
 }
 
 function bindChannelsRead(client: OperationExecutor): OperationMethod<"reporting.channels.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.channels.read","method":"GET","path":"/api/v1/reports/channels","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.channels.read","method":"GET","path":"/api/v1/reports/channels","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingPowderclassRead(baseUrl: string): OperationMethod<"reporting.powderclass.read"> {
@@ -102,7 +102,7 @@ export function createFetchReportingPowderclassRead(baseUrl: string): OperationM
 }
 
 function bindPowderclassRead(client: OperationExecutor): OperationMethod<"reporting.powderclass.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.powderclass.read","method":"GET","path":"/api/v1/reports/powderclass","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.powderclass.read","method":"GET","path":"/api/v1/reports/powderclass","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingVoucherconsumptionRead(baseUrl: string): OperationMethod<"reporting.voucherconsumption.read"> {
@@ -110,7 +110,7 @@ export function createFetchReportingVoucherconsumptionRead(baseUrl: string): Ope
 }
 
 function bindVoucherconsumptionRead(client: OperationExecutor): OperationMethod<"reporting.voucherconsumption.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.voucherconsumption.read","method":"GET","path":"/api/v1/reports/voucherconsumption","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.voucherconsumption.read","method":"GET","path":"/api/v1/reports/voucherconsumption","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingExportsCreate(baseUrl: string): OperationMethod<"reporting.exports.create"> {
@@ -118,7 +118,7 @@ export function createFetchReportingExportsCreate(baseUrl: string): OperationMet
 }
 
 function bindExportsCreate(client: OperationExecutor): OperationMethod<"reporting.exports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.exports.create","method":"POST","path":"/api/v1/reports/exports","audience":"operator","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.exports.create","method":"POST","path":"/api/v1/reports/exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReportingExportsRead(baseUrl: string): OperationMethod<"reporting.exports.read"> {
@@ -126,5 +126,5 @@ export function createFetchReportingExportsRead(baseUrl: string): OperationMetho
 }
 
 function bindExportsRead(client: OperationExecutor): OperationMethod<"reporting.exports.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"reporting.exports.read","method":"GET","path":"/api/v1/reports/exports/{exportid}","audience":"operator","idempotent":true,"pathKeys":["exportid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"reporting.exports.read","method":"GET","path":"/api/v1/reports/exports/{exportid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["exportid"]}));
 }

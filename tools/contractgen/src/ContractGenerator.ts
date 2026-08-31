@@ -13,27 +13,27 @@ interface EventDefinition {
   readonly handlers: readonly string[];
 }
 
-interface CapabilityDefinition {
-  readonly code: string;
-  readonly kind: string;
-  readonly audience?: OperationDefinition['audience'];
-}
-
 interface ErrorDefinition {
   readonly code: string;
   readonly status: number;
 }
 
+type RawOperationDefinition = Omit<OperationDefinition, 'availability' | 'execution' | 'expectedVersion' | 'idempotency' | 'summary'> & Partial<Pick<OperationDefinition, 'availability' | 'execution' | 'expectedVersion' | 'idempotency' | 'summary'>> & Readonly<{
+  controller?: unknown;
+  handler?: unknown;
+  sdk?: unknown;
+}>;
+
 const root = resolve(import.meta.dirname, '../../..');
 const definitions = resolve(root, 'packages/contract/definitions');
-const operations = await catalog<OperationDefinition>('operations.yml', 'operations');
+const rawOperations = await catalog<RawOperationDefinition>('operations.yml', 'operations');
+const operations = normalizeOperations(rawOperations);
+const runtimeOperations = operations.filter((operation) => operation.availability === 'runtime');
 const events = await catalog<EventDefinition>('events.yml', 'events');
-const capabilities = await catalog<CapabilityDefinition>('capabilities.yml', 'capabilities');
 const errors = await catalog<ErrorDefinition>('errors.yml', 'errors');
-validateOperations(operations);
+validateOperations(operations, rawOperations);
 validateEvents(events);
 validatePermissions(operations);
-validateCapabilityAudiences(operations, capabilities);
 validateErrors(errors);
 const check = process.argv.includes('--check');
 const contractSdkOnly = process.argv.includes('--scope=contract-sdk');
@@ -46,7 +46,7 @@ const errorArtifact = errors.map(({ code, status }) => ({ code, status }));
 const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
 if (databaseOnly) {
-  await emitDatabaseArtifact(contractChecksum);
+  await emitDatabaseArtifact(contractChecksum, runtimeOperations);
 } else {
   await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
   await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
@@ -60,7 +60,7 @@ if (databaseOnly) {
   for (const [domain, source] of sdkDomainSources(operations)) {
     await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
   }
-  if (!contractSdkOnly) await emitLegacyArtifacts(contractChecksum);
+  if (!contractSdkOnly) await emitRuntimeArtifacts(contractChecksum, runtimeOperations);
 }
 
 async function catalog<T>(name: string, key: string): Promise<readonly T[]> {
@@ -70,19 +70,57 @@ async function catalog<T>(name: string, key: string): Promise<readonly T[]> {
   return values as readonly T[];
 }
 
-function validateOperations(values: readonly OperationDefinition[]): void {
+function normalizeOperations(values: readonly RawOperationDefinition[]): readonly OperationDefinition[] {
+  return values.map((item) => Object.freeze({
+    id: item.id,
+    owner: item.owner,
+    method: item.method,
+    path: item.path,
+    audience: item.audience,
+    ...(item.permission === undefined ? {} : { permission: item.permission }),
+    idempotent: item.idempotent,
+    idempotency: item.idempotency ?? (item.method === 'GET' || item.audience === 'provider' ? 'none' : 'required'),
+    expectedVersion: item.expectedVersion ?? (item.method === 'GET' ? 'none' : 'optional'),
+    execution: item.execution ?? 'sync',
+    availability: item.availability ?? 'runtime',
+    summary: item.summary ?? item.id,
+    schema: item.schema,
+    requirements: Object.freeze([...item.requirements]),
+  }));
+}
+
+function validateOperations(values: readonly OperationDefinition[], sources: readonly RawOperationDefinition[]): void {
   const ids = new Set<string>();
   const routes = new Set<string>();
-  for (const item of values) {
+  for (const [index, item] of values.entries()) {
+    const source = sources[index]!;
+    const duplicate = ['controller', 'handler', 'sdk'].find((field) => Object.hasOwn(source, field));
+    if (duplicate !== undefined) throw new Error(`OPERATION_DUPLICATE_FACT:${item.id}:${duplicate}`);
     if (!/^[a-z]+(?:\.[a-z]+)+$/.test(item.id) || ids.has(item.id)) throw new Error(`OPERATION_ID_INVALID:${item.id}`);
     const pathAllowed = item.path.startsWith('/api/v1/') || (item.id.startsWith('runtime.health.') && item.path.startsWith('/health/'));
     if (!pathAllowed || routes.has(`${item.method} ${item.path}`)) throw new Error(`OPERATION_ROUTE_INVALID:${item.id}`);
+    if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(item.method)) throw new Error(`OPERATION_METHOD_INVALID:${item.id}`);
+    if (!['public', 'member', 'operator', 'provider'].includes(item.audience)) throw new Error(`OPERATION_AUDIENCE_INVALID:${item.id}`);
+    if (!['runtime', 'frozen'].includes(item.availability)) throw new Error(`OPERATION_AVAILABILITY_INVALID:${item.id}`);
+    if (!['sync', 'async'].includes(item.execution)) throw new Error(`OPERATION_EXECUTION_INVALID:${item.id}`);
+    if (!['none', 'required'].includes(item.idempotency)) throw new Error(`OPERATION_IDEMPOTENCY_INVALID:${item.id}`);
+    if (!['none', 'optional', 'required'].includes(item.expectedVersion)) throw new Error(`OPERATION_VERSION_POLICY_INVALID:${item.id}`);
+    if (typeof item.idempotent !== 'boolean') throw new Error(`OPERATION_IDEMPOTENT_INVALID:${item.id}`);
+    if (item.summary.trim().length === 0) throw new Error(`OPERATION_SUMMARY_INVALID:${item.id}`);
     if (item.schema !== 'exact' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
-    if (item.expectedVersion !== undefined && !['none', 'optional', 'required'].includes(item.expectedVersion)) throw new Error(`OPERATION_EXPECTED_VERSION_INVALID:${item.id}`);
-    if (item.method === 'GET' && item.expectedVersion !== undefined && item.expectedVersion !== 'none') throw new Error(`OPERATION_EXPECTED_VERSION_INVALID:${item.id}`);
     if (item.requirements.length === 0 || item.requirements.some((id) => !/^MVP(?:0[3-9]|1\d|2[0-3])$/.test(id))) throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
     const domain = item.id.split('.')[0]!;
-    if (item.sdk !== `packages/sdk/src/operations/${domain}.ts`) throw new Error(`OPERATION_SDK_TARGET_INVALID:${item.id}`);
+    if (item.availability === 'frozen' && item.owner !== domain) throw new Error(`OPERATION_OWNER_INVALID:${item.id}:${item.owner}`);
+    if (item.availability === 'frozen' && ['availability', 'execution', 'expectedVersion', 'idempotency', 'summary'].some((field) => !Object.hasOwn(source, field))) {
+      throw new Error(`OPERATION_POLICY_NOT_EXPLICIT:${item.id}`);
+    }
+    if (item.method === 'GET' && (!item.idempotent || item.idempotency !== 'none' || item.expectedVersion !== 'none' || item.execution !== 'sync')) {
+      throw new Error(`OPERATION_GET_POLICY_INVALID:${item.id}`);
+    }
+    if (item.method === 'GET' && item.schema === 'exact') throw new Error(`OPERATION_GET_BODY_INVALID:${item.id}`);
+    if (item.execution === 'async' && (item.method === 'GET' || item.idempotency !== 'required')) throw new Error(`OPERATION_ASYNC_POLICY_INVALID:${item.id}`);
+    if (item.idempotency === 'required' && item.method === 'GET') throw new Error(`OPERATION_IDEMPOTENCY_METHOD_INVALID:${item.id}`);
+    if (item.expectedVersion === 'required' && item.method === 'GET') throw new Error(`OPERATION_VERSION_METHOD_INVALID:${item.id}`);
     ids.add(item.id);
     routes.add(`${item.method} ${item.path}`);
   }
@@ -101,17 +139,6 @@ function validatePermissions(values: readonly OperationDefinition[]): void {
   for (const operation of values) {
     if (operation.permission !== undefined && !definitions.has(operation.permission)) {
       throw new Error(`OPERATION_PERMISSION_UNKNOWN:${operation.id}:${operation.permission}`);
-    }
-  }
-}
-
-function validateCapabilityAudiences(values: readonly OperationDefinition[], capabilities: readonly CapabilityDefinition[]): void {
-  const operations = new Map(values.map((operation) => [operation.id, operation]));
-  for (const capability of capabilities) {
-    if (capability.kind !== 'operation') continue;
-    const operation = operations.get(capability.code);
-    if (operation !== undefined && capability.audience !== operation.audience) {
-      throw new Error(`OPERATION_AUDIENCE_DRIFT:${operation.id}:${operation.audience}:${capability.audience ?? 'missing'}`);
     }
   }
 }
@@ -137,29 +164,29 @@ async function emit(path: string, content: string): Promise<void> {
   if (current !== content) throw new Error(`GENERATED_CONTRACT_DRIFT:${path}`);
 }
 
-async function emitLegacyArtifacts(contractChecksum: string): Promise<void> {
+async function emitRuntimeArtifacts(contractChecksum: string, values: readonly OperationDefinition[]): Promise<void> {
   const miniappApi = resolve(root, 'apps/miniapp/miniprogram/api');
   const miniappPresent = await stat(miniappApi)
     .then((entry) => entry.isDirectory())
     .catch(() => false);
   if (miniappPresent) {
     await emit(resolve(miniappApi, 'identity.js'), miniappIdentitySource(contractChecksum));
-    await emit(resolve(miniappApi, 'operations.js'), miniappSource(operations, permissionMetadata));
+    await emit(resolve(miniappApi, 'operations.js'), miniappSource(values, permissionMetadata));
   }
-  await emit(resolve(root, 'services/commerce/src/foundation/application/OperationHandler.ts'), hardenedHandlerSource(operations));
-  await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), hardenedControllerSource(operations));
+  await emit(resolve(root, 'services/commerce/src/foundation/application/OperationHandler.ts'), hardenedHandlerSource(values));
+  await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), hardenedControllerSource(values));
   await emit(resolve(root, 'services/commerce/src/app/events.ts'), eventRegistrySource(events));
 
-  await emitDatabaseArtifact(contractChecksum);
+  await emitDatabaseArtifact(contractChecksum, values);
 }
 
-async function emitDatabaseArtifact(contractChecksum: string): Promise<void> {
+async function emitDatabaseArtifact(contractChecksum: string, values: readonly OperationDefinition[]): Promise<void> {
   const template = await readFile(resolve(root, 'database/contracts/publish.template.sql'), 'utf8');
-  const operationRows = operations.map((item) => sqlRow([item.id, item.owner, item.method, item.path, '1.0.0'])).join(',\n');
+  const operationRows = values.map((item) => sqlRow([item.id, item.owner, item.method, item.path, '1.0.0'])).join(',\n');
   const eventRows = events.map((item) => sqlRow([item.id, item.version, item.owner, item.schema])).join(',\n');
-  const capabilityRows = operations.map((item) => sqlRow([item.id, 'operation', item.id, 1, 'active'])).join(',\n');
-  const bindings = operations.map((item) => sqlRow([item.id, item.id, item.permission ?? null, item.audience])).join(',\n');
-  const usedPermissions = new Set(operations.flatMap((item) => (item.permission ? [item.permission] : [])));
+  const capabilityRows = values.map((item) => sqlRow([item.id, 'operation', item.id, 1, 'active'])).join(',\n');
+  const bindings = values.map((item) => sqlRow([item.id, item.id, item.permission ?? null, item.audience])).join(',\n');
+  const usedPermissions = new Set(values.flatMap((item) => (item.permission ? [item.permission] : [])));
   const permissions = PERMISSION_CATALOG.filter(({ code }) => usedPermissions.has(code))
     .sort((left, right) => left.code.localeCompare(right.code))
     .map(({ code, risk }) => sqlRow([`permission:${hash(code).slice(0, 24)}`, code, risk, 'active']))
@@ -283,12 +310,12 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     .replace("operation.audience === 'public' ? null", "operation.audience === 'public' || operation.audience === 'provider' ? null")
     .replace('const access = operation.audience', 'const resource = operationResource(operation.id, request);\n      const access = operation.audience')
     .replace('Object.values(request.parameters)[0]);', 'resource);')
-    .replace('operationInput(operation.method, request)', 'operationInput(operation.id, operation.method, operation.audience, request, resource)')
+    .replace('operationInput(operation.method, request)', 'operationInput(operation.id, request, resource)')
     .replace(
       'function operationInput(method: string, request: HttpRequest): OperationInput {',
-      'function operationInput(operation: string, method: string, audience: string, request: HttpRequest, resource: string | undefined): OperationInput {'
+      'function operationInput(operation: string, request: HttpRequest, resource: string | undefined): OperationInput {'
     )
-    .replace("if (method !== 'GET' && idempotency === undefined)", "if (method !== 'GET' && audience !== 'provider' && idempotency === undefined)")
+    .replace("if (method !== 'GET' && idempotency === undefined)", "if (OperationCatalog.get(operation as OperationId).idempotency === 'required' && idempotency === undefined)")
     .replace('const normalized = header?.replace(/^W\\/"|"$/g, \'\');', "const normalized = header?.replace(/^W\\//, '').replace(/^\"|\"$/g, '');")
     .replace(
       "if (normalized !== undefined && (!Number.isSafeInteger(expectedVersion) || expectedVersion! < 0)) throw new Error('EXPECTED_VERSION_INVALID');",

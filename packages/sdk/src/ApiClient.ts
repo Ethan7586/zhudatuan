@@ -1,5 +1,5 @@
 import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
-import { canonicalFinancialActionRequest, requiresFinancialActionProof, requiresFinancialExpectedVersion } from '@shop/contract';
+import { canonicalFinancialActionRequest, requiresFinancialActionProof } from '@shop/contract';
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Deadline } from '@shop/kernel/deadline';
@@ -27,10 +27,11 @@ export class ApiClient implements OperationExecutor {
 
   async execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>> {
     if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
-    if (operation.method !== 'GET' && operation.audience !== 'provider' && context.idempotencyKey === undefined) {
+    if (operation.availability === 'frozen') throw new Error('SDK_OPERATION_FROZEN');
+    if (operation.idempotency === 'required' && context.idempotencyKey === undefined) {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
-    if (requiresFinancialExpectedVersion(operation.id) && context.expectedVersion === undefined) {
+    if (operation.expectedVersion === 'required' && context.expectedVersion === undefined) {
       throw new Error('SDK_EXPECTED_VERSION_REQUIRED');
     }
     if (requiresFinancialActionProof(operation.id) && context.proof === undefined) {

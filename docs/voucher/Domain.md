@@ -263,22 +263,22 @@ pending   = committed - issued
 ### 3.10 Redemption 聚合
 
 根：`Redemption`
-实体：`Reversal`
+实体：`Refund`
 
 职责：
 
 - 记录订单或门店核销事实。
-- 支持多个部分冲正。
-- 维护已冲正金额和剩余可冲正金额。
+- 支持多次部分退款。
+- 维护已退款金额和剩余可退款金额。
 
 不变量：
 
 - 核销金额为正且不超过卡券可用余额。
 - 相同 verification 或业务 reference 只产生一次核销。
-- 冲正金额为正。
-- 累计冲正不超过原核销金额。
-- 每个冲正 reference 唯一。
-- 卡券余额恢复和冲正事实在同一事务中完成。
+- 退款金额为正。
+- 累计退款不超过原核销金额。
+- 每个退款 reference 唯一。
+- 卡券余额恢复和退款事实在同一事务中完成。
 
 ### 3.11 ActionBatch 聚合
 
@@ -573,11 +573,11 @@ id、voucher_id、order_id、member_id、amount_minor、state、expires_at、ver
 
 #### `voucher.redemption`
 
-id、voucher_id、verification_id unique、order_id nullable、store_id nullable、amount_minor、reversed_minor、state、redeemed_at、version。
+id、voucher_id、verification_id unique、order_id nullable、store_id nullable、amount_minor、refunded_minor、state、redeemed_at、version。
 
-#### `voucher.reversal`
+#### `voucher.refund`
 
-id、redemption_id、reference_id unique、amount_minor、reason、evidence、occurred_at。只插入；删除现有 `redemption_id unique` 限制。
+id、redemption_id、reference_id unique、amount_minor、reason、evidence、occurred_at。只插入；允许一次核销对应多次部分退款。
 
 关键索引：scope/state/expiry、member/state/expiry、credential、order、状态事件时间、核销 order/time、到期部分索引。
 
@@ -782,11 +782,11 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> completed
-    completed --> partiallyreversed: partial reversal
-    partiallyreversed --> partiallyreversed: another partial reversal
-    completed --> reversed: full reversal
-    partiallyreversed --> reversed: cumulative full reversal
-    reversed --> [*]
+    completed --> partiallyrefunded: partial refund
+    partiallyrefunded --> partiallyrefunded: another partial refund
+    completed --> refunded: full refund
+    partiallyrefunded --> refunded: cumulative full refund
+    refunded --> [*]
 ```
 
 ## 7. 编号规则
@@ -817,7 +817,7 @@ stateDiagram-v2
 - 实体备券最终批准、凭证占用和计数更新。
 - 订单提交、备券 committed 增量、凭证 assigned 和发行批次创建。
 - 单券状态改变、状态事件和 ActionItem 结果。
-- 卡券余额改变、核销或冲正记录及 FinancePort 事实。
+- 卡券余额改变、核销或退款记录及 FinancePort 事实。
 - 批次最终完成、订单完成和发行财务事实。
 
 允许最终一致：
@@ -852,7 +852,7 @@ stateDiagram-v2
 | voucher.voided.v1 | Voucher | Finance、Projection |
 | voucher.expired.v1 | Voucher Jobs | Finance、Projection |
 | voucher.redeemed.v1 | Voucher | Finance、Projection |
-| voucher.reversed.v1 | Voucher | Finance、Projection |
+| voucher.refunded.v1 | Voucher | Finance、Projection |
 | voucher.action.completed.v1 | Voucher Jobs | Projection、Notification |
 
 事件 payload 只包含稳定 ID、业务金额、状态和必要快照，不包含可由消费者读取的整张数据库行。
@@ -867,7 +867,7 @@ type VoucherFinanceFact =
   | { kind: 'issue'; batch: string; count: number; face: Money }
   | { kind: 'receipt'; order: string; amount: Money; reference: string }
   | { kind: 'redeem'; redemption: string; voucher: string; amount: Money }
-  | { kind: 'reverse'; reversal: string; redemption: string; amount: Money }
+  | { kind: 'refund'; refund: string; redemption: string; amount: Money }
   | { kind: 'void'; voucher: string; remaining: Money; reason: string }
   | { kind: 'expire'; voucher: string; remaining: Money };
 ```

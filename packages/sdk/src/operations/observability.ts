@@ -30,7 +30,7 @@ export function createFetchObservabilityClienterrorsCreate(baseUrl: string): Ope
 }
 
 function bindClienterrorsCreate(client: OperationExecutor): OperationMethod<"observability.clienterrors.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"observability.clienterrors.create","method":"POST","path":"/api/v1/telemetry/clienterrors","audience":"member","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"observability.clienterrors.create","method":"POST","path":"/api/v1/telemetry/clienterrors","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchObservabilityClienterrorsRead(baseUrl: string): OperationMethod<"observability.clienterrors.read"> {
@@ -38,5 +38,5 @@ export function createFetchObservabilityClienterrorsRead(baseUrl: string): Opera
 }
 
 function bindClienterrorsRead(client: OperationExecutor): OperationMethod<"observability.clienterrors.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"observability.clienterrors.read","method":"GET","path":"/api/v1/telemetry/clienterrors","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"observability.clienterrors.read","method":"GET","path":"/api/v1/telemetry/clienterrors","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }

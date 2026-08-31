@@ -1,9 +1,13 @@
 import type {
   HttpMethod,
   OperationAudience,
+  OperationAvailability,
+  OperationExecution,
   OperationId,
+  OperationIdempotency,
   OperationInputFor,
   OperationOutputFor,
+  OperationVersionPolicy,
   Schema,
 } from '@shop/contract';
 import { structuralOperationInput, structuralOperationOutput } from '@shop/contract/schema';
@@ -15,6 +19,10 @@ export interface OperationDescriptor<TKey extends OperationId> {
   readonly path: `/api/v1/${string}` | `/health/${string}`;
   readonly audience: OperationAudience;
   readonly idempotent: boolean;
+  readonly idempotency: OperationIdempotency;
+  readonly expectedVersion: OperationVersionPolicy;
+  readonly execution: OperationExecution;
+  readonly availability: OperationAvailability;
   readonly input: Schema<OperationInputFor<TKey>>;
   readonly output: Schema<OperationOutputFor<TKey>>;
 }
@@ -38,6 +46,10 @@ export function defineStructuralOperation<TKey extends OperationId>(definition: 
   path: `/api/v1/${string}` | `/health/${string}`;
   audience: OperationAudience;
   idempotent: boolean;
+  idempotency: OperationIdempotency;
+  expectedVersion: OperationVersionPolicy;
+  execution: OperationExecution;
+  availability: OperationAvailability;
   pathKeys: readonly string[];
 }>): OperationDescriptor<TKey> {
   return Object.freeze({
@@ -46,6 +58,10 @@ export function defineStructuralOperation<TKey extends OperationId>(definition: 
     path: definition.path,
     audience: definition.audience,
     idempotent: definition.idempotent,
+    idempotency: definition.idempotency,
+    expectedVersion: definition.expectedVersion,
+    execution: definition.execution,
+    availability: definition.availability,
     input: structuralOperationInput(definition.pathKeys) as Schema<OperationInputFor<TKey>>,
     output: structuralOperationOutput() as Schema<OperationOutputFor<TKey>>,
   });

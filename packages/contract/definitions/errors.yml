@@ -102,6 +102,10 @@ errors:
     status: 500
   - code: APPLICATION_ROLE_BYPASSRLS
     status: 500
+  - code: APPROVAL_ALREADY_DECIDED
+    status: 409
+  - code: APPROVAL_NOT_ASSIGNED
+    status: 403
   - code: ARTIFACT_MANIFEST_SCHEMA_INVALID
     status: 500
   - code: AUDIT_ACCESS_ID_INVALID
@@ -532,6 +536,8 @@ errors:
     status: 404
   - code: CREDENTIAL_PROVIDER_INVALID
     status: 400
+  - code: CREDENTIAL_SHORTAGE
+    status: 409
   - code: CSRF_TOKEN_INVALID
     status: 403
   - code: CSV_COLUMN_COUNT_INVALID
@@ -558,6 +564,8 @@ errors:
     status: 400
   - code: CUSTOM_ROLE_STATUS_INVALID
     status: 400
+  - code: CUSTOMER_NOT_FOUND
+    status: 404
   - code: CUTOVER_CHECK_INVALID
     status: 400
   - code: CUTOVER_EVIDENCE_AND_RELEASE_REQUIRED
@@ -1300,6 +1308,8 @@ errors:
     status: 409
   - code: INSUFFICIENT_ACCOUNT_BALANCE
     status: 500
+  - code: INSUFFICIENT_BALANCE
+    status: 409
   - code: INSUFFICIENT_INVENTORY
     status: 500
   - code: INSUFFICIENT_SIMULATION_POINTS
@@ -1535,6 +1545,8 @@ errors:
   - code: INVOICE_RED_NOT_ELIGIBLE
     status: 409
   - code: INVOICE_STATE_CONFLICT
+    status: 409
+  - code: ISSUE_ORDER_LOCKED
     status: 409
   - code: JDFRESH_MANIFEST_SIGNATURE_MISSING
     status: 400
@@ -2012,6 +2024,8 @@ errors:
     status: 400
   - code: OPERATION_AUDIENCE_DRIFT
     status: 500
+  - code: OPERATION_FROZEN
+    status: 409
   - code: OPERATION_HANDLER_DUPLICATE
     status: 500
   - code: OPERATION_HANDLER_MISSING
@@ -2037,6 +2051,8 @@ errors:
   - code: OPERATION_ROUTE_DUPLICATE
     status: 500
   - code: OPERATION_ROUTE_INVALID
+    status: 500
+  - code: OPERATION_SUMMARY_INVALID
     status: 500
   - code: OPERATION_UNKNOWN
     status: 404
@@ -2450,12 +2466,16 @@ errors:
     status: 400
   - code: PRODUCT_BRAND_ORPHAN
     status: 500
+  - code: PRODUCT_DISABLED
+    status: 409
   - code: PRODUCT_ID_REQUIRED
     status: 400
   - code: PRODUCT_NOT_FOUND
     status: 404
   - code: PRODUCT_PARTNER_ORPHAN
     status: 500
+  - code: PRODUCT_VERSION_STALE
+    status: 409
   - code: PRODUCTION_AUTH_MODE_INVALID
     status: 500
   - code: PRODUCTION_SHOWCASE_CADDY_MATCHER_MISSING
@@ -2679,6 +2699,8 @@ errors:
   - code: RECONCILIATION_EVIDENCE_INVALID
     status: 400
   - code: RECONCILIATION_NOT_RUNNABLE
+    status: 409
+  - code: REDEMPTION_DUPLICATE
     status: 409
   - code: REDIS_CONNECTION_INVALID
     status: 500
@@ -3260,6 +3282,8 @@ errors:
     status: 400
   - code: SDK_IDEMPOTENCY_KEY_REQUIRED
     status: 400
+  - code: SDK_OPERATION_FROZEN
+    status: 409
   - code: SDK_PATH_VALUE_MISSING
     status: 500
   - code: SDK_SECURE_HASH_SOURCE_UNAVAILABLE
@@ -3412,6 +3436,8 @@ errors:
     status: 400
   - code: STEPUP_REQUIRED
     status: 403
+  - code: STOCK_EXHAUSTED
+    status: 409
   - code: STORE_ROUTE_FORBIDDEN
     status: 403
   - code: STORE_SCOPE_MISSING
@@ -3640,8 +3666,10 @@ errors:
     status: 400
   - code: VOUCHER_DECISION_CONFLICT_OR_SEPARATION
     status: 409
+  - code: VOUCHER_DISABLED
+    status: 409
   - code: VOUCHER_EXPIRED
-    status: 500
+    status: 409
   - code: VOUCHER_EXPIRY_INVALID
     status: 400
   - code: VOUCHER_EXTENSION_NOT_LATER
@@ -3746,6 +3774,8 @@ errors:
     status: 409
   - code: VOUCHER_STAGE_REMAINS
     status: 500
+  - code: VOUCHER_STATE_CONFLICT
+    status: 409
   - code: VOUCHER_STATE_INVALID
     status: 409
   - code: VOUCHER_STATUS_BATCH_NOT_RUNNABLE
@@ -3753,6 +3783,8 @@ errors:
   - code: VOUCHER_TENDER_AMOUNT_INVALID
     status: 400
   - code: VOUCHER_VERSION_CONFLICT
+    status: 409
+  - code: VOUCHER_VOID
     status: 409
   - code: VOUCHER_VOID_HOLD_NOT_FOUND
     status: 404

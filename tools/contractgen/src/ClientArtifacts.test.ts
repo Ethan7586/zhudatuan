@@ -31,7 +31,7 @@ describe('SDK client artifacts', () => {
     const openapi = JSON.stringify(buildOpenapi([reset], new Map()));
 
     expect(openapi).toContain('"x-expected-version":"required"');
-    expect(operationSource([reset], new Map())).toContain('"required","required"');
+    expect(operationSource([reset], new Map())).toContain('"none","required"');
   });
 });
 
@@ -48,8 +48,12 @@ function operation(
     audience,
     owner: id.split('.')[0]!,
     idempotent: true,
+    idempotency: 'none',
+    expectedVersion: 'none',
+    execution: 'sync',
+    availability: 'runtime',
+    summary: id,
     schema: 'structural',
     requirements: ['MVP03'],
-    sdk: `packages/sdk/src/operations/${id.split('.')[0]!}.ts`,
   };
 }
