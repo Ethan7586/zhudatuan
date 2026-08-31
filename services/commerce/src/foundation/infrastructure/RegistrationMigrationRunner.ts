@@ -6,7 +6,11 @@ import type { PoolClient } from 'pg';
 import { Semaphore } from '../performance/Semaphore';
 import type { DatabasePool } from '../persistence/Pool';
 import type { KmsClient } from './KmsClient';
-import { registrationMigrationExecution, type RegistrationMigrationExecution } from './RegistrationMigrationPlan';
+import {
+  registrationMigrationExecution,
+  registrationMigrationLedgerMatches,
+  type RegistrationMigrationExecution,
+} from './RegistrationMigrationPlan';
 
 interface HistoryContract {
   readonly algorithm: 'sha256';
@@ -141,8 +145,7 @@ export class RegistrationMigrationRunner {
   }
 
   private assertLedgerRecord(record: LedgerRecord, execution: RegistrationMigrationExecution, file: string): void {
-    if (record.name !== execution.ledgerName
-      || JSON.stringify(record.statements ?? []) !== JSON.stringify(execution.ledgerStatements)) {
+    if (!registrationMigrationLedgerMatches(file, record.name, record.statements, execution)) {
       throw new Error(`REGISTRATION_MIGRATION_LEDGER_DRIFT:${file}`);
     }
   }

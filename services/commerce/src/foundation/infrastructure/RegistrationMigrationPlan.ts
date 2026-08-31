@@ -14,6 +14,9 @@ interface Transformation {
 
 const PROFILE = 'registration-only/v1';
 const HISTORY_HEAD = '20260820133000';
+const LEGACY_GENERIC_LEDGER_FILES = new Set([
+  '20260831150000_identity_experience_application_commands.sql',
+]);
 const OMITTED_MIGRATIONS = new Map<string, string>([
   ['20260817191000_bootstrap_ethan_platform_owner.sql', 'environment-specific Ethan platform owner fixture'],
   ['20260820132000_platform_owner_reconciliation.sql', 'environment-specific Ethan platform owner reconciliation'],
@@ -94,6 +97,22 @@ export function registrationMigrationExecution(file: string, source: string): Re
     ledgerStatements: Object.freeze(metadata(sourceDigest, sha256(sql), transformation.reason)),
     sql,
   });
+}
+
+export function registrationMigrationLedgerMatches(
+  file: string,
+  existingName: string | null,
+  existingStatements: readonly string[] | null,
+  execution: RegistrationMigrationExecution,
+): boolean {
+  if (existingName !== execution.ledgerName) return false;
+  const statements = existingStatements ?? [];
+  if (JSON.stringify(statements) === JSON.stringify(execution.ledgerStatements)) return true;
+
+  // This migration was first applied by the legacy generic runner, which stored
+  // the exact filename but no statement metadata. Later migrations still verify
+  // its immutable runtime.schemaversion checksum before they can execute.
+  return LEGACY_GENERIC_LEDGER_FILES.has(file) && statements.length === 0;
 }
 
 function metadata(sourceDigest: string, executedDigest: string, reason: string): string[] {
