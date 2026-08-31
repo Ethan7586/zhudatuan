@@ -43,7 +43,8 @@ const openapi = buildOpenapi(operations, permissionMetadata);
 const eventArtifact = stable({ version: 1, events: events.map((item) => ({ type: item.id, version: item.version, module: item.owner })) });
 const permissionArtifact = PERMISSION_CATALOG.map(({ code, category, risk, stepup, scopes }) => ({ code, category, risk, stepup, scopes }));
 const errorArtifact = errors.map(({ code, status }) => ({ code, status }));
-const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
+// OMS links are design provenance; without a path/schema/permission change they do not rotate the published runtime identity.
+const contractChecksum = hash(JSON.stringify({ openapi: contractIdentityOpenapi(openapi), events: eventArtifact, permissions: permissionArtifact, errors: errorArtifact }));
 
 if (databaseOnly) {
   await emitDatabaseArtifact(contractChecksum, runtimeOperations);
@@ -108,7 +109,9 @@ function validateOperations(values: readonly OperationDefinition[], sources: rea
     if (typeof item.idempotent !== 'boolean') throw new Error(`OPERATION_IDEMPOTENT_INVALID:${item.id}`);
     if (item.summary.trim().length === 0) throw new Error(`OPERATION_SUMMARY_INVALID:${item.id}`);
     if (item.schema !== 'exact' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
-    if (item.requirements.length === 0 || item.requirements.some((id) => !/^MVP(?:0[3-9]|1\d|2[0-3])$/.test(id))) throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
+    if (item.requirements.length === 0 || item.requirements.some((id) => !/^(?:MVP(?:0[3-9]|1\d|2[0-3])|OMS-(?:00[1-9]|01[0-4]))$/.test(id))) {
+      throw new Error(`OPERATION_REQUIREMENT_INVALID:${item.id}`);
+    }
     const domain = item.id.split('.')[0]!;
     if (item.availability === 'frozen' && item.owner !== domain) throw new Error(`OPERATION_OWNER_INVALID:${item.id}:${item.owner}`);
     if (item.availability === 'frozen' && ['availability', 'execution', 'expectedVersion', 'idempotency', 'summary'].some((field) => !Object.hasOwn(source, field))) {
@@ -340,6 +343,19 @@ function stable(value: unknown): unknown {
         .sort(([left], [right]) => left.localeCompare(right))
         .map(([key, child]) => [key, stable(child)])
     );
+  return value;
+}
+
+function contractIdentityOpenapi(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(contractIdentityOpenapi);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+      key,
+      key === 'x-requirements' && Array.isArray(child)
+        ? child.filter((requirement) => typeof requirement !== 'string' || !requirement.startsWith('OMS-'))
+        : contractIdentityOpenapi(child),
+    ]));
+  }
   return value;
 }
 
