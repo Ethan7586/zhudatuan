@@ -1,10 +1,27 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, loadEnv, type Plugin, type PluginOption } from 'vite';
 
-export default defineConfig(() => {
+const consoleRoot = fileURLToPath(new URL('.', import.meta.url));
+
+export default defineConfig(({ command, mode }) => {
+  const plugins: PluginOption[] = [react(), tailwindcss()];
+  if (command === 'build') {
+    const source = { ...loadEnv(mode, consoleRoot, ''), ...process.env };
+    const environment = clientBuildEnvironment(source);
+    plugins.push(
+      consoleArtifactPlugin({
+        schema: 'shop.console-artifact.v1',
+        ...buildIdentity(source),
+        ...environment,
+      })
+    );
+  }
   return {
-    plugins: [react(), tailwindcss()],
+    envDir: consoleRoot,
+    plugins,
     build: { manifest: true },
     server: {
       port: 4173,
@@ -25,3 +42,55 @@ export default defineConfig(() => {
     },
   };
 });
+
+function clientBuildEnvironment(source: Readonly<Record<string, string | undefined>>) {
+  const apiBaseUrl = required(source.VITE_API_BASE_URL, 'CLIENT_API_BASE_URL_MISSING');
+  const authBaseUrl = required(source.VITE_AUTH_BASE_URL, 'CLIENT_AUTH_BASE_URL_MISSING');
+  const clientVersion = required(source.VITE_CLIENT_VERSION, 'CLIENT_VERSION_MISSING');
+  if (!/^https:\/\//.test(apiBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(apiBaseUrl)) {
+    throw new Error('CLIENT_API_BASE_URL_INVALID');
+  }
+  if (!/^https:\/\//.test(authBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(authBaseUrl)) {
+    throw new Error('CLIENT_AUTH_BASE_URL_INVALID');
+  }
+  if (!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?$/i.test(clientVersion)) throw new Error('CLIENT_VERSION_INVALID');
+  return {
+    apiBaseUrl: apiBaseUrl.replace(/\/$/, ''),
+    authBaseUrl: authBaseUrl.replace(/\/$/, ''),
+    clientVersion,
+  } as const;
+}
+
+function required(value: string | undefined, error: string): string {
+  if (!value?.trim()) throw new Error(error);
+  return value.trim();
+}
+
+function buildIdentity(source: Readonly<Record<string, string | undefined>>) {
+  const commit = source.SHOP_BUILD_COMMIT?.trim() || source.GITHUB_SHA?.trim() || git(['rev-parse', 'HEAD'], 'CONSOLE_BUILD_COMMIT_MISSING');
+  if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error('CONSOLE_BUILD_COMMIT_INVALID');
+  const sourceTree = source.SHOP_SOURCE_TREE?.trim() || (git(['status', '--porcelain', '--untracked-files=all'], 'CONSOLE_BUILD_SOURCE_TREE_UNKNOWN') === '' ? 'clean' : 'dirty');
+  if (!['clean', 'dirty'].includes(sourceTree)) throw new Error('CONSOLE_BUILD_SOURCE_TREE_INVALID');
+  return { commit, sourceTree } as const;
+}
+
+function git(args: readonly string[], error: string): string {
+  try {
+    return execFileSync('git', args, { cwd: consoleRoot, encoding: 'utf8' }).trim();
+  } catch {
+    throw new Error(error);
+  }
+}
+
+function consoleArtifactPlugin(artifact: Readonly<Record<string, string>>): Plugin {
+  return {
+    name: 'shop-console-artifact',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'console-build.json',
+        source: `${JSON.stringify(artifact, null, 2)}\n`,
+      });
+    },
+  };
+}
