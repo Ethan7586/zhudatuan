@@ -21,3 +21,6 @@ export * from './Table';
 export * from './Theme';
 export * from './Token';
 export * from './WorkspaceShell';
+export * from './WorkspaceHero';
+export * from './WorkspaceMetrics';
+export * from './MasterDetail';
