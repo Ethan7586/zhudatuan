@@ -5,11 +5,12 @@ import { consoleModules } from '../../route/ConsoleModuleRegistry';
 import { selectConsoleNavigationItems } from './ConsoleNavigation';
 
 describe('Console navigation selector', () => {
-  it('derives the approved 11 main items and bottom support in manifest order', () => {
+  it('derives the approved 12 main items and bottom support in navigation order', () => {
     const items = selectConsoleNavigationItems(consoleModules, 'enterprise');
 
     expect(items.filter(({ placement }) => placement === 'main').map(({ moduleId, label, icon, order }) => ({ moduleId, label, icon, order }))).toEqual([
       { moduleId: 'cockpit', label: '经营驾驶舱', icon: 'trend', order: 10 },
+      { moduleId: 'reports', label: '数据报表', icon: 'trend', order: 15 },
       { moduleId: 'control', label: '智慧翼中控台', icon: 'control', order: 20 },
       { moduleId: 'applications', label: '築店 · 商城管理', icon: 'building', order: 30 },
       { moduleId: 'products', label: '商品治理台', icon: 'products', order: 40 },
@@ -43,14 +44,15 @@ describe('Console navigation selector', () => {
     }
   });
 
-  it('keeps disabled navigable, omits hidden, and never emits placement none', () => {
+  it('keeps disabled navigable, omits hidden, and emits restored reports navigation', () => {
     const modules = withStatus('products', 'disabled', withStatus('channels', 'hidden', consoleModules));
     const items = selectConsoleNavigationItems(modules, 'enterprise');
 
     expect(items.find(({ moduleId }) => moduleId === 'products')).toMatchObject({ status: 'disabled', suffix: 'products' });
     expect(items.find(({ moduleId }) => moduleId === 'channels')).toBeUndefined();
-    expect(items.find(({ moduleId }) => moduleId === 'reports')).toBeUndefined();
-    expect(consoleModules.find(({ id }) => id === 'reports')).toMatchObject({ status: 'enabled', navigation: { placement: 'none' } });
+    expect(items.find(({ moduleId }) => moduleId === 'reports')).toMatchObject({
+      status: 'enabled', suffix: 'reports', placement: 'main', order: 15,
+    });
   });
 });
 

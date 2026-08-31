@@ -3,7 +3,7 @@ import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModul
 export const reportsModule = {
   id: 'reports',
   status: 'enabled',
-  navigation: { placement: 'none', group: null, order: 120, label: '数据报表' },
+  navigation: { placement: 'main', group: 'overview', order: 15, label: '数据报表', icon: 'trend' },
   routes: [{
     id: 'reports.index',
     path: 'reports',
