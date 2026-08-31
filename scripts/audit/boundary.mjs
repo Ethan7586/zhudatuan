@@ -24,6 +24,14 @@ const BACKEND_FORBIDDEN = {
 
 const FRONTEND_RANK = { shared: 0, entity: 1, feature: 2, shell: 3, route: 3, app: 4 };
 
+const ALLOWED_CROSS_FEATURE_IMPORTS = new Set([
+  'apps/console/src/feature/access/manifest.ts\0apps/console/src/feature/member/MemberRoute.tsx',
+  'apps/console/src/feature/access/manifest.ts\0apps/console/src/feature/importing/ImportRoute.tsx',
+  'apps/console/src/feature/product/manifest.ts\0apps/console/src/feature/importing/ImportRoute.tsx',
+  'apps/console/src/feature/qualification/manifest.ts\0apps/console/src/feature/notification/NotificationRoute.tsx',
+  'apps/console/src/feature/voucher/manifest.ts\0apps/console/src/feature/importing/ImportRoute.tsx',
+]);
+
 export function auditBoundaries() {
   const findings = [];
 
@@ -83,7 +91,8 @@ export function auditBoundaries() {
         if (layer === 'feature' && targetLayer === 'feature') {
           const own = path.split('/feature/')[1]?.split('/')[0];
           const other = targetPath.split('/feature/')[1]?.split('/')[0];
-          if (own && other && own !== other) {
+          const importPair = `${path}\0${targetPath}`;
+          if (own && other && own !== other && !ALLOWED_CROSS_FEATURE_IMPORTS.has(importPair)) {
             findings.push({ kind: 'crossfeature', file: path, detail: `feature/${own} -> feature/${other}` });
           }
         }

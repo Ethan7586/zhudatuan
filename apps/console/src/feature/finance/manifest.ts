@@ -1,0 +1,72 @@
+import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModuleManifest';
+
+export const financeModule = {
+  id: 'finance',
+  status: 'enabled',
+  navigation: { placement: 'main', group: 'finance-analysis', order: 90, label: '财务与对账台', icon: 'finance' },
+  routes: [
+    {
+      id: 'finance.index',
+      path: 'finance',
+      kind: 'entry',
+      lazy: () => import('./FinanceRoute'),
+      operations: [
+        'finance.overview.read',
+        'finance.reconciliations.read',
+        'finance.policies.read',
+        'finance.policies.preview',
+        'finance.policies.manage',
+        'finance.audit.read',
+      ],
+      presentation: { title: '财务系统', summary: '账务、账单、对账、结算和发票' },
+    },
+    {
+      id: 'finance.entries',
+      path: 'finance/entries',
+      kind: 'child',
+      lazy: () => import('./EntryRoute'),
+      operations: ['finance.entries.read'],
+      presentation: { title: '财务分录', summary: '不可变借贷分录和业务引用' },
+    },
+    {
+      id: 'finance.statements',
+      path: 'finance/statements',
+      kind: 'child',
+      lazy: () => import('./StatementRoute'),
+      operations: ['finance.statements.read'],
+      presentation: { title: '账单', summary: '服务端生成的期间账单' },
+    },
+    {
+      id: 'finance.reconciliations',
+      path: 'finance/reconciliations',
+      kind: 'child',
+      lazy: () => import('./ReconciliationRoute'),
+      operations: ['finance.reconciliations.read'],
+      presentation: { title: '对账', summary: '渠道账单匹配、差异和证据' },
+    },
+    {
+      id: 'finance.settlements',
+      path: 'finance/settlements',
+      kind: 'child',
+      lazy: () => import('./SettlementRoute'),
+      operations: ['finance.settlements.read'],
+      presentation: { title: '结算', summary: '冻结结算、分账和调整状态' },
+    },
+    {
+      id: 'finance.withdrawals',
+      path: 'finance/withdrawals',
+      kind: 'child',
+      lazy: () => import('./WithdrawalRoute'),
+      operations: ['finance.withdrawals.read'],
+      presentation: { title: '提现', summary: '提现申请和支付终态' },
+    },
+    {
+      id: 'finance.invoices',
+      path: 'finance/invoices',
+      kind: 'child',
+      lazy: () => import('./InvoiceRoute'),
+      operations: ['invoice.requests.read'],
+      presentation: { title: '发票', summary: '开票申请、金额和文档状态' },
+    },
+  ],
+} as const satisfies ConsoleModuleManifest<'finance'>;

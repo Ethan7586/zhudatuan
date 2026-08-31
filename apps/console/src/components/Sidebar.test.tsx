@@ -3,9 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
-import { navigationAccessRequirements } from '../route/NavigationAccess';
-import { professionalRoutes } from '../route/ProfessionalRouteCatalog';
-import { workstations } from '../shell/Workstation';
+import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
+import type { ConsoleModuleManifest } from '../entity/navigation/ConsoleModuleManifest';
+import { consoleModules } from '../route/ConsoleModuleRegistry';
 import { Sidebar } from './Sidebar';
 
 const navigationCss = readFileSync('src/shell/navigation.css', 'utf8');
@@ -48,34 +48,32 @@ describe('Sidebar commerce navigation', () => {
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
 
-  it('darkens unavailable systems and prevents navigation', async () => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    renderSidebar('mall', false, onNavigate, {
-      permissions: ['referral.settings.read'],
-      capabilities: ['referral.settings.read'],
-    });
+  it('keeps all 11 main items in order, then profile, then bottom support', () => {
+    const { container } = renderSidebar('enterprise', false, vi.fn());
+    const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
+    const labels = within(primaryNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
+    const profile = container.querySelector('.sidebarprofile');
+    const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
 
-    const unavailable = screen.getByRole('button', { name: '渠道接入系统，没有权限' });
-    expect(unavailable.hasAttribute('disabled')).toBe(true);
-    expect(unavailable.getAttribute('aria-disabled')).toBe('true');
-    expect(within(unavailable).getByText('没有权限')).toBeTruthy();
-    await user.click(unavailable);
-    expect(onNavigate).not.toHaveBeenCalled();
-
-    const referral = screen.getByRole('button', { name: '分销返佣系统' });
-    expect(referral.hasAttribute('disabled')).toBe(false);
+    expect(labels).toEqual([
+      '经营驾驶舱', '智慧翼中控台', '築店 · 商城管理', '商品治理台', '订单管理系统', '分销返佣系统',
+      '渠道接入系统', '卡券治理台', '财务与对账台', '会员与权限', '系统治理台',
+    ]);
+    expect(primaryNavigation.nextElementSibling).toBe(profile);
+    expect(profile?.nextElementSibling).toBe(supportNavigation);
   });
 
-  it('exposes reporting and notification routes from the primary navigation', async () => {
+  it('keeps disabled navigation visible and clickable without native disabling', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
-    renderSidebar('platform', false, onNavigate);
+    renderSidebar('enterprise', false, onNavigate, withStatus('products', 'disabled'));
+    const target = screen.getByRole('button', { name: '商品治理台（已停用）' });
 
-    await user.click(screen.getByRole('button', { name: '数据报表' }));
-    await user.click(screen.getByRole('button', { name: '通知管理' }));
-    expect(onNavigate).toHaveBeenNthCalledWith(1, 'reports');
-    expect(onNavigate).toHaveBeenNthCalledWith(2, 'settings/notification');
+    expect(target.getAttribute('data-status')).toBe('disabled');
+    expect(target.getAttribute('aria-disabled')).toBe('true');
+    expect(target.hasAttribute('disabled')).toBe(false);
+    await user.click(target);
+    expect(onNavigate).toHaveBeenCalledWith('products');
   });
 
   it.each([false, true])('keeps the profile above bottom-pinned customer service when collapsed=%s', async (collapsed) => {
@@ -97,23 +95,31 @@ describe('Sidebar commerce navigation', () => {
     await user.click(supportButton);
     expect(onNavigate).toHaveBeenCalledWith('support');
   });
-});
 
-const allPermissions = [...new Set(Object.values(navigationAccessRequirements).flatMap((requirements) =>
-  requirements.map(({ permission }) => permission)))];
-const allCapabilities = [...new Set(Object.values(navigationAccessRequirements).flatMap((requirements) =>
-  requirements.map(({ capability }) => capability)))];
+  it('does not import legacy route catalogs, workstations, or feature modules', () => {
+    const source = readFileSync('src/components/Sidebar.tsx', 'utf8');
+    expect(source).not.toMatch(/ProfessionalRouteCatalog|Workstation|\.\.\/feature\//);
+  });
+});
 
 function renderSidebar(
   kind: ConsoleScope['kind'],
   collapsed: boolean,
   onNavigate: (suffix: string) => void,
-  access = { permissions: allPermissions, capabilities: allCapabilities },
+  modules: readonly ConsoleModuleManifest[] = consoleModules,
 ) {
+  const items = selectConsoleNavigationItems(modules, kind);
   return render(<div className="consolelayout" data-visual-theme="admin-web-v1">
     <Sidebar active="applications" collapsed={collapsed} displayName="商城管理员" roleLabel="当前范围"
-      scopeKind={kind} professionalRoutes={professionalRoutes} workstations={workstations}
-      permissions={access.permissions} capabilities={access.capabilities}
+      mainItems={items.filter(({ placement }) => placement === 'main')}
+      bottomItems={items.filter(({ placement }) => placement === 'bottom')}
       onNavigate={onNavigate} onToggle={vi.fn()} />
   </div>);
+}
+
+function withStatus(
+  moduleId: ConsoleModuleManifest['id'],
+  status: ConsoleModuleManifest['status'],
+): readonly ConsoleModuleManifest[] {
+  return consoleModules.map((module) => module.id === moduleId ? { ...module, status } : module);
 }

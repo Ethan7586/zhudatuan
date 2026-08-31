@@ -124,6 +124,16 @@
   color: #f1f6ff;
 }
 
+.sidebarnavigation button[data-status='disabled'],
+.sidebarsupport button[data-status='disabled'] {
+  opacity: .52;
+}
+
+.sidebarnavigation button[data-status='disabled']:hover,
+.sidebarsupport button[data-status='disabled']:hover {
+  opacity: .72;
+}
+
 .sidebarlabel {
   overflow: hidden;
   font-size: 14px;
