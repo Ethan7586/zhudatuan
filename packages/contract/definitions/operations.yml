@@ -7,7 +7,7 @@ operations:
     audience: public
     idempotent: true
     schema: structural
-    requirements: &a1
+    requirements:
       - MVP03
       - MVP04
       - MVP05
@@ -29,9 +29,6 @@ operations:
       - MVP21
       - MVP22
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/runtime.ts
   - id: runtime.health.ready
     owner: runtime
     method: GET
@@ -39,10 +36,28 @@ operations:
     audience: public
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/runtime.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: runtime.health.startup
     owner: runtime
     method: GET
@@ -50,10 +65,28 @@ operations:
     audience: public
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/runtime.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: runtime.health.dependency
     owner: runtime
     method: GET
@@ -62,10 +95,28 @@ operations:
     permission: runtime.health.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/runtime.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.sessions.create
     owner: identity
     method: POST
@@ -73,10 +124,28 @@ operations:
     audience: public
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.tickets.exchange
     owner: identity
     method: POST
@@ -84,10 +153,28 @@ operations:
     audience: public
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.session.read
     owner: identity
     method: GET
@@ -96,10 +183,28 @@ operations:
     permission: identity.session.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.session.delete
     owner: identity
     method: DELETE
@@ -108,10 +213,28 @@ operations:
     permission: identity.session.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.sessions.read
     owner: identity
     method: GET
@@ -122,9 +245,6 @@ operations:
     schema: structural
     requirements:
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.sessions.revoke
     owner: identity
     method: DELETE
@@ -135,9 +255,6 @@ operations:
     schema: structural
     requirements:
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.challenges.create
     owner: identity
     method: POST
@@ -145,10 +262,28 @@ operations:
     audience: public
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.invitations.read
     owner: identity
     method: POST
@@ -156,10 +291,28 @@ operations:
     audience: public
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.invitations.create
     owner: identity
     method: POST
@@ -171,9 +324,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.invitations.revoke
     owner: identity
     method: DELETE
@@ -185,9 +335,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.members.create
     owner: identity
     method: POST
@@ -195,10 +342,28 @@ operations:
     audience: public
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.members.manage
     owner: identity
     method: PUT
@@ -210,9 +375,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.members.reset
     owner: identity
     method: PUT
@@ -225,9 +387,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.password.change
     owner: identity
     method: PUT
@@ -236,10 +395,28 @@ operations:
     permission: identity.credential.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.password.verify
     owner: identity
     method: POST
@@ -251,9 +428,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.password.reset
     owner: identity
     method: POST
@@ -261,10 +435,28 @@ operations:
     audience: public
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.mobile.challenge
     owner: identity
     method: POST
@@ -273,10 +465,28 @@ operations:
     permission: identity.mobile.manage
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.mobile.manage
     owner: identity
     method: PUT
@@ -285,10 +495,28 @@ operations:
     permission: identity.mobile.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.stepup.start
     owner: identity
     method: POST
@@ -297,10 +525,28 @@ operations:
     permission: identity.assurance.manage
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.stepup.complete
     owner: identity
     method: POST
@@ -309,10 +555,28 @@ operations:
     permission: identity.assurance.manage
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.wechat.session
     owner: identity
     method: POST
@@ -322,9 +586,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: identity.wechat.bind
     owner: identity
     method: POST
@@ -335,9 +596,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/identity.ts
   - id: organization.layers.read
     owner: organization
     method: GET
@@ -348,9 +606,7 @@ operations:
     schema: structural
     requirements:
       - MVP03
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/organization.ts
+      - OMS-004
   - id: access.center.read
     owner: access
     method: GET
@@ -362,9 +618,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.roles.manage
     owner: access
     method: PUT
@@ -376,9 +629,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.scopes.manage
     owner: access
     method: PUT
@@ -390,9 +640,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.ownership.read
     owner: access
     method: GET
@@ -404,9 +651,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.ownership.transfers.preview
     owner: access
     method: POST
@@ -418,9 +662,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.ownership.transfers.create
     owner: access
     method: POST
@@ -432,9 +673,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.ownership.transfers.accept.preview
     owner: access
     method: POST
@@ -446,9 +684,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.ownership.transfers.accept
     owner: access
     method: POST
@@ -460,9 +695,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.ownership.transfers.cancel
     owner: access
     method: POST
@@ -474,9 +706,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: access.ownership.transfers.cancel.preview
     owner: access
     method: POST
@@ -488,9 +717,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/access.ts
   - id: capability.assignments.read
     owner: capability
     method: GET
@@ -503,9 +729,6 @@ operations:
       - MVP04
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/capability.ts
   - id: capability.assignments.manage
     owner: capability
     method: PUT
@@ -518,9 +741,6 @@ operations:
       - MVP04
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/capability.ts
   - id: partner.partners.read
     owner: partner
     method: GET
@@ -532,9 +752,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/partner.ts
   - id: partner.partners.manage
     owner: partner
     method: PUT
@@ -546,9 +763,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/partner.ts
   - id: organization.stores.read
     owner: partner
     method: GET
@@ -560,9 +774,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/organization.ts
   - id: organization.stores.manage
     owner: partner
     method: PUT
@@ -574,9 +785,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/organization.ts
   - id: member.members.read
     owner: member
     method: GET
@@ -588,9 +796,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/member.ts
   - id: member.profile.read
     owner: member
     method: GET
@@ -599,10 +804,28 @@ operations:
     permission: member.profile.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/member.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: member.addresses.read
     owner: member
     method: GET
@@ -611,10 +834,28 @@ operations:
     permission: member.address.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/member.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: member.addresses.manage
     owner: member
     method: PUT
@@ -623,10 +864,28 @@ operations:
     permission: member.address.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/member.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: member.imports.create
     owner: member
     method: POST
@@ -638,9 +897,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/member.ts
   - id: member.imports.read
     owner: member
     method: GET
@@ -652,9 +908,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/member.ts
   - id: qualification.center.read
     owner: qualification
     method: GET
@@ -666,9 +919,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/qualification.ts
   - id: qualification.decisions.preview
     owner: qualification
     method: POST
@@ -680,9 +930,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/qualification.ts
   - id: qualification.policies.manage
     owner: qualification
     method: PUT
@@ -694,9 +941,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/qualification.ts
   - id: channel.distributors.create
     owner: channel
     method: POST
@@ -707,9 +951,6 @@ operations:
     schema: structural
     requirements:
       - MVP04
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.distributors.read
     owner: channel
     method: GET
@@ -720,9 +961,6 @@ operations:
     schema: structural
     requirements:
       - MVP04
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.distributors.update
     owner: channel
     method: PATCH
@@ -733,9 +971,6 @@ operations:
     schema: structural
     requirements:
       - MVP04
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.distributors.disable
     owner: channel
     method: DELETE
@@ -746,9 +981,6 @@ operations:
     schema: structural
     requirements:
       - MVP04
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.bindings.manage
     owner: channel
     method: PUT
@@ -759,9 +991,6 @@ operations:
     schema: structural
     requirements:
       - MVP04
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.quotas.manage
     owner: channel
     method: PUT
@@ -772,9 +1001,6 @@ operations:
     schema: structural
     requirements:
       - MVP04
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: catalog.pools.read
     owner: catalog
     method: GET
@@ -786,9 +1012,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.pools.attach
     owner: catalog
     method: PUT
@@ -799,9 +1022,6 @@ operations:
     schema: structural
     requirements:
       - MVP03
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.pools.detach
     owner: catalog
     method: DELETE
@@ -812,9 +1032,6 @@ operations:
     schema: structural
     requirements:
       - MVP03
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.pools.allocate
     owner: catalog
     method: POST
@@ -825,9 +1042,6 @@ operations:
     schema: structural
     requirements:
       - MVP04
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.products.create
     owner: catalog
     method: POST
@@ -839,9 +1053,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.products.update
     owner: catalog
     method: PATCH
@@ -853,9 +1064,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.products.archive
     owner: catalog
     method: DELETE
@@ -867,9 +1075,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.listings.read
     owner: catalog
     method: GET
@@ -881,9 +1086,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.listings.publish
     owner: catalog
     method: PUT
@@ -895,9 +1097,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.listings.unpublish
     owner: catalog
     method: DELETE
@@ -909,9 +1108,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.listings.batch
     owner: catalog
     method: POST
@@ -923,9 +1119,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.imports.create
     owner: catalog
     method: POST
@@ -937,9 +1130,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: catalog.imports.read
     owner: catalog
     method: GET
@@ -951,9 +1141,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/catalog.ts
   - id: pricing.rules.create
     owner: pricing
     method: POST
@@ -965,9 +1152,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/pricing.ts
   - id: pricing.rules.publish
     owner: pricing
     method: PUT
@@ -979,9 +1163,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/pricing.ts
   - id: pricing.offers.read
     owner: pricing
     method: GET
@@ -990,10 +1171,28 @@ operations:
     permission: pricing.offer.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/pricing.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: inventory.availability.read
     owner: inventory
     method: GET
@@ -1002,10 +1201,28 @@ operations:
     permission: inventory.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/inventory.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: inventory.imports.create
     owner: inventory
     method: POST
@@ -1017,9 +1234,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/inventory.ts
   - id: inventory.imports.read
     owner: inventory
     method: GET
@@ -1031,9 +1245,6 @@ operations:
     requirements:
       - MVP07
       - MVP16
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/inventory.ts
   - id: marketing.campaigns.read
     owner: marketing
     method: GET
@@ -1042,10 +1253,28 @@ operations:
     permission: marketing.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/marketing.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: referral.settings.read
     owner: referral
     method: GET
@@ -1054,10 +1283,8 @@ operations:
     permission: referral.settings.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.settings.manage
     owner: referral
     method: PUT
@@ -1066,10 +1293,8 @@ operations:
     permission: referral.settings.manage
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.products.read
     owner: referral
     method: GET
@@ -1078,10 +1303,8 @@ operations:
     permission: referral.products.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.products.manage
     owner: referral
     method: PUT
@@ -1090,10 +1313,8 @@ operations:
     permission: referral.products.manage
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.members.read
     owner: referral
     method: GET
@@ -1102,10 +1323,8 @@ operations:
     permission: referral.members.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.members.apply
     owner: referral
     method: POST
@@ -1114,10 +1333,8 @@ operations:
     permission: referral.self.manage
     idempotent: false
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.members.approve
     owner: referral
     method: POST
@@ -1126,10 +1343,8 @@ operations:
     permission: referral.members.approve
     idempotent: false
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.members.disqualify
     owner: referral
     method: POST
@@ -1138,10 +1353,8 @@ operations:
     permission: referral.members.disqualify
     idempotent: false
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.bindings.read
     owner: referral
     method: GET
@@ -1150,10 +1363,8 @@ operations:
     permission: referral.bindings.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.bindings.create
     owner: referral
     method: POST
@@ -1162,10 +1373,8 @@ operations:
     permission: referral.self.manage
     idempotent: false
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.commissions.read
     owner: referral
     method: GET
@@ -1174,10 +1383,8 @@ operations:
     permission: referral.commissions.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.earnings.read
     owner: referral
     method: GET
@@ -1186,10 +1393,8 @@ operations:
     permission: referral.self.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.links.read
     owner: referral
     method: GET
@@ -1198,10 +1403,8 @@ operations:
     permission: referral.self.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.withdrawals.read
     owner: referral
     method: GET
@@ -1210,10 +1413,8 @@ operations:
     permission: referral.self.read
     idempotent: true
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: referral.withdrawals.create
     owner: referral
     method: POST
@@ -1222,10 +1423,8 @@ operations:
     permission: referral.withdrawals.create
     idempotent: false
     schema: structural
-    requirements: [MVP04]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/referral.ts
+    requirements:
+      - MVP04
   - id: reporting.dashboard.read
     owner: reporting
     method: GET
@@ -1237,9 +1436,7 @@ operations:
     requirements:
       - MVP05
       - MVP14
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
+      - OMS-012
   - id: reporting.sales.read
     owner: reporting
     method: GET
@@ -1251,9 +1448,7 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
+      - OMS-012
   - id: reporting.products.read
     owner: reporting
     method: GET
@@ -1265,9 +1460,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.malls.read
     owner: reporting
     method: GET
@@ -1279,9 +1471,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.categories.read
     owner: reporting
     method: GET
@@ -1293,9 +1482,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.channels.read
     owner: reporting
     method: GET
@@ -1307,9 +1493,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.powderclass.read
     owner: reporting
     method: GET
@@ -1321,9 +1504,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.voucherconsumption.read
     owner: reporting
     method: GET
@@ -1335,9 +1515,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.exports.create
     owner: reporting
     method: POST
@@ -1349,9 +1526,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: reporting.exports.read
     owner: reporting
     method: GET
@@ -1363,9 +1537,6 @@ operations:
     requirements:
       - MVP11
       - MVP20
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
   - id: experience.applications.create
     owner: experience
     method: POST
@@ -1377,9 +1548,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.published.read
     owner: experience
     method: GET
@@ -1390,9 +1558,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.applications.copy
     owner: experience
     method: POST
@@ -1404,9 +1569,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.applications.read
     owner: experience
     method: GET
@@ -1418,9 +1580,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.applications.update
     owner: experience
     method: PATCH
@@ -1432,9 +1591,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.versions.save
     owner: experience
     method: POST
@@ -1446,9 +1602,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.versions.validate
     owner: experience
     method: POST
@@ -1460,9 +1613,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.versions.publish
     owner: experience
     method: PUT
@@ -1474,9 +1624,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: experience.versions.restore
     owner: experience
     method: POST
@@ -1488,9 +1635,6 @@ operations:
     requirements:
       - MVP06
       - MVP15
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/experience.ts
   - id: cart.current.read
     owner: cart
     method: GET
@@ -1499,10 +1643,28 @@ operations:
     permission: cart.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/cart.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: cart.items.put
     owner: cart
     method: PUT
@@ -1511,10 +1673,28 @@ operations:
     permission: cart.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/cart.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: cart.items.batch
     owner: cart
     method: POST
@@ -1523,10 +1703,28 @@ operations:
     permission: cart.manage
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/cart.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: checkout.quote.create
     owner: checkout
     method: POST
@@ -1535,10 +1733,28 @@ operations:
     permission: checkout.create
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/checkout.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: order.orders.create
     owner: order
     method: POST
@@ -1547,10 +1763,28 @@ operations:
     permission: order.create
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: order.orders.read
     owner: order
     method: GET
@@ -1562,9 +1796,9 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+      - OMS-001
+      - OMS-004
+      - OMS-005
   - id: order.reminders.create
     owner: order
     method: POST
@@ -1573,10 +1807,28 @@ operations:
     permission: order.reminder.create
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: order.orders.export
     owner: order
     method: POST
@@ -1588,9 +1840,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+      - OMS-007
   - id: order.aftersales.read
     owner: order
     method: GET
@@ -1602,9 +1852,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+      - OMS-008
   - id: order.aftersales.apply
     owner: order
     method: POST
@@ -1616,9 +1864,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+      - OMS-008
   - id: order.aftersales.approve
     owner: order
     method: PUT
@@ -1630,9 +1876,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+      - OMS-008
   - id: order.aftersales.reject
     owner: order
     method: DELETE
@@ -1644,9 +1888,7 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/order.ts
+      - OMS-008
   - id: fulfillment.shipments.create
     owner: fulfillment
     method: POST
@@ -1658,9 +1900,6 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/fulfillment.ts
   - id: fulfillment.tracking.read
     owner: fulfillment
     method: GET
@@ -1669,10 +1908,28 @@ operations:
     permission: fulfillment.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/fulfillment.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: fulfillment.returns.receive
     owner: fulfillment
     method: PUT
@@ -1684,9 +1941,6 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/fulfillment.ts
   - id: fulfillment.returns.inspect
     owner: fulfillment
     method: PUT
@@ -1698,9 +1952,6 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/fulfillment.ts
   - id: payment.intents.create
     owner: payment
     method: POST
@@ -1709,10 +1960,28 @@ operations:
     permission: payment.create
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/payment.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: verification.challenges.issue
     owner: verification
     method: POST
@@ -1721,10 +1990,28 @@ operations:
     permission: verification.issue
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/verification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: verification.sessions.read
     owner: verification
     method: GET
@@ -1733,10 +2020,28 @@ operations:
     permission: verification.issue
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/verification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: verification.challenges.verify
     owner: verification
     method: POST
@@ -1745,10 +2050,28 @@ operations:
     permission: verification.verify
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/verification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: verification.history.read
     owner: verification
     method: GET
@@ -1757,10 +2080,28 @@ operations:
     permission: verification.verify
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/verification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: verification.devices.read
     owner: verification
     method: GET
@@ -1769,10 +2110,28 @@ operations:
     permission: verification.verify
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/verification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: verification.devices.manage
     owner: verification
     method: PUT
@@ -1781,10 +2140,28 @@ operations:
     permission: verification.verify
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/verification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: payment.refunds.request
     owner: payment
     method: POST
@@ -1796,9 +2173,6 @@ operations:
     requirements:
       - MVP08
       - MVP17
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/payment.ts
   - id: payment.recoveries.read
     owner: payment
     method: GET
@@ -1811,9 +2185,6 @@ operations:
       - MVP08
       - MVP17
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/payment.ts
   - id: payment.recoveries.resolve
     owner: payment
     method: POST
@@ -1826,9 +2197,6 @@ operations:
       - MVP08
       - MVP17
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/payment.ts
   - id: payment.webhooks.wechat
     owner: payment
     method: POST
@@ -1838,9 +2206,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/payment.ts
   - id: voucher.cardlibraries.read
     owner: voucher
     method: GET
@@ -1852,9 +2217,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.cardlibraries.create
     owner: voucher
     method: POST
@@ -1867,9 +2229,6 @@ operations:
       - MVP03
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.cardlibraries.allocate
     owner: voucher
     method: POST
@@ -1883,9 +2242,6 @@ operations:
       - MVP04
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.imports.read
     owner: voucher
     method: GET
@@ -1897,9 +2253,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.programs.read
     owner: voucher
     method: GET
@@ -1911,9 +2264,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.programs.manage
     owner: voucher
     method: PUT
@@ -1925,9 +2275,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.reserves.read
     owner: voucher
     method: GET
@@ -1939,9 +2286,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.reserves.request
     owner: voucher
     method: POST
@@ -1953,9 +2297,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.reserves.decide
     owner: voucher
     method: PUT
@@ -1967,9 +2308,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.batches.read
     owner: voucher
     method: GET
@@ -1981,9 +2319,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.batches.issue
     owner: voucher
     method: POST
@@ -1995,9 +2330,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.batches.retry
     owner: voucher
     method: POST
@@ -2009,9 +2341,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.status.batch
     owner: voucher
     method: POST
@@ -2023,9 +2352,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.statusbatches.read
     owner: voucher
     method: GET
@@ -2037,9 +2363,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.bindings.read
     owner: voucher
     method: GET
@@ -2051,9 +2374,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.bindings.manage
     owner: voucher
     method: PUT
@@ -2065,9 +2385,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.redemptions.read
     owner: voucher
     method: GET
@@ -2079,9 +2396,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.history.read
     owner: voucher
     method: GET
@@ -2093,9 +2407,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: voucher.redemptions.reverse
     owner: voucher
     method: POST
@@ -2107,9 +2418,6 @@ operations:
     requirements:
       - MVP09
       - MVP18
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/voucher.ts
   - id: benefit.accounts.read
     owner: benefit
     method: GET
@@ -2118,10 +2426,28 @@ operations:
     permission: benefit.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.ledgers.read
     owner: benefit
     method: GET
@@ -2132,9 +2458,6 @@ operations:
     schema: structural
     requirements:
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
   - id: benefit.plans.read
     owner: benefit
     method: GET
@@ -2143,10 +2466,28 @@ operations:
     permission: benefit.plan.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.plans.manage
     owner: benefit
     method: PUT
@@ -2155,10 +2496,28 @@ operations:
     permission: benefit.plan.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.budgets.read
     owner: benefit
     method: GET
@@ -2167,10 +2526,28 @@ operations:
     permission: benefit.budget.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.budgets.manage
     owner: benefit
     method: PUT
@@ -2179,10 +2556,28 @@ operations:
     permission: benefit.budget.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.grants.create
     owner: benefit
     method: POST
@@ -2191,10 +2586,28 @@ operations:
     permission: benefit.grant
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.grants.decide
     owner: benefit
     method: PUT
@@ -2203,10 +2616,28 @@ operations:
     permission: benefit.grant.decide
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.grants.read
     owner: benefit
     method: GET
@@ -2215,10 +2646,28 @@ operations:
     permission: benefit.grant.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.grants.control
     owner: benefit
     method: POST
@@ -2227,10 +2676,28 @@ operations:
     permission: benefit.grant.control
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.grants.revoke
     owner: benefit
     method: POST
@@ -2239,10 +2706,28 @@ operations:
     permission: benefit.revoke
     idempotent: false
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: benefit.lots.read
     owner: benefit
     method: GET
@@ -2251,10 +2736,28 @@ operations:
     permission: benefit.lot.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/benefit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: finance.overview.read
     owner: finance
     method: GET
@@ -2266,9 +2769,6 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.entries.read
     owner: finance
     method: GET
@@ -2280,9 +2780,6 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.statements.read
     owner: finance
     method: GET
@@ -2294,9 +2791,6 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.statements.export
     owner: finance
     method: POST
@@ -2308,9 +2802,6 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
   - id: finance.reconciliations.manage
     owner: finance
     method: PUT
@@ -2322,9 +2813,8 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+      - OMS-011
+    expectedVersion: required
   - id: finance.reconciliations.read
     owner: finance
     method: GET
@@ -2333,10 +2823,10 @@ operations:
     permission: finance.reconciliation.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+      - OMS-011
   - id: finance.reconciliationrepairs.read
     owner: finance
     method: GET
@@ -2345,10 +2835,9 @@ operations:
     permission: finance.reconciliation.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
   - id: finance.reconciliationrepairs.preview
     owner: finance
     method: POST
@@ -2357,10 +2846,10 @@ operations:
     permission: finance.reconciliation.manage
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.reconciliationrepairs.submit
     owner: finance
     method: POST
@@ -2369,10 +2858,10 @@ operations:
     permission: finance.reconciliation.manage
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.reconciliationrepairs.decide
     owner: finance
     method: POST
@@ -2381,10 +2870,10 @@ operations:
     permission: finance.reconciliation.manage
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.reconciliationrepairs.reverse
     owner: finance
     method: POST
@@ -2393,10 +2882,10 @@ operations:
     permission: finance.reconciliation.manage
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.settlements.read
     owner: finance
     method: GET
@@ -2405,10 +2894,10 @@ operations:
     permission: finance.settlement.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+      - OMS-011
   - id: finance.settlements.decide
     owner: finance
     method: POST
@@ -2417,10 +2906,10 @@ operations:
     permission: finance.settlement.decide
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.settlements.adjust
     owner: finance
     method: POST
@@ -2429,10 +2918,10 @@ operations:
     permission: finance.settlement.adjust
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.withdrawals.read
     owner: finance
     method: GET
@@ -2441,10 +2930,9 @@ operations:
     permission: finance.withdrawal.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
   - id: finance.withdrawals.create
     owner: finance
     method: POST
@@ -2453,10 +2941,10 @@ operations:
     permission: finance.withdrawal.create
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.withdrawals.decide
     owner: finance
     method: POST
@@ -2465,10 +2953,10 @@ operations:
     permission: finance.withdrawal.decide
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.withdrawals.recover
     owner: finance
     method: POST
@@ -2477,10 +2965,10 @@ operations:
     permission: finance.withdrawal.recover
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.holds.read
     owner: finance
     method: GET
@@ -2489,10 +2977,9 @@ operations:
     permission: finance.hold.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
   - id: finance.periods.read
     owner: finance
     method: GET
@@ -2501,10 +2988,9 @@ operations:
     permission: finance.period.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
   - id: finance.periods.manage
     owner: finance
     method: POST
@@ -2513,10 +2999,10 @@ operations:
     permission: finance.period.manage
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.backfills.read
     owner: finance
     method: GET
@@ -2525,10 +3011,9 @@ operations:
     permission: finance.backfill.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
   - id: finance.backfills.decide
     owner: finance
     method: POST
@@ -2537,10 +3022,10 @@ operations:
     permission: finance.backfill.decide
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: finance.policies.manage
     owner: finance
     method: PUT
@@ -2552,9 +3037,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    expectedVersion: required
   - id: finance.policies.preview
     owner: finance
     method: POST
@@ -2566,9 +3049,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    expectedVersion: required
   - id: finance.policies.read
     owner: finance
     method: GET
@@ -2577,10 +3058,9 @@ operations:
     permission: finance.policy.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
   - id: finance.audit.read
     owner: finance
     method: GET
@@ -2589,10 +3069,9 @@ operations:
     permission: audit.read
     idempotent: true
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/finance.ts
+    requirements:
+      - MVP10
+      - MVP19
   - id: invoice.profiles.manage
     owner: finance
     method: PUT
@@ -2604,9 +3083,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
+    expectedVersion: required
   - id: invoice.profiles.read
     owner: finance
     method: GET
@@ -2619,9 +3096,6 @@ operations:
       - MVP10
       - MVP17
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
   - id: invoice.operatorprofiles.read
     owner: finance
     method: GET
@@ -2633,9 +3107,6 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
   - id: invoice.requests.create
     owner: finance
     method: POST
@@ -2647,9 +3118,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
+    expectedVersion: required
   - id: invoice.requests.read
     owner: finance
     method: GET
@@ -2661,9 +3130,6 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
   - id: invoice.requests.cancel
     owner: finance
     method: DELETE
@@ -2675,9 +3141,7 @@ operations:
     requirements:
       - MVP10
       - MVP19
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
+    expectedVersion: required
   - id: invoice.requests.decide
     owner: finance
     method: POST
@@ -2686,10 +3150,10 @@ operations:
     permission: invoice.request.decide
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: invoice.requests.red
     owner: finance
     method: POST
@@ -2698,10 +3162,10 @@ operations:
     permission: invoice.request.red
     idempotent: false
     schema: structural
-    requirements: [MVP10, MVP19]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/invoice.ts
+    requirements:
+      - MVP10
+      - MVP19
+    expectedVersion: required
   - id: support.cases.create
     owner: support
     method: POST
@@ -2713,9 +3177,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.cases.read
     owner: support
     method: GET
@@ -2727,9 +3188,7 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+      - OMS-013
   - id: support.cases.update
     owner: support
     method: PATCH
@@ -2741,9 +3200,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.cases.close
     owner: support
     method: PUT
@@ -2755,9 +3211,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.cases.reopen
     owner: support
     method: DELETE
@@ -2769,9 +3222,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.messages.send
     owner: support
     method: POST
@@ -2783,9 +3233,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.messages.read
     owner: support
     method: GET
@@ -2797,9 +3244,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.attachments.create
     owner: support
     method: POST
@@ -2811,9 +3255,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.assignments.manage
     owner: support
     method: PUT
@@ -2825,9 +3266,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.agents.manage
     owner: support
     method: PUT
@@ -2839,9 +3277,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.agents.read
     owner: support
     method: GET
@@ -2850,10 +3285,9 @@ operations:
     permission: support.agent.read
     idempotent: true
     schema: structural
-    requirements: [MVP12, MVP21]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+    requirements:
+      - MVP12
+      - MVP21
   - id: support.accounts.manage
     owner: support
     method: PUT
@@ -2865,9 +3299,6 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
   - id: support.accounts.read
     owner: support
     method: GET
@@ -2876,10 +3307,9 @@ operations:
     permission: support.account.read
     idempotent: true
     schema: structural
-    requirements: [MVP12, MVP21]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+    requirements:
+      - MVP12
+      - MVP21
   - id: support.rules.read
     owner: support
     method: GET
@@ -2888,10 +3318,9 @@ operations:
     permission: support.rule.read
     idempotent: true
     schema: structural
-    requirements: [MVP12, MVP21]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+    requirements:
+      - MVP12
+      - MVP21
   - id: support.rules.manage
     owner: support
     method: PUT
@@ -2900,10 +3329,9 @@ operations:
     permission: support.rule.manage
     idempotent: true
     schema: structural
-    requirements: [MVP12, MVP21]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+    requirements:
+      - MVP12
+      - MVP21
   - id: support.slas.read
     owner: support
     method: GET
@@ -2912,10 +3340,9 @@ operations:
     permission: support.sla.read
     idempotent: true
     schema: structural
-    requirements: [MVP12, MVP21]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+    requirements:
+      - MVP12
+      - MVP21
   - id: support.slas.manage
     owner: support
     method: PUT
@@ -2924,10 +3351,9 @@ operations:
     permission: support.sla.manage
     idempotent: true
     schema: structural
-    requirements: [MVP12, MVP21]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+    requirements:
+      - MVP12
+      - MVP21
   - id: support.history.read
     owner: support
     method: GET
@@ -2939,9 +3365,7 @@ operations:
     requirements:
       - MVP12
       - MVP21
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/support.ts
+      - OMS-013
   - id: notification.notifications.read
     owner: notification
     method: GET
@@ -2953,9 +3377,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
   - id: notification.preferences.read
     owner: notification
     method: GET
@@ -2964,10 +3385,28 @@ operations:
     permission: notification.preference.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: notification.preferences.manage
     owner: notification
     method: PUT
@@ -2976,10 +3415,28 @@ operations:
     permission: notification.preference.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: notification.endpoints.manage
     owner: notification
     method: PUT
@@ -2988,10 +3445,28 @@ operations:
     permission: notification.endpoint.manage
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: notification.templates.manage
     owner: notification
     method: PUT
@@ -3003,9 +3478,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
   - id: notification.templates.read
     owner: notification
     method: GET
@@ -3017,9 +3489,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
   - id: notification.announcements.read
     owner: notification
     method: GET
@@ -3031,9 +3500,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
   - id: notification.announcements.manage
     owner: notification
     method: PUT
@@ -3045,9 +3511,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/notification.ts
   - id: risk.center.read
     owner: risk
     method: GET
@@ -3059,9 +3522,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/risk.ts
   - id: risk.policies.manage
     owner: risk
     method: PUT
@@ -3073,9 +3533,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/risk.ts
   - id: risk.cases.review
     owner: risk
     method: PUT
@@ -3087,9 +3544,6 @@ operations:
     requirements:
       - MVP13
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/risk.ts
   - id: audit.records.read
     owner: audit
     method: GET
@@ -3098,10 +3552,28 @@ operations:
     permission: audit.read
     idempotent: true
     schema: structural
-    requirements: *a1
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/audit.ts
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: observability.clienterrors.create
     owner: observability
     method: POST
@@ -3114,9 +3586,6 @@ operations:
       - MVP12
       - MVP21
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/observability.ts
   - id: observability.clienterrors.read
     owner: observability
     method: GET
@@ -3129,9 +3598,6 @@ operations:
       - MVP12
       - MVP21
       - MVP22
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/observability.ts
   - id: channel.connections.read
     owner: channel
     method: GET
@@ -3140,10 +3606,8 @@ operations:
     permission: channel.connection.read
     idempotent: true
     schema: structural
-    requirements: [MVP23]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
+    requirements:
+      - MVP23
   - id: channel.connections.create
     owner: channel
     method: POST
@@ -3154,9 +3618,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.connections.update
     owner: channel
     method: PATCH
@@ -3167,9 +3628,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.connections.test
     owner: channel
     method: POST
@@ -3180,9 +3638,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.connections.enable
     owner: channel
     method: PUT
@@ -3193,9 +3648,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.connections.disable
     owner: channel
     method: DELETE
@@ -3206,9 +3658,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.webhooks.receive
     owner: channel
     method: POST
@@ -3216,10 +3665,8 @@ operations:
     audience: provider
     idempotent: true
     schema: structural
-    requirements: [MVP23]
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
+    requirements:
+      - MVP23
   - id: channel.syncruns.start
     owner: channel
     method: POST
@@ -3230,9 +3677,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.syncruns.read
     owner: channel
     method: GET
@@ -3243,9 +3687,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.syncruns.cancel
     owner: channel
     method: DELETE
@@ -3256,9 +3697,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.operations.read
     owner: channel
     method: GET
@@ -3269,9 +3707,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: channel.operations.replay
     owner: channel
     method: POST
@@ -3282,9 +3717,6 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/channel.ts
   - id: extension.installations.read
     owner: extension
     method: GET
@@ -3295,6 +3727,1195 @@ operations:
     schema: structural
     requirements:
       - MVP23
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/foundation/application/OperationHandler.ts
-    sdk: packages/sdk/src/operations/extension.ts
+  - id: partner.customers.create
+    owner: partner
+    method: POST
+    path: /api/v1/partners/customers
+    audience: operator
+    permission: partner.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 新增客户及联系人
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: partner.customers.update
+    owner: partner
+    method: PATCH
+    path: /api/v1/partners/customers/{customerid}
+    audience: operator
+    permission: partner.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 更新客户及联系人
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: partner.customers.enable
+    owner: partner
+    method: POST
+    path: /api/v1/partners/customers/{customerid}/enable
+    audience: operator
+    permission: partner.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 启用客户
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: partner.customers.disable
+    owner: partner
+    method: POST
+    path: /api/v1/partners/customers/{customerid}/disable
+    audience: operator
+    permission: partner.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 停用客户
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: partner.customers.get
+    owner: partner
+    method: GET
+    path: /api/v1/partners/customers/{customerid}
+    audience: operator
+    permission: partner.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 客户详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: partner.customers.list
+    owner: partner
+    method: GET
+    path: /api/v1/partners/customers
+    audience: operator
+    permission: partner.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 客户列表
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: partner.customeroptions.list
+    owner: partner
+    method: GET
+    path: /api/v1/partners/customer-options
+    audience: operator
+    permission: partner.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 客户轻量选项
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.products.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/products
+    audience: operator
+    permission: voucher.program.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 创建产品及首版本
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.products.revise
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/products/{productid}/versions
+    audience: operator
+    permission: voucher.program.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 创建产品新版本
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.products.enable
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/products/{productid}/enable
+    audience: operator
+    permission: voucher.program.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 启用产品
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.products.disable
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/products/{productid}/disable
+    audience: operator
+    permission: voucher.program.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 停用产品
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.products.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/products/{productid}
+    audience: operator
+    permission: voucher.program.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 产品详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.products.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/products
+    audience: operator
+    permission: voucher.program.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 产品列表
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.productoptions.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/product-options
+    audience: operator
+    permission: voucher.program.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 当前产品选项
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.credentialpools.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/credential-pools
+    audience: operator
+    permission: voucher.cardlibrary.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 建立凭证池
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentials.generate
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/credential-pools/{poolid}/generate
+    audience: operator
+    permission: voucher.cardlibrary.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: async
+    availability: frozen
+    summary: 批量生成卡号券密
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentials.import
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/credential-pools/{poolid}/imports
+    audience: operator
+    permission: voucher.cardlibrary.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: async
+    availability: frozen
+    summary: 导入实体卡号
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentialpools.close
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/credential-pools/{poolid}/close
+    audience: operator
+    permission: voucher.cardlibrary.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 关闭凭证池
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentialpools.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/credential-pools/{poolid}
+    audience: operator
+    permission: voucher.cardlibrary.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 凭证池详情
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentialpools.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/credential-pools
+    audience: operator
+    permission: voucher.cardlibrary.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 凭证池列表
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentials.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/credentials
+    audience: operator
+    permission: voucher.cardlibrary.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 凭证列表
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentials.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/credentials/{credentialid}
+    audience: operator
+    permission: voucher.cardlibrary.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 凭证详情
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.credentialexports.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/credential-exports
+    audience: operator
+    permission: reporting.export.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: async
+    availability: frozen
+    summary: 导出凭证资源
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.jobs.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/jobs/{jobid}
+    audience: operator
+    permission: voucher.batch.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 作业进度
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP09
+      - MVP18
+  - id: voucher.stockrequests.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/stock-requests
+    audience: operator
+    permission: voucher.reserve.request
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 新建备券草稿
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.stockrequests.update
+    owner: voucher
+    method: PATCH
+    path: /api/v1/vouchers/stock-requests/{requestid}
+    audience: operator
+    permission: voucher.reserve.request
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 编辑备券草稿
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.stockrequests.submit
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/stock-requests/{requestid}/submit
+    audience: operator
+    permission: voucher.reserve.request
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 提交备券审批
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.stockrequests.cancel
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/stock-requests/{requestid}/cancel
+    audience: operator
+    permission: voucher.reserve.request
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 取消备券申请
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.stockrequests.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/stock-requests/{requestid}
+    audience: operator
+    permission: voucher.reserve.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 备券详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.stockrequests.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/stock-requests
+    audience: operator
+    permission: voucher.reserve.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 备券列表
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.stockrequestoptions.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/stock-request-options
+    audience: operator
+    permission: voucher.reserve.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 可用备券选项
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.templates.create
+    owner: approval
+    method: POST
+    path: /api/v1/approvals/templates
+    audience: operator
+    permission: approval.template.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 创建审批模板
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.templates.revise
+    owner: approval
+    method: POST
+    path: /api/v1/approvals/templates/{templateid}/versions
+    audience: operator
+    permission: approval.template.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 修订审批模板
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.templates.enable
+    owner: approval
+    method: POST
+    path: /api/v1/approvals/templates/{templateid}/enable
+    audience: operator
+    permission: approval.template.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 启用审批模板
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.templates.disable
+    owner: approval
+    method: POST
+    path: /api/v1/approvals/templates/{templateid}/disable
+    audience: operator
+    permission: approval.template.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 停用审批模板
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.templates.get
+    owner: approval
+    method: GET
+    path: /api/v1/approvals/templates/{templateid}
+    audience: operator
+    permission: approval.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 审批模板详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.templates.list
+    owner: approval
+    method: GET
+    path: /api/v1/approvals/templates
+    audience: operator
+    permission: approval.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 审批模板列表
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.tasks.list
+    owner: approval
+    method: GET
+    path: /api/v1/approvals/tasks
+    audience: operator
+    permission: approval.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 我的审批任务
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.tasks.approve
+    owner: approval
+    method: POST
+    path: /api/v1/approvals/tasks/{taskid}/approve
+    audience: operator
+    permission: approval.task.decide
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 同意审批任务
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.tasks.reject
+    owner: approval
+    method: POST
+    path: /api/v1/approvals/tasks/{taskid}/reject
+    audience: operator
+    permission: approval.task.decide
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 驳回审批任务
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: approval.instances.get
+    owner: approval
+    method: GET
+    path: /api/v1/approvals/instances/{instanceid}
+    audience: operator
+    permission: approval.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 审批实例详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issueorders.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/issue-orders
+    audience: operator
+    permission: voucher.issue
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 创建发行订单
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issueorders.update
+    owner: voucher
+    method: PATCH
+    path: /api/v1/vouchers/issue-orders/{orderid}
+    audience: operator
+    permission: voucher.issue
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 编辑发行订单
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issueorders.submit
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/issue-orders/{orderid}/submit
+    audience: operator
+    permission: voucher.issue
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: async
+    availability: frozen
+    summary: 提交发行订单
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issueorders.cancel
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/issue-orders/{orderid}/cancel
+    audience: operator
+    permission: voucher.issue
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 取消发行订单
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issueorders.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/issue-orders/{orderid}
+    audience: operator
+    permission: voucher.batch.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 发行订单详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issueorders.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/issue-orders
+    audience: operator
+    permission: voucher.batch.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 发行订单列表
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issuebatches.retry
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/issue-batches/{batchid}/retry
+    audience: operator
+    permission: voucher.issue
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: async
+    availability: frozen
+    summary: 重试发行批次
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issuebatches.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/issue-batches/{batchid}
+    audience: operator
+    permission: voucher.batch.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 发行批次详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.issueorderexports.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/issue-order-exports
+    audience: operator
+    permission: reporting.export.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: async
+    availability: frozen
+    summary: 导出发行订单
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.actionbatches.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/action-batches
+    audience: operator
+    permission: voucher.status.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: async
+    availability: frozen
+    summary: 创建批量状态操作
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.actionbatches.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/action-batches/{actionbatchid}
+    audience: operator
+    permission: voucher.history.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 批量操作详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.actionbatches.list
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/action-batches
+    audience: operator
+    permission: voucher.history.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 批量操作列表
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.actionbatches.retry
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/action-batches/{actionbatchid}/retry
+    audience: operator
+    permission: voucher.status.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: async
+    availability: frozen
+    summary: 重试批量操作
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.actionexports.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/action-exports
+    audience: operator
+    permission: reporting.export.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: async
+    availability: frozen
+    summary: 导出批量操作
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.search.read
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/search
+    audience: operator
+    permission: voucher.history.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 统一卡券搜索
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.activations.secret
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/activation/secret
+    audience: public
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 仅券密激活
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.activations.numbersecret
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/activation/number-secret
+    audience: public
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 券号加券密激活
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.vouchers.bind
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/{voucherid}/bind
+    audience: operator
+    permission: voucher.binding.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 绑定最终用户
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.vouchers.unbind
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/{voucherid}/unbind
+    audience: operator
+    permission: voucher.binding.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 解绑最终用户
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.vouchers.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/{voucherid}
+    audience: operator
+    permission: voucher.history.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 单卡详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.vouchers.getbynumber
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/by-number/{number}
+    audience: operator
+    permission: voucher.history.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 按券号查询
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.vouchers.timeline
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/{voucherid}/timeline
+    audience: operator
+    permission: voucher.history.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 生命周期时间线
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.redemptions.quote
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/redemptions/quote
+    audience: operator
+    permission: verification.verify
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 核销报价校验
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.tenderholds.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/tender-holds
+    audience: operator
+    permission: verification.verify
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 创建金额预占
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.tenderholds.consume
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/tender-holds/{holdid}/consume
+    audience: operator
+    permission: verification.verify
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 预占转消费
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.tenderholds.release
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/tender-holds/{holdid}/release
+    audience: operator
+    permission: verification.verify
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 释放金额预占
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.redemptions.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/redemptions
+    audience: operator
+    permission: verification.verify
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 直接核销
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.refunds.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/redemptions/{redemptionid}/refunds
+    audience: operator
+    permission: voucher.redemption.reverse
+    idempotent: false
+    idempotency: required
+    expectedVersion: required
+    execution: sync
+    availability: frozen
+    summary: 部分或全额退款
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.redemptions.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/redemptions/{redemptionid}
+    audience: operator
+    permission: voucher.redemption.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 核销详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.searchfacets.read
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/search/facets
+    audience: operator
+    permission: voucher.history.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 搜索筛选计数
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.searchsnapshots.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/search-snapshots
+    audience: operator
+    permission: voucher.history.read
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 冻结搜索目标集
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.searchexports.create
+    owner: voucher
+    method: POST
+    path: /api/v1/vouchers/search-exports
+    audience: operator
+    permission: reporting.export.manage
+    idempotent: false
+    idempotency: required
+    expectedVersion: none
+    execution: async
+    availability: frozen
+    summary: 创建搜索导出
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
+  - id: voucher.exports.get
+    owner: voucher
+    method: GET
+    path: /api/v1/vouchers/exports/{exportid}
+    audience: operator
+    permission: reporting.export.read
+    idempotent: true
+    idempotency: none
+    expectedVersion: none
+    execution: sync
+    availability: frozen
+    summary: 导出作业详情
+    schema: structural
+    requirements:
+      - MVP09
+      - MVP18
