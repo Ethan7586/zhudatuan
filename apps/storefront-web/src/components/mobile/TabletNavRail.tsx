@@ -48,7 +48,7 @@ export const TabletNavRail: React.FC = () => {
         <div className="flex items-center gap-2.5 px-2 py-1 border-b border-blue-800/60 pb-3">
           <img src="/icon.svg" alt="" className="h-9 w-9 rounded-xl shadow-sm" />
           <div className="overflow-hidden">
-            <div className="text-xs font-black tracking-wide text-white truncate">智慧翼企业福利</div>
+            <div className="text-xs font-black tracking-wide text-white truncate">主打团企业福利</div>
             <div className="text-[10px] text-blue-200 truncate">Tablet App 专属版</div>
           </div>
         </div>

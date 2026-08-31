@@ -37,11 +37,11 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
           <img src="/icon.svg" alt="" className="h-7 w-7 flex-shrink-0 rounded-md shadow-xs" />
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-black text-sm tracking-tight text-white">智慧翼企业福利商城</span>
+              <span className="font-black text-sm tracking-tight text-white">主打团企业福利商城</span>
               <span className="text-[10px] bg-blue-500/30 text-blue-200 border border-blue-400/40 font-bold px-1.5 py-0.2 rounded">{surfaceCopy.frameBadge}</span>
             </div>
             <div className="text-[10px] text-blue-200 flex items-center gap-1">
-              <span>SMART WING B2B2C</span>
+              <span>ZHUDATUAN B2B2C</span>
               <span>·</span>
               <span className="text-yellow-200">技术服务：雍彻科技（SGSYEN TECH）</span>
             </div>

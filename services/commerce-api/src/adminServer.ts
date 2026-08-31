@@ -255,7 +255,7 @@ async function startServer() {
 
   // 仅由本机 Caddy 反向代理暴露，避免绕过 TLS、WAF 与域名级会话隔离。
   app.listen(PORT, '127.0.0.1', () => {
-    console.log(`Smart Wing Admin Console listening on 127.0.0.1:${PORT}`);
+    console.log(`ZHUDATUAN Admin Console listening on 127.0.0.1:${PORT}`);
   });
 }
 

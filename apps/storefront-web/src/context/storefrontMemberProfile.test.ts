@@ -25,7 +25,7 @@ describe('authenticated storefront member projection', () => {
           restrictedCapabilities: ['order.create', 'payment.execute'],
         },
       },
-      scope: { tenantId: 'tenant-one', enterpriseId: 'enterprise-one', mallId: 'mall-one', mallCode: 'MALL', mallName: '智慧翼商城', brandName: '智慧翼', enterpriseName: '演示企业' },
+      scope: { tenantId: 'tenant-one', enterpriseId: 'enterprise-one', mallId: 'mall-one', mallCode: 'MALL', mallName: '主打团商城', brandName: '主打团', enterpriseName: '演示企业' },
     } satisfies ApiBootstrap;
 
     const profile = mergeAuthenticatedMemberProfile(MOCK_USER, bootstrap);

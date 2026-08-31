@@ -26,9 +26,9 @@ describe('canonical registration', () => {
     const result = await resolveCanonicalInvite('  invitation-secret  ');
 
     expect(result).toEqual({
-      termsTitle: '筑大团用户服务协议',
+      termsTitle: '主打团用户服务协议',
       termsBody: '服务协议正文',
-      privacyTitle: '筑大团隐私政策',
+      privacyTitle: '主打团隐私政策',
       privacyBody: '隐私政策正文',
       termsHash: TERMS_HASH,
       target: 'console',
@@ -200,9 +200,9 @@ function expectCanonicalHeaders(headers: HeadersInit | undefined): void {
 
 function invitation(): Readonly<Record<string, unknown>> {
   return {
-    terms_title: '筑大团用户服务协议',
+    terms_title: '主打团用户服务协议',
     terms_body: '服务协议正文',
-    privacy_title: '筑大团隐私政策',
+    privacy_title: '主打团隐私政策',
     privacy_body: '隐私政策正文',
     terms_hash: TERMS_HASH,
     target_client: 'operator',

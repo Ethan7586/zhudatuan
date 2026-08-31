@@ -31,10 +31,10 @@ afterAll(() => server.close());
 describe('Commerce application workspace', () => {
   it('renders application governance for platform scope and opens a read-only record', async () => {
     const user = userEvent.setup();
-    renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     expect(await screen.findByRole('heading', { level: 1, name: '应用治理' })).toBeTruthy();
     expect(await screen.findByRole('table', { name: '应用治理列表' })).toBeTruthy();
-    expect(screen.getByText('平台治理视角：智慧翼平台')).toBeTruthy();
+    expect(screen.getByText('平台治理视角：主打团平台')).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '查看鸿泰惠民通摘要' }));
     const drawer = await screen.findByRole('dialog', { name: '鸿泰惠民通' });
@@ -44,7 +44,7 @@ describe('Commerce application workspace', () => {
 
   it('hides cached records and an open drawer when access is revoked', async () => {
     const user = userEvent.setup();
-    const { client } = renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    const { client } = renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
     await user.click(screen.getByRole('button', { name: '查看鸿泰惠民通摘要' }));
     expect(await screen.findByRole('dialog', { name: '鸿泰惠民通' })).toBeTruthy();
@@ -58,7 +58,7 @@ describe('Commerce application workspace', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('table', { name: '应用治理列表' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: '应用治理' })).toBeNull();
-    expect(screen.queryByText('平台治理视角：智慧翼平台')).toBeNull();
+    expect(screen.queryByText('平台治理视角：主打团平台')).toBeNull();
     expect(screen.queryByRole('button', { name: '刷新数据' })).toBeNull();
     expect(screen.queryByRole('button', { name: '创建商城' })).toBeNull();
   });
@@ -96,7 +96,7 @@ describe('Commerce application workspace', () => {
         return HttpResponse.json(createdApplication, { status: 201 });
       })
     );
-    renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
 
     await user.click(screen.getByRole('button', { name: '新建应用' }));
@@ -142,7 +142,7 @@ describe('Commerce application workspace', () => {
         return HttpResponse.json({ ...applications.items[0], name: '鸿泰惠民通新版', version: 13 });
       })
     );
-    renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
 
     const locationKey = currentLocationKey;
@@ -169,7 +169,7 @@ describe('Commerce application workspace', () => {
         return HttpResponse.json({ code: 'VERSION_CONFLICT', message: 'stale application version', requestId: 'request:conflict' }, { status: 409 });
       })
     );
-    renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
     await user.click(screen.getByRole('button', { name: '编辑鸿泰惠民通' }));
     const dialog = await screen.findByRole('dialog', { name: '编辑应用 · 鸿泰惠民通' });
@@ -203,7 +203,7 @@ describe('Commerce application workspace', () => {
         return HttpResponse.json({ ...applications.items[0], status: 'disabled', version: 13 });
       })
     );
-    renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
     await user.click(screen.getByRole('button', { name: '停用鸿泰惠民通' }));
     const dialog = await screen.findByRole('dialog', { name: '停用应用 · 鸿泰惠民通' });
@@ -243,7 +243,7 @@ describe('Commerce application workspace', () => {
         return HttpResponse.json({ ...copiedApplication, versionId: 'version:copy' }, { status: 201 });
       })
     );
-    renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
     await user.click(screen.getByRole('button', { name: '复制鸿泰惠民通' }));
     const dialog = await screen.findByRole('dialog', { name: '复制应用 · 鸿泰惠民通' });
@@ -271,7 +271,7 @@ describe('Commerce application workspace', () => {
         })
       )
     );
-    renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
     await user.click(screen.getByRole('button', { name: '复制鸿泰甄选' }));
     const dialog = await screen.findByRole('dialog', { name: '复制应用 · 鸿泰甄选' });
@@ -294,7 +294,7 @@ describe('Commerce application workspace', () => {
 
   it('commits a candidate only after confirmation and preserves unrelated URL state', async () => {
     const user = userEvent.setup();
-    renderRoute('/applications?campaign=keep', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications?campaign=keep', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
 
     await user.click(screen.getByRole('button', { name: '建店方案（3 套）' }));
@@ -327,7 +327,7 @@ describe('Commerce application workspace', () => {
 
   it('discards on Escape and loads only the requested original in the full preview', async () => {
     const user = userEvent.setup();
-    renderRoute('/applications?campaign=keep', scope('platform', 'platform:preview', '智慧翼平台'));
+    renderRoute('/applications?campaign=keep', scope('platform', 'platform:preview', '主打团平台'));
     await screen.findByRole('table', { name: '应用治理列表' });
 
     await user.click(screen.getByRole('button', { name: '建店方案（3 套）' }));

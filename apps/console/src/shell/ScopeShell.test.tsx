@@ -112,7 +112,7 @@ describe('ScopeShell route handles', () => {
     expect(screen.getByText('创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。')).toBeTruthy();
     expect(screen.getByRole('button', { name: '築店 · 商城管理' }).getAttribute('aria-current')).toBe('page');
     expect(container.querySelector('.consolelayout')?.getAttribute('data-route')).toBe('applications');
-    await waitFor(() => expect(document.title).toBe('商城管理 · 智慧翼'));
+    await waitFor(() => expect(document.title).toBe('商城管理 · 主打团'));
   });
 
   it('uses referral preferredScopeKind from registry navigation when opening the module', async () => {
