@@ -15,19 +15,19 @@ describe('Sidebar commerce navigation', () => {
     renderSidebar('enterprise', false, onNavigate);
     const navigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(navigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    expect(labels.indexOf('智慧翼中控台')).toBeLessThan(labels.indexOf('築店 · 商城管理'));
-    expect(labels.indexOf('築店 · 商城管理')).toBeLessThan(labels.indexOf('商品治理台'));
+    expect(labels.indexOf('系统中控台')).toBeLessThan(labels.indexOf('商城管理'));
+    expect(labels.indexOf('商城管理')).toBeLessThan(labels.indexOf('商品治理台'));
 
-    await user.click(screen.getByRole('button', { name: '築店 · 商城管理' }));
+    await user.click(screen.getByRole('button', { name: '商城管理' }));
     expect(onNavigate).toHaveBeenCalledWith('applications');
   });
 
   it.each([
-    ['platform', '築店 · 应用治理'],
-    ['distributor', '築店 · 应用治理'],
-    ['tenant', '築店 · 应用治理'],
-    ['enterprise', '築店 · 商城管理'],
-    ['mall', '築店 · 店铺装修'],
+    ['platform', '应用治理'],
+    ['distributor', '应用治理'],
+    ['tenant', '应用治理'],
+    ['enterprise', '商城管理'],
+    ['mall', '店铺装修'],
   ] as const)('uses %s scope navigation label %s', (kind, expected) => {
     renderSidebar(kind, true, vi.fn());
     const target = screen.getByRole('button', { name: expected });

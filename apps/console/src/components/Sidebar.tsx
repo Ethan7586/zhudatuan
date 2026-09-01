@@ -14,6 +14,7 @@ export interface SidebarProps {
   readonly professionalRoutes: readonly ProfessionalRoute[];
   readonly workstations: readonly Workstation[];
   readonly onNavigate: (suffix: string) => void;
+  readonly onOpenProfile: () => void;
   readonly onToggle: () => void;
 }
 
@@ -42,8 +43,8 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
-        <Brand variant="mark" inverse />
-        <span className="sidebarbrandcopy"><strong>智慧翼 Smart Wing</strong><small>福利平台治理系统</small></span>
+        <span className="sidebarproductmark" aria-hidden="true">F</span>
+        <span className="sidebarbrandcopy"><strong>主打团</strong><small>经营与权限管理</small></span>
         <button className="sidebartoggle" type="button" onClick={onToggle}
           aria-label={collapsed ? '展开导航' : '收起导航'} aria-expanded={!collapsed}>
           <ShellIcon name={collapsed ? 'chevron' : 'collapse'} />
@@ -64,7 +65,9 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
           </button>;
         })}
       </nav>
-      <div className="sidebarprofile">
+      <button className="sidebarprofile" type="button" onClick={onOpenProfile}
+        aria-label={`个人中心：${displayName}`} aria-current={active === 'profile' ? 'page' : undefined}
+        title={collapsed ? '个人中心' : undefined}>
         <span className="sidebarprofileavatar" aria-hidden="true">{avatarLetter(displayName)}</span>
         <span className="sidebarprofilecopy"><strong>{displayName}</strong><small>{roleLabel}</small></span>
       </div>

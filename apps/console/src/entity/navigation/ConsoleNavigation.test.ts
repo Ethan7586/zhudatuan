@@ -35,11 +35,11 @@ describe('Console navigation selector', () => {
       const label = selectConsoleNavigationItems(consoleModules, scopeKind)
         .find(({ moduleId }) => moduleId === 'applications')?.label;
       if (scopeKind === 'platform' || scopeKind === 'distributor' || scopeKind === 'tenant') {
-        expect(label).toBe('築店 · 应用治理');
+        expect(label).toBe('应用治理');
       } else if (scopeKind === 'mall') {
-        expect(label).toBe('築店 · 店铺装修');
+        expect(label).toBe('店铺装修');
       } else {
-        expect(label).toBe('築店 · 商城管理');
+        expect(label).toBe('商城管理');
       }
     }
   });

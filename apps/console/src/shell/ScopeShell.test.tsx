@@ -108,9 +108,9 @@ describe('ScopeShell route handles', () => {
   it('renders manifest presentation and active owner through real useMatches data', async () => {
     const { container } = renderShell('/scopes/enterprise/enterprise%3A1/applications');
 
-    expect(await screen.findByText('商城管理')).toBeTruthy();
+    expect((await screen.findAllByText('商城管理')).length).toBeGreaterThan(0);
     expect(screen.getByText('创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。')).toBeTruthy();
-    expect(screen.getByRole('button', { name: '築店 · 商城管理' }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('button', { name: '商城管理' }).getAttribute('aria-current')).toBe('page');
     expect(container.querySelector('.consolelayout')?.getAttribute('data-route')).toBe('applications');
     await waitFor(() => expect(document.title).toBe('商城管理 · 主打团'));
   });
@@ -159,6 +159,7 @@ function renderShell(initialEntry: string) {
     children: [
       { path: 'applications', Component: FixturePage, handle: handleForPath('applications') },
       { path: 'referral/settings', Component: FixturePage, handle: handleForPath('referral/settings') },
+      { path: 'settings/profile', Component: FixturePage },
       { path: '*', Component: UnknownPage },
     ],
   }], { initialEntries: [initialEntry] });

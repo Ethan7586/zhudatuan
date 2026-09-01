@@ -47,7 +47,7 @@ export function ScopeShell() {
   });
 
   useEffect(() => {
-    document.title = `${routeTitle} · 智慧翼`;
+    document.title = `${routeTitle} · 主打团`;
     setMobileOpen(false);
     const frame = requestAnimationFrame(() => {
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
@@ -67,9 +67,9 @@ export function ScopeShell() {
   };
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
-    if (next !== undefined) navigateAfterCancel(`${scopePath(next, scopeSuffix(location.pathname) || 'cockpit')}${location.search}`);
+    if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);
   };
-  const scopeLabel = `${scopeTypeLabel(context.scope.kind)} · ${context.scope.name ?? context.scope.id}`;
+  const scopeLabel = `${scopeKindLabel(context.scope.kind)} · ${scopeDisplayName(context.scope)}`;
   const selectedPeriod = new URLSearchParams(location.search).get('period') ?? '30days';
   const selectPeriod = (period: string) => {
     const search = new URLSearchParams(location.search);
@@ -93,15 +93,16 @@ export function ScopeShell() {
             displayName={context.profile.display_name} assuranceLevel={context.session.assurance.level} syncedAt={context.session.syncedAt}
             loggingOut={logout.isPending} onLogout={() => logout.mutate()}
             onOpenNavigation={() => setMobileOpen(true)}
+            onOpenProfile={() => openRoute('settings/profile')}
             {...(logout.isError ? { logoutError: '退出失败，请重试。' } : {})} />
           <div className="scopebar">
             <div className="scopecontext">
-              {controlContext ? <span>{context.scope.id === 'platform:preview' ? '本地预览' : scopeTypeLabel(context.scope.kind)}</span> : null}
+              {controlContext ? <span>{context.scope.id === 'platform:preview' ? '本地预览' : scopeKindLabel(context.scope.kind)}</span> : null}
               {controlContext ? <i aria-hidden="true">·</i> : null}
               <label className="sr-only" htmlFor="consolescope">当前数据范围</label>
               <select id="consolescope" value={`${context.scope.kind}:${context.scope.id}`} onChange={(event) => selectScope(event.target.value)}>
               {context.scopes.map((scope) => <option key={`${scope.kind}:${scope.id}`} value={`${scope.kind}:${scope.id}`}>
-                {scope.name ?? scope.id} / 全部商城
+                {scopeDisplayName(scope)} / 全部商城
               </option>)}
               </select>
               <span className="scopedivider" aria-hidden="true">|</span>
@@ -121,7 +122,7 @@ export function ScopeShell() {
             <Outlet />
           </main>
           <footer className="consolefooter">
-            <span>© 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
+            <span>© 2026 主打团运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
             <span className="consolefooterstatus"><i aria-hidden="true" />服务运行正常</span>
             <code>AI 调用需服务端授权</code>
           </footer>
@@ -129,10 +130,6 @@ export function ScopeShell() {
       </div>
     </ConsoleContextProvider>
   );
-}
-
-function scopeTypeLabel(kind: ConsoleContext['scope']['kind']): string {
-  return kind in scopeLabels ? scopeLabels[kind as keyof typeof scopeLabels] : kind;
 }
 
 function formatRailTime(value: string): string {
