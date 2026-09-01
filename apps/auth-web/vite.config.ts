@@ -1,12 +1,19 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig } from 'vite';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, loadEnv } from 'vite';
+import { validateAuthBuildEnvironment } from './src/buildEnvironment';
 
-export default defineConfig(({ command }) => {
+const authRoot = fileURLToPath(new URL('.', import.meta.url));
+
+export default defineConfig(({ command, mode }) => {
+  if (command === 'build') validateAuthBuildEnvironment({ ...loadEnv(mode, authRoot, ''), ...process.env });
   return {
-    // 生产环境由消费者站点同域 /login 提供，确保 HttpOnly 会话保持同源。
-    base: command === 'build' ? '/login/' : '/',
+    envDir: authRoot,
+    // Relative assets let the exact same reviewed dist run at
+    // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
+    base: command === 'build' ? './' : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

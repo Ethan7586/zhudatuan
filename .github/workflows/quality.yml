@@ -33,7 +33,13 @@ jobs:
       PGPORT: 5432
       PGDATABASE: shop
       PGUSER: postgres
-      PGPASSWORD: ${{ env.SHOP_CI_DATABASE_PASSWORD }}
+      PGPASSWORD: shop-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      SHOP_TEST_REDIS_URL: redis://127.0.0.1:6379
+      VITE_API_BASE_URL: http://127.0.0.1:3001
+      VITE_AUTH_BASE_URL: http://127.0.0.1:5176
+      VITE_CLIENT_VERSION: 0.0.0
+      VITE_ADMIN_ORIGIN: http://127.0.0.1:4173
+      VITE_STOREFRONT_ORIGIN: http://127.0.0.1:3000
     services:
       postgres:
         image: postgres:17-alpine
