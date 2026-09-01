@@ -10,6 +10,7 @@ import type { RouteRegistryContract } from '../shared/manifest/ComponentManifest
 import { clearConsoleNavigation } from '../shared/navigation/NavigationQuery';
 import { scopePath } from '../shared/url/ScopePath';
 import { flattenNavigation, navigationPath } from '../shared/url/NavigationPath';
+import { transitionConsoleRoute } from '../route/RouteTransition';
 import { Header } from './Header';
 import { NavigationTree } from './NavigationTree';
 import { RouteTitleProvider } from '../shared/ui/RouteTitle';
@@ -89,8 +90,7 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
   }, [location.pathname, routeTitle]);
 
   const navigateAfterCancel = (target: string) => {
-    void queryClient.cancelQueries({ queryKey: ['console'] });
-    void navigate(target);
+    void transitionConsoleRoute(queryClient, navigate, target);
   };
   const openRoute = (route: string) => {
     setMobileOpen(false);
