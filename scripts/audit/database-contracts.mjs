@@ -64,6 +64,9 @@ const REPAIR_FILES = [
   '20260821078000_complete_experience_application.sql',
   '20260821079000_resolve_experience_version_scope.sql',
   '20260821080000_restore_member_scope_authorization.sql',
+  '20260901190000_add_payment_mall_identity.sql',
+  '20260901191000_add_fulfillment_mall_identity.sql',
+  '20260901192000_add_inventory_mall_identity.sql',
 ];
 
 const mode = process.argv[2];

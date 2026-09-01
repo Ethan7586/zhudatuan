@@ -130,7 +130,7 @@ export class PlaceOrder {
   }
 
   private async paymentPlan(database: OperationDatabase, request: OperationRequest, order: string, number: string, quote: CheckoutQuote): Promise<string> {
-    return this.payment.plan(database, { order, orderNumber: number, member: quote.cart.member, currency: quote.currency,
+    return this.payment.plan(database, { mall: quote.cart.mall, order, orderNumber: number, member: quote.cart.member, currency: quote.currency,
       amountMinor: quote.payableMinor, idempotency: request.input.idempotency!, tenders: quote.tenders });
   }
 

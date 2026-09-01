@@ -15,6 +15,7 @@ import { PipelineAuthorizer } from './PipelineAuthorizer';
 const NOW = new Date('2026-08-27T00:00:00.000Z');
 const PLATFORM: Scope = Object.freeze({ kind: 'platform', id: 'platform:one', path: [] });
 const OWNER: Scope = Object.freeze({ kind: 'owner', id: 'member:one', path: [] });
+const MALL: Scope = Object.freeze({ kind: 'mall', id: 'mall:one', path: [{ kind: 'platform' as const, id: 'platform:one' }] });
 
 describe('AccessPipeline audience boundary', () => {
   it.each(['storefront', 'store', 'supplier'] as const)('returns 403 before an operator handler for a %s session', async (target) => {
@@ -80,6 +81,41 @@ describe('AccessPipeline audience boundary', () => {
     });
     expect(fixture.membership).toHaveBeenCalledWith('membership:one');
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
+  });
+
+  it('passes one authorized mall to a handler even when the request body names another mall', async () => {
+    const fixture = accessFixture('console', 'catalog.products.create', 'catalog.product.manage', MALL);
+    const invoke = vi.fn(async () => ({ status: 201, body: { created: true } }) as const);
+    const container = new Container();
+    const operationHandler = new OperationHandler({ invoke });
+    const handlers = new Map<OperationId, OperationHandler>(
+      OperationCatalog.all()
+        .filter((operation) => operation.module === 'catalog')
+        .map((operation) => [operation.id, operationHandler])
+    );
+    const registered: RouteDefinition[] = [];
+    container.bind(OPERATION_HANDLERS, handlers);
+    container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(fixture.pipeline));
+    registerOperationRoutes('catalog', { container, routes: { register: (route: RouteDefinition) => registered.push(route) } } as unknown as ModuleContext);
+    const route = registered.find((candidate) => candidate.operation === 'catalog.products.create');
+    if (!route) throw new Error('TEST_ROUTE_MISSING');
+
+    await route.handler({
+      method: 'POST',
+      path: '/api/v1/catalog/products',
+      headers: { 'idempotency-key': 'catalog-product:one', 'x-scope-hint': 'mall:other' },
+      parameters: {},
+      query: new URLSearchParams(),
+      body: { mall_id: 'mall:other', name: 'Other mall product' },
+      rawBody: '{"mall_id":"mall:other","name":"Other mall product"}',
+      deadline: Date.now() + 1_000,
+      signal: new AbortController().signal,
+    });
+
+    expect(invoke).toHaveBeenCalledWith(expect.objectContaining({
+      input: expect.objectContaining({ body: expect.objectContaining({ mall_id: 'mall:other' }) }),
+      access: expect.objectContaining({ mall_id: 'mall:one', mallContext: { mall_id: 'mall:one' } }),
+    }));
   });
 });
 
