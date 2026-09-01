@@ -147,6 +147,7 @@ const REPAIR_FILES = [
   '20260902010000_publish_stepup_destination_contract.sql',
   '20260902011000_enable_experience_detail_capability.sql',
   '20260902012000_enable_owner_catalog_product_detail.sql',
+  '20260902013000_enable_owner_reporting_reads.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v3_catalog_contract.sql',
