@@ -9,6 +9,7 @@ import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle,
 import { useMallContext } from '../context/MallContext';
 import { useSmsResendCountdown } from '../hooks/useSmsResendCountdown';
 import { Membership, PreAuthContext } from '../types';
+import { defaultTermsAccepted } from '../services/termsAcceptance';
 import {
   changeInitialPassword,
   buildCredentialLoginAction,
@@ -76,7 +77,7 @@ export const LoginPage: React.FC = () => {
     confirmPassword: '',
   });
   const [registrationInvite, setRegistrationInvite] = useState<CanonicalInvitation | null>(null);
-  const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(false);
+  const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(() => defaultTermsAccepted('invitation-unresolved'));
   const [registrationPolicyModal, setRegistrationPolicyModal] = useState<'terms' | 'privacy' | null>(null);
   const [registrationBusy, setRegistrationBusy] = useState<'invite' | 'code' | 'submit' | null>(null);
   const { seconds: registrationCodeSeconds, start: startRegistrationCodeCooldown, reset: resetRegistrationCodeCooldown } = useSmsResendCountdown();
@@ -181,7 +182,7 @@ export const LoginPage: React.FC = () => {
     });
     if (field === 'inviteCode') {
       setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
     }
     if (field === 'mobile' || field === 'inviteCode') resetRegistrationCodeCooldown();
     setFormError('');
@@ -191,7 +192,7 @@ export const LoginPage: React.FC = () => {
   const closeRegistration = () => {
     setRegistrationOpen(false);
     setRegistrationInvite(null);
-    setRegistrationTermsAccepted(false);
+    setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
     setRegistrationPolicyModal(null);
     resetRegistrationCodeCooldown();
     setRegistrationBusy(null);
@@ -207,11 +208,11 @@ export const LoginPage: React.FC = () => {
     try {
       const invitation = await resolveCanonicalInvite(registration.inviteCode);
       setRegistrationInvite(invitation);
-      setRegistrationTermsAccepted(false);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
       setRegistrationNotice(registrationPresentation(invitation.target).resolvedNotice);
     } catch (error) {
       setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
       setFormError(error instanceof Error ? error.message : '邀请码验证失败');
     } finally {
       setRegistrationBusy(null);
@@ -277,7 +278,7 @@ export const LoginPage: React.FC = () => {
       setRegistrationOpen(false);
       setRegistrationNotice('');
       setRegistrationInvite(null);
-      setRegistrationTermsAccepted(false);
+      setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
       resetRegistrationCodeCooldown();
       setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
       setFormNotice(registrationCopy.successNotice);
