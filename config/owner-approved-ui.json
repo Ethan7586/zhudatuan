@@ -1,6 +1,6 @@
 {
   "schema": "zhudatuan.owner-approved-ui.v1",
-  "approvedAt": "2026-09-01T09:18:00+08:00",
+  "approvedAt": "2026-09-01T10:48:00+08:00",
   "owner": "Ethan",
   "policy": {
     "sourceRoot": ".",
@@ -92,12 +92,12 @@
       },
       "lockedFiles": {
         "apps/auth-web/src/App.tsx": "cfe8488ad44c59f517e2238d2e674cdc766eb0b8d96d9da1ae06237f54014459",
-        "apps/auth-web/src/screens/LoginPage.tsx": "a6b77b3dcdabae48f9d4d54398689a1781919c69c03235734a508ecfdb1a44fc",
+        "apps/auth-web/src/screens/LoginPage.tsx": "87b4d873fde1bb6837cd691726abc5f8a7169d82dc3781860b90ab6107765cdb",
         "apps/auth-web/src/context/MallContext.tsx": "1c4b4c81be39d142171ef7f6c02008bdcf05b13e2e11971c7f45bb74a34b5cc0",
         "apps/auth-web/src/services/auth.ts": "6c776b1e2c34c294a898a9d2fffb746f28c0a2d91a7bfacf7726ebc569ef30c9",
         "apps/auth-web/src/services/canonicalIdentity.ts": "e7b8cfb122361f165c06b6204d218694b63db51be45aba48bf14b40c2713fefa",
-        "apps/auth-web/src/services/canonicalRegistration.ts": "16c635e7d15f083a0f0d1c3c47b6160c3fc87e6e044a8d28a617b26a929e98ba",
-        "apps/auth-web/vite.config.ts": "20a25f1ea0d990d5d06a2f7ccbbf92ed43d538bb4182253eb522485cbc57ab0c",
+        "apps/auth-web/src/services/canonicalRegistration.ts": "39cbb173ed75f734d077466e8e02b1958436156bc14a0164c9b3acc6a7add176",
+        "apps/auth-web/vite.config.ts": "28f6e252b9823baef3b1ea18c8a56a4f28e18129f098eb11250bc43a48640882",
         "apps/auth-web/index.html": "fe9a3d2749aa9c4466150f3ca7c54817f4e72dfade70f7c7b67bdd6539d3c00a",
         "apps/auth-web/public/brand/site.webmanifest": "15fc099b2ef342870838fb9bf72ead08ced3ead8bfb23ce4c76288cf9edaf6df",
         "services/commerce-api/src/api/publicRoutes.ts": "54230700a6a66c8363cb53e66282106c565cee49d193450bdea913fd445344a2",
