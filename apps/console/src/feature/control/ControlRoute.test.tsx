@@ -88,7 +88,19 @@ describe('Control route', () => {
 
 function renderRoute(scope: ConsoleScope) {
   const context: ConsoleContext = {
-    session: { actor: 'actor:one', membership: 'membership:one', accessVersion: 7, permissions: [], capabilities: [], target: 'console', scope, scopes: [scope], assurance: { level: 2 }, syncedAt: '2026-08-30T00:00:00Z' },
+    session: {
+      actor: 'actor:one',
+      membership: 'membership:one',
+      accessVersion: 7,
+      permissions: [],
+      capabilities: [],
+      target: 'console',
+      scope,
+      scopes: [scope],
+      assurance: { level: 2 },
+      security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
+      syncedAt: '2026-08-30T00:00:00Z',
+    },
     profile: { display_name: '平台管理员', employee_no: null },
     scope,
     scopes: [scope],

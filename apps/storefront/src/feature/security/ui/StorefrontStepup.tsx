@@ -16,12 +16,22 @@ export function StorefrontStepup({ open, onClose, onVerified }: StorefrontStepup
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phoneMasked, setPhoneMasked] = useState<string | null | undefined>(undefined);
   useEffect(() => {
-    if (open) return;
-    setChallenge(null);
-    setCode('');
-    setError(null);
-  }, [open]);
+    if (!open) {
+      setChallenge(null);
+      setCode('');
+      setError(null);
+      setPhoneMasked(undefined);
+      return;
+    }
+    if (!session.session) return;
+    const controller = new AbortController();
+    void StepupGateway.phoneMasked(session.session, controller.signal)
+      .then(setPhoneMasked)
+      .catch((cause) => setError(productionError(cause).message));
+    return () => controller.abort();
+  }, [open, session.session]);
   if (!open) return null;
 
   async function send() {
@@ -29,6 +39,7 @@ export function StorefrontStepup({ open, onClose, onVerified }: StorefrontStepup
     setError(null);
     try {
       if (!session.session) throw new Error('AUTHENTICATION_REQUIRED');
+      if (phoneMasked === null) throw new Error('STEPUP_DESTINATION_MISSING');
       setChallenge((await StepupGateway.start(session.session)).id);
       setCode('');
     } catch (cause) {
@@ -77,10 +88,12 @@ export function StorefrontStepup({ open, onClose, onVerified }: StorefrontStepup
                 <CircleCheck className="mt-0.5 shrink-0" size={18} />
                 <div>
                   <b>验证码只用于本次身份确认</b>
-                  <p className="mt-1 text-xs leading-5 text-emerald-700">不会修改密码，也不会向任何人展示完整手机号。</p>
+                  <p className="mt-1 text-xs leading-5 text-emerald-700">
+                    {phoneMasked === undefined ? '正在确认当前账号绑定的手机号…' : phoneMasked === null ? '当前账号未绑定手机号，请先在安全中心完成绑定。' : `验证码将发送到 ${phoneMasked}，不会展示完整手机号。`}
+                  </p>
                 </div>
               </div>
-              <button type="button" disabled={busy} onClick={() => void send()} className="w-full rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-black text-white shadow-sm disabled:opacity-50">
+              <button type="button" disabled={busy || phoneMasked == null} onClick={() => void send()} className="w-full rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-black text-white shadow-sm disabled:opacity-50">
                 {busy ? '正在发送…' : '发送验证码'}
               </button>
             </>

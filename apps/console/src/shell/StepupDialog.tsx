@@ -8,12 +8,13 @@ import './StepupDialog.css';
 export interface StepupDialogProps {
   readonly open: boolean;
   readonly accessVersion: number;
+  readonly phoneMasked: string | null;
   readonly csrf?: string;
   readonly onClose: () => void;
   readonly onComplete: () => void;
 }
 
-export function StepupDialog({ open, accessVersion, csrf, onClose, onComplete }: StepupDialogProps) {
+export function StepupDialog({ open, accessVersion, phoneMasked, csrf, onClose, onComplete }: StepupDialogProps) {
   const [challenge, setChallenge] = useState<string>();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -34,6 +35,7 @@ export function StepupDialog({ open, accessVersion, csrf, onClose, onComplete }:
   }, [open]);
   const request = () =>
     run(async () => {
+      if (phoneMasked === null) throw new Error('STEPUP_DESTINATION_MISSING');
       const action = approval.trim() ? readActionRequest(approval) : undefined;
       const result = await identityStepupStart(
         {
@@ -86,7 +88,7 @@ export function StepupDialog({ open, accessVersion, csrf, onClose, onComplete }:
           <span aria-hidden="true">✓</span>
           <div>
             <strong>验证是为了保护关键操作</strong>
-            <p>验证码只发送到当前账号绑定的手机号，验证状态将在 15 分钟后自动失效。</p>
+            <p>{phoneMasked === null ? '当前账号未绑定手机号，暂时无法开启二次验证。' : `验证码将发送到 ${phoneMasked}，验证状态将在 15 分钟后自动失效。`}</p>
           </div>
         </header>
         {proof !== undefined ? (
@@ -137,8 +139,13 @@ export function StepupDialog({ open, accessVersion, csrf, onClose, onComplete }:
             ) : (
               <p className="stepupnote">完成后，当前账号将在 15 分钟内可以执行已授权的高风险操作。</p>
             )}
+            {phoneMasked === null ? (
+              <p className="stepuperror" role="status">
+                请先在员工商城安全中心绑定手机号，再开启二次验证。
+              </p>
+            ) : null}
             <div className="stepupactions">
-              <Button tone="primary" onPress={() => void request()} isDisabled={busy || (purpose === 'review' && !approval)}>
+              <Button tone="primary" onPress={() => void request()} isDisabled={busy || phoneMasked === null || (purpose === 'review' && !approval)}>
                 {busy ? '正在发送…' : purpose === 'review' ? '校验请求并发送验证码' : '发送验证码'}
               </Button>
             </div>

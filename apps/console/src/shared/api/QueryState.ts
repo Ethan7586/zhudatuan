@@ -57,6 +57,8 @@ function apiErrorMessage(error: Pick<ApiError, 'code' | 'status'>): string {
     case 'STEPUP_REQUIRED':
     case 'ACTION_PROOF_REQUIRED':
       return '为保护敏感数据，请先完成二次验证后重试。';
+    case 'STEPUP_DESTINATION_MISSING':
+      return '当前账号未绑定手机号，请先在员工商城安全中心完成绑定。';
     case 'ACTION_PROOF_INVALID':
     case 'ACTION_PROOF_REPLAYED':
       return '本次身份确认已失效，请重新完成二次验证。';

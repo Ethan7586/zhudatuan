@@ -78,7 +78,19 @@ describe('Order query', () => {
 function context(id = 'enterprise:1', accessVersion = 7): ConsoleContext {
   const scope = { kind: 'enterprise' as const, id };
   return {
-    session: { actor: 'actor:1', membership: 'membership:1', accessVersion, permissions: [], capabilities: [], target: 'console', scope, scopes: [scope], assurance: { level: 1 }, syncedAt: '2026-08-26T00:00:00Z' },
+    session: {
+      actor: 'actor:1',
+      membership: 'membership:1',
+      accessVersion,
+      permissions: [],
+      capabilities: [],
+      target: 'console',
+      scope,
+      scopes: [scope],
+      assurance: { level: 1 },
+      security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
+      syncedAt: '2026-08-26T00:00:00Z',
+    },
     profile: { display_name: '测试运营', employee_no: null },
     scope,
     scopes: [scope],

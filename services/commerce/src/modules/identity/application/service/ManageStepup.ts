@@ -51,7 +51,7 @@ export class ManageStepup {
       load: async (request, database) => {
         const actor = requireAccess(request);
         const profile = await this.members.securityProfile(database, actor.actor.id);
-        if (!profile.mobileCiphertext || !profile.mobileFingerprint) throw new Error('STEP_UP_DESTINATION_MISSING');
+        if (!profile.mobileCiphertext || !profile.mobileFingerprint) reject('STEPUP_DESTINATION_MISSING');
         return { actor, mobileCiphertext: profile.mobileCiphertext, mobileFingerprint: profile.mobileFingerprint };
       },
       prepare: async (request, loaded) => {

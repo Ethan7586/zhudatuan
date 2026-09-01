@@ -470,6 +470,11 @@ errors:
     retryable: false
     audit: false
     client: message
+  - code: STEPUP_DESTINATION_MISSING
+    status: 409
+    retryable: false
+    audit: false
+    client: message
   - code: STEPUP_REQUIRED
     status: 403
     retryable: false

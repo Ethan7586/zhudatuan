@@ -146,6 +146,7 @@ const context: ConsoleContext = {
     scope: { kind: 'enterprise', id: 'enterprise:1' },
     scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
     assurance: { level: 3 },
+    security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
     syncedAt: '2026-08-24T13:31:00.000Z',
   },
   profile: { display_name: '测试财务', employee_no: null },

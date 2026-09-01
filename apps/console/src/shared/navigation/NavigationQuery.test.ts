@@ -17,6 +17,7 @@ const session: ConsoleSession = {
   permissions: [],
   capabilities: [],
   assurance: { level: 1 },
+  security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
   target: 'console',
   syncedAt: '2026-08-30T00:00:00Z',
 };

@@ -57,7 +57,19 @@ describe('Finance reconciliation query', () => {
 function context(): ConsoleContext {
   const scope = { kind: 'enterprise' as const, id: 'enterprise:1' };
   return {
-    session: { actor: 'actor:finance', membership: 'membership:finance', accessVersion: 7, permissions: [], capabilities: [], target: 'console', scope, scopes: [scope], assurance: { level: 3 }, syncedAt: '2026-08-26T00:00:00Z' },
+    session: {
+      actor: 'actor:finance',
+      membership: 'membership:finance',
+      accessVersion: 7,
+      permissions: [],
+      capabilities: [],
+      target: 'console',
+      scope,
+      scopes: [scope],
+      assurance: { level: 3 },
+      security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
+      syncedAt: '2026-08-26T00:00:00Z',
+    },
     profile: { display_name: '测试财务', employee_no: null },
     scope,
     scopes: [scope],

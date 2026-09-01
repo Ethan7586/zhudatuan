@@ -42,6 +42,7 @@
     "build:console": "npm run build --workspace @shop/console",
     "build:storefront": "npm run build --workspace @shop/storefront",
     "build:auth": "npm run build --workspace @shop/auth",
+    "build:clients:production": "node scripts/build-clients.mjs",
     "generate:design": "node scripts/build-web-tokens.mjs",
     "generate:runtime": "node scripts/build-runtime-config.mjs",
     "generate": "npm run generate --workspace @shop/contractgen && npm run generate --workspace @shop/navigationgen && npm run generate --workspace @shop/requirementgen && npm run generate --workspace @shop/providergen",

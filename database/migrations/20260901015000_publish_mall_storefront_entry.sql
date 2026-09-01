@@ -19,6 +19,8 @@ begin
 end
 $precondition$;
 
+alter table runtime.mvpauthority disable row level security;
+
 update runtime.contractcatalog
 set checksum='0fa65a88e13853d6db30740982d97f58ed37970de3f9c5d5f3e502ab87da38d7',
   operation_count=(select count(*) from runtime.operation),
@@ -48,5 +50,8 @@ begin
   if not exists(select 1 from runtime.mvpauthority where id='mvp:operations' and expected_count=271 and observed_count=271) then raise exception 'MALL_STOREFRONT_CONTRACT_MVP_AUTHORITY_INVALID'; end if;
 end
 $assert$;
+
+alter table runtime.mvpauthority enable row level security;
+alter table runtime.mvpauthority force row level security;
 
 commit;

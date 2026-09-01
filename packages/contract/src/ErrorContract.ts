@@ -97,6 +97,7 @@ export const ERROR_CATALOG = Object.freeze([
   {"code":"RISK_DENIED","status":403,"retryable":false,"audit":false,"client":"message"},
   {"code":"RISK_REVIEW_REQUIRED","status":423,"retryable":false,"audit":false,"client":"message"},
   {"code":"SCOPE_DENIED","status":403,"retryable":false,"audit":false,"client":"message"},
+  {"code":"STEPUP_DESTINATION_MISSING","status":409,"retryable":false,"audit":false,"client":"message"},
   {"code":"STEPUP_REQUIRED","status":403,"retryable":false,"audit":false,"client":"message"},
   {"code":"STOREFRONT_DISABLED","status":410,"retryable":false,"audit":false,"client":"message"},
   {"code":"STOREFRONT_HANDLE_INVALID","status":400,"retryable":false,"audit":true,"client":"message"},

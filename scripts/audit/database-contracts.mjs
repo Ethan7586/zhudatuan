@@ -144,6 +144,7 @@ const REPAIR_FILES = [
   '20260901014000_mall_storefront_entry.sql',
   '20260901015000_publish_mall_storefront_entry.sql',
   '20260901016000_publish_stepup_disable_contract.sql',
+  '20260902010000_publish_stepup_destination_contract.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v3_catalog_contract.sql',

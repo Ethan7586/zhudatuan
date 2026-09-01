@@ -116,6 +116,7 @@ const context: ConsoleContext = {
     scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' },
     scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }],
     assurance: { level: 2 },
+    security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
     csrf: 'csrf-token-at-least-sixteen-characters',
     syncedAt: '2026-08-27T05:00:00.000Z',
   },

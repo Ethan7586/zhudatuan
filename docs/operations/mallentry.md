@@ -4,11 +4,12 @@
 
 ## 发布前准入
 
-1. 确认候选制品中的 Commerce、Console、Storefront、Auth 来自同一 commit、签名和发布清单，`schemaHead` 为 `20260901015000`。
-2. 完成全量迁移重放、升级重放、PITR 恢复演练；核对 slug 全局大小写不敏感唯一、每个 Mall 最多一个 Application、每个 Application 恰有一个 Mall、每个 Active Release 恰有一个 Pool 和 Active Publication。
-3. 确认 Edge、Auth、Console、Storefront、API 的配置 Hash 相同，当前生产 Origin 分别为 `fufu.wang`、`passport.fufu.wang`、`console.fufu.wang`、`api.fufu.wang`。
-4. 选定一个经营中且已发布的验收商城，记录 Application、Mall、Pool、Release、Version 和 `publicSlug`；不得记录 Cookie、Token、会员 ID 或手机号。
-5. 验证数据库快照可读、PITR 时间点已记录、上一完整制品和上一 Edge 配置可恢复。
+1. 确认候选制品中的 Commerce、Console、Storefront、Auth 来自同一 commit、签名和发布清单，`schemaHead` 为 `20260901016000`。
+2. 以不可变 SemVer 设置 `VITE_CLIENT_VERSION` 并运行 `npm run build:clients:production`；该入口必须从生成的 Network Catalog 注入 API、Auth、Console 和 Storefront Origin，制品中不得出现本地 Origin。
+3. 完成全量迁移重放、升级重放、PITR 恢复演练；核对 slug 全局大小写不敏感唯一、每个 Mall 最多一个 Application、每个 Application 恰有一个 Mall、每个 Active Release 恰有一个 Pool 和 Active Publication。
+4. 确认 Edge、Auth、Console、Storefront、API 的配置 Hash 相同，当前生产 Origin 分别为 `fufu.wang`、`passport.fufu.wang`、`console.fufu.wang`、`api.fufu.wang`。
+5. 选定一个经营中且已发布的验收商城，记录 Application、Mall、Pool、Release、Version 和 `publicSlug`；不得记录 Cookie、Token、会员 ID 或手机号。
+6. 验证数据库快照可读、PITR 时间点已记录、上一完整制品和上一 Edge 配置可恢复。
 
 ## 硬切顺序
 
@@ -17,7 +18,7 @@
 1. 冻结商城创建、复制、装修、发布、回滚、启停写入。
 2. 创建数据库发布前快照并验证可恢复性。
 3. 停止旧 API 和 Jobs，等待事务、Outbox 与 Inbox 收敛；不得保留旧实例。
-4. 依次执行 `20260901014000_mall_storefront_entry.sql` 与 `20260901015000_publish_mall_storefront_entry.sql`，任何前置检查失败都终止发布，不自动修数据。
+4. 依次执行 `20260901014000_mall_storefront_entry.sql`、`20260901015000_publish_mall_storefront_entry.sql` 与 `20260901016000_publish_stepup_disable_contract.sql`，任何前置检查失败都终止发布，不自动修数据。
 5. 部署同一签名制品中的 Commerce API、Jobs、Console、Storefront 和 Auth。
 6. 清理全部旧入口命名空间键；新入口键只允许 `storefrontentry` 版本化键。不得删除无关缓存。
 7. 将 Edge 的 `/s/*` 深链及 `index.html` 回退切到新 Storefront 制品，同时保持 API、Auth 与 Console Host 不变。

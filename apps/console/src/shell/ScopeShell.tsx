@@ -182,6 +182,7 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
                 <StepupDialog
                   open
                   accessVersion={context.session.accessVersion}
+                  phoneMasked={context.session.security.phoneMasked}
                   {...(context.session.csrf === undefined ? {} : { csrf: context.session.csrf })}
                   onClose={() => setStepupOpen(false)}
                   onComplete={() => window.location.reload()}

@@ -4,6 +4,7 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = Object.freeze({
   AUTHENTICATION_REQUIRED: '登录会话已失效，请重新登录',
   MOBILE_ASSURANCE_REQUIRED: '手机尚未验证，暂不能提交订单',
   STEPUP_REQUIRED: '为保护账户和收货信息，请先完成二次验证',
+  STEPUP_DESTINATION_MISSING: '当前账号未绑定手机号，请先在安全中心完成绑定',
   STEPUP_ASSURANCE_INVALID: '身份验证未达到安全要求，请重新获取验证码',
   VALIDATION_FAILED: '提交信息格式不正确，请刷新商品与购物车后重试',
   CHECKOUT_REJECTED: '部分商品暂不满足结算条件，请返回购物车重新选择',

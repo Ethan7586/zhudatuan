@@ -41,6 +41,7 @@ describe('Console Route Registry', () => {
       scope: { kind: 'enterprise', id: 'group:1' },
       scopes: [{ kind: 'enterprise', id: 'group:1' }],
       assurance: { level: 1 },
+      security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
       csrf: 'csrf-token-from-api-session',
       syncedAt: '2026-08-26T00:00:00Z',
     });

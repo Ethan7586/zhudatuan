@@ -22,6 +22,7 @@ const context: ConsoleContext = {
     scope: { kind: 'enterprise', id: 'enterprise:one' },
     scopes: [{ kind: 'enterprise', id: 'enterprise:one' }],
     assurance: { level: 2 },
+    security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
     syncedAt: '2026-08-31T00:00:00Z',
   },
   profile: { display_name: '治理管理员', employee_no: null },

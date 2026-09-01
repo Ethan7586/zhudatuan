@@ -109,6 +109,7 @@ function contextFor(activeScope: ConsoleScope): ConsoleContext {
       scope: activeScope,
       scopes: [activeScope],
       assurance: { level: 2 },
+      security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
       syncedAt: '2026-08-27T05:00:00.000Z',
     },
     profile: { display_name: '商城运营', employee_no: null },

@@ -1605,6 +1605,7 @@ const definitions = [
       "MAKER_CHECKER_SEPARATION_REQUIRED",
       "RATE_LIMITED",
       "SCOPE_DENIED",
+      "STEPUP_DESTINATION_MISSING",
       "STEPUP_REQUIRED",
       "VALIDATION_FAILED"
     ],
