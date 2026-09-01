@@ -20,6 +20,11 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const access = requireAccess(request);
       const body = bodyRecord(request);
       const role = request.input.path.roleid!;
+      if (body.action === 'assign' || body.action === 'revoke') {
+        return manageRoleAssignment(request, database, access, role, body.action);
+      }
+      if (body.action === 'delete') return deleteCustomRole(request, database, access, role);
+      if (body.action !== undefined) throw new Error('VALIDATION_FAILED:action');
       const permissions = body.permissions;
       if (!Array.isArray(permissions) || permissions.some((item) => typeof item !== 'string')) throw new Error('VALIDATION_FAILED:permissions');
       const result = await database.query(`with target as (
@@ -133,6 +138,118 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       return { status: 200, body: cancelled, headers: { etag: `"${String(cancelled.version)}"` } };
     },
   });
+}
+
+async function manageRoleAssignment(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,
+  role: string, action: 'assign' | 'revoke'): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
+  const body = bodyRecord(request);
+  const membership = textField(body, 'membership');
+  const kind = textField(body, 'kind');
+  const scope = textField(body, 'scope');
+  const source = textField(body, 'scopeSource');
+  if (source !== 'direct' && source !== 'inherited') throw new Error('VALIDATION_FAILED:scopeSource');
+  const expectedVersion = requireExpectedVersion(request);
+  const resolved = await database.query<{
+    scope: unknown;
+    target_membership_scope: unknown;
+    target_access_version: string | number;
+    role_id: string;
+  }>(`select access.scope_object($1) scope,access.scope_object(target.organization_id) target_membership_scope,
+    target.access_version target_access_version,role.id role_id
+    from access.membership target join access.role role on role.id=$3 and role.scope_id=$4 and role.status='active'
+      and role.id not in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator')
+    where target.id=$2 and target.status='active' for update of target`, [scope, membership, role, access.scope.id]);
+  const target = resolved.rows[0];
+  if (target === undefined) throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
+  const targetScope = canonicalScope(target.scope);
+  const targetMembershipScope = canonicalScope(target.target_membership_scope);
+  const scopeDecision = targetScope === null ? null : checkScope(access.membership, 'access.scope.manage', targetScope, new Date());
+  if (targetScope === null || targetMembershipScope === null || kind !== targetScope.kind
+    || !scopeContains(access.scope, targetScope)
+    || scopeDecision === null || 'reason' in scopeDecision
+    || !scopesAreRelated(targetScope, targetMembershipScope)) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
+  const currentVersion = numericVersion(target.target_access_version);
+  if (currentVersion !== expectedVersion) throw new Error('VERSION_CONFLICT');
+
+  if (action === 'revoke') {
+    const removed = await database.query<{ scope_source: string | null }>(`update access.membershiprole assignment
+      set expires_at=clock_timestamp() from access.role role
+      where assignment.membership_id=$1 and assignment.role_id=$2 and role.id=assignment.role_id
+        and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+        and (assignment.assigned_scope_id=$3 or (assignment.assigned_scope_id is null and role.scope_id=$3))
+      returning assignment.scope_source`, [membership, role, targetScope.id]);
+    const accessVersion = removed.rows.length === 0 ? currentVersion
+      : await raiseMembershipVersion(database, membership, currentVersion);
+    return { status: 200, body: Object.freeze({ action, changed: removed.rows.length > 0, role, membership,
+      scope: targetScope, scope_source: removed.rows[0]?.scope_source ?? source, access_version: accessVersion }) };
+  }
+
+  let scopeAdded = false;
+  if (source === 'inherited') {
+    const inherited = await database.query(`select id from access.scopegrant where membership_id=$1 and scope_kind=$2 and scope_id=$3
+      and effect='allow' and access_version>0 and access_version<=$4 and effective_at<=clock_timestamp()
+      and (expires_at is null or expires_at>clock_timestamp()) limit 1`, [membership, targetScope.kind, targetScope.id, currentVersion]);
+    if (inherited.rows[0] === undefined) throw new Error('INHERITED_SCOPE_NOT_FOUND');
+  } else {
+    const inserted = await database.query(`insert into access.scopegrant(
+      id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,expires_at,access_version)
+      select $1,$2,$3,$4,$5,'allow',clock_timestamp(),null,$6
+      where not exists(select 1 from access.scopegrant existing where existing.membership_id=$2
+        and existing.scope_kind=$3 and existing.scope_id=$4 and existing.effect='allow'
+        and existing.effective_at<=clock_timestamp() and (existing.expires_at is null or existing.expires_at>clock_timestamp()))
+      returning id`, [`scope:${randomUUID()}`, membership, targetScope.kind, targetScope.id,
+      canonicalScopePath(targetScope), currentVersion + 1]);
+    scopeAdded = inserted.rows.length > 0;
+  }
+  const assigned = await database.query(`insert into access.membershiprole(
+    membership_id,role_id,effective_at,expires_at,delegated_by,assigned_scope_kind,assigned_scope_id,assigned_scope_path,scope_source)
+    select $1,$2,clock_timestamp(),null,$3,$4,$5,$6,$7
+    where not exists(select 1 from access.membershiprole existing where existing.membership_id=$1 and existing.role_id=$2
+      and coalesce(existing.assigned_scope_id,$5)=$5 and existing.effective_at<=clock_timestamp()
+      and (existing.expires_at is null or existing.expires_at>clock_timestamp()))
+    returning role_id`, [membership, role, access.membership.id, targetScope.kind, targetScope.id,
+    canonicalScopePath(targetScope), source]);
+  const changed = scopeAdded || assigned.rows.length > 0;
+  const accessVersion = changed ? await raiseMembershipVersion(database, membership, currentVersion) : currentVersion;
+  return { status: 200, body: Object.freeze({ action, changed, role, membership, scope: targetScope,
+    scope_source: source, access_version: accessVersion }) };
+}
+
+async function deleteCustomRole(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,
+  role: string): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
+  const expectedVersion = requireExpectedVersion(request);
+  const selected = await database.query<{ id: string; name: string; version: string | number }>(`select id,name,version from access.role
+    where id=$1 and scope_id=$2 and id not in(
+      'role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator') for update`,
+  [role, access.scope.id]);
+  const target = selected.rows[0];
+  if (target === undefined) throw new Error('ROLE_DELETE_NOT_AVAILABLE');
+  if (numericVersion(target.version) !== expectedVersion) throw new Error('VERSION_CONFLICT');
+  const detached = await database.query<{ membership_id: string }>('delete from access.membershiprole where role_id=$1 returning membership_id', [role]);
+  await database.query('delete from access.rolepermission where role_id=$1', [role]);
+  const deleted = await database.query<{ id: string; name: string }>('delete from access.role where id=$1 and scope_id=$2 returning id,name',
+    [role, access.scope.id]);
+  if (deleted.rows[0] === undefined) throw new Error('ROLE_DELETE_FAILED');
+  const affectedMemberships = [...new Set(detached.rows.map(({ membership_id }) => membership_id))];
+  const affected = affectedMemberships.length === 0 ? [] : (await database.query<{ id: string; access_version: string | number }>(
+    'update access.membership set access_version=access_version+1 where id=any($1::text[]) returning id,access_version',
+    [affectedMemberships])).rows.map((row) => ({ membership: row.id, access_version: numericVersion(row.access_version) }));
+  return { status: 200, body: Object.freeze({ action: 'delete', deleted: true, role: target.id, name: target.name,
+    affected_memberships: affected }) };
+}
+
+async function raiseMembershipVersion(database: OperationDatabase, membership: string, expectedVersion: number): Promise<number> {
+  const raised = await database.query<{ access_version: string | number }>(`update access.membership set access_version=access_version+1
+    where id=$1 and access_version=$2 returning access_version`, [membership, expectedVersion]);
+  const version = raised.rows[0]?.access_version;
+  if (version === undefined) throw new Error('VERSION_CONFLICT');
+  return numericVersion(version);
+}
+
+function numericVersion(value: string | number): number {
+  const version = Number(value);
+  if (!Number.isSafeInteger(version) || version < 0) throw new Error('INVALID_ACCESS_VERSION');
+  return version;
 }
 
 function canonicalScope(value: unknown): Scope | null {

@@ -43,7 +43,7 @@ export function RoleAccessWorkspace() {
     setNotice(undefined);
     const result = await query.refetch();
     if (result.data === undefined) throw result.error ?? new Error('ACCESS_ROLE_REREAD_FAILED');
-    return result.data.roles;
+    return result.data;
   };
 
   return (
@@ -58,7 +58,7 @@ export function RoleAccessWorkspace() {
 
       <Surface className="roleaccessprinciple" depth="flat" padding="default" radius="large">
         <span aria-hidden="true">✓</span>
-        <div><strong>身份是权限容器，不是固定职位</strong><p>名称由商户自由定义；名称不产生权限，权限也不会自动改名。范围与成员分配留在 IAM-003。</p></div>
+        <div><strong>身份是权限容器，不是固定职位</strong><p>名称由商户自由定义；权限独立组合，每次成员分配都直接指定或继承明确范围。</p></div>
       </Surface>
 
       <AccessWorkspaceTabs current={section} />
@@ -77,7 +77,7 @@ export function RoleAccessWorkspace() {
           <MasterDetail
             className="roleaccessmasterdetail"
             masterLabel="身份列表"
-            detailLabel="身份名称与功能权限"
+            detailLabel="身份名称、功能权限、范围与成员"
             master={
               <RoleDirectory
                 roles={visibleRoles}
@@ -98,8 +98,11 @@ export function RoleAccessWorkspace() {
                 key={`${editorRecord.id}:${editorRecord.version ?? 'draft'}`}
                 context={context}
                 role={editorRecord}
+                members={query.data?.items ?? []}
                 onRefresh={refresh}
                 onEdit={() => setNotice(undefined)}
+                onNotice={setNotice}
+                onDeleted={() => { setDraftId(undefined); setSelectedId(undefined); }}
                 onSaved={(saved) => {
                   setDraftId(undefined);
                   setSelectedId(saved.id);
@@ -154,7 +157,7 @@ function RoleItem({ role, selected, onSelect }: Readonly<{ role: AccessRole; sel
     selected={selected}
     title={role.name}
     description={`${role.permissions.length} 项权限 · ${role.member_count} 位成员`}
-    meta={`版本 v${role.version}`}
+    meta={`${role.scopes.length} 个生效范围 · 版本 v${role.version}`}
     leading={<span className="roleavatar" aria-hidden="true">{role.name.slice(0, 1)}</span>}
     trailing={<Badge tone={role.governance ? 'info' : 'neutral'}>{role.governance ? '治理' : '自定义'}</Badge>}
     onClick={() => onSelect(role.id)}
@@ -193,5 +196,6 @@ function toEditorRecord(role: AccessRole): RoleEditorRecord {
 }
 
 function newRoleDraft(id: string): RoleEditorRecord {
-  return { id, name: '', status: 'active', permissions: [], member_count: 0, governance: false, editable: true, persisted: false };
+  return { id, name: '', status: 'active', permissions: [], member_count: 0, governance: false, editable: true,
+    members: [], scopes: [], persisted: false };
 }

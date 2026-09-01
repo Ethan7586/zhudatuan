@@ -8,7 +8,7 @@ import {
 } from '../../entity/session/ScopePresentation';
 import type { AccessMembership } from '../access/AccessSchema';
 
-type AssignedRole = AccessMembership['roles'][number];
+type AssignedRole = Pick<AccessMembership['roles'][number], 'role' | 'name'>;
 
 export interface PermissionGroup {
   readonly category: string;
