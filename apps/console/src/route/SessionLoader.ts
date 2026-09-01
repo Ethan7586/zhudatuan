@@ -33,6 +33,8 @@ interface ConsoleCockpitPrefetch {
 }
 
 const LANDING_SESSION_HANDOFF_MS = 5_000;
+const DOCUMENT_PREFETCH_HANDOFF_MS = 180;
+const DOCUMENT_PREFETCH_TIMEOUT = Symbol('DOCUMENT_PREFETCH_TIMEOUT');
 let landingSessionHandoff: Readonly<{ path: string; session: ConsoleSession; expiresAt: number }> | undefined;
 
 export async function landingLoader({ request }: LoaderFunctionArgs) {
@@ -99,6 +101,7 @@ async function readSession(signal: AbortSignal): Promise<ConsoleSession> {
     if (session.target !== 'console') throw new Response('WRONG_CLIENT_ENTRANCE', { status: 403 });
     return session;
   } catch (cause) {
+    if (signal.aborted) throw signal.reason ?? cause;
     if (apiErrorStatus(cause) === 401) {
       const { appConfig } = await import('../shared/config/AppConfig');
       throw redirectDocument(`${appConfig.authBaseUrl}/login?client=console`);
@@ -156,19 +159,35 @@ async function takeScopePrefetch(
 
 async function consumeDocumentPrefetch<T>(slot: DocumentPrefetch<T> | undefined, signal: AbortSignal): Promise<T | undefined> {
   if (slot === undefined) return undefined;
-  const abort = () => window.__consoleAbortDocumentPrefetch?.();
   if (signal.aborted) {
-    abort();
+    window.__consoleAbortDocumentPrefetch?.();
     throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
   }
+  let rejectAbort: (cause: unknown) => void = () => undefined;
+  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
+  const abort = () => {
+    window.__consoleAbortDocumentPrefetch?.();
+    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+  };
+  let timer: number | undefined;
   signal.addEventListener('abort', abort, { once: true });
   try {
-    if (!slot.settled) {
-      abort();
+    const value = slot.settled
+      ? await Promise.race([slot.promise, aborted])
+      : await Promise.race([
+        slot.promise,
+        aborted,
+        new Promise<typeof DOCUMENT_PREFETCH_TIMEOUT>((resolve) => {
+          timer = window.setTimeout(() => resolve(DOCUMENT_PREFETCH_TIMEOUT), DOCUMENT_PREFETCH_HANDOFF_MS);
+        }),
+      ]);
+    if (value === DOCUMENT_PREFETCH_TIMEOUT) {
+      window.__consoleAbortDocumentPrefetch?.();
       return undefined;
     }
-    return await slot.promise;
+    return value;
   } finally {
+    if (timer !== undefined) window.clearTimeout(timer);
     signal.removeEventListener('abort', abort);
   }
 }
