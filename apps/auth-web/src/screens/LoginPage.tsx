@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
 import { useMallContext } from '../context/MallContext';
+import { useSmsResendCountdown } from '../hooks/useSmsResendCountdown';
 import { Membership, PreAuthContext } from '../types';
 import {
   changeInitialPassword,
@@ -61,7 +62,7 @@ export const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loginOtp, setLoginOtp] = useState({ code: '', challengeId: '', challengeMobile: '' });
-  const [loginOtpSeconds, setLoginOtpSeconds] = useState(0);
+  const { seconds: loginOtpSeconds, start: startLoginOtpCooldown, reset: resetLoginOtpCooldown } = useSmsResendCountdown();
   const [loginOtpSending, setLoginOtpSending] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [registration, setRegistration] = useState({
@@ -78,7 +79,7 @@ export const LoginPage: React.FC = () => {
   const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(false);
   const [registrationPolicyModal, setRegistrationPolicyModal] = useState<'terms' | 'privacy' | null>(null);
   const [registrationBusy, setRegistrationBusy] = useState<'invite' | 'code' | 'submit' | null>(null);
-  const [registrationCodeSeconds, setRegistrationCodeSeconds] = useState(0);
+  const { seconds: registrationCodeSeconds, start: startRegistrationCodeCooldown, reset: resetRegistrationCodeCooldown } = useSmsResendCountdown();
   const [registrationNotice, setRegistrationNotice] = useState('');
   const [formNotice, setFormNotice] = useState('');
   const [resetOpen, setResetOpen] = useState(false);
@@ -101,25 +102,11 @@ export const LoginPage: React.FC = () => {
   const [newPassword, setNewPassword] = useState<string>('');
   const registrationCopy = registrationPresentation(registrationInvite?.target);
 
-  useEffect(() => {
-    if (registrationCodeSeconds <= 0) return;
-    const timer = window.setInterval(() => {
-      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [registrationCodeSeconds]);
-
-  useEffect(() => {
-    if (loginOtpSeconds <= 0) return;
-    const timer = window.setInterval(() => setLoginOtpSeconds((seconds) => Math.max(0, seconds - 1)), 1000);
-    return () => window.clearInterval(timer);
-  }, [loginOtpSeconds]);
-
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
     if (val.trim() !== loginOtp.challengeMobile) {
       setLoginOtp({ code: '', challengeId: '', challengeMobile: '' });
-      setLoginOtpSeconds(0);
+      resetLoginOtpCooldown();
     }
     setFormError('');
     setFormNotice('');
@@ -173,7 +160,7 @@ export const LoginPage: React.FC = () => {
     try {
       const challenge = await createCanonicalLoginChallenge(identifier);
       setLoginOtp({ code: '', challengeId: challenge.challengeId, challengeMobile: identifier.trim() });
-      setLoginOtpSeconds(SMS_CODE_RESEND_SECONDS);
+      startLoginOtpCooldown();
       setFormNotice(`如果该手机号已绑定账号，验证码将发送至 ${maskMobile(identifier)}。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码请求失败');
@@ -196,7 +183,7 @@ export const LoginPage: React.FC = () => {
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(false);
     }
-    if (field === 'mobile' || field === 'inviteCode') setRegistrationCodeSeconds(0);
+    if (field === 'mobile' || field === 'inviteCode') resetRegistrationCodeCooldown();
     setFormError('');
     setRegistrationNotice('');
   };
@@ -206,7 +193,7 @@ export const LoginPage: React.FC = () => {
     setRegistrationInvite(null);
     setRegistrationTermsAccepted(false);
     setRegistrationPolicyModal(null);
-    setRegistrationCodeSeconds(0);
+    resetRegistrationCodeCooldown();
     setRegistrationBusy(null);
     setRegistrationNotice('');
     setFormError('');
@@ -249,7 +236,7 @@ export const LoginPage: React.FC = () => {
         challengeId: challenge.challengeId,
         challengeMobile: mobile,
       }));
-      setRegistrationCodeSeconds(Math.min(SMS_CODE_RESEND_SECONDS, validitySeconds));
+      startRegistrationCodeCooldown(validitySeconds);
       setRegistrationNotice(`验证码请求已提交至 ${maskMobile(registration.mobile)}。${SMS_CODE_RESEND_SECONDS} 秒后仍未收到可重新获取；多次请求请使用最后一条。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码发送失败');
@@ -291,7 +278,7 @@ export const LoginPage: React.FC = () => {
       setRegistrationNotice('');
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(false);
-      setRegistrationCodeSeconds(0);
+      resetRegistrationCodeCooldown();
       setRegistration({ mobile: '', displayName: '', inviteCode: '', code: '', challengeId: '', challengeMobile: '', password: '', confirmPassword: '' });
       setFormNotice(registrationCopy.successNotice);
     } catch (error) {
