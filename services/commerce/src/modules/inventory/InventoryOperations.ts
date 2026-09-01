@@ -11,15 +11,18 @@ export function inventoryOperations(context: ModuleContext): ModuleOperations {
     ...inventoryImportOperations(context),
     'inventory.availability.read': async (request, database) => {
       const access = requireAccess(request);
+      const mall = access.mall_id;
+      if (!mall) throw new Error('SCOPE_DENIED');
       const skus = queryValues(request.input.query.sku, 100);
       const page = queryPage(request);
       const result = await database.query(`select stock.id,stock.sku_id,stock.location_id,stock.onhand,stock.safety,
         stock.onhand-stock.safety-coalesce(sum(reservation.quantity) filter(where reservation.state='active' and reservation.expires_at>clock_timestamp()),0) available,
-        stock.status,stock.version,stock.updated_at from inventory.stockitem stock left join inventory.reservation reservation on reservation.stockitem_id=stock.id
-        where exists(select 1 from organization.unitclosure closure where closure.ancestor_id=$1 and closure.descendant_id=stock.scope_id)
+        stock.status,stock.version,stock.updated_at from inventory.stockitem stock left join inventory.reservation reservation
+          on reservation.mall_id=stock.scope_id and reservation.stockitem_id=stock.id
+        where stock.scope_id=$1
         and ($2::text[] is null or stock.sku_id=any($2::text[]))
         and ($3::timestamptz is null or (stock.updated_at,stock.id)<($3::timestamptz,$4))
-        group by stock.id order by stock.updated_at desc,stock.id desc limit $5`, [access.scope.id, skus.length === 0 ? null : skus, page.sort, page.id, page.fetch]);
+        group by stock.id order by stock.updated_at desc,stock.id desc limit $5`, [mall, skus.length === 0 ? null : skus, page.sort, page.id, page.fetch]);
       return keysetResult(result, page, 'updated_at');
     },
   });

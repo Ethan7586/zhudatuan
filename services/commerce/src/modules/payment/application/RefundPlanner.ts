@@ -9,7 +9,7 @@ export interface RefundRequest {
   readonly amountMinor: number;
   readonly idempotency: string;
   readonly reason: string;
-  readonly scope: string;
+  readonly mall: string;
   readonly aftersale?: string;
 }
 
@@ -46,13 +46,13 @@ export class RefundPlanner {
 
   async create(database: OperationDatabase, request: RefundRequest): Promise<PlannedRefund> {
     const payment = (await database.query<PaymentRow>(`select payment.intent_id,payment.currency,
-      payment.captured_minor::float8 captured_minor from payment.payment payment join payment.intent intent on intent.id=payment.intent_id
-      join ordering.orderrecord orders on orders.id=intent.order_id where payment.id=$1 and orders.scope_id=$2 for update of payment`,
-    [request.payment, request.scope])).rows[0];
+      payment.captured_minor::float8 captured_minor from payment.payment payment
+      where payment.mall_id=$1 and payment.id=$2 for update of payment`, [request.mall, request.payment])).rows[0];
     if (!payment) throw new Error('PAYMENT_NOT_REFUNDABLE');
     if (payment.currency !== 'CNY') throw new Error('PAYMENT_CURRENCY_UNSUPPORTED');
     const existing = (await database.query<PlannedRefund>(`select id,payment_id,provider,provider_reference,amount_minor::float8 amount_minor,
-      currency,state,reason,aftersale_id from payment.refund where payment_id=$1 and idempotency_key=$2`, [request.payment, request.idempotency])).rows[0];
+      currency,state,reason,aftersale_id from payment.refund where mall_id=$1 and payment_id=$2 and idempotency_key=$3`,
+    [request.mall, request.payment, request.idempotency])).rows[0];
     if (existing) {
       if (existing.amount_minor !== request.amountMinor || existing.reason !== request.reason || existing.aftersale_id !== (request.aftersale ?? null)) {
         throw new Error('PAYMENT_REFUND_IDEMPOTENCY_CONFLICT');
@@ -60,10 +60,12 @@ export class RefundPlanner {
       return existing;
     }
     const plans = (await database.query<Omit<TenderRow, 'refunded_minor'>>(`select sequence,kind,reference_id,amount_minor::float8 amount_minor
-      from payment.intenttender where intent_id=$1 and state='captured' order by sequence for update`, [payment.intent_id])).rows;
+      from payment.intenttender where mall_id=$1 and intent_id=$2 and state='captured' order by sequence for update`,
+    [request.mall, payment.intent_id])).rows;
     const refunded = (await database.query<RefundedRow>(`select leg.kind,leg.reference_id,sum(leg.amount_minor)::float8 amount_minor
-      from payment.refund refund join payment.refundtender leg on leg.refund_id=refund.id
-      where refund.payment_id=$1 and refund.state not in('failed','cancelled') group by leg.kind,leg.reference_id`, [request.payment])).rows;
+      from payment.refund refund join payment.refundtender leg on leg.mall_id=refund.mall_id and leg.refund_id=refund.id
+      where refund.mall_id=$1 and refund.payment_id=$2 and refund.state not in('failed','cancelled')
+      group by leg.kind,leg.reference_id`, [request.mall, request.payment])).rows;
     const claimed = new Map(refunded.map((row) => [key(row.kind, row.reference_id), row.amount_minor]));
     const tenders: readonly TenderRow[] = plans.map((plan) => ({ ...plan, refunded_minor: claimed.get(key(plan.kind, plan.reference_id)) ?? 0 }));
     if (tenders.length === 0 || tenders.reduce((sum, tender) => sum + tender.amount_minor, 0) !== payment.captured_minor) {
@@ -81,13 +83,13 @@ export class RefundPlanner {
     const external = legs.some(({ kind }) => kind === 'wechat');
     const internal = legs.some(({ kind }) => kind !== 'wechat');
     const provider = external && internal ? 'mixed' : external ? 'wechat' : 'internal';
-    const inserted = await database.query<PlannedRefund>(`insert into payment.refund(id,payment_id,provider,provider_reference,idempotency_key,
-      amount_minor,currency,state,reason,aftersale_id,version) values($1,$2,$3,$4,$5,$6,$7,'requested',$8,$9,0)
+    const inserted = await database.query<PlannedRefund>(`insert into payment.refund(id,mall_id,payment_id,provider,provider_reference,idempotency_key,
+      amount_minor,currency,state,reason,aftersale_id,version) values($1,$2,$3,$4,$5,$6,$7,$8,'requested',$9,$10,0)
       returning id,payment_id,provider,provider_reference,amount_minor::float8 amount_minor,currency,state,reason,aftersale_id`,
-    [request.id, request.payment, provider, PaymentReference.refund(request.id).text, request.idempotency, request.amountMinor,
-      payment.currency, request.reason, request.aftersale ?? null]);
-    for (const leg of legs) await database.query(`insert into payment.refundtender(refund_id,sequence,kind,reference_id,amount_minor,state)
-      values($1,$2,$3,$4,$5,'planned')`, [request.id, leg.sequence, leg.kind, leg.reference, leg.amount]);
+    [request.id, request.mall, request.payment, provider, PaymentReference.refund(request.id).text, request.idempotency,
+      request.amountMinor, payment.currency, request.reason, request.aftersale ?? null]);
+    for (const leg of legs) await database.query(`insert into payment.refundtender(mall_id,refund_id,sequence,kind,reference_id,amount_minor,state)
+      values($1,$2,$3,$4,$5,$6,'planned')`, [request.mall, request.id, leg.sequence, leg.kind, leg.reference, leg.amount]);
     return inserted.rows[0]!;
   }
 }

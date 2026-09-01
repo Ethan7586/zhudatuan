@@ -179,7 +179,7 @@ objects:
   - id: payment.webhook_scope
     kind: function
     owner: payment
-    source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
+    source: database/supabase/migrations/20260901190000_add_payment_mall_identity.sql
     callers:
       - services/commerce/src/modules/payment/PaymentWebhook.ts
   - id: reporting.cockpit
@@ -464,13 +464,13 @@ objects:
     objectType: function
     target: identity.resolve_session(text)
     privilege: execute
-  - id: shopapp:function:payment.webhook_scope(text,text):execute
+  - id: shopapp:function:payment.webhook_scope(text,text,text):execute
     kind: grant
     owner: payment
-    source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
+    source: database/supabase/migrations/20260901190000_add_payment_mall_identity.sql
     role: shopapp
     objectType: function
-    target: payment.webhook_scope(text,text)
+    target: payment.webhook_scope(text,text,text)
     privilege: execute
   - id: shopapp:function:reporting.cockpit(text):execute
     kind: grant

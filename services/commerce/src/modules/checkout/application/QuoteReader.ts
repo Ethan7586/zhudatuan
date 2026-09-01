@@ -26,6 +26,7 @@ interface PolicyRow {
   readonly period: string | null; readonly quantity: number | null; readonly amount_minor: number | null;
 }
 interface PurchaseRow { readonly listing_id: string; readonly day_quantity: number; readonly week_quantity: number; readonly month_quantity: number; readonly lifetime_quantity: number; readonly day_minor: number; readonly week_minor: number; readonly month_minor: number; readonly lifetime_minor: number }
+interface PurchaseHistoryQuery { readonly mall_id: string; readonly member_id: string }
 interface CampaignRow { readonly id: string; readonly version: number; readonly rule: Record<string, unknown>; readonly remaining_budget: number }
 interface PriceRuleRow { readonly id: string; readonly version: number; readonly priority: number; readonly kind: string; readonly condition: unknown; readonly effect: unknown }
 
@@ -35,7 +36,8 @@ export class QuoteReader {
   async read(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CheckoutQuote> {
     const cart = await this.cart(database, membership, selection);
     const [lines, policies, purchases, tags, campaigns, priceRules, vouchers, benefits] = await Promise.all([
-      this.lines(database, cart), this.policies(database, cart.mall_id), this.purchases(database, cart.member_id), this.tags(database, cart.member_id),
+      this.lines(database, cart), this.policies(database, cart.mall_id),
+      this.purchases(database, { mall_id: cart.mall_id, member_id: cart.member_id }), this.tags(database, cart.member_id),
       this.campaigns(database, cart.mall_id), this.priceRules(database, cart.mall_id), this.vouchers(database, cart, selection), this.benefits(database, cart, selection),
     ]);
     if (lines.length === 0) throw new Error('CART_EMPTY');
@@ -140,7 +142,7 @@ export class QuoteReader {
       where policy.scope_id=$1 and policy.status='published' order by policy.id`, [scope])).rows;
   }
 
-  private async purchases(database: OperationDatabase, member: string): Promise<ReadonlyMap<string, PurchaseRow>> {
+  private async purchases(database: OperationDatabase, query: PurchaseHistoryQuery): Promise<ReadonlyMap<string, PurchaseRow>> {
     const rows = (await database.query<PurchaseRow>(`select line.listing_id,
       coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('day',clock_timestamp())),0)::float8 day_quantity,
       coalesce(sum(line.quantity) filter(where orders.created_at>=date_trunc('week',clock_timestamp())),0)::float8 week_quantity,
@@ -150,7 +152,8 @@ export class QuoteReader {
       coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('week',clock_timestamp())),0)::float8 week_minor,
       coalesce(sum(line.payable_minor) filter(where orders.created_at>=date_trunc('month',clock_timestamp())),0)::float8 month_minor,
       coalesce(sum(line.payable_minor),0)::float8 lifetime_minor from ordering.orderrecord orders join ordering.line line on line.order_id=orders.id
-      where orders.member_id=$1 and orders.lifecycle_state not in('cancelled','closed') group by line.listing_id`, [member])).rows;
+      where orders.mall_id=$1 and orders.member_id=$2 and orders.lifecycle_state not in('cancelled','closed') group by line.listing_id`,
+    [query.mall_id, query.member_id])).rows;
     return new Map(rows.map((row) => [row.listing_id, row]));
   }
 

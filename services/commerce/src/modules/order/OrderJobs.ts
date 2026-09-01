@@ -20,28 +20,37 @@ export class OrderExpiryJobProcessor implements JobProcessor {
       await client.query('begin');
       const expired = await checkoutSessionPort.expire(client, checkout);
       for (const item of expired.rows) await inventoryPort.expireCheckout(client, item.id);
-      const external = await client.query<{ intent: string; scope_id: string }>(`select intent.id intent,orders.scope_id from payment.intent intent
-        join ordering.orderrecord orders on orders.id=intent.order_id where intent.expires_at<=clock_timestamp()
-        and intent.state in('created','authorizing','authorized') and orders.payment_state in('unpaid','authorizing')
-        and ($1::text is null or orders.id=$1) and exists(select 1 from payment.attempt attempt where attempt.intent_id=intent.id and attempt.provider='wechat')
-        order by intent.id for update of intent,orders`, [order]);
-      for (const target of external.rows) await client.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-        values($1,'paymentquery','payment',$2,jsonb_build_object('intent',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())
-        on conflict(id) do update set state='queued',available_at=clock_timestamp(),updated_at=clock_timestamp()`,
-      [`job:expiry:${target.intent}`, target.scope_id, target.intent]);
-      const orders = await client.query<{ id: string; scope_id: string }>(`select orders.id,orders.scope_id from ordering.orderrecord orders
-        join payment.intent intent on intent.order_id=orders.id where intent.expires_at<=clock_timestamp()
-        and intent.state in('created','authorizing','authorized') and orders.payment_state in('unpaid','authorizing')
-        and ($1::text is null or orders.id=$1) and not exists(select 1 from payment.attempt attempt
-          where attempt.intent_id=intent.id and attempt.provider='wechat') order by orders.id for update of intent,orders`, [order]);
-      for (const expiredOrder of orders.rows) {
-        await orderPort.cancelUnpaid(client, expiredOrder.id);
-        await releaseOrderHolds(client, expiredOrder.id);
-        await client.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-        values($1,'order.cancelled',1,'order',$2,$3,jsonb_build_object('order',$2,'reason','paymenttimeout'),$1,clock_timestamp(),clock_timestamp())`,
-        [`event:${randomUUID()}`, expiredOrder.id, expiredOrder.scope_id]);
+      const malls = job.scope_id ? [job.scope_id] : (await client.query<{ mall_id: string }>(`select distinct mall_id
+        from ordering.orderrecord where payment_state in('unpaid','authorizing') and ($1::text is null or id=$1)
+        order by mall_id`, [order])).rows.map(({ mall_id }) => mall_id);
+      for (const mall of malls) {
+        const external = await client.query<{ intent: string; scope_id: string }>(`select intent.id intent,intent.mall_id scope_id from payment.intent intent
+          join ordering.orderrecord orders on orders.id=intent.order_id and orders.mall_id=intent.mall_id where intent.mall_id=$2
+          and intent.expires_at<=clock_timestamp()
+          and intent.state in('created','authorizing','authorized') and orders.payment_state in('unpaid','authorizing')
+          and ($1::text is null or orders.id=$1) and exists(select 1 from payment.attempt attempt where attempt.mall_id=intent.mall_id
+            and attempt.intent_id=intent.id and attempt.provider='wechat')
+          order by intent.id for update of intent,orders`, [order, mall]);
+        for (const target of external.rows) await client.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+          values($1,'paymentquery','payment',$2,jsonb_build_object('intent',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())
+          on conflict(id) do update set state='queued',available_at=clock_timestamp(),updated_at=clock_timestamp()`,
+        [`job:expiry:${target.intent}`, target.scope_id, target.intent]);
+        const orders = await client.query<{ id: string; scope_id: string }>(`select orders.id,orders.scope_id from ordering.orderrecord orders
+          join payment.intent intent on intent.order_id=orders.id and intent.mall_id=orders.mall_id where intent.mall_id=$2
+          and intent.expires_at<=clock_timestamp()
+          and intent.state in('created','authorizing','authorized') and orders.payment_state in('unpaid','authorizing')
+          and ($1::text is null or orders.id=$1) and not exists(select 1 from payment.attempt attempt
+            where attempt.mall_id=intent.mall_id and attempt.intent_id=intent.id and attempt.provider='wechat')
+          order by orders.id for update of intent,orders`, [order, mall]);
+        for (const expiredOrder of orders.rows) {
+          await orderPort.cancelUnpaid(client, expiredOrder.id);
+          await releaseOrderHolds(client, mall, expiredOrder.id);
+          await client.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
+          values($1,'order.cancelled',1,'order',$2,$3,jsonb_build_object('order',$2,'reason','paymenttimeout'),$1,clock_timestamp(),clock_timestamp())`,
+          [`event:${randomUUID()}`, expiredOrder.id, expiredOrder.scope_id]);
+        }
+        await paymentPort.expire(client, mall, order);
       }
-      await paymentPort.expire(client, order);
       await client.query('commit');
     } catch (cause) { await client.query('rollback'); throw cause; } finally { client.release(); }
   }
