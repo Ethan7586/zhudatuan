@@ -73,12 +73,14 @@ describe('Console module route materializer', () => {
       ]);
   });
 
-  it('supplies the Router index, all registry routes, and the existing wildcard', () => {
-    expect(consoleScopeChildren).toHaveLength(34);
+  it('supplies the Router index, all registry routes, the profile route, and the existing wildcard', () => {
+    expect(consoleScopeChildren).toHaveLength(35);
     expect(consoleScopeChildren[0]).toMatchObject({ index: true });
+    expect(consoleScopeChildren.at(-2)).toMatchObject({ path: 'settings/profile' });
     expect(consoleScopeChildren.at(-1)).toMatchObject({ path: '*' });
-    expect(consoleScopeChildren.slice(1, -1)
+    expect(consoleScopeChildren.slice(1, -2)
       .every((route) => 'handle' in route && isConsoleRouteHandle(route.handle))).toBe(true);
+    expect('handle' in (consoleScopeChildren.at(-2) ?? {})).toBe(false);
   });
 
   it('selects only the first enabled main entry for the scope index', () => {

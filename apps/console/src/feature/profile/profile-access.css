@@ -1,0 +1,268 @@
+.profileidentitysummary {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+  gap: var(--sw-space-2);
+}
+
+.profilegovernancecard,
+.profilebusinesscard {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: var(--sw-space-1);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-2);
+}
+
+.profilebusinesscard {
+  border-color: color-mix(in srgb, var(--sw-brand) 28%, var(--sw-border));
+  background: var(--sw-surface-selected);
+  box-shadow: var(--sw-shadow-control-rest);
+}
+
+.profileidentitysummary > div > span {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.profileidentitysummary > div > small {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.profilechips {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--sw-space-1);
+}
+
+.profileempty {
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-1-5);
+}
+
+.profileeffectivescope {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sw-space-2);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-2);
+}
+
+.profileeffectivescope > p {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-caption);
+}
+
+.profileeffectivescope ol,
+.profilegrants ul,
+.profilepermissiongroup ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profileeffectivescope ol {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+
+.profileeffectivescope li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+}
+
+.profileeffectivescope li > span,
+.profileeffectivescope li > strong {
+  display: grid;
+  min-height: var(--sw-control-height-compact);
+  place-items: center;
+  border-radius: var(--sw-radius-full);
+  padding-inline: var(--sw-space-1-5);
+  font-size: var(--sw-font-size-caption);
+}
+
+.profileeffectivescope li > span {
+  background: var(--sw-brand-ink);
+  color: var(--sw-text-inverse);
+}
+
+.profileeffectivescope li > strong {
+  overflow-wrap: anywhere;
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+}
+
+.profileeffectivescope i {
+  color: var(--sw-disabled);
+  font-style: normal;
+}
+
+.profilepermissionsheading {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.profilepermissionsheading > div {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+
+.profilepermissionsheading h3,
+.profilegrants h3 {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-h3);
+  line-height: var(--sw-line-height-h3);
+}
+
+.profilepermissiongroups {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--sw-space-2);
+}
+
+.profilepermissiongroup {
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--sw-control-height-lg);
+  overflow: hidden;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+}
+
+.profilepermissiongroup summary {
+  display: flex;
+  min-height: var(--sw-control-height-lg);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  padding: var(--sw-space-1-5);
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-semibold);
+  cursor: pointer;
+}
+
+.profilepermissiongroup[open] summary {
+  border-bottom: var(--sw-border-width) solid var(--sw-divider);
+  background: var(--sw-surface-selected);
+  color: var(--sw-brand-dark);
+}
+
+.profilepermissiongroup ul {
+  display: grid;
+  gap: var(--sw-space-1);
+  padding: var(--sw-space-1-5);
+}
+
+.profilepermissiongroup li {
+  position: relative;
+  padding-left: var(--sw-space-2);
+}
+
+.profilepermissiongroup li::before {
+  position: absolute;
+  top: var(--sw-space-0-5);
+  left: 0;
+  color: var(--sw-brand);
+  content: '✓';
+}
+
+.profilepermissiongroup code {
+  overflow-wrap: anywhere;
+  color: var(--sw-text-secondary);
+  font-family: var(--sw-font-mono);
+  font-size: var(--sw-font-size-code);
+  line-height: var(--sw-line-height-code);
+}
+
+.profilegrants {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-1);
+}
+
+.profilegrants ul {
+  display: grid;
+  gap: var(--sw-space-1);
+}
+
+.profilegrants li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border-bottom: var(--sw-border-width) solid var(--sw-divider-subtle);
+  padding-block: var(--sw-space-1);
+}
+
+.profilegrants li > span:not(.swbadge),
+.profilegrants small {
+  overflow-wrap: anywhere;
+}
+
+.profilegrants small {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+
+.profileformula {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-brand-ink);
+  color: var(--sw-text-inverse);
+  padding: var(--sw-space-2);
+}
+
+.profileformula > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.profileformula span {
+  color: var(--sw-overlay-inverse-label);
+  font-size: var(--sw-font-size-caption);
+}
+
+.profileformula strong {
+  overflow-wrap: anywhere;
+  font-size: var(--sw-font-size-body);
+  line-height: var(--sw-line-height-body);
+}
+
+.profileformula p {
+  color: var(--sw-overlay-inverse-label);
+  font-size: var(--sw-font-size-body-sm);
+  line-height: var(--sw-line-height-body-sm);
+  text-align: right;
+}
+

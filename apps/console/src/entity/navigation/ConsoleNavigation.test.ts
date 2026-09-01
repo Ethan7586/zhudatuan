@@ -11,8 +11,8 @@ describe('Console navigation selector', () => {
     expect(items.filter(({ placement }) => placement === 'main').map(({ moduleId, label, icon, order }) => ({ moduleId, label, icon, order }))).toEqual([
       { moduleId: 'cockpit', label: '经营驾驶舱', icon: 'trend', order: 10 },
       { moduleId: 'reports', label: '数据报表', icon: 'trend', order: 15 },
-      { moduleId: 'control', label: '智慧翼中控台', icon: 'control', order: 20 },
-      { moduleId: 'applications', label: '築店 · 商城管理', icon: 'building', order: 30 },
+      { moduleId: 'control', label: '系统中控台', icon: 'control', order: 20 },
+      { moduleId: 'applications', label: '商城管理', icon: 'building', order: 30 },
       { moduleId: 'products', label: '商品治理台', icon: 'products', order: 40 },
       { moduleId: 'orders', label: '订单管理系统', icon: 'orders', order: 50 },
       { moduleId: 'referral', label: '分销返佣系统', icon: 'channel', order: 60 },
@@ -35,11 +35,11 @@ describe('Console navigation selector', () => {
       const label = selectConsoleNavigationItems(consoleModules, scopeKind)
         .find(({ moduleId }) => moduleId === 'applications')?.label;
       if (scopeKind === 'platform' || scopeKind === 'distributor' || scopeKind === 'tenant') {
-        expect(label).toBe('築店 · 应用治理');
+        expect(label).toBe('应用治理');
       } else if (scopeKind === 'mall') {
-        expect(label).toBe('築店 · 店铺装修');
+        expect(label).toBe('店铺装修');
       } else {
-        expect(label).toBe('築店 · 商城管理');
+        expect(label).toBe('商城管理');
       }
     }
   });

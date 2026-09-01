@@ -89,6 +89,20 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   border-bottom-color: rgb(255 255 255 / 8%);
 }
 
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarproductmark {
+  display: grid;
+  width: var(--sw-icon-container-md);
+  height: var(--sw-icon-container-md);
+  flex: 0 0 var(--sw-icon-container-md);
+  place-items: center;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  font-size: var(--sw-font-size-h3);
+  font-weight: var(--sw-font-weight-bold);
+  box-shadow: var(--sw-shadow-brand-control);
+}
+
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand .swbrand-mark img {
   box-shadow: 0 0 0 1px rgb(255 255 255 / 10%), 0 8px 20px rgb(0 61 183 / 34%);
 }
@@ -162,10 +176,27 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofile {
+  width: 100%;
   height: 56px;
   min-height: 56px;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
   border-top-color: rgb(255 255 255 / 8%);
   background: linear-gradient(180deg, rgb(0 0 0 / 10%), rgb(0 0 0 / 22%));
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--sw-duration-fast), box-shadow var(--sw-duration-fast);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] button.sidebarprofile:hover {
+  background: color-mix(in srgb, var(--sw-brand) 18%, var(--sw-brand-ink));
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] button.sidebarprofile[aria-current='page'] {
+  background: color-mix(in srgb, var(--sw-brand) 27%, var(--sw-brand-ink));
+  box-shadow: inset var(--sw-border-width-strong) 0 0 var(--sw-brand);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofilecopy strong {
@@ -233,6 +264,22 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 
 .consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy strong {
   line-height: 16px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .accountpopup .accountprofileentry {
+  border-color: color-mix(in srgb, var(--sw-brand) 24%, var(--sw-border));
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .accountpopup .accountprofileentry:hover {
+  border-color: var(--sw-brand);
+  background: var(--sw-surface-selected);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .accountpopup .accountlogout {
+  color: var(--sw-text-secondary);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy em,
