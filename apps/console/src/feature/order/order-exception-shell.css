@@ -1,0 +1,243 @@
+.orderexceptionworkspace {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-2);
+}
+
+.orderexceptionheading {
+  display: flex;
+  min-width: 0;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--sw-space-3);
+}
+
+.orderexceptionheading > div:first-child {
+  min-width: 14rem;
+}
+
+.orderexceptionheading p,
+.orderexceptionheading h1 {
+  margin: 0;
+}
+
+.orderexceptionheading h1 {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-h1);
+  line-height: var(--sw-line-height-h1);
+}
+
+.orderexceptionheading > div:first-child > p:last-child {
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.orderexceptionheadingactions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+
+.orderexceptionheadingactions > .shopbutton svg {
+  width: var(--sw-icon-size-sm);
+  height: var(--sw-icon-size-sm);
+}
+
+.orderexceptionpurpose {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1);
+  box-shadow: var(--sw-shadow-control-rest);
+}
+
+.orderexceptionpurpose span {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+  border-radius: var(--sw-radius-md);
+  color: var(--sw-text-secondary);
+  padding: var(--sw-space-0-5) var(--sw-space-1);
+  font-size: var(--sw-font-size-caption);
+  white-space: nowrap;
+}
+
+.orderexceptionpurpose span[data-active='true'] {
+  background: var(--sw-brand-faint);
+  color: var(--sw-brand-dark);
+  font-weight: 700;
+}
+
+.orderexceptionpurpose b {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  font-size: 0.625rem;
+}
+
+.orderexceptionpurpose i {
+  color: var(--sw-muted);
+  font-style: normal;
+}
+
+.orderexceptionstats {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sw-space-1);
+}
+
+.orderexceptionmetric {
+  display: flex;
+  min-width: 0;
+  min-height: 4.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1-5) var(--sw-space-2);
+  box-shadow: var(--sw-shadow-control-rest);
+}
+
+.orderexceptionmetric span {
+  display: block;
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderexceptionmetric strong {
+  display: block;
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-h2);
+  line-height: 1;
+}
+
+.orderexceptionmetric strong small {
+  margin-left: var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 500;
+}
+
+.orderexceptionmetric > i {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  place-items: center;
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-brand-faint);
+  color: var(--sw-brand);
+  font-style: normal;
+}
+
+.orderexceptionmetric[data-tone='danger'] > i {
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger);
+}
+
+.orderexceptionmetric[data-tone='warning'] > i {
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+
+.orderexceptionmetric[data-tone='success'] > i {
+  background: var(--sw-success-surface);
+  color: var(--sw-success);
+}
+
+.orderexceptionmetric svg {
+  width: var(--sw-icon-size-sm);
+  height: var(--sw-icon-size-sm);
+}
+
+.orderexceptiondesk {
+  display: grid;
+  min-width: 0;
+  min-height: 36rem;
+  height: clamp(36rem, calc(100vh - 22rem), 45rem);
+  grid-template-columns: minmax(14.5rem, 0.78fr) minmax(23rem, 1.45fr) minmax(17rem, 0.9fr);
+  gap: var(--sw-space-1-5);
+}
+
+.orderexceptiondesk > .swsurface {
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.orderexceptionlistpanel,
+.orderexceptiontimelinepanel,
+.orderexceptionactionpanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.orderexceptionpanelhead {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  border-bottom: var(--sw-border-width) solid var(--sw-divider);
+  padding: var(--sw-space-1-5) var(--sw-space-2);
+}
+
+.orderexceptionpanelhead h2,
+.orderexceptionpanelhead p {
+  margin: 0;
+}
+
+.orderexceptionpanelhead h2 {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-h3);
+}
+
+.orderexceptionpanelhead p {
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderexceptionfilters {
+  display: flex;
+  gap: var(--sw-space-0-5);
+  padding: var(--sw-space-1) var(--sw-space-1) var(--sw-space-0-5);
+}
+
+.orderexceptionfilters button {
+  min-height: 1.75rem;
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-space-1);
+  font: inherit;
+  font-size: var(--sw-font-size-caption);
+  cursor: pointer;
+}
+
+.orderexceptionfilters button[data-active='true'] {
+  background: var(--sw-brand-faint);
+  color: var(--sw-brand-dark);
+  font-weight: 700;
+}
+
+.orderexceptionfilters button:focus-visible,
+.orderexceptioncard:focus-visible {
+  outline: 2px solid var(--sw-focus-color);
+  outline-offset: 2px;
+}

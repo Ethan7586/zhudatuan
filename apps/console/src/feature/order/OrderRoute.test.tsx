@@ -156,6 +156,47 @@ describe('Order route', () => {
     expect(within(dialog).queryByText('不应泄漏的演示说明')).toBeNull();
   });
 
+  it('turns the preview exception view into a vertical responsibility workflow', async () => {
+    const exceptionOrder = {
+      ...order,
+      payment_state: 'partially_refunded',
+      fulfillment_state: 'returned',
+      aftersale_state: 'processing',
+      preview: {
+        ...order.preview,
+        exception: true,
+        operation: { id: 'operation:refund-reconciliation', label: '退款对账等待确认', status: 'failed', at: '2026-08-26T08:28:00.000Z' },
+      },
+    } as const;
+    server.use(
+      http.get('*/api/v1/orders', ({ request }) => {
+        const url = new URL(request.url);
+        getRequests.push(url);
+        if (url.searchParams.get('limit') === '1') return HttpResponse.json({ items: [exceptionOrder], count: 1 });
+        return HttpResponse.json({
+          items: [exceptionOrder],
+          count: 1,
+          preview: { ...listPage.preview, total: 1, counts: { ...listPage.preview.counts, exception: 1 } },
+        });
+      })
+    );
+    const user = userEvent.setup();
+    renderRoute('/orders?view=exception', previewContext);
+
+    expect(await screen.findByRole('heading', { level: 1, name: '订单协同异常' })).toBeTruthy();
+    expect(screen.getByText('找到卡住的订单，确认责任系统，并直接去处理。')).toBeTruthy();
+    expect(await screen.findByRole('list', { name: '异常订单列表' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: new RegExp(order.order_number) }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('list', { name: new RegExp(`${order.order_number} 纵向进度`) })).toBeTruthy();
+    const actionPanel = screen.getByRole('region', { name: '当前卡点与处理动作' });
+    expect(within(actionPanel).getByText('财务与对账台', { exact: true })).toBeTruthy();
+    expect(within(actionPanel).getByRole('button', { name: '进入财务与对账台处理' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: '查看完整订单详情' }));
+    expect(await screen.findByRole('dialog', { name: new RegExp(order.order_number) })).toBeTruthy();
+    expect(postRequests).toHaveLength(0);
+  });
+
   it('normalizes preview-only URL filters out of a production scope before presenting results', async () => {
     renderRoute('/orders?view=unpaid&placed=today&lifecycle=active&payment=paid&fulfillment=allocated&mall=huimin&order=order%3Ainternal-1&campaign=keep');
 

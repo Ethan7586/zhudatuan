@@ -23,7 +23,7 @@ test('Console 订单管理呈现参考结构并只用服务端筛选结果', asy
   await expect(page.getByRole('button', { name: '导出订单' })).toBeEnabled();
   await expect(page.getByRole('button', { name: '刷新数据' })).toBeEnabled();
   await expect(page.getByRole('button', { name: /全部订单\s*7/ })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('button', { name: /异常\s*1/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /异常\s*6/ })).toBeVisible();
 
   const table = page.getByRole('table', { name: '订单列表' });
   await expect(table.getByRole('columnheader')).toHaveText(['', '订单 / 时间', '会员 / 企业', '商品摘要', '金额 / 支付', '履约状态', '售后', 'SLA', '操作']);
@@ -73,6 +73,34 @@ test('Console 订单管理呈现参考结构并只用服务端筛选结果', asy
   await expect(table.getByText('九阳5.5L大容量可视空气炸锅', { exact: true })).toBeVisible();
   expect(lastOrderQuery(api).get('view')).toBe('unpaid');
 
+  expectOrderReadsOnly(api);
+  expect(api.unmatched).toEqual([]);
+});
+
+test('Console 订单异常视图以纵向任务流定位责任系统', async ({ page }) => {
+  const api = consoleOrderApi(page, (call) => orderPreviewPage(new URLSearchParams(call.query)));
+  await api.install();
+  await page.goto(`${ordersUrl}?view=exception`);
+
+  await expect(page.getByRole('heading', { level: 1, name: '订单协同异常' })).toBeVisible();
+  await expect(page.getByText('找到卡住的订单，确认责任系统，并直接去处理。', { exact: true })).toBeVisible();
+  await expect(page.getByRole('list', { name: '异常订单列表' }).getByRole('listitem')).toHaveCount(6);
+  await expect(page.getByRole('button', { name: /SW202608210006/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('list', { name: /SW202608210006 纵向进度/ }).getByText('退款对账待确认', { exact: true })).toBeVisible();
+  const actionPanel = page.getByRole('region', { name: '当前卡点与处理动作' });
+  await expect(actionPanel.getByText('财务与对账台', { exact: true })).toBeVisible();
+  await expect(actionPanel.getByRole('button', { name: '进入财务与对账台处理' })).toBeEnabled();
+
+  await page.getByRole('button', { name: /SW202608240001/ }).click();
+  await expect(page.getByText('发货任务已超时', { exact: true }).last()).toBeVisible();
+  await expect(page.getByText('履约服务', { exact: true }).last()).toBeVisible();
+  await page.getByRole('button', { name: '查看完整订单详情' }).click();
+  await expect(page.getByRole('dialog', { name: '订单详情 SW202608240001' })).toBeVisible();
+
+  const exceptionListRead = orderCalls(api)
+    .map((call) => new URLSearchParams(call.query))
+    .find((query) => query.get('limit') === '50' && query.get('view') === 'exception');
+  expect(exceptionListRead).toBeDefined();
   expectOrderReadsOnly(api);
   expect(api.unmatched).toEqual([]);
 });
