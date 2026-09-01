@@ -37,6 +37,12 @@ export class OperationMock {
     return this.register('POST', path, body, status);
   }
 
+  put(path: string, respond: Responder, status?: number): this;
+  put(path: string, body: unknown, status?: number): this;
+  put(path: string, body: unknown, status = 200): this {
+    return this.register('PUT', path, body, status);
+  }
+
   async install(): Promise<void> {
     await this.page.route('http://127.0.0.1:4311/api/v1/**', (route) => this.dispatch(route));
   }
@@ -56,7 +62,7 @@ export class OperationMock {
     }
     const call = operationCall(request, url);
     this.calls.push(call);
-    const operation = this.operations.find((candidate) => candidate.method === call.method && candidate.path === call.path);
+    const operation = this.operations.find((candidate) => candidate.method === call.method && operationPathMatches(candidate.path, call.path));
     if (operation === undefined) {
       this.unmatched.push(call);
       await route.fulfill(response(501, { code: 'E2E_OPERATION_NOT_REGISTERED', method: call.method, path: call.path }, call.headers.origin));
@@ -73,6 +79,12 @@ export class OperationMock {
       this.cancelled.push(call);
     }
   }
+}
+
+function operationPathMatches(pattern: string, path: string): boolean {
+  const expected = pattern.split('/');
+  const actual = path.split('/');
+  return expected.length === actual.length && expected.every((part, index) => part.startsWith(':') ? (actual[index]?.length ?? 0) > 0 : part === actual[index]);
 }
 
 function operationCall(request: Request, url: URL): OperationCall {

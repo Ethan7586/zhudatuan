@@ -14,6 +14,7 @@ import { MemberRegistrationResetDialog } from '../member/MemberRegistrationReset
 import type { Member } from '../member/MemberSchema';
 import { accessKey, readAccess } from './AccessQuery';
 import type { AccessMembership } from './AccessSchema';
+import { AccessWorkspaceTabs } from './AccessWorkspaceTabs';
 import './member-access-workspace.css';
 
 export type MemberAccessPrimary = 'access' | 'members';
@@ -99,6 +100,8 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
             </Button>
           </div>
         </header>
+
+        <AccessWorkspaceTabs current="members" />
 
         {primaryPending && primaryData === undefined ? <WorkspaceState text="正在读取真实会员与授权关系…" /> : null}
         {primaryError !== undefined && primaryData === undefined ? <WorkspaceState tone="danger" text={primaryError} action={refresh} /> : null}
@@ -324,7 +327,7 @@ function clientLabel(client?: Member['client']): string {
   return client === 'operator' ? '后台' : client === 'storefront' ? '购物端' : client === 'store' ? '门店端' : client === 'supplier' ? '供应商端' : '后台';
 }
 function scopeKindLabel(kind: string): string {
-  return ({ platform: '平台', tenant: '租户', distributor: '分销', enterprise: '集团', mall: '商城', supplier: '供应商', brand: '品牌', store: '门店', department: '部门', self: '本人' } as Record<string, string>)[kind] ?? kind;
+  return ({ platform: '平台', tenant: '商户', distributor: '分销', enterprise: '集团', mall: '商城', supplier: '供应商', brand: '品牌', store: '门店', department: '部门', self: '本人' } as Record<string, string>)[kind] ?? kind;
 }
 
 function Metric({ label, value }: { readonly label: string; readonly value: number }) {

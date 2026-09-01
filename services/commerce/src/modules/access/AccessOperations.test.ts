@@ -22,6 +22,29 @@ describe('access scope management boundary', () => {
     expect(query).not.toMatch(/\baccess\.scopegrant\s+grant\b/);
   });
 
+  it('returns the current-scope role directory with permissions, governance metadata, member count and version', async () => {
+    const role = { id: 'role:finance', name: '财务', status: 'active', version: 4,
+      permissions: ['finance.overview.read', 'order.read'], member_count: 3, governance: false, editable: true };
+    const harness = operationHarness({ roleRows: [role] });
+
+    const response = await accessOperations(context(harness.pool)).invoke(centerRequest());
+
+    expect(response).toMatchObject({ status: 200, body: { roles: [role] } });
+    const query = harness.queries.find((text) => text.includes('from access.role role where role.scope_id=$1'));
+    expect(query).toContain("mapping.effect='allow'");
+    expect(query).toContain('count(distinct assignment.membership_id)');
+  });
+
+  it('replaces only allow mappings so an identity rename or permission save preserves explicit denies', async () => {
+    const harness = operationHarness();
+
+    await expect(accessOperations(context(harness.pool)).invoke(roleRequest())).resolves.toMatchObject({ status: 200 });
+
+    const query = harness.queries.find((text) => text.includes('insert into access.role(id,scope_id,name,status,version)'));
+    expect(query).toContain("mapping.effect='allow'");
+    expect(query).not.toContain("mapping.effect='deny'");
+  });
+
   it('fails closed when a runtime request attempts to create an unsupported deny scope', async () => {
     const harness = operationHarness();
 
@@ -128,6 +151,18 @@ function scopeRequest(effect: string, kind = 'mall', scope = 'mall-zhudatuan', a
   };
 }
 
+function roleRequest(): OperationRequest {
+  return {
+    type: 'access.roles.manage', access: managerAccess(),
+    input: {
+      path: { roleid: 'role:finance' }, query: {}, headers: {},
+      body: { name: '财务主管', permissions: ['finance.overview.read', 'order.read'] }, rawBody: '',
+      deadline: Date.now() + 5_000, signal: new AbortController().signal,
+      idempotency: 'role-management:rename', expectedVersion: 3,
+    },
+  };
+}
+
 function ownerAccess(scope: AccessContext['scope']): AccessContext {
   return accessContext(scope, platform);
 }
@@ -152,7 +187,7 @@ function accessContext(scope: AccessContext['scope'], grantScope = scope): Acces
   };
 }
 
-function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipScope?: unknown }> = {}): Readonly<{
+function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipScope?: unknown; roleRows?: readonly Record<string, unknown>[] }> = {}): Readonly<{
   pool: DatabasePool;
   queries: readonly string[];
   calls: readonly Readonly<{ text: string; values: readonly unknown[] }>[];
@@ -170,6 +205,10 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
       }
       if (text.startsWith('select access.scope_object($1) scope')) {
         return result([{ scope: options.scope ?? null, target_membership_scope: options.targetMembershipScope ?? null }]);
+      }
+      if (text.includes('from access.role role where role.scope_id=$1')) return result(options.roleRows ?? []);
+      if (text.includes('insert into access.role(id,scope_id,name,status,version)')) {
+        return result([{ id: 'role:finance', name: '财务主管', status: 'active', version: 4 }]);
       }
       if (text.includes('insert into access.scopegrant')) return result([{ id: 'scope:new', access_version: 3 }]);
       return result([]);

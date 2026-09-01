@@ -1,0 +1,768 @@
+.roleaccessworkspace {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: var(--sw-space-2);
+  color: var(--sw-text);
+}
+
+.roleaccesshero {
+  min-height: auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--sw-text);
+  padding: var(--sw-space-2) var(--sw-space-0);
+  box-shadow: none;
+}
+
+.roleaccesshero .swworkspaceheroeyebrow {
+  color: var(--sw-muted);
+}
+
+.roleaccesshero .swworkspaceherotitle {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-h1);
+  line-height: var(--sw-line-height-h1);
+}
+
+.roleaccesshero .swworkspaceherodescription {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body);
+  line-height: var(--sw-line-height-body);
+}
+
+.roleaccesshero .swworkspaceheroside {
+  width: auto;
+  justify-items: end;
+}
+
+.roleaccessprinciple {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: var(--sw-icon-container-md) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sw-space-1-5);
+  border-color: color-mix(in srgb, var(--sw-brand) 20%, var(--sw-border));
+  background: var(--sw-brand-light);
+}
+
+.roleaccessprinciple > span {
+  display: grid;
+  width: var(--sw-icon-container-md);
+  height: var(--sw-icon-container-md);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  font-size: var(--sw-font-size-body);
+  font-style: normal;
+  font-weight: var(--sw-font-weight-bold);
+  place-items: center;
+}
+
+.roleaccessprinciple strong,
+.roleaccessprinciple p {
+  margin: 0;
+}
+
+.roleaccessprinciple strong {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-label);
+}
+
+.roleaccessprinciple p {
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.roleaccessnotice {
+  margin: 0;
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-success) 24%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+  padding: var(--sw-space-1-5) var(--sw-space-2);
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.roleaccessmasterdetail {
+  grid-template-columns: minmax(var(--sw-workspace-master-min-width), var(--sw-workspace-master-ideal-width)) minmax(0, 1fr);
+}
+
+.roleaccessmasterdetail > .swmasterdetailmaster,
+.roleaccessmasterdetail > .swmasterdetailcontent {
+  padding: 0;
+}
+
+.roledirectory {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: var(--sw-space-1-5);
+  padding: var(--sw-space-2);
+}
+
+.roledirectory > header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+}
+
+.roledirectory h2,
+.roledirectory h3,
+.roledirectory p {
+  margin: 0;
+}
+
+.roledirectory h2 {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-h3);
+  line-height: var(--sw-line-height-h3);
+}
+
+.roledirectory > header p,
+.roledirectoryhint {
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.roledirectorysearch,
+.rolepermissionoverview > header label {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.roledirectorysearch input,
+.rolepermissionoverview input,
+.roleeditorname input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--sw-control-touch-target);
+  box-sizing: border-box;
+  border: var(--sw-border-width) solid var(--sw-border-interactive);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  font: inherit;
+  font-size: var(--sw-font-size-label);
+  box-shadow: var(--sw-shadow-control-rest);
+}
+
+.roledirectorysearch input:focus-visible,
+.rolepermissionoverview input:focus-visible,
+.roleeditorname input:focus-visible {
+  border-color: var(--sw-brand);
+  outline: 0;
+  box-shadow: var(--sw-shadow-focus);
+}
+
+.roledirectorygroup {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.roledirectorygroup h3 {
+  margin: var(--sw-space-1) var(--sw-space-1) var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-overline);
+  line-height: var(--sw-line-height-overline);
+  letter-spacing: var(--sw-letter-spacing-wide);
+}
+
+.roledirectorygroup > p {
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-sunken);
+  color: var(--sw-muted);
+  padding: var(--sw-space-1-5);
+  font-size: var(--sw-font-size-caption);
+}
+
+.roleavatar {
+  display: grid;
+  width: var(--sw-icon-container-md);
+  height: var(--sw-icon-container-md);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-bold);
+  place-items: center;
+}
+
+.roledirectorycreate {
+  width: 100%;
+  min-height: var(--sw-control-touch-target);
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--sw-brand) 55%, var(--sw-border));
+  background: var(--sw-brand-faint);
+  color: var(--sw-brand-dark);
+}
+
+.roledirectoryhint {
+  text-align: center;
+}
+
+.roleeditor {
+  display: grid;
+  min-width: 0;
+  min-height: 100%;
+  grid-template-columns: minmax(0, 1fr) minmax(var(--sw-workspace-master-min-width), var(--sw-workspace-master-ideal-width));
+  background: var(--sw-surface);
+}
+
+.roleeditormain,
+.roleeditorrail {
+  min-width: 0;
+  padding: var(--sw-space-3);
+}
+
+.roleeditormain {
+  display: grid;
+  align-content: start;
+  gap: var(--sw-space-2);
+}
+
+.roleeditorrail {
+  display: grid;
+  align-content: start;
+  gap: var(--sw-space-2);
+  border-left: var(--sw-border-width) solid var(--sw-divider);
+  background: var(--sw-surface-subtle);
+}
+
+.roleeditorheader,
+.rolepermissionoverview > header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.roleeditorheader p,
+.roleeditorheader h2,
+.roleeditorheader span,
+.rolepermissionoverview h3,
+.rolepermissionoverview p {
+  margin: 0;
+}
+
+.roleeditorheader p {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-overline);
+  font-weight: var(--sw-font-weight-bold);
+  letter-spacing: var(--sw-letter-spacing-overline);
+}
+
+.roleeditorheader h2 {
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-h2);
+  line-height: var(--sw-line-height-h2);
+}
+
+.roleeditorheader div > span {
+  display: block;
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.roleeditorname {
+  display: grid;
+  gap: var(--sw-space-1);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.roleeditorname > span {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: var(--sw-icon-container-md) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-brand) 55%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-0-5) var(--sw-space-1);
+  box-shadow: var(--sw-shadow-focus);
+}
+
+.roleeditorname i {
+  display: grid;
+  width: var(--sw-icon-container-md);
+  height: var(--sw-icon-container-md);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  font-style: normal;
+  place-items: center;
+}
+
+.roleeditorname input {
+  border: 0;
+  box-shadow: none;
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.roleeditorname input:focus-visible {
+  box-shadow: none;
+}
+
+.roleeditorname small {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  white-space: nowrap;
+}
+
+.roleeditorreadonly {
+  margin: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+  padding: var(--sw-space-1-5);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.rolepermissionoverview {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-1-5);
+}
+
+.rolepermissionoverview h3 {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-h3);
+}
+
+.rolepermissionoverview p {
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+
+.rolepermissionoverview > header label {
+  width: min(var(--sw-workspace-master-ideal-width), 42%);
+}
+
+.rolecategorygrid {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sw-space-1);
+}
+
+.rolecategorygrid button {
+  display: grid;
+  min-width: 0;
+  min-height: var(--sw-control-touch-target);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sw-space-0-5) var(--sw-space-1);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text);
+  padding: var(--sw-space-1-5);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rolecategorygrid button:hover {
+  border-color: color-mix(in srgb, var(--sw-brand) 35%, var(--sw-border));
+  background: var(--sw-brand-faint);
+}
+
+.rolecategorygrid button:focus-visible {
+  outline: 0;
+  box-shadow: var(--sw-shadow-focus);
+}
+
+.rolecategorygrid span {
+  overflow: hidden;
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rolecategorygrid strong {
+  color: var(--sw-brand);
+  font-family: var(--sw-font-financial);
+  font-size: var(--sw-font-size-amount-sm);
+}
+
+.rolecategorygrid small {
+  grid-column: 1 / -1;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+
+.rolepermissiondirectory {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-1);
+}
+
+.rolepermissiondirectory details {
+  scroll-margin-top: var(--sw-space-2);
+  overflow: hidden;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+}
+
+.rolepermissiondirectory summary {
+  display: flex;
+  min-height: var(--sw-control-touch-target);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  background: var(--sw-surface-subtle);
+  color: var(--sw-brand-ink);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+  cursor: pointer;
+}
+
+.rolepermissionitems {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sw-border-width);
+  background: var(--sw-divider-subtle);
+}
+
+.rolepermissionitems label {
+  display: grid;
+  min-width: 0;
+  min-height: var(--sw-control-touch-target);
+  grid-template-columns: var(--sw-icon-size-md) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sw-space-1);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  cursor: pointer;
+}
+
+.rolepermissionitems label:has(input:checked) {
+  background: var(--sw-brand-faint);
+}
+
+.rolepermissionitems input {
+  width: var(--sw-icon-size-md);
+  height: var(--sw-icon-size-md);
+  margin: 0;
+  accent-color: var(--sw-brand);
+}
+
+.rolepermissionitems input:focus-visible {
+  outline: var(--sw-focus-width) solid var(--sw-focus-color);
+  outline-offset: var(--sw-focus-offset);
+}
+
+.rolepermissionitems span {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.rolepermissionitems code {
+  overflow-wrap: anywhere;
+  color: var(--sw-text);
+  font-family: var(--sw-font-mono);
+  font-size: var(--sw-font-size-code);
+  line-height: var(--sw-line-height-code);
+}
+
+.rolepermissionitems small {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.rolepermissionempty {
+  margin: 0;
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-sunken);
+  color: var(--sw-muted);
+  padding: var(--sw-space-2);
+}
+
+.roleeditorrail > .swsurface {
+  display: grid;
+  gap: var(--sw-space-1);
+  border-color: var(--sw-border);
+  background: var(--sw-surface);
+}
+
+.roleeditorrail p,
+.roleeditorrail strong,
+.roleeditorrail span {
+  margin: 0;
+}
+
+.roleeditorrail > .swsurface > p {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.roleeditorrail > .swsurface > strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body);
+}
+
+.roleeditorrail > .swsurface > span {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.roleeditorrail .swbadge {
+  justify-self: start;
+}
+
+.roleeditorerror {
+  display: grid;
+  gap: var(--sw-space-1);
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-danger) 25%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+  padding: var(--sw-space-1-5);
+}
+
+.roleeditorerror[data-kind='conflict'] {
+  border-color: color-mix(in srgb, var(--sw-warning) 30%, var(--sw-border));
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+
+.roleeditorerror p {
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.roleeditorsave {
+  display: grid;
+  gap: var(--sw-space-1);
+  margin-top: auto;
+}
+
+.roleeditorsave .shopbutton {
+  width: 100%;
+  min-height: var(--sw-control-touch-target);
+}
+
+.roleeditorsave small {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+  text-align: center;
+}
+
+.roleaccessstate,
+.invitationrecordspanel {
+  display: grid;
+  min-width: 0;
+  justify-items: start;
+  gap: var(--sw-space-1);
+}
+
+.roleaccessstate[data-tone='danger'] {
+  border-color: color-mix(in srgb, var(--sw-danger) 28%, var(--sw-border));
+  background: var(--sw-danger-surface);
+}
+
+.roleaccessstate[data-tone='denied'] {
+  border-color: color-mix(in srgb, var(--sw-warning) 28%, var(--sw-border));
+  background: var(--sw-warning-surface);
+}
+
+.roleaccessstate strong,
+.roleaccessstate p,
+.invitationrecordspanel p,
+.invitationrecordspanel h2,
+.invitationrecordspanel strong,
+.invitationrecordspanel span {
+  margin: 0;
+}
+
+.roleaccessstate p,
+.invitationrecordspanel span {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-label);
+  line-height: var(--sw-line-height-label);
+}
+
+.invitationrecordspanel > p:first-child {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-overline);
+  font-weight: var(--sw-font-weight-bold);
+  letter-spacing: var(--sw-letter-spacing-overline);
+}
+
+.invitationrecordspanel h2 {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-h2);
+}
+
+@media (max-width: 82.125rem) {
+  .roleaccessmasterdetail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .roleaccessmasterdetail > .swmasterdetailmaster {
+    border-right: 0;
+    border-bottom: var(--sw-border-width) solid var(--sw-divider);
+  }
+
+  .roledirectorygroup {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roledirectorygroup h3,
+  .roledirectorygroup > p {
+    grid-column: 1 / -1;
+  }
+
+  .roleeditor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .roleeditorrail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: var(--sw-border-width) solid var(--sw-divider);
+    border-left: 0;
+  }
+
+  .roleeditorerror,
+  .roleeditorsave {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 64rem) {
+  .rolecategorygrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  .roleaccesshero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .roleaccesshero .swworkspaceheroside {
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .roleaccesshero .shopbutton {
+    width: 100%;
+  }
+
+  .roledirectorygroup,
+  .roleeditorrail,
+  .rolepermissionitems {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .roleeditorerror,
+  .roleeditorsave {
+    grid-column: auto;
+  }
+
+  .rolepermissionoverview > header {
+    display: grid;
+  }
+
+  .rolepermissionoverview > header label {
+    width: 100%;
+  }
+}
+
+@media (max-width: 40rem) {
+  .roleaccessworkspace {
+    gap: var(--sw-space-1-5);
+  }
+
+  .roleaccesshero {
+    padding-block: 0 var(--sw-space-1);
+  }
+
+  .roleaccesshero .swworkspaceheroeyebrow {
+    display: none;
+  }
+
+  .roleaccesshero .swworkspaceherotitle {
+    font-size: var(--sw-font-size-h2);
+    line-height: var(--sw-line-height-h2);
+  }
+
+  .roleaccesshero .swworkspaceherodescription {
+    font-size: var(--sw-font-size-body-sm);
+    line-height: var(--sw-line-height-body-sm);
+  }
+
+  .roleaccessprinciple {
+    grid-template-columns: var(--sw-icon-container-sm) minmax(0, 1fr);
+    padding: var(--sw-space-1-5);
+  }
+
+  .roleaccessprinciple > span {
+    width: var(--sw-icon-container-sm);
+    height: var(--sw-icon-container-sm);
+  }
+
+  .roleaccessprinciple p {
+    display: none;
+  }
+
+  .roledirectory,
+  .roleeditormain,
+  .roleeditorrail {
+    padding: var(--sw-space-1-5);
+  }
+
+  .roleeditorheader {
+    display: grid;
+  }
+
+  .roleeditorname > span {
+    grid-template-columns: var(--sw-icon-container-md) minmax(0, 1fr);
+  }
+
+  .roleeditorname small {
+    grid-column: 1 / -1;
+    padding-inline: var(--sw-space-1);
+  }
+
+  .rolecategorygrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rolecategorygrid button {
+    scroll-behavior: auto;
+  }
+}
