@@ -147,9 +147,13 @@ try {
     group by journal.id having sum(case when entry.side='debit' then entry.amount_minor else -entry.amount_minor end)<>0) unbalanced`);
   const paymentAmounts = (await queryRows<{ readonly captured: string; readonly refunded: string }>(database,
     `select coalesce(sum(captured_minor),0)::text captured,coalesce(sum(refunded_minor),0)::text refunded from payment.payment where id like 'itht:%'`))[0]!;
-  const financeAmounts = (await queryRows<{ readonly captured: string; readonly refunded: string }>(database, `select
-    coalesce(sum((select max(amount_minor) from finance.entry where journal_id=journal.id)) filter(where reference_type='payment.capture'),0)::text captured,
-    coalesce(sum((select max(amount_minor) from finance.entry where journal_id=journal.id)) filter(where reference_type='payment.refund'),0)::text refunded
+  const financeAmounts = (await queryRows<{ readonly accrued: string; readonly captured: string; readonly externalCaptured: string; readonly refunded: string }>(database, `select
+    coalesce(sum((select max(amount_minor) from finance.entry where journal_id=journal.id)) filter(where reference_type='order.placed'),0)::text accrued,
+    coalesce(sum((select max(amount_minor) from finance.entry where journal_id=journal.id))
+      filter(where reference_type in ('payment.succeeded','benefit.consume','voucher.redeem')),0)::text captured,
+    coalesce(sum((select max(amount_minor) from finance.entry where journal_id=journal.id)) filter(where reference_type='payment.succeeded'),0)::text "externalCaptured",
+    coalesce(sum((select max(amount_minor) from finance.entry where journal_id=journal.id))
+      filter(where reference_type in ('payment.refunded','benefit.refund','voucher.refund')),0)::text refunded
     from finance.journal journal where scope_id like 'itht:%'`))[0]!;
   const reconciliationDefects = await scalarNumber(database, `select
     (select count(*) from finance.reconciliation where id like 'itht:%' and difference_minor<>0)
@@ -157,7 +161,8 @@ try {
     +(select count(*) from runtime.reconciliationevidence where id like 'itht:%' and difference<>0)
     +(select count(*) from runtime.reconciliationhash where id like 'itht:%' and source_hash<>target_hash) value`);
   check('finance_balance', unbalancedJournals === 0 && paymentAmounts.captured === financeAmounts.captured
-      && paymentAmounts.refunded === financeAmounts.refunded && reconciliationDefects === 0,
+      && paymentAmounts.refunded === financeAmounts.refunded && financeAmounts.accrued === financeAmounts.externalCaptured
+      && reconciliationDefects === 0,
     `unbalanced_journals=${unbalancedJournals} captured_minor=${paymentAmounts.captured} refunded_minor=${paymentAmounts.refunded} reconciliation_defects=${reconciliationDefects}`);
 
   const dailyRollupDefects = await scalarNumber(database, `with detail as (
