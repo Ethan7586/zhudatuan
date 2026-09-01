@@ -110,7 +110,7 @@
 
 ## 10. 质量证据
 
-- `npm run quality`：使用隔离的验收 PostgreSQL 与 Redis 端点执行完整链；不得跳过任何步骤。
+- `npm run quality`：使用隔离的验收 PostgreSQL 与 Redis 端点执行完整链，最终退出码 0，未跳过任何步骤。
 - 架构门禁：命名、模块边界、Schema 所有权、重复逻辑、调用图、分页、性能、事务、前端边界、Operation、事件、Provider、扩展、Job、导航、依赖、需求图、运行时图均为 0 违规。
 - 调用完整性：`scripts/check/calls.mjs` 通过，调用点断裂 0。
 - 重复逻辑与配置：`scripts/check/duplicates.mjs` 通过，违规 0。
@@ -118,6 +118,7 @@
 - 数据一致性：284 个迁移全量目标 Schema 回放通过；MVP、支付和财务内核通过；RLS、Inbox 幂等与 Job 排他租约在真实 PostgreSQL 上验证。
 - 契约：1096 项 Commerce 契约测试通过；二维码独立解码与工作簿优先级一 Provider 合同通过。
 - 浏览器 E2E：20 项、5 Worker 全部通过；包含二维码独立解码、320/768/1366/1440 响应式可访问性，以及扫码受保护深链登录后原商城路径恢复。
+- 主测试集：Auth 20 项、Console 92 项、Storefront 54 项、Commerce 376 项全部通过；Journey 181 项、安全 21 项、性能 9 项全部通过。
 - 供应链：713 项许可证策略通过，Secret 扫描 0 项发现。
 - 构建与包体：Auth、Console、Storefront、Commerce 以及全部 Workspace 构建和 Bundle 策略通过。
 - 本地运行时复核：`npm run local:verify` 通过，数据库 284 个迁移、272 个 Operation，公开权限越界为 0。
@@ -137,3 +138,4 @@ c285e36d4c7d99acf8610c007103eb585001dec5086af95d3a1ed9786eb33403  Storefront.mp4
 - 临时语音及中间视频仅存在于系统临时目录，生成结束自动删除。
 - 最终文本产物经模式扫描，未发现 AccessKey、手机号或已知 Secret；视频画面中的个人数据使用掩码或本地合成验收身份。
 - 支付被明确跳过；没有提交真实订单、没有发起支付、没有修改外部供应商数据。
+- 隔离验收 API、Jobs、Provider、前端、本地支撑服务及两个临时容器均已停止；临时容器随停止自动删除。用户原有 `zhudatuan-local-postgres-1` 与 `zhudatuan-local-redis-1` 已恢复，健康检查分别为 accepting connections 与 PONG。

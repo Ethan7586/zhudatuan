@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM node:22.22.0-alpine AS build
 ARG NPM_REGISTRY=https://registry.npmjs.org
 WORKDIR /workspace
@@ -10,7 +11,8 @@ COPY packages ./packages
 COPY extensions ./extensions
 COPY tools ./tools
 COPY database ./database
-RUN npm ci --ignore-scripts --registry="$NPM_REGISTRY"
+RUN --mount=type=cache,id=shop-npm,target=/root/.npm \
+    npm ci --ignore-scripts --prefer-offline --no-audit --no-fund --registry="$NPM_REGISTRY"
 RUN npm run build:commerce
 
 FROM node:22.22.0-alpine AS runtime
