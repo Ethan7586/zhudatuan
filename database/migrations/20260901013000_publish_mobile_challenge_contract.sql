@@ -44,8 +44,6 @@ update runtime.mvpauthority
 set checksum=encode(public.digest('packages/contract/definitions/operations.yml:270','sha256'),'hex'),
   expected_count=270,observed_count=270,published_at=clock_timestamp()
 where id='mvp:operations';
-alter table runtime.mvpauthority enable row level security;
-alter table runtime.mvpauthority force row level security;
 
 update runtime.contractcatalog
 set checksum='b6a6803d866fe082b61511eb434b3223e027162f805f47505745113624a96390',
@@ -111,5 +109,8 @@ do $assert$ begin
     raise exception 'MOBILE_CHALLENGE_CONTRACT_HEAD_INVALID';
   end if;
 end $assert$;
+
+alter table runtime.mvpauthority enable row level security;
+alter table runtime.mvpauthority force row level security;
 
 commit;
