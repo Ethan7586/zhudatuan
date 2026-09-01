@@ -1,6 +1,7 @@
 # Referral commission
 
 - Trigger: the `referral` job consumes immutable order events from `runtime.inbox`; a settlement payload processes commissions whose `eligible_at` has passed.
+- Impact: delayed processing postpones commission settlement and withdrawal availability; failed reconciliation can block referral payout transitions until the source facts are repaired and the same event is replayed.
 - Owner: operations owns member review; finance owns rates, settlement exceptions, and money repair.
 - Idempotency: the event handler locks `runtime.inbox` with consumer `job:referral`, verifies the matching `runtime.outbox` row, performs all writes, and sets `processed_at` in one transaction. A replay of a processed event is a no-op.
 - Ordering: paid, received, cancelled, and refunded events must observe the committed `order.placed` referral inbox row. An out-of-order job rolls back and retries instead of completing a no-op before commissions exist.
@@ -14,6 +15,9 @@
 - Stop loss: pause the `referral` job kind if scope evidence differs, commission bases no longer match order facts, or ledger posting fails. Do not mark the inbox row processed and do not edit commission rows manually.
 - Diagnosis: inspect the outbox/inbox pair, order lines, benefit tender, successful refund tenders, binding expiry, active referral members, product rate snapshot, commission row, movements, and journals in that order.
 - Recovery: correct the authoritative source, resolve an in-flight payout to a terminal state, then requeue the same event envelope. For a settlement failure, requeue the same scope; existing settled rows are skipped and deterministic journal/movement references make retries idempotent.
+- Data repair: repair only the authoritative order, payment, member, or policy fact through its owning workflow; preserve existing commission rows, movements, journals, outbox facts, and inbox evidence, then replay the original event.
 - Cutover: on a non-empty environment, backfill and replay `order.placed` outbox/inbox facts for all in-flight orders before registering or enabling the `job:referral` consumer. Do not bypass the ordering gate: later paid, cancelled, or refunded facts intentionally retry or dead-letter until their committed placed fact exists.
 - Validation: no commission without a valid binding; at most two beneficiaries; benefit value excluded; only the configured trigger advances state; movement totals equal `journal_id` postings; `reversed_minor <= amount_minor`; processed event replay creates no rows. A referral withdrawal cannot enter `approved` or `processing` unless its immutable claims are non-empty, match scope/member/currency/source, remain in the prior withdrawal state, and sum exactly to the withdrawal amount.
 - Escalation: finance controller for posted-money differences, operations lead for binding/member issues, and engineering on-call for evidence or scope mismatches.
+- Audit: retain the source event envelope, inbox/outbox identifiers, affected commission and movement identifiers, ledger journal references, repair command result, and validation evidence with the incident record.
+- Postmortem: document the failed source fact or transition, detection gap, financial exposure, replay result, and the approved follow-up owner after service recovery.
