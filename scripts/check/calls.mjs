@@ -122,6 +122,18 @@ function boundaryDetail(source, target) {
   return denied[sourceLayer]?.has(targetLayer) ? `invalid layer direction ${sourceLayer}->${targetLayer}` : undefined;
 }
 
+function importCaseMismatch(source, reference) {
+  if (!reference.target || !reference.specifier.startsWith('.')) return false;
+  const expected = importStem(path.resolve(path.dirname(source), reference.specifier));
+  const actual = importStem(reference.target);
+  const candidates = path.basename(actual) === 'index' ? [actual, path.dirname(actual)] : [actual];
+  return candidates.some((candidate) => candidate.toLowerCase() === expected.toLowerCase()) && !candidates.includes(expected);
+}
+
+function importStem(value) {
+  return value.replace(/\.(?:[cm]?[jt]sx?)$/i, '');
+}
+
 function hasModifier(node, kind) {
   return ts.canHaveModifiers(node) && (ts.getModifiers(node) ?? []).some((modifier) => modifier.kind === kind);
 }
@@ -228,6 +240,9 @@ export function audit() {
         values.push(violation('UNRESOLVED_IMPORT', location, reference.specifier));
         continue;
       }
+      if (importCaseMismatch(source, reference)) {
+        values.push(violation('IMPORT_PATH_CASE_MISMATCH', location, reference.specifier));
+      }
       if (path.extname(reference.target) === '.json') continue;
       if (tests.has(reference.target)) {
         values.push(violation('PRODUCTION_TEST_IMPORT', location, reference.specifier));
@@ -289,6 +304,12 @@ function selfTest() {
   const sourceFile = ts.createSourceFile('/tmp/self-test.ts', 'import value from "./value.js"; export { other } from "./other.js"; void import("./lazy.js");', ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
   const references = moduleReferences(sourceFile, new Map());
   if (references.length !== 3) throw new Error(`AST import self-test failed: ${references.length}`);
+  if (!importCaseMismatch('/tmp/source.ts', { specifier: './SyncRunsHandler', target: '/tmp/SyncrunsHandler.ts' })) {
+    throw new Error('import case self-test failed');
+  }
+  if (importCaseMismatch('/tmp/source.ts', { specifier: './SyncRunsHandler', target: '/tmp/SyncRunsHandler.ts' })) {
+    throw new Error('import case positive self-test failed');
+  }
   const routeFile = path.join(root, 'apps/selftest/src/routes.ts');
   const routeSource = ts.createSourceFile(routeFile, 'export const routes = [{ path: "/missing" }];', ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
   const routeViolations = auditRoutes(new Map([[routeFile, routeSource]]));
