@@ -68,14 +68,8 @@ describe('AccessPort directory membership resolution', () => {
     const repository = new PgAccessRepository();
 
     await expect(
-      withWriteTransaction(query, (context) =>
-        repository.saveRole(context, { role: 'role:one', scope: 'mall:one', name: '运营', allows: ['order.orders.read'], denies: ['payment.refund'], expectedVersion: 3 })
-      )
+      withWriteTransaction(query, (context) => repository.saveRole(context, { role: 'role:one', scope: 'mall:one', name: '运营', allows: ['order.orders.read'], denies: ['payment.refund'], expectedVersion: 3 }))
     ).resolves.toMatchObject({ role: { id: 'role:one', version: 4 }, allowCount: 1, denyCount: 1 });
-    expect(query.mock.calls.map(([sql]) => String(sql).trim().split(/\s+/).slice(0, 3).join(' '))).toEqual([
-      'insert into access.role(id,scope_id,name,status,version,kind)',
-      'delete from access.rolepermission',
-      'with requested as',
-    ]);
+    expect(query.mock.calls.map(([sql]) => String(sql).trim().split(/\s+/).slice(0, 3).join(' '))).toEqual(['insert into access.role(id,scope_id,name,status,version,kind)', 'delete from access.rolepermission', 'with requested as']);
   });
 });

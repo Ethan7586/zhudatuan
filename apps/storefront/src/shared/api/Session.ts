@@ -28,11 +28,3 @@ export function requestContext(clientVersion: string, session: StorefrontSession
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
   });
 }
-
-export function csrfCookie(): string | null {
-  for (const part of document.cookie.split(';')) {
-    const [name, ...value] = part.trim().split('=');
-    if (name === '__Host-storefront-csrf') return decodeURIComponent(value.join('='));
-  }
-  return null;
-}

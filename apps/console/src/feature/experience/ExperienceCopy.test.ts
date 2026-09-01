@@ -9,7 +9,7 @@ describe('experienceCopyIdentity', () => {
         code: 'ZHUDATUAN_REHEARSAL_30202641',
         public_slug: 'z'.repeat(48),
       },
-      36 ** 7,
+      36 ** 7
     );
 
     expect(identity.name).toHaveLength(120);

@@ -126,7 +126,10 @@
         { "image": "frames/console/102-channel-sync.jpg", "text": "查看渠道同步，批次、游标和同步状态入口正常。" },
         { "image": "frames/console/103-channel-external.jpg", "text": "查看外部商品映射，外部标识与平台商品关联入口正常。" },
         { "image": "frames/console/104-channel-connections.jpg", "text": "查看渠道连接，连接配置入口不会展示供应商密钥明文。" },
-        { "image": "frames/console/105-platform-providers.jpg", "text": "查看平台供应商接入。京东、京东生鲜、天猫超市、自有供应商、蛋糕、鲜花、图书、虚拟直充、食品提货券、电影和在线点餐共十一类适配器均已注册；本地未配置外部凭据时不建立真实连接。" },
+        {
+          "image": "frames/console/105-platform-providers.jpg",
+          "text": "查看平台供应商接入。京东、京东生鲜、天猫超市、自有供应商、蛋糕、鲜花、图书、虚拟直充、食品提货券、电影和在线点餐共十一类适配器均已注册；本地未配置外部凭据时不建立真实连接。"
+        },
         { "image": "frames/console/106-system-settings.jpg", "text": "进入系统治理，运行状态和治理指标正常，各项运行检查均为正常状态。" },
         { "image": "frames/console/107-notification-settings.jpg", "text": "打开通知设置，通知策略与渠道偏好正常加载。" },
         { "image": "frames/console/108-announcement-settings.jpg", "text": "打开公告设置，公告管理入口正常加载。" },

@@ -29,7 +29,7 @@ export class BootstrapQuery {
   async execute(input: OperationInputFor<'storefront.bootstrap.read'>, context: HandlerContext<'storefront.bootstrap.read'>) {
     const host = canonicalHost(context.headers);
     const binding = await this.ports.experience.resolveHost(context.transaction, host);
-    const identity = this.ports.identity.resolve(context.security);
+    const identity = this.ports.identity.resolve(context.security, context.headers);
     const transaction = context.transaction;
     const memberId = identity.membership ? await this.ports.membership.member(transaction, identity.membership) : null;
     const member = memberId ? await this.ports.member.summary(transaction, memberId) : null;
@@ -50,7 +50,15 @@ export class BootstrapQuery {
       state: benefit.state === 'failed' || orders.state === 'failed' ? 'partial' : 'complete',
       host,
       binding: Object.freeze(binding),
-      identity: this.mapper.section({ state: identity.state, member: member ? { id: member.id, displayName: member.displayName } : null, membership: identity.membership }, identity.version),
+      identity: this.mapper.section(
+        {
+          state: identity.state,
+          member: member ? { id: member.id, displayName: member.displayName } : null,
+          membership: identity.membership,
+          ...(identity.csrf === undefined ? {} : { csrf: identity.csrf }),
+        },
+        identity.version
+      ),
       navigation: this.mapper.section(navigation.items, navigation.version),
       benefit,
       orders,

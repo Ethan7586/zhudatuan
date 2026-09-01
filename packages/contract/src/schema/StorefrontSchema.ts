@@ -5,7 +5,12 @@ import { isoUtc } from './Primitives';
 const nullableText = union([string(), nullSchema()]);
 const section = <T>(data: T) => strictObject({ state: literal(['complete', 'unavailable', 'failed']), version: string(), asOf: isoUtc, data: union([data as never, nullSchema()]) });
 const binding = strictObject({ application: string(), mall: string(), pool: string(), release: string(), version: string(), tenant: string() });
-const identity = strictObject({ state: literal(['anonymous', 'member']), member: union([strictObject({ id: string(), displayName: string() }), nullSchema()]), membership: nullableText });
+const identity = strictObject({
+  state: literal(['anonymous', 'member']),
+  member: union([strictObject({ id: string(), displayName: string() }), nullSchema()]),
+  membership: nullableText,
+  csrf: optional(string()),
+});
 const navigation = strictObject({ id: string(), title: string(), icon: string(), route: string(), order: number() });
 const benefit = strictObject({ accounts: number(), availableMinor: number(), currency: nullableText, version: number() });
 const orders = strictObject({ total: number(), awaitingPayment: number(), fulfilling: number(), aftersale: number(), version: number() });

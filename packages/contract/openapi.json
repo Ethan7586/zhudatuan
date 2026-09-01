@@ -33563,6 +33563,9 @@
                   {
                     "additionalProperties": false,
                     "properties": {
+                      "csrf": {
+                        "type": "string"
+                      },
                       "member": {
                         "anyOf": [
                           {

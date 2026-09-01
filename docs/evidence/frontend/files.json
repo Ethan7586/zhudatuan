@@ -16,20 +16,14 @@
     "config/visuals.yml",
     "config/navigation.yml"
   ],
-  "count": 857,
-  "treeSha256": "8d3fe2e9ebf048913a209657202b13c8b44cad89c48c419f056bd25285aa75df",
+  "count": 854,
+  "treeSha256": "1eebffcb52284a8fa1c55f70eb33ebbb0d189de1a44acf8de4129ad55a5ed6c6",
   "entries": [
     {
       "path": "apps/auth/.env.example",
       "sha256": "ad461502eab2bc8179412f95eac983ecc223c917c6169c311f80eb79976b5754",
       "size": 315,
       "mode": "0644"
-    },
-    {
-      "path": "apps/auth/.env.local",
-      "sha256": "1dc8b95b1699eb55dd6115a133de93a6b61bec3bed07bbe49db607b43a72f71d",
-      "size": 117,
-      "mode": "0600"
     },
     {
       "path": "apps/auth/.gitignore",
@@ -380,12 +374,6 @@
       "mode": "0755"
     },
     {
-      "path": "apps/console/.env.local",
-      "sha256": "bda9619e1a746fb29e86b440b1c5d55f0bf15ee5b143095f995f2589023693dc",
-      "size": 117,
-      "mode": "0600"
-    },
-    {
       "path": "apps/console/.gitignore",
       "sha256": "e7c77c51f6aa735834d51ef40a103aefe96a41e87894d0f7ffe27a4c94ade233",
       "size": 167,
@@ -518,7 +506,7 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/Feature.css",
+      "path": "apps/console/src/feature.css",
       "sha256": "787e8831345d9573c0e641937278c9384ef5801035b2f4d031aa5469dd02ff53",
       "size": 2648,
       "mode": "0644"
@@ -548,7 +536,7 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/feature/cockpit/Cockpit.css",
+      "path": "apps/console/src/feature/cockpit/cockpit.css",
       "sha256": "dadf8e972026f4a4938d49fc491955f74914abe98d3dc7c97f505869cd39225e",
       "size": 65,
       "mode": "0644"
@@ -663,8 +651,8 @@
     },
     {
       "path": "apps/console/src/feature/experience/ExperienceCopy.test.ts",
-      "sha256": "79899ca791d016ae1b05b0b202e029095de794edbd5ee65b04cf511c0a357188",
-      "size": 935,
+      "sha256": "2d2a4c5aafd1eb8664ea13904cb551db87e7fbd1cac9721e56da5784180526bc",
+      "size": 934,
       "mode": "0644"
     },
     {
@@ -1167,8 +1155,8 @@
     },
     {
       "path": "apps/console/src/feature/product/ProductActions.tsx",
-      "sha256": "21c45518ebe11fac424a0f3e32aeb7f76f51fdd56e64a1edc8d08c50e0a0be9d",
-      "size": 12498,
+      "sha256": "8f0138331b9ec6ebaaa6f4ab91e6e8372831395514171e008de28dce828e5560",
+      "size": 12490,
       "mode": "0644"
     },
     {
@@ -1766,7 +1754,7 @@
       "mode": "0755"
     },
     {
-      "path": "apps/console/src/Responsive.css",
+      "path": "apps/console/src/responsive.css",
       "sha256": "0f6882fb3bd76fe26e336206f9bf6ba1d2b9e4d584d994dc81a43e8150457f35",
       "size": 1634,
       "mode": "0644"
@@ -1952,13 +1940,13 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/Shell.css",
+      "path": "apps/console/src/shell.css",
       "sha256": "0962a3c06d6d713205ac10b3097b54f90125d9adb4932646b6d595eefaa971b6",
       "size": 4748,
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/shell/Header.css",
+      "path": "apps/console/src/shell/header.css",
       "sha256": "e2ed94a942fe2f8655c5a34f04a3b8301a0b63caafe166e5063e972918abb2c5",
       "size": 3926,
       "mode": "0644"
@@ -1970,7 +1958,7 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/shell/Navigation.css",
+      "path": "apps/console/src/shell/navigation.css",
       "sha256": "4bea87e8b6b00422cc77cb1bde40bf6ff32b202b43f9847f724c24a4c39a9273",
       "size": 4509,
       "mode": "0644"
@@ -2024,7 +2012,7 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/Style.css",
+      "path": "apps/console/src/style.css",
       "sha256": "d9ab2481bac34ef3537eff258757e5f8800d4876479873c77c5f0e89055e916c",
       "size": 474,
       "mode": "0644"
@@ -2126,12 +2114,6 @@
       "mode": "0644"
     },
     {
-      "path": "apps/storefront/.env.local",
-      "sha256": "4fc5eba3c7bc4737fc9dfa9e939d36e15ddf573832be9ee02b311221d53e0aea",
-      "size": 117,
-      "mode": "0600"
-    },
-    {
       "path": "apps/storefront/index.html",
       "sha256": "a08e84c38640932851e1cf8e634a01d278096b14b0d4574d14e4ae9a7971daf2",
       "size": 1291,
@@ -2217,14 +2199,14 @@
     },
     {
       "path": "apps/storefront/src/app/SessionRuntime.test.tsx",
-      "sha256": "cac7f1aabb8620cba70677d09dc159d959c062534977e473fd9c7814734eaed4",
-      "size": 1421,
+      "sha256": "3d8a43fe9c65af660d54d1e7559b4e2eca117032e4fa02b0a103f19d26390200",
+      "size": 1429,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/app/SessionRuntime.tsx",
-      "sha256": "901517fdb350a40f61ab6ff4b4f7b48045b529799afb9695bace246670b1def8",
-      "size": 4471,
+      "sha256": "0f1cc44c3f06503d20406cd3948c66c82007ee3069fcf76cbb160d9e9426acc4",
+      "size": 4457,
       "mode": "0644"
     },
     {
@@ -2727,8 +2709,8 @@
     },
     {
       "path": "apps/storefront/src/feature/checkout/ui/CheckoutPage.tsx",
-      "sha256": "c1ddcef04eba7885d696882927a818b53393728608db5f79ce7917c6649ad554",
-      "size": 9589,
+      "sha256": "ee42eedeca0e8fd4c3c86b358cc05174c8921d058100363cf144c2ff4f5d564d",
+      "size": 9435,
       "mode": "0644"
     },
     {
@@ -3003,8 +2985,8 @@
     },
     {
       "path": "apps/storefront/src/feature/order/ui/LaptopOrdersPage.tsx",
-      "sha256": "b31cf10fec2af61a06737c8384bf91cc02a03195dbfa95868cbb85997a39a3a2",
-      "size": 9581,
+      "sha256": "a7dd5527414b2a7d870fc016671296a1ab1cff585fd846c383d335785b446c6b",
+      "size": 9415,
       "mode": "0644"
     },
     {
@@ -3459,8 +3441,8 @@
     },
     {
       "path": "apps/storefront/src/shared/api/Session.ts",
-      "sha256": "44ce2b7d247a210bb7bdaa2a110ef38d5b59a30e2f1cd451766c8fbe8c8a29b3",
-      "size": 1631,
+      "sha256": "b955af9fedc436b4a5e7bd9c3b8278111469fb57d9ffa4b0db8075da5bf9917a",
+      "size": 1372,
       "mode": "0644"
     },
     {
@@ -3747,8 +3729,8 @@
     },
     {
       "path": "packages/config/src/ClientEnvironment.ts",
-      "sha256": "9b4bb0ce636c0ab9ee8e323fee35fd45b7b55f7ec4e7c4e848586dcc0aae013b",
-      "size": 4914,
+      "sha256": "3eede6f76b6107446d754f9868cbb5024f87adda8fc4c117ea8bb49b5abf297a",
+      "size": 5577,
       "mode": "0755"
     },
     {
@@ -3765,8 +3747,8 @@
     },
     {
       "path": "packages/config/src/index.test.ts",
-      "sha256": "a3616ba86cb2aeade17e21e5bfc9bc687b902e30a9d8478ce2d947337137ae26",
-      "size": 8765,
+      "sha256": "4328addd7510f16f188ff741af58e20ffb133e1c84c1a5e26c5c82aff252cce0",
+      "size": 9625,
       "mode": "0644"
     },
     {
@@ -3897,8 +3879,8 @@
     },
     {
       "path": "packages/contract/openapi.json",
-      "sha256": "92b3c9b0234be18cd79108c9b20c1c35527b9f489bfda64eeda771358a9ada5f",
-      "size": 2317824,
+      "sha256": "10064b7687477e668ccdb8cecba079ad2ff3da1b199bdfb575e07c8e432bfb1e",
+      "size": 2317922,
       "mode": "0755"
     },
     {
@@ -3939,7 +3921,7 @@
     },
     {
       "path": "packages/contract/src/ContractIdentity.ts",
-      "sha256": "1b7bb085a1c1ba36b0be8b384cb5e0246085674f8eceb04631de2a0621f04d20",
+      "sha256": "560562312df2c18844848c743899f86540eb8031b34a51d868d4dfdb82d0be3e",
       "size": 214,
       "mode": "0644"
     },
@@ -4029,8 +4011,8 @@
     },
     {
       "path": "packages/contract/src/OperationFingerprint.test.ts",
-      "sha256": "653be65cc8222ae2564d36281a23ca2538d75d1abceba5aa4078c4c4f53f0adc",
-      "size": 756,
+      "sha256": "26baa1b9ead0805ba0f5f8be33c8ca923dd6aad79b37b885fa14dfecca9f8a9c",
+      "size": 744,
       "mode": "0644"
     },
     {
@@ -4293,8 +4275,8 @@
     },
     {
       "path": "packages/contract/src/schema/StorefrontSchema.ts",
-      "sha256": "3ee7f2fcd80f68dae72c6dc64d283b069abaab8a4661ad9ee7321bd81e8ac588",
-      "size": 3064,
+      "sha256": "cdc5a4d22dfb89a822932ebf6a359444b01f312bd0fe4227b4a502405a658920",
+      "size": 3099,
       "mode": "0644"
     },
     {
@@ -4599,14 +4581,14 @@
     },
     {
       "path": "packages/sdk/src/ApiClient.test.ts",
-      "sha256": "01e298ecc76c0aa5abc2a9c66e8a6e701efd3f92d1f3e016dafbbf5eafa2f97a",
-      "size": 6285,
+      "sha256": "f375b21446dad54663623b1041a48aa2039518eb21131bd6117ed8d20b93fba6",
+      "size": 7310,
       "mode": "0755"
     },
     {
       "path": "packages/sdk/src/ApiClient.ts",
-      "sha256": "db52506acb51b641aa56160a1960a4bbd83a6c667de876bda1133d9cfee5e132",
-      "size": 7123,
+      "sha256": "24c723b6d729562016b48464c47fe18fab2e010ffc0e8e426c3022cc2e833245",
+      "size": 7151,
       "mode": "0755"
     },
     {

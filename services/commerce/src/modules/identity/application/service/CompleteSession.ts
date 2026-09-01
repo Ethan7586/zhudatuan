@@ -49,47 +49,47 @@ export class CompleteSession {
   }
 
   private async complete(request: Parameters<OperationLifecycle['execute']>[0], database: WriteTransactionContext, prepared: SessionCompletionScope) {
-      const preauth = requirePreauth(request.security, 'invitationproof');
-      const body = bodyRecord(request.input);
-      const invitation = await this.repository.lockClaimed(requireWriteTransaction(database), preauth.reference, preauth.target);
-      const claim = await this.repository.claim(requireWriteTransaction(database), preauth.reference);
-      if (invitation.state.id !== prepared.invitation || invitation.state.organization !== prepared.scope || !invitation.state.principal || !invitation.state.membership || !invitation.state.recipientHash) {
-        throw new DomainError('INVITATION_INVALID');
-      }
-      try {
-        await this.redeemer.validate(database, invitation, preauth.target);
-      } catch (cause) {
-        return this.failures.reject(database, request, invitation.state.id, invitation.state.organization, cause, 'INVITATION_INVALID');
-      }
-      try {
-        await this.challenges.consume(requireWriteTransaction(database), textField(body, 'proof'), textField(body, 'code', 16), (id, code) => this.code(id, code), invitation.state.principal, {
-          purpose: 'invitation_login',
-          destinationHash: invitation.state.recipientHash.toString('hex'),
-        });
-      } catch (cause) {
-        await this.failures.record(database, request, invitation.state.id, invitation.state.organization, cause);
-        throw cause;
-      }
-      await this.assurances.record(requireWriteTransaction(database), {
-        principal: invitation.state.principal,
-        method: 'invitation_otp',
-        level: 2,
-        evidenceHash: createHmac('sha256', this.sessionKey).update(preauth.reference).digest('hex'),
-        expiresIn: '15minutes',
+    const preauth = requirePreauth(request.security, 'invitationproof');
+    const body = bodyRecord(request.input);
+    const invitation = await this.repository.lockClaimed(requireWriteTransaction(database), preauth.reference, preauth.target);
+    const claim = await this.repository.claim(requireWriteTransaction(database), preauth.reference);
+    if (invitation.state.id !== prepared.invitation || invitation.state.organization !== prepared.scope || !invitation.state.principal || !invitation.state.membership || !invitation.state.recipientHash) {
+      throw new DomainError('INVITATION_INVALID');
+    }
+    try {
+      await this.redeemer.validate(database, invitation, preauth.target);
+    } catch (cause) {
+      return this.failures.reject(database, request, invitation.state.id, invitation.state.organization, cause, 'INVITATION_INVALID');
+    }
+    try {
+      await this.challenges.consume(requireWriteTransaction(database), textField(body, 'proof'), textField(body, 'code', 16), (id, code) => this.code(id, code), invitation.state.principal, {
+        purpose: 'invitation_login',
+        destinationHash: invitation.state.recipientHash.toString('hex'),
       });
-      const session = await this.sessions.issue(requireWriteTransaction(database), {
-        principal: invitation.state.principal,
-        membership: invitation.state.membership,
-        assurance: 2,
-        target: preauth.target,
-        device: request.input.headers['x-device-id'] ?? 'browser',
-        peer: request.input.headers['x-peer-address'] ?? 'unknown',
-        agent: request.input.headers['user-agent'] ?? 'unknown',
-        trace: preauth.trace,
-      });
-      await this.redeemer.consume(database, invitation, { session: session.session, assurance: 2, trace: preauth.trace, claim: { id: preauth.reference, version: claim.version } });
-      const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, preauth.target, AuthTransaction.start(body.authorization));
-      return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue(preauth.target).proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
+    } catch (cause) {
+      await this.failures.record(database, request, invitation.state.id, invitation.state.organization, cause);
+      throw cause;
+    }
+    await this.assurances.record(requireWriteTransaction(database), {
+      principal: invitation.state.principal,
+      method: 'invitation_otp',
+      level: 2,
+      evidenceHash: createHmac('sha256', this.sessionKey).update(preauth.reference).digest('hex'),
+      expiresIn: '15minutes',
+    });
+    const session = await this.sessions.issue(requireWriteTransaction(database), {
+      principal: invitation.state.principal,
+      membership: invitation.state.membership,
+      assurance: 2,
+      target: preauth.target,
+      device: request.input.headers['x-device-id'] ?? 'browser',
+      peer: request.input.headers['x-peer-address'] ?? 'unknown',
+      agent: request.input.headers['user-agent'] ?? 'unknown',
+      trace: preauth.trace,
+    });
+    await this.redeemer.consume(database, invitation, { session: session.session, assurance: 2, trace: preauth.trace, claim: { id: preauth.reference, version: claim.version } });
+    const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, preauth.target, AuthTransaction.start(body.authorization));
+    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue(preauth.target).proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
   }
   private code(id: string, code: string): string {
     return createHmac('sha256', this.sessionKey).update(`${id}:${code}`).digest('hex');

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { StorefrontQuery } from '../shared/api/Query';
-import { csrfCookie, type StorefrontSession } from '../shared/api/Session';
+import type { StorefrontSession } from '../shared/api/Session';
 import { useToasts } from '../shared/ui/ToastState';
 import { storefrontClient } from '../shared/api/Client';
 import { NAVIGATION_IDS } from '../generated/NavigationBinding';
@@ -13,17 +13,17 @@ import { storefrontAuthHref } from '../config/storefrontAuth';
 
 export interface BootstrapView {
   readonly binding: Readonly<{ mall: string }>;
-  readonly identity: Readonly<{ version: string; data: Readonly<{ state: 'anonymous' | 'member'; membership: string | null }> | null }>;
+  readonly identity: Readonly<{ version: string; data: Readonly<{ state: 'anonymous' | 'member'; membership: string | null; csrf?: string }> | null }>;
   readonly navigation: Readonly<{ data: readonly Readonly<{ id: string; title: string; icon: string; route: string; order: number }>[] | null }>;
 }
 
-export function deriveStorefrontSession(view: BootstrapView | undefined, csrfToken: string | null): StorefrontSession | null {
+export function deriveStorefrontSession(view: BootstrapView | undefined): StorefrontSession | null {
   const identity = view?.identity.data;
   if (!identity || identity.state === 'anonymous') return null;
   if (!identity.membership || !view?.binding.mall) throw new Error('AUTHENTICATED_SESSION_BINDING_INVALID');
   const accessVersion = Number(view.identity.version);
   if (!Number.isSafeInteger(accessVersion) || accessVersion < 0) throw new Error('SESSION_ACCESS_VERSION_INVALID');
-  return Object.freeze({ membership: identity.membership, scope: { kind: 'mall' as const, id: view.binding.mall }, accessVersion, csrfToken });
+  return Object.freeze({ membership: identity.membership, scope: { kind: 'mall' as const, id: view.binding.mall }, accessVersion, csrfToken: identity.csrf ?? null });
 }
 
 export function visibleNavigation(view: BootstrapView | undefined): SessionState['navigation'] {
@@ -43,7 +43,7 @@ export function SessionRuntime({ children }: { readonly children: ReactNode }) {
   const toast = useToasts();
   const view = bootstrap.data as unknown as BootstrapView | undefined;
   const scope = view?.binding.mall ?? '';
-  const session = useMemo(() => deriveStorefrontSession(view, csrfCookie()), [view]);
+  const session = useMemo(() => deriveStorefrontSession(view), [view]);
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const referral = useRef(

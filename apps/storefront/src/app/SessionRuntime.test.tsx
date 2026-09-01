@@ -3,8 +3,8 @@ import { deriveStorefrontSession, visibleNavigation, type BootstrapView } from '
 
 describe('storefront session runtime', () => {
   it('derives a scoped member session from the trusted bootstrap', () => {
-    const view = bootstrap({ state: 'member', membership: 'membership:one' });
-    expect(deriveStorefrontSession(view, 'csrf:one')).toEqual({
+    const view = bootstrap({ state: 'member', membership: 'membership:one', csrf: 'csrf:one' });
+    expect(deriveStorefrontSession(view)).toEqual({
       membership: 'membership:one',
       scope: { kind: 'mall', id: 'mall:one' },
       accessVersion: 7,
@@ -13,8 +13,8 @@ describe('storefront session runtime', () => {
   });
 
   it('keeps anonymous access but rejects malformed authenticated identity', () => {
-    expect(deriveStorefrontSession(bootstrap({ state: 'anonymous', membership: null }), '')).toBeNull();
-    expect(() => deriveStorefrontSession(bootstrap({ state: 'member', membership: null }), 'csrf')).toThrow('AUTHENTICATED_SESSION_BINDING_INVALID');
+    expect(deriveStorefrontSession(bootstrap({ state: 'anonymous', membership: null }))).toBeNull();
+    expect(() => deriveStorefrontSession(bootstrap({ state: 'member', membership: null, csrf: 'csrf' }))).toThrow('AUTHENTICATED_SESSION_BINDING_INVALID');
   });
 
   it('only exposes generated navigation ids', () => {

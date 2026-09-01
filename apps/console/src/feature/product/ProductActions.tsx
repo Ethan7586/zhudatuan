@@ -6,10 +6,7 @@ import { poolKey, readPools } from './ProductQuery';
 import type { ProductStatus } from './ProductPublication';
 import type { Listing, Pool } from './ProductSchema';
 
-export type ProductAction =
-  | Readonly<{ kind: 'create' }>
-  | Readonly<{ kind: 'edit'; listing: Listing; status: ProductStatus }>
-  | Readonly<{ kind: 'archive' | 'price' | 'publish' | 'unpublish'; listing: Listing }>;
+export type ProductAction = Readonly<{ kind: 'create' }> | Readonly<{ kind: 'edit'; listing: Listing; status: ProductStatus }> | Readonly<{ kind: 'archive' | 'price' | 'publish' | 'unpublish'; listing: Listing }>;
 
 export function ProductActionDialog({ action, context, onClose, onDone }: Readonly<{ action: ProductAction | null; context: ConsoleContext; onClose: () => void; onDone: () => void }>) {
   if (action === null) return null;
