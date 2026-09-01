@@ -1,5 +1,6 @@
 .cockpitpage { color: #172033; font-variant-numeric: tabular-nums; }
 .cockpitstack { display: grid; gap: 14px; }
+.cockpitdeferred { display: grid; min-height: 490px; gap: 14px; }
 .cockpithero { min-height: 128px; display: flex; align-items: center; justify-content: space-between; padding: 18px 24px;
   border: 1px solid #cbd8ee; border-left: 4px solid #1f5eff; border-radius: 10px;
   background: linear-gradient(105deg, #fff 0%, #f8faff 62%, #edf3ff 100%); }

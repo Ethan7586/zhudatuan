@@ -146,7 +146,7 @@ describe('registered Console modules', () => {
     const transitionEdges = literalEdges.filter(({ target }) => target?.startsWith('../'))
       .sort((left, right) => `${left.source}:${left.target}`.localeCompare(`${right.source}:${right.target}`));
 
-    expect(literalEdges).toHaveLength(32);
+    expect(literalEdges).toHaveLength(31);
     expect(transitionEdges).toEqual([
       { source: 'src/feature/access/manifest.ts', target: '../importing/ImportRoute' },
       { source: 'src/feature/access/manifest.ts', target: '../member/MemberRoute' },

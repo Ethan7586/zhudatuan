@@ -8,7 +8,6 @@ import type {
 } from '../entity/navigation/ConsoleModuleManifest';
 import { isConsoleModuleId } from '../entity/navigation/ConsoleModuleManifest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
-import { ModuleDisabledRoute } from './ModuleDisabledRoute';
 
 export interface ResolvedConsoleRoutePresentation {
   readonly title: string;
@@ -98,7 +97,13 @@ function materializeConsoleRoute<Id extends ConsoleModuleId>(
   };
   const base = { id: route.id, path: route.path, handle };
 
-  if (module.status === 'disabled') return { ...base, Component: ModuleDisabledRoute };
+  if (module.status === 'disabled') return {
+    ...base,
+    lazy: async () => {
+      const { ModuleDisabledRoute } = await import('./ModuleDisabledRoute');
+      return { Component: ModuleDisabledRoute };
+    },
+  };
   if (route.kind === 'redirect') {
     return { ...base, element: <Navigate to={route.redirectTo} replace /> };
   }

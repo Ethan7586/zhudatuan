@@ -13,6 +13,7 @@ export default defineConfig(({ command, mode }) => {
   if (command === 'build') {
     const environment = clientBuildEnvironment(source);
     plugins.push(
+      consoleAfterPaintBootstrapPlugin(),
       consoleArtifactPlugin({
         schema: 'shop.console-artifact.v1',
         ...build,
@@ -49,6 +50,52 @@ export default defineConfig(({ command, mode }) => {
     },
   };
 });
+
+function consoleAfterPaintBootstrapPlugin(): Plugin {
+  const preloadModules = [
+    './src/app/providers.tsx',
+    './src/components/Sidebar.tsx',
+    './src/feature/cockpit/CockpitRoute.tsx',
+  ].map((modulePath) => fileURLToPath(new URL(modulePath, import.meta.url)));
+  return {
+    name: 'shop-console-after-paint-bootstrap',
+    enforce: 'post',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, context) {
+        if (context.bundle === undefined) return html;
+        const bundle = context.bundle;
+        const preloadChunks = preloadModules.map((modulePath) => Object.values(bundle).find((output) => output.type === 'chunk'
+          && output.facadeModuleId === modulePath));
+        if (preloadChunks.some((output) => output === undefined || output.type !== 'chunk')) {
+          throw new Error('CONSOLE_STARTUP_CHUNK_MISSING');
+        }
+        const files: string[] = [];
+        const visited = new Set<string>();
+        const visit = (fileName: string) => {
+          if (visited.has(fileName) || html.includes(`"/${fileName}"`)) return;
+          visited.add(fileName);
+          const output = bundle[fileName];
+          if (output === undefined || output.type !== 'chunk' || output.isEntry) return;
+          files.push(`/${fileName}`);
+          for (const dependency of output.imports) visit(dependency);
+        };
+        for (const output of preloadChunks) {
+          if (output !== undefined && output.type === 'chunk') visit(output.fileName);
+        }
+        return {
+          html,
+          tags: [{
+            tag: 'script',
+            attrs: { type: 'module' },
+            children: `const f=${JSON.stringify(files)},s=document.querySelector('link[rel="stylesheet"][href*="/assets/"]');const w=()=>requestAnimationFrame(()=>{for(const h of f){const l=document.createElement('link');l.rel='modulepreload';l.crossOrigin='anonymous';l.href=h;document.head.append(l)}});s?.sheet?w():s?s.addEventListener('load',w,{once:true}):w();`,
+            injectTo: 'head-prepend',
+          }],
+        };
+      },
+    },
+  };
+}
 
 function clientBuildEnvironment(source: Readonly<Record<string, string | undefined>>) {
   const apiBaseUrl = required(source.VITE_API_BASE_URL, 'CLIENT_API_BASE_URL_MISSING');

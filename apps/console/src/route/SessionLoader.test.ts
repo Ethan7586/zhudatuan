@@ -1,6 +1,6 @@
 import { ApiError } from '@shop/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { scopeLoader } from './SessionLoader';
+import { landingLoader, scopeLoader } from './SessionLoader';
 
 const api = vi.hoisted(() => ({
   identitySessionRead: vi.fn(),
@@ -31,16 +31,93 @@ const session = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  delete window.__consoleSessionPrefetch;
+  delete window.__consoleScopePrefetch;
+  delete window.__consoleAbortDocumentPrefetch;
   api.identitySessionRead.mockResolvedValue(session);
   api.memberProfileRead.mockResolvedValue({ display_name: 'Ethan', employee_no: null });
 });
 
 describe('console scope loader profile isolation', () => {
+  it('consumes a successful document session prefetch through the existing validation path', async () => {
+    window.__consoleSessionPrefetch = resolvedPrefetch({ value: session });
+
+    const context = await loadPlatformScope();
+
+    expect(context.scope).toEqual(platformScope);
+    expect(api.identitySessionRead).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the SDK immediately when document prefetch is still pending', async () => {
+    window.__consoleSessionPrefetch = { settled: false, promise: new Promise(() => undefined) };
+    window.__consoleAbortDocumentPrefetch = vi.fn();
+
+    const context = await loadPlatformScope();
+
+    expect(context.scope).toEqual(platformScope);
+    expect(window.__consoleAbortDocumentPrefetch).toHaveBeenCalledOnce();
+    expect(api.identitySessionRead).toHaveBeenCalledOnce();
+  });
+
+  it('falls back to the SDK when the prefetched session schema is invalid', async () => {
+    window.__consoleSessionPrefetch = resolvedPrefetch({ value: { ...session, accessVersion: 'invalid' } });
+
+    const context = await loadPlatformScope();
+
+    expect(context.scope).toEqual(platformScope);
+    expect(api.identitySessionRead).toHaveBeenCalledOnce();
+  });
+
+  it('hands the validated landing session to the exact redirected cockpit route once', async () => {
+    const response = await landingLoader({
+      params: {},
+      request: new Request('https://console.zhudatuan.com/'),
+    } as never);
+    const location = response.headers.get('location');
+    expect(location).toBe('/scopes/platform/organization-platform-root/cockpit');
+
+    const context = await scopeLoader({
+      params: { scopeKind: platformScope.kind, scopeId: platformScope.id },
+      request: new Request(new URL(location!, 'https://console.zhudatuan.com')),
+    } as never);
+
+    expect(context.scope).toEqual(platformScope);
+    expect(api.identitySessionRead).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not hand a landing session to a different route', async () => {
+    await landingLoader({
+      params: {},
+      request: new Request('https://console.zhudatuan.com/'),
+    } as never);
+
+    await scopeLoader({
+      params: { scopeKind: platformScope.kind, scopeId: platformScope.id },
+      request: new Request(`https://console.zhudatuan.com/scopes/${platformScope.kind}/${platformScope.id}/settings/access`),
+    } as never);
+
+    expect(api.identitySessionRead).toHaveBeenCalledTimes(2);
+  });
+
   it('returns the live profile when the personal data source succeeds', async () => {
     const context = await loadPlatformScope();
 
     expect(context.profile).toMatchObject({ display_name: 'Ethan', employee_no: null });
     expect(context.profileState).toBe('ready');
+  });
+
+  it('uses an exact access-version and scope context prefetch without loading the SDK profile', async () => {
+    window.__consoleScopePrefetch = resolvedPrefetch({
+      accessVersion: 7,
+      roots: [{ kind: platformScope.kind, id: platformScope.id }],
+      profile: { display_name: 'Prefetched Ethan', employee_no: null },
+      layers: [],
+    });
+
+    const context = await loadPlatformScope();
+
+    expect(context.profile.display_name).toBe('Prefetched Ethan');
+    expect(api.memberProfileRead).not.toHaveBeenCalled();
   });
 
   it('keeps the authorized workspace available when the non-critical profile read is forbidden', async () => {
@@ -65,4 +142,8 @@ function loadPlatformScope() {
     params: { scopeKind: platformScope.kind, scopeId: platformScope.id },
     request: new Request(`https://console.zhudatuan.com/scopes/${platformScope.kind}/${encodeURIComponent(platformScope.id)}/cockpit`),
   } as never);
+}
+
+function resolvedPrefetch<T>(value: T) {
+  return { settled: true, promise: Promise.resolve(value) };
 }

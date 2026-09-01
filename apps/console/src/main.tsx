@@ -1,13 +1,23 @@
 import { createRoot } from 'react-dom/client';
-import { bootstrapApplication } from '@shop/design';
+import { StrictMode } from 'react';
 import '@shop/design/tokens.css';
 import '@shop/design/base.css';
 import '@shop/design/components.css';
 import '@shop/design/workspace.css';
-import '@shop/design/components.css';
 import './style.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('APP_ROOT_MISSING');
 const renderer = createRoot(root);
-void bootstrapApplication(() => import('./app/providers'), (application) => renderer.render(application));
+void import('./app/providers').then(
+  ({ Providers }) => {
+    window.setTimeout(() => renderer.render(<StrictMode><Providers /></StrictMode>));
+  },
+  (cause: unknown) => {
+    const message = cause instanceof Error ? cause.message : 'APPLICATION_BOOTSTRAP_FAILED';
+    renderer.render(<StrictMode><main className="statemain"><section role="alert">
+      <h2>应用配置无效</h2><p>{message}</p>
+      <button className="shopbutton shopbuttondefault" type="button" onClick={() => window.location.reload()}>重试</button>
+    </section></main></StrictMode>);
+  },
+);

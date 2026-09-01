@@ -1,4 +1,5 @@
 import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModuleManifest';
+import { CockpitBootstrapRoute } from './CockpitBootstrapRoute';
 
 export const cockpitModule = {
   id: 'cockpit',
@@ -8,7 +9,7 @@ export const cockpitModule = {
     id: 'cockpit.index',
     path: 'cockpit',
     kind: 'entry',
-    lazy: () => import('./CockpitRoute'),
+    lazy: async () => ({ Component: CockpitBootstrapRoute }),
     operations: ['reporting.dashboard.read'],
     presentation: { title: '经营驾驶舱', summary: '经营数据、宏观和细节趋势' },
   }],

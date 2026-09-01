@@ -61,9 +61,9 @@ describe('Cockpit route', () => {
     expect(await screen.findByRole('heading', { level: 1, name: '经营驾驶舱' })).toBeTruthy();
     expect(screen.getByText('¥315.00')).toBeTruthy();
     expect(screen.getByText('环比 +12.8%')).toBeTruthy();
-    expect(screen.getByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '商城经营对比' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '查看售后订单 →' })).toBeTruthy();
+    expect(await screen.findByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '商城经营对比' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: '查看售后订单 →' })).toBeTruthy();
   });
 
   it('renders the complete cockpit with zero values when the authoritative read model is empty', async () => {
@@ -83,10 +83,10 @@ describe('Cockpit route', () => {
     expect(await screen.findByRole('heading', { level: 1, name: '经营驾驶舱' })).toBeTruthy();
     expect(screen.getByText('当前周期暂无经营数据，所有指标按 0 展示。')).toBeTruthy();
     expect(screen.getAllByText('环比 0.0%')).toHaveLength(3);
-    expect(screen.getByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
-    expect(screen.getByText('全部商城')).toBeTruthy();
-    expect(screen.getByText('0 条')).toBeTruthy();
-    expect(screen.getByText('需要关注 0 项')).toBeTruthy();
+    expect(await screen.findByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
+    expect(await screen.findByText('全部商城')).toBeTruthy();
+    expect(await screen.findByText('0 条')).toBeTruthy();
+    expect(await screen.findByText('需要关注 0 项')).toBeTruthy();
     expect(screen.queryByText('暂无数据')).toBeNull();
   });
 });
