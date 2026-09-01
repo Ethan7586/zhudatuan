@@ -12,6 +12,7 @@ import { deepestConsoleRouteHandle, resolveConsoleRoutePresentation } from '../r
 import { scopeSuffix } from '../route/ProfessionalRouteCatalog';
 import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
 import { appConfig } from '../shared/config/AppConfig';
+import { buildInfo } from '../shared/config/BuildInfo';
 import { scopePath } from '../shared/url/ScopePath';
 
 const scopeLabels = Object.freeze({ platform: '平台', distributor: '分销', tenant: '租户', enterprise: '集团', mall: '商城' });
@@ -136,7 +137,7 @@ export function ScopeShell() {
             <Outlet />
           </main>
           <footer className="consolefooter">
-            <span>© 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
+            <span data-testid="console-build-info" title={buildInfo.detailLabel}>{buildInfo.footerLabel} · © 2026 Smart Wing 运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
             <span className="consolefooterstatus"><i aria-hidden="true" />服务运行正常</span>
             <code>AI 调用需服务端授权</code>
           </footer>
