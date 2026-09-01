@@ -28,6 +28,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('identity.wechat.session','identity','POST','/api/v1/identity/wechat/sessions','1.0.0'),
   ('identity.wechat.bind','identity','POST','/api/v1/identity/wechat/bindings','1.0.0'),
   ('organization.layers.read','organization','GET','/api/v1/organizations/layers','1.0.0'),
+  ('provisioning.malls.create','provisioning','POST','/api/v1/provisioning/malls','1.0.0'),
   ('access.center.read','access','GET','/api/v1/access/center','1.0.0'),
   ('access.roles.manage','access','PUT','/api/v1/access/roles/{roleid}','1.0.0'),
   ('access.scopes.manage','access','PUT','/api/v1/access/memberships/{membershipid}/scopes','1.0.0'),
@@ -390,6 +391,7 @@ insert into access.permission(id,code,risk,status) values
   ('permission:9266806a4193998d7972daf7','order.export','critical','active'),
   ('permission:8fcf25d4bf32df4be57fd284','order.read','low','active'),
   ('permission:09a64425a471eccb861e30c6','order.reminder.create','low','active'),
+  ('permission:326a6cd0a1184e734fc3d2d6','organization.layer.manage','critical','active'),
   ('permission:112c1fd0b8e53acf556987cf','organization.layer.read','low','active'),
   ('permission:a8ad05622f07c6a9b3d5a30a','partner.manage','high','active'),
   ('permission:607796d42d71519b286a6786','partner.read','low','active'),
@@ -489,6 +491,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('identity.wechat.session','operation','identity.wechat.session',1,'active'),
   ('identity.wechat.bind','operation','identity.wechat.bind',1,'active'),
   ('organization.layers.read','operation','organization.layers.read',1,'active'),
+  ('provisioning.malls.create','operation','provisioning.malls.create',1,'active'),
   ('access.center.read','operation','access.center.read',1,'active'),
   ('access.roles.manage','operation','access.roles.manage',1,'active'),
   ('access.scopes.manage','operation','access.scopes.manage',1,'active'),
@@ -708,6 +711,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.wechat.session','identity.wechat.session',null,'public'),
   ('identity.wechat.bind','identity.wechat.bind','identity.credential.manage','member'),
   ('organization.layers.read','organization.layers.read','organization.layer.read','operator'),
+  ('provisioning.malls.create','provisioning.malls.create','organization.layer.manage','operator'),
   ('access.center.read','access.center.read','access.center.read','operator'),
   ('access.roles.manage','access.roles.manage','access.role.manage','operator'),
   ('access.scopes.manage','access.scopes.manage','access.scope.manage','operator'),
@@ -1189,6 +1193,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','83892ce3a42c15ab21703902380b63b6cc3352000d0c4c2a9df50b60347e383a');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','9d316b494919d214afc4ab2ba2e5dc7d6cc8b01fea36be89a4d876c37fbe9361');
 
 commit;

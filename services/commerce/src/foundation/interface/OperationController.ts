@@ -33,6 +33,7 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'identity.wechat.session',
   'identity.wechat.bind',
   'organization.layers.read',
+  'provisioning.malls.create',
   'access.center.read',
   'access.roles.manage',
   'access.scopes.manage',

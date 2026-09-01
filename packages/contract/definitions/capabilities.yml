@@ -100,6 +100,11 @@ capabilities:
     owner: organization
     permission: organization.layer.read
     audience: operator
+  - code: provisioning.malls.create
+    kind: operation
+    owner: provisioning
+    permission: organization.layer.manage
+    audience: operator
   - code: access.center.read
     kind: operation
     owner: access

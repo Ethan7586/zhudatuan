@@ -67,6 +67,7 @@ const REPAIR_FILES = [
   '20260901190000_add_payment_mall_identity.sql',
   '20260901191000_add_fulfillment_mall_identity.sql',
   '20260901192000_add_inventory_mall_identity.sql',
+  '20260901223000_publish_mall_provisioning.sql',
 ];
 
 const mode = process.argv[2];

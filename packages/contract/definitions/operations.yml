@@ -324,6 +324,20 @@ operations:
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/foundation/application/OperationHandler.ts
     sdk: packages/sdk/src/operations/organization.ts
+  - id: provisioning.malls.create
+    owner: provisioning
+    method: POST
+    path: /api/v1/provisioning/malls
+    audience: operator
+    permission: organization.layer.manage
+    idempotent: false
+    schema: structural
+    requirements:
+      - MVP06
+      - MVP15
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: packages/sdk/src/operations/provisioning.ts
   - id: access.center.read
     owner: access
     method: GET

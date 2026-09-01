@@ -5,4 +5,5 @@ export { ApplyRiskDecision } from './application/command/ApplyRiskDecision';
 export type { CatalogSku } from './application/port/CatalogSku';
 export const catalogSku = new PgCatalogSku();
 export { CatalogSourcePort, catalogSourcePort, type CatalogSourceInput } from './CatalogSourcePort';
+export { CatalogProvisioningPort, catalogProvisioningPort } from './CatalogProvisioningPort';
 export const CatalogModule = defineModule('catalog', ['partner'], catalogOperations);
