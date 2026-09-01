@@ -41,9 +41,12 @@ jobs:
       VITE_CLIENT_VERSION: 0.0.0
       VITE_ADMIN_ORIGIN: http://127.0.0.1:4173
       VITE_STOREFRONT_ORIGIN: http://127.0.0.1:3000
+<<<<<<< HEAD
 =======
       PGPASSWORD: ${{ env.SHOP_CI_DATABASE_PASSWORD }}
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> bc283dd3 (fix(auth): fail builds with missing runtime values)
     services:
       postgres:
         image: postgres:17-alpine
