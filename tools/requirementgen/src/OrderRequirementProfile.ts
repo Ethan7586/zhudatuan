@@ -71,7 +71,6 @@ interface OperationRecord {
   readonly id: string;
   readonly owner: string;
   readonly handler: string;
-  readonly controller: string;
   readonly requirements: readonly string[];
 }
 
@@ -264,14 +263,16 @@ function requirementValue(
 }
 
 async function loadOperations(root: string): Promise<readonly OperationRecord[]> {
+  const sharedHandler = 'services/commerce/src/foundation/application/OperationHandler.ts';
   const document = objectValue(parse(await readFile(resolve(root, 'packages/contract/definitions/operations.yml'), 'utf8')), 'operations');
   return arrayValue(document.operations, 'operations').map((value, index) => {
     const operation = objectValue(value, 'operations:' + index);
     return deepFreeze({
       id: stringValue(operation.id, 'operations:' + index + ':id'),
       owner: stringValue(operation.owner, 'operations:' + index + ':owner'),
-      handler: stringValue(operation.handler, 'operations:' + index + ':handler'),
-      controller: stringValue(operation.controller, 'operations:' + index + ':controller'),
+      handler: operation.handler === undefined
+        ? sharedHandler
+        : stringValue(operation.handler, 'operations:' + index + ':handler'),
       requirements: stringArray(operation.requirements, 'operations:' + index + ':requirements'),
     });
   });
