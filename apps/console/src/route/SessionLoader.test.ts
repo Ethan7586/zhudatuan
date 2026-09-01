@@ -48,7 +48,7 @@ describe('console scope loader profile isolation', () => {
     expect(api.identitySessionRead).not.toHaveBeenCalled();
   });
 
-  it('falls back to the SDK immediately when document prefetch is still pending', async () => {
+  it('falls back to the SDK after the bounded handoff when document prefetch remains pending', async () => {
     window.__consoleSessionPrefetch = { settled: false, promise: new Promise(() => undefined) };
     window.__consoleAbortDocumentPrefetch = vi.fn();
 
@@ -57,6 +57,39 @@ describe('console scope loader profile isolation', () => {
     expect(context.scope).toEqual(platformScope);
     expect(window.__consoleAbortDocumentPrefetch).toHaveBeenCalledOnce();
     expect(api.identitySessionRead).toHaveBeenCalledOnce();
+  });
+
+  it('uses a document session that finishes inside the bounded handoff', async () => {
+    let resolvePrefetch: (value: Readonly<{ value: unknown }>) => void = () => undefined;
+    window.__consoleSessionPrefetch = {
+      settled: false,
+      promise: new Promise((resolve) => { resolvePrefetch = resolve; }),
+    };
+
+    const loading = loadPlatformScope();
+    queueMicrotask(() => resolvePrefetch({ value: session }));
+    const context = await loading;
+
+    expect(context.scope).toEqual(platformScope);
+    expect(api.identitySessionRead).not.toHaveBeenCalled();
+  });
+
+  it('abandons the handoff immediately when route navigation aborts', async () => {
+    window.__consoleSessionPrefetch = { settled: false, promise: new Promise(() => undefined) };
+    window.__consoleAbortDocumentPrefetch = vi.fn();
+    const controller = new AbortController();
+    const loading = scopeLoader({
+      params: { scopeKind: platformScope.kind, scopeId: platformScope.id },
+      request: new Request(`https://console.zhudatuan.com/scopes/${platformScope.kind}/${platformScope.id}/cockpit`, {
+        signal: controller.signal,
+      }),
+    } as never);
+
+    controller.abort(new DOMException('navigation cancelled', 'AbortError'));
+
+    await expect(loading).rejects.toMatchObject({ name: 'AbortError' });
+    expect(window.__consoleAbortDocumentPrefetch).toHaveBeenCalledOnce();
+    expect(api.identitySessionRead).not.toHaveBeenCalled();
   });
 
   it('falls back to the SDK when the prefetched session schema is invalid', async () => {

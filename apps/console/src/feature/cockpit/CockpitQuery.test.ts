@@ -61,7 +61,7 @@ describe('cockpit document prefetch', () => {
     });
   });
 
-  it('abandons a pending document read before using the SDK fallback', async () => {
+  it('abandons a document read that remains pending beyond the bounded handoff', async () => {
     window.__consoleCockpitPrefetch = { settled: false, promise: new Promise(() => undefined) };
     window.__consoleAbortDocumentPrefetch = vi.fn();
     api.dashboardRead.mockResolvedValue(response);
@@ -69,6 +69,35 @@ describe('cockpit document prefetch', () => {
     await expect(readCockpit(context, '30days', new AbortController().signal)).resolves.toMatchObject({ count: 0 });
     expect(window.__consoleAbortDocumentPrefetch).toHaveBeenCalledOnce();
     expect(api.dashboardRead).toHaveBeenCalledOnce();
+  });
+
+  it('uses a dashboard that finishes inside the bounded handoff', async () => {
+    let resolvePrefetch: (value: NonNullable<Window['__consoleCockpitPrefetch']> extends { promise: Promise<infer T> } ? T : never) => void = () => undefined;
+    window.__consoleCockpitPrefetch = {
+      settled: false,
+      promise: new Promise((resolve) => { resolvePrefetch = resolve; }),
+    };
+
+    const reading = readCockpit(context, '30days', new AbortController().signal);
+    queueMicrotask(() => resolvePrefetch({
+      scopeKind: 'enterprise', scopeId: 'enterprise:1', accessVersion: 7, period: '30days', value: response,
+    }));
+
+    await expect(reading).resolves.toMatchObject({ count: 0 });
+    expect(api.dashboardRead).not.toHaveBeenCalled();
+  });
+
+  it('abandons the handoff immediately when route navigation aborts', async () => {
+    window.__consoleCockpitPrefetch = { settled: false, promise: new Promise(() => undefined) };
+    window.__consoleAbortDocumentPrefetch = vi.fn();
+    const controller = new AbortController();
+
+    const reading = readCockpit(context, '30days', controller.signal);
+    controller.abort(new DOMException('navigation cancelled', 'AbortError'));
+
+    await expect(reading).rejects.toMatchObject({ name: 'AbortError' });
+    expect(window.__consoleAbortDocumentPrefetch).toHaveBeenCalledOnce();
+    expect(api.dashboardRead).not.toHaveBeenCalled();
   });
 
   it('falls back to the SDK when the prefetched dashboard schema is invalid', async () => {
