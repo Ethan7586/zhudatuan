@@ -1,0 +1,133 @@
+.commerceentrydialog {
+  display: grid;
+  gap: 16px;
+  min-width: min(520px, calc(100vw - 72px));
+}
+.commerceentrystate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 750;
+}
+.commerceentrystate i {
+  width: 9px;
+  height: 9px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.commerceentrystate.is-success {
+  color: var(--sw-success-strong);
+}
+.commerceentrystate.is-warning {
+  color: var(--sw-warning-strong);
+}
+.commerceentrystate.is-neutral {
+  color: var(--sw-muted);
+}
+.commerceentrystate.is-danger {
+  color: var(--sw-danger-strong);
+}
+.commerceqrframe {
+  display: grid;
+  min-height: 264px;
+  place-items: center;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 18px;
+  background: var(--sw-surface-subtle);
+  padding: 16px;
+}
+.commerceqrframe svg {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--sw-brand-ink) 10%, transparent);
+}
+.commerceqrskeleton {
+  display: grid;
+  width: 232px;
+  height: 232px;
+  place-items: center;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--sw-surface) 25%, var(--sw-brand-light) 50%, var(--sw-surface) 75%);
+  background-size: 200% 100%;
+  color: var(--sw-muted);
+  animation: commerceqrpulse 1.4s infinite;
+}
+.commerceentryempty {
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+  text-align: center;
+  border: 1px dashed var(--sw-border-strong);
+  border-radius: 18px;
+  background: var(--sw-surface-subtle);
+  padding: 24px;
+}
+.commerceentryempty span {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--sw-brand-light);
+  color: var(--vi-brand);
+  font-weight: 800;
+}
+.commerceentryempty p {
+  max-width: 380px;
+  margin: 0;
+  color: var(--sw-muted);
+  line-height: 1.7;
+}
+.commerceentryaddress {
+  display: grid;
+  gap: 6px;
+}
+.commerceentryaddress strong {
+  font-size: 12px;
+  color: var(--sw-text-secondary);
+}
+.commerceentryaddress a {
+  border-radius: 10px;
+  background: var(--sw-surface-subtle);
+  padding: 10px 12px;
+  color: var(--vi-brand);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.commerceentryactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.commerceentryhint,
+.commerceentryfeedback {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.commerceentryfeedback {
+  min-height: 18px;
+  color: var(--vi-brand);
+  font-weight: 700;
+}
+@keyframes commerceqrpulse {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (max-width: 640px) {
+  .commerceentrydialog {
+    min-width: 0;
+  }
+  .commerceentryactions {
+    display: grid;
+  }
+  .commerceentryactions button {
+    width: 100%;
+  }
+}

@@ -19,7 +19,7 @@ export function useHomeRuntime() {
   const cart = useCartCommand();
   const order = useOrderState(identity.currentMall);
   const reader = useRef(new ReadHome());
-  const bootstrap = useQuery({ queryKey: StorefrontQuery.bootstrap(), queryFn: ({ signal }) => HomeGateway.read(signal) });
+  const bootstrap = useQuery({ queryKey: StorefrontQuery.bootstrap(session.entry.handle), queryFn: ({ signal }) => HomeGateway.read(signal) });
   return Object.freeze({
     user: identity.user,
     currentMall: identity.currentMall,

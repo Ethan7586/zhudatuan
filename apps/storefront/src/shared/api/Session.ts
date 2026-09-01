@@ -1,4 +1,5 @@
 import { createRequestContext, type RequestContext, type RequestScope } from '@shop/sdk';
+import type { StorefrontHandle } from '@shop/contract';
 
 export interface StorefrontSession {
   readonly membership: string;
@@ -15,12 +16,13 @@ export interface RequestOptions {
   readonly includeScope?: boolean;
 }
 
-export function requestContext(clientVersion: string, session: StorefrontSession | null, options: RequestOptions = {}): RequestContext {
+export function requestContext(clientVersion: string, handle: StorefrontHandle, session: StorefrontSession | null, options: RequestOptions = {}): RequestContext {
   if (options.write && !session) throw new Error('AUTHENTICATION_REQUIRED');
   if (options.write && !options.idempotencyKey) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
   if (options.write && !session?.csrfToken) throw new Error('CSRF_TOKEN_MISSING');
   return createRequestContext(clientVersion, {
     target: 'storefront',
+    storefrontHandle: handle,
     ...(session && options.includeScope !== false ? { scope: session.scope, accessVersion: session.accessVersion } : {}),
     ...(options.signal ? { signal: options.signal } : {}),
     ...(options.write ? { csrfToken: session!.csrfToken! } : {}),

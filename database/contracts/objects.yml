@@ -267,17 +267,22 @@ objects:
     owner: channel
     source: database/migrations/20260821044000_channel_lifecycle.sql
     operationalOwner: channel
+  - id: experience.prevent_storefront_handle_change
+    kind: function
+    owner: experience
+    source: database/migrations/20260901014000_mall_storefront_entry.sql
+    operationalOwner: experience
   - id: experience.read_published
     kind: function
     owner: experience
     source: database/migrations/20260821033000_complete_experience_publication.sql
     operationalOwner: experience
-  - id: experience.resolve_storefront_host
+  - id: experience.resolve_storefront_entry
     kind: function
     owner: experience
-    source: database/migrations/20260831031000_resolve_storefront_tenant_boundary.sql
+    source: database/migrations/20260901014000_mall_storefront_entry.sql
     callers:
-      - services/commerce/src/modules/experience/infrastructure/persistence/PgExperienceReadPort.ts
+      - services/commerce/src/modules/experience/infrastructure/persistence/PgEntryRepository.ts
   - id: extension.enabled_installations
     kind: function
     owner: extension
@@ -759,13 +764,13 @@ objects:
     objectType: function
     target: experience.read_published(text)
     privilege: execute
-  - id: shopapp:function:experience.resolve_storefront_host(text):execute
+  - id: shopapp:function:experience.resolve_storefront_entry(text):execute
     kind: grant
     owner: experience
-    source: database/migrations/20260831031000_resolve_storefront_tenant_boundary.sql
+    source: database/migrations/20260901014000_mall_storefront_entry.sql
     role: shopapp
     objectType: function
-    target: experience.resolve_storefront_host(text)
+    target: experience.resolve_storefront_entry(text)
     privilege: execute
   - id: shopapp:function:extension.enabled_installations():execute
     kind: grant
@@ -3118,38 +3123,6 @@ objects:
     role: shopapp
     objectType: table
     target: experience.application
-    privilege: update
-  - id: shopapp:table:experience.binding:delete
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: experience.binding
-    privilege: delete
-  - id: shopapp:table:experience.binding:insert
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: experience.binding
-    privilege: insert
-  - id: shopapp:table:experience.binding:select
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: experience.binding
-    privilege: select
-  - id: shopapp:table:experience.binding:update
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: experience.binding
     privilege: update
   - id: shopapp:table:experience.publication:delete
     kind: grant
@@ -9719,13 +9692,13 @@ objects:
     objectType: function
     target: channel.webhook_context(text)
     privilege: execute
-  - id: shopjob:function:experience.resolve_storefront_host(text):execute
+  - id: shopjob:function:experience.resolve_storefront_entry(text):execute
     kind: grant
     owner: experience
-    source: database/migrations/20260831031000_resolve_storefront_tenant_boundary.sql
+    source: database/migrations/20260901014000_mall_storefront_entry.sql
     role: shopjob
     objectType: function
-    target: experience.resolve_storefront_host(text)
+    target: experience.resolve_storefront_entry(text)
     privilege: execute
   - id: shopjob:function:extension.enabled_installations():execute
     kind: grant
@@ -12094,38 +12067,6 @@ objects:
     role: shopjob
     objectType: table
     target: experience.application
-    privilege: update
-  - id: shopjob:table:experience.binding:delete
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: experience.binding
-    privilege: delete
-  - id: shopjob:table:experience.binding:insert
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: experience.binding
-    privilege: insert
-  - id: shopjob:table:experience.binding:select
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: experience.binding
-    privilege: select
-  - id: shopjob:table:experience.binding:update
-    kind: grant
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: experience.binding
     privilege: update
   - id: shopjob:table:experience.publication:delete
     kind: grant
@@ -19478,23 +19419,15 @@ objects:
   - id: experience.application.appscope
     kind: policy
     owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260901014000_mall_storefront_entry.sql
   - id: experience.application.jobscope
-    kind: policy
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: experience.binding.appscope
-    kind: policy
-    owner: experience
-    source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: experience.binding.jobscope
     kind: policy
     owner: experience
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: experience.publication.appscope
     kind: policy
     owner: experience
-    source: database/migrations/20260821033000_complete_experience_publication.sql
+    source: database/migrations/20260901014000_mall_storefront_entry.sql
   - id: experience.publication.jobscope
     kind: policy
     owner: experience
@@ -22154,11 +22087,6 @@ objects:
     owner: experience
     source: database/migrations/20260821018000_create_inventory_experience.sql
     rls: true
-  - id: experience.binding
-    kind: table
-    owner: experience
-    source: database/migrations/20260821018000_create_inventory_experience.sql
-    rls: true
   - id: experience.publication
     kind: table
     owner: experience
@@ -23349,6 +23277,11 @@ objects:
     owner: audit
     source: database/migrations/20260821050000_audit_lifecycle.sql
     operationalOwner: audit
+  - id: experience.application.application_storefront_handle_immutable
+    kind: trigger
+    owner: experience
+    source: database/migrations/20260901014000_mall_storefront_entry.sql
+    operationalOwner: experience
   - id: extension.installation.extension_registry_sync
     kind: trigger
     owner: extension

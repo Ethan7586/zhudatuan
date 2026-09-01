@@ -7,24 +7,25 @@ import type { FederationProtector } from '../../domain/service/FederationProtect
 import type { MembershipSelectionPort, MembershipCandidate } from '../port/MembershipSelectionPort';
 import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
-import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { FederationCompletionPort } from '../port/FederationRepository';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
+import type { ReturnTargetPort } from '../port/ReturnTargetPort';
+import { returnDestination } from './ReturnDestination';
 export class MembershipSelector {
   constructor(
     private readonly repository: MembershipSelectionPort,
     private readonly sessions: SessionIssuer,
     private readonly protector: FederationProtector,
-    private readonly returns: ReturnTargetPort,
     private readonly access: IdentityAccessPort,
     private readonly members: IdentityMemberPort,
     private readonly federations: FederationCompletionPort,
+    private readonly returns: ReturnTargetPort,
     private readonly cookies: SessionCookiePort
   ) {}
   async begin(
     database: ReadTransactionContext,
-    input: Readonly<{ principal: string; target: 'console' | 'storefront'; memberships: readonly MembershipCandidate[]; assurance: number; authorization: AuthTransaction }>,
+    input: Readonly<{ principal: string; target: 'console' | 'storefront'; memberships: readonly MembershipCandidate[]; assurance: number; authorization: AuthTransaction; returnTarget: string }>,
     context: Readonly<{ peer: string; agent: string; device: string }>
   ) {
     const selection = await this.repository.create(requireWriteTransaction(database), {
@@ -32,6 +33,7 @@ export class MembershipSelector {
       target: input.target,
       memberships: input.memberships,
       assurance: input.assurance,
+      returnTarget: input.returnTarget,
       authorization: Object.freeze({ stateHash: input.authorization.stateHash, nonceHash: input.authorization.nonceHash, challenge: input.authorization.challenge }),
       browser: this.protector.browser(context.peer, context.agent, context.device),
       device: this.protector.device(context.device),
@@ -44,6 +46,7 @@ export class MembershipSelector {
   async select(database: ReadTransactionContext, id: string, membership: string, context: Readonly<{ peer: string; agent: string; device: string; trace: string }>) {
     const browser = this.protector.browser(context.peer, context.agent, context.device);
     const selected = await this.repository.consume(requireWriteTransaction(database), id, browser, this.protector.device(context.device), membership);
+    const destination = returnDestination(this.returns, selected.target, selected.returnTarget);
     const member = await this.members.memberForPrincipal(database, selected.principal);
     const active = await this.access.memberships(database, member, selected.target);
     if (!active.some((candidate) => candidate.id === membership)) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
@@ -58,6 +61,6 @@ export class MembershipSelector {
       trace: context.trace,
     });
     if (selected.transaction !== null) await this.federations.complete(requireWriteTransaction(database), selected.transaction, await this.federations.version(database, selected.transaction));
-    return Object.freeze({ headers: issued.headers, destination: this.returns.issue(selected.target).url });
+    return Object.freeze({ headers: issued.headers, destination: destination.url });
   }
 }

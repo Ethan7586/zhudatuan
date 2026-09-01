@@ -91,6 +91,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('reporting.exports.read','reporting','GET','/api/v1/reports/exports/{exportid}','3.0.0'),
   ('experience.applications.create','experience','POST','/api/v1/experiences/applications','3.0.0'),
   ('experience.applications.copy','experience','POST','/api/v1/experiences/applications/{applicationid}/copies','3.0.0'),
+  ('experience.applications.detail.read','experience','GET','/api/v1/experiences/applications/{applicationid}','3.0.0'),
   ('experience.applications.read','experience','GET','/api/v1/experiences/applications','3.0.0'),
   ('experience.applications.update','experience','PATCH','/api/v1/experiences/applications/{applicationid}','3.0.0'),
   ('experience.versions.save','experience','POST','/api/v1/experiences/applications/{applicationid}/versions','3.0.0'),
@@ -684,6 +685,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('reporting.exports.read','operation','reporting.exports.read',3,'active'),
   ('experience.applications.create','operation','experience.applications.create',3,'active'),
   ('experience.applications.copy','operation','experience.applications.copy',3,'active'),
+  ('experience.applications.detail.read','operation','experience.applications.detail.read',3,'active'),
   ('experience.applications.read','operation','experience.applications.read',3,'active'),
   ('experience.applications.update','operation','experience.applications.update',3,'active'),
   ('experience.versions.save','operation','experience.versions.save',3,'active'),
@@ -956,6 +958,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('reporting.exports.read','reporting.exports.read','reporting.export.read','console'),
   ('experience.applications.create','experience.applications.create','experience.application.manage','console'),
   ('experience.applications.copy','experience.applications.copy','experience.application.manage','console'),
+  ('experience.applications.detail.read','experience.applications.detail.read','experience.application.read','console'),
   ('experience.applications.read','experience.applications.read','experience.application.read','console'),
   ('experience.applications.update','experience.applications.update','experience.application.manage','console'),
   ('experience.versions.save','experience.versions.save','experience.version.manage','console'),
@@ -1161,23 +1164,27 @@ language sql stable security definer set search_path=identity,member,pg_temp as 
     and (session.assurance_level<3 or assurance.verified_at is not null)
 $function$;
 
-create or replace function experience.resolve_storefront_host(p_domain text)
-returns table(application text,mall text,pool text,release text,version text,tenant text)
-language sql stable security definer set search_path=experience,organization,pg_temp as $function$
-  select application.id,binding.mall_id,binding.pool_id,release.id,version.id,tenant.id
-  from experience.binding binding
-  join experience.application application on application.id=binding.application_id and application.status='active'
+create or replace function experience.resolve_storefront_entry(p_handle text)
+returns table(
+  application text,handle text,mall text,pool text,release text,version text,tenant text,
+  application_status text,validation_state text,publication_state text,content_hash text,configuration_hash text,object_key text
+)
+language sql stable security definer set search_path=experience,organization,pg_temp set row_security=off as $function$
+  select application.id,application.public_slug,application.mall_id,release.pool_id,release.id,version.id,tenant.id,
+    application.status,version.validation_state,publication.state,publication.content_hash,version.configuration_hash,publication.object_key
+  from experience.application application
   join lateral(select ancestor.id from organization.unitclosure closure
     join organization.organization ancestor on ancestor.id=closure.ancestor_id and ancestor.kind='tenant'
-    where closure.descendant_id=application.scope_id order by closure.depth limit 1) tenant on true
-  join lateral(select item.id,item.version_id from experience.release item where item.application_id=application.id
+    where closure.descendant_id=application.mall_id order by closure.depth limit 1) tenant on true
+  left join lateral(select item.id,item.version_id,item.pool_id from experience.release item where item.application_id=application.id
     and item.state='active' and item.effective_at<=clock_timestamp()
     order by item.effective_at desc,item.id desc limit 1) release on true
-  join experience.version version on version.id=release.version_id and version.validation_state='valid'
-  where lower(binding.domain)=lower(p_domain)
+  left join experience.version version on version.id=release.version_id
+  left join experience.publication publication on publication.release_id=release.id
+  where application.public_slug=p_handle
 $function$;
-revoke all on function experience.resolve_storefront_host(text) from public;
-grant execute on function experience.resolve_storefront_host(text) to shopapp,shopjob;
+revoke all on function experience.resolve_storefront_entry(text) from public,anon,authenticated,service_role;
+grant execute on function experience.resolve_storefront_entry(text) to shopapp,shopjob;
 
 create or replace function access.scope_object(p_scope_id text)
 returns jsonb language plpgsql stable security definer set search_path=organization,partner,member,pg_temp as $function$
@@ -1519,6 +1526,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','b6a6803d866fe082b61511eb434b3223e027162f805f47505745113624a96390');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','0fa65a88e13853d6db30740982d97f58ed37970de3f9c5d5f3e502ab87da38d7');
 
 commit;

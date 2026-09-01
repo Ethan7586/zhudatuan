@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = '495740a2f420b1b22812a01a751469557646102a333f7274923948910dce7714' as const;
+export const CONFIG_CHECKSUM = '4d985388bebd1eb90f54a81144d6bf1d97107182dd7c1e8b7a19743b058702a3' as const;
 
 export const CACHE_CATALOG = Object.freeze({
   "experience": {
@@ -7,6 +7,12 @@ export const CACHE_CATALOG = Object.freeze({
     "maximumSeconds": 86400,
     "staleSeconds": 30,
     "commandRevalidate": false
+  },
+  "storefrontentry": {
+    "key": "handle",
+    "maximumSeconds": 60,
+    "staleSeconds": 0,
+    "commandRevalidate": true
   },
   "catalog": {
     "key": "mall:listing:version",

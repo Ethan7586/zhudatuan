@@ -253,9 +253,9 @@ async function ensureLocalMallCatalog(database: Client): Promise<void> {
     on conflict(mall_id,pool_id) do update set status='active',effective_at=excluded.effective_at,expires_at=null`
   );
   await database.query(
-    `insert into experience.application(id,scope_id,code,public_slug,name,status,head_version_id,created_at,updated_at,version)
+    `insert into experience.application(id,mall_id,code,public_slug,name,status,head_version_id,created_at,updated_at,version)
     values($1,'mall-zhudatuan','ZHUDATUAN_LOCAL','zhudatuan-local','主打团福利商城','active',$2,clock_timestamp(),clock_timestamp(),1)
-    on conflict(id) do update set scope_id=excluded.scope_id,code=excluded.code,public_slug=excluded.public_slug,
+    on conflict(id) do update set mall_id=excluded.mall_id,code=excluded.code,public_slug=excluded.public_slug,
       name=excluded.name,status='active',head_version_id=excluded.head_version_id,updated_at=clock_timestamp()`,
     [application, version]
   );
@@ -266,17 +266,10 @@ async function ensureLocalMallCatalog(database: Client): Promise<void> {
       validation_state='valid',reason=excluded.reason`,
     [version, application, configuration, contentHash, LOCAL_OWNER.principal]
   );
-  await database.query(`delete from experience.binding where application_id=$1 and domain<>'127.0.0.1'`, [application]);
   await database.query(
-    `insert into experience.binding(application_id,domain,mall_id,pool_id)
-    values($1,'127.0.0.1','mall-zhudatuan','pool-local-zhudatuan')
-    on conflict(application_id,domain) do update set mall_id=excluded.mall_id,pool_id=excluded.pool_id`,
-    [application]
-  );
-  await database.query(
-    `insert into experience.release(id,application_id,version_id,state,effective_at,retired_at,published_by)
-    values('release:zhudatuan:local:v1',$1,$2,'active','1970-01-01T00:00:00Z',null,$3)
-    on conflict(id) do update set version_id=excluded.version_id,state='active',effective_at=excluded.effective_at,
+    `insert into experience.release(id,application_id,version_id,pool_id,state,effective_at,retired_at,published_by)
+    values('release:zhudatuan:local:v1',$1,$2,'pool-local-zhudatuan','active','1970-01-01T00:00:00Z',null,$3)
+    on conflict(id) do update set version_id=excluded.version_id,pool_id=excluded.pool_id,state='active',effective_at=excluded.effective_at,
       retired_at=null,published_by=excluded.published_by`,
     [application, version, LOCAL_OWNER.principal]
   );

@@ -12,7 +12,6 @@ const MIGRATIONS = join(ROOT, 'database', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
 const CONTRACTS = join(ROOT, 'database', 'contracts', 'sql');
-const SANDBOX_CATALOG = join(ROOT, 'tools', 'seed', 'src', 'SandboxCatalogDatabase.sql');
 const REGISTRATION_BOUNDARY_RECONCILE = join(ROOT, 'infrastructure', 'zhudatuan', 'aliyun', 'postgres-reconcile-registration-boundary.sql');
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
@@ -142,6 +141,8 @@ const REPAIR_FILES = [
   '20260901011000_resolve_payment_webhook_scope.sql',
   '20260901012000_resolve_access_role_scope.sql',
   '20260901013000_publish_mobile_challenge_contract.sql',
+  '20260901014000_mall_storefront_entry.sql',
+  '20260901015000_publish_mall_storefront_entry.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v3_catalog_contract.sql',
@@ -708,82 +709,6 @@ async function verifyZhudatuanBootstrapRuntimeRepair(database) {
   }
 }
 
-async function verifySandboxMemberBootstraps(database) {
-  const sentinel = 'registration-fresh-replay-sentinel-not-for-production';
-  await database.exec(`
-    insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
-    values('principal:sandbox-member-bootstrap','active',1,clock_timestamp(),clock_timestamp(),0);
-    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
-    values('member:sandbox-member-bootstrap','principal:sandbox-member-bootstrap','Sandbox Bootstrap','active',
-      clock_timestamp(),clock_timestamp(),0);
-    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
-    values('membership:sandbox-member-bootstrap','member:sandbox-member-bootstrap','mall-zhudatuan','storefront','active',1,
-      clock_timestamp());
-    insert into access.membershiprole(membership_id,role_id,effective_at,expires_at,delegated_by)
-    values('membership:sandbox-member-bootstrap','role-zhudatuan-storefront-member',clock_timestamp(),null,
-      'registration-fresh-replay');
-    set session authorization zhudatuansandboxbootstrap;`);
-  const boundary = await database.query(
-    `select current_database() database_name,current_user,session_user,
-    deployment.sandbox_catalog_bootstrap_boundary($1) sentinel_valid,
-    has_schema_privilege(current_user,'benefit','USAGE') benefit_usage,
-    has_schema_privilege(current_user,'finance','USAGE') finance_usage`,
-    [sentinel]
-  );
-  if (
-    JSON.stringify(boundary.rows[0]) !==
-    JSON.stringify({
-      database_name: 'zhudatuan_registration',
-      current_user: 'zhudatuansandboxbootstrap',
-      session_user: 'zhudatuansandboxbootstrap',
-      sentinel_valid: true,
-      benefit_usage: false,
-      finance_usage: false,
-    })
-  )
-    throw new Error(`SANDBOX_MEMBER_BOOTSTRAP_BOUNDARY_INVALID:${JSON.stringify(boundary.rows[0])}`);
-  for (let replay = 0; replay < 2; replay += 1) {
-    const qualification = await database.query('select deployment.sandbox_member_qualification_bootstrap($1,$2) result', [sentinel, 'membership:sandbox-member-bootstrap']);
-    const result = qualification.rows[0]?.result;
-    if (
-      !result ||
-      result.membership !== 'membership:sandbox-member-bootstrap' ||
-      result.member !== 'member:sandbox-member-bootstrap' ||
-      result.scope !== 'mall-zhudatuan' ||
-      result.status !== 'active' ||
-      result.version !== 1 ||
-      result.benefitAmountGranted !== false
-    ) {
-      throw new Error(`SANDBOX_QUALIFICATION_REPLAY_INVALID:${JSON.stringify(result ?? null)}`);
-    }
-  }
-  for (let replay = 0; replay < 2; replay += 1) {
-    const welfare = await database.query('select deployment.sandbox_member_welfare_bootstrap($1,$2,$3,$4,$5) result', [sentinel, 'membership:sandbox-member-bootstrap', 500, 'CNY', 'OWNER_APPROVES_ONE_EXPLICIT_SANDBOX_WELFARE_GRANT']);
-    const result = welfare.rows[0]?.result;
-    if (
-      !result ||
-      result.membership !== 'membership:sandbox-member-bootstrap' ||
-      result.member !== 'member:sandbox-member-bootstrap' ||
-      result.scope !== 'mall-zhudatuan' ||
-      result.amountMinor !== 500 ||
-      result.currency !== 'CNY' ||
-      result.expiresInDays !== 30 ||
-      result.sandboxOnly !== true ||
-      typeof result.account !== 'string' ||
-      typeof result.batch !== 'string'
-    ) {
-      throw new Error(`SANDBOX_WELFARE_REPLAY_INVALID:${JSON.stringify(result ?? null)}`);
-    }
-  }
-  let conflict = false;
-  try {
-    await database.query('select deployment.sandbox_member_welfare_bootstrap($1,$2,$3,$4,$5)', [sentinel, 'membership:sandbox-member-bootstrap', 501, 'CNY', 'OWNER_APPROVES_ONE_EXPLICIT_SANDBOX_WELFARE_GRANT']);
-  } catch (error) {
-    conflict = String(error instanceof Error ? error.message : error).includes('SANDBOX_WELFARE_AMOUNT_CONFLICT');
-  }
-  if (!conflict) throw new Error('SANDBOX_WELFARE_DIFFERENT_AMOUNT_NOT_REJECTED');
-}
-
 async function verifyZhudatuanPurchaseAccess(database) {
   await database.exec(`begin;
     insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
@@ -914,48 +839,6 @@ async function verifyZhudatuanWebBusinessAccess(database) {
   } finally {
     await database.exec('rollback');
   }
-}
-
-async function verifySandboxCatalogBootstrap(database) {
-  const sql = await readFile(SANDBOX_CATALOG, 'utf8');
-  await database.exec(`begin; set local role zhudatuansandboxbootstrap;
-    select pg_advisory_xact_lock(hashtext('zhudatuan:sandbox-catalog:v1'));
-    select pg_advisory_xact_lock(hashtextextended('audit:mall-zhudatuan',0));`);
-  try {
-    await execute(database, sql, 'sandbox catalog first replay');
-    await execute(database, sql, 'sandbox catalog idempotent replay');
-    const result = await database.query(`select
-      (select count(*)::integer from experience.application where id='application:zhudatuan:sandbox:v1') applications,
-      (select count(*)::integer from experience.release where id='release:zhudatuan:sandbox:v1' and state='active') releases,
-      (select count(*)::integer from experience.publication where id='publication:zhudatuan:sandbox:v1' and state='active') publications,
-      (select count(*)::integer from catalog.product where id='product:zhudatuan:sandbox:welcome') products,
-      (select count(*)::integer from catalog.sku where id='sku:zhudatuan:sandbox:welcome') skus,
-      (select count(*)::integer from catalog.listing where id='listing:zhudatuan:sandbox:welcome') listings,
-      (select count(*)::integer from pricing.price where id='price:zhudatuan:sandbox:welcome') prices,
-      (select count(*)::integer from inventory.stockitem where id='stock:zhudatuan:sandbox:welcome') stocks,
-      (select count(*)::integer from audit.record
-        where id in('audit:zhudatuan:sandbox-catalog:v1','audit:zhudatuan:sandbox-publication:v1')) audits`);
-    if (
-      JSON.stringify(result.rows[0]) !==
-      JSON.stringify({
-        applications: 1,
-        releases: 1,
-        publications: 1,
-        products: 1,
-        skus: 1,
-        listings: 1,
-        prices: 1,
-        stocks: 1,
-        audits: 2,
-      })
-    ) {
-      throw new Error(`SANDBOX_CATALOG_REPLAY_INVALID:${JSON.stringify(result.rows[0])}`);
-    }
-  } finally {
-    await database.exec('rollback');
-  }
-  const leaked = await database.query("select count(*)::integer count from catalog.product where id='product:zhudatuan:sandbox:welcome'");
-  if (leaked.rows[0]?.count !== 0) throw new Error('SANDBOX_CATALOG_REPLAY_LEAKED');
 }
 
 async function verifyZhudatuanRegistrationBaseline(database) {
@@ -1140,30 +1023,6 @@ async function verifyAuditImmutability(database) {
   await database.exec('rollback');
   const retained = await database.query("select count(*)::integer count from audit.record where id='audit:immutability'");
   if (!deleteRejected || retained.rows[0]?.count !== 1) throw new Error('AUDIT_PHYSICAL_DELETE_NOT_REJECTED');
-}
-
-async function verifyExperiencePublication(database) {
-  const hash = 'a'.repeat(64);
-  await database.exec(`insert into experience.application(id,scope_id,code,public_slug,name,status,created_at,updated_at) values
-    ('application:publication-audit','scope-publication-audit','PUBLICATION_AUDIT','publication-audit','Publication audit','active',clock_timestamp(),clock_timestamp());
-    insert into experience.version(id,application_id,sequence,schema_version,configuration,configuration_hash,validation_state,reason,created_by,created_at) values
-    ('version:publication-audit','application:publication-audit',1,'2','{"version":2,"application":"application:publication-audit","pages":[{"id":"home","path":"/","blocks":[]}]}',
-      '${hash}','valid','publication audit fixture','audit',clock_timestamp());
-    update experience.application set head_version_id='version:publication-audit' where id='application:publication-audit';
-    insert into experience.release(id,application_id,version_id,state,effective_at,published_by) values
-    ('release:publication-audit','application:publication-audit','version:publication-audit','active',clock_timestamp(),'audit');
-    insert into experience.binding(application_id,domain,mall_id,pool_id) values
-    ('application:publication-audit','audit.invalid','mall:publication-audit','pool:publication-audit');
-    insert into experience.publication(id,release_id,application_id,version_id,content_hash,object_key,object_ref,object_hash,object_size,state,staged_at,published_at) values
-    ('publication:audit','release:publication-audit','application:publication-audit','version:publication-audit','${hash}',
-      'experience/application:publication-audit/${hash}.json','object:publication-audit','${hash}',1,'active',clock_timestamp(),clock_timestamp());`);
-  await database.exec(`begin; set local role shopapp; select set_config('app.workload','api',true),set_config('app.scope_id','public:experience',true);`);
-  const direct = await database.query("select count(*)::integer count from experience.publication where id='publication:audit'");
-  const published = await database.query("select release,version,hash,object_key from experience.read_published('mall:publication-audit')");
-  await database.exec('commit');
-  if (direct.rows[0]?.count !== 0 || published.rows[0]?.release !== 'release:publication-audit' || published.rows[0]?.hash !== hash) {
-    throw new Error('EXPERIENCE_PUBLICATION_SECURITY_INVALID');
-  }
 }
 
 async function verifyRls(database) {

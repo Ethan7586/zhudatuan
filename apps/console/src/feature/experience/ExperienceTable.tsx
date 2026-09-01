@@ -2,47 +2,43 @@ import { useMemo } from 'react';
 import type { DataColumn } from '../../shared/ui/DataTable';
 import { DataTable } from '../../shared/ui/DataTable';
 import { formatDate } from '../../shared/ui/Format';
-import { applicationStatusLabel, applicationStatusTone, publicationLabel, validationLabel, validationTone } from './ExperiencePresentation';
+import { applicationStatusLabel, applicationStatusTone, entryLabel, entryTone, publicationLabel } from './ExperiencePresentation';
 import type { Experience } from './ExperienceSchema';
 import type { CommerceWorkspaceMode } from './ExperienceScope';
 
-export function ExperienceTable({
-  rows,
-  mode,
-  onOpen,
-  onCopy,
-  onManage,
-  onDesign,
-}: Readonly<{
-  rows: readonly Experience[];
-  mode: CommerceWorkspaceMode;
-  onOpen: (record: Experience) => void;
-  onCopy: (record: Experience) => void;
-  onManage: (record: Experience) => void;
-  onDesign: (record: Experience) => void;
-}>) {
-  const columns = useMemo(() => applicationColumns(mode, onOpen, onCopy, onManage, onDesign), [mode, onCopy, onDesign, onManage, onOpen]);
-  return <DataTable caption={tableCaption(mode)} columns={columns} rows={rows} rowKey={(row) => row.id} />;
+interface ExperienceTableProps {
+  readonly rows: readonly Experience[];
+  readonly mode: CommerceWorkspaceMode;
+  readonly onOpen: (record: Experience) => void;
+  readonly onEntry: (record: Experience, trigger: HTMLButtonElement) => void;
+  readonly onCopy: (record: Experience) => void;
+  readonly onManage: (record: Experience) => void;
+  readonly onDesign: (record: Experience) => void;
+}
+
+export function ExperienceTable({ rows, mode, onOpen, onEntry, onCopy, onManage, onDesign }: ExperienceTableProps) {
+  const columns = useMemo(() => applicationColumns(onOpen, onEntry, onCopy, onManage, onDesign), [onCopy, onDesign, onEntry, onManage, onOpen]);
+  return <DataTable caption={mode === 'design' ? '店铺装修应用' : mode === 'governance' ? '应用治理列表' : '集团商城列表'} columns={columns} rows={rows} rowKey={(row) => row.id} />;
 }
 
 function applicationColumns(
-  mode: CommerceWorkspaceMode,
-  onOpen: (record: Experience) => void,
-  onCopy: (record: Experience) => void,
-  onManage: (record: Experience) => void,
-  onDesign: (record: Experience) => void
+  onOpen: (row: Experience) => void,
+  onEntry: (row: Experience, trigger: HTMLButtonElement) => void,
+  onCopy: (row: Experience) => void,
+  onManage: (row: Experience) => void,
+  onDesign: (row: Experience) => void
 ): readonly DataColumn<Experience>[] {
   return Object.freeze([
     {
       key: 'identity',
-      label: mode === 'design' ? '当前店铺应用' : '商城 / 应用',
+      label: '商城 / 应用',
       render: (row) => (
         <div className="commerceidentity">
           <span className="commerceappmark" aria-hidden="true">
             店
           </span>
           <span>
-            <button type="button" onClick={() => onOpen(row)} aria-label={`查看${row.name}摘要`}>
+            <button type="button" onClick={() => onOpen(row)} aria-label={`查看${row.name}详情`}>
               {row.name}
             </button>
             <code>{row.code}</code>
@@ -51,35 +47,22 @@ function applicationColumns(
       ),
     },
     {
-      key: 'binding',
-      label: '商城 / 商品池',
+      key: 'entry',
+      label: '商城码',
       render: (row) => (
-        <div className="commercebinding">
-          <span>{row.mall_id ?? '未绑定商城'}</span>
-          <code>{row.pool_id ?? '未绑定商品池'}</code>
-        </div>
+        <button data-entry-trigger={`${row.id}:badge`} className={`commerceentrybadge is-${entryTone(row.entry.state)}`} type="button" onClick={(event) => onEntry(row, event.currentTarget)}>
+          <i aria-hidden="true" />
+          {entryLabel(row.entry.state)}
+        </button>
       ),
     },
     {
-      key: 'draft',
-      label: '装修草稿',
+      key: 'version',
+      label: '装修版本',
       render: (row) => (
         <div className="commerceversion">
-          <strong>{row.head_sequence === null || row.head_sequence === undefined ? '—' : `v${row.head_sequence}`}</strong>
-          <span className={`commercestate is-${validationTone(row.head_validation_state)}`}>
-            <i aria-hidden="true" />
-            {validationLabel(row.head_validation_state)}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: 'publication',
-      label: '发布 / 域名',
-      render: (row) => (
-        <div className="commercepublication">
-          <strong>{publicationLabel(row)}</strong>
-          <span>{row.domain ?? '域名未绑定'}</span>
+          <strong>{row.headSequence === null ? '无草稿' : `草稿 v${row.headSequence}`}</strong>
+          <span>{publicationLabel(row)}</span>
         </div>
       ),
     },
@@ -93,7 +76,7 @@ function applicationColumns(
         </span>
       ),
     },
-    { key: 'updated', label: '更新时间', render: (row) => <time>{formatDate(row.updated_at)}</time> },
+    { key: 'updated', label: '更新时间', render: (row) => <time>{formatDate(row.updatedAt)}</time> },
     {
       key: 'action',
       label: '操作',
@@ -102,23 +85,34 @@ function applicationColumns(
           <button className="commercerowaction" type="button" onClick={() => onOpen(row)}>
             查看
           </button>
-          <button className="commercerowaction" type="button" onClick={() => onManage(row)}>
-            管理
+          <button data-entry-trigger={`${row.id}:action`} className="commercerowaction is-entry" type="button" onClick={(event) => onEntry(row, event.currentTarget)}>
+            商城码
           </button>
-          <button className="commercerowaction" type="button" onClick={() => onCopy(row)}>
-            复制
-          </button>
-          <button className="commercerowaction" type="button" onClick={() => onDesign(row)}>
-            装修
-          </button>
+          <span className="commerceactionwide">
+            <button className="commercerowaction" type="button" onClick={() => onManage(row)}>
+              管理
+            </button>
+            <button className="commercerowaction" type="button" onClick={() => onCopy(row)}>
+              复制
+            </button>
+            <button className="commercerowaction" type="button" onClick={() => onDesign(row)}>
+              装修
+            </button>
+          </span>
+          <details className="commerceactionmore">
+            <summary>更多</summary>
+            <button type="button" onClick={() => onManage(row)}>
+              管理
+            </button>
+            <button type="button" onClick={() => onCopy(row)}>
+              复制
+            </button>
+            <button type="button" onClick={() => onDesign(row)}>
+              装修
+            </button>
+          </details>
         </span>
       ),
     },
   ]);
-}
-
-function tableCaption(mode: CommerceWorkspaceMode): string {
-  if (mode === 'governance') return '应用治理列表';
-  if (mode === 'design') return '店铺装修应用';
-  return '集团商城列表';
 }

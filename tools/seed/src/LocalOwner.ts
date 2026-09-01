@@ -58,6 +58,7 @@ export async function ensureLocalOwner(database: Client): Promise<void> {
       version=access.ownership.version+1,updated_at=clock_timestamp()`,
     [LOCAL_OWNER.tenant, LOCAL_OWNER.membership]
   );
+  await database.query('delete from access.scopegrant where membership_id=$1', [LOCAL_OWNER.membership]);
   await database.query(
     `insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
       ('scope:membership-platform-owner-ethan-v1:platform',$1,'platform','organization-platform-root','organization-platform-root','allow','1970-01-01T00:00:00Z',1),

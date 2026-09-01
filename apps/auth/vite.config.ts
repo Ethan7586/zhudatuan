@@ -1,14 +1,15 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
+import { networkHtml } from '@shop/config/networkhtml';
 import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig(({ command }) => {
   return {
-    // Relative assets let the exact same reviewed dist run at
-    // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
+    // Relative assets keep the reviewed Auth artifact independent of its mount path.
     base: command === 'build' ? './' : '/',
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), { name: 'network-html', transformIndexHtml: networkHtml }],
     build: { manifest: true },
     resolve: {
       alias: {
@@ -24,7 +25,7 @@ export default defineConfig(({ command }) => {
     },
     // Keep the explicit host allowlist; do not turn on allowHosts: true.
     preview: {
-      allowedHosts: ['zhudatuan.com', 'www.zhudatuan.com', 'accounts.zhudatuan.com', 'console.zhudatuan.com'],
+      allowedHosts: Object.values(NETWORK_CATALOG.origins).map((origin) => new URL(origin).hostname),
     },
   };
 });

@@ -538,6 +538,11 @@ capabilities:
     owner: experience
     permission: experience.application.manage
     audience: console
+  - code: experience.applications.detail.read
+    kind: operation
+    owner: experience
+    permission: experience.application.read
+    audience: console
   - code: experience.applications.read
     kind: operation
     owner: experience

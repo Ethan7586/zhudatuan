@@ -37,7 +37,7 @@ describe('IdentityClient', () => {
     expect(body).not.toHaveProperty('provider');
     expect(body).not.toHaveProperty('membership');
     expect(requests[1]?.headers.get('x-csrf-token')).toBe('c'.repeat(43));
-    expect(parsedBody(requests[2])).toMatchObject({ ticket: 't'.repeat(64), state: body.authorization.state });
+    expect(parsedBody(requests[2])).toMatchObject({ ticket: 't'.repeat(64), state: body.authorization.state, returnTarget: TARGET_PROOF });
   });
 
   it('submits an invitation only in the request body and continues enrollment by opaque preauth id', async () => {
@@ -117,6 +117,22 @@ describe('IdentityClient', () => {
     await expect(new IdentityClient().provider(provider, 'console')).resolves.toMatchObject({ kind: 'proofRequired', method: 'sso', target: 'console', reference: 'https://identity.example.com/authorize' });
     expect(requests[1]?.url).toContain('/api/v1/identity/federations');
     expect(parsedBody(requests[1])).toMatchObject({ providerid: provider, returntarget: TARGET_PROOF, authorization: { state: STRING_MATCHER, nonce: STRING_MATCHER, challenge: STRING_MATCHER } });
+  });
+
+  it('exchanges a deep storefront path for a signed target before password authentication', async () => {
+    const { fetcher, requests } = fetchSequence(
+      json({ items: [], csrf: 'c'.repeat(43), target: 'storefront', returnTarget: TARGET_PROOF }),
+      json({ kind: 'selection', transaction: 'selection-deep', memberships: [{ id: 'membership-one', target: 'storefront' }] })
+    );
+    vi.stubGlobal('fetch', fetcher);
+    const client = new IdentityClient();
+
+    const returns = { returnPath: '/s/mall-one/orders?state=paid' };
+    await client.providers(returns, 'storefront');
+    await expect(client.password('member', 'password', 'storefront', returns)).resolves.toMatchObject({ kind: 'selection' });
+
+    expect(requests[0]?.url).toContain('returnpath=%2Fs%2Fmall-one%2Forders%3Fstate%3Dpaid');
+    expect(parsedBody(requests[1])).toMatchObject({ returnTarget: TARGET_PROOF });
   });
 });
 

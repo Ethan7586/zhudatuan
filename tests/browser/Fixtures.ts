@@ -56,13 +56,13 @@ const storefrontAsOf = '2026-08-31T00:00:00.000Z';
 
 export const storefrontBootstrap = Object.freeze({
   state: 'complete',
-  host: '127.0.0.1',
+  entry: { handle: 'mall-e2e', url: 'http://127.0.0.1:3000/s/mall-e2e' },
   binding: {
     application: 'application:e2e',
     mall: 'mall:e2e',
     pool: 'pool:e2e',
     release: 'release:e2e',
-    version: 'binding:1',
+    version: 'version:e2e',
     tenant: 'enterprise:e2e',
   },
   identity: {

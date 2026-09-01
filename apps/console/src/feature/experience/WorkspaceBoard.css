@@ -56,7 +56,7 @@
   font-size: 12px;
 }
 .commercefilterbar span {
-  color: var(--sw-disabled);
+  color: var(--sw-text-secondary);
   font-size: 9px;
 }
 .commercesearch {
@@ -82,7 +82,7 @@
 .commercefiltermeta {
   margin: 0;
   padding: 0 14px 10px;
-  color: var(--sw-disabled);
+  color: var(--sw-text-secondary);
   font-size: 9px;
 }
 .commerceempty {

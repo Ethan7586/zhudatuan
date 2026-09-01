@@ -5059,6 +5059,58 @@ const definitions = [
     ]
   },
   {
+    "id": "experience.applications.detail.read",
+    "method": "GET",
+    "path": "/api/v1/experiences/applications/{applicationid}",
+    "module": "experience",
+    "audience": "console",
+    "targets": [
+      "console"
+    ],
+    "permission": "experience.application.read",
+    "capability": "experience.applications.detail.read",
+    "scopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "none",
+    "csrfPolicy": "none",
+    "responseMode": "json",
+    "cachePolicy": "none",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "none",
+    "requestSchema": "ExperienceApplicationDetailReadInput",
+    "responseSchema": "ExperienceApplicationDetailReadOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "INTERNAL_ERROR",
+      "RATE_LIMITED",
+      "RESOURCE_NOT_FOUND",
+      "SCOPE_DENIED",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "none",
+    "expectedVersion": "none",
+    "timeout": 500,
+    "rateClass": "read",
+    "risk": "low",
+    "resourceResolver": "experience.resource",
+    "resourceParameter": "applicationid",
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPAPPLICATION",
+      "MVPMALLDESIGN"
+    ]
+  },
+  {
     "id": "experience.applications.read",
     "method": "GET",
     "path": "/api/v1/experiences/applications",
@@ -15446,6 +15498,12 @@ const definitions = [
       "MEMBERSHIP_INACTIVE",
       "RATE_LIMITED",
       "SCOPE_DENIED",
+      "STOREFRONT_DISABLED",
+      "STOREFRONT_HANDLE_INVALID",
+      "STOREFRONT_MEMBERSHIP_MALL_MISMATCH",
+      "STOREFRONT_NOT_FOUND",
+      "STOREFRONT_NOT_PUBLISHED",
+      "STOREFRONT_PUBLICATION_UNAVAILABLE",
       "VALIDATION_FAILED"
     ],
     "idempotencyScope": "none",
@@ -15457,6 +15515,7 @@ const definitions = [
     "resourceParameter": null,
     "idempotent": true,
     "requirements": [
+      "MVPGROUPAPPLICATION",
       "MVPMALLDESIGN",
       "MVPMALLPOOL",
       "MVPMALLORDER"
@@ -15495,6 +15554,12 @@ const definitions = [
       "MEMBERSHIP_INACTIVE",
       "RATE_LIMITED",
       "SCOPE_DENIED",
+      "STOREFRONT_DISABLED",
+      "STOREFRONT_HANDLE_INVALID",
+      "STOREFRONT_MEMBERSHIP_MALL_MISMATCH",
+      "STOREFRONT_NOT_FOUND",
+      "STOREFRONT_NOT_PUBLISHED",
+      "STOREFRONT_PUBLICATION_UNAVAILABLE",
       "VALIDATION_FAILED"
     ],
     "idempotencyScope": "none",

@@ -50,7 +50,8 @@ export interface FederationRepository {
     browserhash: Buffer,
     devicehash: Buffer,
     assurance: number,
-    authorization: AuthTicketBinding
+    authorization: AuthTicketBinding,
+    returnTarget: string
   ): Promise<Readonly<{ token: string }>>;
   version(context: ReadTransactionContext, transaction: string): Promise<number>;
   complete(context: WriteTransactionContext, transaction: string, expected: number): Promise<void>;

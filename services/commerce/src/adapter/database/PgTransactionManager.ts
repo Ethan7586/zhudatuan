@@ -32,7 +32,7 @@ export class PgTransactionManager implements TransactionManager {
       return (work as (context: ReadTransactionContext) => Promise<T>)(joined.context);
     }
 
-    const attempts = mode === 'write' ? 4 : 1;
+    const attempts = mode === 'write' ? (options.workload === 'jobs' ? 8 : 4) : 1;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
       assertAvailable(options);
       const workload = options.workload === 'jobs' ? 'worker' : mode === 'write' ? 'command' : 'query';
@@ -107,7 +107,8 @@ function retryable(cause: unknown): boolean {
 }
 
 function retryDelay(attempt: number, random: () => number): number {
-  return Math.min(100, 7 * 2 ** (attempt - 1)) + Math.floor(random() * 7);
+  const base = Math.min(100, 7 * 2 ** (attempt - 1));
+  return base + Math.floor(random() * base);
 }
 
 function abortableDelay(milliseconds: number, signal: AbortSignal): Promise<void> {

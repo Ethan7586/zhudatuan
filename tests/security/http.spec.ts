@@ -80,7 +80,7 @@ test('allowlisted login uses bootstrap CSRF while one-time ticket exchange remai
     new Request('https://api.example/api/v1/identity/tickets/exchange', {
       method: 'POST',
       headers: { origin: 'https://store.example', cookie: '__Host-storefront-session=session', 'x-client-target': 'storefront', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
-      body: JSON.stringify({ ticket: 'ticket', state: 'state', nonce: 'nonce', verifier: 'verifier' }),
+      body: JSON.stringify({ ticket: 'ticket', state: 'state', nonce: 'nonce', verifier: 'verifier', returnTarget: 'signed-target' }),
     })
   );
   assert.equal(exchange.status, 200);

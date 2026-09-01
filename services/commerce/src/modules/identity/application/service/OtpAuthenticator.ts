@@ -17,6 +17,7 @@ import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { MembershipSelector } from '../service/MembershipSelector';
 import type { AssuranceRepository } from '../port/AssuranceRepository';
+import { returnDestination } from './ReturnDestination';
 
 export class OtpAuthenticator implements AuthenticationStrategy {
   readonly method = 'otp' as const;
@@ -35,6 +36,7 @@ export class OtpAuthenticator implements AuthenticationStrategy {
   async authenticate(request: OperationRequest, database: WriteTransactionContext, body: AuthenticationBody): Promise<AuthenticationReply> {
     if (body.method !== this.method) throw new Error('AUTHENTICATION_METHOD_MISMATCH');
     const target = targetOf(body.target);
+    const destination = returnDestination(this.returns, target, body.returnTarget);
     const subject = this.digest(identitySubjectVariants(textField(body, 'subject'))[0]!);
     const challenge = textField(body, 'challenge');
     const code = textField(body, 'code', 16);
@@ -46,7 +48,7 @@ export class OtpAuthenticator implements AuthenticationStrategy {
     await this.assurances.record(requireWriteTransaction(database), { principal: verified.principal_id, method: 'phone_otp', level: 2, evidenceHash: this.digest(challenge), expiresIn: '15minutes' });
     const authorization = AuthTransaction.start(body.authorization);
     if (memberships.length !== 1) {
-      const selection = await this.selector.begin(database, { principal: verified.principal_id, target, memberships, assurance: 2, authorization }, this.context(request));
+      const selection = await this.selector.begin(database, { principal: verified.principal_id, target, memberships, assurance: 2, authorization, returnTarget: destination.proof }, this.context(request));
       return { status: 200, headers: selection.headers, result: { kind: 'selection', transaction: selection.id, memberships } };
     }
     const membership = memberships[0]!;
@@ -62,7 +64,7 @@ export class OtpAuthenticator implements AuthenticationStrategy {
       trace,
     });
     const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, target, authorization);
-    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue(target).proof } };
+    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof } };
   }
   private digest(value: string): string {
     return createHmac('sha256', this.identityKey).update(value.trim().toLowerCase()).digest('hex');

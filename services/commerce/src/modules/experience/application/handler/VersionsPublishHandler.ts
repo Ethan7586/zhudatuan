@@ -32,7 +32,8 @@ export class VersionsPublishHandler implements OperationHandler<'experience.vers
       bindings: version.pool !== null,
       preview: version.validation === 'valid',
     });
-    const release = await this.releases.publish(context.transaction, { application: version.application, version: input.path.versionid, actor: access.actor.id, trace: context.traceId });
+    if (version.pool === null) throw new DomainError('EXPERIENCE_PUBLICATION_INVALID', { failed: ['bindings'] });
+    const release = await this.releases.publish(context.transaction, { application: version.application, version: input.path.versionid, pool: version.pool, actor: access.actor.id, trace: context.traceId });
     return { status: 202, body: release as unknown as OperationOutputFor<'experience.versions.publish'> };
   }
 }

@@ -9,7 +9,8 @@ const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
 const cache = parse(await readFile(resolve(root, 'config/cache.yml'), 'utf8'));
 const capacity = parse(await readFile(resolve(root, 'config/capacity.yml'), 'utf8'));
-validate(cache, capacity);
+const network = parse(await readFile(resolve(root, 'infrastructure/network/Edge.yml'), 'utf8'));
+validate(cache, capacity, network);
 
 const source =
   `// Generated from config/cache.yml and config/capacity.yml. Do not edit.\n` +
@@ -20,7 +21,19 @@ const source =
   `export const RUNTIME_LIMITS = Object.freeze(${JSON.stringify(capacity.runtime, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/config/src/RuntimeCatalog.ts'), source);
 
-function validate(cacheDocument, capacityDocument) {
+const origins = Object.freeze({
+  api: origin(network.routes.api.host),
+  auth: origin(network.routes.auth.host),
+  console: origin(network.routes.console.host),
+  storefront: origin(network.routes.storefront.host),
+});
+const networkSource =
+  `// Generated from infrastructure/network/Edge.yml. Do not edit.\n` +
+  `export const NETWORK_CHECKSUM = '${createHash('sha256').update(JSON.stringify(network)).digest('hex')}' as const;\n\n` +
+  `export const NETWORK_CATALOG = Object.freeze(${JSON.stringify({ origins, storefront: { entryPath: network.routes.storefront.entryPath, fallback: network.routes.storefront.fallback } }, null, 2)} as const);\n`;
+await emit(resolve(root, 'packages/config/src/NetworkCatalog.ts'), networkSource);
+
+function validate(cacheDocument, capacityDocument, networkDocument) {
   if (cacheDocument?.version !== 1 || cacheDocument.owner !== 'platform' || typeof cacheDocument.caches !== 'object') throw new Error('CACHE_CATALOG_INVALID');
   for (const [name, value] of Object.entries(cacheDocument.caches)) {
     if (
@@ -49,6 +62,17 @@ function validate(cacheDocument, capacityDocument) {
     typeof capacityDocument.runtime?.sql !== 'object'
   ) {
     throw new Error('CAPACITY_CATALOG_INVALID');
+  }
+  if (
+    networkDocument?.version !== 1 ||
+    networkDocument.owner !== 'platform' ||
+    !networkDocument.routes ||
+    !['api', 'auth', 'console', 'storefront'].every((name) => /^[a-z0-9.-]+$/.test(networkDocument.routes[name]?.host ?? '')) ||
+    networkDocument.routes.storefront.entryPath !== '/s' ||
+    networkDocument.routes.storefront.fallback !== 'index.html' ||
+    new Set(['api', 'auth', 'console', 'storefront'].map((name) => networkDocument.routes[name].host)).size !== 4
+  ) {
+    throw new Error('NETWORK_CATALOG_INVALID');
   }
   const otp = capacityDocument.runtime.authentication.otp;
   if (otp.validMinutes !== 10 || otp.resendSeconds !== 30) throw new Error('OTP_POLICY_INVALID');
@@ -91,6 +115,10 @@ function validate(cacheDocument, capacityDocument) {
   if (sql.defaultRows !== 50 || sql.maximumRows !== 200 || !Number.isSafeInteger(sql.maximumResponseBytes) || sql.maximumResponseBytes < 1 || !Number.isSafeInteger(sql.maximumPlanCost) || sql.maximumPlanCost < 1) {
     throw new Error('SQL_BUDGET_INVALID');
   }
+}
+
+function origin(host) {
+  return `https://${host}`;
 }
 
 async function emit(file, content) {

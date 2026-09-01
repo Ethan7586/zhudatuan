@@ -7,6 +7,6 @@ export interface SignedReturnTarget {
   readonly tenant?: string;
 }
 export interface ReturnTargetPort {
-  issue(target: AuthTarget, options?: Date | Readonly<{ now?: Date; tenant?: string }>): SignedReturnTarget;
+  issue(target: AuthTarget, options?: Date | Readonly<{ now?: Date; tenant?: string; path?: string }>): SignedReturnTarget;
   verify(proof: string, now?: Date): SignedReturnTarget;
 }

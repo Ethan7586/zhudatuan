@@ -1,10 +1,12 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
+import { parseStorefrontHandle } from '@shop/contract';
 import type { RequestContext, RequestScope } from './RequestContext';
 
 export type { RequestContext, RequestScope } from './RequestContext';
 
 export interface RequestContextOptions {
   readonly scope?: RequestScope;
+  readonly storefrontHandle?: string;
   readonly accessVersion?: number;
   readonly traceId?: string;
   readonly signal?: AbortSignal;
@@ -35,6 +37,7 @@ export function createRequestContext(clientVersion: string, options: RequestCont
     contractVersion: CONTRACT_VERSION,
     traceId,
     ...(options.scope === undefined ? {} : { scope: Object.freeze({ ...options.scope }) }),
+    ...(options.storefrontHandle === undefined ? {} : { storefrontHandle: parseStorefrontHandle(options.storefrontHandle) }),
     ...(options.accessVersion === undefined ? {} : { accessVersion: options.accessVersion }),
     ...(options.signal === undefined ? {} : { signal: options.signal }),
     ...(options.idempotencyKey === undefined ? {} : { idempotencyKey: required(options.idempotencyKey, 'SDK_IDEMPOTENCY_KEY_INVALID') }),

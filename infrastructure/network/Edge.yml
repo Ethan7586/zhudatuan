@@ -1,18 +1,21 @@
 version: 1
 owner: platform
 edge:
-  waf: cloudflare
-  cdn: cloudflare
-  apiOrigin: cloudflare-tunnel
-  staticOrigin: nginx
+  waf: aliyun
+  cdn: aliyun
+  apiOrigin: alb
+  staticOrigin: oss
 routes:
   api:
     host: api.fufu.wang
-    originHost: fufu.wang
     service: shop-api
     paths: [/api/v1, /health]
-  storefront: { host: fufu.wang, artifact: storefront }
-  auth: { host: accounts.fufu.wang, artifact: auth }
+  storefront:
+    host: fufu.wang
+    artifact: storefront
+    entryPath: /s
+    fallback: index.html
+  auth: { host: auth.fufu.wang, artifact: auth }
   console: { host: console.fufu.wang, artifact: console }
 headers:
   hsts: max-age=63072000; includeSubDomains

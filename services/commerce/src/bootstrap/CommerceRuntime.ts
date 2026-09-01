@@ -1,6 +1,6 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import { apiReturnTargets, WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
+import { apiReturnTargets, apiStorefrontOrigin, WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
 import { CSRF_PROTECTOR, CsrfProtector } from '../foundation/security/CsrfProtector';
 import { PgSessionResolver } from '../foundation/security/PgSessionResolver';
@@ -54,6 +54,8 @@ import { PublicActorFingerprint } from '../foundation/security/PublicActorFinger
 import { PUBLIC_ACTOR_FINGERPRINT } from '../foundation/security/PublicActorFingerprintToken';
 import { InvitationHasher } from '../modules/identity/infrastructure/security/InvitationHasher';
 import { PgTransactionManager } from '../adapter/database/PgTransactionManager';
+import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
+import { STOREFRONT_CONFIG } from '../modules/experience/application/port/StorefrontConfig';
 
 export interface CommerceRuntime {
   readonly pool: DatabasePool;
@@ -100,6 +102,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
         }
       : null;
   const returnTargets = workload === 'api' ? apiReturnTargets(environment as ApiEnvironment) : null;
+  const storefrontOrigin = workload === 'api' ? apiStorefrontOrigin(environment as ApiEnvironment) : null;
   const kms = environment.KMS_ENDPOINT ? new KmsClient(environment.KMS_ENDPOINT, required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING')) : null;
   const [applicationSource, paymentSource] = await Promise.all([
     resolveSecret(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING'), 'providerconfig'),
@@ -166,6 +169,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
         container.bind(NAVIGATION_CLOCK, new SystemClock());
       }
       if (returnTargets !== null) container.bind(RETURN_TARGETS, returnTargets);
+      if (storefrontOrigin !== null) container.bind(STOREFRONT_CONFIG, Object.freeze({ origin: storefrontOrigin, entryPath: NETWORK_CATALOG.storefront.entryPath }));
       if (security !== null && returnTargets !== null) container.bind(CSRF_PROTECTOR, new CsrfProtector(security.session, returnTargets));
       if (kms !== null) container.bind(KMS_CLIENT, kms);
       container.bind(PAYMENT_GATEWAY, payment);

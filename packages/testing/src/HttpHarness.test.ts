@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { contractErrorResponse, HttpHarness } from './HttpHarness';
 
 const request = {
-  url: 'https://smart.hbbtzn.com/api/health',
+  url: 'https://console.fufu.wang/api/health',
   method: 'GET',
   headers: { accept: 'application/json' },
 } as const;

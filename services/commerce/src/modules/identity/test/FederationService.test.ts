@@ -50,7 +50,7 @@ describe('FederationService callback', () => {
       clientid: 'client',
       secretref: 'identity/oidc/client',
       status: 'enabled',
-      redirecturi: `https://api.zhudatuan.com/api/v1/identity/federations/${PROVIDER}/callback`,
+      redirecturi: `https://api.fufu.wang/api/v1/identity/federations/${PROVIDER}/callback`,
       scopes: ['openid'],
       version: 1,
       createdat: '2026-08-30T00:00:00.000Z',
@@ -75,7 +75,7 @@ describe('FederationService callback', () => {
       nonces,
       kms as never,
       { issue: vi.fn() } as never,
-      { verify: vi.fn(() => ({ url: 'https://console.zhudatuan.com/security', proof: 'proof', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
+      { verify: vi.fn(() => ({ url: 'https://console.fufu.wang/security', proof: 'proof', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
       { directoryBindings: vi.fn() } as never,
       {} as never,
       new SessionCookieAdapter(),
@@ -84,7 +84,7 @@ describe('FederationService callback', () => {
 
     const response = await callback(service);
 
-    expect(response).toMatchObject({ status: 303, headers: { location: 'https://console.zhudatuan.com/security' } });
+    expect(response).toMatchObject({ status: 303, headers: { location: 'https://console.fufu.wang/security' } });
     expect(kms.encrypt).toHaveBeenCalledWith('pii', 'identity/federatedsubject', 'provider-subject', { principal: 'principal:one', provider: PROVIDER });
     expect(links.create).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ principal: 'principal:one', membership: 'membership:one', provider: PROVIDER, ciphertext: 'subject-envelope' }));
     expect(repository.complete).toHaveBeenCalledWith(expect.anything(), TRANSACTION, 3);
@@ -123,7 +123,7 @@ describe('FederationService callback', () => {
       clientid: 'client',
       secretref: 'identity/oidc/client',
       status: 'enabled',
-      redirecturi: `https://api.zhudatuan.com/api/v1/identity/federations/${PROVIDER}/callback`,
+      redirecturi: `https://api.fufu.wang/api/v1/identity/federations/${PROVIDER}/callback`,
       scopes: ['openid'],
       version: 1,
       createdat: '2026-08-30T00:00:00.000Z',
@@ -142,7 +142,7 @@ describe('FederationService callback', () => {
       {
         issue: vi.fn(async () => ({ session: 'session:one', membership: 'membership:one', target: 'console', expiresin: 3600, headers: { 'set-cookie': '__Host-console-session=opaque; Path=/; Secure; HttpOnly; SameSite=Strict' } })),
       } as never,
-      { issue: vi.fn(() => ({ url: 'https://console.zhudatuan.com', proof: 'proof', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
+      { verify: vi.fn(() => ({ url: 'https://console.fufu.wang', proof: 'signed-return-target', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
       { directoryBindings: vi.fn() } as never,
       {} as never,
       new SessionCookieAdapter(),
@@ -152,7 +152,7 @@ describe('FederationService callback', () => {
     const response = await callback(service);
 
     expect(response.status).toBe(303);
-    expect(response.headers?.location).toBe('https://console.zhudatuan.com');
+    expect(response.headers?.location).toBe('https://console.fufu.wang');
     expect(response.headers?.['set-cookie']).toContain('__Host-console-session=opaque');
     const location = new URL(response.headers!.location!);
     expect(location.search).toBe('');
@@ -201,7 +201,7 @@ describe('FederationService callback', () => {
       clientid: 'client',
       secretref: 'identity/oidc/client',
       status: 'enabled',
-      redirecturi: `https://api.zhudatuan.com/api/v1/identity/federations/${PROVIDER}/callback`,
+      redirecturi: `https://api.fufu.wang/api/v1/identity/federations/${PROVIDER}/callback`,
       scopes: ['openid'],
       version: 1,
       createdat: '2026-08-30T00:00:00.000Z',
@@ -232,6 +232,7 @@ describe('FederationService callback', () => {
     ]);
     expect(response.headers?.['set-cookie']).toContain('__Host-preauth=');
     expect(response.headers!.location).not.toContain('signed-secret-return-target');
+    expect(repository.preauthorize).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'principal:one', expect.anything(), expect.anything(), expect.anything(), 2, expect.anything(), 'signed-secret-return-target');
   });
 });
 

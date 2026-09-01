@@ -4,6 +4,12 @@ slo:
   catalogP95Ms: 150
   queryP95Ms: 300
   detailP95Ms: 500
+  applicationListP95Ms: 250
+  entryCacheHitP95Ms: 20
+  entryDatabaseP95Ms: 80
+  bootstrapP95Ms: 300
+  qrEncodeP95Ms: 30
+  qrBundleGzipKb: 100
   commandP95Ms: 800
   orderP95Ms: 1500
   webhookDurableAcceptP99Ms: 500
@@ -11,6 +17,16 @@ slo:
   availabilityPercent: 99.95
   rpoMinutes: 5
   rtoMinutes: 30
+alerts:
+  entryFailure:
+    windowSeconds: 300
+    maximumPercent: 1
+  entryInvalid:
+    windowSeconds: 60
+    maximumCount: 0
+  sessionMallMismatch:
+    windowSeconds: 300
+    maximumCount: 20
 redaction:
   deny:
     - authorization

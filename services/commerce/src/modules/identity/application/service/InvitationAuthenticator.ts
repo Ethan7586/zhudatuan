@@ -21,6 +21,7 @@ import type { ChallengePort } from '../port/ChallengePort';
 import type { InvitationFailure } from '../service/InvitationFailure';
 import type { InvitationLookup } from '../service/InvitationLookup';
 import type { Invitation } from '../../domain/model/Invitation';
+import { returnDestination } from './ReturnDestination';
 
 type InvitationAuthenticationBody = Extract<AuthenticationBody, Readonly<{ method: 'invitation' }>>;
 
@@ -109,6 +110,7 @@ export class InvitationAuthenticator {
   async commit(request: OperationRequest, database: WriteTransactionContext, body: AuthenticationBody, prepared: PreparedInvitationAuthentication): Promise<AuthenticationReply> {
     const invitationBody = requireInvitation(body);
     const { loaded } = prepared;
+    const destination = returnDestination(this.returns, loaded.target, invitationBody.returnTarget);
     const invitation = await this.lookup.lock(database, invitationBody.code, loaded.target);
     if (invitation.state.id !== loaded.invitation.state.id || invitation.state.version !== loaded.invitation.state.version) {
       throw new DomainError('INVITATION_INVALID');
@@ -188,7 +190,7 @@ export class InvitationAuthenticator {
     });
     await this.redeemer.consume(database, invitation, { session: session.session, assurance: 1, trace });
     const ticket = await this.tickets.issue(database, session.session, loaded.target, AuthTransaction.start(invitationBody.authorization));
-    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue(loaded.target).proof } };
+    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof } };
   }
 
   private code(challenge: string, code: string): string {

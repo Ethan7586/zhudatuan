@@ -3,7 +3,7 @@ import { LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN } from '@shop/config/client';
 
 const apiOrigin = LOCAL_API_ORIGIN;
 const authOrigin = LOCAL_AUTH_ORIGIN;
-const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
+const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_STOREFRONT_ORIGIN=http://127.0.0.1:3000 VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
 
 function webServer(workspace: string, port: number) {
   return {
@@ -35,6 +35,6 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-  webServer: [webServer('@shop/auth', 3002), webServer('@shop/console', 4173), webServer('@shop/storefront', 4177)],
+  webServer: [webServer('@shop/auth', 3002), webServer('@shop/console', 4173), webServer('@shop/storefront', 3000)],
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

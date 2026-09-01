@@ -2,7 +2,17 @@ version: 1
 owner: reliability
 source: config/telemetry.yml
 probes: [live, ready, startup, dependency]
-dashboards: [runtime, database, queue, provider, security]
+dashboards: [runtime, database, queue, provider, security, storefrontentry]
+metrics:
+  - experience.entry.resolve.duration
+  - experience.entry.resolve.failure
+  - experience.entry.state
+  - experience.publication.activate.duration
+  - storefront.bootstrap.duration
+  - storefront.bootstrap.failure
+  - console.entry.dialog.open
+  - console.entry.copy.failure
+  - console.entry.download.failure
 alerts:
   - readiness
   - errorbudget
@@ -26,3 +36,10 @@ alerts:
   - workloadavailability
   - zonecapacity
   - postgresfailover
+  - storefrontentryfailure
+  - storefrontentryinvalid
+  - storefrontentrycache
+  - publicationentryconsistency
+  - storefrontoriginmismatch
+  - mallqrsmoke
+  - storefrontsessionmismatch

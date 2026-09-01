@@ -21,7 +21,7 @@ function database(): SqlExecutor {
         return result([{ id: 'event:one', type: 'experience.published', version: 1, aggregate: target.application, scope: 'mall:one', payload: {}, occurredAt: target.effectiveAt }]);
       }
       if (sql.includes('superseded')) return result([{ superseded: false }]);
-      if (sql.includes('select mall_id')) return result([{ mall_id: 'mall:one' }]);
+      if (sql.includes('select mall_id')) return result([{ mall_id: 'mall:one', public_slug: 'mall-one' }]);
       if (sql.includes('update runtime.inbox')) return result([], 1);
       return result([]);
     }),
@@ -37,7 +37,7 @@ describe('PgExperiencePublicationRepository', () => {
     const sql = database();
     const repository = new PgExperiencePublicationRepository({ database: () => sql } as unknown as PgTransactionAccess);
 
-    await expect(repository.activate(context, 'event:one', target, 'experience/one.json', { reference: 'object:one', sha256: target.hash, size: 42 })).resolves.toEqual({ active: true, malls: ['mall:one'] });
+    await expect(repository.activate(context, 'event:one', target, 'experience/one.json', { reference: 'object:one', sha256: target.hash, size: 42 })).resolves.toEqual({ active: true, malls: ['mall:one'], handles: ['mall-one'] });
 
     const statements = vi.mocked(sql.query).mock.calls.map(([statement]) => statement);
     const retire = statements.findIndex((statement) => statement.includes("update experience.publication set state='retired'"));

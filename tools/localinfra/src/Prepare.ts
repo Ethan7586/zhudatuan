@@ -203,6 +203,7 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
     API_PORT: '3001',
     API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:4173,http://127.0.0.1:4173',
     AUTH_RETURN_TARGETS: JSON.stringify({ console: 'http://127.0.0.1:4173', storefront: 'http://127.0.0.1:3000' }),
+    PUBLIC_STOREFRONT_ORIGIN: 'http://127.0.0.1:3000',
     DATABASE_API_CONNECTION_REF: 'shop/local/database/api',
     DATABASE_JOB_CONNECTION_REF: 'shop/local/database/jobs',
     DATABASE_PROVIDER_CONNECTION_REF: 'shop/local/database/provider',
@@ -226,7 +227,6 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443',
     SECRET_STORE_BEARER_TOKEN: prepared.secretStoreBearerToken,
     PUBLIC_MEDIA_BASE_URL: 'https://127.0.0.1:8445',
-    PUBLIC_MALL_SLUG: 'local',
     JOB_WORKER_ID: 'local-worker-1',
     PROVIDER_WORKER_ID: 'local-provider-1',
     MIGRATION_APPROVAL,
@@ -244,7 +244,7 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
 }
 
 function viteEnvironment(port: number): string {
-  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
+  return lines({ VITE_API_BASE_URL: 'http://127.0.0.1:3001', VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002', VITE_STOREFRONT_ORIGIN: 'http://127.0.0.1:3000', VITE_CLIENT_VERSION: '0.0.0', PORT: String(port) });
 }
 
 function postgresUrl(user: string, password: string): string {

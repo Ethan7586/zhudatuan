@@ -10,8 +10,10 @@ import { ReferralGateway } from '../feature/referral/infrastructure/ReferralGate
 import { HomeGateway } from '../feature/home/infrastructure/HomeGateway';
 import { SessionProvider, type SessionState } from '../shared/runtime/SessionContext';
 import { storefrontAuthHref } from '../config/storefrontAuth';
+import type { StorefrontEntryPath } from '../route/EntryPath';
 
 export interface BootstrapView {
+  readonly entry: Readonly<{ handle: string; url: string }>;
   readonly binding: Readonly<{ mall: string }>;
   readonly identity: Readonly<{ version: string; data: Readonly<{ state: 'anonymous' | 'member'; membership: string | null; csrf?: string }> | null }>;
   readonly navigation: Readonly<{ data: readonly Readonly<{ id: string; title: string; icon: string; route: string; order: number }>[] | null }>;
@@ -30,20 +32,34 @@ export function visibleNavigation(view: BootstrapView | undefined): SessionState
   return Object.freeze((view?.navigation.data ?? []).filter(({ id }) => (NAVIGATION_IDS as readonly string[]).includes(id)));
 }
 
-export function useBootstrapQuery() {
+export function useBootstrapQuery(handle: string) {
   return useQuery({
-    queryKey: StorefrontQuery.bootstrap(),
+    queryKey: StorefrontQuery.bootstrap(handle),
     queryFn: ({ signal }) => HomeGateway.read(signal),
   });
 }
 
-export function SessionRuntime({ children }: { readonly children: ReactNode }) {
-  const bootstrap = useBootstrapQuery();
+export function shouldRefreshAfterRestore(event: Pick<PageTransitionEvent, 'persisted'>): boolean {
+  return event.persisted;
+}
+
+export function sessionFingerprint(session: StorefrontSession | null): string {
+  return session ? `${session.membership}:${session.accessVersion}` : 'guest';
+}
+
+export function isSessionScopeQuery(queryKey: readonly unknown[], scope: string): boolean {
+  return queryKey[0] === 'storefront' && queryKey[1] === scope;
+}
+
+export function SessionRuntime({ entry, children }: { readonly entry: StorefrontEntryPath; readonly children: ReactNode }) {
+  const bootstrap = useBootstrapQuery(entry.handle);
   const queryClient = useQueryClient();
   const toast = useToasts();
   const view = bootstrap.data as unknown as BootstrapView | undefined;
   const scope = view?.binding.mall ?? '';
   const session = useMemo(() => deriveStorefrontSession(view), [view]);
+  const fingerprint = sessionFingerprint(session);
+  const fingerprintRef = useRef(fingerprint);
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const referral = useRef(
@@ -57,6 +73,19 @@ export function SessionRuntime({ children }: { readonly children: ReactNode }) {
     if (!scope) return;
     void queryClient.cancelQueries({ predicate: (query) => query.queryKey[0] === 'storefront' && query.queryKey[1] !== scope && query.queryKey[1] !== 'bootstrap' });
   }, [queryClient, scope]);
+  useEffect(() => {
+    const refreshBootstrap = (event: PageTransitionEvent) => {
+      if (!shouldRefreshAfterRestore(event)) return;
+      void queryClient.invalidateQueries({ queryKey: StorefrontQuery.bootstrap(entry.handle), exact: true });
+    };
+    window.addEventListener('pageshow', refreshBootstrap);
+    return () => window.removeEventListener('pageshow', refreshBootstrap);
+  }, [entry.handle, queryClient]);
+  useEffect(() => {
+    if (!scope || fingerprintRef.current === fingerprint) return;
+    fingerprintRef.current = fingerprint;
+    void queryClient.invalidateQueries({ predicate: (query) => isSessionScopeQuery(query.queryKey, scope) });
+  }, [fingerprint, queryClient, scope]);
   useEffect(() => {
     if (!session) return;
     void referral.current.capture({ search: window.location.search, mallId: scope, memberId: session.membership });
@@ -73,13 +102,14 @@ export function SessionRuntime({ children }: { readonly children: ReactNode }) {
       status: bootstrap.isPending ? 'checking' : bootstrap.isError ? 'error' : session ? 'authenticated' : 'guest',
       session,
       scope,
+      entry: Object.freeze({ handle: view?.entry.handle ?? entry.handle, url: view?.entry.url ?? '' }),
       navigation: visibleNavigation(view),
       toasts: toast.toasts,
       showToast: toast.showToast,
       removeToast: toast.removeToast,
       logout,
     }),
-    [bootstrap.isError, bootstrap.isPending, logout, scope, session, toast.removeToast, toast.showToast, toast.toasts, view]
+    [bootstrap.isError, bootstrap.isPending, entry.basePath, entry.handle, logout, scope, session, toast.removeToast, toast.showToast, toast.toasts, view]
   );
   return <SessionProvider value={state}>{children}</SessionProvider>;
 }

@@ -9211,6 +9211,630 @@
         ],
         "type": "object"
       },
+      "ExperienceApplicationDetailReadInput": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "additionalProperties": false,
+            "properties": {
+              "applicationid": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "applicationid"
+            ],
+            "type": "object"
+          },
+          "query": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "ExperienceApplicationDetailReadOutput": {
+        "$defs": {
+          "__schema0": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              },
+              {
+                "items": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "type": "array"
+              },
+              {
+                "additionalProperties": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "propertyNames": {
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "entry": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "contentHash": {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "releaseId": {
+                    "type": "string"
+                  },
+                  "releaseVersion": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "ready",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "releaseId",
+                  "releaseVersion",
+                  "contentHash"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "unpublished",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "disabled",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "requestId": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "invalid",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "requestId"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "head": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "application_id": {
+                    "type": "string"
+                  },
+                  "configuration": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "application": {
+                        "type": "string"
+                      },
+                      "pages": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "blocks": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "action": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "target": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "link",
+                                          "product",
+                                          "category",
+                                          "collection",
+                                          "exchangeableproduct",
+                                          "micropage",
+                                          "marketingactivity"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "type",
+                                      "target"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "component": {
+                                    "enum": [
+                                      "hero",
+                                      "notice",
+                                      "shortcut",
+                                      "productcollection",
+                                      "richtext"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "content": {
+                                    "additionalProperties": {
+                                      "$ref": "#/$defs/__schema0"
+                                    },
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "component",
+                                  "content"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "path": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "path",
+                            "blocks"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "version": {
+                        "const": 2,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "version",
+                      "application",
+                      "pages"
+                    ],
+                    "type": "object"
+                  },
+                  "configuration_hash": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                    "type": "string"
+                  },
+                  "created_by": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "schema_version": {
+                    "const": "2",
+                    "type": "string"
+                  },
+                  "sequence": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "validation_state": {
+                    "enum": [
+                      "pending",
+                      "valid",
+                      "invalid"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "application_id",
+                  "sequence",
+                  "schema_version",
+                  "configuration",
+                  "configuration_hash",
+                  "validation_state",
+                  "reason",
+                  "created_by",
+                  "created_at"
+                ],
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "headSequence": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "createdAt": {
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "lifecycle": {
+                  "enum": [
+                    "published",
+                    "draft"
+                  ],
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "schemaVersion": {
+                  "const": "2",
+                  "type": "string"
+                },
+                "sequence": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "validationState": {
+                  "enum": [
+                    "pending",
+                    "valid",
+                    "invalid"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "sequence",
+                "schemaVersion",
+                "validationState",
+                "reason",
+                "createdAt",
+                "lifecycle"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "mallId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "publicSlug": {
+            "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+            "type": "string"
+          },
+          "published": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "application_id": {
+                    "type": "string"
+                  },
+                  "configuration": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "application": {
+                        "type": "string"
+                      },
+                      "pages": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "blocks": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "action": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "target": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "link",
+                                          "product",
+                                          "category",
+                                          "collection",
+                                          "exchangeableproduct",
+                                          "micropage",
+                                          "marketingactivity"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "type",
+                                      "target"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "component": {
+                                    "enum": [
+                                      "hero",
+                                      "notice",
+                                      "shortcut",
+                                      "productcollection",
+                                      "richtext"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "content": {
+                                    "additionalProperties": {
+                                      "$ref": "#/$defs/__schema0"
+                                    },
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "component",
+                                  "content"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "path": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "path",
+                            "blocks"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "version": {
+                        "const": 2,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "version",
+                      "application",
+                      "pages"
+                    ],
+                    "type": "object"
+                  },
+                  "configuration_hash": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                    "type": "string"
+                  },
+                  "created_by": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "schema_version": {
+                    "const": "2",
+                    "type": "string"
+                  },
+                  "sequence": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "validation_state": {
+                    "enum": [
+                      "pending",
+                      "valid",
+                      "invalid"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "application_id",
+                  "sequence",
+                  "schema_version",
+                  "configuration",
+                  "configuration_hash",
+                  "validation_state",
+                  "reason",
+                  "created_by",
+                  "created_at"
+                ],
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "publishedSequence": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active",
+              "disabled"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "mallId",
+          "code",
+          "publicSlug",
+          "name",
+          "status",
+          "version",
+          "headSequence",
+          "publishedSequence",
+          "entry",
+          "updatedAt",
+          "head",
+          "published",
+          "history"
+        ],
+        "type": "object"
+      },
       "ExperienceApplicationsCopyInput": {
         "additionalProperties": false,
         "properties": {
@@ -9264,14 +9888,125 @@
           "code": {
             "type": "string"
           },
-          "created_at": {
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-            "type": "string"
+          "entry": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "contentHash": {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "releaseId": {
+                    "type": "string"
+                  },
+                  "releaseVersion": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "ready",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "releaseId",
+                  "releaseVersion",
+                  "contentHash"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "unpublished",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "disabled",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "requestId": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "invalid",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "requestId"
+                ],
+                "type": "object"
+              }
+            ]
           },
-          "head_version_id": {
+          "headSequence": {
             "anyOf": [
               {
-                "type": "string"
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -9281,14 +10016,27 @@
           "id": {
             "type": "string"
           },
+          "mallId": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
-          "public_slug": {
+          "publicSlug": {
+            "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
             "type": "string"
           },
-          "scope_id": {
-            "type": "string"
+          "publishedSequence": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "status": {
             "enum": [
@@ -9298,7 +10046,7 @@
             ],
             "type": "string"
           },
-          "updated_at": {
+          "updatedAt": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
             "type": "string"
           },
@@ -9313,15 +10061,16 @@
         },
         "required": [
           "id",
-          "scope_id",
+          "mallId",
           "code",
-          "public_slug",
+          "publicSlug",
           "name",
           "status",
-          "head_version_id",
-          "created_at",
-          "updated_at",
           "version",
+          "headSequence",
+          "publishedSequence",
+          "entry",
+          "updatedAt",
           "versionId"
         ],
         "type": "object"
@@ -9361,14 +10110,125 @@
           "code": {
             "type": "string"
           },
-          "created_at": {
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-            "type": "string"
+          "entry": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "contentHash": {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "releaseId": {
+                    "type": "string"
+                  },
+                  "releaseVersion": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "ready",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "releaseId",
+                  "releaseVersion",
+                  "contentHash"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "unpublished",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "disabled",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "requestId": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "invalid",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "requestId"
+                ],
+                "type": "object"
+              }
+            ]
           },
-          "head_version_id": {
+          "headSequence": {
             "anyOf": [
               {
-                "type": "string"
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -9378,14 +10238,27 @@
           "id": {
             "type": "string"
           },
+          "mallId": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
-          "public_slug": {
+          "publicSlug": {
+            "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
             "type": "string"
           },
-          "scope_id": {
-            "type": "string"
+          "publishedSequence": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "status": {
             "enum": [
@@ -9395,7 +10268,7 @@
             ],
             "type": "string"
           },
-          "updated_at": {
+          "updatedAt": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
             "type": "string"
           },
@@ -9407,15 +10280,16 @@
         },
         "required": [
           "id",
-          "scope_id",
+          "mallId",
           "code",
-          "public_slug",
+          "publicSlug",
           "name",
           "status",
-          "head_version_id",
-          "created_at",
-          "updated_at",
-          "version"
+          "version",
+          "headSequence",
+          "publishedSequence",
+          "entry",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -9452,39 +10326,6 @@
         "type": "object"
       },
       "ExperienceApplicationsReadOutput": {
-        "$defs": {
-          "__schema0": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              },
-              {
-                "items": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "type": "array"
-              },
-              {
-                "additionalProperties": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "propertyNames": {
-                  "type": "string"
-                },
-                "type": "object"
-              }
-            ]
-          }
-        },
         "additionalProperties": false,
         "properties": {
           "count": {
@@ -9499,168 +10340,120 @@
                 "code": {
                   "type": "string"
                 },
-                "created_at": {
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-                  "type": "string"
-                },
-                "domain": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "head_configuration": {
-                  "anyOf": [
+                "entry": {
+                  "oneOf": [
                     {
                       "additionalProperties": false,
                       "properties": {
-                        "application": {
+                        "contentHash": {
+                          "pattern": "^[0-9a-f]{64}$",
                           "type": "string"
                         },
-                        "pages": {
-                          "items": {
-                            "additionalProperties": false,
-                            "properties": {
-                              "blocks": {
-                                "items": {
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "action": {
-                                      "additionalProperties": false,
-                                      "properties": {
-                                        "target": {
-                                          "type": "string"
-                                        },
-                                        "type": {
-                                          "enum": [
-                                            "link",
-                                            "product",
-                                            "category",
-                                            "collection",
-                                            "exchangeableproduct",
-                                            "micropage",
-                                            "marketingactivity"
-                                          ],
-                                          "type": "string"
-                                        }
-                                      },
-                                      "required": [
-                                        "type",
-                                        "target"
-                                      ],
-                                      "type": "object"
-                                    },
-                                    "component": {
-                                      "enum": [
-                                        "hero",
-                                        "notice",
-                                        "shortcut",
-                                        "productcollection",
-                                        "richtext"
-                                      ],
-                                      "type": "string"
-                                    },
-                                    "content": {
-                                      "additionalProperties": {
-                                        "$ref": "#/$defs/__schema0"
-                                      },
-                                      "propertyNames": {
-                                        "type": "string"
-                                      },
-                                      "type": "object"
-                                    },
-                                    "id": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": [
-                                    "id",
-                                    "component",
-                                    "content"
-                                  ],
-                                  "type": "object"
-                                },
-                                "type": "array"
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "path": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "path",
-                              "blocks"
-                            ],
-                            "type": "object"
-                          },
-                          "type": "array"
+                        "handle": {
+                          "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
                         },
-                        "version": {
-                          "const": 2,
-                          "type": "number"
+                        "releaseId": {
+                          "type": "string"
+                        },
+                        "releaseVersion": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "const": "ready",
+                          "type": "string"
+                        },
+                        "url": {
+                          "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
                         }
                       },
                       "required": [
-                        "version",
-                        "application",
-                        "pages"
+                        "handle",
+                        "url",
+                        "state",
+                        "releaseId",
+                        "releaseVersion",
+                        "contentHash"
                       ],
                       "type": "object"
                     },
                     {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "head_created_at": {
-                  "anyOf": [
-                    {
-                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-                      "type": "string"
+                      "additionalProperties": false,
+                      "properties": {
+                        "handle": {
+                          "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
+                        },
+                        "state": {
+                          "const": "unpublished",
+                          "type": "string"
+                        },
+                        "url": {
+                          "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "handle",
+                        "url",
+                        "state"
+                      ],
+                      "type": "object"
                     },
                     {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "head_id": {
-                  "anyOf": [
-                    {
-                      "type": "string"
+                      "additionalProperties": false,
+                      "properties": {
+                        "handle": {
+                          "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
+                        },
+                        "state": {
+                          "const": "disabled",
+                          "type": "string"
+                        },
+                        "url": {
+                          "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "handle",
+                        "url",
+                        "state"
+                      ],
+                      "type": "object"
                     },
                     {
-                      "type": "null"
+                      "additionalProperties": false,
+                      "properties": {
+                        "handle": {
+                          "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "const": "invalid",
+                          "type": "string"
+                        },
+                        "url": {
+                          "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "handle",
+                        "url",
+                        "state",
+                        "requestId"
+                      ],
+                      "type": "object"
                     }
                   ]
                 },
-                "head_reason": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "head_schema_version": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "head_sequence": {
+                "headSequence": {
                   "anyOf": [
                     {
                       "maximum": 9007199254740991,
@@ -9671,346 +10464,21 @@
                       "type": "null"
                     }
                   ]
-                },
-                "head_validation_state": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "history": {
-                  "items": {
-                    "additionalProperties": false,
-                    "properties": {
-                      "configuration": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "application": {
-                            "type": "string"
-                          },
-                          "pages": {
-                            "items": {
-                              "additionalProperties": false,
-                              "properties": {
-                                "blocks": {
-                                  "items": {
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "action": {
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "target": {
-                                            "type": "string"
-                                          },
-                                          "type": {
-                                            "enum": [
-                                              "link",
-                                              "product",
-                                              "category",
-                                              "collection",
-                                              "exchangeableproduct",
-                                              "micropage",
-                                              "marketingactivity"
-                                            ],
-                                            "type": "string"
-                                          }
-                                        },
-                                        "required": [
-                                          "type",
-                                          "target"
-                                        ],
-                                        "type": "object"
-                                      },
-                                      "component": {
-                                        "enum": [
-                                          "hero",
-                                          "notice",
-                                          "shortcut",
-                                          "productcollection",
-                                          "richtext"
-                                        ],
-                                        "type": "string"
-                                      },
-                                      "content": {
-                                        "additionalProperties": {
-                                          "$ref": "#/$defs/__schema0"
-                                        },
-                                        "propertyNames": {
-                                          "type": "string"
-                                        },
-                                        "type": "object"
-                                      },
-                                      "id": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "required": [
-                                      "id",
-                                      "component",
-                                      "content"
-                                    ],
-                                    "type": "object"
-                                  },
-                                  "type": "array"
-                                },
-                                "id": {
-                                  "type": "string"
-                                },
-                                "path": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": [
-                                "id",
-                                "path",
-                                "blocks"
-                              ],
-                              "type": "object"
-                            },
-                            "type": "array"
-                          },
-                          "version": {
-                            "const": 2,
-                            "type": "number"
-                          }
-                        },
-                        "required": [
-                          "version",
-                          "application",
-                          "pages"
-                        ],
-                        "type": "object"
-                      },
-                      "createdAt": {
-                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-                        "type": "string"
-                      },
-                      "id": {
-                        "type": "string"
-                      },
-                      "lifecycle": {
-                        "enum": [
-                          "published",
-                          "draft"
-                        ],
-                        "type": "string"
-                      },
-                      "reason": {
-                        "type": "string"
-                      },
-                      "schemaVersion": {
-                        "const": "2",
-                        "type": "string"
-                      },
-                      "sequence": {
-                        "maximum": 9007199254740991,
-                        "minimum": 0,
-                        "type": "integer"
-                      },
-                      "validationState": {
-                        "enum": [
-                          "pending",
-                          "valid",
-                          "invalid"
-                        ],
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "sequence",
-                      "schemaVersion",
-                      "configuration",
-                      "validationState",
-                      "reason",
-                      "createdAt",
-                      "lifecycle"
-                    ],
-                    "type": "object"
-                  },
-                  "type": "array"
                 },
                 "id": {
                   "type": "string"
                 },
-                "mall_id": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
+                "mallId": {
+                  "type": "string"
                 },
                 "name": {
                   "type": "string"
                 },
-                "pool_id": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "public_slug": {
+                "publicSlug": {
+                  "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
                   "type": "string"
                 },
-                "published_configuration": {
-                  "anyOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "application": {
-                          "type": "string"
-                        },
-                        "pages": {
-                          "items": {
-                            "additionalProperties": false,
-                            "properties": {
-                              "blocks": {
-                                "items": {
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "action": {
-                                      "additionalProperties": false,
-                                      "properties": {
-                                        "target": {
-                                          "type": "string"
-                                        },
-                                        "type": {
-                                          "enum": [
-                                            "link",
-                                            "product",
-                                            "category",
-                                            "collection",
-                                            "exchangeableproduct",
-                                            "micropage",
-                                            "marketingactivity"
-                                          ],
-                                          "type": "string"
-                                        }
-                                      },
-                                      "required": [
-                                        "type",
-                                        "target"
-                                      ],
-                                      "type": "object"
-                                    },
-                                    "component": {
-                                      "enum": [
-                                        "hero",
-                                        "notice",
-                                        "shortcut",
-                                        "productcollection",
-                                        "richtext"
-                                      ],
-                                      "type": "string"
-                                    },
-                                    "content": {
-                                      "additionalProperties": {
-                                        "$ref": "#/$defs/__schema0"
-                                      },
-                                      "propertyNames": {
-                                        "type": "string"
-                                      },
-                                      "type": "object"
-                                    },
-                                    "id": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": [
-                                    "id",
-                                    "component",
-                                    "content"
-                                  ],
-                                  "type": "object"
-                                },
-                                "type": "array"
-                              },
-                              "id": {
-                                "type": "string"
-                              },
-                              "path": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "path",
-                              "blocks"
-                            ],
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "version": {
-                          "const": 2,
-                          "type": "number"
-                        }
-                      },
-                      "required": [
-                        "version",
-                        "application",
-                        "pages"
-                      ],
-                      "type": "object"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "published_created_at": {
-                  "anyOf": [
-                    {
-                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "published_id": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "published_reason": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "published_schema_version": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "published_sequence": {
+                "publishedSequence": {
                   "anyOf": [
                     {
                       "maximum": 9007199254740991,
@@ -10021,19 +10489,6 @@
                       "type": "null"
                     }
                   ]
-                },
-                "published_validation_state": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "scope_id": {
-                  "type": "string"
                 },
                 "status": {
                   "enum": [
@@ -10043,7 +10498,7 @@
                   ],
                   "type": "string"
                 },
-                "updated_at": {
+                "updatedAt": {
                   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
                   "type": "string"
                 },
@@ -10055,32 +10510,16 @@
               },
               "required": [
                 "id",
-                "scope_id",
+                "mallId",
                 "code",
-                "public_slug",
+                "publicSlug",
                 "name",
                 "status",
                 "version",
-                "created_at",
-                "updated_at",
-                "head_id",
-                "head_sequence",
-                "head_schema_version",
-                "head_configuration",
-                "head_validation_state",
-                "head_reason",
-                "head_created_at",
-                "published_id",
-                "published_sequence",
-                "published_schema_version",
-                "published_configuration",
-                "published_validation_state",
-                "published_reason",
-                "published_created_at",
-                "domain",
-                "mall_id",
-                "pool_id",
-                "history"
+                "headSequence",
+                "publishedSequence",
+                "entry",
+                "updatedAt"
               ],
               "type": "object"
             },
@@ -10142,14 +10581,125 @@
           "code": {
             "type": "string"
           },
-          "created_at": {
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-            "type": "string"
+          "entry": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "contentHash": {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "releaseId": {
+                    "type": "string"
+                  },
+                  "releaseVersion": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "ready",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "releaseId",
+                  "releaseVersion",
+                  "contentHash"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "unpublished",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "disabled",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "handle": {
+                    "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  },
+                  "requestId": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "const": "invalid",
+                    "type": "string"
+                  },
+                  "url": {
+                    "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "url",
+                  "state",
+                  "requestId"
+                ],
+                "type": "object"
+              }
+            ]
           },
-          "head_version_id": {
+          "headSequence": {
             "anyOf": [
               {
-                "type": "string"
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
               },
               {
                 "type": "null"
@@ -10159,14 +10709,27 @@
           "id": {
             "type": "string"
           },
+          "mallId": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
-          "public_slug": {
+          "publicSlug": {
+            "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
             "type": "string"
           },
-          "scope_id": {
-            "type": "string"
+          "publishedSequence": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "status": {
             "enum": [
@@ -10176,7 +10739,7 @@
             ],
             "type": "string"
           },
-          "updated_at": {
+          "updatedAt": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
             "type": "string"
           },
@@ -10188,15 +10751,16 @@
         },
         "required": [
           "id",
-          "scope_id",
+          "mallId",
           "code",
-          "public_slug",
+          "publicSlug",
           "name",
           "status",
-          "head_version_id",
-          "created_at",
-          "updated_at",
-          "version"
+          "version",
+          "headSequence",
+          "publishedSequence",
+          "entry",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -10241,6 +10805,9 @@
           "id": {
             "type": "string"
           },
+          "pool_id": {
+            "type": "string"
+          },
           "published_by": {
             "type": "string"
           },
@@ -10272,6 +10839,7 @@
           "id",
           "application_id",
           "version_id",
+          "pool_id",
           "state",
           "effective_at",
           "retired_at",
@@ -19232,6 +19800,9 @@
           "query": {
             "additionalProperties": false,
             "properties": {
+              "returnpath": {
+                "type": "string"
+              },
               "returntarget": {
                 "type": "string"
               }
@@ -19662,11 +20233,15 @@
               },
               "proof": {
                 "type": "string"
+              },
+              "returnTarget": {
+                "type": "string"
               }
             },
             "required": [
               "code",
               "proof",
+              "returnTarget",
               "authorization"
             ],
             "type": "object"
@@ -19752,6 +20327,7 @@
                   "subject",
                   "password",
                   "target",
+                  "returnTarget",
                   "authorization"
                 ],
                 "type": "object"
@@ -19809,6 +20385,7 @@
                   "challenge",
                   "code",
                   "target",
+                  "returnTarget",
                   "authorization"
                 ],
                 "type": "object"
@@ -19858,6 +20435,7 @@
                   "method",
                   "code",
                   "target",
+                  "returnTarget",
                   "authorization"
                 ],
                 "type": "object"
@@ -19907,6 +20485,7 @@
                   "method",
                   "provider",
                   "target",
+                  "returnTarget",
                   "authorization"
                 ],
                 "type": "object"
@@ -20359,6 +20938,9 @@
               "nonce": {
                 "type": "string"
               },
+              "returnTarget": {
+                "type": "string"
+              },
               "state": {
                 "type": "string"
               },
@@ -20373,7 +20955,8 @@
               "ticket",
               "state",
               "nonce",
-              "verifier"
+              "verifier",
+              "returnTarget"
             ],
             "type": "object"
           }
@@ -33545,6 +34128,24 @@
             ],
             "type": "object"
           },
+          "entry": {
+            "additionalProperties": false,
+            "properties": {
+              "handle": {
+                "pattern": "^[a-z0-9][a-z0-9-]{2,47}$",
+                "type": "string"
+              },
+              "url": {
+                "pattern": "^(?:https:\\/\\/[^/?#]+|http:\\/\\/127\\.0\\.0\\.1(?::\\d+)?)\\/s\\/[a-z0-9][a-z0-9-]{2,47}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "handle",
+              "url"
+            ],
+            "type": "object"
+          },
           "experience": {
             "additionalProperties": false,
             "properties": {
@@ -33587,9 +34188,6 @@
               "data"
             ],
             "type": "object"
-          },
-          "host": {
-            "type": "string"
           },
           "identity": {
             "additionalProperties": false,
@@ -33816,7 +34414,7 @@
         },
         "required": [
           "state",
-          "host",
+          "entry",
           "binding",
           "identity",
           "navigation",
@@ -49562,6 +50160,143 @@
       }
     },
     "/api/v1/experiences/applications/{applicationid}": {
+      "get": {
+        "operationId": "experience.applications.detail.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "applicationid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceApplicationDetailReadOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "tags": [
+          "experience"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "console",
+        "x-cache-policy": "none",
+        "x-capability": "experience.applications.detail.read",
+        "x-csrf-policy": "none",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "INTERNAL_ERROR",
+          "RATE_LIMITED",
+          "RESOURCE_NOT_FOUND",
+          "SCOPE_DENIED",
+          "VALIDATION_FAILED"
+        ],
+        "x-expected-version": "none",
+        "x-idempotency-policy": "none",
+        "x-idempotency-scope": "none",
+        "x-maker-checker": false,
+        "x-origin-policy": "none",
+        "x-permission": "experience.application.read",
+        "x-rate-class": "read",
+        "x-requirements": [
+          "MVPGROUPAPPLICATION",
+          "MVPMALLDESIGN"
+        ],
+        "x-resource-parameter": "applicationid",
+        "x-resource-resolver": "experience.resource",
+        "x-response-mode": "json",
+        "x-risk": "low",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department"
+        ],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console"
+        ],
+        "x-timeout-ms": 500
+      },
       "patch": {
         "operationId": "experience.applications.update",
         "parameters": [
@@ -60178,6 +60913,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "returnpath",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -61138,6 +61881,7 @@
                       "subject",
                       "password",
                       "target",
+                      "returnTarget",
                       "authorization"
                     ],
                     "type": "object"
@@ -61195,6 +61939,7 @@
                       "challenge",
                       "code",
                       "target",
+                      "returnTarget",
                       "authorization"
                     ],
                     "type": "object"
@@ -61244,6 +61989,7 @@
                       "method",
                       "code",
                       "target",
+                      "returnTarget",
                       "authorization"
                     ],
                     "type": "object"
@@ -61293,6 +62039,7 @@
                       "method",
                       "provider",
                       "target",
+                      "returnTarget",
                       "authorization"
                     ],
                     "type": "object"
@@ -61647,11 +62394,15 @@
                   },
                   "proof": {
                     "type": "string"
+                  },
+                  "returnTarget": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "code",
                   "proof",
+                  "returnTarget",
                   "authorization"
                 ],
                 "type": "object"
@@ -62176,6 +62927,9 @@
                   "nonce": {
                     "type": "string"
                   },
+                  "returnTarget": {
+                    "type": "string"
+                  },
                   "state": {
                     "type": "string"
                   },
@@ -62190,7 +62944,8 @@
                   "ticket",
                   "state",
                   "nonce",
-                  "verifier"
+                  "verifier",
+                  "returnTarget"
                 ],
                 "type": "object"
               }
@@ -76850,6 +77605,26 @@
             },
             "description": "Typed operation error"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -76861,6 +77636,16 @@
             "description": "Typed operation error"
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "503": {
             "content": {
               "application/json": {
                 "schema": {
@@ -76892,6 +77677,12 @@
           "MEMBERSHIP_INACTIVE",
           "RATE_LIMITED",
           "SCOPE_DENIED",
+          "STOREFRONT_DISABLED",
+          "STOREFRONT_HANDLE_INVALID",
+          "STOREFRONT_MEMBERSHIP_MALL_MISMATCH",
+          "STOREFRONT_NOT_FOUND",
+          "STOREFRONT_NOT_PUBLISHED",
+          "STOREFRONT_PUBLICATION_UNAVAILABLE",
           "VALIDATION_FAILED"
         ],
         "x-expected-version": "none",
@@ -76902,6 +77693,7 @@
         "x-permission": null,
         "x-rate-class": "read",
         "x-requirements": [
+          "MVPGROUPAPPLICATION",
           "MVPMALLDESIGN",
           "MVPMALLPOOL",
           "MVPMALLORDER"
@@ -77061,6 +77853,26 @@
             },
             "description": "Typed operation error"
           },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -77072,6 +77884,16 @@
             "description": "Typed operation error"
           },
           "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "503": {
             "content": {
               "application/json": {
                 "schema": {
@@ -77103,6 +77925,12 @@
           "MEMBERSHIP_INACTIVE",
           "RATE_LIMITED",
           "SCOPE_DENIED",
+          "STOREFRONT_DISABLED",
+          "STOREFRONT_HANDLE_INVALID",
+          "STOREFRONT_MEMBERSHIP_MALL_MISMATCH",
+          "STOREFRONT_NOT_FOUND",
+          "STOREFRONT_NOT_PUBLISHED",
+          "STOREFRONT_PUBLICATION_UNAVAILABLE",
           "VALIDATION_FAILED"
         ],
         "x-expected-version": "none",

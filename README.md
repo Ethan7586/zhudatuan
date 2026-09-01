@@ -51,11 +51,11 @@ npm run check:bundles
 
 `npm run quality` 是完整顺序门禁。发布只能消费三端不可变制品、Commerce OCI、SBOM、Provenance、完整事实 Hash、Migration Head、签名 Stage Evidence 和数据库快照。
 
-## 正式域名
+## 环境网络入口
 
-- `zhudatuan.com`：Storefront。
-- `accounts.zhudatuan.com`：Auth。
-- `console.zhudatuan.com`：Console。
-- `api.zhudatuan.com`：Commerce API。
+- 本地 Storefront 使用 `http://127.0.0.1:3000`，Auth、Console 和 Commerce API 分别使用本地清单声明的独立 Origin。
+- 当前生产 Storefront 使用 `https://fufu.wang`，Auth、Console 和 Commerce API 使用同一生产网络清单声明的独立 Origin。
+
+生产 Origin 由 `infrastructure/network/Edge.yml` 唯一生成；本地 Origin 由 `tools/localinfra` 唯一生成到各工作负载环境，业务模块不写死域名，也不接受未列入当前环境清单的 Origin。
 
 详细架构、发布和恢复契约见 `docs/architecture` 与 `docs/operations`。

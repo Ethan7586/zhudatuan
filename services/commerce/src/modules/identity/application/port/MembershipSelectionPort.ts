@@ -13,6 +13,7 @@ export interface MembershipSelectionValue {
   readonly memberships: readonly MembershipCandidate[];
   readonly expiresAt: Date;
   readonly transaction: string | null;
+  readonly returnTarget: string;
   readonly authorization: AuthTicketBinding;
   readonly assurance: number;
 }

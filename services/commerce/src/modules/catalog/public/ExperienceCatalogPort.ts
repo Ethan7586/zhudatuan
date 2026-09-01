@@ -1,4 +1,4 @@
-import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface ExperienceCatalogReferences {
@@ -7,6 +7,7 @@ export interface ExperienceCatalogReferences {
   readonly collections: readonly string[];
 }
 export interface ExperienceCatalogPort {
+  provisionPool(context: WriteTransactionContext, input: Readonly<{ mall: string; name: string; source?: string }>): Promise<string>;
   activeBinding(
     context: ReadTransactionContext,
     malls: readonly string[]

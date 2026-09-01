@@ -14,3 +14,4 @@ export const CHANNEL_ORGANIZATION_PORT = publicPort<ChannelOrganizationPort>('or
 export { NAVIGATION_ORGANIZATION_PORT, type NavigationOrganizationPort, type NavigationScope } from './NavigationOrganizationPort';
 export { ORGANIZATION_READ_PORT, type OrganizationReadPort, type OrganizationScopeSnapshot } from './OrganizationReadPort';
 export { ORGANIZATION_HIERARCHY_PORT, type OrganizationHierarchyPort, type OrganizationNode } from './HierarchyPort';
+export { EXPERIENCE_ORGANIZATION_PORT, type ExperienceOrganizationPort } from './ExperienceOrganizationPort';

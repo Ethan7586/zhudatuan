@@ -18,6 +18,7 @@ import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { MembershipSelector } from '../service/MembershipSelector';
 import type { CredentialRepository } from '../port/CredentialRepository';
+import { returnDestination } from './ReturnDestination';
 
 export class PasswordAuthenticator implements AuthenticationStrategy {
   readonly method = 'password' as const;
@@ -36,6 +37,7 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
   async authenticate(request: OperationRequest, database: WriteTransactionContext, body: AuthenticationBody): Promise<AuthenticationReply> {
     if (body.method !== this.method) throw new Error('AUTHENTICATION_METHOD_MISMATCH');
     const target = targetOf(body.target);
+    const destination = returnDestination(this.returns, target, body.returnTarget);
     const subjects = identitySubjectVariants(textField(body, 'subject'));
     const hashes = subjects.map((value) => this.digest(value));
     const subject = hashes[0]!;
@@ -55,7 +57,7 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
     const authorization = AuthTransaction.start(body.authorization);
     await this.guard.clear(requireWriteTransaction(database), hashes, client);
     if (memberships.length !== 1) {
-      const selection = await this.selector.begin(database, { principal: credential!.principal, target, memberships, assurance: 1, authorization }, this.context(request));
+      const selection = await this.selector.begin(database, { principal: credential!.principal, target, memberships, assurance: 1, authorization, returnTarget: destination.proof }, this.context(request));
       return { status: 200, headers: selection.headers, result: { kind: 'selection', transaction: selection.id, memberships } };
     }
     const membership = memberships[0]!;
@@ -71,8 +73,7 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
       trace,
     });
     const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, target, authorization);
-    const returnTarget = this.returns.issue(target);
-    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: returnTarget.proof } };
+    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof } };
   }
   private digest(value: string): string {
     return createHmac('sha256', this.key).update(value.trim().toLowerCase()).digest('hex');

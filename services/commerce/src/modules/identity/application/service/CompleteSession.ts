@@ -16,6 +16,7 @@ import type { InvitationRedeemer } from '../service/InvitationRedeemer';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { AssuranceRepository } from '../port/AssuranceRepository';
 import type { InvitationFailure } from '../service/InvitationFailure';
+import { returnDestination } from './ReturnDestination';
 
 export interface SessionCompletionScope {
   readonly invitation: string;
@@ -51,6 +52,7 @@ export class CompleteSession {
   private async complete(request: Parameters<OperationLifecycle['execute']>[0], database: WriteTransactionContext, prepared: SessionCompletionScope) {
     const preauth = requirePreauth(request.security, 'invitationproof');
     const body = bodyRecord(request.input);
+    const destination = returnDestination(this.returns, preauth.target, body.returnTarget);
     const invitation = await this.repository.lockClaimed(requireWriteTransaction(database), preauth.reference, preauth.target);
     const claim = await this.repository.claim(requireWriteTransaction(database), preauth.reference);
     if (invitation.state.id !== prepared.invitation || invitation.state.organization !== prepared.scope || !invitation.state.principal || !invitation.state.membership || !invitation.state.recipientHash) {
@@ -89,7 +91,7 @@ export class CompleteSession {
     });
     await this.redeemer.consume(database, invitation, { session: session.session, assurance: 2, trace: preauth.trace, claim: { id: preauth.reference, version: claim.version } });
     const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, preauth.target, AuthTransaction.start(body.authorization));
-    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue(preauth.target).proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
+    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
   }
   private code(id: string, code: string): string {
     return createHmac('sha256', this.sessionKey).update(`${id}:${code}`).digest('hex');

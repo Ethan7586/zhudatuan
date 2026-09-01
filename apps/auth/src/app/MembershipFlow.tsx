@@ -26,7 +26,7 @@ export function MembershipFlow() {
     setBusy(true);
     setError('');
     void client
-      .selectMembership(membership.id, selection.target, request.handle)
+      .selectMembership(membership.id, selection.target)
       .then((result) => {
         if (result.kind !== 'authenticated') throw new Error('MEMBERSHIP_SELECTION_REQUIRED');
         window.location.replace(result.redirectUrl);

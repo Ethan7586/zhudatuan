@@ -1,4 +1,5 @@
 import type { ScopeKind } from '@shop/authz';
+import type { StorefrontHandle } from '@shop/contract';
 
 export interface RequestScope {
   readonly kind: ScopeKind;
@@ -10,6 +11,7 @@ export interface RequestContext {
   readonly contractVersion: string;
   readonly traceId: string;
   readonly scope?: RequestScope;
+  readonly storefrontHandle?: StorefrontHandle;
   readonly accessVersion?: number;
   readonly signal?: AbortSignal;
   readonly idempotencyKey?: string;

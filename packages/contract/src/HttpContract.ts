@@ -16,6 +16,7 @@ export const HttpHeader = Object.freeze({
   navigationCatalog: 'x-navigation-catalog',
   requestId: 'x-request-id',
   scopeHint: 'x-scope-hint',
+  storefrontHandle: 'x-storefront-handle',
   traceId: 'x-trace-id',
 } as const);
 
@@ -36,6 +37,7 @@ export const BrowserRequestHeaders = Object.freeze([
   HttpHeader.navigationCatalog,
   HttpHeader.requestId,
   HttpHeader.scopeHint,
+  HttpHeader.storefrontHandle,
   HttpHeader.traceId,
 ] as const);
 

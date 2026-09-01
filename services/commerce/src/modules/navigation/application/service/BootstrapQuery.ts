@@ -9,6 +9,7 @@ import type { MemberReadPort } from '../../../member/public/MemberReadPort';
 import type { OrderReadPort } from '../../../order/public/OrderReadPort';
 import type { NavigationReadPort } from '../../public/NavigationReadPort';
 import { BootstrapMapper, type BootstrapSection } from './BootstrapMapper';
+import { assertEntryMall, entryHandle } from './EntryHandle';
 
 export interface BootstrapPorts {
   readonly identity: IdentityReadPort;
@@ -27,14 +28,14 @@ export class BootstrapQuery {
   ) {}
 
   async execute(input: OperationInputFor<'storefront.bootstrap.read'>, context: HandlerContext<'storefront.bootstrap.read'>) {
-    const host = canonicalHost(context.headers);
-    const binding = await this.ports.experience.resolveHost(context.transaction, host);
+    const handle = entryHandle(context);
+    const binding = await this.ports.experience.resolveEntry(context.transaction, handle);
     const identity = this.ports.identity.resolve(context.security, context.headers);
     const transaction = context.transaction;
     const memberId = identity.membership ? await this.ports.membership.member(transaction, identity.membership) : null;
     const member = memberId ? await this.ports.member.summary(transaction, memberId) : null;
     if (identity.state === 'member' && !member) throw new Error('STOREFRONT_MEMBERSHIP_INVALID');
-    assertMallAccess(context, binding.mall);
+    assertEntryMall(context, binding.mall);
     const navigation = this.ports.navigation.storefront();
     const tasks = [
       () => this.ports.experience.published(transaction, binding),
@@ -48,8 +49,8 @@ export class BootstrapQuery {
     const orders = partition(settled[2], this.mapper);
     const body = this.mapper.result({
       state: benefit.state === 'failed' || orders.state === 'failed' ? 'partial' : 'complete',
-      host,
-      binding: Object.freeze(binding),
+      entry: Object.freeze({ handle: binding.handle, url: binding.url }),
+      binding: Object.freeze({ application: binding.application, mall: binding.mall, pool: binding.pool, release: binding.release, version: binding.version, tenant: binding.tenant }),
       identity: this.mapper.section(
         {
           state: identity.state,
@@ -84,18 +85,4 @@ function partition<T>(result: PromiseSettledResult<T | null>, mapper: BootstrapM
 function versionOf(value: unknown): string {
   if (value && typeof value === 'object' && 'version' in value) return String(Reflect.get(value, 'version'));
   return '1';
-}
-
-function assertMallAccess(context: HandlerContext<'storefront.bootstrap.read'>, mall: string): void {
-  if (context.security.kind !== 'session') return;
-  if (context.security.access.organization === mall) return;
-  throw new Error('STOREFRONT_MEMBERSHIP_MALL_MISMATCH');
-}
-
-export function canonicalHost(headers: Readonly<Record<string, string>>): string {
-  const host = headers.host?.split(':')[0]?.trim().toLowerCase();
-  const forwarded = headers['x-forwarded-host'];
-  if (!host || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(host)) throw new Error('STOREFRONT_HOST_INVALID');
-  if (forwarded !== undefined && forwarded.split(',')[0]?.trim().toLowerCase().split(':')[0] !== host) throw new Error('STOREFRONT_FORWARDED_HOST_UNTRUSTED');
-  return host;
 }

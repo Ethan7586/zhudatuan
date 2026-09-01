@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   CANONICAL_API_ORIGIN,
   CANONICAL_AUTH_ORIGIN,
-  FUFU_API_ORIGIN,
-  FUFU_AUTH_ORIGIN,
-  FUFU_CONSOLE_ORIGIN,
-  FUFU_STOREFRONT_ORIGIN,
+  CANONICAL_CONSOLE_ORIGIN,
+  CANONICAL_STOREFRONT_ORIGIN,
   LOCAL_API_ORIGIN,
   LOCAL_AUTH_ORIGIN,
   authClientEnvironment,
@@ -20,6 +18,7 @@ import {
   WechatApplicationCatalog,
   apiBindHost,
   apiReturnTargets,
+  apiStorefrontOrigin,
   bearerToken,
   integerValue,
   isPrivateIpv4Host,
@@ -91,14 +90,17 @@ describe('canonical runtime configuration', () => {
   it('accepts only two hard-cut authentication return targets', () => {
     const valid = apiEnvironment();
     expect(() => validateApiEnvironment(valid)).not.toThrow();
-    expect(apiReturnTargets(valid)).toEqual({ console: 'https://console.example.com', storefront: 'https://storefront.example.com' });
+    expect(apiReturnTargets(valid)).toEqual({ console: CANONICAL_CONSOLE_ORIGIN, storefront: CANONICAL_STOREFRONT_ORIGIN });
+    expect(apiStorefrontOrigin(valid)).toBe(CANONICAL_STOREFRONT_ORIGIN);
+    expect(apiStorefrontOrigin({ ...valid, APP_ENV: 'development', PUBLIC_STOREFRONT_ORIGIN: 'http://127.0.0.1:3000' })).toBe('http://127.0.0.1:3000');
+    expect(() => apiStorefrontOrigin({ ...valid, APP_ENV: 'development', PUBLIC_STOREFRONT_ORIGIN: 'http://localhost:3000' })).toThrow('PUBLIC_STOREFRONT_ORIGIN_INVALID');
     expect(() => apiReturnTargets({ ...valid, AUTH_RETURN_TARGETS: '{"console":"https://console.example.com","storefront":"https://storefront.example.com","supplier":"https://supplier.example.com"}' })).toThrow(
       'AUTH_RETURN_TARGETS_INVALID'
     );
   });
 
   it('validates browser, local infrastructure and bounded primitives', () => {
-    const client = { VITE_API_BASE_URL: 'https://api.example.com', VITE_AUTH_BASE_URL: 'https://auth.example.com', VITE_CLIENT_VERSION: '2.4.1' };
+    const client = { MODE: 'production', VITE_API_BASE_URL: CANONICAL_API_ORIGIN, VITE_AUTH_BASE_URL: CANONICAL_AUTH_ORIGIN, VITE_CLIENT_VERSION: '2.4.1' };
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
     expect(requiredValue(' value ', 'MISSING')).toBe('value');
     expect(bearerToken(secretStoreBearerToken, 'INVALID')).toBe(secretStoreBearerToken);
@@ -134,25 +136,13 @@ describe('canonical runtime configuration', () => {
   });
 
   it('owns Auth and Storefront origins, versions and local exceptions in one fail-closed source', () => {
+    expect(clientEnvironment({ MODE: 'production', VITE_CLIENT_VERSION: '2.0.0' })).toMatchObject({ storefrontOrigin: CANONICAL_STOREFRONT_ORIGIN });
+    expect(clientEnvironment({ MODE: 'development' })).toMatchObject({ storefrontOrigin: 'http://127.0.0.1:3000' });
     expect(authClientEnvironment({ MODE: 'production', VITE_CLIENT_VERSION: '2.0.0' })).toMatchObject({
       apiOrigin: CANONICAL_API_ORIGIN,
       clientVersion: '2.0.0',
     });
     expect(authClientEnvironment({ MODE: 'development' })).toMatchObject({ apiOrigin: LOCAL_API_ORIGIN, clientVersion: '0.0.0' });
-    expect(
-      authClientEnvironment({
-        MODE: 'production',
-        VITE_API_BASE_URL: FUFU_API_ORIGIN,
-        VITE_ADMIN_ORIGIN: FUFU_CONSOLE_ORIGIN,
-        VITE_STOREFRONT_ORIGIN: FUFU_STOREFRONT_ORIGIN,
-        VITE_CLIENT_VERSION: '2.0.0',
-      })
-    ).toEqual({
-      apiOrigin: FUFU_API_ORIGIN,
-      consoleOrigin: FUFU_CONSOLE_ORIGIN,
-      storefrontOrigin: FUFU_STOREFRONT_ORIGIN,
-      clientVersion: '2.0.0',
-    });
     expect(() => authClientEnvironment({ MODE: 'production', VITE_API_BASE_URL: 'https://attacker.example', VITE_CLIENT_VERSION: '2.0.0' })).toThrow('AUTH_API_ORIGIN_INVALID');
     expect(storefrontClientEnvironment({ MODE: 'production', VITE_CLIENT_VERSION: '2.0.0' })).toEqual({
       apiOrigin: CANONICAL_API_ORIGIN,
@@ -164,14 +154,6 @@ describe('canonical runtime configuration', () => {
       authOrigin: LOCAL_AUTH_ORIGIN,
       clientVersion: '0.0.0',
     });
-    expect(
-      storefrontClientEnvironment({
-        MODE: 'production',
-        VITE_API_BASE_URL: FUFU_API_ORIGIN,
-        VITE_AUTH_BASE_URL: FUFU_AUTH_ORIGIN,
-        VITE_CLIENT_VERSION: '2.0.0',
-      })
-    ).toEqual({ apiOrigin: FUFU_API_ORIGIN, authOrigin: FUFU_AUTH_ORIGIN, clientVersion: '2.0.0' });
     expect(() => storefrontClientEnvironment({ MODE: 'production' })).toThrow('CLIENT_VERSION_INVALID');
   });
 
@@ -193,8 +175,9 @@ function apiEnvironment() {
     APP_ENV: 'production',
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
-    API_ALLOWED_ORIGINS: 'https://console.example.com',
-    AUTH_RETURN_TARGETS: '{"console":"https://console.example.com","storefront":"https://storefront.example.com"}',
+    API_ALLOWED_ORIGINS: `${CANONICAL_AUTH_ORIGIN},${CANONICAL_CONSOLE_ORIGIN},${CANONICAL_STOREFRONT_ORIGIN}`,
+    AUTH_RETURN_TARGETS: JSON.stringify({ console: CANONICAL_CONSOLE_ORIGIN, storefront: CANONICAL_STOREFRONT_ORIGIN }),
+    PUBLIC_STOREFRONT_ORIGIN: CANONICAL_STOREFRONT_ORIGIN,
     DATABASE_API_CONNECTION_REF: 'secret/database/api',
     REDIS_CONNECTION_REF: 'secret/redis/query',
     SESSION_KEY_REF: 'secret/session/signing',

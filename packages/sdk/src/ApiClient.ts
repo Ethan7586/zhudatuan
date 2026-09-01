@@ -105,6 +105,7 @@ export class ApiClient implements OperationExecutor {
     };
     if (input.body !== undefined) headers[HttpHeader.contentType] = 'application/json';
     if (context.scope !== undefined) headers[HttpHeader.scopeHint] = context.scope.id;
+    if (context.storefrontHandle !== undefined) headers[HttpHeader.storefrontHandle] = context.storefrontHandle;
     if (context.accessVersion !== undefined) headers[HttpHeader.accessVersion] = String(context.accessVersion);
     if (context.idempotencyKey !== undefined) headers[HttpHeader.idempotencyKey] = context.idempotencyKey;
     if (context.expectedVersion !== undefined) headers[HttpHeader.ifMatch] = `"${context.expectedVersion}"`;

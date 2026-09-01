@@ -5,8 +5,8 @@ import type { CatalogReadPort } from '../../../catalog/public/CatalogReadPort';
 import type { ExperienceReadPort } from '../../../experience/public/ExperienceReadPort';
 import type { InventoryReadPort } from '../../../inventory/public/InventoryReadPort';
 import type { PricingReadPort } from '../../../pricing/public/PricingReadPort';
-import { canonicalHost } from './BootstrapQuery';
 import { CatalogMapper } from './CatalogMapper';
+import { assertEntryMall, entryHandle } from './EntryHandle';
 
 export class CatalogQuery {
   constructor(
@@ -18,7 +18,8 @@ export class CatalogQuery {
   ) {}
 
   async execute(input: OperationInputFor<'storefront.catalog.read'>, context: HandlerContext<'storefront.catalog.read'>) {
-    const binding = await this.experience.resolveHost(context.transaction, canonicalHost(context.headers));
+    const binding = await this.experience.resolveEntry(context.transaction, entryHandle(context));
+    assertEntryMall(context, binding.mall);
     const queryInput = input.query ?? {};
     const limit = integer(queryInput.limit, 24);
     if (limit < 1 || limit > 50) throw new Error('STOREFRONT_CATALOG_LIMIT_INVALID');
@@ -41,7 +42,7 @@ export class CatalogQuery {
     return {
       status: 200,
       body: Object.freeze({ items, nextCursor: this.mapper.encode(page.next), version: combinationVersion(binding.version, prices, availability), asOf: new Date().toISOString() }),
-      headers: { 'cache-control': 'public,max-age=30,stale-while-revalidate=60' },
+      headers: { 'cache-control': context.security.kind === 'session' ? 'private,no-store' : 'public,max-age=30,stale-while-revalidate=60' },
     };
   }
 }

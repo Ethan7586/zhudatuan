@@ -5,6 +5,8 @@ import type { StoredObject } from '../../../../foundation/infrastructure/ObjectS
 import { mapParallel } from '../../../../foundation/performance/Parallel';
 import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
 import type { ExperiencePublicationRepository, PublicationTarget } from '../port/ExperiencePublicationRepository';
+import type { ExperienceObserver } from '../port/ExperienceObserver';
+import { safeErrorCode } from '../../../../foundation/domain/SafeError';
 
 export interface ExperiencePublisher {
   publish(path: string, document: unknown, expectedHash: string, signal: AbortSignal): Promise<StoredObject>;
@@ -37,10 +39,22 @@ export class PublishExperience {
     private readonly transactions: TransactionManager,
     private readonly repository: ExperiencePublicationRepository,
     private readonly publisher: ExperiencePublisher,
-    private readonly cache: Cache
+    private readonly cache: Cache,
+    private readonly observer: ExperienceObserver
   ) {}
 
   async execute(request: ExperiencePublishRequest): Promise<void> {
+    const started = performance.now();
+    try {
+      await this.publish(request);
+      this.observer.publication({ trace: request.trace, result: 'success', milliseconds: performance.now() - started });
+    } catch (cause) {
+      this.observer.publication({ trace: request.trace, result: 'failure', milliseconds: performance.now() - started, errorCode: safeErrorCode(cause, 'EXPERIENCE_PUBLICATION_FAILED') });
+      throw cause;
+    }
+  }
+
+  private async publish(request: ExperiencePublishRequest): Promise<void> {
     const target = await this.transactions.read(this.options(request, 'select'), (context) => this.repository.target(context, request.release));
     if (!target) throw new Error('EXPERIENCE_RELEASE_NOT_FOUND');
     if (target.application !== request.application || target.version !== request.version || target.hash !== request.hash) {
@@ -49,7 +63,11 @@ export class PublishExperience {
     if (!['scheduled', 'active'].includes(target.state)) return this.complete(request);
     const stored = await this.publisher.publish(request.path, target.configuration, request.hash, request.signal);
     const publication = await this.transactions.write(this.options(request, 'activate'), (context) => this.repository.activate(context, request.event, target, request.path, stored));
-    if (publication.active) await this.publishCache(publication.malls, target, request.path);
+    if (publication.active) {
+      await this.publishCache(publication.malls, target, request.path);
+      await mapParallel(publication.handles, 16, (handle) => this.cache.remove(VersionedKey.create('storefrontentry', { handle })));
+    }
+    await this.complete(request);
   }
 
   private complete(request: ExperiencePublishRequest): Promise<void> {

@@ -1,5 +1,5 @@
 export const StorefrontQuery = Object.freeze({
-  bootstrap: () => Object.freeze(['storefront', 'bootstrap'] as const),
+  bootstrap: (handle: string) => Object.freeze(['storefront', handle, 'bootstrap'] as const),
   catalog: (scope: string, input: Readonly<Record<string, unknown>> = {}) => Object.freeze(['storefront', scope, 'catalog', input] as const),
   product: (scope: string, productId: string) => Object.freeze(['storefront', scope, 'product', productId] as const),
   profile: (scope: string) => Object.freeze(['storefront', scope, 'profile'] as const),

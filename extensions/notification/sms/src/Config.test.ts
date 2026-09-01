@@ -8,6 +8,19 @@ describe('SmsConfiguration', () => {
     );
   });
 
+  it('uses the runtime role instead of a long-lived key in managed environments', () => {
+    expect(parseSmsConfiguration({ signName: '商城', verificationTemplate: 'SMS_1234', endpoint: 'dysmsapi.aliyuncs.com', region: 'cn-hangzhou', credentialRef: null, roleName: 'CommerceSmsRole' })).toMatchObject({
+      credentialRef: null,
+      roleName: 'CommerceSmsRole',
+    });
+  });
+
+  it('requires exactly one environment-owned credential source', () => {
+    const base = { signName: '商城', verificationTemplate: 'SMS_1234', endpoint: 'dysmsapi.aliyuncs.com', region: 'cn-hangzhou' };
+    expect(() => parseSmsConfiguration(base)).toThrow('SMS_CREDENTIAL_SOURCE_INVALID');
+    expect(() => parseSmsConfiguration({ ...base, credentialRef: 'notification/sms/credential', roleName: 'CommerceSmsRole' })).toThrow('SMS_CREDENTIAL_SOURCE_INVALID');
+  });
+
   it('rejects inline credential material', () => {
     expect(() =>
       parseSmsConfiguration({ signName: '商城', verificationTemplate: 'SMS_1234', endpoint: 'dysmsapi.aliyuncs.com', region: 'cn-hangzhou', credentialRef: 'notification/sms/credential', roleName: null, accessKeySecret: 'leak' })

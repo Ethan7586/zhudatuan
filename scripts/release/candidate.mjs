@@ -48,7 +48,14 @@ const extensionHash = manifestHash(
   root,
   productionSources().filter((path) => path.includes('/extensions/'))
 );
-const runtimeConfigHash = manifestHash(root, [join(root, 'config/cache.yml'), join(root, 'config/capacity.yml'), join(root, 'config/telemetry.yml'), join(root, 'packages/config/src/RuntimeCatalog.ts')]);
+const runtimeConfigHash = manifestHash(root, [
+  join(root, 'config/cache.yml'),
+  join(root, 'config/capacity.yml'),
+  join(root, 'config/telemetry.yml'),
+  join(root, 'infrastructure/network/Edge.yml'),
+  join(root, 'packages/config/src/NetworkCatalog.ts'),
+  join(root, 'packages/config/src/RuntimeCatalog.ts'),
+]);
 const migrationHash = fileHash(join(root, 'database/contracts/history.json'));
 const sbomHash = fileHash(join(output, 'sbom.cdx.json'));
 const provenanceHash = fileHash(join(output, 'provenance.intoto.jsonl'));

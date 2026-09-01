@@ -8,7 +8,7 @@ export type AuthorizationRequest = Readonly<{
 
 type AuthenticationShared = Readonly<{
   readonly target: IdentityTarget;
-  readonly returnTarget?: string;
+  readonly returnTarget: string;
   readonly authorization: AuthorizationRequest;
 }>;
 
@@ -21,6 +21,7 @@ export type IdentitySessionsCreateBody =
 export type IdentitySessionsCompleteBody = Readonly<{
   code: string;
   proof: string;
+  returnTarget: string;
   authorization: AuthorizationRequest;
 }>;
 
@@ -78,7 +79,7 @@ export type IdentityOperationInputs = Readonly<{
   'identity.invitations.revoke': Readonly<{ path: Readonly<{ id: string }>; body: IdentityInvitationsRevokeBody }>;
   'identity.enrollments.read': Readonly<{ path: Readonly<{ id: string }>; query?: EmptyInput }>;
   'identity.enrollments.complete': Readonly<{ path: Readonly<{ id: string }>; body: IdentityEnrollmentsCompleteBody }>;
-  'identity.providers.read': Readonly<{ query?: Readonly<{ returntarget?: string }> }>;
+  'identity.providers.read': Readonly<{ query?: Readonly<{ returntarget?: string; returnpath?: string }> }>;
   'identity.federations.start': Readonly<{ body: Readonly<{ providerid: string; returntarget: string; authorization: AuthorizationRequest }> }>;
   'identity.federations.callback': Readonly<{ path: Readonly<{ providerid: string }>; query?: Readonly<{ state: string; code: string }> }>;
   'identity.federations.selection.read': Readonly<{ query?: EmptyInput }>;

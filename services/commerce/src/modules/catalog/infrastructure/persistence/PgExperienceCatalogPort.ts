@@ -1,8 +1,27 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ExperienceCatalogReferences, ExperienceCatalogPort } from '../../public/ExperienceCatalogPort';
+import { randomUUID } from 'node:crypto';
 export class PgExperienceCatalogPort implements ExperienceCatalogPort {
   private readonly transactions = new PgTransactionAccess();
+  async provisionPool(context: WriteTransactionContext, input: Readonly<{ mall: string; name: string; source?: string }>): Promise<string> {
+    const database = this.transactions.database(context);
+    const pool = `pool:${randomUUID()}`;
+    await database.query(`insert into catalog.pool(id,scope_id,kind,name,status,version) values($1,$2,'private',$3,'active',0)`, [pool, input.mall, input.name]);
+    if (input.source) {
+      await database.query(
+        `insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at)
+        select $1,sku_id,state,source_version,clock_timestamp() from catalog.poolitem where pool_id=$2`,
+        [pool, input.source]
+      );
+    }
+    await database.query(
+      `insert into catalog.poolbinding(mall_id,pool_id,listing_kind,status,effective_at,created_at)
+      values($1,$2,'selected','active',clock_timestamp(),clock_timestamp())`,
+      [input.mall, pool]
+    );
+    return pool;
+  }
   async activeBinding(
     context: ReadTransactionContext,
     malls: readonly string[]

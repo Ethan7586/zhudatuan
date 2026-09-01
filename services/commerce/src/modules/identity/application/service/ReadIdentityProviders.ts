@@ -12,9 +12,11 @@ export class ReadIdentityProviders {
   action(): OperationAction<'read'> {
     return async (request, database) => {
       const value = request.input.query.returntarget;
+      const path = request.input.query.returnpath;
       const requested = request.input.headers['x-client-target'];
       if (requested !== 'console' && requested !== 'storefront') throw new DomainError('VALIDATION_FAILED');
-      const target = typeof value === 'string' ? this.targets.verify(value) : this.targets.issue(requested);
+      if (value !== undefined && path !== undefined) throw new DomainError('VALIDATION_FAILED');
+      const target = typeof value === 'string' ? this.targets.verify(value) : this.targets.issue(requested, typeof path === 'string' ? { path } : undefined);
       if (target.target !== requested) throw new Error('AUTH_RETURN_TARGET_INVALID');
       const items = await this.providers.list(database, target.tenant);
       const csrf = randomBytes(32).toString('base64url');

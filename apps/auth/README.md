@@ -1,8 +1,7 @@
 # Unified authentication UI
 
 This app owns the approved three-stage sign-in experience at
-`accounts.zhudatuan.com`, with optional same-origin mounting at
-`zhudatuan.com/login/`.
+the Auth origin generated from `infrastructure/network/Edge.yml`.
 
 Console password login uses the canonical Commerce identity API with an
 ephemeral PKCE transaction and an immediately exchanged one-time ticket. The

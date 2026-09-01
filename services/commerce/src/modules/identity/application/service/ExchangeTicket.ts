@@ -7,10 +7,14 @@ import { reject } from '../../../../foundation/application/OperationRejection';
 import type { CsrfProtector } from '../../../../foundation/security/CsrfProtector';
 import type { AuthTicketPort } from '../port/AuthTicketPort';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
+import type { ReturnTargetPort } from '../port/ReturnTargetPort';
+import { returnDestination } from './ReturnDestination';
+import { bodyRecord } from '../../../../foundation/interface/Validation';
 
 export class ExchangeTicket {
   constructor(
     private readonly tickets: AuthTicketPort,
+    private readonly returns: ReturnTargetPort,
     private readonly csrf: CsrfProtector,
     private readonly cookies: SessionCookiePort
   ) {}
@@ -19,9 +23,11 @@ export class ExchangeTicket {
       const current = (['console', 'storefront'] as const).map((target) => this.cookies.read(request.input.headers.cookie, `__Host-${target}-session`)).filter((token): token is string => token !== undefined);
       if (current.length === 0) reject('AUTHENTICATION_REQUIRED');
       const token = randomBytes(48).toString('base64url');
-      const exchanged = await this.tickets.consume(requireWriteTransaction(database), request.input.body, current, token);
+      const body = bodyRecord(request.input);
+      const exchanged = await this.tickets.consume(requireWriteTransaction(database), body, current, token);
+      const destination = returnDestination(this.returns, exchanged.target, body.returnTarget);
       const expiresIn = Math.max(1, Math.min(43_200, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
-      return { status: 200, body: { returnTarget: exchanged.returnTarget, expiresIn }, headers: this.cookies.session(exchanged.target, token, this.csrf.issue(token, exchanged.target, expiresIn), expiresIn) };
+      return { status: 200, body: { returnTarget: destination, expiresIn }, headers: this.cookies.session(exchanged.target, token, this.csrf.issue(token, exchanged.target, expiresIn), expiresIn) };
     };
   }
 }

@@ -4,8 +4,12 @@ import type { PgTransactionAccess } from '../../../../adapter/database/PgTransac
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { VersionRepository } from '../../application/port/VersionRepository';
+import type { ExperienceCatalogPort } from '../../../catalog/public';
 export class PgVersionRepository implements VersionRepository {
-  constructor(private readonly transactions: PgTransactionAccess) {}
+  constructor(
+    private readonly transactions: PgTransactionAccess,
+    private readonly catalog: ExperienceCatalogPort
+  ) {}
   async save(context: WriteTransactionContext, input: Parameters<VersionRepository['save']>[1]) {
     const database = this.transactions.database(context);
     const application = await database.query<{
@@ -41,17 +45,17 @@ export class PgVersionRepository implements VersionRepository {
       application_id: string;
       validation_state: string;
       configuration: unknown;
-      pool_id: string | null;
+      mall_id: string;
     }>(
-      `select version.application_id,version.validation_state,version.configuration,
-      (select pool_id from experience.binding where application_id=version.application_id order by domain limit 1) pool_id
+      `select version.application_id,version.validation_state,version.configuration,application.mall_id
       from experience.version version join experience.application application on application.id=version.application_id
       where version.id=$1 and application.version=$2 for update of version,application`,
       [version, expectedVersion]
     );
     const row = loaded.rows[0];
     if (!row) throw new DomainError('VERSION_CONFLICT');
-    return Object.freeze({ application: row.application_id, validation: row.validation_state, configuration: row.configuration, pool: row.pool_id });
+    const binding = await this.catalog.activeBinding(context, [row.mall_id]);
+    return Object.freeze({ application: row.application_id, validation: row.validation_state, configuration: row.configuration, pool: binding?.pool ?? null });
   }
   async restore(context: WriteTransactionContext, input: Parameters<VersionRepository['restore']>[1]) {
     const database = this.transactions.database(context);

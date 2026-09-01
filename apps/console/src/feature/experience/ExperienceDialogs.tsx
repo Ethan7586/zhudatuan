@@ -1,60 +1,50 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { Dialog } from '@shop/design';
+import { useQuery } from '@tanstack/react-query';
+import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { formatDate } from '../../shared/ui/Format';
-import { applicationStatusLabel, applicationStatusTone, publicationLabel, validationLabel, validationTone } from './ExperiencePresentation';
+import { applicationDetailKey, readExperienceDetail } from './ExperienceQuery';
+import { applicationStatusLabel, entryLabel, publicationLabel } from './ExperiencePresentation';
 import type { Experience } from './ExperienceSchema';
 
-export function ExperienceRecordDrawer({ record, onClose }: Readonly<{ record: Experience | undefined; onClose: () => void }>) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-  useDialogKeyboard(record !== undefined, onClose, closeRef);
+export function ExperienceRecordDrawer({ record, context, onClose }: Readonly<{ record: Experience | undefined; context: ConsoleContext; onClose: () => void }>) {
+  const query = useQuery({
+    queryKey: applicationDetailKey(context, record?.id ?? 'closed'),
+    queryFn: ({ signal }) => readExperienceDetail(context, record!.id, signal),
+    enabled: record !== undefined,
+    staleTime: 30_000,
+  });
   if (record === undefined) return null;
+  const detail = query.data;
   return (
-    <div className="commerceoverlay is-drawer">
-      <button className="commercedialogbackdrop" type="button" onClick={onClose} aria-label="关闭商城应用摘要" />
-      <aside className="commercedrawer" role="dialog" aria-modal="true" aria-labelledby="commercedrawertitle">
-        <header>
-          <div>
-            <p>COMMERCE APPLICATION · 只读摘要</p>
-            <h2 id="commercedrawertitle">{record.name}</h2>
-            <code>{record.id}</code>
-          </div>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="关闭商城应用摘要">
-            ×
-          </button>
-        </header>
+    <Dialog open title={record.name} eyebrow="商城应用详情" onClose={onClose}>
+      {query.isPending ? (
+        <p role="status">正在读取装修与发布详情…</p>
+      ) : query.isError || !detail ? (
+        <p role="alert">详情读取失败，请关闭后重试。</p>
+      ) : (
         <div className="commercedrawerbody">
           <section className="commercedrawerstatus">
-            <span className={`commercestate is-${applicationStatusTone(record.status)}`}>
-              <i aria-hidden="true" />
-              {applicationStatusLabel(record.status)}
-            </span>
-            <span className={`commercestate is-${validationTone(record.head_validation_state)}`}>
-              <i aria-hidden="true" />
-              {validationLabel(record.head_validation_state)}
-            </span>
-            <p>这里只展示 experience.applications.read 已返回的权威字段，不推断页面配置或审核结论。</p>
+            <strong>{applicationStatusLabel(detail.status)}</strong>
+            <span>{entryLabel(detail.entry.state)}</span>
+            <p>列表保持轻量；装修文档和有限历史仅在打开详情时读取。</p>
           </section>
           <dl className="commercefacts">
-            <Fact label="应用代码" value={record.code} />
-            <Fact label="公开路径" value={`/${record.public_slug}`} />
-            <Fact label="商城绑定" value={record.mall_id ?? '尚未绑定'} />
-            <Fact label="商品池绑定" value={record.pool_id ?? '尚未绑定'} />
-            <Fact label="当前草稿" value={record.head_sequence == null ? '尚未建立' : `v${record.head_sequence}`} />
-            <Fact label="发布版本" value={publicationLabel(record)} />
-            <Fact label="绑定域名" value={record.domain ?? '尚未绑定'} />
-            <Fact label="更新时间" value={formatDate(record.updated_at)} />
+            <Fact label="应用代码" value={detail.code} />
+            <Fact label="商城归属" value={detail.mallId} />
+            <Fact label="公开入口" value={detail.entry.url} />
+            <Fact label="入口状态" value={entryLabel(detail.entry.state)} />
+            <Fact label="当前草稿" value={detail.headSequence === null ? '尚未建立' : `v${detail.headSequence}`} />
+            <Fact label="发布版本" value={publicationLabel(detail)} />
+            <Fact label="历史摘要" value={`${detail.history.length} 条（最多 20 条）`} />
+            <Fact label="更新时间" value={formatDate(detail.updatedAt)} />
           </dl>
           <section className="commercewriteboundary" role="note">
             <strong>安全边界</strong>
-            <p>编辑、校验、发布与恢复必须使用独立写 Operation、expectedVersion 和操作证明；当前抽屉只读。</p>
+            <p>商城入口只读取当前有效发布制品，草稿不会通过二维码泄露。</p>
           </section>
         </div>
-        <footer>
-          <button type="button" onClick={onClose}>
-            关闭
-          </button>
-        </footer>
-      </aside>
-    </div>
+      )}
+    </Dialog>
   );
 }
 
@@ -65,20 +55,4 @@ function Fact({ label, value }: Readonly<{ label: string; value: string }>) {
       <dd>{value}</dd>
     </div>
   );
-}
-
-function useDialogKeyboard(open: boolean, onClose: () => void, focusRef: RefObject<HTMLButtonElement | null>) {
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    focusRef.current?.focus();
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('keydown', closeOnEscape);
-      previous?.focus();
-    };
-  }, [focusRef, onClose, open]);
 }

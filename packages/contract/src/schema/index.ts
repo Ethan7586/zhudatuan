@@ -36,7 +36,7 @@ function operationBody(schemaName: string): Schema<ContractJsonValue> {
 
 export function definedOperationBodySchema(schemaName: string): Schema<ContractJsonValue> | undefined {
   const target = literal(['console', 'storefront']);
-  const returnTarget = optional(string());
+  const returnTarget = string();
   const authorization = strictObject({ state: string(), nonce: string(), challenge: string() });
   const empty = strictObject({});
   const schemas: Readonly<Record<string, Schema<ContractJsonValue>>> = {
@@ -46,8 +46,8 @@ export function definedOperationBodySchema(schemaName: string): Schema<ContractJ
       strictObject({ method: literal('invitation'), code: string(), target, returnTarget, authorization }),
       strictObject({ method: literal('federation'), provider: string(), target, returnTarget, authorization }),
     ]) as Schema<ContractJsonValue>,
-    IdentitySessionsCompleteInput: strictObject({ code: string(), proof: string(), authorization }),
-    IdentityTicketsExchangeInput: strictObject({ ticket: string(), state: string(), nonce: string(), verifier: string() }),
+    IdentitySessionsCompleteInput: strictObject({ code: string(), proof: string(), returnTarget, authorization }),
+    IdentityTicketsExchangeInput: strictObject({ ticket: string(), state: string(), nonce: string(), verifier: string(), returnTarget }),
     IdentitySessionDeleteInput: empty,
     IdentitySessionsRevokeInput: empty,
     IdentityMembershipsSwitchInput: strictObject({ membershipId: string() }),
@@ -145,7 +145,7 @@ export function definedOperationQuerySchema(schemaName: string): Schema<Operatio
       status: optional(literal(['draft', 'active', 'exhausted', 'revoked', 'expired'])),
     }),
     IdentityEnrollmentsReadInput: empty,
-    IdentityProvidersReadInput: strictObject({ returntarget: optional(string()) }),
+    IdentityProvidersReadInput: strictObject({ returntarget: optional(string()), returnpath: optional(string()) }),
     IdentityFederationsCallbackInput: strictObject({ state: string(), code: string() }),
     IdentityFederationsSelectionReadInput: empty,
     IdentityLinksReadInput: empty,

@@ -18,6 +18,6 @@ export interface PublicationObject {
 
 export interface ExperiencePublicationRepository {
   target(context: ReadTransactionContext, release: string): Promise<PublicationTarget | undefined>;
-  activate(context: WriteTransactionContext, event: string, target: PublicationTarget, path: string, object: PublicationObject): Promise<Readonly<{ active: boolean; malls: readonly string[] }>>;
+  activate(context: WriteTransactionContext, event: string, target: PublicationTarget, path: string, object: PublicationObject): Promise<Readonly<{ active: boolean; malls: readonly string[]; handles: readonly string[] }>>;
   complete(context: WriteTransactionContext, event: string): Promise<void>;
 }

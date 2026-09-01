@@ -18,6 +18,7 @@ interface SelectionRow {
   readonly auth_nonce_hash: string;
   readonly auth_pkce_challenge: string;
   readonly assurance: number;
+  readonly return_target: string | null;
 }
 export class PgMembershipSelection implements MembershipSelectionPort {
   private readonly transactions = new PgTransactionAccess();
@@ -36,9 +37,23 @@ export class PgMembershipSelection implements MembershipSelectionPort {
     await database.query(
       `insert into identity.preauth(id,transaction_id,principal_id,token_hash,candidate_hash,candidate_memberships,
       browser_hash,expires_at,created_at,purpose,target,reference_id,device_hash,state,version,auth_state_hash,auth_nonce_hash,
-      auth_pkce_challenge,assurance) values($1,null,$2,$3,$4,$5::jsonb,$6,clock_timestamp()+interval '5 minutes',clock_timestamp(),
-      'federationselection',$7,$1::text,$8,'active',0,$9,$10,$11,$12)`,
-      [id, input.principal, hash(token), hash(candidates), candidates, input.browser, input.target, input.device, input.authorization.stateHash, input.authorization.nonceHash, input.authorization.challenge, input.assurance]
+      auth_pkce_challenge,assurance,return_target) values($1,null,$2,$3,$4,$5::jsonb,$6,clock_timestamp()+interval '5 minutes',clock_timestamp(),
+      'federationselection',$7,$1::text,$8,'active',0,$9,$10,$11,$12,$13)`,
+      [
+        id,
+        input.principal,
+        hash(token),
+        hash(candidates),
+        candidates,
+        input.browser,
+        input.target,
+        input.device,
+        input.authorization.stateHash,
+        input.authorization.nonceHash,
+        input.authorization.challenge,
+        input.assurance,
+        input.returnTarget,
+      ]
     );
     return Object.freeze({ id, token });
   }
@@ -46,7 +61,7 @@ export class PgMembershipSelection implements MembershipSelectionPort {
     const database = this.transactions.database(context);
     const result = await database.query<SelectionRow>(
       `select id::text,transaction_id::text,principal_id,target,candidate_memberships,
-      expires_at,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance from identity.preauth where id=$1::uuid
+      expires_at,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance,return_target from identity.preauth where id=$1::uuid
       and purpose='federationselection' and state='active' and consumed_at is null and expires_at>clock_timestamp()`,
       [id]
     );
@@ -62,7 +77,7 @@ export class PgMembershipSelection implements MembershipSelectionPort {
       `update identity.preauth set state='consumed',consumed_at=clock_timestamp(),version=version+1
       where id=$1::uuid and browser_hash=$2 and device_hash=$3 and state='active' and consumed_at is null
         and expires_at>clock_timestamp() returning id::text,transaction_id::text,principal_id,target,candidate_memberships,
-        expires_at,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance`,
+        expires_at,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance,return_target`,
       [id, browser, device]
     );
     return selection(result.rows[0]);
@@ -70,6 +85,7 @@ export class PgMembershipSelection implements MembershipSelectionPort {
 }
 function selection(row: SelectionRow | undefined): MembershipSelectionValue {
   if (!row) throw new DomainError('FEDERATION_TRANSACTION_EXPIRED');
+  if (!row.return_target) throw new DomainError('FEDERATION_TRANSACTION_INVALID');
   return Object.freeze({
     id: row.id,
     principal: row.principal_id,
@@ -77,6 +93,7 @@ function selection(row: SelectionRow | undefined): MembershipSelectionValue {
     memberships: Object.freeze(row.candidate_memberships.map((candidate) => Object.freeze(candidate))),
     expiresAt: row.expires_at,
     transaction: row.transaction_id,
+    returnTarget: row.return_target,
     assurance: Number(row.assurance),
     authorization: Object.freeze({
       stateHash: row.auth_state_hash,

@@ -1,12 +1,17 @@
 import { PgExperienceReadPort } from './infrastructure/persistence/PgExperienceReadPort';
 import { PgCheckoutExperiencePort } from './infrastructure/persistence/PgCheckoutExperiencePort';
 import { PgCartExperiencePort } from './infrastructure/persistence/PgCartExperiencePort';
+import { CACHE } from '../../foundation/cache/Cache';
+import { Singleflight } from '../../foundation/performance/Singleflight';
 
 import { PgTransactionAccess } from '../../adapter/database/PgTransactionAccess';
 import { defineModule } from '../../bootstrap/DefinedModule';
 import { EXPERIENCE_CATALOG_PORT } from '../catalog/public';
 import { EXPERIENCE_MARKETING_PORT } from '../marketing/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
+import { EXPERIENCE_ORGANIZATION_PORT } from '../organization/public';
+import { ApplicationDetailHandler } from './application/handler/ApplicationDetailHandler';
+import { EntryResolver } from './application/service/EntryResolver';
 import { ApplicationsCopyHandler } from './application/handler/ApplicationsCopyHandler';
 import { ApplicationsCreateHandler } from './application/handler/ApplicationsCreateHandler';
 import { ApplicationsReadHandler } from './application/handler/ApplicationsReadHandler';
@@ -19,26 +24,35 @@ import { PgApplicationRepository } from './infrastructure/persistence/PgApplicat
 import { PgPublicationRepository } from './infrastructure/persistence/PgPublicationRepository';
 import { PgReleaseRepository } from './infrastructure/persistence/PgReleaseRepository';
 import { PgVersionRepository } from './infrastructure/persistence/PgVersionRepository';
+import { PgEntryRepository } from './infrastructure/persistence/PgEntryRepository';
+import { RedisEntryCache } from './infrastructure/cache/RedisEntryCache';
 import { Manifest } from './Manifest';
 import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT } from './public';
 import { EXPERIENCE_READ_PORT } from './public/ExperienceReadPort';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
+import { TELEMETRY } from '../../foundation/telemetry/Telemetry';
+import { ExperienceTelemetry } from './infrastructure/adapter/ExperienceTelemetry';
+import { STOREFRONT_CONFIG } from './application/port/StorefrontConfig';
 
 export const ExperienceModule = defineModule(Manifest, {
   jobs: createJobs,
   events: [{ handler: 'experiencepublish', events: EVENT_SUBSCRIPTIONS.experiencepublish }],
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
-    const applications = new PgApplicationRepository(transactions, context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(EXPERIENCE_CATALOG_PORT));
-    const versions = new PgVersionRepository(transactions);
+    const entries = new RedisEntryCache(context.service(CACHE));
+    const telemetry = new ExperienceTelemetry(context.service(TELEMETRY));
+    const storefront = context.service(STOREFRONT_CONFIG);
+    const applications = new PgApplicationRepository(transactions, context.ports.get(ORGANIZATION_READ_PORT), context.ports.get(EXPERIENCE_ORGANIZATION_PORT), context.ports.get(EXPERIENCE_CATALOG_PORT), storefront);
+    const versions = new PgVersionRepository(transactions, context.ports.get(EXPERIENCE_CATALOG_PORT));
     const publications = new PgPublicationRepository(transactions, context.ports.get(EXPERIENCE_CATALOG_PORT), context.ports.get(EXPERIENCE_MARKETING_PORT));
     const releases = new PgReleaseRepository(transactions);
     return [
       new ApplicationsCreateHandler(applications),
       new ApplicationsCopyHandler(applications),
-      new ApplicationsReadHandler(applications),
-      new ApplicationsUpdateHandler(applications),
+      new ApplicationsReadHandler(applications, telemetry),
+      new ApplicationDetailHandler(applications),
+      new ApplicationsUpdateHandler(applications, entries),
       new VersionsSaveHandler(versions),
       new VersionsValidateHandler(versions),
       new VersionsPublishHandler(versions, publications, releases),
@@ -48,6 +62,9 @@ export const ExperienceModule = defineModule(Manifest, {
   ports: (context) => [
     { token: CART_EXPERIENCE_PORT, value: new PgCartExperiencePort() },
     { token: CHECKOUT_EXPERIENCE_PORT, value: new PgCheckoutExperiencePort() },
-    { token: EXPERIENCE_READ_PORT, value: new PgExperienceReadPort() },
+    {
+      token: EXPERIENCE_READ_PORT,
+      value: new PgExperienceReadPort(new EntryResolver(new PgEntryRepository(context.service(STOREFRONT_CONFIG)), new RedisEntryCache(context.service(CACHE)), new Singleflight(), new ExperienceTelemetry(context.service(TELEMETRY)))),
+    },
   ],
 });

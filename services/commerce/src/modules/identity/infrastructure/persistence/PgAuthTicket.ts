@@ -4,11 +4,9 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { AuthTarget } from '@shop/config/server';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { AuthTicketBinding, AuthTicketPort } from '../../application/port/AuthTicketPort';
-import type { ReturnTargetPort, SignedReturnTarget } from '../../application/port/ReturnTargetPort';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 export class PgAuthTicket implements AuthTicketPort {
   private readonly transactions = new PgTransactionAccess();
-  constructor(private readonly signer: ReturnTargetPort) {}
   async issue(
     context: WriteTransactionContext,
     session: string,
@@ -50,7 +48,6 @@ export class PgAuthTicket implements AuthTicketPort {
     nextSessionToken: string
   ): Promise<
     Readonly<{
-      returnTarget: SignedReturnTarget;
       sessionExpiresAt: Date;
       target: AuthTarget;
     }>
@@ -79,7 +76,7 @@ export class PgAuthTicket implements AuthTicketPort {
     );
     const accepted = result.rows[0];
     if (!accepted) throw new DomainError('AUTH_TICKET_EXCHANGE_REJECTED');
-    return Object.freeze({ returnTarget: this.signer.issue(accepted.target), sessionExpiresAt: accepted.expires_at, target: accepted.target });
+    return Object.freeze({ sessionExpiresAt: accepted.expires_at, target: accepted.target });
   }
 }
 function hash(value: string): string {

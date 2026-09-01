@@ -8,12 +8,22 @@ import { PublishExperience } from '../../application/process/PublishExperience';
 import { CdnPublisher } from '../../infrastructure/adapter/CdnPublisher';
 import { PgExperiencePublicationRepository } from '../../infrastructure/persistence/PgExperiencePublicationRepository';
 import { ExperiencePublishJob } from './ExperiencePublishJob';
+import { TELEMETRY } from '../../../../foundation/telemetry/Telemetry';
+import { ExperienceTelemetry } from '../../infrastructure/adapter/ExperienceTelemetry';
 
 export function createJobs(context: ModuleContext): readonly ModuleJob[] {
   return Object.freeze([
     {
       id: 'experiencepublish',
-      processor: new ExperiencePublishJob(new PublishExperience(new PgTransactionManager(context.service(DATABASE_POOL)), new PgExperiencePublicationRepository(), new CdnPublisher(context.service(OBJECT_STORE)), context.service(CACHE))),
+      processor: new ExperiencePublishJob(
+        new PublishExperience(
+          new PgTransactionManager(context.service(DATABASE_POOL)),
+          new PgExperiencePublicationRepository(),
+          new CdnPublisher(context.service(OBJECT_STORE)),
+          context.service(CACHE),
+          new ExperienceTelemetry(context.service(TELEMETRY))
+        )
+      ),
     },
   ]);
 }

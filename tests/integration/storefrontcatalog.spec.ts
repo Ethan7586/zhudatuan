@@ -17,7 +17,20 @@ test('storefront catalog composes listing, price and inventory concurrently with
     return value;
   };
   const query = new CatalogQuery(
-    { resolveHost: async () => ({ application: 'application:one', mall: 'mall:one', pool: 'pool:one', release: 'release:one', version: 'binding:1', tenant: 'tenant:one' }) },
+    {
+      resolveEntry: async () => ({
+        application: 'application:one',
+        handle: 'mall-one',
+        url: 'https://fufu.wang/s/mall-one',
+        mall: 'mall:one',
+        pool: 'pool:one',
+        release: 'release:one',
+        version: 'version:1',
+        tenant: 'tenant:one',
+        contentHash: 'hash:one',
+        objectKey: 'experience/mall-one/hash.json',
+      }),
+    },
     {
       listings: async (_scope, input) => {
         assert.equal(input.mall, 'mall:one');
@@ -55,7 +68,7 @@ function context(transaction: unknown) {
     traceId: 'trace:catalog',
     operation: 'storefront.catalog.read',
     transaction,
-    headers: { host: 'mall.example' },
+    headers: { 'x-storefront-handle': 'mall-one' },
     rawBody: '',
     deadline: Date.now() + 1_000,
     signal: new AbortController().signal,

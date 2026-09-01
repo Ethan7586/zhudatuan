@@ -1,12 +1,16 @@
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
-export interface StorefrontBinding {
+export interface StorefrontEntry {
   readonly application: string;
+  readonly handle: string;
+  readonly url: string;
   readonly mall: string;
   readonly pool: string;
   readonly release: string;
   readonly version: string;
   readonly tenant: string;
+  readonly contentHash: string;
+  readonly objectKey: string;
 }
 export interface PublishedStorefront {
   readonly document: Readonly<Record<string, unknown>>;
@@ -14,7 +18,7 @@ export interface PublishedStorefront {
   readonly asOf: string;
 }
 export interface ExperienceReadPort {
-  resolveHost(context: ReadTransactionContext, host: string): Promise<StorefrontBinding>;
-  published(context: ReadTransactionContext, binding: StorefrontBinding): Promise<PublishedStorefront>;
+  resolveEntry(context: ReadTransactionContext, handle: string): Promise<StorefrontEntry>;
+  published(context: ReadTransactionContext, entry: StorefrontEntry): Promise<PublishedStorefront>;
 }
 export const EXPERIENCE_READ_PORT = publicPort<ExperienceReadPort>('experience', 'read');

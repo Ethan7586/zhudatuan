@@ -92,6 +92,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "reporting.exports.read": Object.freeze({ input: exactOperationInput("ReportingExportsReadInput", ["exportid"] as const, false), output: exactOperationOutput("ReportingExportsReadOutput") }),
   "experience.applications.create": Object.freeze({ input: exactOperationInput("ExperienceApplicationsCreateInput", [] as const, true), output: exactOperationOutput("ExperienceApplicationsCreateOutput") }),
   "experience.applications.copy": Object.freeze({ input: exactOperationInput("ExperienceApplicationsCopyInput", ["applicationid"] as const, true), output: exactOperationOutput("ExperienceApplicationsCopyOutput") }),
+  "experience.applications.detail.read": Object.freeze({ input: exactOperationInput("ExperienceApplicationDetailReadInput", ["applicationid"] as const, false), output: exactOperationOutput("ExperienceApplicationDetailReadOutput") }),
   "experience.applications.read": Object.freeze({ input: exactOperationInput("ExperienceApplicationsReadInput", [] as const, false), output: exactOperationOutput("ExperienceApplicationsReadOutput") }),
   "experience.applications.update": Object.freeze({ input: exactOperationInput("ExperienceApplicationsUpdateInput", ["applicationid"] as const, true), output: exactOperationOutput("ExperienceApplicationsUpdateOutput") }),
   "experience.versions.save": Object.freeze({ input: exactOperationInput("ExperienceVersionsSaveInput", ["applicationid"] as const, true), output: exactOperationOutput("ExperienceVersionsSaveOutput") }),

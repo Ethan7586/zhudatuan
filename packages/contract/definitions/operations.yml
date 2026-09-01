@@ -4005,6 +4005,38 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: required
+  - id: experience.applications.detail.read
+    owner: experience
+    method: GET
+    path: /api/v1/experiences/applications/{applicationid}
+    audience: console
+    targets: [console]
+    permission: experience.application.read
+    capability: experience.applications.detail.read
+    scopeKinds: *a7
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: ExperienceApplicationDetailReadInput
+    responseSchema: ExperienceApplicationDetailReadOutput
+    errorUnion: [AUTHENTICATION_REQUIRED, AUTHORIZATION_DENIED, CAPABILITY_DENIED, INTERNAL_ERROR, RATE_LIMITED, RESOURCE_NOT_FOUND, SCOPE_DENIED, VALIDATION_FAILED]
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 500
+    rateClass: read
+    risk: low
+    resourceResolver: experience.resource
+    idempotent: true
+    requirements: [MVPGROUPAPPLICATION, MVPMALLDESIGN]
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/modules/experience/application/handler/ApplicationDetailHandler.ts
+    sdk: packages/sdk/src/operations/experience.ts
+    resourceParameter: applicationid
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: none
   - id: experience.applications.read
     owner: experience
     method: GET
@@ -11106,7 +11138,22 @@ operations:
     makerChecker: false
     requestSchema: StorefrontBootstrapReadInput
     responseSchema: StorefrontBootstrapReadOutput
-    errorUnion: [AUTHENTICATION_REQUIRED, AUTHORIZATION_DENIED, INTERNAL_ERROR, MEMBERSHIP_INACTIVE, RATE_LIMITED, SCOPE_DENIED, VALIDATION_FAILED]
+    errorUnion:
+      [
+        AUTHENTICATION_REQUIRED,
+        AUTHORIZATION_DENIED,
+        INTERNAL_ERROR,
+        MEMBERSHIP_INACTIVE,
+        RATE_LIMITED,
+        SCOPE_DENIED,
+        STOREFRONT_DISABLED,
+        STOREFRONT_HANDLE_INVALID,
+        STOREFRONT_MEMBERSHIP_MALL_MISMATCH,
+        STOREFRONT_NOT_FOUND,
+        STOREFRONT_NOT_PUBLISHED,
+        STOREFRONT_PUBLICATION_UNAVAILABLE,
+        VALIDATION_FAILED,
+      ]
     idempotencyScope: none
     expectedVersion: none
     timeout: 800
@@ -11114,7 +11161,7 @@ operations:
     risk: low
     resourceResolver: none
     idempotent: true
-    requirements: [MVPMALLDESIGN, MVPMALLPOOL, MVPMALLORDER]
+    requirements: [MVPGROUPAPPLICATION, MVPMALLDESIGN, MVPMALLPOOL, MVPMALLORDER]
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/modules/navigation/application/handler/BootstrapReadHandler.ts
     sdk: packages/sdk/src/operations/storefront.ts
@@ -11138,7 +11185,22 @@ operations:
     makerChecker: false
     requestSchema: StorefrontCatalogReadInput
     responseSchema: StorefrontCatalogReadOutput
-    errorUnion: [AUTHENTICATION_REQUIRED, AUTHORIZATION_DENIED, INTERNAL_ERROR, MEMBERSHIP_INACTIVE, RATE_LIMITED, SCOPE_DENIED, VALIDATION_FAILED]
+    errorUnion:
+      [
+        AUTHENTICATION_REQUIRED,
+        AUTHORIZATION_DENIED,
+        INTERNAL_ERROR,
+        MEMBERSHIP_INACTIVE,
+        RATE_LIMITED,
+        SCOPE_DENIED,
+        STOREFRONT_DISABLED,
+        STOREFRONT_HANDLE_INVALID,
+        STOREFRONT_MEMBERSHIP_MALL_MISMATCH,
+        STOREFRONT_NOT_FOUND,
+        STOREFRONT_NOT_PUBLISHED,
+        STOREFRONT_PUBLICATION_UNAVAILABLE,
+        VALIDATION_FAILED,
+      ]
     idempotencyScope: none
     expectedVersion: none
     timeout: 800

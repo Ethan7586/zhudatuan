@@ -10,6 +10,7 @@ import { TermsDialog } from '../shared/ui/TermsDialog';
 import { challengeNotice, OTP_POLICY } from '../shared/challenge/ChallengePolicy';
 import { authentication } from './Authentication';
 import { useAuth } from './AuthProvider';
+import type { AuthRequest } from '../shared/returntarget/ReturnTarget';
 
 export function AuthFlow() {
   const { request, selectTarget } = useAuth();
@@ -25,15 +26,16 @@ export function AuthFlow() {
   const [providers, setProviders] = useState<readonly ProviderChoice[]>([]);
   const [terms, setTerms] = useState<'terms' | 'privacy' | null>(null);
   const [reset, setReset] = useState(false);
+  const returns = returnRequest(request);
 
   useEffect(() => {
     const controller = new AbortController();
     void client
-      .providers(request.handle, request.target, controller.signal)
+      .providers(returns, request.target, controller.signal)
       .then(setProviders)
       .catch(() => setProviders([]));
     return () => controller.abort();
-  }, [client, request.handle, request.target]);
+  }, [client, request.returnPath, request.returnTarget, request.target]);
 
   const stage = outcome?.kind === 'selection' || outcome?.kind === 'proofRequired' ? outcome.kind : null;
   const changeMethod = (next: AuthMethod) => {
@@ -100,7 +102,7 @@ export function AuthFlow() {
     if (!value) next.password = '请输入密码';
     setFields(next);
     if (Object.keys(next).length > 0) return;
-    void run(() => client.password(subject, value, request.target, request.handle));
+    void run(() => client.password(subject, value, request.target, returns));
   };
   const otp = (subject: string, challenge: string, code: string) => {
     const next: Record<string, string> = {};
@@ -108,7 +110,7 @@ export function AuthFlow() {
     if (!challenge || !/^\d{6}$/.test(code)) next.code = challenge ? '请输入 6 位短信验证码' : '请先为当前账号获取验证码';
     setFields(next);
     if (Object.keys(next).length > 0) return;
-    void run(() => client.otp(subject, challenge, code, request.target, request.handle));
+    void run(() => client.otp(subject, challenge, code, request.target, returns));
   };
   const challenge = async (subject: string) => {
     if (!subject.trim()) {
@@ -118,7 +120,7 @@ export function AuthFlow() {
     setBusy(true);
     setError('');
     try {
-      const value = await client.challenge(subject, 'login', request.target, request.handle);
+      const value = await client.challenge(subject, 'login', request.target, returns);
       setNotice(challengeNotice(true));
       return Object.freeze({ id: value.id, resendSeconds: OTP_POLICY.resendSeconds });
     } catch (cause) {
@@ -137,7 +139,7 @@ export function AuthFlow() {
     setBusy(true);
     setError('');
     try {
-      await route(await client.invitationProof(outcome.reference, code, outcome.target));
+      await route(await client.invitationProof(outcome.reference, code, outcome.target, returns));
     } catch {
       setError('验证失败或已过期，请重新使用邀请码登录');
     } finally {
@@ -153,7 +155,7 @@ export function AuthFlow() {
     setBusy(true);
     setError('');
     void client
-      .selectMembership(membership.id, membership.target, request.handle)
+      .selectMembership(membership.id, membership.target)
       .then(route)
       .catch((cause) => setError(message(cause, '身份选择失败')))
       .finally(() => setBusy(false));
@@ -187,9 +189,9 @@ export function AuthFlow() {
         onPassword={password}
         onOtp={otp}
         onChallenge={challenge}
-        onInvitation={(code) => run(() => client.invitation(code, request.target, request.handle), true)}
+        onInvitation={(code) => run(() => client.invitation(code, request.target, returns), true)}
         onProvider={(provider) => {
-          void run(() => client.provider(provider.id, request.target, request.handle));
+          void run(() => client.provider(provider.id, request.target, returns));
         }}
         onBack={() => {
           setOutcome(null);
@@ -235,4 +237,8 @@ export function AuthFlow() {
 
 function message(cause: unknown, fallback: string) {
   return cause instanceof Error ? cause.message : fallback;
+}
+
+function returnRequest(request: AuthRequest) {
+  return Object.freeze({ ...(request.returnTarget ? { returnTarget: request.returnTarget } : {}), ...(request.returnPath ? { returnPath: request.returnPath } : {}) });
 }

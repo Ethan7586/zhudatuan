@@ -53,7 +53,19 @@ describe('storefront catalog query', () => {
 
 function createQuery(catalog: CatalogReadPort): CatalogQuery {
   const experience: ExperienceReadPort = {
-    resolveHost: async () => Object.freeze({ application: 'application:one', mall: 'mall:one', pool: 'pool:one', release: 'release:one', version: 'binding:1', tenant: 'tenant:one' }),
+    resolveEntry: async () =>
+      Object.freeze({
+        application: 'application:one',
+        handle: 'mall-one',
+        url: 'https://fufu.wang/s/mall-one',
+        mall: 'mall:one',
+        pool: 'pool:one',
+        release: 'release:one',
+        version: 'version:1',
+        tenant: 'tenant:one',
+        contentHash: 'hash:one',
+        objectKey: 'experience/mall-one/hash.json',
+      }),
     published: async () => {
       throw new Error('NOT_USED');
     },
@@ -74,7 +86,7 @@ function context(): HandlerContext<'storefront.catalog.read'> {
     traceId: 'trace:catalog-query',
     deadline: Date.now() + 5_000,
     signal: new AbortController().signal,
-    headers: Object.freeze({ host: 'mall.example.com' }),
+    headers: Object.freeze({ 'x-storefront-handle': 'mall-one' }),
     rawBody: '',
     publicActor: 'public:storefront',
     security: Object.freeze({ kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:catalog-query' }),

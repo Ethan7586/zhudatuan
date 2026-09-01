@@ -1,4 +1,5 @@
 import { FileText, X } from 'lucide-react';
+import { CANONICAL_CONSOLE_ORIGIN, CANONICAL_STOREFRONT_ORIGIN } from '@shop/config/client';
 
 export function TermsDialog({
   kind,
@@ -23,7 +24,10 @@ export function TermsDialog({
         </div>
         <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto pr-2 text-xs leading-relaxed text-slate-600">
           <p className="font-semibold text-slate-800">一、服务说明与主体定义</p>
-          <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
+          <p>
+            本《统一身份与登录服务协议》适用于筑大团消费者商城（{new URL(CANONICAL_STOREFRONT_ORIGIN).hostname}）与运营后台（{new URL(CANONICAL_CONSOLE_ORIGIN).hostname}
+            ）。技术服务由雍彻科技提供安全合规与鉴权支持；其他域名不属于本系统的登录或会话边界。
+          </p>
           <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
           <p>本系统由服务端建立可撤销的 Host-only HttpOnly 会话。前端不落地存储密码、永久 Token 或跨域票据。高风险管理操作须经正式二次验证；连续失败认证会被限流并记入安全审计。</p>
           <p className="font-semibold text-slate-800">三、个人信息保护</p>

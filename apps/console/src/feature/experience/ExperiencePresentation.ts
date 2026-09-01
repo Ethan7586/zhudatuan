@@ -20,11 +20,11 @@ const modeFlows: Readonly<Record<CommerceWorkspaceMode, readonly CommerceFlowSte
     { label: '商城准入', detail: '平台审核' },
     { label: '应用建档', detail: '范围归属' },
     { label: '版本校验', detail: '配置安全' },
-    { label: '域名绑定', detail: '唯一映射' },
+    { label: '公开入口', detail: '唯一标识' },
     { label: '发布监测', detail: '异常治理' },
   ]),
   management: Object.freeze([
-    { label: '创建商城', detail: '禁用态起步' },
+    { label: '创建商城', detail: '待发布起步' },
     { label: '组织关系', detail: '集团归属' },
     { label: '初始商品池', detail: '经营边界' },
     { label: '开店草稿', detail: '六步向导' },
@@ -44,14 +44,14 @@ export function commerceFlow(mode: CommerceWorkspaceMode): readonly CommerceFlow
 }
 
 export function applicationSummary(rows: readonly Experience[]): readonly CommerceMetric[] {
-  const published = rows.filter((row) => row.published_sequence !== null && row.published_sequence !== undefined).length;
-  const drafts = rows.filter((row) => row.head_sequence !== null && row.head_sequence !== undefined && row.head_sequence !== row.published_sequence).length;
+  const published = rows.filter((row) => row.publishedSequence !== null).length;
+  const drafts = rows.filter((row) => row.headSequence !== null && row.headSequence !== row.publishedSequence).length;
   const attention = rows.filter(needsAttention).length;
   return Object.freeze([
     { label: '当前页应用', value: String(rows.length), hint: '来自当前 Scope 的读模型', tone: 'info' },
     { label: '已有发布', value: String(published), hint: '返回有效发布版本', tone: 'success' },
     { label: '待继续草稿', value: String(drafts), hint: '草稿领先于发布版本', tone: drafts > 0 ? 'warning' : 'neutral' },
-    { label: '需要处理', value: String(attention), hint: '校验失败或绑定不完整', tone: attention > 0 ? 'danger' : 'success' },
+    { label: '需要处理', value: String(attention), hint: '入口停用或发布制品异常', tone: attention > 0 ? 'danger' : 'success' },
   ]);
 }
 
@@ -87,10 +87,19 @@ export function validationTone(value: string | null | undefined): CommerceTone {
 }
 
 export function publicationLabel(row: Experience): string {
-  if (row.published_sequence === null || row.published_sequence === undefined) return '未发布';
-  return `已发布 v${row.published_sequence}`;
+  if (row.publishedSequence === null) return '未发布';
+  return `已发布 v${row.publishedSequence}`;
 }
 
 export function needsAttention(row: Experience): boolean {
-  return row.head_validation_state === 'invalid' || row.mall_id === null || row.mall_id === undefined || row.pool_id === null || row.pool_id === undefined;
+  return row.entry.state === 'invalid' || row.entry.state === 'disabled';
+}
+
+export function entryLabel(state: Experience['entry']['state']): string {
+  return { ready: '可扫码', unpublished: '待发布', disabled: '已停用', invalid: '发布异常' }[state];
+}
+
+export function entryTone(state: Experience['entry']['state']): CommerceTone {
+  const tones: Readonly<Record<Experience['entry']['state'], CommerceTone>> = { ready: 'success', unpublished: 'warning', disabled: 'neutral', invalid: 'danger' };
+  return tones[state];
 }

@@ -22,6 +22,8 @@ const files = [
   'scripts/release/cutover.mjs',
   'scripts/release/stage.mjs',
   'scripts/release/promote.mjs',
+  'scripts/smoke/MallEntry.ts',
+  'docs/operations/mallentry.md',
   '.github/workflows/quality.yml',
 ];
 const source = files.map((file) => `${file}\n${readFileSync(resolve(root, file), 'utf8')}`).join('\n');
@@ -60,6 +62,8 @@ for (const value of [
   'shop_job_queue_depth',
   'shop_job_oldest_message_seconds',
   'provider canary',
+  'mall entry smoke passed',
+  'SHOP_SMOKE_MALL_URL',
 ]) {
   if (!source.includes(value)) throw new Error(`DEPLOYMENT_CONTRACT_MISSING:${value}`);
 }

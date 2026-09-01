@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { OperationCatalog } from '@shop/contract';
+import { NETWORK_CATALOG } from '@shop/config/networkcatalog';
 import { Container } from '../../services/commerce/src/bootstrap/Container.ts';
 import { AUDIT_SINK } from '../../services/commerce/src/foundation/application/AuditSink.ts';
 import { DATABASE_POOL } from '../../services/commerce/src/foundation/persistence/Pool.ts';
@@ -107,6 +108,7 @@ const fixture = Object.freeze({
 
 export async function verifyMvpKernel(database) {
   await seed(database);
+  await verifyStorefrontEntry(database);
   const pool = pglitePool(database);
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
@@ -270,6 +272,37 @@ export async function verifyMvpKernel(database) {
   for (const [field, value] of Object.entries(expected)) assert(row?.[field] === value, `MVP_KERNEL_EVIDENCE_INVALID:${field}:${String(row?.[field])}`);
   console.log(`smart-wing MVP kernel passed: cart=converted quote=confirmed order=awaitingpayment payment=authorizing totalMinor=${row.total_minor} outbox=${row.outbox_events} audits=${row.audits}`);
   await verifyPayment(database, handlers, operations, gateway, orderid);
+}
+
+async function verifyStorefrontEntry(database) {
+  const rows = (
+    await database.query(
+      `select application,handle,mall,pool,release,version,tenant,application_status,validation_state,
+      publication_state,content_hash,configuration_hash,object_key
+      from experience.resolve_storefront_entry($1)`,
+      ['mvp-application']
+    )
+  ).rows;
+  assert(rows.length === 1, `MVP_STOREFRONT_ENTRY_COUNT_INVALID:${rows.length}`);
+  const entry = rows[0];
+  const expected = {
+    application: fixture.application,
+    handle: 'mvp-application',
+    mall: fixture.mall,
+    pool: fixture.pool,
+    release: fixture.release,
+    version: fixture.version,
+    tenant: fixture.tenant,
+    application_status: 'active',
+    validation_state: 'valid',
+    publication_state: 'active',
+    content_hash: 'd'.repeat(64),
+    configuration_hash: 'd'.repeat(64),
+    object_key: `experience/${fixture.application}/${'d'.repeat(64)}.json`,
+  };
+  for (const [field, value] of Object.entries(expected)) assert(entry?.[field] === value, `MVP_STOREFRONT_ENTRY_INVALID:${field}:${String(entry?.[field])}`);
+  const missing = await database.query(`select application from experience.resolve_storefront_entry($1)`, ['missing-mall']);
+  assert(missing.rows.length === 0, `MVP_STOREFRONT_UNKNOWN_ENTRY_VISIBLE:${missing.rows.length}`);
 }
 
 async function verifyPayment(database, handlers, operations, gateway, order) {
@@ -686,7 +719,7 @@ async function seed(database) {
       values('${fixture.membership}','${fixture.member}','${fixture.mall}','storefront','active',1,clock_timestamp(),'${fixture.principal}');
     insert into identity.provider(id,tenant_id,type,provider_tenant_hash,client_id_hash,secret_ref,redirect_uri,scopes,status,version)
       values('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','wechat',decode(repeat('a',64),'hex'),
-        decode('${fixture.applicationHash}','hex'),'identity/mvp/wechat','https://accounts.zhudatuan.com/api/v1/identity/federations/callback',
+        decode('${fixture.applicationHash}','hex'),'identity/mvp/wechat','${NETWORK_CATALOG.origins.auth}/api/v1/identity/federations/callback',
         array['snsapi_base'],'enabled',0);
     insert into identity.federatedidentity(id,principal_id,membership_id,provider,subject_ciphertext,subject_key_version,status,bound_at,revoked_at,
       created_at,updated_at,provider_instance_id,provider_tenant_hash,normalized_subject_hash,linked_at,verified_at,last_seen_at,source,version)
@@ -711,14 +744,13 @@ async function seed(database) {
       values('${fixture.price}','${fixture.pricebook}','${fixture.sku}',2590,2990,'1970-01-01T00:00:00Z');
     insert into inventory.stockitem(id,scope_id,sku_id,location_id,onhand,safety,version,status,updated_at)
       values('${fixture.stock}','${fixture.mall}','${fixture.sku}','mvp:warehouse',100,5,1,'active',clock_timestamp());
-    insert into experience.application(id,scope_id,name,status,created_at,updated_at,version,code,public_slug)
+    insert into experience.application(id,mall_id,name,status,created_at,updated_at,version,code,public_slug)
       values('${fixture.application}','${fixture.mall}','MVP storefront','active',clock_timestamp(),clock_timestamp(),1,'MVP_APPLICATION','mvp-application');
     insert into experience.version(id,application_id,sequence,schema_version,configuration,configuration_hash,validation_state,created_by,created_at)
       values('${fixture.version}','${fixture.application}',1,'2','{"version":2,"application":"${fixture.application}","pages":[{"id":"home","path":"/","blocks":[]}]}','${hash}','valid','mvp:kernel',clock_timestamp());
     update experience.application set head_version_id='${fixture.version}' where id='${fixture.application}';
-    insert into experience.release(id,application_id,version_id,state,effective_at,published_by)
-      values('${fixture.release}','${fixture.application}','${fixture.version}','active',clock_timestamp(),'mvp:kernel');
-    insert into experience.binding(application_id,domain,mall_id,pool_id) values('${fixture.application}','mvp.invalid','${fixture.mall}','${fixture.pool}');
+    insert into experience.release(id,application_id,version_id,pool_id,state,effective_at,published_by)
+      values('${fixture.release}','${fixture.application}','${fixture.version}','${fixture.pool}','active',clock_timestamp(),'mvp:kernel');
     insert into experience.publication(id,release_id,application_id,version_id,content_hash,object_key,object_ref,object_hash,object_size,state,staged_at,published_at)
       values('${fixture.publication}','${fixture.release}','${fixture.application}','${fixture.version}','${hash}',
         'experience/${fixture.application}/${hash}.json','mvp:object','${hash}',1,'active',clock_timestamp(),clock_timestamp());

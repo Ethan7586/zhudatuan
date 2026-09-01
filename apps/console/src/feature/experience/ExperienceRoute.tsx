@@ -1,6 +1,6 @@
 import { Button, ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
@@ -12,6 +12,7 @@ import { applicationKey, readExperiences } from './ExperienceQuery';
 import type { Experience } from './ExperienceSchema';
 import { experienceScopePresentation, type CommerceWorkspaceMode } from './ExperienceScope';
 import { ExperienceTable } from './ExperienceTable';
+import { EntryDialog } from './entry/EntryDialog';
 import './Workspace.css';
 import './Table.css';
 import './Dialogs.css';
@@ -40,6 +41,8 @@ export function Component() {
   });
   const data = query.data;
   const [action, setAction] = useState<ExperienceAction | null>(null);
+  const [entry, setEntry] = useState<Experience | null>(null);
+  const entryTrigger = useRef('');
   const condition = queryCondition({
     pending: query.isPending,
     fetching: query.isFetching,
@@ -86,6 +89,16 @@ export function Component() {
     [updateSearch]
   );
   const closeRecord = useCallback(() => updateSearch((next) => next.delete('selected')), [updateSearch]);
+  const openEntry = useCallback((record: Experience, trigger: HTMLButtonElement) => {
+    entryTrigger.current = trigger.dataset.entryTrigger ?? '';
+    setEntry(record);
+  }, []);
+  const closeEntry = useCallback(() => {
+    const trigger = entryTrigger.current;
+    entryTrigger.current = '';
+    setEntry(null);
+    requestAnimationFrame(() => restoreEntryFocus(trigger));
+  }, []);
   const scopeName = context.scope.name ?? context.scope.id;
 
   return (
@@ -171,11 +184,11 @@ export function Component() {
             <div className="commercefilterbar">
               <div>
                 <strong id="commerceboardtitle">商城应用清单</strong>
-                <span>应用、绑定、草稿、校验与发布状态来自同一权威读模型</span>
+                <span>应用、入口、草稿、校验与发布状态来自同一权威读模型</span>
               </div>
               <label className="commercesearch">
                 <span className="sr-only">搜索商城应用</span>
-                <input type="search" value={search.get('q') ?? ''} onChange={(event) => updateQuery(event.target.value)} placeholder="搜索名称、代码、商城或域名" />
+                <input type="search" value={search.get('q') ?? ''} onChange={(event) => updateQuery(event.target.value)} placeholder="搜索名称、代码、商城或公开链接" />
               </label>
             </div>
             <p className="commercefiltermeta">
@@ -202,6 +215,7 @@ export function Component() {
                 mode={presentation.mode}
                 onOpen={openRecord}
                 onManage={(record) => setAction({ kind: 'manage', record })}
+                onEntry={openEntry}
                 onCopy={(record) => setAction({ kind: 'copy', record })}
                 onDesign={(record) => setAction({ kind: 'design', record })}
               />
@@ -220,7 +234,8 @@ export function Component() {
           </section>
         </div>
       </ResourcePanel>
-      <ExperienceRecordDrawer record={selected} onClose={closeRecord} />
+      <ExperienceRecordDrawer record={selected} context={context} onClose={closeRecord} />
+      <EntryDialog record={entry} onClose={closeEntry} />
       <ExperienceActionDialog
         action={action}
         context={context}
@@ -234,23 +249,29 @@ export function Component() {
   );
 }
 
+function restoreEntryFocus(key: string, attempt = 0): void {
+  const trigger = [...document.querySelectorAll<HTMLButtonElement>('button[data-entry-trigger]')].find((candidate) => candidate.dataset.entryTrigger === key);
+  trigger?.focus({ preventScroll: true });
+  if (trigger !== undefined && document.activeElement !== trigger && attempt < 5) setTimeout(() => restoreEntryFocus(key, attempt + 1), 50);
+}
+
 function readView(value: string | null): CommerceView {
   return views.some((view) => view.key === value) ? (value as CommerceView) : 'all';
 }
 
 function matchesView(row: Experience, view: CommerceView): boolean {
-  if (view === 'published') return row.published_sequence !== null && row.published_sequence !== undefined;
-  if (view === 'drafts') return row.head_sequence !== null && row.head_sequence !== undefined && row.head_sequence !== row.published_sequence;
+  if (view === 'published') return row.publishedSequence !== null;
+  if (view === 'drafts') return row.headSequence !== null && row.headSequence !== row.publishedSequence;
   if (view === 'attention') return needsAttention(row);
   return true;
 }
 
 function searchable(row: Experience): string {
-  return `${row.name} ${row.code} ${row.public_slug} ${row.mall_id ?? ''} ${row.pool_id ?? ''} ${row.domain ?? ''}`.toLowerCase();
+  return `${row.name} ${row.code} ${row.publicSlug} ${row.mallId} ${row.entry.url}`.toLowerCase();
 }
 
 function boundaryMessage(mode: CommerceWorkspaceMode): string {
-  if (mode === 'management') return '服务端在一个事务中建立商城应用、初始草稿与已有商城商品池绑定，失败时整体回滚。';
+  if (mode === 'management') return '服务端在一个事务中建立独立商城、应用、初始草稿与专属商品池，失败时整体回滚。';
   if (mode === 'design') return '保存、校验、发布与恢复均使用独立 Operation 和 expectedVersion，失败版本不会污染已发布版本。';
   return '平台可查看准入与异常，但正式审批必须进入系统治理并与商户权限隔离。';
 }

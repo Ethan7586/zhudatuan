@@ -1,10 +1,9 @@
-import { Navigate, useLocation } from 'react-router';
 import type { ReactNode } from 'react';
 import { useSession } from '../shared/runtime/SessionContext';
+import { storefrontAuthHref } from '../config/storefrontAuth';
 
 export function Guard({ children }: { readonly children: ReactNode }) {
   const session = useSession();
-  const location = useLocation();
   if (session.status === 'checking')
     return (
       <main role="status" className="storefrontloading">
@@ -12,8 +11,12 @@ export function Guard({ children }: { readonly children: ReactNode }) {
       </main>
     );
   if (session.status === 'authenticated') return children;
-  const returnTo = safeReturnTarget(`${location.pathname}${location.search}`);
-  return <Navigate replace to={`/?returnTo=${encodeURIComponent(returnTo)}`} />;
+  window.location.assign(storefrontAuthHref(`${window.location.pathname}${location.search}`));
+  return (
+    <main role="status" className="storefrontloading">
+      正在前往安全登录…
+    </main>
+  );
 }
 
 export function safeReturnTarget(value: string): string {

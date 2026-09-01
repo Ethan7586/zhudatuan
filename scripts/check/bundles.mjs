@@ -5,6 +5,7 @@ import { parse } from 'yaml';
 
 const root = resolve(import.meta.dirname, '../..');
 const budgets = parse(readFileSync(join(root, 'config/bundles.yml'), 'utf8')).budgets;
+const telemetry = parse(readFileSync(join(root, 'config/telemetry.yml'), 'utf8'));
 const artifacts = [
   ['console', 'apps/console/dist', budgets.consoleInitialGzipKb, budgets.lazyFeatureGzipKb],
   ['auth', 'apps/auth/dist', budgets.authInitialGzipKb, budgets.lazyFeatureGzipKb],
@@ -44,12 +45,35 @@ for (const [name, path, budget, lazyBudget] of artifacts) {
     }
   }
 }
+assertQrSplit();
 if (findings.length > 0) {
   console.error(`bundle policy failed: ${findings.length}`);
   for (const finding of findings) console.error(finding);
   process.exit(1);
 }
 console.log('bundle policy: three clients and one commerce artifact present, retired and substitute code absent, budgets satisfied');
+
+function assertQrSplit() {
+  const directory = join(root, 'apps/console/dist');
+  const manifestPath = join(directory, '.vite', 'manifest.json');
+  if (!existsSync(manifestPath)) return;
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  const qrKey = Object.keys(manifest).find((key) => key.endsWith('packages/design/src/QrCode.tsx'));
+  const experienceKey = Object.keys(manifest).find((key) => key.endsWith('src/feature/experience/ExperienceRoute.tsx'));
+  const roots = Object.entries(manifest)
+    .filter(([, item]) => item.isEntry)
+    .map(([key]) => key);
+  if (!qrKey || !experienceKey || roots.length === 0) {
+    findings.push('BUNDLE_QR_ENTRY_MISSING console');
+    return;
+  }
+  if (!(manifest[experienceKey].dynamicImports ?? []).includes(qrKey)) findings.push('BUNDLE_QR_NOT_LAZY console');
+  const initial = graph(manifest, roots).assets;
+  if (manifest[qrKey].file && initial.has(manifest[qrKey].file)) findings.push('BUNDLE_QR_IN_INITIAL console');
+  const qrBytes = bytes(directory, graph(manifest, [qrKey]).assets);
+  const qrBudget = telemetry.slo.qrBundleGzipKb * 1024;
+  if (qrBytes > qrBudget) findings.push(`BUNDLE_QR_BUDGET console ${(qrBytes / 1024).toFixed(1)}KB-gzip>${telemetry.slo.qrBundleGzipKb}KB-gzip`);
+}
 
 function measureVite(directory, code) {
   const root = existsSync(join(directory, '.vite', 'manifest.json')) ? directory : join(directory, 'client');

@@ -37,11 +37,11 @@ export class PgExperiencePublicationRepository implements ExperiencePublicationR
       : undefined;
   }
 
-  async activate(context: WriteTransactionContext, event: string, target: PublicationTarget, path: string, object: PublicationObject): Promise<Readonly<{ active: boolean; malls: readonly string[] }>> {
+  async activate(context: WriteTransactionContext, event: string, target: PublicationTarget, path: string, object: PublicationObject): Promise<Readonly<{ active: boolean; malls: readonly string[]; handles: readonly string[] }>> {
     const database = this.transactions.database(context);
     const runtime = new PgRuntimeWriter(database);
     const inbox = await runtime.claim('job:experiencepublish', event);
-    if (!inbox) return Object.freeze({ active: false, malls: Object.freeze([]) });
+    if (!inbox) return Object.freeze({ active: false, malls: Object.freeze([]), handles: Object.freeze([]) });
     await database.query(`select pg_advisory_xact_lock(hashtextextended('experience:'||$1,0))`, [target.application]);
     const release = await database.query<{ superseded: boolean }>(
       `select exists(select 1 from experience.release current
@@ -63,11 +63,15 @@ export class PgExperiencePublicationRepository implements ExperiencePublicationR
       [target.release, target.application, target.version, target.hash, path, object.reference, object.sha256, object.size, selected.superseded ? 'staged' : 'active']
     );
     let malls: readonly string[] = Object.freeze([]);
+    let handles: readonly string[] = Object.freeze([]);
     if (selected.superseded) {
       await database.query(`update experience.release set state='retired',retired_at=clock_timestamp() where id=$1`, [target.release]);
     } else {
-      const bindings = await database.query<{ mall_id: string }>(`select mall_id from experience.binding where application_id=$1 order by mall_id`, [target.application]);
-      malls = Object.freeze(bindings.rows.map(({ mall_id }) => mall_id));
+      const application = await database.query<{ mall_id: string; public_slug: string }>(`select mall_id,public_slug from experience.application where id=$1`, [target.application]);
+      const owner = application.rows[0];
+      if (!owner) throw new Error('EXPERIENCE_APPLICATION_NOT_FOUND');
+      malls = Object.freeze([owner.mall_id]);
+      handles = Object.freeze([owner.public_slug]);
       await database.query(`update experience.release set state='active',retired_at=null where id=$1 and state in('scheduled','active')`, [target.release]);
       await database.query(
         `update experience.application set head_version_id=$2,status='active',version=version+case when head_version_id is distinct from $2 then 1 else 0 end,
@@ -75,8 +79,7 @@ export class PgExperiencePublicationRepository implements ExperiencePublicationR
         [target.application, target.version]
       );
     }
-    if (!(await runtime.completeInbox('job:experiencepublish', event))) throw new Error('EXPERIENCE_INBOX_LEASE_LOST');
-    return Object.freeze({ active: !selected.superseded, malls });
+    return Object.freeze({ active: !selected.superseded, malls, handles });
   }
 
   async complete(context: WriteTransactionContext, event: string): Promise<void> {

@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import type { QueryResult } from 'pg';
 import { describe, expect, it } from 'vitest';
 import { PgAuthTicket } from '../infrastructure/persistence/PgAuthTicket';
-import { ReturnTargetSigner } from '../infrastructure/security/ReturnTargetSigner';
 import { withWriteTransaction } from '../../../test/TransactionFixture';
 
 describe('PgAuthTicket exchange', () => {
@@ -21,15 +20,7 @@ describe('PgAuthTicket exchange', () => {
         } as unknown as QueryResult;
       },
     };
-    const tickets = new PgAuthTicket(
-      new ReturnTargetSigner(
-        {
-          console: 'https://console.zhudatuan.com',
-          storefront: 'https://zhudatuan.com',
-        },
-        'return-target-signing-key-that-is-at-least-thirty-two-bytes'
-      )
-    );
+    const tickets = new PgAuthTicket();
     const exchange = {
       ticket: 't'.repeat(64),
       state: 's'.repeat(32),
@@ -39,8 +30,8 @@ describe('PgAuthTicket exchange', () => {
 
     await expect(withWriteTransaction(database.query, (context) => tickets.consume(context, exchange, ['wrong-session-token'], nextSessionToken))).rejects.toThrow('AUTH_TICKET_EXCHANGE_REJECTED');
     await expect(withWriteTransaction(database.query, (context) => tickets.consume(context, exchange, [currentSessionToken], nextSessionToken))).resolves.toMatchObject({
-      returnTarget: { url: 'https://console.zhudatuan.com' },
       sessionExpiresAt,
+      target: 'console',
     });
 
     expect(queries).toHaveLength(2);

@@ -7,7 +7,7 @@ describe('experienceCopyIdentity', () => {
       {
         name: '极'.repeat(120),
         code: 'ZHUDATUAN_REHEARSAL_30202641',
-        public_slug: 'z'.repeat(48),
+        publicSlug: 'z'.repeat(48),
       },
       36 ** 7
     );
@@ -20,7 +20,7 @@ describe('experienceCopyIdentity', () => {
   });
 
   it('uses the nonce to avoid repeated-copy collisions', () => {
-    const source = { name: '商城', code: 'MALL', public_slug: 'mall' };
+    const source = { name: '商城', code: 'MALL', publicSlug: 'mall' };
     expect(experienceCopyIdentity(source, 1)).not.toEqual(experienceCopyIdentity(source, 2));
   });
 });

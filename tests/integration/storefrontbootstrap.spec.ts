@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BootstrapQuery, canonicalHost } from '../../services/commerce/src/modules/navigation/application/service/BootstrapQuery';
+import { BootstrapQuery } from '../../services/commerce/src/modules/navigation/application/service/BootstrapQuery';
 import { result as databaseResult, withReadTransaction } from '../../services/commerce/src/test/TransactionFixture';
 
-test('storefront bootstrap resolves the trusted host and returns one coherent anonymous snapshot', async () => {
+test('storefront bootstrap resolves the trusted entry handle and returns one coherent anonymous snapshot', async () => {
   const calls: string[] = [];
   const query = new BootstrapQuery({
     identity: { resolve: () => ({ state: 'anonymous', member: null, membership: null, scope: null, version: 0 }) },
@@ -24,31 +24,38 @@ test('storefront bootstrap resolves the trusted host and returns one coherent an
       },
     },
     experience: {
-      resolveHost: async (_context, host) => {
-        calls.push(`host:${host}`);
-        return { application: 'application:one', mall: 'mall:one', pool: 'pool:one', release: 'release:one', version: 'binding:1', tenant: 'tenant:one' };
+      resolveEntry: async (_context, handle) => {
+        calls.push(`handle:${handle}`);
+        return {
+          application: 'application:one',
+          handle: 'mall-one',
+          url: 'https://fufu.wang/s/mall-one',
+          mall: 'mall:one',
+          pool: 'pool:one',
+          release: 'release:one',
+          version: 'version:1',
+          tenant: 'tenant:one',
+          contentHash: 'hash:one',
+          objectKey: 'experience/mall-one/hash.json',
+        };
       },
       published: async () => ({ document: { sections: [] }, version: 'experience:1', asOf: '2026-08-31T00:00:00.000Z' }),
     },
   } as never);
   const response = await withReadTransaction(
     async () => databaseResult([]),
-    (transaction) => query.execute({} as never, context(transaction, { host: 'Mall.Example:443', 'x-forwarded-host': 'mall.example' }))
+    (transaction) => query.execute({} as never, context(transaction, { 'x-storefront-handle': 'mall-one' }))
   );
   const body = response.body as Record<string, any>;
   assert.equal(response.status, 200);
   assert.equal(response.headers?.['cache-control'], 'public,max-age=30');
   assert.equal(body.state, 'complete');
+  assert.deepEqual(body.entry, { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one' });
   assert.equal(body.binding.mall, 'mall:one');
   assert.equal(body.identity.data.state, 'anonymous');
   assert.equal(body.benefit.state, 'unavailable');
   assert.equal(body.orders.state, 'unavailable');
-  assert.deepEqual(calls, ['host:mall.example']);
-});
-
-test('storefront bootstrap rejects forwarded-host confusion before a binding lookup', () => {
-  assert.throws(() => canonicalHost({ host: 'mall.example', 'x-forwarded-host': 'attacker.example' }), /STOREFRONT_FORWARDED_HOST_UNTRUSTED/);
-  assert.throws(() => canonicalHost({ host: 'mall.example/path' }), /STOREFRONT_HOST_INVALID/);
+  assert.deepEqual(calls, ['handle:mall-one']);
 });
 
 function context(transaction: unknown, headers: Readonly<Record<string, string>>) {

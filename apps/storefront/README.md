@@ -17,7 +17,7 @@ npm run dev
 
 消费者 Web 统一使用 `shop-storefront-standard-v2` 组件族，规范入口为 `src/components/laptop/LaptopFrame.tsx` 导出的 `StorefrontWebFrame`。标准和宽屏布局共享 Header、导航、六个业务页面、商品卡、账户卡、交互反馈与 Footer，仅通过响应式密度调整布局。
 
-正式 `/` 入口由 `src/StorefrontRoot.tsx` 承载，使用生产数据 Provider。客户端只通过 Contract v2 生成 SDK 访问 `https://api.zhudatuan.com`；本地开发只允许 `.env` 明确配置的 3001 API 与 3002 Auth 端口。不存在静态业务状态、演示认证、设备展示路由或失败后降级数据。
+正式 `/s/{handle}` 入口由 Storefront 路由承载，使用生产数据 Provider。客户端只通过 Contract v2 生成 SDK 访问网络目录中的唯一 Commerce API；本地开发只允许明确的 3001 API 与 3002 Auth 端口。不存在静态业务状态、演示认证、设备展示路由或失败后降级数据。
 
 ## 质量检查
 

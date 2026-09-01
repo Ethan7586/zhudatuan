@@ -220,7 +220,17 @@ export class FederationService {
     }
     const candidates = resolution.memberships.filter(({ target }) => target === accepted.transaction.target);
     if (candidates.length !== 1) {
-      const preauth = await this.repository.preauthorize(database, verified, resolution.principal, candidates, accepted.browserhash, this.protector.device(prepared.request.device), subject.assurance, accepted.authorization);
+      const preauth = await this.repository.preauthorize(
+        database,
+        verified,
+        resolution.principal,
+        candidates,
+        accepted.browserhash,
+        this.protector.device(prepared.request.device),
+        subject.assurance,
+        accepted.authorization,
+        accepted.returntarget
+      );
       return this.authRedirect('/membership', accepted.transaction.target, { state: 'selectionrequired' }, this.cookies.preauth(preauth.token));
     }
     const issued = await this.sessions.issue(database, {
@@ -234,7 +244,7 @@ export class FederationService {
       trace: prepared.request.trace,
     });
     await this.repository.complete(database, accepted.transaction.id, verified.version);
-    return Object.freeze({ status: 303, headers: Object.freeze({ ...issued.headers, location: this.returns.issue(accepted.transaction.target).url, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });
+    return Object.freeze({ status: 303, headers: Object.freeze({ ...issued.headers, location: this.returns.verify(accepted.returntarget).url, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });
   }
 
   private authRedirect(path: string, target: 'console' | 'storefront', query: Readonly<Record<string, string>>, cookie?: string): OperationResult {

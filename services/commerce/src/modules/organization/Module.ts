@@ -27,6 +27,8 @@ import { DirectoryProviderRegistry } from './application/service/DirectoryProvid
 import { WecomDirectoryClient } from './infrastructure/adapter/wecom/WecomDirectoryClient';
 import { WecomDirectoryProvider } from './infrastructure/adapter/wecom/WecomDirectoryProvider';
 import { createJobs } from './interface/job/JobFactory';
+import { EXPERIENCE_ORGANIZATION_PORT } from './public/ExperienceOrganizationPort';
+import { PgExperienceOrganizationPort } from './infrastructure/persistence/PgExperienceOrganizationPort';
 export const OrganizationModule = defineModule(Manifest, {
   jobs: createJobs,
   handlers: (context) => {
@@ -52,6 +54,7 @@ export const OrganizationModule = defineModule(Manifest, {
       { token: NAVIGATION_ORGANIZATION_PORT, value: new PgNavigationOrganization() },
       { token: ORGANIZATION_READ_PORT, value: new PgOrganizationReadPort() },
       { token: ORGANIZATION_HIERARCHY_PORT, value: new PgOrganizationHierarchy(new PgTransactionAccess()) },
+      { token: EXPERIENCE_ORGANIZATION_PORT, value: new PgExperienceOrganizationPort() },
     ];
   },
   jobPorts: [{ token: ORGANIZATION_READ_PORT, value: new PgOrganizationReadPort() }],

@@ -191,7 +191,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
         'x-real-ip': localPeer(),
         'x-request-id': randomUUID(),
       },
-      body: JSON.stringify({ ...credential, target, authorization: { state: token(), nonce: token(), challenge: token() } }),
+      body: JSON.stringify({ ...credential, target, returnTarget: bootstrap.returnTarget, authorization: { state: token(), nonce: token(), challenge: token() } }),
     });
   };
   const login = await authenticate('storefront', { method: 'password', subject: LOCAL_ACCOUNT, password });
@@ -419,6 +419,7 @@ type AuthTarget = 'console' | 'storefront';
 interface AuthBootstrap {
   readonly cookie: string;
   readonly csrf: string;
+  readonly returnTarget: string;
   readonly target: AuthTarget;
 }
 
@@ -441,9 +442,10 @@ async function authBootstrap(target: AuthTarget): Promise<AuthBootstrap> {
   });
   const value: unknown = await response.json();
   const csrf = value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>).csrf : null;
+  const returnTarget = value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Readonly<Record<string, unknown>>).returnTarget : null;
   const cookie = response.headers.get('set-cookie')?.split(';', 1)[0];
-  if (response.status !== 200 || typeof csrf !== 'string' || !cookie) throw new Error('LOCAL_AUTH_BOOTSTRAP_INVALID');
-  return Object.freeze({ cookie, csrf, target });
+  if (response.status !== 200 || typeof csrf !== 'string' || typeof returnTarget !== 'string' || !cookie) throw new Error('LOCAL_AUTH_BOOTSTRAP_INVALID');
+  return Object.freeze({ cookie, csrf, returnTarget, target });
 }
 
 function bootstrapCommand(bootstrap: AuthBootstrap): Readonly<Record<string, string>> {

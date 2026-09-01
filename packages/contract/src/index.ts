@@ -11,6 +11,7 @@ export * from './Operation';
 export * from './OperationCatalog';
 export * from './OperationFingerprint';
 export * from './RequirementCatalog';
+export * from './StorefrontEntry';
 export * from './schema';
 export * from './VerificationContract';
 export * from './events/CommerceEvents';

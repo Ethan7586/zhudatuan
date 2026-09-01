@@ -5,7 +5,7 @@ import { DomainError } from '../domain/DomainError';
 describe('OperationPipeline redirect contract', () => {
   it('validates Location as the generated output and keeps the HTTP body empty', async () => {
     const pipeline = new OperationPipeline(
-      { get: () => ({ handle: () => Promise.resolve({ status: 303, headers: { location: 'https://zhudatuan.com/' } }) }) } as never,
+      { get: () => ({ handle: () => Promise.resolve({ status: 303, headers: { location: 'https://fufu.wang/' } }) }) } as never,
       {
         authorize: () =>
           Promise.resolve({
@@ -24,7 +24,7 @@ describe('OperationPipeline redirect contract', () => {
       passthroughExecutor() as never
     );
 
-    await expect(pipeline.execute('identity.federations.complete', request())).resolves.toEqual({ status: 303, body: undefined, headers: { location: 'https://zhudatuan.com/' } });
+    await expect(pipeline.execute('identity.federations.complete', request())).resolves.toEqual({ status: 303, body: undefined, headers: { location: 'https://fufu.wang/' } });
   });
 
   it('rejects a redirect without Location before it reaches the HTTP boundary', async () => {
@@ -180,7 +180,7 @@ function sessionRequest() {
     headers: { 'idempotency-key': 'login:one', 'x-client-target': 'storefront' },
     parameters: {},
     query: new URLSearchParams(),
-    body: { method: 'password', subject: 'ethan', password: 'secret', target: 'storefront', authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' } },
+    body: { method: 'password', subject: 'ethan', password: 'secret', target: 'storefront', returnTarget: 'signed-target', authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' } },
     rawBody: '{}',
     deadline: Date.now() + 1_000,
     signal: controller.signal,

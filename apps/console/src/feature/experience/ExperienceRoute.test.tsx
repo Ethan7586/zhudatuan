@@ -12,6 +12,10 @@ import { Component } from './ExperienceRoute';
 const writes: string[] = [];
 const server = setupServer(
   http.get('*/api/v1/experiences/applications', () => HttpResponse.json(applications)),
+  http.get('*/api/v1/experiences/applications/:applicationid', ({ params }) => {
+    const record = applications.items.find((item) => item.id === params.applicationid);
+    return record ? HttpResponse.json({ ...record, head: null, published: null, history: [] }) : HttpResponse.json({ code: 'RESOURCE_NOT_FOUND' }, { status: 404 });
+  }),
   http.all('*/api/v1/experiences/**', ({ request }) => {
     writes.push(request.method);
     return HttpResponse.json({ code: 'UNEXPECTED_APPLICATION_WRITE' }, { status: 500 });
@@ -35,9 +39,9 @@ describe('Experience governance workspace', () => {
     expect(screen.getByText('平台治理视角：智慧翼平台')).toBeTruthy();
     expect(screen.queryByText(/建店方案/)).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: '查看鸿泰惠民通摘要' }));
+    await user.click(screen.getByRole('button', { name: '查看鸿泰惠民通详情' }));
     const drawer = await screen.findByRole('dialog', { name: '鸿泰惠民通' });
-    expect(within(drawer).getByText(/当前抽屉只读/)).toBeTruthy();
+    expect(await within(drawer).findByText(/列表保持轻量/)).toBeTruthy();
     expect(writes).toHaveLength(0);
   });
 
@@ -113,62 +117,33 @@ function contextFor(activeScope: ConsoleScope): ConsoleContext {
   };
 }
 
-const common = {
-  scope_id: 'platform:commerce',
-  created_at: '2026-08-20T04:00:00.000Z',
-  head_schema_version: '2',
-  head_configuration: null,
-  head_reason: null,
-  published_schema_version: '2',
-  published_configuration: null,
-  published_reason: null,
-  history: [],
-} as const;
-
 const applications = {
   items: [
     {
-      ...common,
       id: 'application:benefits',
+      mallId: 'mall:benefits',
       code: 'BENEFITS',
-      public_slug: 'benefits',
+      publicSlug: 'benefits',
       name: '鸿泰惠民通',
       status: 'active',
       version: 12,
-      head_id: 'experienceversion:benefits:8',
-      head_sequence: 8,
-      head_validation_state: 'valid',
-      head_created_at: '2026-08-27T04:00:00.000Z',
-      published_id: 'experienceversion:benefits:8',
-      published_sequence: 8,
-      published_validation_state: 'valid',
-      published_created_at: '2026-08-27T04:00:00.000Z',
-      domain: 'benefits.example.cn',
-      mall_id: 'mall:benefits',
-      pool_id: 'pool:benefits',
-      updated_at: '2026-08-27T04:00:00.000Z',
+      headSequence: 8,
+      publishedSequence: 8,
+      entry: { handle: 'benefits', url: 'http://127.0.0.1:3000/s/benefits', state: 'ready', releaseId: 'release:benefits:8', releaseVersion: 'experienceversion:benefits:8', contentHash: 'a'.repeat(64) },
+      updatedAt: '2026-08-27T04:00:00.000Z',
     },
     {
-      ...common,
       id: 'application:select',
+      mallId: 'mall:select',
       code: 'SELECT',
-      public_slug: 'select',
+      publicSlug: 'select',
       name: '鸿泰甄选',
       status: 'draft',
       version: 5,
-      head_id: 'experienceversion:select:5',
-      head_sequence: 5,
-      head_validation_state: 'invalid',
-      head_reason: 'INVALID_CONFIGURATION',
-      head_created_at: '2026-08-27T03:00:00.000Z',
-      published_id: 'experienceversion:select:3',
-      published_sequence: 3,
-      published_validation_state: 'valid',
-      published_created_at: '2026-08-25T03:00:00.000Z',
-      domain: 'select.example.cn',
-      mall_id: 'mall:select',
-      pool_id: 'pool:select',
-      updated_at: '2026-08-27T03:00:00.000Z',
+      headSequence: 5,
+      publishedSequence: 3,
+      entry: { handle: 'select', url: 'http://127.0.0.1:3000/s/select', state: 'invalid', requestId: 'trace:select' },
+      updatedAt: '2026-08-27T03:00:00.000Z',
     },
   ],
   count: 2,

@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
 navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
-contractSha256: 78e6f4a3775fd59743df8ac111ed52a39b4e0f6d56dbb18c06050bb06e580bdf
+contractSha256: d396b0aa46a0405b6c5aa23e55ca436f44442b83162ae6e4cb5a5ac7efc111cb
 generated: true
 chain:
   - WorkbookCell
@@ -593,6 +593,7 @@ requirements:
       - checkout.quote.create
       - experience.applications.copy
       - experience.applications.create
+      - experience.applications.detail.read
       - experience.applications.read
       - experience.applications.update
       - experience.versions.publish
@@ -628,6 +629,7 @@ requirements:
       - runtime.health.live
       - runtime.health.ready
       - runtime.health.startup
+      - storefront.bootstrap.read
       - verification.challenges.issue
       - verification.challenges.verify
       - verification.devices.manage
@@ -653,6 +655,7 @@ requirements:
       - packages/contract/definitions/operations.yml#checkout.quote.create
       - packages/contract/definitions/operations.yml#experience.applications.copy
       - packages/contract/definitions/operations.yml#experience.applications.create
+      - packages/contract/definitions/operations.yml#experience.applications.detail.read
       - packages/contract/definitions/operations.yml#experience.applications.read
       - packages/contract/definitions/operations.yml#experience.applications.update
       - packages/contract/definitions/operations.yml#experience.versions.publish
@@ -688,6 +691,7 @@ requirements:
       - packages/contract/definitions/operations.yml#runtime.health.live
       - packages/contract/definitions/operations.yml#runtime.health.ready
       - packages/contract/definitions/operations.yml#runtime.health.startup
+      - packages/contract/definitions/operations.yml#storefront.bootstrap.read
       - packages/contract/definitions/operations.yml#verification.challenges.issue
       - packages/contract/definitions/operations.yml#verification.challenges.verify
       - packages/contract/definitions/operations.yml#verification.devices.manage
@@ -721,7 +725,7 @@ requirements:
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
-      - tests/journey/GroupApplicationJourney.spec.ts
+      - tests/journey/MallEntryJourney.spec.ts
     runbook: docs/operations/experiencepublish.md
     signedEvidence: docs/evidence/releases/MVPGROUPAPPLICATION.json
     releaseBlockers: []
@@ -2209,6 +2213,7 @@ requirements:
       - checkout.quote.create
       - experience.applications.copy
       - experience.applications.create
+      - experience.applications.detail.read
       - experience.applications.read
       - experience.applications.update
       - experience.versions.publish
@@ -2270,6 +2275,7 @@ requirements:
       - packages/contract/definitions/operations.yml#checkout.quote.create
       - packages/contract/definitions/operations.yml#experience.applications.copy
       - packages/contract/definitions/operations.yml#experience.applications.create
+      - packages/contract/definitions/operations.yml#experience.applications.detail.read
       - packages/contract/definitions/operations.yml#experience.applications.read
       - packages/contract/definitions/operations.yml#experience.applications.update
       - packages/contract/definitions/operations.yml#experience.versions.publish

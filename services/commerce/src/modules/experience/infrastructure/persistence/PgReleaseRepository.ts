@@ -9,16 +9,16 @@ export class PgReleaseRepository implements ReleaseRepository {
     const database = this.transactions.database(context);
     const release = `release:${randomUUID()}`;
     const result = await database.query(
-      `insert into experience.release(id,application_id,version_id,state,effective_at,published_by)
-      values($1,$2,$3,'scheduled',clock_timestamp(),$4) returning *`,
-      [release, input.application, input.version, input.actor]
+      `insert into experience.release(id,application_id,version_id,pool_id,state,effective_at,published_by)
+      values($1,$2,$3,$4,'scheduled',clock_timestamp(),$5) returning *`,
+      [release, input.application, input.version, input.pool, input.actor]
     );
     const selected = await database.query<{
-      scope_id: string;
+      mall_id: string;
       public_slug: string;
       configuration_hash: string;
     }>(
-      `select application.scope_id,application.public_slug,version.configuration_hash
+      `select application.mall_id,application.public_slug,version.configuration_hash
       from experience.application application join experience.version version on version.id=$2 where application.id=$1`,
       [input.application, input.version]
     );
@@ -29,7 +29,7 @@ export class PgReleaseRepository implements ReleaseRepository {
       type: 'experience.published',
       aggregateType: 'experience',
       aggregate: input.application,
-      scope: publication.scope_id,
+      scope: publication.mall_id,
       payload: Object.freeze({ release, application: input.application, version: input.version, hash: publication.configuration_hash, key: `experience/${publication.public_slug}/${publication.configuration_hash}.json` }),
       trace: input.trace,
     });

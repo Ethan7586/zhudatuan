@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
+import { parseStorefrontHandle } from '@shop/contract';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiClient } from './ApiClient';
 import { createCatalogOperations } from './operations/catalog';
@@ -52,6 +53,7 @@ describe('ApiClient contract identity', () => {
       {
         ...context(),
         scope: { kind: 'mall', id: 'mall:1' },
+        storefrontHandle: parseStorefrontHandle('mall-one'),
         accessVersion: 11,
         idempotencyKey: 'command:1',
         expectedVersion: 7,
@@ -59,6 +61,7 @@ describe('ApiClient contract identity', () => {
       }
     );
     expect(transport.request?.headers['x-scope-hint']).toBe('mall:1');
+    expect(transport.request?.headers['x-storefront-handle']).toBe('mall-one');
     expect(transport.request?.headers['x-access-version']).toBe('11');
     expect(transport.request?.headers['idempotency-key']).toBe('command:1');
     expect(transport.request?.headers['if-match']).toBe('"7"');

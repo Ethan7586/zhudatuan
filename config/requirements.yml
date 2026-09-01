@@ -72,8 +72,8 @@ mvp:
     status: Designed
     release: required
     modules: [experience, capability, extension]
-    operations: [experience.applications.read]
-    journeys: [tests/journey/GroupApplicationJourney.spec.ts]
+    operations: [experience.applications.read, storefront.bootstrap.read]
+    journeys: [tests/journey/MallEntryJourney.spec.ts]
     providers: []
     clarifications: []
     runbook: experiencepublish
@@ -180,7 +180,7 @@ mvp:
     status: Designed
     release: required
     modules: [experience]
-    operations: [experience.applications.read]
+    operations: [experience.applications.read, storefront.bootstrap.read]
     journeys: [tests/journey/MallDesignJourney.spec.ts]
     providers: []
     clarifications: []
@@ -442,7 +442,7 @@ bindings:
   DIST040: { 'module': 'member', 'operation': 'member.addresses.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'member.profile' }
   DIST041: { 'module': 'member', 'operation': 'member.addresses.manage', 'route': '/scopes/:scopeKind/:scopeId/settings', 'journey': 'tests/journey/DistributionJourney.spec.ts', 'table': 'member.profile' }
   GROUP001: { 'module': 'reporting', 'operation': 'reporting.exports.create', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/GroupDashboardJourney.spec.ts', 'table': 'reporting.metric' }
-  GROUP002: { 'module': 'pricing', 'operation': 'pricing.rules.create', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'pricing.rule' }
+  GROUP002: { 'module': 'experience', 'operation': 'experience.applications.read', 'route': '/scopes/:scopeKind/:scopeId/experience', 'journey': 'tests/journey/MallEntryJourney.spec.ts', 'table': 'experience.application' }
   GROUP003: { 'module': 'pricing', 'operation': 'pricing.rules.create', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'pricing.rule' }
   GROUP004: { 'module': 'catalog', 'operation': 'catalog.pools.read', 'route': '/scopes/:scopeKind/:scopeId/products', 'journey': 'tests/journey/GroupProductJourney.spec.ts', 'table': 'catalog.product' }
   GROUP005: { 'module': 'order', 'operation': 'order.reminders.create', 'route': '/scopes/:scopeKind/:scopeId/orders', 'journey': 'tests/journey/GroupOrderJourney.spec.ts', 'table': 'ordering.orderrecord' }

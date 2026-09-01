@@ -113,7 +113,7 @@ const callerMap = {
   'channel.submit_supplier_refund': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
   'channel.build_supplier_statement': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
   'channel.supplier_enabled': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
-  'experience.resolve_storefront_host': ['services/commerce/src/modules/experience/infrastructure/persistence/PgExperienceReadPort.ts'],
+  'experience.resolve_storefront_entry': ['services/commerce/src/modules/experience/infrastructure/persistence/PgEntryRepository.ts'],
   'extension.enabled_installations': ['services/commerce/src/bootstrap/ProviderLoader.ts'],
   'extension.load_installation': ['services/commerce/src/bootstrap/ProviderLoader.ts'],
   'reporting.cockpit': ['services/commerce/src/modules/reporting/infrastructure/persistence/PgReportingRepository.ts'],

@@ -12,6 +12,8 @@
   },
   "exports": {
     "./client": "./src/ClientEnvironment.ts",
+    "./networkcatalog": "./src/NetworkCatalog.ts",
+    "./networkhtml": "./src/NetworkHtml.ts",
     "./runtime": "./src/RuntimeCatalog.ts",
     "./server": "./src/ServerEnvironment.ts"
   },

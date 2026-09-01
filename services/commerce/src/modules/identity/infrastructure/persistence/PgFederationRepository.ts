@@ -169,7 +169,8 @@ export class PgFederationRepository implements FederationRepository {
     browserhash: Buffer,
     devicehash: Buffer,
     assurance: number,
-    authorization: AuthTicketBinding
+    authorization: AuthTicketBinding,
+    returnTarget: string
   ): Promise<
     Readonly<{
       token: string;
@@ -182,10 +183,25 @@ export class PgFederationRepository implements FederationRepository {
     const minimal = memberships.map(({ id, name, target }) => ({ id, name, target }));
     await database.query(
       `insert into identity.preauth(id,transaction_id,principal_id,token_hash,candidate_hash,candidate_memberships,browser_hash,
-      expires_at,created_at,purpose,target,reference_id,device_hash,state,version,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance)
+      expires_at,created_at,purpose,target,reference_id,device_hash,state,version,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance,return_target)
       values($1,$2,$3,$4,$5,$6::jsonb,$7,clock_timestamp()+interval '5 minutes',clock_timestamp(),
-        'federationselection',$8,$2,$9,'active',0,$10,$11,$12,$13)`,
-      [randomUUID(), value.id, principal, hash(token), hash(JSON.stringify(minimal)), JSON.stringify(minimal), browserhash, value.target, devicehash, authorization.stateHash, authorization.nonceHash, authorization.challenge, assurance]
+        'federationselection',$8,$2,$9,'active',0,$10,$11,$12,$13,$14)`,
+      [
+        randomUUID(),
+        value.id,
+        principal,
+        hash(token),
+        hash(JSON.stringify(minimal)),
+        JSON.stringify(minimal),
+        browserhash,
+        value.target,
+        devicehash,
+        authorization.stateHash,
+        authorization.nonceHash,
+        authorization.challenge,
+        assurance,
+        returnTarget,
+      ]
     );
     return Object.freeze({ token });
   }

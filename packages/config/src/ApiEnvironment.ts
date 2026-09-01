@@ -1,5 +1,6 @@
 import { bearerToken, distinctValues, enumValue, integerValue, pickEnvironment, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 import type { AuthTarget } from './ClientEnvironment';
+import { NETWORK_CATALOG } from './NetworkCatalog';
 
 export const API_ENVIRONMENT_KEYS = [
   'API_PORT',
@@ -9,6 +10,7 @@ export const API_ENVIRONMENT_KEYS = [
   'AUTH_MODE',
   'API_ALLOWED_ORIGINS',
   'AUTH_RETURN_TARGETS',
+  'PUBLIC_STOREFRONT_ORIGIN',
   'DATABASE_API_CONNECTION_REF',
   'REDIS_CONNECTION_REF',
   'SESSION_KEY_REF',
@@ -25,7 +27,6 @@ export const API_ENVIRONMENT_KEYS = [
   'OBJECT_STORE_TOKEN_REF',
   'EXTENSION_MANIFEST_KEY_REF',
   'PUBLIC_MEDIA_BASE_URL',
-  'PUBLIC_MALL_SLUG',
   'SECRET_STORE_ENDPOINT',
   'SECRET_STORE_BEARER_TOKEN',
 ] as const;
@@ -73,6 +74,10 @@ export function apiReturnTargets(environment: ApiEnvironment): AuthReturnTargets
   return Object.freeze(Object.fromEntries(keys.map((key) => [key, webUrl(record[key])])) as Record<AuthTarget, string>);
 }
 
+export function apiStorefrontOrigin(environment: ApiEnvironment): string {
+  return webOrigin(requiredValue(environment.PUBLIC_STOREFRONT_ORIGIN, 'PUBLIC_STOREFRONT_ORIGIN_MISSING'), 'PUBLIC_STOREFRONT_ORIGIN_INVALID');
+}
+
 export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSource): void {
   const app = enumValue(source.APP_ENV, ['development', 'test', 'production'], 'APP_ENV_INVALID');
   const auth = enumValue(source.AUTH_MODE, ['test', 'membership'], 'AUTH_MODE_INVALID');
@@ -81,6 +86,7 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
     ['SERVICE_VERSION', 'SERVICE_VERSION_MISSING'],
     ['API_ALLOWED_ORIGINS', 'API_ALLOWED_ORIGINS_MISSING'],
     ['AUTH_RETURN_TARGETS', 'AUTH_RETURN_TARGETS_MISSING'],
+    ['PUBLIC_STOREFRONT_ORIGIN', 'PUBLIC_STOREFRONT_ORIGIN_MISSING'],
     ['DATABASE_API_CONNECTION_REF', 'DATABASE_API_CONNECTION_REF_MISSING'],
     ['REDIS_CONNECTION_REF', 'REDIS_CONNECTION_REF_MISSING'],
     ['SESSION_KEY_REF', 'SESSION_KEY_REF_MISSING'],
@@ -101,6 +107,18 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
   const kmsBearer = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
   const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+  if (app === 'production') validateProductionNetwork(source);
+}
+
+function validateProductionNetwork(source: ApiEnvironment | EnvironmentSource): void {
+  const allowed = apiAllowedOrigins(source as ApiEnvironment)
+    .slice()
+    .sort();
+  const expectedAllowed = [NETWORK_CATALOG.origins.auth, NETWORK_CATALOG.origins.console, NETWORK_CATALOG.origins.storefront].sort();
+  if (allowed.join(',') !== expectedAllowed.join(',')) throw new Error('PRODUCTION_ALLOWED_ORIGINS_INVALID');
+  const targets = apiReturnTargets(source as ApiEnvironment);
+  if (targets.console !== NETWORK_CATALOG.origins.console || targets.storefront !== NETWORK_CATALOG.origins.storefront) throw new Error('PRODUCTION_RETURN_TARGETS_INVALID');
+  if (apiStorefrontOrigin(source as ApiEnvironment) !== NETWORK_CATALOG.origins.storefront) throw new Error('PRODUCTION_STOREFRONT_ORIGIN_INVALID');
 }
 
 function webUrl(value: unknown): string {
@@ -108,4 +126,18 @@ function webUrl(value: unknown): string {
   const url = new URL(value);
   if (url.username || url.password || url.hash) throw new Error('AUTH_RETURN_TARGETS_INVALID');
   return url.toString().replace(/\/$/, '');
+}
+
+function webOrigin(value: string, code: string): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(code);
+  }
+  const secure = url.protocol === 'https:';
+  const local = url.protocol === 'http:' && url.hostname === '127.0.0.1';
+  if (!secure && !local) throw new Error(code);
+  if (url.username || url.password || url.hash || url.search || (url.pathname !== '/' && url.pathname !== '')) throw new Error(code);
+  return url.origin;
 }

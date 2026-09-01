@@ -161,6 +161,7 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "reporting.exports.read",
   "experience.applications.create",
   "experience.applications.copy",
+  "experience.applications.detail.read",
   "experience.applications.read",
   "experience.applications.update",
   "experience.versions.save",

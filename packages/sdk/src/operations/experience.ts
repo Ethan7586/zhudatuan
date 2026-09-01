@@ -7,6 +7,7 @@ import { bindOperation, defineOperation, type OperationExecutor, type OperationM
 export const EXPERIENCE_OPERATION_IDS = Object.freeze([
   "experience.applications.create",
   "experience.applications.copy",
+  "experience.applications.detail.read",
   "experience.applications.read",
   "experience.applications.update",
   "experience.versions.save",
@@ -18,6 +19,7 @@ export const EXPERIENCE_OPERATION_IDS = Object.freeze([
 export interface ExperienceOperations {
   readonly applicationsCreate: OperationMethod<"experience.applications.create">;
   readonly applicationsCopy: OperationMethod<"experience.applications.copy">;
+  readonly applicationsDetailRead: OperationMethod<"experience.applications.detail.read">;
   readonly applicationsRead: OperationMethod<"experience.applications.read">;
   readonly applicationsUpdate: OperationMethod<"experience.applications.update">;
   readonly versionsSave: OperationMethod<"experience.versions.save">;
@@ -31,6 +33,7 @@ export function createFetchExperience(baseUrl: string): ExperienceOperations { r
 export function createExperienceOperations(client: OperationExecutor): ExperienceOperations { return Object.freeze({
     applicationsCreate: bindApplicationsCreate(client),
     applicationsCopy: bindApplicationsCopy(client),
+    applicationsDetailRead: bindApplicationsDetailRead(client),
     applicationsRead: bindApplicationsRead(client),
     applicationsUpdate: bindApplicationsUpdate(client),
     versionsSave: bindVersionsSave(client),
@@ -46,6 +49,10 @@ function bindApplicationsCreate(client: OperationExecutor): OperationMethod<"exp
 export function createFetchExperienceApplicationsCopy(baseUrl: string): OperationMethod<"experience.applications.copy"> { return bindApplicationsCopy(new ApiClient(baseUrl, new FetchTransport())); }
 
 function bindApplicationsCopy(client: OperationExecutor): OperationMethod<"experience.applications.copy"> { return bindOperation(client, defineOperation({"id":"experience.applications.copy","method":"POST","path":"/api/v1/experiences/applications/{applicationid}/copies","audience":"console","targets":["console"],"responseMode":"json","idempotent":false,"timeout":800})); }
+
+export function createFetchExperienceApplicationsDetailRead(baseUrl: string): OperationMethod<"experience.applications.detail.read"> { return bindApplicationsDetailRead(new ApiClient(baseUrl, new FetchTransport())); }
+
+function bindApplicationsDetailRead(client: OperationExecutor): OperationMethod<"experience.applications.detail.read"> { return bindOperation(client, defineOperation({"id":"experience.applications.detail.read","method":"GET","path":"/api/v1/experiences/applications/{applicationid}","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
 
 export function createFetchExperienceApplicationsRead(baseUrl: string): OperationMethod<"experience.applications.read"> { return bindApplicationsRead(new ApiClient(baseUrl, new FetchTransport())); }
 

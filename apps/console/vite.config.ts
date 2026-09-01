@@ -1,19 +1,16 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { networkHtml } from '@shop/config/networkhtml';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), { name: 'network-html', transformIndexHtml: networkHtml }],
     build: { manifest: true },
     server: {
       host: '127.0.0.1',
       port: 4173,
-      /**
-       * In production Caddy reverse-proxies console.zhudatuan.com/api/* to the commerce
-       * runtime. The dev server must do the same or every authenticated request
-       * would hit the Vite server itself and fail.
-       */
+      /** Development mirrors the canonical Console-to-Commerce request path. */
       proxy: {
         '/api': {
           target: process.env.COMMERCE_API_ORIGIN ?? 'http://127.0.0.1:3001',

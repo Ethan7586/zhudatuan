@@ -23,7 +23,10 @@ test('invite02_console_signin_proof_success', () => {
   const invitation = signin({ target: 'console', recipientHash: Buffer.alloc(32, 1), assurance: 2 });
   assert.equal(invitation.requiresProof(), true);
   assert.equal(OperationCatalog.get('identity.sessions.complete').assuranceLevel, 'preauth');
-  assert.equal(operationSchema('identity.sessions.complete').input.safeParse({ body: { proof: 'challenge', code: '123456', authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' } } }).success, true);
+  assert.equal(
+    operationSchema('identity.sessions.complete').input.safeParse({ body: { proof: 'challenge', code: '123456', returnTarget: 'signed-target', authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' } } }).success,
+    true
+  );
 });
 
 test('invite03_enrollment_success', () => {

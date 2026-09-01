@@ -8,6 +8,7 @@ export * from './Error';
 export * from './Form';
 export * from './NavigationIcon';
 export * from './QueryState';
+export * from './QrCode';
 export * from './RecordTable';
 export * from './ResourcePanel';
 export * from './ResourceState';

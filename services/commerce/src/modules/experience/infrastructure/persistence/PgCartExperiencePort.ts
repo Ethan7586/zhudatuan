@@ -8,7 +8,7 @@ export class PgCartExperiencePort implements CartExperiencePort {
     const result = await database.query<{
       id: string;
     }>(
-      `select id from experience.application where scope_id=$1 and status='active'
+      `select id from experience.application where mall_id=$1 and status='active'
       order by updated_at desc,id limit 1`,
       [scope]
     );

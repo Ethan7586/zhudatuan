@@ -169,7 +169,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   const protector = new FederationProtector(keys.session);
   const preauth = new PgPreauthResolver(pool, protector);
   const invitationGuard = new InvitationGuard(new PgInvitationRate(new PgTransactionManager(pool), telemetry), context.service(RISK_GATE), protector);
-  const tickets = new PgAuthTicket(returns);
+  const tickets = new PgAuthTicket();
   const identityAccess = context.ports.get(IDENTITY_ACCESS_PORT);
   const members = context.ports.get(IDENTITY_MEMBER_PORT);
   const sessionRepository = new PgSessionRepository();
@@ -183,7 +183,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   const redeemer = new InvitationRedeemer(repository, invitationAccess, telemetry);
   const invited = context.ports.get(INVITATION_MEMBER_PORT);
   const federationRepository = new PgFederationRepository(members, identityAccess);
-  const selector = new MembershipSelector(new PgMembershipSelection(), sessions, protector, returns, identityAccess, members, federationRepository, cookies);
+  const selector = new MembershipSelector(new PgMembershipSelection(), sessions, protector, identityAccess, members, federationRepository, returns, cookies);
   const linkcases = new PgLinkCaseRepository();
   const linkRepository = new PgIdentityLinkRepository();
   const federation = new FederationService(
@@ -254,7 +254,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   return [
     new SessionsCreateHandler(authentication.action(), new StartFederation(federation).lifecycle(), invitationAuthenticator),
     new SessionsCompleteHandler(new CompleteSession(repository, redeemer, sessions, returns, keys.session, tickets, challenges, cookies, assurances, invitationFailures).lifecycle()),
-    new TicketsExchangeHandler(new ExchangeTicket(tickets, csrf, cookies).action()),
+    new TicketsExchangeHandler(new ExchangeTicket(tickets, returns, csrf, cookies).action()),
     new SessionReadHandler(new ReadSession(members, kms, cookies, credentials).lifecycle()),
     new SessionDeleteHandler(revocation.current()),
     new SessionsReadHandler(new ReadSessions(sessionRepository).action()),

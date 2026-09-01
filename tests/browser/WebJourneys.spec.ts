@@ -4,6 +4,7 @@ import { expectWcagAA } from './Accessibility';
 import { createConsoleMock } from './ConsoleMock';
 import { cockpit, consoleSession, storefrontBootstrap, storefrontCatalog } from './Fixtures';
 import { OperationMock } from './OperationMock';
+import jsQR from 'jsqr';
 
 test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) => {
   const api = new OperationMock(page)
@@ -102,7 +103,7 @@ test('Storefront 公开首页无需会话即可深链并满足 WCAG A/AA', async
   const api = new OperationMock(page).get('/api/v1/storefront/bootstrap', storefrontBootstrap).get('/api/v1/storefront/catalog', storefrontCatalog);
   await api.install();
 
-  await page.goto('http://127.0.0.1:4177/m/mall%3Ae2e');
+  await page.goto('http://127.0.0.1:3000/s/mall-e2e');
   await expect(page.getByRole('heading', { level: 1, name: '智慧翼企业福利专场 · 权益按报价结算' })).toBeVisible();
   await expect(page).toHaveTitle('智慧翼企业福利商城｜企业员工福利平台');
   await expect(page.getByRole('navigation', { name: '商城页面导航' })).toBeVisible();
@@ -114,6 +115,138 @@ test('Storefront 公开首页无需会话即可深链并满足 WCAG A/AA', async
   expect(operationPaths.length).toBeGreaterThan(0);
   await expect.poll(() => new Set(api.calls.map((call) => call.path))).toEqual(new Set(['/api/v1/storefront/bootstrap', '/api/v1/storefront/catalog']));
   expect(api.calls.every((call) => call.method === 'GET')).toBe(true);
+  expect(api.calls.every((call) => call.headers['x-storefront-handle'] === 'mall-e2e')).toBe(true);
   expect(api.unmatched).toEqual([]);
   await expectWcagAA(page);
 });
+
+test('Console 商城码按需生成并在手机宽度保持可访问', async ({ page }) => {
+  const session = {
+    ...consoleSession,
+    permissions: [...consoleSession.permissions, 'experience.application.read'],
+    capabilities: [...consoleSession.capabilities, 'experience.applications.read'],
+  };
+  const applications = {
+    items: [
+      {
+        id: 'application:e2e',
+        mallId: 'mall:e2e',
+        code: 'MALLE2E',
+        publicSlug: 'mall-e2e',
+        name: '鸿泰惠民通',
+        status: 'active',
+        version: 8,
+        headSequence: 8,
+        publishedSequence: 8,
+        entry: { handle: 'mall-e2e', url: 'http://127.0.0.1:3000/s/mall-e2e', state: 'ready', releaseId: 'release:e2e', releaseVersion: 'version:e2e', contentHash: 'a'.repeat(64) },
+        updatedAt: '2026-09-01T00:00:00.000Z',
+      },
+    ],
+    count: 1,
+  };
+  const api = createConsoleMock(page, session).get('/api/v1/experiences/applications', applications);
+  await api.install();
+
+  await page.goto('http://127.0.0.1:4173/scopes/enterprise/enterprise%3Ae2e/experience');
+  await expect(page.getByRole('heading', { level: 1, name: '商城管理' })).toBeVisible();
+  const trigger = page.getByRole('button', { name: '商城码', exact: true });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: '商城入口' });
+  await expect(dialog.getByRole('img', { name: '鸿泰惠民通商城二维码' })).toBeVisible();
+  const renderedQr = await dialog.locator('svg').evaluate((svg) => ({ viewBox: svg.getAttribute('viewBox'), path: svg.querySelector('path')?.getAttribute('d') ?? null }));
+  expect(decodeRenderedQr(renderedQr)).toBe('http://127.0.0.1:3000/s/mall-e2e');
+  await expect(dialog.getByRole('link', { name: 'http://127.0.0.1:3000/s/mall-e2e' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '复制链接' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '下载二维码' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '新窗口打开商城' })).toBeVisible();
+  for (const width of [320, 768, 1366, 1440]) {
+    await page.setViewportSize({ width, height: width === 320 ? 720 : 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    const bounds = await dialog.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+  }
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+  expect(api.calls.filter((call) => call.path === '/api/v1/experiences/applications').every((call) => call.headers['x-scope-hint'] === 'enterprise:e2e')).toBe(true);
+  expect(api.unmatched).toEqual([]);
+  await expectWcagAA(page);
+});
+
+test('Storefront 受保护深链登录保留原商城路径', async ({ page }) => {
+  let bootstraps = 0;
+  let authenticated = false;
+  const signedTarget = `proof.${'a'.repeat(64)}`;
+  const api = new OperationMock(page)
+    .get('/api/v1/storefront/bootstrap', () => {
+      bootstraps += 1;
+      if (!authenticated) return storefrontBootstrap;
+      return {
+        ...storefrontBootstrap,
+        identity: { ...storefrontBootstrap.identity, version: '1', data: { state: 'member', member: { id: 'member:e2e', displayName: '测试员工' }, membership: 'membership:e2e' } },
+      };
+    })
+    .get('/api/v1/identity/providers', { items: [], csrf: 'c'.repeat(43), target: 'storefront', returnTarget: signedTarget })
+    .get('/api/v1/identity/memberships', { items: [], count: 0 })
+    .get('/api/v1/benefits/accounts', { items: [], count: 0 })
+    .get('/api/v1/members/me/addresses', { items: [], count: 0 })
+    .get('/api/v1/members/me/favorites', { items: [], count: 0 })
+    .get('/api/v1/members/me', {
+      id: 'member:e2e',
+      display_name: '测试员工',
+      status: 'active',
+      mobile_bound: true,
+      membership_id: 'membership:e2e',
+      organization_id: 'mall:e2e',
+      employee_no: null,
+      joined_at: '2026-09-01T00:00:00.000Z',
+      access_version: 1,
+    })
+    .get('/api/v1/carts/current', { version: 0, items: [] })
+    .post('/api/v1/identity/sessions', { kind: 'session', ticket: 't'.repeat(64), returnTarget: signedTarget }, 201)
+    .post('/api/v1/identity/tickets/exchange', () => {
+      authenticated = true;
+      return {
+        returnTarget: { url: 'http://127.0.0.1:3000/s/mall-e2e/orders?state=paid', proof: signedTarget, expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' },
+        expiresIn: 3600,
+      };
+    });
+  await api.install();
+
+  await page.goto('http://127.0.0.1:3000/s/mall-e2e/orders?state=paid');
+  await expect(page).toHaveURL(/127\.0\.0\.1:3002/);
+  const destination = new URL(page.url());
+  expect(destination.searchParams.get('target')).toBe('storefront');
+  expect(destination.searchParams.get('returnpath')).toBe('/s/mall-e2e/orders?state=paid');
+  await expect(page.getByRole('heading', { level: 2, name: '统一账号认证' })).toBeVisible();
+  await expect.poll(() => api.calls.some((call) => call.path === '/api/v1/identity/providers' && new URLSearchParams(call.query).get('returnpath') === '/s/mall-e2e/orders?state=paid')).toBe(true);
+  await page.getByLabel('登录账号或已绑定手机号').fill('e2e-user');
+  await page.getByLabel('密码', { exact: true }).fill('correct-horse');
+  await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
+  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await expect(page).toHaveURL('http://127.0.0.1:3000/s/mall-e2e/orders?state=paid');
+  expect(api.calls.find((call) => call.path === '/api/v1/identity/sessions')?.body).toMatchObject({ returnTarget: signedTarget });
+  expect(api.calls.find((call) => call.path === '/api/v1/identity/tickets/exchange')?.body).toMatchObject({ returnTarget: signedTarget });
+  await expect.poll(() => bootstraps).toBeGreaterThanOrEqual(2);
+  expect(api.unmatched).toEqual([]);
+});
+
+function decodeRenderedQr(svg: Readonly<{ viewBox: string | null; path: string | null }>): string | undefined {
+  const extent = Number(svg.viewBox?.split(/\s+/)[3]);
+  if (!Number.isSafeInteger(extent) || extent < 1 || !svg.path) return undefined;
+  const dark = new Set([...svg.path.matchAll(/M(\d+) (\d+)h1v1h-1z/g)].map((match) => `${match[1]}:${match[2]}`));
+  const scale = 8;
+  const width = extent * scale;
+  const pixels = new Uint8ClampedArray(width * width * 4);
+  for (let y = 0; y < width; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const color = dark.has(`${Math.floor(x / scale)}:${Math.floor(y / scale)}`) ? 0 : 255;
+      const offset = (y * width + x) * 4;
+      pixels.fill(color, offset, offset + 3);
+      pixels[offset + 3] = 255;
+    }
+  }
+  return jsQR(pixels, width, width, { inversionAttempts: 'dontInvert' })?.data;
+}

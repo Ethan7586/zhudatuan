@@ -70,6 +70,27 @@ describe('PgTransactionManager', () => {
     expect(first.statements).toContain('rollback');
     expect(second.statements).toContain('commit');
   });
+
+  it('absorbs synchronized worker claim conflicts without weakening API transaction bounds', async () => {
+    const clients = Array.from({ length: 8 }, () => fakeClient());
+    const sleeps: number[] = [];
+    const manager = new PgTransactionManager(
+      fakePool(...clients),
+      async (milliseconds) => {
+        sleeps.push(milliseconds);
+      },
+      () => 0
+    );
+    let attempts = 0;
+    await manager.write({ ...options(), workload: 'jobs' }, async () => {
+      attempts += 1;
+      if (attempts < 8) throw Object.assign(new Error('serialization'), { code: '40001' });
+    });
+    expect(attempts).toBe(8);
+    expect(sleeps).toEqual([7, 14, 28, 56, 100, 100, 100]);
+    expect(clients.slice(0, -1).every((client) => client.statements.includes('rollback'))).toBe(true);
+    expect(clients.at(-1)?.statements).toContain('commit');
+  });
 });
 
 function options() {

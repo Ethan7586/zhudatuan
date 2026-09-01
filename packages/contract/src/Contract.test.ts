@@ -30,7 +30,7 @@ describe('contract truth', () => {
   it('keeps invitation entry code-only and moves campaign recipients to the strict challenge step', () => {
     const schema = OPERATION_SCHEMAS['identity.sessions.create'].input;
     const authorization = { state: 'state', nonce: 'nonce', challenge: 'a'.repeat(43) };
-    expect(schema.parse({ body: { method: 'invitation', code: 'invite', target: 'console', authorization } })).toMatchObject({ body: { method: 'invitation', target: 'console' } });
+    expect(schema.parse({ body: { method: 'invitation', code: 'invite', target: 'console', returnTarget: 'signed-target', authorization } })).toMatchObject({ body: { method: 'invitation', target: 'console' } });
     expect(() => schema.parse({ body: { method: 'invitation', code: 'invite', subject: '13800138000', target: 'storefront', authorization } })).toThrow();
     expect(() => schema.parse({ body: { method: 'invitation', code: 'invite', target: 'storefront', authorization, role: 'owner' } })).toThrow();
     expect(OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'enrollment', destination: '13800138000' } })).toEqual({ body: { purpose: 'enrollment', destination: '13800138000' } });

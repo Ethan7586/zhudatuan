@@ -1,8 +1,12 @@
 import { array, literal, null as nullSchema, number, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { isoUtc } from './Primitives';
+import { STOREFRONT_ENTRY_URL_PATTERN, STOREFRONT_HANDLE_PATTERN } from '../StorefrontEntry';
+import { regex } from 'zod/mini';
 
 const nullableText = union([string(), nullSchema()]);
+const handle = string().check(regex(STOREFRONT_HANDLE_PATTERN));
+const publicUrl = string().check(regex(STOREFRONT_ENTRY_URL_PATTERN));
 const section = <T>(data: T) => strictObject({ state: literal(['complete', 'unavailable', 'failed']), version: string(), asOf: isoUtc, data: union([data as never, nullSchema()]) });
 const binding = strictObject({ application: string(), mall: string(), pool: string(), release: string(), version: string(), tenant: string() });
 const identity = strictObject({
@@ -53,7 +57,7 @@ export const STOREFRONT_QUERY_SCHEMAS = {
 export const STOREFRONT_OUTPUT_SCHEMAS = {
   StorefrontBootstrapReadOutput: strictObject({
     state: literal(['complete', 'partial']),
-    host: string(),
+    entry: strictObject({ handle, url: publicUrl }),
     binding,
     identity: section(identity),
     navigation: section(array(navigation)),
