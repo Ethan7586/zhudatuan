@@ -150,6 +150,7 @@ const REPAIR_FILES = [
   '20260902013000_enable_owner_reporting_reads.sql',
   '20260902014000_enable_owner_governance_reads.sql',
   '20260902015000_seed_platform_support_sla.sql',
+  '20260902016000_resolve_inherited_support_sla.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v3_catalog_contract.sql',

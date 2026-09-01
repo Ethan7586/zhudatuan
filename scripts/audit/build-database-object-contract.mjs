@@ -117,6 +117,7 @@ const callerMap = {
   'extension.enabled_installations': ['services/commerce/src/bootstrap/ProviderLoader.ts'],
   'extension.load_installation': ['services/commerce/src/bootstrap/ProviderLoader.ts'],
   'reporting.cockpit': ['services/commerce/src/modules/reporting/infrastructure/persistence/PgReportingRepository.ts'],
+  'support.resolve_sla': ['services/commerce/src/modules/support/infrastructure/persistence/PgSupportRepository.ts'],
   'ordering.payment_webhook_scope': ['services/commerce/src/modules/order/infrastructure/persistence/PgPaymentWebhookScopeReader.ts'],
 };
 

@@ -62,12 +62,9 @@ export class PgSupportRepository implements SupportPersistencePort {
   }
 
   async sla(scope: string, priority: TicketPriority): Promise<SlaPolicy> {
-    const organization = await this.organizations.scope(this.database.transaction, scope);
-    const scopes = [organization.id, ...organization.ancestors];
     const result = await this.database.query<{ response_seconds: number; resolution_seconds: number }>(
-      `select sla.response_seconds,sla.resolution_seconds from support.sla sla where sla.scope_id=any($1::text[])
-      and sla.priority=$2 order by array_position($1::text[],sla.scope_id),sla.version desc limit 1`,
-      [scopes, priority]
+      'select response_seconds,resolution_seconds from support.resolve_sla($1,$2)',
+      [scope, priority]
     );
     const policy = result.rows[0];
     if (!policy) throw new Error('SUPPORT_SLA_NOT_CONFIGURED');

@@ -559,6 +559,12 @@ objects:
     owner: support
     source: database/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+  - id: support.resolve_sla
+    kind: function
+    owner: support
+    source: database/migrations/20260902016000_resolve_inherited_support_sla.sql
+    callers:
+      - services/commerce/src/modules/support/infrastructure/persistence/PgSupportRepository.ts
   - id: support.resource_scope
     kind: function
     owner: support
@@ -947,6 +953,14 @@ objects:
     role: shopapp
     objectType: function
     target: runtime.accept_provider_webhook(text,text,text,jsonb,text,text,text,integer,jsonb)
+    privilege: execute
+  - id: shopapp:function:support.resolve_sla(text,text):execute
+    kind: grant
+    owner: support
+    source: database/migrations/20260902016000_resolve_inherited_support_sla.sql
+    role: shopapp
+    objectType: function
+    target: support.resolve_sla(text,text)
     privilege: execute
   - id: shopapp:schema:access:usage
     kind: grant
