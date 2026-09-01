@@ -41,7 +41,7 @@ describe('SDK client artifacts', () => {
 
     expect(openapi).toContain('OMS-001');
     expect(source).toContain('OMS-001');
-    expect(source.match(/identity\.session\.read/g)).toHaveLength(1);
+    expect(source.match(/\["identity\.session\.read",/g)).toHaveLength(1);
   });
 });
 

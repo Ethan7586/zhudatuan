@@ -75,6 +75,16 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+      - voucher.credentialpools.create
+      - voucher.credentials.generate
+      - voucher.credentials.import
+      - voucher.credentialpools.close
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.list
+      - voucher.credentials.get
+      - voucher.credentialexports.create
+      - voucher.jobs.get
     modules:
       - audit
       - benefit
@@ -852,7 +862,82 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+      - partner.customers.create
+      - partner.customers.update
+      - partner.customers.enable
+      - partner.customers.disable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customeroptions.list
+      - voucher.products.create
+      - voucher.products.revise
+      - voucher.products.enable
+      - voucher.products.disable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.productoptions.list
+      - voucher.credentialpools.create
+      - voucher.credentials.generate
+      - voucher.credentials.import
+      - voucher.credentialpools.close
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.list
+      - voucher.credentials.get
+      - voucher.credentialexports.create
+      - voucher.jobs.get
+      - voucher.stockrequests.create
+      - voucher.stockrequests.update
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequestoptions.list
+      - approval.templates.create
+      - approval.templates.revise
+      - approval.templates.enable
+      - approval.templates.disable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.tasks.list
+      - approval.tasks.approve
+      - approval.tasks.reject
+      - approval.instances.get
+      - voucher.issueorders.create
+      - voucher.issueorders.update
+      - voucher.issueorders.submit
+      - voucher.issueorders.cancel
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issuebatches.retry
+      - voucher.issuebatches.get
+      - voucher.issueorderexports.create
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.search.read
+      - voucher.activations.secret
+      - voucher.activations.numbersecret
+      - voucher.vouchers.bind
+      - voucher.vouchers.unbind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.redemptions.quote
+      - voucher.tenderholds.create
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.release
+      - voucher.redemptions.create
+      - voucher.refunds.create
+      - voucher.redemptions.get
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.searchexports.create
+      - voucher.exports.get
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -864,6 +949,7 @@ requirements:
       - member
       - notification
       - order
+      - partner
       - payment
       - pricing
       - runtime
@@ -875,6 +961,7 @@ requirements:
       - voucher.voucher
       - voucher.redemption
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -886,6 +973,7 @@ requirements:
       - services/commerce/src/modules/member
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -2059,7 +2147,82 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+      - partner.customers.create
+      - partner.customers.update
+      - partner.customers.enable
+      - partner.customers.disable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customeroptions.list
+      - voucher.products.create
+      - voucher.products.revise
+      - voucher.products.enable
+      - voucher.products.disable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.productoptions.list
+      - voucher.credentialpools.create
+      - voucher.credentials.generate
+      - voucher.credentials.import
+      - voucher.credentialpools.close
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.list
+      - voucher.credentials.get
+      - voucher.credentialexports.create
+      - voucher.jobs.get
+      - voucher.stockrequests.create
+      - voucher.stockrequests.update
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequestoptions.list
+      - approval.templates.create
+      - approval.templates.revise
+      - approval.templates.enable
+      - approval.templates.disable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.tasks.list
+      - approval.tasks.approve
+      - approval.tasks.reject
+      - approval.instances.get
+      - voucher.issueorders.create
+      - voucher.issueorders.update
+      - voucher.issueorders.submit
+      - voucher.issueorders.cancel
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issuebatches.retry
+      - voucher.issuebatches.get
+      - voucher.issueorderexports.create
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.search.read
+      - voucher.activations.secret
+      - voucher.activations.numbersecret
+      - voucher.vouchers.bind
+      - voucher.vouchers.unbind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.redemptions.quote
+      - voucher.tenderholds.create
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.release
+      - voucher.redemptions.create
+      - voucher.refunds.create
+      - voucher.redemptions.get
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.searchexports.create
+      - voucher.exports.get
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -2071,6 +2234,7 @@ requirements:
       - member
       - notification
       - order
+      - partner
       - payment
       - pricing
       - runtime
@@ -2081,6 +2245,7 @@ requirements:
       - voucher.redemption
       - voucher.reversal
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -2092,6 +2257,7 @@ requirements:
       - services/commerce/src/modules/member
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
