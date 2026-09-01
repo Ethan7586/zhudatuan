@@ -13,8 +13,8 @@
     "packages/config",
     "packages/telemetry"
   ],
-  "count": 745,
-  "treeSha256": "ba6617da3f82d7a76404bb633ae0df6e94bbb897e0921a55e9b9b4f88814128f",
+  "count": 746,
+  "treeSha256": "64e736ff25e020f26d24a0552789199c0212de604ee36a3bc2260482f48c0787",
   "entries": [
     {
       "path": "apps/auth-web/.env.example",
@@ -2658,8 +2658,8 @@
     },
     {
       "path": "apps/storefront-web/src/context/checkoutSelectedCart.ts",
-      "sha256": "de488b3de54f9b25057b1439f33a561083d68ed643326a8ad91f5ec793b61cd3",
-      "size": 1421,
+      "sha256": "1bdf64c6c4254e26e8024ee2633a6bb122a33e3342dece4500d4cd29cf92e566",
+      "size": 1513,
       "mode": "0644"
     },
     {
@@ -2676,8 +2676,8 @@
     },
     {
       "path": "apps/storefront-web/src/context/MallContext.tsx",
-      "sha256": "67826f827f592384b4e01cbb89e1968844434439158ca39560b45c9f22c7c72d",
-      "size": 16245,
+      "sha256": "724d3d1a81bba01870fa274670d55a5b02a6938e773f1e5dfd451059cabfadf5",
+      "size": 16501,
       "mode": "0644"
     },
     {
@@ -2724,8 +2724,8 @@
     },
     {
       "path": "apps/storefront-web/src/context/useProductionSync.ts",
-      "sha256": "0ad46b96735ad594c75644154aa6f525c6b58f8e93a650b4186f8eda03e4a5a6",
-      "size": 7911,
+      "sha256": "c470465925e9d561b13a998e0824104da6c820d198e344b87e5a0c2d27bc980b",
+      "size": 7939,
       "mode": "0644"
     },
     {
@@ -2946,8 +2946,8 @@
     },
     {
       "path": "apps/storefront-web/src/services/canonicalCheckout.ts",
-      "sha256": "ad0b4a3eb2bb351cfaaf2659449489640bf44af3b6240e2236e4ee57d2815b54",
-      "size": 4597,
+      "sha256": "be05fe01680440040547bb57ad0df1eaba3ee5d28dfcb9039935c4ef4e137b34",
+      "size": 4727,
       "mode": "0644"
     },
     {
@@ -3006,14 +3006,14 @@
     },
     {
       "path": "apps/storefront-web/src/services/productionApi.test.ts",
-      "sha256": "4b4c224b0f2c373265843e9a1783dcb2b5084ddc86992421fe0224d013976524",
-      "size": 10532,
+      "sha256": "94bd0cbfe5c5ac5b803541c2860f70fd2e88aa892422ddb939451b5e501380fd",
+      "size": 12281,
       "mode": "0644"
     },
     {
       "path": "apps/storefront-web/src/services/productionApi.ts",
-      "sha256": "f2884c2bebefd9b637ef7dd32cc5602553248cd5549f7149ac87b17e6d8eb0b8",
-      "size": 8262,
+      "sha256": "90a5d94f294e048c2d3d8255efc90c098e1bda6e1825b84935b02002b5e0d078",
+      "size": 8240,
       "mode": "0644"
     },
     {
@@ -3032,6 +3032,12 @@
       "path": "apps/storefront-web/src/services/referralAttribution.ts",
       "sha256": "b0474144a68614e775c17c7b28b1f6662abc7f8ca959bb680cef5a9f0d242bed",
       "size": 4067,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/storefront-web/src/services/wechatJsapiPayment.ts",
+      "sha256": "b0847e3a93973af4dd4440bb3ba645481f6c3112bef5ee75eb5fe814cd7b4f14",
+      "size": 2667,
       "mode": "0644"
     },
     {
@@ -3246,14 +3252,14 @@
     },
     {
       "path": "packages/config/src/PurchaseApiEnvironment.test.ts",
-      "sha256": "514ae9654da40b38213604f63ebc1d9e5ee8cb15f7c26e0d563677627be5e5c4",
-      "size": 3373,
+      "sha256": "1c71ea64d7f0443d691a92ae7e0a6bd2f80ea76a03e48d6c0a3ff3eb4fa11708",
+      "size": 3639,
       "mode": "0644"
     },
     {
       "path": "packages/config/src/PurchaseApiEnvironment.ts",
-      "sha256": "2f641d2fd6ac85f400469d6ad7364327a851f7c236b82bccb2390b64881c7550",
-      "size": 3781,
+      "sha256": "2143d65245ffa09040d0c3bb25d2f8276b813db7d3e452e8a56dd64870bc6f0f",
+      "size": 4216,
       "mode": "0644"
     },
     {

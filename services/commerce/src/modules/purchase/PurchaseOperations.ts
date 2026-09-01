@@ -2,11 +2,12 @@ import { randomUUID } from 'node:crypto';
 import type { OperationId } from '@shop/contract';
 import { token } from '../../bootstrap/Container';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
-import type { OperationResult } from '../../foundation/application/OperationHandler';
+import type { OperationResult, OperationUsecase } from '../../foundation/application/OperationHandler';
 import type { OperationAction } from '../../foundation/application/ModuleOperations';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import { domainEvent } from '../../foundation/domain/DomainEvent';
 import { appendOutbox } from '../../foundation/infrastructure/OutboxStore';
+import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { ModuleOperations, requireAccess, type OperationDatabase } from '../../foundation/application/ModuleOperations';
 import { bodyRecord, textField } from '../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
@@ -21,6 +22,7 @@ import { MarketingPort } from '../marketing/MarketingPort';
 import { OrderPort } from '../order/OrderPort';
 import { PlaceOrder } from '../order/application/PlaceOrder';
 import { PaymentSettlementCore } from '../payment/application/PaymentSettlementCore';
+import { ExternalPaymentIntentOperations } from '../payment/PaymentContractModule';
 import { PAYMENT_GATEWAY } from '../payment/application/port/PaymentGateway';
 import type { PaymentGateway } from '../payment/application/port/PaymentGateway';
 import { pricingPort } from '../pricing/PricingPort';
@@ -28,6 +30,8 @@ import { PurchaseBenefitGateway } from './PurchaseBenefitGateway';
 import { DisabledPurchaseVoucherGateway } from './DisabledPurchaseVoucherGateway';
 import { PurchaseCheckoutContext } from './PurchaseCheckoutContext';
 import { PurchaseOrderQuoteStore } from './PurchaseOrderQuoteStore';
+import { PurchasePaymentIntentContext } from './PurchasePaymentIntentContext';
+import { PurchasePaymentRecoveryQueue } from './PurchasePaymentRecoveryQueue';
 import {
   assertPurchaseQuote,
   assertInternalIntent,
@@ -101,14 +105,27 @@ interface InternalSettlement {
 export type InternalSettlementFactory = (benefit: PurchaseBenefitGateway) => InternalSettlement;
 
 export function purchasePaymentOperations(context: ModuleContext,
-  settlementFactory: InternalSettlementFactory = internalSettlement): ModuleOperations {
+  settlementFactory: InternalSettlementFactory = internalSettlement): OperationUsecase {
   const pool = context.container.get(DATABASE_POOL);
   const gateway = context.container.get(PAYMENT_GATEWAY);
   const risk = context.container.get(RISK_GATE);
   const decisions = context.container.get(DECISION_SINK);
-  return new ModuleOperations('payment', pool, context.container.get(AUDIT_SINK), {
+  const audit = context.container.get(AUDIT_SINK);
+  const internal = new ModuleOperations('payment', pool, audit, {
     'payment.intents.create': purchasePaymentAction(gateway, risk, decisions, settlementFactory),
   }, ['payment.intents.create']);
+  const external = new ExternalPaymentIntentOperations(pool.workload('command'), gateway, context.container.get(KMS_CLIENT), audit,
+    new PurchasePaymentIntentContext(), new PurchasePaymentRecoveryQueue());
+  return {
+    async invoke(request) {
+      try {
+        return await external.invoke(request);
+      } catch (cause) {
+        if (!(cause instanceof Error) || cause.message !== 'PAYMENT_EXTERNAL_TENDER_REQUIRED') throw cause;
+        return internal.invoke(request);
+      }
+    },
+  };
 }
 
 export function purchasePaymentAction(gateway: PaymentGateway, risk: RiskGate, decisions: DecisionSink,

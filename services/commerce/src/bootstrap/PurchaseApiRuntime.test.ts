@@ -16,6 +16,8 @@ describe('purchase API runtime', () => {
     const pool = (state: typeof healthy) => ({ query: async (sql: string, values: readonly unknown[]) => {
       expect(sql).toContain("to_regprocedure('access.resolve_scope(text,text,text,text)')");
       expect(sql).toContain("to_regprocedure('benefit.purchase_consume(text,text,text,text,text,bigint)')");
+      expect(sql).toContain("to_regprocedure('access.purchase_payment_intent_context(text,text,text,text,text)')");
+      expect(sql).toContain("to_regprocedure('access.purchase_enqueue_payment_query(text,text,text,text,integer,integer)')");
       expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
       expect(sql).toContain("namespace.nspname='finance' and procedure.proname='post'");
       expect(sql).toContain("has_function_privilege(current_user,procedure.oid,'EXECUTE')");
@@ -27,6 +29,12 @@ describe('purchase API runtime', () => {
       expect(sql).toContain("not has_column_privilege(current_user,'ordering.orderrecord','member_id','UPDATE')");
       expect(sql).toContain("not has_table_privilege(current_user,'payment.intent','UPDATE')");
       expect(sql).toContain("not has_column_privilege(current_user,'payment.intent','amount_minor','UPDATE')");
+      expect(sql).toContain("has_table_privilege(current_user,'payment.attempt','INSERT')");
+      expect(sql).toContain("has_column_privilege(current_user,'payment.attempt','payer_hash','UPDATE')");
+      expect(sql).toContain("has_table_privilege(current_user,'payment.prepay','INSERT')");
+      expect(sql).toContain("has_column_privilege(current_user,'payment.prepay','parameters','UPDATE')");
+      expect(sql).toContain("not has_table_privilege(current_user,'runtime.job','UPDATE')");
+      expect(sql).toContain("not has_column_privilege(current_user,'runtime.job','state','UPDATE')");
       expect(sql).toContain("not has_table_privilege(current_user,'pricing.quote','UPDATE')");
       expect(sql).toContain("not has_column_privilege(current_user,'inventory.stockitem','scope_id','UPDATE')");
       expect(sql).not.toContain("has_column_privilege(current_user,'inventory.stockitem','mall_id'");

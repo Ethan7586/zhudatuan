@@ -18,18 +18,18 @@
   ],
   "properties": {
     "schema": {
-      "const": "zhudatuan.purchase-e2e-receipt.v1"
+      "const": "zhudatuan.purchase-e2e-receipt.v2"
     },
     "releaseCommit": {
       "type": "string",
       "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
     },
     "schemaVersion": {
-      "const": "20260828180000"
+      "const": "20260902011000"
     },
     "schemaChecksum": {
       "type": "string",
-      "const": "0d3eb3e766c32ea0dada6a982bb07a1e797f0b3a08d8104235f2894f3721d81c",
+      "const": "d53ccec069c3a040fb31977482ae3ebbb256a0d6285cf2e25f6a1497b8784549",
       "pattern": "^[0-9a-f]{64}$",
       "not": {
         "const": "0000000000000000000000000000000000000000000000000000000000000000"
@@ -62,17 +62,22 @@
         "quoteCreated",
         "orderCreated",
         "paymentIntentCreated",
+        "wechatPrepayCreated",
+        "paymentAttemptRecorded",
+        "paymentPrepayRecorded",
+        "recoveryJobRecorded",
+        "providerPaymentObserved",
         "paymentCaptured",
-        "benefitDebited",
-        "benefitLedgerRecorded",
-        "benefitLotMovementRecorded",
         "inventoryStockUpdated",
         "inventoryReservationRecorded",
         "orderReadable",
         "fulfillmentCreated",
         "outboxRecorded",
-        "jobRecorded",
         "idempotentReplayVerified",
+        "duplicatePaymentRequestVerified",
+        "duplicateProviderResultVerified",
+        "paymentFailureRecoveryVerified",
+        "mallIsolationVerified",
         "rollbackVerified",
         "negativeRoutesRejected",
         "auditRecorded"
@@ -81,17 +86,22 @@
         "quoteCreated": { "$ref": "#/$defs/passedCheck" },
         "orderCreated": { "$ref": "#/$defs/passedCheck" },
         "paymentIntentCreated": { "$ref": "#/$defs/passedCheck" },
+        "wechatPrepayCreated": { "$ref": "#/$defs/passedCheck" },
+        "paymentAttemptRecorded": { "$ref": "#/$defs/passedCheck" },
+        "paymentPrepayRecorded": { "$ref": "#/$defs/passedCheck" },
+        "recoveryJobRecorded": { "$ref": "#/$defs/passedCheck" },
+        "providerPaymentObserved": { "$ref": "#/$defs/passedCheck" },
         "paymentCaptured": { "$ref": "#/$defs/passedCheck" },
-        "benefitDebited": { "$ref": "#/$defs/passedCheck" },
-        "benefitLedgerRecorded": { "$ref": "#/$defs/passedCheck" },
-        "benefitLotMovementRecorded": { "$ref": "#/$defs/passedCheck" },
         "inventoryStockUpdated": { "$ref": "#/$defs/passedCheck" },
         "inventoryReservationRecorded": { "$ref": "#/$defs/passedCheck" },
         "orderReadable": { "$ref": "#/$defs/passedCheck" },
         "fulfillmentCreated": { "$ref": "#/$defs/passedCheck" },
         "outboxRecorded": { "$ref": "#/$defs/passedCheck" },
-        "jobRecorded": { "$ref": "#/$defs/passedCheck" },
         "idempotentReplayVerified": { "$ref": "#/$defs/passedCheck" },
+        "duplicatePaymentRequestVerified": { "$ref": "#/$defs/passedCheck" },
+        "duplicateProviderResultVerified": { "$ref": "#/$defs/passedCheck" },
+        "paymentFailureRecoveryVerified": { "$ref": "#/$defs/passedCheck" },
+        "mallIsolationVerified": { "$ref": "#/$defs/passedCheck" },
         "rollbackVerified": { "$ref": "#/$defs/passedCheck" },
         "negativeRoutesRejected": { "$ref": "#/$defs/passedCheck" },
         "auditRecorded": { "$ref": "#/$defs/passedCheck" }

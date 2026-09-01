@@ -293,7 +293,9 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
       await refreshServerCart();
       await refreshProductionData();
-      showToast('订单已安全写入数据库并完成福利账户支付', 'success');
+      if (checkout.paymentState === 'captured') showToast('订单已写入数据库并完成支付', 'success');
+      else if (checkout.paymentState === 'reconciling') showToast('订单已创建，支付渠道结果正在自动核验', 'info');
+      else showToast('微信支付已提交，订单正在确认到账', 'info');
       return true;
     } catch (error) {
       const message = error instanceof ProductionApiError ? error.message : '订单服务暂时不可用';

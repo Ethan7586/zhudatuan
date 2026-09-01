@@ -3,6 +3,7 @@ import { productionApi } from '../services/productionApi';
 
 export interface CheckoutResult {
   selectedItems: CartItem[];
+  paymentState: 'captured' | 'authorizing' | 'reconciling';
 }
 
 export async function checkoutSelectedCartRequest(cart: CartItem[], addresses: DeliveryAddress[], user: UserProfile): Promise<CheckoutResult> {

@@ -17824,6 +17824,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.attempt.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.attempt.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.attempt.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
   - id: payment.capture.appscope
     kind: policy
     owner: payment
@@ -17888,6 +17900,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.prepay.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.prepay.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.prepay.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
   - id: payment.providerattempt.appscope
     kind: policy
     owner: payment
