@@ -36,7 +36,7 @@ function ExperienceActionForm({ action, detail, context, onClose, onDone }: Read
       const request = commandContext(context, record?.version);
       if (action.kind === 'create') return commands.applicationsCreate({ body: { code, publicSlug: slug, name } }, request);
       if (action.kind === 'copy') return commands.applicationsCopy({ path: { applicationid: action.record.id }, body: { code, publicSlug: slug, name, reason: '控制台复制商城应用' } }, request);
-      if (action.kind === 'manage') return commands.applicationsUpdate({ path: { applicationid: action.record.id }, body: { name, status: status as 'draft' | 'active' | 'disabled' } }, request);
+      if (action.kind === 'manage') return commands.applicationsUpdate({ path: { applicationid: action.record.id }, body: { name, status } }, request);
       const configuration = {
         version: 2 as const,
         application: action.record.id,

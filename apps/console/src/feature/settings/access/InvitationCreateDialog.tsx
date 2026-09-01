@@ -1,4 +1,5 @@
 import { Button, Dialog } from '@shop/design';
+import type { ConsoleScopeKind } from '@shop/authz';
 import { useEffect, useMemo, useState } from 'react';
 import type { AccessMembership } from './AccessSchema';
 import type { CreateInvitationInput } from './AccessQuery';
@@ -8,11 +9,21 @@ export function InvitationCreateDialog({
   open,
   memberships,
   scope,
+  scopeKind,
   busy,
   error,
   onClose,
   onSubmit,
-}: Readonly<{ open: boolean; memberships: readonly AccessMembership[]; scope: string; busy: boolean; error?: string; onClose: () => void; onSubmit: (input: CreateInvitationInput) => Promise<void> }>) {
+}: Readonly<{
+  open: boolean;
+  memberships: readonly AccessMembership[];
+  scope: string;
+  scopeKind: ConsoleScopeKind;
+  busy: boolean;
+  error?: string;
+  onClose: () => void;
+  onSubmit: (input: CreateInvitationInput) => Promise<void>;
+}>) {
   const [kind, setKind] = useState<CreateInvitationInput['kind']>('signin');
   const [target, setTarget] = useState<CreateInvitationInput['target']>('console');
   const [membership, setMembership] = useState('');
@@ -28,6 +39,9 @@ export function InvitationCreateDialog({
   useEffect(() => {
     if (kind === 'campaign') setTarget('storefront');
   }, [kind]);
+  useEffect(() => {
+    if (scopeKind !== 'mall' && kind === 'campaign') setKind('signin');
+  }, [kind, scopeKind]);
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     await onSubmit({
@@ -47,7 +61,7 @@ export function InvitationCreateDialog({
           <select value={kind} onChange={(event) => setKind(event.target.value as CreateInvitationInput['kind'])} disabled={busy}>
             <option value="signin">登录邀请</option>
             <option value="enrollment">入驻邀请</option>
-            <option value="campaign">活动邀请</option>
+            {scopeKind === 'mall' ? <option value="campaign">活动邀请</option> : null}
           </select>
         </label>
         <label>

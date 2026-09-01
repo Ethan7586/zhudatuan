@@ -87,6 +87,22 @@ export class PgSessionRepository implements SessionRepository {
     );
     return Boolean(result.rows[0]);
   }
+  async lower(context: WriteTransactionContext, principal: string, session: string): Promise<1 | 2 | null> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{ assurance_level: number }>(
+      `update identity.session target set assurance_level=greatest(1,least(2,coalesce((
+        select max(source.level) from identity.assurance source
+        where source.principal_id=$2 and source.method<>'otp'
+        and source.verified_at<=clock_timestamp()
+        and (source.expires_at is null or source.expires_at>clock_timestamp())
+      ),1))),last_seen_at=clock_timestamp()
+      where target.id=$1 and target.principal_id=$2 and target.revoked_at is null
+      and target.expires_at>clock_timestamp() returning assurance_level`,
+      [session, principal]
+    );
+    const assurance = result.rows[0]?.assurance_level;
+    return assurance === 1 || assurance === 2 ? assurance : null;
+  }
   async list(context: ReadTransactionContext, principal: string, current: string, page: QueryPage): Promise<readonly SessionListRecord[]> {
     const database = this.transactions.database(context);
     const result = await database.query<SessionListRecord>(

@@ -9,7 +9,7 @@ export interface StorefrontEntryPath {
 
 export function readEntryPath(pathname: string): StorefrontEntryPath {
   const prefix = `${STOREFRONT_ENTRY_PATH}/`;
-  if (!pathname.startsWith(prefix) || /[\\\u0000-\u001f\u007f]/.test(pathname)) throw new Error('STOREFRONT_ENTRY_PATH_INVALID');
+  if (!pathname.startsWith(prefix) || pathname.includes('\\') || hasControlCharacter(pathname)) throw new Error('STOREFRONT_ENTRY_PATH_INVALID');
   const remainder = pathname.slice(prefix.length);
   const boundary = remainder.indexOf('/');
   const rawHandle = boundary === -1 ? remainder : remainder.slice(0, boundary);
@@ -21,4 +21,11 @@ export function readEntryPath(pathname: string): StorefrontEntryPath {
 
 export function currentStorefrontHandle(): StorefrontHandle {
   return readEntryPath(window.location.pathname).handle;
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const code = character.codePointAt(0) ?? 0;
+    return code <= 31 || code === 127;
+  });
 }

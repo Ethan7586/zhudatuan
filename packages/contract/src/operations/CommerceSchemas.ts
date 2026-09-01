@@ -32,6 +32,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "identity.mobile.manage": Object.freeze({ input: exactOperationInput("IdentityMobileManageInput", [] as const, true), output: exactOperationOutput("IdentityMobileManageOutput") }),
   "identity.stepup.start": Object.freeze({ input: exactOperationInput("IdentityStepupStartInput", [] as const, true), output: exactOperationOutput("IdentityStepupStartOutput") }),
   "identity.stepup.complete": Object.freeze({ input: exactOperationInput("IdentityStepupCompleteInput", [] as const, true), output: exactOperationOutput("IdentityStepupCompleteOutput") }),
+  "identity.stepup.disable": Object.freeze({ input: exactOperationInput("IdentityStepupDisableInput", [] as const, true), output: exactOperationOutput("IdentityStepupDisableOutput") }),
   "organization.layers.read": Object.freeze({ input: exactOperationInput("OrganizationLayersReadInput", [] as const, false), output: exactOperationOutput("OrganizationLayersReadOutput") }),
   "access.center.read": Object.freeze({ input: exactOperationInput("AccessCenterReadInput", [] as const, false), output: exactOperationOutput("AccessCenterReadOutput") }),
   "access.owners.transfer": Object.freeze({ input: exactOperationInput("AccessOwnersTransferInput", [] as const, true), output: exactOperationOutput("AccessOwnersTransferOutput") }),

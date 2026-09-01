@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AuthenticationOutcome, AuthMethod, EnrollmentState, MembershipChoice, ProviderChoice } from '../entity/authentication/AuthenticationState';
 import { EnrollmentPage } from '../feature/invitation/EnrollmentPage';
 import { InvitationError } from '../feature/invitation/InvitationError';
@@ -26,7 +26,7 @@ export function AuthFlow() {
   const [providers, setProviders] = useState<readonly ProviderChoice[]>([]);
   const [terms, setTerms] = useState<'terms' | 'privacy' | null>(null);
   const [reset, setReset] = useState(false);
-  const returns = returnRequest(request);
+  const returns = useMemo(() => returnRequest(request), [request]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -35,7 +35,7 @@ export function AuthFlow() {
       .then(setProviders)
       .catch(() => setProviders([]));
     return () => controller.abort();
-  }, [client, request.returnPath, request.returnTarget, request.target]);
+  }, [client, request.target, returns]);
 
   const stage = outcome?.kind === 'selection' || outcome?.kind === 'proofRequired' ? outcome.kind : null;
   const changeMethod = (next: AuthMethod) => {

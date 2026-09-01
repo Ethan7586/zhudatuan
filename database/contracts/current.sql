@@ -31,6 +31,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('identity.mobile.manage','identity','PUT','/api/v1/identity/mobile','3.0.0'),
   ('identity.stepup.start','identity','POST','/api/v1/identity/stepup/challenges','3.0.0'),
   ('identity.stepup.complete','identity','POST','/api/v1/identity/stepup/verifications','3.0.0'),
+  ('identity.stepup.disable','identity','DELETE','/api/v1/identity/stepup','3.0.0'),
   ('organization.layers.read','organization','GET','/api/v1/organizations/layers','3.0.0'),
   ('access.center.read','access','GET','/api/v1/access/center','3.0.0'),
   ('access.owners.transfer','access','PUT','/api/v1/access/owners/transfer','3.0.0'),
@@ -625,6 +626,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('identity.mobile.manage','operation','identity.mobile.manage',3,'active'),
   ('identity.stepup.start','operation','identity.stepup.start',3,'active'),
   ('identity.stepup.complete','operation','identity.stepup.complete',3,'active'),
+  ('identity.stepup.disable','operation','identity.stepup.disable',3,'active'),
   ('organization.layers.read','operation','organization.layers.read',3,'active'),
   ('access.center.read','operation','access.center.read',3,'active'),
   ('access.owners.transfer','operation','access.owners.transfer',3,'active'),
@@ -898,6 +900,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.mobile.manage','identity.mobile.manage','identity.mobile.manage','public'),
   ('identity.stepup.start','identity.stepup.start','identity.assurance.manage','public'),
   ('identity.stepup.complete','identity.stepup.complete','identity.assurance.manage','public'),
+  ('identity.stepup.disable','identity.stepup.disable','identity.assurance.manage','public'),
   ('organization.layers.read','organization.layers.read','organization.layer.read','console'),
   ('access.center.read','access.center.read','access.center.read','console'),
   ('access.owners.transfer','access.owners.transfer','access.owner.transfer','console'),
@@ -1526,6 +1529,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','0fa65a88e13853d6db30740982d97f58ed37970de3f9c5d5f3e502ab87da38d7');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','29c753774add43dc7528adc9707c2c2ca3279c7986a93d4c0f6872916d9a7693');
 
 commit;

@@ -181,10 +181,10 @@ export class IdentityClient {
     const returnTarget = returns?.returnTarget;
     const returnPath = returnTarget ? undefined : returns?.returnPath;
     const current = this.bootstraps.get(target);
-    if (current && current.expiresAt > Date.now() && (!returnTarget || current.returnTargetRequest === returnTarget) && (!returnPath || current.returnPath === returnPath)) return current;
+    if (current && current.expiresAt > Date.now() && (!returnTarget || current.returnTargetRequest === returnTarget) && (!returnPath || current.returnPath === returnPath)) return consumerResult(Promise.resolve(current), signal);
     const key = `${target}:${returnTarget ?? ''}:${returnPath ?? ''}`;
     const existing = this.pending.get(key);
-    if (existing !== undefined) return existing;
+    if (existing !== undefined) return consumerResult(existing, signal);
     const operation = this.request(this.identity.providersRead(returnTarget ? { query: { returntarget: returnTarget } } : returnPath ? { query: { returnpath: returnPath } } : {}, query(target)))
       .then((result) => {
         if (result.target !== target) throw new Error('登录目标与已签名返回目标不一致');
@@ -202,8 +202,30 @@ export class IdentityClient {
       })
       .finally(() => this.pending.delete(key));
     this.pending.set(key, operation);
-    return operation;
+    return consumerResult(operation, signal);
   }
+}
+
+function consumerResult<T>(operation: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return operation;
+  if (signal.aborted) return Promise.reject(signal.reason);
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => {
+      signal.removeEventListener('abort', abort);
+      reject(signal.reason);
+    };
+    signal.addEventListener('abort', abort, { once: true });
+    void operation.then(
+      (value) => {
+        signal.removeEventListener('abort', abort);
+        resolve(value);
+      },
+      (cause: unknown) => {
+        signal.removeEventListener('abort', abort);
+        reject(cause);
+      }
+    );
+  });
 }
 
 async function beginAuthorization(): Promise<Authorization> {

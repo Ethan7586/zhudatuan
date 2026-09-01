@@ -20861,6 +20861,36 @@
           }
         ]
       },
+      "IdentityStepupDisableInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "type": "object"
+      },
+      "IdentityStepupDisableOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "assurance": {
+            "type": "number"
+          },
+          "session": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "session",
+          "assurance"
+        ],
+        "type": "object"
+      },
       "IdentityStepupStartInput": {
         "additionalProperties": false,
         "properties": {
@@ -60355,7 +60385,7 @@
         "tags": [
           "identity"
         ],
-        "x-assurance-level": "session",
+        "x-assurance-level": "mfa",
         "x-audience": "public",
         "x-cache-policy": "none",
         "x-capability": "identity.mobile.challenges.create",
@@ -60370,6 +60400,7 @@
           "RISK_DENIED",
           "RISK_REVIEW_REQUIRED",
           "SCOPE_DENIED",
+          "STEPUP_REQUIRED",
           "VALIDATION_FAILED"
         ],
         "x-expected-version": "none",
@@ -62545,6 +62576,143 @@
         "x-response-mode": "json",
         "x-risk": "high",
         "x-scope-kinds": [],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "storefront"
+        ],
+        "x-timeout-ms": 800
+      }
+    },
+    "/api/v1/identity/stepup": {
+      "delete": {
+        "operationId": "identity.stepup.disable",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityStepupDisableOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "tags": [
+          "identity"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "public",
+        "x-cache-policy": "none",
+        "x-capability": "identity.stepup.disable",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "IDEMPOTENCY_CONFLICT",
+          "INTERNAL_ERROR",
+          "RATE_LIMITED",
+          "SCOPE_DENIED",
+          "VALIDATION_FAILED"
+        ],
+        "x-expected-version": "none",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-maker-checker": false,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "identity.assurance.manage",
+        "x-rate-class": "identity",
+        "x-requirements": [
+          "MVPGROUPSETTING",
+          "MVPMALLSETTING"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "identity.resource",
+        "x-response-mode": "json",
+        "x-risk": "elevated",
+        "x-scope-kinds": [
+          "self"
+        ],
         "x-target-policy": "exact",
         "x-targets": [
           "console",

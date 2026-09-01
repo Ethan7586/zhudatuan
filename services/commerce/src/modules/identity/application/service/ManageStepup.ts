@@ -120,6 +120,15 @@ export class ManageStepup {
       return { status: 200, body: { session: actor.actor.session, assurance: 3, ...(issued ?? {}) } };
     };
   }
+  disable(): OperationAction {
+    return async (request, database) => {
+      const actor = requireAccess(request);
+      await this.assurances.expire(database, actor.actor.id, 'otp');
+      const assurance = await this.sessions.lower(database, actor.actor.id, actor.actor.session);
+      if (assurance === null) reject('AUTHENTICATION_REQUIRED');
+      return { status: 200, body: { session: actor.actor.session, assurance } };
+    };
+  }
   private digest(value: string): string {
     return createHmac('sha256', this.identityKey).update(value.trim().toLowerCase()).digest('hex');
   }

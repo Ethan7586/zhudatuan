@@ -121,6 +121,7 @@ import { PasswordResetHandler } from './application/handler/PasswordResetHandler
 import { MobileManageHandler } from './application/handler/MobileManageHandler';
 import { StepUpStartHandler } from './application/handler/StepUpStartHandler';
 import { StepUpCompleteHandler } from './application/handler/StepUpCompleteHandler';
+import { StepUpDisableHandler } from './application/handler/StepUpDisableHandler';
 import { ProvidersReadHandler } from './application/handler/ProvidersReadHandler';
 import { FederationStartHandler } from './application/handler/FederationStartHandler';
 import { FederationCallbackHandler } from './application/handler/FederationCallbackHandler';
@@ -276,6 +277,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
     new MobileManageHandler(credentialCommands.mobile()),
     new StepUpStartHandler(stepup.start()),
     new StepUpCompleteHandler(stepup.complete()),
+    new StepUpDisableHandler(stepup.disable()),
     new ProvidersReadHandler(new ReadIdentityProviders(providers, returns).action()),
     new FederationStartHandler(new StartFederation(federation).lifecycle()),
     new FederationCallbackHandler(new CompleteFederation(federation).lifecycle()),

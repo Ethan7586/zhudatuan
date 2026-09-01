@@ -37,6 +37,7 @@ export interface SessionRepository {
   revokeSelected(context: WriteTransactionContext, principal: string, current: string, target: string): Promise<readonly string[]>;
   owns(context: ReadTransactionContext, principal: string, session: string): Promise<boolean>;
   elevate(context: WriteTransactionContext, principal: string, session: string, assurance: 1 | 2 | 3): Promise<boolean>;
+  lower(context: WriteTransactionContext, principal: string, session: string): Promise<1 | 2 | null>;
   list(context: ReadTransactionContext, principal: string, current: string, page: QueryPage): Promise<readonly SessionListRecord[]>;
   advance(context: WriteTransactionContext, principal: string): Promise<number>;
 }

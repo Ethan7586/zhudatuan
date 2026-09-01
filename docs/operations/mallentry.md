@@ -6,7 +6,7 @@
 
 1. 确认候选制品中的 Commerce、Console、Storefront、Auth 来自同一 commit、签名和发布清单，`schemaHead` 为 `20260901015000`。
 2. 完成全量迁移重放、升级重放、PITR 恢复演练；核对 slug 全局大小写不敏感唯一、每个 Mall 最多一个 Application、每个 Application 恰有一个 Mall、每个 Active Release 恰有一个 Pool 和 Active Publication。
-3. 确认 Edge、Auth、Console、Storefront、API 的配置 Hash 相同，当前生产 Origin 分别为 `fufu.wang`、`auth.fufu.wang`、`console.fufu.wang`、`api.fufu.wang`。
+3. 确认 Edge、Auth、Console、Storefront、API 的配置 Hash 相同，当前生产 Origin 分别为 `fufu.wang`、`passport.fufu.wang`、`console.fufu.wang`、`api.fufu.wang`。
 4. 选定一个经营中且已发布的验收商城，记录 Application、Mall、Pool、Release、Version 和 `publicSlug`；不得记录 Cookie、Token、会员 ID 或手机号。
 5. 验证数据库快照可读、PITR 时间点已记录、上一完整制品和上一 Edge 配置可恢复。
 

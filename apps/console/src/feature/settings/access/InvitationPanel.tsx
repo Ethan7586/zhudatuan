@@ -148,6 +148,7 @@ export function InvitationPanel({ tabs }: Readonly<{ tabs: ReactNode }>) {
         open={createOpen}
         memberships={members.data?.items ?? []}
         scope={context.scope.id}
+        scopeKind={context.scope.kind}
         busy={busy}
         {...(actionError === undefined ? {} : { error: actionError })}
         onClose={() => {

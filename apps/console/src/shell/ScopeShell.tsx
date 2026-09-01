@@ -53,6 +53,21 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
       window.location.assign(`${appConfig.authBaseUrl}/login?target=console`);
     },
   });
+  const disableStepup = useMutation({
+    mutationFn: async () => {
+      const { consoleCommand, identityStepupDisable } = await import('../shared/api/Client');
+      const result = await identityStepupDisable(
+        { body: {} },
+        consoleCommand(undefined, {
+          accessVersion: context.session.accessVersion,
+          ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+        })
+      );
+      if (result.assurance > 2) throw new Error('STEPUP_DISABLE_INVALID');
+      return result;
+    },
+    onSuccess: () => window.location.reload(),
+  });
 
   useEffect(() => {
     document.title = `${routeTitle} · 智慧翼`;
@@ -110,8 +125,11 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
               assuranceLevel={context.session.assurance.level}
               syncedAt={context.session.syncedAt}
               loggingOut={logout.isPending}
+              disablingStepup={disableStepup.isPending}
+              {...(disableStepup.error === null ? {} : { stepupError: safeStepupError(disableStepup.error) })}
               onLogout={() => logout.mutate()}
               onStepup={() => setStepupOpen(true)}
+              onDisableStepup={() => disableStepup.mutate()}
               onOpenNavigation={() => setMobileOpen(true)}
             />
             <div className="scopebar">
@@ -196,4 +214,8 @@ function formatRailTime(value: string): string {
 
 function scopeSuffix(pathname: string): string {
   return pathname.split('/').filter(Boolean).slice(3).join('/');
+}
+
+function safeStepupError(cause: Error): string {
+  return cause.message === 'STEPUP_DISABLE_INVALID' ? '二次验证状态未能关闭，请重试。' : '关闭二次验证失败，请重试。';
 }

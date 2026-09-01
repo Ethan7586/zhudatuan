@@ -23,14 +23,14 @@ describe('experience entry contract', () => {
   });
 
   it('requires entry and rejects every additional property', () => {
-    const { entry: _entry, ...missing } = summary;
+    const missing = Object.fromEntries(Object.entries(summary).filter(([key]) => key !== 'entry'));
     expect(schema.safeParse({ items: [missing], count: 1 }).success).toBe(false);
     expect(schema.safeParse({ items: [{ ...summary, auxiliary: true }], count: 1 }).success).toBe(false);
     expect(schema.safeParse({ items: [{ ...summary, entry: { ...summary.entry, auxiliary: true } }], count: 1 }).success).toBe(false);
   });
 
   it('requires release facts only for ready and forbids fabricated release facts otherwise', () => {
-    const { releaseId: _releaseId, ...missingRelease } = summary.entry;
+    const missingRelease = Object.fromEntries(Object.entries(summary.entry).filter(([key]) => key !== 'releaseId'));
     expect(schema.safeParse({ items: [{ ...summary, entry: missingRelease }], count: 1 }).success).toBe(false);
     expect(schema.safeParse({ items: [{ ...summary, entry: { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one', state: 'unpublished', releaseId: 'release:fake' } }], count: 1 }).success).toBe(false);
   });

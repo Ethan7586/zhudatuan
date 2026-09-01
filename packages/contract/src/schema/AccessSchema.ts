@@ -60,6 +60,7 @@ export const SECURITY_OUTPUT_SCHEMAS = {
   IdentityMobileManageOutput: strictObject({ memberId: text, displayName: text, mobileMasked: text, version: number() }),
   IdentityStepupStartOutput: strictObject({ id: text, purpose: literal('stepup'), expiresAt: text, actionBound: boolean() }),
   IdentityStepupCompleteOutput: union([strictObject({ session: text, assurance: number() }), strictObject({ session: text, assurance: number(), proof: text, expiresAt: text })]),
+  IdentityStepupDisableOutput: strictObject({ session: text, assurance: number() }),
   IdentityLinksReadOutput: strictObject({ items: array(identityLink), count }),
   IdentityLinksCreateOutput: redirect,
   IdentityLinksRevokeOutput: undefinedSchema(),

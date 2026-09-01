@@ -864,7 +864,7 @@ const definitions = [
     "scopeKinds": [
       "self"
     ],
-    "assuranceLevel": "session",
+    "assuranceLevel": "mfa",
     "makerChecker": false,
     "originPolicy": "sameorigin",
     "csrfPolicy": "required",
@@ -884,6 +884,7 @@ const definitions = [
       "RISK_DENIED",
       "RISK_REVIEW_REQUIRED",
       "SCOPE_DENIED",
+      "STEPUP_REQUIRED",
       "VALIDATION_FAILED"
     ],
     "idempotencyScope": "actor-operation-scope",
@@ -1710,6 +1711,54 @@ const definitions = [
       "MVPMALLSETTING",
       "MVPIDENTITY",
       "MVPPROVIDER"
+    ]
+  },
+  {
+    "id": "identity.stepup.disable",
+    "method": "DELETE",
+    "path": "/api/v1/identity/stepup",
+    "module": "identity",
+    "audience": "public",
+    "targets": [
+      "console",
+      "storefront"
+    ],
+    "permission": "identity.assurance.manage",
+    "capability": "identity.stepup.disable",
+    "scopeKinds": [
+      "self"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "sameorigin",
+    "csrfPolicy": "required",
+    "responseMode": "json",
+    "cachePolicy": "none",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "required",
+    "requestSchema": "IdentityStepupDisableInput",
+    "responseSchema": "IdentityStepupDisableOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "IDEMPOTENCY_CONFLICT",
+      "INTERNAL_ERROR",
+      "RATE_LIMITED",
+      "SCOPE_DENIED",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "actor-operation-scope",
+    "expectedVersion": "none",
+    "timeout": 800,
+    "rateClass": "identity",
+    "risk": "elevated",
+    "resourceResolver": "identity.resource",
+    "resourceParameter": null,
+    "idempotent": true,
+    "requirements": [
+      "MVPGROUPSETTING",
+      "MVPMALLSETTING"
     ]
   },
   {

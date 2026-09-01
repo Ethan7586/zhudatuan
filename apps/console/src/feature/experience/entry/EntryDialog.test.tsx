@@ -61,8 +61,8 @@ describe('EntryDialog', () => {
       class {
         decoding = 'auto';
         src = '';
-        async decode() {
-          return undefined;
+        decode() {
+          return Promise.resolve();
         }
       }
     );

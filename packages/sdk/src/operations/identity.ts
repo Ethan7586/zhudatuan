@@ -29,6 +29,7 @@ export const IDENTITY_OPERATION_IDS = Object.freeze([
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
+  "identity.stepup.disable",
   "identity.providers.read",
   "identity.federations.start",
   "identity.federations.callback",
@@ -66,6 +67,7 @@ export interface IdentityOperations {
   readonly mobileManage: OperationMethod<"identity.mobile.manage">;
   readonly stepupStart: OperationMethod<"identity.stepup.start">;
   readonly stepupComplete: OperationMethod<"identity.stepup.complete">;
+  readonly stepupDisable: OperationMethod<"identity.stepup.disable">;
   readonly providersRead: OperationMethod<"identity.providers.read">;
   readonly federationsStart: OperationMethod<"identity.federations.start">;
   readonly federationsCallback: OperationMethod<"identity.federations.callback">;
@@ -105,6 +107,7 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     mobileManage: bindMobileManage(client),
     stepupStart: bindStepupStart(client),
     stepupComplete: bindStepupComplete(client),
+    stepupDisable: bindStepupDisable(client),
     providersRead: bindProvidersRead(client),
     federationsStart: bindFederationsStart(client),
     federationsCallback: bindFederationsCallback(client),
@@ -212,6 +215,10 @@ function bindStepupStart(client: OperationExecutor): OperationMethod<"identity.s
 export function createFetchIdentityStepupComplete(baseUrl: string): OperationMethod<"identity.stepup.complete"> { return bindStepupComplete(new ApiClient(baseUrl, new FetchTransport())); }
 
 function bindStepupComplete(client: OperationExecutor): OperationMethod<"identity.stepup.complete"> { return bindOperation(client, defineOperation({"id":"identity.stepup.complete","method":"POST","path":"/api/v1/identity/stepup/verifications","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":false,"timeout":800})); }
+
+export function createFetchIdentityStepupDisable(baseUrl: string): OperationMethod<"identity.stepup.disable"> { return bindStepupDisable(new ApiClient(baseUrl, new FetchTransport())); }
+
+function bindStepupDisable(client: OperationExecutor): OperationMethod<"identity.stepup.disable"> { return bindOperation(client, defineOperation({"id":"identity.stepup.disable","method":"DELETE","path":"/api/v1/identity/stepup","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":true,"timeout":800})); }
 
 export function createFetchIdentityProvidersRead(baseUrl: string): OperationMethod<"identity.providers.read"> { return bindProvidersRead(new ApiClient(baseUrl, new FetchTransport())); }
 

@@ -9,8 +9,11 @@ export interface HeaderProps {
   readonly assuranceLevel: number;
   readonly syncedAt: string;
   readonly loggingOut: boolean;
+  readonly disablingStepup: boolean;
   readonly logoutError?: string;
+  readonly stepupError?: string;
   readonly onStepup: () => void;
+  readonly onDisableStepup: () => void;
   readonly onLogout: () => void;
   readonly onOpenNavigation: () => void;
 }
@@ -18,7 +21,7 @@ export interface HeaderProps {
 type HeaderPanel = 'account' | 'command' | 'notices' | 'tasks' | null;
 
 export function Header(props: HeaderProps) {
-  const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, loggingOut, logoutError, onLogout, onStepup, onOpenNavigation } = props;
+  const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, loggingOut, disablingStepup, logoutError, stepupError, onLogout, onStepup, onDisableStepup, onOpenNavigation } = props;
   const [panel, setPanel] = useState<HeaderPanel>(null);
   const commandInput = useRef<HTMLInputElement>(null);
 
@@ -107,12 +110,15 @@ export function Header(props: HeaderProps) {
                 安全等级 {assuranceLevel} · {formatTime(syncedAt)}
               </span>
               {assuranceLevel >= 3 ? (
-                <span>二次验证已完成</span>
+                <button type="button" onClick={() => onDisableStepup()} disabled={disablingStepup}>
+                  {disablingStepup ? '正在关闭二次验证' : '关闭二次验证'}
+                </button>
               ) : (
-                <button type="button" onClick={onStepup}>
-                  完成二次验证
+                <button type="button" onClick={() => onStepup()}>
+                  开启二次验证
                 </button>
               )}
+              {stepupError === undefined ? null : <em role="alert">{stepupError}</em>}
               <button type="button" onClick={onLogout} disabled={loggingOut}>
                 {loggingOut ? '正在退出' : '退出登录'}
               </button>

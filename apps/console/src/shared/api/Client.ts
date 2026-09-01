@@ -1,6 +1,6 @@
 import type { ScopeKind } from '@shop/authz';
 import { createIdempotencyKey, createRequestContext } from '@shop/sdk/context';
-import { createFetchIdentitySessionDelete, createFetchIdentitySessionRead, createFetchIdentityStepupComplete, createFetchIdentityStepupStart } from '@shop/sdk/identity';
+import { createFetchIdentitySessionDelete, createFetchIdentitySessionRead, createFetchIdentityStepupComplete, createFetchIdentityStepupDisable, createFetchIdentityStepupStart } from '@shop/sdk/identity';
 import { createFetchMemberProfileRead } from '@shop/sdk/member';
 import { createFetchOrganizationLayersRead } from '@shop/sdk/organization';
 import { createFetchNavigationTreeRead } from '@shop/sdk/navigation';
@@ -16,6 +16,7 @@ export const identitySessionRead = createFetchIdentitySessionRead(appConfig.apiB
 export const identitySessionDelete = createFetchIdentitySessionDelete(appConfig.apiBaseUrl);
 export const identityStepupStart = createFetchIdentityStepupStart(appConfig.apiBaseUrl);
 export const identityStepupComplete = createFetchIdentityStepupComplete(appConfig.apiBaseUrl);
+export const identityStepupDisable = createFetchIdentityStepupDisable(appConfig.apiBaseUrl);
 export const memberProfileRead = createFetchMemberProfileRead(appConfig.apiBaseUrl);
 export const organizationLayersRead = createFetchOrganizationLayersRead(appConfig.apiBaseUrl);
 export const navigationTreeRead = createFetchNavigationTreeRead(appConfig.apiBaseUrl);

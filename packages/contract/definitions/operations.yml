@@ -794,7 +794,7 @@ operations:
     permission: identity.assurance.manage
     capability: identity.mobile.challenges.create
     scopeKinds: [self]
-    assuranceLevel: session
+    assuranceLevel: mfa
     makerChecker: false
     requestSchema: IdentityMobileChallengesCreateInput
     responseSchema: IdentityMobileChallengesCreateOutput
@@ -808,6 +808,7 @@ operations:
       - RISK_DENIED
       - RISK_REVIEW_REQUIRED
       - SCOPE_DENIED
+      - STEPUP_REQUIRED
       - VALIDATION_FAILED
     idempotencyScope: actor-operation-scope
     expectedVersion: none
@@ -1385,6 +1386,48 @@ operations:
     requirements: *a1
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/StepUpCompleteHandler.ts
+    sdk: packages/sdk/src/operations/identity.ts
+    resourceParameter: null
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
+  - id: identity.stepup.disable
+    owner: identity
+    method: DELETE
+    path: /api/v1/identity/stepup
+    audience: public
+    targets: [console, storefront]
+    permission: identity.assurance.manage
+    capability: identity.stepup.disable
+    scopeKinds: *a5
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: IdentityStepupDisableInput
+    responseSchema: IdentityStepupDisableOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: actor-operation-scope
+    expectedVersion: none
+    timeout: 800
+    rateClass: identity
+    risk: elevated
+    resourceResolver: identity.resource
+    idempotent: true
+    requirements:
+      - MVPGROUPSETTING
+      - MVPMALLSETTING
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/modules/identity/application/handler/StepUpDisableHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
     resourceParameter: null
     originPolicy: sameorigin

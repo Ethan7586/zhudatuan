@@ -1,4 +1,5 @@
 FROM node:22.22.0-alpine AS build
+ARG NPM_REGISTRY=https://registry.npmjs.org
 WORKDIR /workspace
 COPY package.json package-lock.json ./
 COPY tsconfig.json ./
@@ -9,7 +10,7 @@ COPY packages ./packages
 COPY extensions ./extensions
 COPY tools ./tools
 COPY database ./database
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --registry="$NPM_REGISTRY"
 RUN npm run build:commerce
 
 FROM node:22.22.0-alpine AS runtime

@@ -38,6 +38,12 @@ describe('contract truth', () => {
     expect(OPERATION_SCHEMAS['identity.mobile.challenges.create'].input.parse({ body: { destination: '13800138000' } })).toEqual({ body: { destination: '13800138000' } });
   });
 
+  it('requires current-account step-up before delivering a new-mobile challenge', () => {
+    const operation = OperationCatalog.get('identity.mobile.challenges.create');
+    expect(operation.assuranceLevel).toBe('mfa');
+    expect(operation.errorUnion).toContain('STEPUP_REQUIRED');
+  });
+
   it('keeps every operation on explicit request and response schemas', () => {
     for (const operation of OperationCatalog.all()) {
       expect(operation.method === 'GET' ? definedOperationQuerySchema(operation.requestSchema) : definedOperationBodySchema(operation.requestSchema), `${operation.id} request schema`).toBeDefined();

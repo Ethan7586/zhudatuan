@@ -15,7 +15,7 @@ routes:
     artifact: storefront
     entryPath: /s
     fallback: index.html
-  auth: { host: auth.fufu.wang, artifact: auth }
+  auth: { host: passport.fufu.wang, artifact: auth }
   console: { host: console.fufu.wang, artifact: console }
 headers:
   hsts: max-age=63072000; includeSubDomains

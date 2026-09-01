@@ -134,6 +134,30 @@ describe('IdentityClient', () => {
     expect(requests[0]?.url).toContain('returnpath=%2Fs%2Fmall-one%2Forders%3Fstate%3Dpaid');
     expect(parsedBody(requests[1])).toMatchObject({ returnTarget: TARGET_PROOF });
   });
+
+  it('keeps a shared provider bootstrap alive when the first React consumer is aborted', async () => {
+    let release: (() => void) | undefined;
+    const fetcher = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(
+      () =>
+        new Promise<Response>((resolve) => {
+          release = () => resolve(json({ items: [], csrf: 'c'.repeat(43), target: 'storefront', returnTarget: TARGET_PROOF }));
+        })
+    );
+    vi.stubGlobal('fetch', fetcher);
+    const client = new IdentityClient();
+    const firstController = new AbortController();
+    const secondController = new AbortController();
+    const returns = { returnPath: '/s/mall-one/orders?state=paid' };
+
+    const first = client.providers(returns, 'storefront', firstController.signal);
+    const second = client.providers(returns, 'storefront', secondController.signal);
+    firstController.abort();
+    release?.();
+
+    await expect(first).rejects.toMatchObject({ name: 'AbortError' });
+    await expect(second).resolves.toEqual([]);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
 });
 
 function json(body: unknown, status = 200): Response {

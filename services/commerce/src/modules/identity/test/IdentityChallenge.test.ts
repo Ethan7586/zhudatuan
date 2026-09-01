@@ -88,6 +88,21 @@ describe('identity login challenge', () => {
     expect(queries[1]?.text).toContain('where principal_id=$1 and revoked_at is null');
     expect(queries[1]?.values).toEqual(['principal:one', 8]);
   });
+
+  it('lowers only the current live session to its strongest non-stepup assurance', async () => {
+    const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+    const query = async (text: string, values: readonly unknown[] = []) => {
+      queries.push({ text, values });
+      return result([{ assurance_level: 2 }]);
+    };
+
+    await expect(withWriteTransaction(query, (context) => new PgSessionRepository().lower(context, 'principal:one', 'session:one'))).resolves.toBe(2);
+    expect(queries).toHaveLength(1);
+    expect(queries[0]?.text).toContain("source.method<>'otp'");
+    expect(queries[0]?.text).toContain('least(2');
+    expect(queries[0]?.text).toContain('target.revoked_at is null');
+    expect(queries[0]?.values).toEqual(['session:one', 'principal:one']);
+  });
 });
 
 function result(rows: readonly Record<string, unknown>[]): QueryResult {

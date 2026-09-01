@@ -109,7 +109,7 @@ export function SessionRuntime({ entry, children }: { readonly entry: Storefront
       removeToast: toast.removeToast,
       logout,
     }),
-    [bootstrap.isError, bootstrap.isPending, entry.basePath, entry.handle, logout, scope, session, toast.removeToast, toast.showToast, toast.toasts, view]
+    [bootstrap.isError, bootstrap.isPending, entry.handle, logout, scope, session, toast.removeToast, toast.showToast, toast.toasts, view]
   );
   return <SessionProvider value={state}>{children}</SessionProvider>;
 }

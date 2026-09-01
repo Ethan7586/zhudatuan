@@ -238,6 +238,11 @@ capabilities:
     owner: identity
     permission: identity.assurance.manage
     audience: public
+  - code: identity.stepup.disable
+    kind: operation
+    owner: identity
+    permission: identity.assurance.manage
+    audience: public
   - code: organization.layers.read
     kind: operation
     owner: organization

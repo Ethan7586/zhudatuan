@@ -111,14 +111,14 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
 }
 
 function validateProductionNetwork(source: ApiEnvironment | EnvironmentSource): void {
-  const allowed = apiAllowedOrigins(source as ApiEnvironment)
+  const allowed = apiAllowedOrigins(source)
     .slice()
     .sort();
   const expectedAllowed = [NETWORK_CATALOG.origins.auth, NETWORK_CATALOG.origins.console, NETWORK_CATALOG.origins.storefront].sort();
   if (allowed.join(',') !== expectedAllowed.join(',')) throw new Error('PRODUCTION_ALLOWED_ORIGINS_INVALID');
-  const targets = apiReturnTargets(source as ApiEnvironment);
+  const targets = apiReturnTargets(source);
   if (targets.console !== NETWORK_CATALOG.origins.console || targets.storefront !== NETWORK_CATALOG.origins.storefront) throw new Error('PRODUCTION_RETURN_TARGETS_INVALID');
-  if (apiStorefrontOrigin(source as ApiEnvironment) !== NETWORK_CATALOG.origins.storefront) throw new Error('PRODUCTION_STOREFRONT_ORIGIN_INVALID');
+  if (apiStorefrontOrigin(source) !== NETWORK_CATALOG.origins.storefront) throw new Error('PRODUCTION_STOREFRONT_ORIGIN_INVALID');
 }
 
 function webUrl(value: unknown): string {

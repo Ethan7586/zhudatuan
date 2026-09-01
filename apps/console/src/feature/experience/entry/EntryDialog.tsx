@@ -131,8 +131,13 @@ async function png(svg: SVGSVGElement, size: number): Promise<Blob> {
 
 function filename(value: string): string {
   return (
-    value
-      .replace(/[\\/:*?"<>|\u0000-\u001f]/g, '')
+    Array.from(value)
+      .filter((character) => {
+        const code = character.codePointAt(0) ?? 0;
+        return code > 31 && code !== 127;
+      })
+      .join('')
+      .replace(/[\\/:*?"<>|]/g, '')
       .trim()
       .slice(0, 80) || '商城'
   );

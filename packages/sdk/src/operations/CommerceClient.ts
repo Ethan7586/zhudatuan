@@ -101,6 +101,7 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "identity.mobile.manage",
   "identity.stepup.start",
   "identity.stepup.complete",
+  "identity.stepup.disable",
   "organization.layers.read",
   "access.center.read",
   "access.owners.transfer",

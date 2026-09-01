@@ -80,7 +80,7 @@ export function StepupDialog({ open, accessVersion, csrf, onClose, onComplete }:
     }
   };
   return (
-    <Dialog open={open} title="完成二次验证" eyebrow="账户安全 · 身份确认" onClose={onClose} dismissable={!busy}>
+    <Dialog open={open} title="开启二次验证" eyebrow="账户安全 · 身份确认" onClose={onClose} dismissable={!busy}>
       <div className="stepupstack">
         <header className="stepupintro">
           <span aria-hidden="true">✓</span>
