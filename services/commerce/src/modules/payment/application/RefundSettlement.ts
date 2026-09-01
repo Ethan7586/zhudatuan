@@ -28,15 +28,17 @@ interface RefundLeg {
 }
 
 export class RefundSettlement {
-  async complete(database: OperationDatabase, refundid: string, providerReference: string | null): Promise<void> {
+  async complete(database: OperationDatabase, mall: string, refundid: string, providerReference: string | null): Promise<void> {
     const refund = (await database.query<RefundRow>(`select refund.id,refund.payment_id,refund.amount_minor::float8 amount_minor,refund.currency,
-      refund.state,refund.aftersale_id,intent.order_id,orders.scope_id,orders.mall_id,orders.member_id from payment.refund refund
-      join payment.payment payment on payment.id=refund.payment_id join payment.intent intent on intent.id=payment.intent_id
-      join ordering.orderrecord orders on orders.id=intent.order_id where refund.id=$1 for update of refund,payment,orders`, [refundid])).rows[0];
+      refund.state,refund.aftersale_id,intent.order_id,refund.mall_id scope_id,refund.mall_id,intent.member_id from payment.refund refund
+      join payment.payment payment on payment.mall_id=refund.mall_id and payment.id=refund.payment_id
+      join payment.intent intent on intent.mall_id=payment.mall_id and intent.id=payment.intent_id
+      where refund.mall_id=$1 and refund.id=$2 for update of refund,payment,intent`, [mall, refundid])).rows[0];
     if (!refund || refund.state === 'succeeded') return;
     if (!['requested','submitted','processing'].includes(refund.state)) throw new Error('PAYMENT_REFUND_STATE_INVALID');
     const legs = (await database.query<RefundLeg>(`select sequence,kind,reference_id,amount_minor::float8 amount_minor
-      from payment.refundtender where refund_id=$1 and state in('planned','processing') order by sequence for update`, [refundid])).rows;
+      from payment.refundtender where mall_id=$1 and refund_id=$2 and state in('planned','processing')
+      order by sequence for update`, [mall, refundid])).rows;
     if (legs.length === 0 || legs.reduce((sum, leg) => sum + leg.amount_minor, 0) !== refund.amount_minor) throw new Error('PAYMENT_REFUND_PLAN_INTEGRITY_FAILED');
     for (const leg of legs) {
       if (leg.kind === 'benefit') await restoreBenefit(database, refund, leg);
@@ -44,15 +46,17 @@ export class RefundSettlement {
     }
     const payment = await database.query<{ refunded_minor: number; captured_minor: number }>(`update payment.payment
       set refunded_minor=refunded_minor+$2,state=case when refunded_minor+$2=captured_minor then 'refunded' else 'partially_refunded' end,
-        version=version+1 where id=$1 and refunded_minor+$2<=captured_minor returning refunded_minor::float8 refunded_minor,captured_minor::float8 captured_minor`,
-    [refund.payment_id, refund.amount_minor]);
+        version=version+1 where mall_id=$1 and id=$3 and refunded_minor+$2<=captured_minor
+      returning refunded_minor::float8 refunded_minor,captured_minor::float8 captured_minor`,
+    [mall, refund.amount_minor, refund.payment_id]);
     const totals = payment.rows[0];
     if (!totals) throw new Error('PAYMENT_REFUND_EXCEEDS_AVAILABLE');
     await database.query(`update payment.refundtender set state='succeeded',provider_reference=case when kind='wechat' then $2 else provider_reference end
-      where refund_id=$1 and state in('planned','processing')`, [refundid, providerReference]);
-    await database.query(`update payment.refund set state='succeeded',external_transaction=$2,version=version+1 where id=$1`, [refundid, providerReference]);
+      where mall_id=$1 and refund_id=$3 and state in('planned','processing')`, [mall, providerReference, refundid]);
+    await database.query(`update payment.refund set state='succeeded',external_transaction=$3,version=version+1
+      where mall_id=$1 and id=$2`, [mall, refundid, providerReference]);
     await database.query(`update payment.recoverycase set state='resolved',resolved_at=clock_timestamp()
-      where state='open' and evidence->>'refund'=$1`, [refundid]);
+      where mall_id=$1 and state='open' and evidence->>'refund'=$2`, [mall, refundid]);
     await orderPort.markRefunded(database, { order: refund.order_id, refundedMinor: totals.refunded_minor,
       capturedMinor: totals.captured_minor, aftersale: refund.aftersale_id });
     await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)

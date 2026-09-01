@@ -8,7 +8,7 @@ export type ProviderObservation = Awaited<ReturnType<PaymentGateway['query']>>;
 export interface IntentTarget {
   readonly intent: string;
   readonly order_id: string;
-  readonly order_number: string;
+  readonly provider_reference: string;
   readonly scope_id: string;
   readonly mall_id: string;
   readonly member_id: string;
@@ -47,7 +47,8 @@ export function assertProviderAmount(selected: IntentTarget, observed: ProviderO
 export async function recordProviderObservation(pool: DatabasePool, selected: IntentTarget, observed: ProviderObservation, source: 'query' | 'close'): Promise<void> {
   const evidence = JSON.stringify({ source, state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor });
   const event = `${source}:${paymentDigest(`${selected.intent}:${evidence}`)}`;
-  await pool.query(`insert into payment.observation(id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at)
-    values($1,$2,$3,$4,$5,$6,$7,clock_timestamp()) on conflict(provider_event_id) do nothing`,
-  [`observation:${paymentDigest(event)}`, selected.attempt, event, observed.state, observed.amountMinor, selected.currency, paymentDigest(evidence)]);
+  await pool.query(`insert into payment.observation(id,mall_id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at)
+    values($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp()) on conflict(mall_id,provider_event_id) do nothing`,
+  [`observation:${paymentDigest(event)}`, selected.mall_id, selected.attempt, event, observed.state, observed.amountMinor,
+    selected.currency, paymentDigest(evidence)]);
 }
