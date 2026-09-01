@@ -24,6 +24,8 @@
 
 当前 GitHub 远程分支数：`28`。累计清理一个 `1.3G` 干净 worktree 和一个 `272M` 旧残留目录。
 
+28 条中有 20 条相对其余远程 heads 的独有提交数为 0。逐条提交血缘、阿里云在线/历史 release 与本地 worktree 审计见 `../04-20条零独有分支逐条审计.md`；该审计只形成队列，没有新增删除动作。
+
 ## 记录
 
 - `001-canonical-registration-release.md`
@@ -32,3 +34,5 @@
 - `004-dim-denied-surfaces-20260830.md`
 
 机器可读证据位于相邻的 `../evidence/branch-closure-001-2026-09-02.json` 至 `../evidence/branch-closure-004-2026-09-02.json`。
+
+当前 20 条零独有分支的机器可读审计位于 `../evidence/zero-unique-branches-20-2026-09-02.json`。

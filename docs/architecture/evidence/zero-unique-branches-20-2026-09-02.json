@@ -1,0 +1,375 @@
+{
+  "schema": "zdt.branch-zero-unique-audit.v1",
+  "capturedAt": "2026-09-02T01:23:04+08:00",
+  "captureMode": "read-only",
+  "repository": "Ethan7586/zhudatuan",
+  "remoteBranchCount": 28,
+  "zeroUniqueBranchCount": 20,
+  "defaultBranch": "main",
+  "aliyun": {
+    "instanceId": "i-2zeewhay0farxq8lucrd",
+    "currentTarget": "/opt/zhudatuan/releases/807ca31f1999-iam-reliability-95-20260901-213046",
+    "releaseDirectoryCount": 39,
+    "stateRefreshedReadOnly": true,
+    "productionChanged": false
+  },
+  "classificationCounts": {
+    "A_ARCHIVE_THEN_CLOSE": 12,
+    "B_PRODUCTION_EVIDENCE_THEN_CLOSE": 4,
+    "C_DEFER": 4
+  },
+  "candidates": [
+    {
+      "index": 1,
+      "branch": "codex/console-modularization-release-20260831",
+      "tip": "0db535e2475c017dda8bb055344a240f6e2ae1b9",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 39,
+      "liveDescendants": ["identity", "purchase", "support", "notification-jobs", "storefront", "current-tree", "current-marker", "current-base"],
+      "historicalReleasesContainingTip": 28,
+      "exactReleaseDirectories": [
+        "0db535e-reports-navigation-20260831-2332",
+        "0db535e-dialog-scroll-20260901-010840"
+      ],
+      "local": {
+        "worktree": "/Users/Ethan/.codex/worktrees/console-modularization-release-20260831",
+        "size": "1.3G",
+        "dirtyEntries": 2,
+        "dirtyPaths": ["apps/console/.codex-preview/", "apps/miniapp/"]
+      },
+      "classification": "C_DEFER"
+    },
+    {
+      "index": 2,
+      "branch": "codex/console-support-20260830",
+      "tip": "4f43dccad19bc120f74a91d4d48fea89e882f494",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "codex/full-production-20260830",
+      "carrierCommitsAfterTip": 37,
+      "liveDescendants": ["web-business", "internal-runtime"],
+      "historicalReleasesContainingTip": 8,
+      "exactReleaseDirectories": [],
+      "local": {"worktree": null, "dirtyEntries": null},
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 3,
+      "branch": "codex/member-classic-ui-release-20260901",
+      "tip": "097421d9da84e219d6d633219a8bcd4089644222",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 37,
+      "liveDescendants": ["identity", "purchase", "support", "notification-jobs", "storefront", "current-tree", "current-marker", "current-base"],
+      "historicalReleasesContainingTip": 25,
+      "exactReleaseDirectories": ["097421d-member-classic-ui-20260901-030600"],
+      "local": {
+        "worktree": "/Users/Ethan/.codex/worktrees/member-classic-ui-release-20260901",
+        "size": "1.2G",
+        "dirtyEntries": 0
+      },
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 4,
+      "branch": "codex/member-invitation-success-92-20260901",
+      "tip": "810acfd17c88304b2664104668851354808fc945",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 34,
+      "exactLiveSources": ["console-support-api"],
+      "liveDescendants": ["identity", "purchase", "support", "notification-jobs", "storefront", "current-tree", "current-marker", "current-base"],
+      "historicalReleasesContainingTip": 22,
+      "exactReleaseDirectories": ["810acfd-invitation-receipt-20260901-044936"],
+      "local": {
+        "worktree": "/Users/Ethan/.codex/worktrees/member-invitation-92-20260901",
+        "size": "1.3G",
+        "dirtyEntries": 0
+      },
+      "classification": "B_PRODUCTION_EVIDENCE_THEN_CLOSE"
+    },
+    {
+      "index": 5,
+      "branch": "codex/product-000a-baseline-isolation",
+      "tip": "f8594a89f634eaaa97a4931ca430bf6890349052",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 2,
+      "liveDescendants": ["current-tree"],
+      "historicalReleasesContainingTip": 2,
+      "exactReleaseDirectories": ["f8594a89f634-product-000a-20260901-212040"],
+      "local": {
+        "worktree": "/Users/Ethan/.codex/worktrees/product-000a-baseline-isolation-20260901",
+        "size": "1.3G",
+        "dirtyEntries": 0
+      },
+      "classification": "B_PRODUCTION_EVIDENCE_THEN_CLOSE"
+    },
+    {
+      "index": 6,
+      "branch": "codex/production-access-denied-hotfix-20260830",
+      "tip": "1c77d92c4b5dcd8d91fee4601a20e0eda3597fe0",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "codex/full-production-20260830",
+      "carrierCommitsAfterTip": 38,
+      "liveDescendants": ["web-business", "internal-runtime"],
+      "historicalReleasesContainingTip": 8,
+      "exactReleaseDirectories": [],
+      "local": {
+        "worktree": "/private/tmp/zhudatuan-access-hotfix-20260830",
+        "size": "1.2G",
+        "dirtyEntries": 0
+      },
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 7,
+      "branch": "codex/referral-preview-api-routing-fix",
+      "tip": "34e9f7fbbd606f079030426cdd713712096d3a48",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "codex/full-production-20260830",
+      "carrierCommitsAfterTip": 36,
+      "liveDescendants": ["web-business", "internal-runtime", "referral-preview"],
+      "historicalReleasesContainingTip": 17,
+      "exactReleaseDirectories": [],
+      "local": {"worktree": null, "dirtyEntries": null},
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 8,
+      "branch": "codex/referral-preview-release-20260830",
+      "tip": "801e92ebadd3f2f19ed89b586cfcd6b5e609239a",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "codex/full-production-20260830",
+      "carrierCommitsAfterTip": 38,
+      "liveDescendants": ["web-business", "internal-runtime", "referral-preview"],
+      "historicalReleasesContainingTip": 18,
+      "exactReleaseDirectories": [],
+      "local": {"worktree": null, "dirtyEntries": null},
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 9,
+      "branch": "codex/referral-preview-routing-fallback-20260830",
+      "tip": "f226e647ae76d647bf9d755b6eb078f87a2d37b5",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "codex/full-production-20260830",
+      "carrierCommitsAfterTip": 31,
+      "liveDescendants": ["web-business", "internal-runtime", "referral-preview"],
+      "historicalReleasesContainingTip": 13,
+      "exactReleaseDirectories": ["f226e647ae76d647bf9d755b6eb078f87a2d37b5-preview-routing-20260830"],
+      "local": {"worktree": null, "dirtyEntries": null},
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 10,
+      "branch": "codex/release-closure-20260901",
+      "tip": "0b9b10ec75930504b207299d031ec09ad5d85c10",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 36,
+      "liveDescendants": ["identity", "purchase", "support", "notification-jobs", "storefront", "current-tree", "current-marker", "current-base"],
+      "historicalReleasesContainingTip": 23,
+      "exactReleaseDirectories": ["0b9b10e-console-release-closure-20260901"],
+      "local": {
+        "worktree": "/Users/Ethan/.codex/worktrees/release-closure-20260901",
+        "size": "1.2G",
+        "dirtyEntries": 0
+      },
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 11,
+      "branch": "codex/runtime-readiness-repair",
+      "tip": "bd4e16dbd7fe2e8d5c54a7262f50e067a97cc33e",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "codex/full-production-20260830",
+      "additionalCarrier": "backend-reconstruction",
+      "carrierCommitsAfterTip": 49,
+      "liveDescendants": ["web-business", "internal-runtime", "referral-preview"],
+      "historicalReleasesContainingTip": 18,
+      "exactReleaseDirectories": [],
+      "local": {"worktree": null, "dirtyEntries": null},
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 12,
+      "branch": "codex/unified-access-denied-20260830",
+      "tip": "58cb532cac642387f9f1bfd8d1f1c2a205f0088b",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "codex/full-production-20260830",
+      "carrierCommitsAfterTip": 33,
+      "liveDescendants": ["web-business", "internal-runtime", "referral-preview"],
+      "historicalReleasesContainingTip": 16,
+      "exactReleaseDirectories": [
+        "58cb532cac642387f9f1bfd8d1f1c2a205f0088b-access-denied-20260830",
+        "58cb532cac642387f9f1bfd8d1f1c2a205f0088b-access-denied-20260830-v2",
+        "58cb532cac642387f9f1bfd8d1f1c2a205f0088b-access-denied-20260830-v3"
+      ],
+      "local": {
+        "worktree": "/private/tmp/zhudatuan-referral-release.nheBE1/worktree",
+        "size": "1.2G",
+        "dirtyEntries": 0
+      },
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 13,
+      "branch": "codex/vi-1-2-foundation-20260901",
+      "tip": "f7b13e239b496111d382190ed1c5a7abb7382dd3",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 36,
+      "liveDescendants": ["identity", "current-tree", "current-marker"],
+      "historicalReleasesContainingTip": 5,
+      "exactReleaseDirectories": ["f7b13e2-vi-1-2-foundation-20260901-040139"],
+      "local": {
+        "worktree": "/Users/Ethan/.codex/worktrees/vi-1-2-foundation-20260901",
+        "size": "1.3G",
+        "dirtyEntries": 0
+      },
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 14,
+      "branch": "codex/zhudatuan-brand-unification-20260901",
+      "tip": "43c75fe7f8362f14a81f522a4e8c56317e362fcc",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 27,
+      "liveDescendants": ["identity", "notification-jobs", "storefront", "current-tree", "current-marker", "current-base"],
+      "historicalReleasesContainingTip": 14,
+      "exactReleaseDirectories": ["43c75fe-identity-notification-auth-receipt-20260901-075100"],
+      "local": {
+        "worktree": "/Users/Ethan/.codex/worktrees/zhudatuan-brand-unification-20260901",
+        "size": "1.4G",
+        "dirtyEntries": 0
+      },
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 15,
+      "branch": "ethan/iam-production-integration-20260901",
+      "tip": "ca9844f944c01b397bafac7563e79629acd06346",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 5,
+      "exactLiveSources": ["identity-registration-api"],
+      "liveDescendants": ["identity", "current-tree", "current-marker"],
+      "historicalReleasesContainingTip": 4,
+      "exactReleaseDirectories": ["ca9844f944c01b397bafac7563e79629acd06346-iam-access-profile-20260901-203628"],
+      "local": {"worktree": null, "dirtyEntries": null},
+      "classification": "B_PRODUCTION_EVIDENCE_THEN_CLOSE"
+    },
+    {
+      "index": 16,
+      "branch": "ethan/identity-recovery-alerting-20260901",
+      "tip": "31b27b78ec88d6f5d24d80c7f3836e54bc8c76e9",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 21,
+      "exactCurrentMarkers": ["RELEASE-BASE"],
+      "liveDescendants": ["identity", "storefront", "current-tree", "current-marker", "current-base"],
+      "historicalReleasesContainingTip": 9,
+      "exactReleaseDirectories": ["31b27b7-auth-resend30-wallclock-20260901-104600"],
+      "local": {
+        "worktree": "/private/tmp/zhudatuan-identity-recovery-alerting-20260901",
+        "size": "1.3G",
+        "dirtyEntries": 0
+      },
+      "classification": "B_PRODUCTION_EVIDENCE_THEN_CLOSE"
+    },
+    {
+      "index": 17,
+      "branch": "ethan/mall-001-mall-context",
+      "tip": "e44d18a7a82a7edc3cfa7383ec84d22ea3f34bb8",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/mall-phase1-integration",
+      "carrierCommitsAfterTip": 1,
+      "liveDescendants": [],
+      "historicalReleasesContainingTip": 0,
+      "exactReleaseDirectories": [],
+      "local": {
+        "worktree": "/Users/Ethan/Desktop/Projects/zhudatuan/worktrees/mall-001",
+        "size": "61M",
+        "dirtyEntries": 0
+      },
+      "classification": "C_DEFER"
+    },
+    {
+      "index": 18,
+      "branch": "ethan/order-release-31b27b7-20260901",
+      "tip": "25277ab7ab6d7e92e24ab23f0475c69b4635a9b9",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/iam-reliability-95",
+      "carrierCommitsAfterTip": 11,
+      "liveDescendants": ["identity", "current-tree", "current-marker"],
+      "historicalReleasesContainingTip": 5,
+      "exactReleaseDirectories": ["25277ab-order-exception-20260901-164529"],
+      "local": {
+        "worktree": "/Users/Ethan/Desktop/Projects/zhudatuan/tree/order-release-c1c8ab0",
+        "size": "1.4G",
+        "dirtyEntries": 2,
+        "dirtyPaths": [
+          "apps/console/src/feature/order/OrderPageHeader.tsx",
+          "apps/console/src/feature/order/order-layout.css"
+        ]
+      },
+      "classification": "C_DEFER"
+    },
+    {
+      "index": 19,
+      "branch": "ethan/order-release-gates-20260901",
+      "tip": "c36a8f917174d1bcb9d4f8d6328d14fe149a2a26",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "main",
+      "carrierCommitsAfterTip": 0,
+      "liveDescendants": [],
+      "historicalReleasesContainingTip": 0,
+      "exactReleaseDirectories": [],
+      "local": {
+        "worktree": "/Users/Ethan/Desktop/Projects/zhudatuan/tree/order-a01-release",
+        "size": "1.4G",
+        "dirtyEntries": 0
+      },
+      "classification": "A_ARCHIVE_THEN_CLOSE"
+    },
+    {
+      "index": 20,
+      "branch": "main",
+      "tip": "c36a8f917174d1bcb9d4f8d6328d14fe149a2a26",
+      "uniqueCommitsAgainstOtherRemoteHeads": 0,
+      "carrier": "ethan/order-release-gates-20260901",
+      "carrierCommitsAfterTip": 0,
+      "liveDescendants": [],
+      "historicalReleasesContainingTip": 0,
+      "exactReleaseDirectories": [],
+      "local": {
+        "worktree": "/Users/Ethan/Desktop/Projects/zhudatuan/main",
+        "size": "1.6G",
+        "localTip": "dbb5bbb186fbf18a1bf75c9e12b73b5f76637917",
+        "remoteTipMatchesLocalTip": false,
+        "dirtyEntries": 419
+      },
+      "classification": "C_DEFER",
+      "deferReasons": ["GitHub default branch", "local tip differs from remote", "dirty shared worktree"]
+    }
+  ],
+  "nonZeroRemoteHeads": [
+    {"branch": "backend-reconstruction", "tip": "2ebf2ed91e872b134b915b7db67e12cf2d35f0ff", "uniqueCommits": 16},
+    {"branch": "codex/full-production-20260830", "tip": "a509e3aedcd035d5fc4b66c1f8ddad88cc0e61b1", "uniqueCommits": 24},
+    {"branch": "codex/identity-notification-production-hotfix-20260901", "tip": "a180ddfebffd100f97a4415695f836c82a6538b8", "uniqueCommits": 2},
+    {"branch": "ethan/iam-reliability-95", "tip": "807ca31f19995c7732592ae91bb028d297bd1615", "uniqueCommits": 2},
+    {"branch": "ethan/mall-phase1-integration", "tip": "a93433b5c693d74003d3222019f81e213b0f2c4e", "uniqueCommits": 1},
+    {"branch": "ethan/order-release-forward-20260901", "tip": "0ca2a5cdda792a41f060838685e3671db36bd880", "uniqueCommits": 6},
+    {"branch": "ethan/registration-polish-20260901", "tip": "01c376ee6ffbe87ed1d9e39e5c50fbf35cb6083e", "uniqueCommits": 1},
+    {"branch": "zdt-next", "tip": "925188d637f18521a5865f868a99bfb088f0fda2", "uniqueCommits": 12}
+  ],
+  "mutationSummary": {
+    "remoteBranchesDeleted": 0,
+    "localBranchesDeleted": 0,
+    "worktreesRemoved": 0,
+    "aliyunFilesChanged": 0,
+    "servicesRestarted": 0
+  }
+}
