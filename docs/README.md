@@ -24,6 +24,7 @@
 - zdt-next 目标系统架构图：`architecture/01-zdt-next-目标系统架构图.md`
 - GitHub 分支谱系与收口图：`architecture/02-github-分支谱系与收口图.md`
 - 阿里云运行真值与生产反推架构：`architecture/03-阿里云运行真值与生产反推架构.md`
+<<<<<<< HEAD
 - 20 条零独有分支逐条审计：`architecture/04-20条零独有分支逐条审计.md`
 - Mall 产品边界、OMS 父级与三源取证裁定：`architecture/05-Mall产品边界取证与裁定.md`
 - H5 微信一键绑定与购物入口架构：`architecture/06-H5微信一键绑定与购物入口架构.md`
@@ -36,5 +37,8 @@
 - zdt-next 目标系统架构图：`architecture/01-zdt-next-目标系统架构图.md`
 - GitHub 分支谱系与收口图：`architecture/02-github-分支谱系与收口图.md`
 >>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
+=======
+- 阿里云生产状态机器快照：`architecture/evidence/production-state-2026-09-02.json`
+>>>>>>> 1d1ee336 (docs(architecture): derive target system from production)
 - 标准与专项提示词：`prompts/`
 - 新系统总说明：`zdt.md`（待 Ethan 定稿后建立）
