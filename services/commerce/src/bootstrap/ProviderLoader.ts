@@ -109,7 +109,7 @@ export class RuntimeExtensionLoader implements ExtensionLoader {
 }
 
 function systemOptions(signal: AbortSignal, action: string) {
-  return { tenant: '', membership: '', scope: 'extension', actor: 'system:extension', trace: `extension:${action}`, operation: `extension.provider.${action}`, deadline: Date.now() + 30_000, signal };
+  return { tenant: '', membership: '', scope: 'extension', actor: 'system:extension', trace: `extension:${action}`, operation: `extension.provider.${action}`, workload: 'jobs' as const, deadline: Date.now() + 30_000, signal };
 }
 
 export async function loadProviders(pool: DatabasePool, secrets: SecretStore, registry: ExtensionRegistry): Promise<RuntimeExtensionLoader> {
