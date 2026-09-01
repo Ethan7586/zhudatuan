@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { CANONICAL_API_ORIGIN, CANONICAL_AUTH_ORIGIN, LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN, authClientEnvironment, clientEnvironment, storefrontClientEnvironment } from './ClientEnvironment';
+import {
+  CANONICAL_API_ORIGIN,
+  CANONICAL_AUTH_ORIGIN,
+  FUFU_API_ORIGIN,
+  FUFU_AUTH_ORIGIN,
+  FUFU_CONSOLE_ORIGIN,
+  FUFU_STOREFRONT_ORIGIN,
+  LOCAL_API_ORIGIN,
+  LOCAL_AUTH_ORIGIN,
+  authClientEnvironment,
+  clientEnvironment,
+  storefrontClientEnvironment,
+} from './ClientEnvironment';
 import {
   API_ENVIRONMENT_KEYS,
   JOBS_ENVIRONMENT_KEYS,
@@ -127,6 +139,20 @@ describe('canonical runtime configuration', () => {
       clientVersion: '2.0.0',
     });
     expect(authClientEnvironment({ MODE: 'development' })).toMatchObject({ apiOrigin: LOCAL_API_ORIGIN, clientVersion: '0.0.0' });
+    expect(
+      authClientEnvironment({
+        MODE: 'production',
+        VITE_API_BASE_URL: FUFU_API_ORIGIN,
+        VITE_ADMIN_ORIGIN: FUFU_CONSOLE_ORIGIN,
+        VITE_STOREFRONT_ORIGIN: FUFU_STOREFRONT_ORIGIN,
+        VITE_CLIENT_VERSION: '2.0.0',
+      })
+    ).toEqual({
+      apiOrigin: FUFU_API_ORIGIN,
+      consoleOrigin: FUFU_CONSOLE_ORIGIN,
+      storefrontOrigin: FUFU_STOREFRONT_ORIGIN,
+      clientVersion: '2.0.0',
+    });
     expect(() => authClientEnvironment({ MODE: 'production', VITE_API_BASE_URL: 'https://attacker.example', VITE_CLIENT_VERSION: '2.0.0' })).toThrow('AUTH_API_ORIGIN_INVALID');
     expect(storefrontClientEnvironment({ MODE: 'production', VITE_CLIENT_VERSION: '2.0.0' })).toEqual({
       apiOrigin: CANONICAL_API_ORIGIN,
@@ -138,6 +164,14 @@ describe('canonical runtime configuration', () => {
       authOrigin: LOCAL_AUTH_ORIGIN,
       clientVersion: '0.0.0',
     });
+    expect(
+      storefrontClientEnvironment({
+        MODE: 'production',
+        VITE_API_BASE_URL: FUFU_API_ORIGIN,
+        VITE_AUTH_BASE_URL: FUFU_AUTH_ORIGIN,
+        VITE_CLIENT_VERSION: '2.0.0',
+      })
+    ).toEqual({ apiOrigin: FUFU_API_ORIGIN, authOrigin: FUFU_AUTH_ORIGIN, clientVersion: '2.0.0' });
     expect(() => storefrontClientEnvironment({ MODE: 'production' })).toThrow('CLIENT_VERSION_INVALID');
   });
 

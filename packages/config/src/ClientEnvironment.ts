@@ -4,10 +4,19 @@ export const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
 export const CANONICAL_AUTH_ORIGIN = 'https://accounts.zhudatuan.com';
 export const CANONICAL_CONSOLE_ORIGIN = 'https://console.zhudatuan.com';
 export const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
+export const FUFU_API_ORIGIN = 'https://api.fufu.wang';
+export const FUFU_AUTH_ORIGIN = 'https://accounts.fufu.wang';
+export const FUFU_CONSOLE_ORIGIN = 'https://console.fufu.wang';
+export const FUFU_STOREFRONT_ORIGIN = 'https://fufu.wang';
 export const LOCAL_API_ORIGIN = 'http://127.0.0.1:3001';
 export const LOCAL_AUTH_ORIGIN = 'http://127.0.0.1:3002';
 export const LOCAL_CONSOLE_ORIGIN = 'http://127.0.0.1:4173';
 export const LOCAL_STOREFRONT_ORIGIN = 'http://127.0.0.1:3000';
+
+const PRODUCTION_API_ORIGINS = Object.freeze([CANONICAL_API_ORIGIN, FUFU_API_ORIGIN]);
+const PRODUCTION_AUTH_ORIGINS = Object.freeze([CANONICAL_AUTH_ORIGIN, FUFU_AUTH_ORIGIN]);
+const PRODUCTION_CONSOLE_ORIGINS = Object.freeze([CANONICAL_CONSOLE_ORIGIN, FUFU_CONSOLE_ORIGIN]);
+const PRODUCTION_STOREFRONT_ORIGINS = Object.freeze([CANONICAL_STOREFRONT_ORIGIN, FUFU_STOREFRONT_ORIGIN]);
 
 export const CLIENT_ENVIRONMENT_KEYS = ['VITE_API_BASE_URL', 'VITE_AUTH_BASE_URL', 'VITE_CLIENT_VERSION'] as const;
 export const AUTH_ENVIRONMENT_KEYS = ['MODE', 'VITE_API_BASE_URL', 'VITE_ADMIN_ORIGIN', 'VITE_STOREFRONT_ORIGIN', 'VITE_CLIENT_VERSION'] as const;
@@ -49,9 +58,9 @@ export function authClientEnvironment(source: EnvironmentSource = browserEnviron
   const values = pickEnvironment(source, AUTH_ENVIRONMENT_KEYS);
   const development = values.MODE !== 'production';
   return Object.freeze({
-    apiOrigin: approvedOrigin(values.VITE_API_BASE_URL, CANONICAL_API_ORIGIN, LOCAL_API_ORIGIN, development, 'AUTH_API_ORIGIN_INVALID'),
-    consoleOrigin: approvedOrigin(values.VITE_ADMIN_ORIGIN, CANONICAL_CONSOLE_ORIGIN, LOCAL_CONSOLE_ORIGIN, development, 'AUTH_CONSOLE_ORIGIN_INVALID'),
-    storefrontOrigin: approvedOrigin(values.VITE_STOREFRONT_ORIGIN, CANONICAL_STOREFRONT_ORIGIN, LOCAL_STOREFRONT_ORIGIN, development, 'AUTH_STOREFRONT_ORIGIN_INVALID'),
+    apiOrigin: approvedOrigin(values.VITE_API_BASE_URL, PRODUCTION_API_ORIGINS, LOCAL_API_ORIGIN, development, 'AUTH_API_ORIGIN_INVALID'),
+    consoleOrigin: approvedOrigin(values.VITE_ADMIN_ORIGIN, PRODUCTION_CONSOLE_ORIGINS, LOCAL_CONSOLE_ORIGIN, development, 'AUTH_CONSOLE_ORIGIN_INVALID'),
+    storefrontOrigin: approvedOrigin(values.VITE_STOREFRONT_ORIGIN, PRODUCTION_STOREFRONT_ORIGINS, LOCAL_STOREFRONT_ORIGIN, development, 'AUTH_STOREFRONT_ORIGIN_INVALID'),
     clientVersion: version(values.VITE_CLIENT_VERSION, development),
   });
 }
@@ -60,20 +69,20 @@ export function storefrontClientEnvironment(source: EnvironmentSource = browserE
   const values = pickEnvironment(source, STOREFRONT_ENVIRONMENT_KEYS);
   const development = values.MODE !== 'production';
   return Object.freeze({
-    apiOrigin: approvedOrigin(values.VITE_API_BASE_URL, CANONICAL_API_ORIGIN, LOCAL_API_ORIGIN, development, 'STOREFRONT_API_ORIGIN_INVALID'),
-    authOrigin: approvedOrigin(values.VITE_AUTH_BASE_URL, CANONICAL_AUTH_ORIGIN, LOCAL_AUTH_ORIGIN, development, 'STOREFRONT_AUTH_ORIGIN_INVALID'),
+    apiOrigin: approvedOrigin(values.VITE_API_BASE_URL, PRODUCTION_API_ORIGINS, LOCAL_API_ORIGIN, development, 'STOREFRONT_API_ORIGIN_INVALID'),
+    authOrigin: approvedOrigin(values.VITE_AUTH_BASE_URL, PRODUCTION_AUTH_ORIGINS, LOCAL_AUTH_ORIGIN, development, 'STOREFRONT_AUTH_ORIGIN_INVALID'),
     clientVersion: version(values.VITE_CLIENT_VERSION, development),
   });
 }
 
 export function resolveStorefrontAuthOrigin(candidate: string | undefined, environment: string | undefined): string {
-  return approvedOrigin(candidate, CANONICAL_AUTH_ORIGIN, LOCAL_AUTH_ORIGIN, environment !== 'production', 'STOREFRONT_AUTH_ORIGIN_INVALID');
+  return approvedOrigin(candidate, PRODUCTION_AUTH_ORIGINS, LOCAL_AUTH_ORIGIN, environment !== 'production', 'STOREFRONT_AUTH_ORIGIN_INVALID');
 }
 
-function approvedOrigin(candidate: string | undefined, canonical: string, local: string, development: boolean, code: string): string {
-  const origin = webOrigin(candidate?.trim() || (development ? local : canonical), code);
+function approvedOrigin(candidate: string | undefined, production: readonly string[], local: string, development: boolean, code: string): string {
+  const origin = webOrigin(candidate?.trim() || (development ? local : production[0]!), code);
   const localhost = new Set([local, local.replace('127.0.0.1', 'localhost')]);
-  if (origin !== canonical && !(development && localhost.has(origin))) throw new Error(code);
+  if (!production.includes(origin) && !(development && localhost.has(origin))) throw new Error(code);
   return origin;
 }
 
