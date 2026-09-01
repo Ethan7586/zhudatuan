@@ -1,3 +1,4 @@
+import { Badge, Button } from '@shop/design';
 import type { OrderPage, OrderView } from './OrderSchema';
 
 interface StatusTab {
@@ -33,10 +34,20 @@ export function OrderStatusTabs({
         const disabled = !previewEnabled && tab.key !== 'all';
         const count = counts?.[tab.key];
         return (
-          <button key={tab.key} type="button" aria-pressed={active === tab.key} disabled={disabled} title={disabled ? '等待服务端状态筛选与全量计数合同' : undefined} onClick={() => onChange(tab.key)}>
-            {tab.label}
-            {count === undefined ? null : <span className={tab.key === 'exception' ? 'isexception' : undefined}>{count}</span>}
-          </button>
+          <Button
+            key={tab.key}
+            className="orderstatusfilter"
+            size="compact"
+            tone="quiet"
+            aria-pressed={active === tab.key}
+            data-selected={active === tab.key || undefined}
+            isDisabled={disabled}
+            aria-description={disabled ? '等待服务端状态筛选与全量计数合同' : undefined}
+            onPress={() => onChange(tab.key)}
+          >
+            <span>{tab.label}</span>
+            {count === undefined ? null : <Badge tone={tab.key === 'exception' ? 'danger' : 'info'}>{count}</Badge>}
+          </Button>
         );
       })}
     </nav>

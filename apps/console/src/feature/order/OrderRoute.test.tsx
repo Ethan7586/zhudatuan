@@ -134,7 +134,14 @@ describe('Order route', () => {
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeTruthy();
-    expect(screen.getByRole('note').textContent).toBe('当前页导出只使用已经加载的服务端读模型；发货、退款、售后及其他写操作仍保持关闭。');
+    const relationshipMap = screen.getByRole('region', { name: '订单系统协同关系' });
+    expect(within(relationshipMap).getByText('商品治理台')).toBeTruthy();
+    expect(within(relationshipMap).getByText('财务与对账台')).toBeTruthy();
+    expect(within(relationshipMap).getByText('履约服务')).toBeTruthy();
+    expect(within(relationshipMap).getByText('分销返佣系统')).toBeTruthy();
+    expect(within(relationshipMap).getByText('客服系统')).toBeTruthy();
+    expect(within(relationshipMap).getByText('数据报表')).toBeTruthy();
+    expect(screen.getByRole('note').textContent).toBe('当前页导出只包含已经加载的订单；发货、退款和售后操作暂未开放。');
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
     expect(screen.getByText('member:verified-1')).toBeTruthy();
