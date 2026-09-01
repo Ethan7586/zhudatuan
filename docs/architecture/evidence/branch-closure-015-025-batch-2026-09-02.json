@@ -1,0 +1,72 @@
+{
+  "schema": "zdt.branch-closure-batch-evidence.v1",
+  "sequences": [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+  "completedAt": "2026-09-02T03:31:00+08:00",
+  "repository": "https://github.com/Ethan7586/zhudatuan.git",
+  "authorization": "Ethan authorized starting the consolidation to eight branches and required retaining Hongtai for the current-month test",
+  "preconditions": {
+    "remoteBranchCount": 19,
+    "openPullRequests": 0,
+    "protectedTargets": 0,
+    "allExpectedTipsFixed": true,
+    "shaLeasesPrepared": 11
+  },
+  "branches": {
+    "codex/console-support-20260830": "4f43dccad19bc120f74a91d4d48fea89e882f494",
+    "codex/full-production-20260830": "a509e3aedcd035d5fc4b66c1f8ddad88cc0e61b1",
+    "codex/identity-notification-production-hotfix-20260901": "a180ddfebffd100f97a4415695f836c82a6538b8",
+    "codex/member-classic-ui-release-20260901": "097421d9da84e219d6d633219a8bcd4089644222",
+    "codex/member-invitation-success-92-20260901": "810acfd17c88304b2664104668851354808fc945",
+    "codex/product-000a-baseline-isolation": "f8594a89f634eaaa97a4931ca430bf6890349052",
+    "codex/production-access-denied-hotfix-20260830": "1c77d92c4b5dcd8d91fee4601a20e0eda3597fe0",
+    "ethan/identity-recovery-alerting-20260901": "31b27b78ec88d6f5d24d80c7f3836e54bc8c76e9",
+    "ethan/mall-001-mall-context": "e44d18a7a82a7edc3cfa7383ec84d22ea3f34bb8",
+    "ethan/order-release-gates-20260901": "c36a8f917174d1bcb9d4f8d6328d14fe149a2a26",
+    "ethan/registration-polish-20260901": "01c376ee6ffbe87ed1d9e39e5c50fbf35cb6083e"
+  },
+  "archive": {
+    "bundlePath": "/Users/Ethan/Desktop/zdt-next/backups/git-branches/github-prune-02-20260902-11-branches.bundle",
+    "bundleSha256": "8b1f65a040e37e535f1ec63f573192a2d2f1eeaa7938d4e9a85baf3b852e9d6e",
+    "bundleVerify": "passed",
+    "temporaryRestore": "passed",
+    "gitFsck": "passed",
+    "remoteTags": {
+      "archive/full-production-20260830": "a509e3aedcd035d5fc4b66c1f8ddad88cc0e61b1",
+      "archive/identity-notification-hotfix-20260901": "a180ddfebffd100f97a4415695f836c82a6538b8",
+      "archive/registration-polish-20260901": "01c376ee6ffbe87ed1d9e39e5c50fbf35cb6083e"
+    }
+  },
+  "action": {
+    "remoteRefsDeleted": 11,
+    "shaLeasesApplied": 11,
+    "remoteTrackingRefsPruned": true,
+    "localBranchesDeleted": 11,
+    "cleanWorktreesRemoved": 9
+  },
+  "postconditions": {
+    "remoteBranchCount": 8,
+    "deletedRemoteRefMatches": 0,
+    "remainingBranches": {
+      "backend-reconstruction": "40a6c0c37c0d4e4314f33de724e1642329abf0ad",
+      "codex/hongtai-fullchain-release-20260902": "483ee84fcdb187bff88589e080ad054548b79dc5",
+      "ethan/iam-reliability-95": "3e8da9344ad532b68315587afc86f79b3ac3be1e",
+      "ethan/mall-phase1-integration": "a93433b5c693d74003d3222019f81e213b0f2c4e",
+      "ethan/order-release-31b27b7-20260901": "25277ab7ab6d7e92e24ab23f0475c69b4635a9b9",
+      "ethan/order-release-forward-20260901": "0ca2a5cdda792a41f060838685e3671db36bd880",
+      "main": "c36a8f917174d1bcb9d4f8d6328d14fe149a2a26",
+      "zdt-next": "35d3c255b34b597cbf3d9c93c954db33418d0004"
+    }
+  },
+  "localSafety": {
+    "estimatedRemovedWorktreeSize": "approximately 10 GiB",
+    "preservedDirtyWorktree": "/private/tmp/zhudatuan-full-production-20260830.worktree",
+    "preservedDirtyEntries": 91,
+    "dirtyWorktreeForced": false
+  },
+  "safety": {
+    "aliyunConnected": false,
+    "aliyunMutated": false,
+    "servicesRestarted": false,
+    "routesChanged": false
+  }
+}

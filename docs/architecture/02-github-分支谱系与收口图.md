@@ -9,6 +9,8 @@
 
 > **执行更新（2026-09-02 02:22 +08:00）**：Ethan 明确授权一次收窄 10 条。10 条固定 SHA 均已由 `main` 或 `ethan/iam-reliability-95` 完整承接，并进入经 `git bundle verify`、SHA-256 与临时仓库恢复验证的本地 Bundle。远程数量已从 `29` 降为 `19`。下文谱系继续保留历史快照，当前执行结果以 `branch-closures/005-014-inherited-branches-batch-20260902.md` 为准。
 
+> **八分支收口（2026-09-02 03:31 +08:00）**：Ethan 明确保留本月宏泰测试线并授权执行。11 条旧分支先进入完整本地 Bundle；`full-production`、Identity Notification Hotfix、Registration Polish 的独立历史另建 3 个远程归档 Tag；随后使用 11 个独立 SHA 租约关闭远端引用。GitHub 已从 `19` 降为 `8`，9 个零改动 worktree 与 11 个同名本地分支已清理。详见 `branch-closures/015-025-eight-branch-consolidation-20260902.md`。
+
 ## 状态更新：关闭 001–004
 
 2026-09-02 已关闭 `codex/canonical-registration-release@71280439c5`：

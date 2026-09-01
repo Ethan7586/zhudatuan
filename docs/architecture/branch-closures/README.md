@@ -22,8 +22,9 @@
 | 003 | 2026-09-02 | `codex/graceful-preview-access-20260830` | `433e0b9401` | 0 | 30 → 29 | 远程与本地均已收口 |
 | 004 | 2026-09-02 | `codex/dim-denied-surfaces-20260830` | `b933686885` | 0 | 29 → 28 | 远程与本地均已收口 |
 | 005–014 | 2026-09-02 | 10 条已继承分支，见批次记录 | 10 个固定 tip | 0 | 29 → 19 | 远程已收口；5 个任务 worktree 本地保留 |
+| 015–025 | 2026-09-02 | 11 条旧线，见八分支收口记录 | 11 个固定 tip | 3 条有独立历史 | 19 → 8 | 远程已收口；独立历史已打 Tag；9 个干净 worktree 已清理 |
 
-当前 GitHub 远程分支数：`19`。001–004 累计关闭 4 条；另一个任务曾新增 `codex/hongtai-fullchain-release-20260902@483ee84`，使数量从 28 回到 29。Ethan 随后明确授权一次收窄 10 条，005–014 批次把数量从 29 降到 19。
+当前 GitHub 远程分支数：`8`。Ethan 明确要求保留本月在测的 `codex/hongtai-fullchain-release-20260902`，随后授权执行 19 → 8。015–025 批次关闭其余 7 条旧 `codex/*` 与 4 条旧 `ethan/*`；现在远端唯一保留的 `codex/*` 是宏泰测试线。
 
 28 条中有 20 条相对其余远程 heads 的独有提交数为 0。逐条提交血缘、阿里云在线/历史 release 与本地 worktree 审计见 `../04-20条零独有分支逐条审计.md`；该审计只形成队列，没有新增删除动作。
 
@@ -34,7 +35,8 @@
 - `003-graceful-preview-access-20260830.md`
 - `004-dim-denied-surfaces-20260830.md`
 - `005-014-inherited-branches-batch-20260902.md`
+- `015-025-eight-branch-consolidation-20260902.md`
 
-机器可读证据位于相邻的 `../evidence/branch-closure-001-2026-09-02.json` 至 `../evidence/branch-closure-004-2026-09-02.json`，以及 `../evidence/branch-closure-005-014-batch-2026-09-02.json`。
+机器可读证据位于相邻的 `../evidence/branch-closure-001-2026-09-02.json` 至 `../evidence/branch-closure-004-2026-09-02.json`，以及两个批次证据 `../evidence/branch-closure-005-014-batch-2026-09-02.json`、`../evidence/branch-closure-015-025-batch-2026-09-02.json`。
 
 当前 20 条零独有分支的机器可读审计位于 `../evidence/zero-unique-branches-20-2026-09-02.json`。
