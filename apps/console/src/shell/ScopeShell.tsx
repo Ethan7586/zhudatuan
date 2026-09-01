@@ -9,6 +9,7 @@ import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { professionalRouteFromPath, professionalRoutes, scopeSuffix } from '../route/ProfessionalRouteCatalog';
 import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
 import { appConfig } from '../shared/config/AppConfig';
+import { buildInfo } from '../shared/config/BuildInfo';
 import { scopePath } from '../shared/url/ScopePath';
 import { workstationFromPath, workstations } from './Workstation';
 
