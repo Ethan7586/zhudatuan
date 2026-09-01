@@ -2,6 +2,7 @@
 
 > 完成时间：2026-09-02T00:26:18+08:00
 <<<<<<< HEAD
+<<<<<<< HEAD
 > 本地清理时间：2026-09-02T00:34:13+08:00
 > 状态：已完成并复核
 > 操作范围：GitHub 远程分支引用及对应本地残留；未修改阿里云
@@ -9,6 +10,11 @@
 > 状态：已完成并复核
 > 操作范围：GitHub 远程分支引用；未修改阿里云
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
+=======
+> 本地清理时间：2026-09-02T00:34:13+08:00
+> 状态：已完成并复核
+> 操作范围：GitHub 远程分支引用及对应本地残留；未修改阿里云
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
 
 ## 一、关闭对象
 
@@ -67,6 +73,9 @@ tag object:
 - 阿里云未部署、未重启、未改路由、未改文件。
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
 ## 五、本地空间清理
 
 两个本地仓库均已检查：
@@ -98,12 +107,18 @@ tag object:
 /Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt
 ```
 
+<<<<<<< HEAD
 最终复核时间为 `2026-09-02T00:36:35+08:00`。此时原 `/private/tmp` 路径和上述废纸篓路径均已不存在；没有清空或改动废纸篓中的其他项目。该分支对应的 `272M` 残留目录已不再保留在本地。
 
 ## 六、恢复方法
 =======
 ## 五、恢复方法
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
+=======
+原 `/private/tmp` 路径已不存在。本次采用可恢复清理，因此废纸篓清空前，这 `272M` 仍占用磁盘。
+
+## 六、恢复方法
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
 
 如需恢复原远程分支，可从固定提交重新创建：
 
@@ -115,6 +130,7 @@ git push origin \
 该命令仅作为恢复说明，本次没有执行。
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## 七、结论
 
 第 001 条关闭符合“有承接、无独有提交、生产先保护、远程与本地均收口、删除后可恢复”的标准。
@@ -123,5 +139,10 @@ git push origin \
 
 第 001 条关闭符合“有承接、无独有提交、生产先保护、删除后可恢复”的标准。
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
+=======
+## 七、结论
+
+第 001 条关闭符合“有承接、无独有提交、生产先保护、远程与本地均收口、删除后可恢复”的标准。
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
 
 下一条分支必须重新执行完整取证，不因本次成功而自动获得删除授权。

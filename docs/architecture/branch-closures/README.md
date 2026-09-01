@@ -14,17 +14,23 @@
 4. 关闭后重新读取 GitHub，验证分支消失、承接关系仍成立、远程分支数准确减少一条。
 5. 每条记录必须给出恢复方法。
 <<<<<<< HEAD
+<<<<<<< HEAD
 6. 远程删除后还要清理同名本地引用、失效 worktree 登记和残留目录；目录有内容时必须先做差异审计。
 7. 未经 Ethan 明确同意，不进行下一条删除。
 8. 批量授权下允许一次推送多个删除 refspec，但每条必须单独配置 `--force-with-lease=<ref>:<expected-sha>`，并在动作前后核对精确集合与总数。
 =======
 6. 未经 Ethan 明确同意，不进行下一条删除。
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
+=======
+6. 远程删除后还要清理同名本地引用、失效 worktree 登记和残留目录；目录有内容时必须先做差异审计。
+7. 未经 Ethan 明确同意，不进行下一条删除。
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
 
 ## 当前进度
 
 | 编号 | 日期 | 关闭分支 | tip SHA | 独有提交 | 分支数变化 | 状态 |
 |---:|---|---|---|---:|---:|---|
+<<<<<<< HEAD
 <<<<<<< HEAD
 | 001 | 2026-09-02 | `codex/canonical-registration-release` | `71280439c5` | 0 | 32 → 31 | 远程与本地均已收口 |
 | 002 | 2026-09-02 | `codex/purchase-readiness-finance-guard` | `9734c2ec06` | 0 | 31 → 30 | 远程与本地均已收口 |
@@ -39,6 +45,9 @@
 =======
 | 001 | 2026-09-02 | `codex/canonical-registration-release` | `71280439c5` | 0 | 32 → 31 | 完成 |
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
+=======
+| 001 | 2026-09-02 | `codex/canonical-registration-release` | `71280439c5` | 0 | 32 → 31 | 远程与本地均已收口 |
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
 
 ## 记录
 

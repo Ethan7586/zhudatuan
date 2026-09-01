@@ -27,12 +27,18 @@
   "action": {
     "type": "delete-remote-branch",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
     "completed": true,
     "localCleanupCompleted": true
   },
   "localCleanup": {
     "completedAt": "2026-09-02T00:34:13+08:00",
+<<<<<<< HEAD
     "finalVerifiedAt": "2026-09-02T00:36:35+08:00",
+=======
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
     "repositoriesChecked": [
       "/Users/Ethan/Desktop/zdt-next",
       "/Users/Ethan/Desktop/Projects/zhudatuan/main"
@@ -49,6 +55,7 @@
       "missingTrackedFiles": 1912,
       "nonMissingTrackedDifferences": 0,
       "untrackedGeneratedFiles": 208,
+<<<<<<< HEAD
       "disposition": "removed-from-source-and-trash",
       "trashPath": "/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt",
       "sourcePathExistsAfter": false,
@@ -58,16 +65,28 @@
 =======
     "completed": true
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
+=======
+      "disposition": "moved-to-trash",
+      "trashPath": "/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt",
+      "sourcePathExistsAfter": false
+    }
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
   },
   "postconditions": {
     "remoteBranchRefMatches": 0,
     "remoteBranchCount": 31,
+<<<<<<< HEAD
 <<<<<<< HEAD
     "localBranchRefMatches": 0,
     "remoteTrackingRefMatches": 0,
     "worktreeRegistrations": 0,
 =======
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
+=======
+    "localBranchRefMatches": 0,
+    "remoteTrackingRefMatches": 0,
+    "worktreeRegistrations": 0,
+>>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
     "recoverableFromAllSurvivors": true,
     "uniqueCommitsVersusSurvivors": 0,
     "productionTagPeeledCommit": "443cdb06d4724ae799e29ee61e97a336d322ec5d"
