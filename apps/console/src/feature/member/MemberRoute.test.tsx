@@ -87,6 +87,31 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
 
+  it('keeps the member page authoritative when access details contain memberships from another page', async () => {
+    server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
+      items: [
+        accessMembership('membership:employee', '测试员工'),
+        accessMembership('membership:off-page', '不应出现在本页'),
+      ],
+      count: 2,
+      roles: [],
+    })));
+    renderRoute({
+      ...ownerContext,
+      session: {
+        ...ownerContext.session,
+        permissions: [...ownerContext.session.permissions, 'access.center.read'],
+        capabilities: [...ownerContext.session.capabilities, 'access.center.read'],
+      },
+    });
+
+    const table = await screen.findByRole('table', { name: '成员管理' });
+    expect(await within(table).findByText('测试员工')).toBeTruthy();
+    expect(within(table).queryByText('不应出现在本页')).toBeNull();
+    expect(within(table).queryByText('membership:off-page')).toBeNull();
+    expect(within(table).getByText('本页 1 条')).toBeTruthy();
+  });
+
   it.each(missingEvidenceCases)('hides the write entry when %s evidence is missing', async (_name, sessionPatch) => {
     renderRoute({ ...ownerContext, session: { ...ownerContext.session, ...sessionPatch } });
     await screen.findByRole('table', { name: '成员管理' });
@@ -228,6 +253,21 @@ function memberPage(patch: Readonly<Record<string, unknown>> = {}) {
       },
     ],
     count: 1,
+  };
+}
+
+function accessMembership(id: string, displayName: string) {
+  return {
+    id,
+    status: 'active',
+    access_version: '7',
+    member_id: id.replace('membership:', 'member:'),
+    display_name: displayName,
+    employee_no: null,
+    roles: [],
+    scopes: [],
+    denies: [],
+    effective_permissions: [],
   };
 }
 

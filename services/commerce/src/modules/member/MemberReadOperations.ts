@@ -23,7 +23,9 @@ export function memberOperatorReadActions(): OperationActions {
         from access.membership membership
         join member.profile profile on profile.id=membership.member_id
         join identity.principal principal on principal.id=profile.principal_id
-        where membership.organization_id=$1 and ($2::text is null or profile.id>$2)
+        where exists(select 1 from organization.unitclosure boundary
+          where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
+          and ($2::text is null or profile.id>$2)
         order by profile.id,case membership.client when 'operator' then 0 when 'storefront' then 1 else 2 end,membership.id
       )
       select anchor.*,
