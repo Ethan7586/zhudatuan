@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { DomainType, MallContextType } from '../types';
+import { defaultTermsAccepted } from '../services/termsAcceptance';
 
 const MallContext = createContext<MallContextType | undefined>(undefined);
 
@@ -17,7 +18,7 @@ function initialDomain(): DomainType {
 
 export const MallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const currentDomain = initialDomain();
-  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
+  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(() => defaultTermsAccepted('login'));
 
   return (
     <MallContext.Provider

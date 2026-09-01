@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowRight, ArrowLeft, RefreshCw, UserCheck, ChevronRight, ShieldAlert, Info, Clock, Store, CreditCard, UserX, FileText, X } from 'lucide-react';
 import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
+import { defaultTermsAccepted } from '../services/termsAcceptance';
 import {
   loginWithPassword,
   getLockoutState,
