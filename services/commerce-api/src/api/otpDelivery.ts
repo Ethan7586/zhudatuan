@@ -2,6 +2,8 @@ import { sendVerificationSms, SmsDeliveryError, smsProviderAvailable, type Verif
 import { callRpc } from './supabase';
 import type { WorkerEnv } from './types';
 
+export const OTP_RESEND_AFTER_SECONDS = 30 as const;
+
 export interface OtpDelivery {
   debugCode?: string;
   provider: 'debug' | 'aliyun';
