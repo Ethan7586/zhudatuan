@@ -11,16 +11,27 @@ import { PaymentPort } from '../../payment/PaymentPort';
 import type { BenefitGateway } from '../../benefit/application/port/BenefitPort';
 import { marketingPort } from '../../marketing/MarketingPort';
 import { cartPort } from '../../cart/CartPort';
+import type { OrderQuoteStore, StoredQuote } from '../OrderContractModule';
 
 export interface OrderVoucherGateway {
   reserve(database: OperationDatabase, order: string, member: string, scope: string,
     tenders: readonly Readonly<{ reference: string; amountMinor: number }>[]): Promise<void>;
 }
 
-interface StoredQuote {
-  readonly checkout: string; readonly cart_id: string; readonly member_id: string; readonly mall_id: string; readonly application_id: string;
-  readonly quote_id: string; readonly quote_hash: string; readonly input: Readonly<Record<string, unknown>>; readonly version: number;
-  readonly signed_payload: CheckoutQuote; readonly signature: string;
+export class DirectOrderQuoteStore implements OrderQuoteStore {
+  async load(database: OperationDatabase, quote: string, membership: string): Promise<StoredQuote> {
+    const result = await database.query<StoredQuote>(`select session.id checkout,session.cart_id,session.member_id,session.mall_id,session.application_id,
+      session.quote_id,session.quote_hash,session.input,session.version::float8 version,quote.signed_payload,quote.signature
+      from checkout.session session join pricing.quote quote on quote.id=session.quote_id
+      join access.membership membership on membership.member_id=session.member_id and membership.organization_id=session.mall_id
+      join cart.cart cart on cart.id=session.cart_id and cart.member_id=session.member_id and cart.mall_id=session.mall_id
+      where session.quote_id=$1 and membership.id=$2 and session.state='quoted' and cart.state='active'
+        and session.expires_at>clock_timestamp() and quote.expires_at>clock_timestamp()
+      for update of session,cart`, [quote, membership]);
+    const row = result.rows[0];
+    if (!row) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
+    return row;
+  }
 }
 
 export class PlaceOrder {
@@ -28,6 +39,7 @@ export class PlaceOrder {
     private readonly checkout: CheckoutPort,
     private readonly benefit: BenefitGateway,
     private readonly voucher: OrderVoucherGateway,
+    private readonly quotes: OrderQuoteStore = new DirectOrderQuoteStore(),
     private readonly inventory = new InventoryPort(),
     private readonly payment = new PaymentPort(),
   ) {}
@@ -37,8 +49,7 @@ export class PlaceOrder {
     if (!access) throw new Error('AUTHENTICATION_REQUIRED');
     if (access.assurance.level < 2) throw new Error('MOBILE_ASSURANCE_REQUIRED');
     const quoteid = text(bodyRecord(request).quote, 'quote');
-    await this.lockCart(database, quoteid, access.membership.id);
-    const stored = await this.load(database, quoteid, access.membership.id);
+    const stored = await this.quotes.load(database, quoteid, access.membership.id);
     if (!this.checkout.verify(stored.signed_payload, stored.signature) || stored.signature !== stored.quote_hash) throw new Error('QUOTE_SIGNATURE_INVALID');
     const selection = this.checkout.selection(stored.input);
     const current = await this.checkout.read(database, access.membership.id, selection);
@@ -69,26 +80,6 @@ export class PlaceOrder {
     await this.events(database, request, stored, current, order, number, intent);
     return { status: 201, body: { ...saved.rows[0], payment: { intent, personalMinor: current.personalMinor,
       action: 'payment.intents.create' } }, headers: { etag: '"0"' } };
-  }
-
-  private async lockCart(database: OperationDatabase, quote: string, membership: string): Promise<void> {
-    const result = await database.query(`select cart.id from checkout.session session
-      join access.membership membership on membership.member_id=session.member_id and membership.organization_id=session.mall_id
-      join cart.cart cart on cart.id=session.cart_id and cart.member_id=session.member_id and cart.mall_id=session.mall_id
-      where session.quote_id=$1 and membership.id=$2 and session.state='quoted' and cart.state='active' for update of cart`, [quote, membership]);
-    if (!result.rows[0]) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
-  }
-
-  private async load(database: OperationDatabase, quote: string, membership: string): Promise<StoredQuote> {
-    const result = await database.query<StoredQuote>(`select session.id checkout,session.cart_id,session.member_id,session.mall_id,session.application_id,
-      session.quote_id,session.quote_hash,session.input,session.version::float8 version,quote.signed_payload,quote.signature
-      from checkout.session session join pricing.quote quote on quote.id=session.quote_id
-      join access.membership membership on membership.member_id=session.member_id and membership.organization_id=session.mall_id
-      where session.quote_id=$1 and membership.id=$2 and session.state='quoted' and session.expires_at>clock_timestamp()
-        and quote.expires_at>clock_timestamp() for update of session`, [quote, membership]);
-    const row = result.rows[0];
-    if (!row) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
-    return row;
   }
 
   private async reserveVouchers(database: OperationDatabase, order: string, quote: CheckoutQuote): Promise<void> {

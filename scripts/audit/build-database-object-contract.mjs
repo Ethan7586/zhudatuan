@@ -6,8 +6,7 @@ import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 const root = repositoryRoot;
 const directory = join(root, 'database', 'supabase', 'migrations');
 const files = (await readdir(directory))
-  .filter((name) => name >= '20260821011000_create_domain_schemas.sql'
-    && (name.startsWith('20260821') || name.startsWith('20260828') || name.startsWith('20260829') || name.startsWith('20260830')))
+  .filter((name) => name.endsWith('.sql') && name >= '20260821011000_create_domain_schemas.sql')
   .sort();
 const droppedTables = new Set([
   'runtime.distributorcontactstage',
@@ -65,6 +64,8 @@ const callerMap = {
   'access.resolve_scope': ['services/commerce/src/foundation/security/PgAccessResolvers.ts'],
   'access.membership_version': ['services/commerce/src/foundation/security/PgAccessResolvers.ts'],
   'capability.membership_operations': ['services/commerce/src/foundation/security/PgAccessResolvers.ts'],
+  'access.purchase_checkout_context': ['services/commerce/src/modules/purchase/PurchaseCheckoutContext.ts'],
+  'access.purchase_order_quote': ['services/commerce/src/modules/purchase/PurchaseOrderQuoteStore.ts'],
   'runtime.accept_inbox': ['services/commerce/src/foundation/infrastructure/InboxStore.ts'],
   'runtime.claim_job': ['services/commerce/src/foundation/application/JobRunner.ts'],
   'channel.pull_private_catalog': ['services/commerce/src/modules/channel/infrastructure/adapter/PgPrivateProvider.ts'],

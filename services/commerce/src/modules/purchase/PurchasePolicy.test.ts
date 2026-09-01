@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import type { CheckoutQuote } from '../checkout/domain/model/CheckoutQuote';
-import { assertInternalBenefitQuote, assertInternalIntent, assertPurchaseAssurance, assertPurchaseTarget } from './PurchasePolicy';
+import { assertInternalBenefitQuote, assertInternalIntent, assertPurchaseAssurance, assertPurchaseQuote, assertPurchaseTarget } from './PurchasePolicy';
 
 describe('purchase policy', () => {
+  it('accepts internal, external, and mixed purchase quotes while rejecting unsupported tenders', () => {
+    expect(() => assertPurchaseQuote(quote())).not.toThrow();
+    expect(() => assertPurchaseQuote(quote({ personalMinor: 100,
+      tenders: [{ kind: 'wechat', reference: null, amountMinor: 100 }] }))).not.toThrow();
+    expect(() => assertPurchaseQuote(quote({ payableMinor: 150, personalMinor: 50,
+      tenders: [{ kind: 'benefit', reference: 'account:one', amountMinor: 100 },
+        { kind: 'wechat', reference: null, amountMinor: 50 }] }))).not.toThrow();
+    expect(() => assertPurchaseQuote(quote({ tenders: [{ kind: 'voucher', reference: 'voucher:one', amountMinor: 100 }] })))
+      .toThrow('PAYMENT_TENDER_UNSUPPORTED');
+    expect(() => assertPurchaseQuote(quote({ personalMinor: 99,
+      tenders: [{ kind: 'wechat', reference: null, amountMinor: 100 }] }))).toThrow('PAYMENT_EXTERNAL_AMOUNT_MISMATCH');
+  });
+
   it('accepts only a positive, fully allocated benefit quote', () => {
     expect(() => assertInternalBenefitQuote(quote())).not.toThrow();
     expect(() => assertInternalBenefitQuote(quote({ personalMinor: 1 }))).toThrow('PAYMENT_EXTERNAL_TENDER_FORBIDDEN');

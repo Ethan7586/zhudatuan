@@ -133,7 +133,7 @@ describe('purchase-only order response', () => {
       status: 201,
       body: {
         id: 'order:one', order_number: 'SW20260828000000000001', payment_state: 'unpaid', fulfillment_state: 'unallocated',
-        aftersale_state: 'none', lifecycle_state: 'created', version: 0, address_snapshot: { recipient_ciphertext: 'secret' },
+        aftersale_state: 'none', lifecycle_state: 'created', version: '0', address_snapshot: { recipient_ciphertext: 'secret' },
         invoice_snapshot: { taxid_ciphertext: 'secret' }, evidence: { tenders: [{ account: 'benefit:one' }] },
         dependencies: { private: true }, tenders: [{ kind: 'benefit' }],
         payment: { intent: 'intent:one', personalMinor: 0, action: 'payment.intents.create', provider: 'private' },

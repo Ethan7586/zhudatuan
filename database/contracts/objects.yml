@@ -131,6 +131,12 @@ objects:
     owner: access
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
     operationalOwner: access
+  - id: access.purchase_checkout_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902010000_restore_public_mall_role_contracts.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchaseCheckoutContext.ts
   - id: access.purchase_fulfillment_allowed
     kind: function
     owner: access
@@ -166,6 +172,12 @@ objects:
     owner: access
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
     operationalOwner: access
+  - id: access.purchase_order_quote
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902010000_restore_public_mall_role_contracts.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchaseOrderQuoteStore.ts
   - id: access.purchase_quote_allowed
     kind: function
     owner: access
