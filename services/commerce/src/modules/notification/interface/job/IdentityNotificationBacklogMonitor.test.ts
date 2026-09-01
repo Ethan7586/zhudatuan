@@ -14,7 +14,8 @@ describe('identity notification backlog monitor', () => {
 
     expect(query).toHaveBeenCalledTimes(1);
     expect(String(query.mock.calls[0]?.[0])).toContain("available_at<=clock_timestamp()");
-    expect(records.filter(({ kind }) => kind === 'metric')).toHaveLength(3);
+    expect(String(query.mock.calls[0]?.[0])).toContain("source_id like 'identitynotification:delivery:%'");
+    expect(records.filter(({ kind }) => kind === 'metric')).toHaveLength(4);
     expect(records.some(({ event }) => event === 'identity.notification.queue.backlog')).toBe(false);
   });
 
@@ -50,10 +51,23 @@ describe('identity notification backlog monitor', () => {
       expect(records.some(({ event }) => event === 'identity.notification.queue.backlog')).toBe(true);
     }
   });
+
+  it('alerts when a provider delivery failure is unresolved after the queue completed', async () => {
+    const records: Readonly<Record<string, unknown>>[] = [];
+    const current = snapshot({ delivery_alerts: 1 });
+    const query = vi.fn(async (statement: string) => statement.startsWith('select') ? result([current]) : result([], 1));
+    const monitor = new IdentityNotificationBacklogMonitor({ query } as unknown as DatabasePool,
+      createTelemetry((record) => { records.push(record); }));
+
+    await monitor.inspect();
+
+    expect(query.mock.calls.some(([statement]) => String(statement).includes('insert into runtime.deadletter'))).toBe(true);
+    expect(records.some(({ event }) => event === 'identity.notification.queue.backlog')).toBe(true);
+  });
 });
 
 function snapshot(overrides: Partial<IdentityNotificationBacklogSnapshot> = {}): IdentityNotificationBacklogSnapshot {
-  return { queued: 0, running: 0, failed: 0, stale_running: 0, oldest_seconds: 0, ...overrides };
+  return { queued: 0, running: 0, failed: 0, stale_running: 0, oldest_seconds: 0, delivery_alerts: 0, ...overrides };
 }
 
 function result(rows: readonly unknown[], rowCount = rows.length, values?: readonly unknown[]) {
