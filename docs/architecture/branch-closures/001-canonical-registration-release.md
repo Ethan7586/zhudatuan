@@ -1,8 +1,9 @@
 # 分支关闭 001：canonical-registration-release
 
 > 完成时间：2026-09-02T00:26:18+08:00
+> 本地清理时间：2026-09-02T00:34:13+08:00
 > 状态：已完成并复核
-> 操作范围：GitHub 远程分支引用；未修改阿里云
+> 操作范围：GitHub 远程分支引用及对应本地残留；未修改阿里云
 
 ## 一、关闭对象
 
@@ -60,7 +61,40 @@ tag object:
 - `zdt-next` 未被旧历史合并。
 - 阿里云未部署、未重启、未改路由、未改文件。
 
-## 五、恢复方法
+## 五、本地空间清理
+
+两个本地仓库均已检查：
+
+| 检查项 | 清理后结果 |
+|---|---|
+| `/Users/Ethan/Desktop/zdt-next` 同名本地引用 | 0 |
+| `/Users/Ethan/Desktop/Projects/zhudatuan/main` 同名本地引用 | 0 |
+| 同名远程跟踪引用 | 0 |
+| 同名 worktree 登记 | 0 |
+| 可修剪 worktree 登记 | 0 |
+
+旧仓库原先仍有：
+
+- 本地分支 `codex/canonical-registration-release`，指向 `71280439...`；现已删除。
+- 失效管理项 `.git/worktrees/zhudatuan-auth-registration.MeOwKt`；其 `gitdir` 指向不存在的位置，现已修剪。
+- 残留目录 `/private/tmp/zhudatuan-auth-registration.MeOwKt`，测得大小为 `272M`。
+
+删除残留目录前，使用独立临时索引与 `71280439...` 对照：
+
+- 166 个仍存在的受管文件内容全部与提交一致。
+- 1,912 个受管文件仅为缺失，不构成独有内容。
+- 208 个未跟踪文件全部位于 `dist`、`node_modules`、`.wrangler` 或 `tsconfig.tsbuildinfo` 等生成物范围。
+- 非缺失型受管内容差异为 0，未发现未提交源码。
+
+目录随后通过系统 `trash` 工具移入：
+
+```text
+/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt
+```
+
+原 `/private/tmp` 路径已不存在。本次采用可恢复清理，因此废纸篓清空前，这 `272M` 仍占用磁盘。
+
+## 六、恢复方法
 
 如需恢复原远程分支，可从固定提交重新创建：
 
@@ -71,8 +105,8 @@ git push origin \
 
 该命令仅作为恢复说明，本次没有执行。
 
-## 六、结论
+## 七、结论
 
-第 001 条关闭符合“有承接、无独有提交、生产先保护、删除后可恢复”的标准。
+第 001 条关闭符合“有承接、无独有提交、生产先保护、远程与本地均收口、删除后可恢复”的标准。
 
 下一条分支必须重新执行完整取证，不因本次成功而自动获得删除授权。

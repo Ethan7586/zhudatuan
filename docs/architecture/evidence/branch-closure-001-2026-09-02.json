@@ -26,11 +26,38 @@
   },
   "action": {
     "type": "delete-remote-branch",
-    "completed": true
+    "completed": true,
+    "localCleanupCompleted": true
+  },
+  "localCleanup": {
+    "completedAt": "2026-09-02T00:34:13+08:00",
+    "repositoriesChecked": [
+      "/Users/Ethan/Desktop/zdt-next",
+      "/Users/Ethan/Desktop/Projects/zhudatuan/main"
+    ],
+    "localBranchRefMatchesAfter": 0,
+    "remoteTrackingRefMatchesAfter": 0,
+    "worktreeRegistrationsAfter": 0,
+    "prunableWorktreeRegistrationsAfter": 0,
+    "staleAdminEntryPruned": ".git/worktrees/zhudatuan-auth-registration.MeOwKt",
+    "residualDirectory": {
+      "sourcePath": "/private/tmp/zhudatuan-auth-registration.MeOwKt",
+      "measuredSize": "272M",
+      "trackedFilesVerifiedEqual": 166,
+      "missingTrackedFiles": 1912,
+      "nonMissingTrackedDifferences": 0,
+      "untrackedGeneratedFiles": 208,
+      "disposition": "moved-to-trash",
+      "trashPath": "/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt",
+      "sourcePathExistsAfter": false
+    }
   },
   "postconditions": {
     "remoteBranchRefMatches": 0,
     "remoteBranchCount": 31,
+    "localBranchRefMatches": 0,
+    "remoteTrackingRefMatches": 0,
+    "worktreeRegistrations": 0,
     "recoverableFromAllSurvivors": true,
     "uniqueCommitsVersusSurvivors": 0,
     "productionTagPeeledCommit": "443cdb06d4724ae799e29ee61e97a336d322ec5d"
