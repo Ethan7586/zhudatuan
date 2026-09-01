@@ -31,6 +31,7 @@
   },
   "localCleanup": {
     "completedAt": "2026-09-02T00:34:13+08:00",
+    "finalVerifiedAt": "2026-09-02T00:36:35+08:00",
     "repositoriesChecked": [
       "/Users/Ethan/Desktop/zdt-next",
       "/Users/Ethan/Desktop/Projects/zhudatuan/main"
@@ -47,9 +48,11 @@
       "missingTrackedFiles": 1912,
       "nonMissingTrackedDifferences": 0,
       "untrackedGeneratedFiles": 208,
-      "disposition": "moved-to-trash",
+      "disposition": "removed-from-source-and-trash",
       "trashPath": "/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt",
-      "sourcePathExistsAfter": false
+      "sourcePathExistsAfter": false,
+      "trashPathExistsAfter": false,
+      "otherTrashItemsTouched": false
     }
   },
   "postconditions": {

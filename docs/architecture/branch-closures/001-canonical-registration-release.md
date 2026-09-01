@@ -92,7 +92,7 @@ tag object:
 /Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt
 ```
 
-原 `/private/tmp` 路径已不存在。本次采用可恢复清理，因此废纸篓清空前，这 `272M` 仍占用磁盘。
+最终复核时间为 `2026-09-02T00:36:35+08:00`。此时原 `/private/tmp` 路径和上述废纸篓路径均已不存在；没有清空或改动废纸篓中的其他项目。该分支对应的 `272M` 残留目录已不再保留在本地。
 
 ## 六、恢复方法
 
