@@ -5,12 +5,6 @@ import { CheckoutPolicy, type CampaignRule } from '../domain/policy/CheckoutPoli
 import { BenefitPort, type BenefitChoice } from '../../benefit/BenefitModule';
 import { VoucherPort, type VoucherChoice } from '../../voucher/VoucherModule';
 
-interface CartRow {
-  readonly id: string; readonly member_id: string; readonly mall_id: string; readonly application_id: string; readonly version: number;
-  readonly profile_status: string | null; readonly profile_version: number | null; readonly city_code: string | null;
-  readonly address_version: number | null; readonly address_region: string | null; readonly invoice_version: number | null;
-  readonly experience_version: string | null; readonly experience_hash: string | null;
-}
 interface LineRow {
   readonly listing_id: string; readonly sku_id: string; readonly quantity: number; readonly cart_listing_version: string;
   readonly listing_title: string | null; readonly listing_version: number | null; readonly listing_status: string | null;
@@ -34,7 +28,9 @@ export class QuoteReader {
   constructor(private readonly policy = new CheckoutPolicy(), private readonly benefit = new BenefitPort(), private readonly voucher = new VoucherPort()) {}
 
   async read(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CheckoutQuote> {
-    const cart = await this.cart(database, membership, selection);
+    const cart = this.context === null
+      ? await this.cart(database, membership, selection)
+      : await this.context.read(database, membership, selection);
     const [lines, policies, purchases, tags, campaigns, priceRules, vouchers, benefits] = await Promise.all([
       this.lines(database, cart), this.policies(database, cart.mall_id),
       this.purchases(database, { mall_id: cart.mall_id, member_id: cart.member_id }), this.tags(database, cart.member_id),
@@ -65,8 +61,8 @@ export class QuoteReader {
       evidence, rejections: Object.freeze(priced.filter(({ accepted }) => !accepted).map(({ listing, reasons }) => Object.freeze({ listing, reasons }))) });
   }
 
-  private async cart(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<CartRow> {
-    const result = await database.query<CartRow>(`select cart.id,cart.member_id,cart.mall_id,cart.application_id,cart.version::float8 version,
+  private async cart(database: OperationDatabase, membership: string, selection: CheckoutSelection): Promise<QuoteCartContext> {
+    const result = await database.query<QuoteCartContext>(`select cart.id,cart.member_id,cart.mall_id,cart.application_id,cart.version::float8 version,
       profile.status profile_status,qualification.version::float8 profile_version,qualification.city_code,
       address.version::float8 address_version,address.region_code address_region,invoice.version::float8 invoice_version,
       publication.version_id experience_version,publication.content_hash experience_hash
@@ -84,7 +80,7 @@ export class QuoteReader {
     return row;
   }
 
-  private async lines(database: OperationDatabase, cart: CartRow): Promise<readonly LineRow[]> {
+  private async lines(database: OperationDatabase, cart: QuoteCartContext): Promise<readonly LineRow[]> {
     const result = await database.query<LineRow>(`select item.listing_id,item.sku_id,item.quantity::float8 quantity,item.listing_version cart_listing_version,
       listing.title listing_title,listing.version::float8 listing_version,listing.status listing_status,product.id product_id,product.product_type,
       product.category_id,product.version::float8 product_version,sku.version::float8 sku_version,price.amount_minor::float8 unit_minor,
@@ -109,7 +105,7 @@ export class QuoteReader {
     return result.rows;
   }
 
-  private line(source: LineRow, cart: CartRow, policies: readonly PolicyRow[], purchases: ReadonlyMap<string, PurchaseRow>, tags: ReadonlySet<string>): QuoteLine {
+  private line(source: LineRow, cart: QuoteCartContext, policies: readonly PolicyRow[], purchases: ReadonlyMap<string, PurchaseRow>, tags: ReadonlySet<string>): QuoteLine {
     const reasons: string[] = [];
     if (!source.listing_id || source.listing_status !== 'published' || source.product_id === null) reasons.push('LISTING_NOT_PURCHASABLE');
     if (source.listing_version === null || source.cart_listing_version !== String(source.listing_version)) reasons.push('LISTING_VERSION_CHANGED');
@@ -180,7 +176,7 @@ export class QuoteReader {
     return rows;
   }
 
-  private async benefits(database: OperationDatabase, cart: CartRow, selection: CheckoutSelection): Promise<readonly BenefitChoice[]> {
+  private async benefits(database: OperationDatabase, cart: QuoteCartContext, selection: CheckoutSelection): Promise<readonly BenefitChoice[]> {
     if (selection.benefits.length === 0) return [];
     const ids = selection.benefits.map(({ account }) => account);
     const rows = await this.benefit.preview(database, cart.member_id, cart.mall_id, ids);
@@ -200,7 +196,7 @@ function applies(policy: PolicyRow, line: LineRow): boolean {
   return policy.resources.length === 0 || policy.resources.some((resource) => resource.id === line.listing_id || resource.id === line.sku_id || resource.id === line.product_id);
 }
 
-function eligible(policy: PolicyRow, line: LineRow, cart: CartRow, purchase: PurchaseRow | undefined, tags: ReadonlySet<string>): boolean {
+function eligible(policy: PolicyRow, line: LineRow, cart: QuoteCartContext, purchase: PurchaseRow | undefined, tags: ReadonlySet<string>): boolean {
   const rule = policy.rule;
   if (rule.effect === 'deny' || rule.allowed === false) return false;
   const cities = strings(rule.cityCodes);

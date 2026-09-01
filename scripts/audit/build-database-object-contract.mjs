@@ -63,6 +63,8 @@ const callerMap = {
   'access.resolve_scope': ['services/commerce/src/foundation/security/PgAccessResolvers.ts'],
   'access.membership_version': ['services/commerce/src/foundation/security/PgAccessResolvers.ts'],
   'capability.membership_operations': ['services/commerce/src/foundation/security/PgAccessResolvers.ts'],
+  'access.purchase_checkout_context': ['services/commerce/src/modules/purchase/PurchaseCheckoutContext.ts'],
+  'access.purchase_order_quote': ['services/commerce/src/modules/purchase/PurchaseOrderQuoteStore.ts'],
   'runtime.accept_inbox': ['services/commerce/src/foundation/infrastructure/InboxStore.ts'],
   'runtime.claim_job': ['services/commerce/src/foundation/application/JobRunner.ts'],
   'channel.pull_private_catalog': ['services/commerce/src/modules/channel/infrastructure/adapter/PgPrivateProvider.ts'],

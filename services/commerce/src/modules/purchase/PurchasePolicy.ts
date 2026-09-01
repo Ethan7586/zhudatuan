@@ -22,6 +22,24 @@ export function assertPurchaseTarget(target: string): void {
   if (target !== 'storefront') throw new Error('PURCHASE_AUDIENCE_TARGET_MISMATCH');
 }
 
+export function assertPurchaseQuote(quote: CheckoutQuote): void {
+  if (quote.rejections.length > 0) throw new Error('CHECKOUT_REJECTED');
+  if (!Number.isSafeInteger(quote.payableMinor) || quote.payableMinor <= 0) throw new Error('PAYMENT_AMOUNT_INVALID');
+  if (!Number.isSafeInteger(quote.personalMinor) || quote.personalMinor < 0) throw new Error('PAYMENT_EXTERNAL_AMOUNT_INVALID');
+  if (quote.tenders.length === 0 || quote.tenders.some(({ kind, reference, amountMinor }) =>
+    !Number.isSafeInteger(amountMinor) || amountMinor <= 0
+      || (kind === 'benefit' ? reference === null : kind === 'wechat' ? reference !== null : true))) {
+    throw new Error('PAYMENT_TENDER_UNSUPPORTED');
+  }
+  const external = quote.tenders.filter(({ kind }) => kind === 'wechat');
+  if (external.length > 1 || external.reduce((total, tender) => total + tender.amountMinor, 0) !== quote.personalMinor) {
+    throw new Error('PAYMENT_EXTERNAL_AMOUNT_MISMATCH');
+  }
+  if (quote.tenders.reduce((total, tender) => total + tender.amountMinor, 0) !== quote.payableMinor) {
+    throw new Error('PAYMENT_TENDER_SUM_MISMATCH');
+  }
+}
+
 export function assertInternalBenefitQuote(quote: CheckoutQuote): void {
   if (quote.rejections.length > 0) throw new Error('CHECKOUT_REJECTED');
   if (!Number.isSafeInteger(quote.payableMinor) || quote.payableMinor <= 0) throw new Error('INTERNAL_PAYMENT_AMOUNT_INVALID');

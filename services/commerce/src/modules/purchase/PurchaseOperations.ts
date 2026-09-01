@@ -26,8 +26,10 @@ import type { PaymentGateway } from '../payment/application/port/PaymentGateway'
 import { pricingPort } from '../pricing/PricingPort';
 import { PurchaseBenefitGateway } from './PurchaseBenefitGateway';
 import { DisabledPurchaseVoucherGateway } from './DisabledPurchaseVoucherGateway';
+import { PurchaseCheckoutContext } from './PurchaseCheckoutContext';
+import { PurchaseOrderQuoteStore } from './PurchaseOrderQuoteStore';
 import {
-  assertInternalBenefitQuote,
+  assertPurchaseQuote,
   assertInternalIntent,
   assertPurchaseAssurance,
   assertPurchaseTarget,
@@ -51,10 +53,11 @@ export function purchaseCheckoutOperations(context: ModuleContext): ModuleOperat
       assertPurchaseTarget(access.actor.target);
       const voucher = new DisabledPurchaseVoucherGateway();
       const benefit = new PurchaseBenefitGateway(access.membership.id, access.actor.session);
-      const checkout = new CheckoutPort(quoteKey, new QuoteReader(benefit, voucher));
+      const checkout = new CheckoutPort(quoteKey, new QuoteReader(benefit, voucher, undefined,
+        new PurchaseCheckoutContext(access.actor.session)));
       const selection = checkout.selection(bodyRecord(request));
       const quote = await checkout.read(database, access.membership.id, selection);
-      assertInternalBenefitQuote(quote);
+      assertPurchaseQuote(quote);
       if (request.input.expectedVersion !== undefined && request.input.expectedVersion !== quote.cart.version) {
         throw new Error('CHECKOUT_VERSION_CONFLICT:cart');
       }
@@ -79,11 +82,13 @@ export function purchaseOrderOperations(context: ModuleContext): ModuleOperation
       [quoteid]);
       const quote = stored.rows[0]?.signed_payload;
       if (!quote) throw new Error('QUOTE_EXPIRED_OR_CONFLICT');
-      assertInternalBenefitQuote(quote);
+      assertPurchaseQuote(quote);
       const voucher = new DisabledPurchaseVoucherGateway();
       const benefit = new PurchaseBenefitGateway(access.membership.id, access.actor.session);
-      const checkout = new CheckoutPort(quoteKey, new QuoteReader(benefit, voucher));
-      const result = await new PlaceOrder(checkout, benefit, voucher).execute(request, database);
+      const checkout = new CheckoutPort(quoteKey, new QuoteReader(benefit, voucher, undefined,
+        new PurchaseCheckoutContext(access.actor.session)));
+      const result = await new PlaceOrder(checkout, benefit, voucher,
+        new PurchaseOrderQuoteStore(access.actor.session)).execute(request, database);
       return purchaseOrderResponse(result);
     },
   }, ['order.orders.create']);
@@ -235,6 +240,7 @@ function requiredText(value: unknown, field: string): string {
 }
 
 function nonnegativeInteger(value: unknown, field: string): number {
-  if (!Number.isSafeInteger(value) || (value as number) < 0) throw new Error(`PURCHASE_RESPONSE_INVALID:${field}`);
-  return value as number;
+  const normalized = typeof value === 'string' && /^(0|[1-9]\d*)$/.test(value) ? Number(value) : value;
+  if (!Number.isSafeInteger(normalized) || (normalized as number) < 0) throw new Error(`PURCHASE_RESPONSE_INVALID:${field}`);
+  return normalized as number;
 }

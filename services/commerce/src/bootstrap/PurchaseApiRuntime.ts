@@ -141,7 +141,8 @@ export async function purchaseRuntimeCompatibility(pool: DatabasePool): Promise<
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text)'),
       to_regprocedure('access.resolve_scope(text,text,text,text)'),
       to_regprocedure('capability.membership_operations(text)'),to_regprocedure('access.purchase_session_context(text,text,boolean)'),
-      to_regprocedure('access.purchase_member_scope(text,text)'),to_regprocedure('benefit.purchase_available(text,text,text[])'),
+      to_regprocedure('access.purchase_member_scope(text,text)'),to_regprocedure('access.purchase_checkout_context(text,text,text,text)'),
+      to_regprocedure('access.purchase_order_quote(text,text,text)'),to_regprocedure('benefit.purchase_available(text,text,text[])'),
       to_regprocedure('benefit.purchase_reserve(text,text,text,text,text[],bigint[])'),
       to_regprocedure('benefit.purchase_consume(text,text,text,text,text,bigint)')
     ],null) is null functions,

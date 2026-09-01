@@ -54,6 +54,7 @@
     "test:performance": "node --import tsx --test tests/performance/*.spec.ts",
     "test:sql": "node scripts/audit/database-contracts.mjs --environment-bootstrap",
     "test:mall-provisioning:postgres": "node scripts/audit/mall-provisioning-engine.pg17-fixture.mjs",
+    "test:public-mall-checkout:postgres": "node scripts/audit/public-mall-checkout.pg17-fixture.mjs",
     "test:mvp": "node --import tsx scripts/audit/database-contracts.mjs --mvp-kernel",
     "format": "prettier --write --ignore-unknown .",
     "check:format": "prettier --check --ignore-unknown .",
