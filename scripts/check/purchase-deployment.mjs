@@ -244,7 +244,7 @@ if (normalizedBootstrapRepairDigest !== bootstrapRepairMarker) {
   throw new Error('REGISTRATION_BOOTSTRAP_REPAIR_NORMALIZED_DIGEST_DRIFT');
 }
 const loginAclMarker = loginAclMigrationSource.match(/values\('20260829054500','([a-f0-9]{64})'\)/)?.[1];
-if (!loginAclMarker || loginAclMarker === '0'.repeat(64) || loginAclMarker !== runnerMarker) {
+if (!loginAclMarker || loginAclMarker === '0'.repeat(64)) {
   throw new Error('IDENTITY_LOGIN_ACL_SCHEMA_MARKER_DRIFT');
 }
 const normalizedLoginAclDigest = createHash('sha256')
@@ -253,10 +253,26 @@ const normalizedLoginAclDigest = createHash('sha256')
 if (normalizedLoginAclDigest !== loginAclMarker) {
   throw new Error('IDENTITY_LOGIN_ACL_NORMALIZED_DIGEST_DRIFT');
 }
-if (!migrationRunnerSource.includes("REGISTRATION_TARGET_VERSION = '20260829054500'")
-  || !migrationRunnerSource.includes("name='20260829054500_zhudatuan_identity_login_acl_repair.sql'")) {
+const migrationFiles = readdirSync(resolve(root, 'database/supabase/migrations'))
+  .filter((name) => name.endsWith('.sql'))
+  .sort();
+const targetFile = migrationFiles.at(-1);
+const targetVersion = targetFile?.slice(0, 14);
+const targetMigrationSource = targetFile
+  ? readFileSync(resolve(root, 'database/supabase/migrations', targetFile), 'utf8')
+  : '';
+const targetMarker = targetVersion
+  ? targetMigrationSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1]
+  : undefined;
+const runnerVersion = migrationRunnerSource.match(/REGISTRATION_TARGET_VERSION = '([0-9]{14})'/)?.[1];
+if (!targetFile || !targetVersion || runnerVersion !== targetVersion || runnerMarker !== targetMarker
+  || !migrationRunnerSource.includes(`name='${targetFile}'`)) {
   throw new Error('PURCHASE_REGISTRATION_MIGRATION_TARGET_INVALID');
 }
+const normalizedTargetDigest = createHash('sha256')
+  .update(targetMigrationSource.replaceAll(targetMarker, '0'.repeat(64)))
+  .digest('hex');
+if (normalizedTargetDigest !== targetMarker) throw new Error('PURCHASE_REGISTRATION_MIGRATION_TARGET_DIGEST_DRIFT');
 for (const token of ['purchaseApiEnvironment', 'purchaseApiPort', '/health/ready', 'ZHUDATUAN_PURCHASE_API_READY']) {
   if (!purchaseReady.includes(token)) throw new Error(`PURCHASE_READINESS_BOUNDARY_MISSING:${token}`);
 }

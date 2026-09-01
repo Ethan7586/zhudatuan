@@ -7,10 +7,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const output = join(root, 'docs/evidence/frontend/files.json');
 const sourceRoots = [
   'apps/console',
-  'apps/auth',
-  'apps/store',
-  'apps/supplier',
-  'apps/storefront',
+  'apps/auth-web',
+  'apps/storefront-web',
   'apps/miniapp',
   'packages/design',
   'packages/sdk',
