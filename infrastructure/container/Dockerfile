@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:22.22.0-alpine AS build
+FROM node:22.22.2-alpine AS build
 ARG NPM_REGISTRY=https://registry.npmjs.org
 WORKDIR /workspace
 COPY package.json package-lock.json ./
@@ -15,7 +15,7 @@ RUN --mount=type=cache,id=shop-npm,target=/root/.npm \
     npm ci --ignore-scripts --prefer-offline --no-audit --no-fund --registry="$NPM_REGISTRY"
 RUN npm run build:commerce
 
-FROM node:22.22.0-alpine AS runtime
+FROM node:22.22.2-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 RUN addgroup -S shop && adduser -S -G shop -u 10001 shop
