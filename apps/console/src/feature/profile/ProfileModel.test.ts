@@ -16,6 +16,39 @@ describe('personal profile presentation model', () => {
     ]);
   });
 
+  it('keeps a freely named “管理员” identity in the business partition', () => {
+    const roles = partitionAssignedRoles([
+      { role: 'role-custom-administrator', name: '管理员' },
+    ], 'tenant');
+
+    expect(roles.governance).toEqual([]);
+    expect(roles.business).toEqual([
+      { id: 'role-custom-administrator', label: '管理员' },
+    ]);
+  });
+
+  it('uses authoritative governance metadata for merchant Owner and administrator levels', () => {
+    const assigned = [
+      { role: 'role-merchant-owner', name: 'Owner' },
+      { role: 'role-senior-administrator', name: '高级管理员' },
+      { role: 'role-normal-administrator', name: '普通管理员' },
+      { role: 'role-custom-administrator', name: '管理员' },
+    ];
+    const roles = partitionAssignedRoles(assigned, 'tenant', [
+      { id: 'role-merchant-owner', name: 'Owner', governance: true },
+      { id: 'role-senior-administrator', name: '高级管理员', governance: true },
+      { id: 'role-normal-administrator', name: '普通管理员', governance: true },
+      { id: 'role-custom-administrator', name: '管理员', governance: false },
+    ]);
+
+    expect(roles.governance).toEqual([
+      { id: 'role-merchant-owner', label: '商户 Owner' },
+      { id: 'role-senior-administrator', label: '高级管理员' },
+      { id: 'role-normal-administrator', label: '普通管理员' },
+    ]);
+    expect(roles.business).toEqual([{ id: 'role-custom-administrator', label: '管理员' }]);
+  });
+
   it('groups and deduplicates the actual session permissions by authoritative catalog domain', () => {
     const groups = permissionGroupsOf(['finance.overview.read', 'order.read', 'finance.overview.read']);
     expect(groups).toEqual([

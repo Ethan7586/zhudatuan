@@ -29,7 +29,7 @@ export function Component() {
     enabled: canReadAssignments,
   });
   const membership = accessQuery.data?.items.find(({ id }) => id === context.session.membership);
-  const roles = partitionAssignedRoles(membership?.roles ?? [], context.scope.kind);
+  const roles = partitionAssignedRoles(membership?.roles ?? [], context.scope.kind, accessQuery.data?.roles ?? []);
   const permissionGroups = permissionGroupsOf(context.session.permissions);
   const permissionCount = permissionGroups.reduce((count, group) => count + group.permissions.length, 0);
   const profileStatus = profileStatusOf(context.profile.status);

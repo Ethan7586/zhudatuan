@@ -48,6 +48,19 @@ describe('access scope management boundary', () => {
     expect(query).not.toContain("mapping.effect='deny'");
   });
 
+  it('raises and returns Access Version for every member affected by an identity save', async () => {
+    const harness = operationHarness();
+
+    const response = await accessOperations(context(harness.pool)).invoke(roleRequest());
+
+    expect(response).toMatchObject({ body: { affected_memberships: [
+      { membership: 'membership:target', access_version: 3 },
+    ] } });
+    const versionWrite = harness.calls.find(({ text }) => text.startsWith('update access.membership membership')
+      && text.includes('assignment.role_id=$1'));
+    expect(versionWrite?.values).toEqual(['role:finance']);
+  });
+
   it('assigns a custom identity with a directly specified scope and raises Access Version once', async () => {
     const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA });
 
@@ -304,8 +317,10 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
       if (text.includes('insert into access.scopegrant')) return result([{ id: 'scope:new', access_version: 3 }]);
       if (text.includes('insert into access.membershiprole')) return result([{ role_id: 'role:finance' }]);
       if (text.startsWith('update access.membershiprole assignment')) return result([{ scope_source: 'direct' }]);
-      if (text.startsWith('update access.membership set access_version=access_version+1')) {
-        if (text.includes('id=any')) return result([{ id: 'membership:target', access_version: 3 }]);
+      if (text.startsWith('update access.membership') && text.includes('set access_version=')) {
+        if (text.includes('id=any') || text.includes('assignment.role_id=$1')) {
+          return result([{ id: 'membership:target', access_version: 3 }]);
+        }
         return result([{ access_version: 3 }]);
       }
       if (text.startsWith('select id,name,version from access.role')) return result([{ id: 'role:finance', name: '财务', version: 3 }]);
