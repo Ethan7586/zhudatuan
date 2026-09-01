@@ -30,6 +30,7 @@
 - H5 微信一键绑定与购物入口架构：`architecture/06-H5微信一键绑定与购物入口架构.md`
 - 阿里云生产状态机器快照：`architecture/evidence/production-state-2026-09-02.json`
 - GitHub 分支关闭账本：`architecture/branch-closures/README.md`
+<<<<<<< HEAD
 - WCHS 朋友架构参考源：`architecture/reference-sources/wchs-backend-reconstruction.md`
 =======
 >>>>>>> 320899d4 (chore(zdt-next): establish rebuild baseline)
@@ -40,5 +41,7 @@
 =======
 - 阿里云生产状态机器快照：`architecture/evidence/production-state-2026-09-02.json`
 >>>>>>> 1d1ee336 (docs(architecture): derive target system from production)
+=======
+>>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
 - 标准与专项提示词：`prompts/`
 - 新系统总说明：`zdt.md`（待 Ethan 定稿后建立）

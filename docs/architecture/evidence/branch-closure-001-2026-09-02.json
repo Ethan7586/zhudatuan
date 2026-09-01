@@ -26,6 +26,7 @@
   },
   "action": {
     "type": "delete-remote-branch",
+<<<<<<< HEAD
     "completed": true,
     "localCleanupCompleted": true
   },
@@ -54,13 +55,19 @@
       "trashPathExistsAfter": false,
       "otherTrashItemsTouched": false
     }
+=======
+    "completed": true
+>>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
   },
   "postconditions": {
     "remoteBranchRefMatches": 0,
     "remoteBranchCount": 31,
+<<<<<<< HEAD
     "localBranchRefMatches": 0,
     "remoteTrackingRefMatches": 0,
     "worktreeRegistrations": 0,
+=======
+>>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
     "recoverableFromAllSurvivors": true,
     "uniqueCommitsVersusSurvivors": 0,
     "productionTagPeeledCommit": "443cdb06d4724ae799e29ee61e97a336d322ec5d"

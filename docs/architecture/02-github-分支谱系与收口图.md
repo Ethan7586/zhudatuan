@@ -4,6 +4,7 @@
 > 远程：`https://github.com/Ethan7586/zhudatuan.git`
 > 范围：GitHub `origin/*`，不把本地未推送分支混入远程结论
 <<<<<<< HEAD
+<<<<<<< HEAD
 > 初始状态：只读取证时共有 32 条远程分支
 
 > **并发变化提示（2026-09-02 02:08 +08:00）**：远程新增 `codex/hongtai-fullchain-release-20260902@483ee84`，`ethan/iam-reliability-95` 从 `807ca31` 前进到 `0d9bcb1`，当前远程分支数为 `29`。下文 28 条与 20 条零独有结论是固定时间快照；执行下一条关闭前必须全部重算。
@@ -13,6 +14,11 @@
 > **八分支收口（2026-09-02 03:31 +08:00）**：Ethan 明确保留本月宏泰测试线并授权执行。11 条旧分支先进入完整本地 Bundle；`full-production`、Identity Notification Hotfix、Registration Polish 的独立历史另建 3 个远程归档 Tag；随后使用 11 个独立 SHA 租约关闭远端引用。GitHub 已从 `19` 降为 `8`，9 个零改动 worktree 与 11 个同名本地分支已清理。详见 `branch-closures/015-025-eight-branch-consolidation-20260902.md`。
 
 ## 状态更新：关闭 001–004
+=======
+> 初始状态：只读取证时共有 32 条远程分支
+
+## 状态更新：关闭 001
+>>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
 
 2026-09-02 已关闭 `codex/canonical-registration-release@71280439c5`：
 
@@ -21,6 +27,7 @@
 - 仍由 `full-production`、`backend-reconstruction` 和旧 `main` 承接。
 - 详细证据：`branch-closures/001-canonical-registration-release.md`。
 
+<<<<<<< HEAD
 同日 Ethan 明确授权再关闭三条“零独有、远古或已完全承接、与阿里云操作无关”的分支。三条均按顺序单独复核和删除：
 
 | 编号 | 关闭分支 | tip SHA | 独有提交 | 分支数变化 | 本地结果 |
@@ -45,6 +52,13 @@ GitHub 首次收口前有 32 条真实远程分支、31 个不同的分支末端
 
 GitHub 当前有 32 条真实远程分支、31 个不同的分支末端 SHA。把已被其他分支包含的祖先折叠后，实际形成 9 个独立末端家族。
 >>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
+=======
+本文件后续谱系图保留首次收口前的 32 分支基线，便于追踪每次减少；已关闭的是分支引用，图中的祖先提交仍然存在。
+
+## 一、当前结论
+
+GitHub 首次收口前有 32 条真实远程分支、31 个不同的分支末端 SHA。把已被其他分支包含的祖先折叠后，实际形成 9 个独立末端家族。
+>>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
 
 按“包含的远程分支节点数 → 可达提交数 → 远程独有提交数”排序，第一条最粗汇聚线是：
 
