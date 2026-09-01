@@ -8,6 +8,7 @@ import {
   SessionSchema,
   uniqueScopes,
   type ConsoleContext,
+  type ConsoleProfile,
   type ConsoleScope,
   type ConsoleSession,
 } from '../entity/session/ConsoleSession';
@@ -32,15 +33,30 @@ export async function scopeLoader({ params, request }: LoaderFunctionArgs): Prom
   if (!parsed.success) throw new Response('SCOPE_ROUTE_INVALID', { status: 404 });
   const session = await readSession(request.signal);
   const roots = session.scopes.filter(isConsoleScope);
-  const [layers, profileValue] = await Promise.all([
+  const [layers, profileResult] = await Promise.all([
     readLayers(session, roots, request.signal),
-    memberProfileRead({}, consoleRequest(undefined, request.signal, session.accessVersion)),
+    readProfile(session, request.signal),
   ]);
   const scopes = uniqueScopes([...roots, ...layers]);
   const scope = scopes.find((candidate) => candidate.kind === parsed.data.scopeKind && candidate.id === parsed.data.scopeId);
   if (scope === undefined) throw new Response('SCOPE_NOT_GRANTED', { status: 403 });
-  const profile = ProfileSchema.parse(profileValue);
-  return Object.freeze({ session, profile, scopes, scope });
+  return Object.freeze({ session, profile: profileResult.profile, profileState: profileResult.state, scopes, scope });
+}
+
+async function readProfile(
+  session: ConsoleSession,
+  signal: AbortSignal,
+): Promise<Readonly<{ profile: ConsoleProfile; state: 'ready' | 'unavailable' }>> {
+  try {
+    const value = await memberProfileRead({}, consoleRequest(undefined, signal, session.accessVersion));
+    return Object.freeze({ profile: ProfileSchema.parse(value), state: 'ready' });
+  } catch (cause) {
+    if (signal.aborted || (cause instanceof ApiError && cause.status === 401)) throw cause;
+    return Object.freeze({
+      profile: Object.freeze({ display_name: '当前用户', employee_no: null }),
+      state: 'unavailable',
+    });
+  }
 }
 
 async function readSession(signal: AbortSignal): Promise<ConsoleSession> {

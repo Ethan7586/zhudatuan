@@ -1,4 +1,5 @@
 import type { Category, Order, OrderItem, OrderStatus, Product } from '../types';
+import { canonicalizeProductBrand } from '../domain/brand/productBrand';
 
 export type FrontendProduct = Product & {
   imageUrl: string;
@@ -49,27 +50,52 @@ function toParameters(product: Product): Record<string, string> {
   return Object.fromEntries((product.params ?? []).map((parameter) => [parameter.key, parameter.value]));
 }
 
-export function toFrontendProduct(product: Product): FrontendProduct {
-  const primaryImage = product.images[0] ?? '';
+function canonicalProduct(product: Product): Product {
   return {
     ...product,
+    title: canonicalizeProductBrand(product.title),
+    subtitle: canonicalizeProductBrand(product.subtitle),
+    categoryName: canonicalizeProductBrand(product.categoryName),
+    brand: canonicalizeProductBrand(product.brand),
+    tags: product.tags.map(canonicalizeProductBrand),
+    supplierName: canonicalizeProductBrand(product.supplierName),
+    deliverySla: canonicalizeProductBrand(product.deliverySla),
+    qualificationReason: product.qualificationReason === undefined ? undefined : canonicalizeProductBrand(product.qualificationReason),
+    specs: product.specs?.map((spec) => ({
+      name: canonicalizeProductBrand(spec.name),
+      options: spec.options.map(canonicalizeProductBrand),
+    })),
+    params: product.params?.map((parameter) => ({
+      key: canonicalizeProductBrand(parameter.key),
+      value: canonicalizeProductBrand(parameter.value),
+    })),
+    descriptionHtml: product.descriptionHtml === undefined ? undefined : canonicalizeProductBrand(product.descriptionHtml),
+    descriptionDetailText: product.descriptionDetailText?.map(canonicalizeProductBrand),
+  };
+}
+
+export function toFrontendProduct(product: Product): FrontendProduct {
+  const displayProduct = canonicalProduct(product);
+  const primaryImage = displayProduct.images[0] ?? '';
+  return {
+    ...displayProduct,
     imageUrl: primaryImage,
     image: primaryImage,
-    gallery: product.images.slice(1),
-    price: product.priceWelfare,
-    originalPrice: product.priceMarket,
-    enterpriseSubsidyAmount: Math.max(0, Number((product.priceMarket - product.priceWelfare).toFixed(2))),
-    stockCount: product.stock,
-    description: product.descriptionDetailText?.join(' ') ?? product.subtitle ?? '智慧翼企业福利商城严选商品。',
-    parameters: toParameters(product),
-    specOptions: toSpecOptions(product),
-    allowMealCard: product.allowedAccounts.includes('meal'),
-    isEnterpriseSubsidized: Boolean(product.isEnterpriseExclusive),
-    welfarePrice: product.priceWelfare,
-    marketPrice: product.priceMarket,
-    salesVolume: product.salesCount,
-    applicableStoreName: product.nearbyStoreInfo?.storeName ?? product.supplierName,
-    category: product.categoryName,
+    gallery: displayProduct.images.slice(1),
+    price: displayProduct.priceWelfare,
+    originalPrice: displayProduct.priceMarket,
+    enterpriseSubsidyAmount: Math.max(0, Number((displayProduct.priceMarket - displayProduct.priceWelfare).toFixed(2))),
+    stockCount: displayProduct.stock,
+    description: displayProduct.descriptionDetailText?.join(' ') ?? displayProduct.subtitle ?? '主打团企业福利商城严选商品。',
+    parameters: toParameters(displayProduct),
+    specOptions: toSpecOptions(displayProduct),
+    allowMealCard: displayProduct.allowedAccounts.includes('meal'),
+    isEnterpriseSubsidized: Boolean(displayProduct.isEnterpriseExclusive),
+    welfarePrice: displayProduct.priceWelfare,
+    marketPrice: displayProduct.priceMarket,
+    salesVolume: displayProduct.salesCount,
+    applicableStoreName: canonicalizeProductBrand(displayProduct.nearbyStoreInfo?.storeName ?? displayProduct.supplierName),
+    category: displayProduct.categoryName,
   };
 }
 
@@ -166,6 +192,9 @@ function productFromOrderSnapshot(order: Order, item: OrderItem): FrontendProduc
 export function toFrontendOrders(orders: Order[], products: FrontendProduct[]): FrontendOrder[] {
   return orders.map((order) => ({
     ...order,
+    enterpriseName: canonicalizeProductBrand(order.enterpriseName),
+    mallName: canonicalizeProductBrand(order.mallName),
+    supplierName: canonicalizeProductBrand(order.supplierName),
     orderId: order.id,
     createdAt: order.createTime,
     totalAmount: order.payment.finalPaidAmount,
@@ -178,7 +207,7 @@ export function toFrontendOrders(orders: Order[], products: FrontendProduct[]): 
         product: {
           ...product,
           id: item.productId,
-          title: item.productTitle,
+          title: canonicalizeProductBrand(item.productTitle),
           images: [item.productImage],
           image: item.productImage,
           imageUrl: item.productImage,

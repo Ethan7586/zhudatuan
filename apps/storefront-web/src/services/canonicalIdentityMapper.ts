@@ -71,7 +71,7 @@ export function mapCanonicalBootstrap(session: CanonicalSessionProjection, profi
       mallId: mall.id,
       mallCode: mall.id,
       mallName: '当前福利商城',
-      brandName: '筑大团',
+      brandName: '主打团',
       enterpriseName: '已授权企业',
     },
   };

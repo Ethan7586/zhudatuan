@@ -26,7 +26,7 @@ const MembershipSchema = z.strictObject({
   id: z.string().min(1),
   member_id: z.string().min(1),
   organization_id: z.string().min(1),
-  client: z.literal('storefront'),
+  client: z.enum(['storefront', 'operator']),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
   access_version: transportInteger.pipe(z.number().positive()),
@@ -67,7 +67,7 @@ export interface CanonicalRegisteredMember {
   readonly membership: string;
   readonly member: string;
   readonly organization: string;
-  readonly target: 'storefront';
+  readonly target: 'storefront' | 'console';
   readonly status: 'active';
   readonly accessVersion: number;
   readonly employeeNo: string | null;
@@ -94,7 +94,7 @@ export async function createCanonicalRegistrationChallenge(destination: string, 
     await identityRequest(
       '/api/v1/identity/challenges',
       {
-        destination: requiredMobile(destination),
+        destination: canonicalRegistrationMobile(destination),
         invite: requiredText(inviteCode, '请输入有效的邀请码'),
         purpose: 'registration',
       },
@@ -110,7 +110,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
     await identityRequest(
       '/api/v1/identity/members',
       {
-        subject: requiredMobile(input.subject),
+        subject: canonicalRegistrationMobile(input.subject),
         password: requiredPassword(input.password),
         displayName: requiredText(input.displayName, '请输入姓名'),
         invite: requiredText(input.inviteCode, '请输入有效的邀请码'),
@@ -127,7 +127,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
     membership: output.id,
     member: output.member_id,
     organization: output.organization_id,
-    target: output.client,
+    target: output.client === 'operator' ? 'console' : 'storefront',
     status: output.status,
     accessVersion: output.access_version,
     employeeNo: output.employee_no,
@@ -205,12 +205,12 @@ function requiredPassword(value: string): string {
   return value;
 }
 
-function requiredMobile(value: string): string {
-  const cleaned = value.trim();
-  const mainlandChina = /^1[3-9]\d{9}$/.test(cleaned);
-  const international = /^\+[1-9]\d{7,14}$/.test(cleaned);
-  if (!mainlandChina && !international) throw new Error('请输入有效的手机号');
-  return cleaned;
+export function canonicalRegistrationMobile(value: string): string {
+  const compact = value.trim().replace(/[\s()-]/g, '');
+  if (/^1[3-9]\d{9}$/.test(compact)) return `+86${compact}`;
+  if (/^\+861[3-9]\d{9}$/.test(compact)) return compact;
+  if (!/^\+[1-9]\d{7,14}$/.test(compact)) throw new Error('请输入有效的手机号');
+  return compact;
 }
 
 function registrationError(value: unknown, status: number): string {

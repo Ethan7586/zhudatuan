@@ -1,5 +1,5 @@
 /*
- * Smart Wing Console VI refinement.
+ * ZHUDATUAN Console VI refinement.
  *
  * This layer is deliberately presentation-only. It builds on the recovered
  * admin-web visual language while preserving the current permission model,
@@ -20,7 +20,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   --vi-brand-soft: #eaf1ff;
   --vi-ink: #07182f;
   --vi-text: #172033;
-  --vi-muted: #64748b;
+  --vi-muted: #475569;
   --vi-line: #e2e8f0;
   --vi-line-strong: #cbd5e1;
   --vi-canvas: #f5f7fa;
@@ -87,6 +87,20 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand {
   border-bottom-color: rgb(255 255 255 / 8%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarproductmark {
+  display: grid;
+  width: var(--sw-icon-container-md);
+  height: var(--sw-icon-container-md);
+  flex: 0 0 var(--sw-icon-container-md);
+  place-items: center;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand);
+  color: var(--sw-text-inverse);
+  font-size: var(--sw-font-size-h3);
+  font-weight: var(--sw-font-weight-bold);
+  box-shadow: var(--sw-shadow-brand-control);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand .swbrand-mark img {
@@ -162,10 +176,27 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofile {
+  width: 100%;
   height: 56px;
   min-height: 56px;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
   border-top-color: rgb(255 255 255 / 8%);
   background: linear-gradient(180deg, rgb(0 0 0 / 10%), rgb(0 0 0 / 22%));
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--sw-duration-fast), box-shadow var(--sw-duration-fast);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] button.sidebarprofile:hover {
+  background: color-mix(in srgb, var(--sw-brand) 18%, var(--sw-brand-ink));
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] button.sidebarprofile[aria-current='page'] {
+  background: color-mix(in srgb, var(--sw-brand) 27%, var(--sw-brand-ink));
+  box-shadow: inset var(--sw-border-width-strong) 0 0 var(--sw-brand);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofilecopy strong {
@@ -193,7 +224,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .consoleheadersummary {
-  color: #7789a0;
+  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger {
@@ -207,6 +238,10 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   border-color: #bfcde0;
   background: #fff;
   box-shadow: var(--vi-shadow-focus);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger kbd {
+  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .taskbutton {
@@ -235,9 +270,29 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   line-height: 16px;
 }
 
+.consolelayout[data-visual-theme='admin-web-v1'] .accountpopup .accountprofileentry {
+  border-color: color-mix(in srgb, var(--sw-brand) 24%, var(--sw-border));
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .accountpopup .accountprofileentry:hover {
+  border-color: var(--sw-brand);
+  background: var(--sw-surface-selected);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .accountpopup .accountlogout {
+  color: var(--sw-text-secondary);
+}
+
 .consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy em,
 .consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy small {
   line-height: 14px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy small {
+  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .scopebar {
@@ -266,7 +321,12 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooter {
   border-top-color: #e3eaf2;
   background: rgb(255 255 255 / 92%);
+  color: var(--vi-muted);
   backdrop-filter: blur(12px);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus {
+  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus i {
@@ -583,7 +643,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   z-index: 1;
   height: 39px;
   background: #f5f8fb;
-  color: #64768e;
+  color: var(--vi-muted);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .015em;
@@ -769,6 +829,14 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 
 .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband strong {
   letter-spacing: -.025em;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband span {
+  color: var(--vi-muted);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband .ispositive {
+  color: #047857 !important;
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] :where(.cockpitcard, .controlcard) {
@@ -1030,7 +1098,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   .financetable th
 ) {
   background: #f4f7fb;
-  color: #65778f;
+  color: var(--vi-muted);
   font-weight: 700;
   letter-spacing: .012em;
 }
@@ -1231,6 +1299,10 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
 ) {
   border-radius: 9px;
   box-shadow: inset 3px 0 0 rgb(232 134 9 / 70%);
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) .financeimmutablealert p {
+  color: #7c2d12;
 }
 
 body:has(.consolelayout[data-visual-theme='admin-web-v1']) .dialogpanel {

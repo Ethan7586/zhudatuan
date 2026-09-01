@@ -9,7 +9,7 @@ describe('contract truth', () => {
   });
 
   it('publishes one runtime schema pair for every Operation', () => {
-    const operationIds = OperationCatalog.all().map(({ id }) => id).sort();
+    const operationIds = OperationCatalog.definitions().map(({ id }) => id).sort();
     expect(Object.keys(OPERATION_SCHEMAS).sort()).toEqual(operationIds);
     expect(new Set(Object.values(OPERATION_SCHEMAS).map(({ fidelity }) => fidelity))).toEqual(new Set(['structural']));
   });

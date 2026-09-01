@@ -1,4 +1,5 @@
-import { COMMERCE_EVENTS, CONTRACT_CHECKSUM, OperationCatalog } from '@shop/contract';
+import { COMMERCE_EVENTS, OperationCatalog } from '@shop/contract';
+import { RUNTIME_CONTRACT_CHECKSUM } from '@shop/config/server';
 import { describe, expect, it } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import type { ExtensionRegistry } from './ExtensionRegistry';
@@ -33,7 +34,7 @@ describe('runtime compatibility', () => {
       events: COMMERCE_EVENTS.length,
     }), extensions());
     expect(state.healthy).toBe(true);
-    expect(state.contract).toEqual({ checksum: CONTRACT_CHECKSUM, matches: true });
+    expect(state.contract).toEqual({ checksum: RUNTIME_CONTRACT_CHECKSUM, matches: true });
     expect(state.registries.jobs).toBeGreaterThan(0);
   });
 

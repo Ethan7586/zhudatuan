@@ -46,6 +46,9 @@ describe('canonical member registration security boundary', () => {
     expect(encrypt.mock.calls.find(([key]) => key === 'identity/destination')?.[1]).toBe(SUBJECT);
     const challenge = harness.queries.find(({ text }) => text.includes("values($1,$2,'stepup'"));
     expect(challenge?.values[2]).toBe(subjectDigest(SUBJECT));
+    const notification = harness.queries.find(({ text }) => text.includes('insert into runtime.job'));
+    expect(notification?.text).toContain("'identitynotification','identity'");
+    expect(notification?.text).not.toContain("'notification','identity'");
   });
 
   it('rejects public phone-change and Step-Up challenge purposes before opening a transaction', async () => {

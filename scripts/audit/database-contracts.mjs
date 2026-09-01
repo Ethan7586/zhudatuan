@@ -124,6 +124,11 @@ const REPAIR_FILES = [
   '20260831120000_identity_reporting_read_boundary.sql',
   '20260831130000_identity_console_tail_read_boundary.sql',
   '20260831140000_identity_registration_profile_acl_repair.sql',
+  '20260831150000_identity_experience_application_commands.sql',
+  '20260901060000_zhudatuan_brand_display_names.sql',
+  '20260901070000_identity_notification_challenge_jobs.sql',
+  '20260901100000_access_identity_scope_assignments.sql',
+  '20260901210000_restore_platform_owner_personal_scope_projection.sql',
 ];
 
 const mode = process.argv[2];
@@ -175,7 +180,7 @@ try {
     applied += 1;
   }
   if (mode !== '--inventory-cutover-unsafe') {
-    await verifyTarget(database);
+  await verifyTarget(database);
     if (mode === '--mvp-kernel') {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
       await verifyMvpKernel(database);
@@ -332,7 +337,9 @@ async function assertUnsafeInventoryCutoverRejected(database, sql) {
 async function verifyTarget(database) {
   const operationContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'operations.yml'), 'utf8'));
   const eventContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'events.yml'), 'utf8'));
-  const expectedOperations = Array.isArray(operationContract?.operations) ? operationContract.operations.length : -1;
+  const expectedOperations = Array.isArray(operationContract?.operations)
+    ? operationContract.operations.filter((operation) => operation.availability !== 'frozen').length
+    : -1;
   const expectedEvents = Array.isArray(eventContract?.events) ? eventContract.events.length : -1;
   const result = await database.query(`select
     (select count(*)::integer from runtime.operation) operations,
@@ -342,12 +349,39 @@ async function verifyTarget(database) {
   const row = result.rows[0];
   if (row.operations !== expectedOperations || row.events !== expectedEvents || row.public_tables !== 0 || row.migrations !== migrationFiles.length) throw new Error(`TARGET_CATALOG_INVALID:${JSON.stringify(row)}`);
   await verifyFinanceAccountingIntegrity(database);
+  await verifyPlatformOwnerPersonalScope(database);
   await verifyObjectContract(database);
   await verifyRls(database);
   await verifyRuntimeSchemaVisibility(database);
   await verifyAuditImmutability(database);
   await verifyExperiencePublication(database);
   await verifyExtensionLifecycle(database);
+}
+
+async function verifyPlatformOwnerPersonalScope(database) {
+  const result = await database.query(`with owner as(
+    select platformowner.membership_id,membership.member_id
+    from access.platformowner platformowner
+    join access.membership membership on membership.id=platformowner.membership_id and membership.status='active'
+    where platformowner.singleton=true and platformowner.state='active'
+  ), projection as(
+    select owner.membership_id,owner.member_id,grantrow
+    from owner cross join lateral access.resolve_membership(owner.membership_id) resolved
+    cross join lateral jsonb_array_elements(resolved.grants) grantrow
+    where grantrow->'scope'->>'kind'='owner' and grantrow->'scope'->>'id'=owner.member_id
+  ) select count(*)::integer count,
+    bool_and(grantrow->'permissions' ? 'member.profile.read') profile_read,
+    bool_and(grantrow->'permissions' ? 'member.address.read') address_read,
+    bool_and(grantrow->'permissions' ? 'member.address.manage') address_manage
+    from projection`);
+  const row = result.rows[0];
+  if (row?.count !== 1 || row.profile_read !== true || row.address_read !== true || row.address_manage !== true) {
+    throw new Error(`PLATFORM_OWNER_PERSONAL_SCOPE_INVALID:${JSON.stringify(row)}`);
+  }
+  const definition = await database.query("select pg_get_functiondef('access.resolve_membership(text)'::regprocedure) definition");
+  if (!String(definition.rows[0]?.definition).includes('assignment.assigned_scope_id')) {
+    throw new Error('PLATFORM_OWNER_ASSIGNED_SCOPE_SEMANTICS_MISSING');
+  }
 }
 
 async function verifyRuntimeSchemaVisibility(database) {

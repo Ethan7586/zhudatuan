@@ -17,7 +17,7 @@ interface Actor {
 }
 
 const proposer: Actor = Object.freeze({
-  actor: 'member-fresh-replay-ethan',
+  actor: 'principal:zhudatuan:owner:ethan:v1',
   membership: 'membership-platform-owner-ethan-v1',
   session: 'session:policy:proposer',
   assurance: 'assurance:policy:proposer',
@@ -318,8 +318,19 @@ async function seedPolicyReviewer(database: PGlite): Promise<void> {
     insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
     select '${reviewer.membership}','member:policy:reviewer',organization_id,'operator','active',1,clock_timestamp()
     from access.membership where id='${proposer.membership}';
+    insert into access.role(id,scope_id,name,status,version)
+    values('role:policy:reviewer','tenant-zhudatuan','Policy Reviewer','active',0);
+    insert into access.rolepermission(role_id,permission_id,effect)
+    select 'role:policy:reviewer',id,'allow' from access.permission
+    where code='finance.policy.manage' and status='active';
     insert into access.membershiprole(membership_id,role_id,effective_at,expires_at,delegated_by)
-    values('${reviewer.membership}','role-platform-owner-v2','1970-01-01T00:00:00Z',null,'${proposer.actor}');
+    values('${reviewer.membership}','role:policy:reviewer','1970-01-01T00:00:00Z',null,'${proposer.actor}');
+    insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version)
+    values
+      ('scope:membership:policy:reviewer:platform','${reviewer.membership}','platform','organization-platform-root',
+        'organization-platform-root','allow','1970-01-01T00:00:00Z',1),
+      ('scope:membership:policy:reviewer:tenant','${reviewer.membership}','tenant','tenant-zhudatuan',
+        'tenant-zhudatuan','allow','1970-01-01T00:00:00Z',1);
     insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,
       ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
     values('${proposer.session}','${proposer.actor}','${proposer.membership}',repeat('1',64),
@@ -337,12 +348,13 @@ async function seedPolicyReviewer(database: PGlite): Promise<void> {
 }
 
 async function replayThroughConfigurablePolicy(database: PGlite): Promise<void> {
-  await database.exec(`create role anon nologin; create role authenticated nologin; create role service_role nologin;
+  await database.exec(`create role anon nologin noinherit; create role authenticated nologin noinherit; create role service_role nologin noinherit;
     create schema supabase_migrations;
     create table supabase_migrations.schema_migrations(version text primary key,statements text[],name text);`);
   const files = (await readdir(migrations)).filter((name) => name.endsWith('.sql') && name <= '20260830100000_finance_configurable_policy_workflow.sql').sort();
   for (const name of files) {
     if (name === '20260817191000_bootstrap_ethan_platform_owner.sql') await seedOwner(database);
+    if (name === '20260829200000_owner_identity_reset_foundation.sql') await seedOwnerBoundaryFixture(database);
     if (name === '20260821026000_backfill_domain_data.sql') await stageSecrets(database);
     try {
       await database.exec(await readFile(`${migrations}/${name}`, 'utf8'));
@@ -358,9 +370,37 @@ async function seedOwner(database: PGlite): Promise<void> {
     values('user-fresh-replay-ethan','tenant-smart-wing','enterprise-demo','department-digital','SW_FRESH_REPLAY_ETHAN',
       'Fresh Replay Ethan','fresh-replay@example.invalid','active');
     insert into public.members(id,user_id,primary_identifier,status)
-    values('${proposer.actor}','user-fresh-replay-ethan','local_username:ethan','active');
+    values('member-fresh-replay-ethan','user-fresh-replay-ethan','local_username:ethan','active');
     insert into public.member_login_aliases(provider,subject,member_id)
-    values('local_username','ethan','${proposer.actor}');`);
+    values('local_username','ethan','member-fresh-replay-ethan');`);
+}
+
+async function seedOwnerBoundaryFixture(database: PGlite): Promise<void> {
+  await database.exec(`
+    insert into identity.principal(id,status,credential_version,created_at,updated_at,version)
+    values('${proposer.actor}','active',1,clock_timestamp(),clock_timestamp(),0)
+    on conflict(id) do update set status='active';
+    insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at)
+    values('credential:password:zhudatuan-owner-ethan:v1','${proposer.actor}','password',
+      encode(digest('fresh-replay-owner','sha256'),'hex'),'fixture-owner-secret','active',clock_timestamp(),clock_timestamp())
+    on conflict(id) do update set status='active';
+    insert into member.profile(id,principal_id,display_name,status,created_at,updated_at,version)
+    values('member:zhudatuan:owner:ethan:v1','${proposer.actor}','Fresh Replay Owner','active',clock_timestamp(),clock_timestamp(),0)
+    on conflict(id) do update set status='active',principal_id=excluded.principal_id;
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
+    values('${proposer.membership}','member:zhudatuan:owner:ethan:v1','tenant-zhudatuan','operator','active',1,clock_timestamp())
+    on conflict(id) do update set member_id=excluded.member_id,organization_id=excluded.organization_id,client='operator',status='active';
+    delete from access.membershiprole where membership_id='${proposer.membership}'
+      and role_id in('role-platform-owner-v2','role:self');
+    insert into access.membershiprole(membership_id,role_id,effective_at) values
+      ('${proposer.membership}','role-platform-owner-v2','1970-01-01T00:00:00Z'),
+      ('${proposer.membership}','role:self','1970-01-01T00:00:00Z');
+    insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
+      ('scope:membership-platform-owner-ethan-v1:platform','${proposer.membership}','platform','organization-platform-root','organization-platform-root','allow','1970-01-01T00:00:00Z',1),
+      ('scope:membership-platform-owner-ethan-v1:tenant','${proposer.membership}','tenant','tenant-zhudatuan','tenant-zhudatuan','allow','1970-01-01T00:00:00Z',1),
+      ('scope:membership-platform-owner-ethan-v1:self','${proposer.membership}','self','self:${proposer.actor}','self:${proposer.actor}','allow','1970-01-01T00:00:00Z',1)
+    on conflict do nothing;
+  `);
 }
 
 async function stageSecrets(database: PGlite): Promise<void> {

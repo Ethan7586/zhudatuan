@@ -12,13 +12,14 @@ export interface HeaderProps {
   readonly logoutError?: string;
   readonly onLogout: () => void;
   readonly onOpenNavigation: () => void;
+  readonly onOpenProfile: () => void;
 }
 
 type HeaderPanel = 'account' | 'command' | 'notices' | 'tasks' | null;
 
 export function Header(props: HeaderProps) {
   const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, loggingOut, logoutError, onLogout,
-    onOpenNavigation } = props;
+    onOpenNavigation, onOpenProfile } = props;
   const [panel, setPanel] = useState<HeaderPanel>(null);
 
   useEffect(() => {
@@ -35,6 +36,10 @@ export function Header(props: HeaderProps) {
   }, []);
 
   const togglePanel = (next: Exclude<HeaderPanel, null>) => setPanel((current) => current === next ? null : next);
+  const openProfile = () => {
+    setPanel(null);
+    onOpenProfile();
+  };
 
   return <header className="consoleheader">
     <div className="consolebreadcrumb" aria-label="当前位置">
@@ -81,7 +86,8 @@ export function Header(props: HeaderProps) {
         {panel === 'account' ? <div className="headerpopup accountpopup" role="dialog" aria-label="账户菜单">
           <strong>{displayName}</strong><span>{scopeLabel}</span>
           <span>AAL{assuranceLevel} · {formatTime(syncedAt)}</span>
-          <button type="button" onClick={onLogout} disabled={loggingOut}>{loggingOut ? '正在退出' : '退出登录'}</button>
+          <button className="accountprofileentry" type="button" onClick={openProfile}>个人信息</button>
+          <button className="accountlogout" type="button" onClick={onLogout} disabled={loggingOut}>{loggingOut ? '正在退出' : '退出登录'}</button>
           {logoutError === undefined ? null : <em role="alert">{logoutError}</em>}
         </div> : null}
       </div>

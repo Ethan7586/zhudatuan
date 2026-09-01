@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCanonicalMember, createCanonicalRegistrationChallenge, resolveCanonicalInvite } from './canonicalRegistration';
+import { canonicalRegistrationMobile, createCanonicalMember, createCanonicalRegistrationChallenge, resolveCanonicalInvite } from './canonicalRegistration';
 
 const TERMS_HASH = 'a'.repeat(64);
 
@@ -26,9 +26,9 @@ describe('canonical registration', () => {
     const result = await resolveCanonicalInvite('  invitation-secret  ');
 
     expect(result).toEqual({
-      termsTitle: '筑大团用户服务协议',
+      termsTitle: '主打团用户服务协议',
       termsBody: '服务协议正文',
-      privacyTitle: '筑大团隐私政策',
+      privacyTitle: '主打团隐私政策',
       privacyBody: '隐私政策正文',
       termsHash: TERMS_HASH,
       target: 'console',
@@ -72,7 +72,7 @@ describe('canonical registration', () => {
     });
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
-    expect(JSON.parse(String(init?.body))).toEqual({ destination: '13800138000', invite: 'invitation-secret', purpose: 'registration' });
+    expect(JSON.parse(String(init?.body))).toEqual({ destination: '+8613800138000', invite: 'invitation-secret', purpose: 'registration' });
     expectCanonicalHeaders(init?.headers);
   });
 
@@ -134,6 +134,30 @@ describe('canonical registration', () => {
     expect(result.accessVersion).toBe(7);
   });
 
+  it('accepts an operator membership receipt and maps it to Console', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      ...membership(),
+      id: 'membership:operator-one',
+      client: 'operator',
+    }, 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember({
+      subject: '+8613800138000',
+      password: 'SecurePassword1!',
+      displayName: 'Ethan',
+      inviteCode: 'operator-invitation',
+      challengeId: 'challenge:registration-one',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    })).resolves.toMatchObject({
+      membership: 'membership:operator-one',
+      target: 'console',
+      status: 'active',
+    });
+  });
+
   it('fails closed before the network when current terms were not accepted', async () => {
     const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);
@@ -168,6 +192,11 @@ describe('canonical registration', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('canonicalizes equivalent mainland mobile formats before binding a challenge or member', () => {
+    expect(canonicalRegistrationMobile('138 0013 8000')).toBe('+8613800138000');
+    expect(canonicalRegistrationMobile('+86 (138) 0013-8000')).toBe('+8613800138000');
+  });
+
   it('maps an existing mobile subject to a safe login recovery message', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ code: 'IDENTITY_SUBJECT_EXISTS' }, 409));
     vi.stubGlobal('fetch', fetchMock);
@@ -200,9 +229,9 @@ function expectCanonicalHeaders(headers: HeadersInit | undefined): void {
 
 function invitation(): Readonly<Record<string, unknown>> {
   return {
-    terms_title: '筑大团用户服务协议',
+    terms_title: '主打团用户服务协议',
     terms_body: '服务协议正文',
-    privacy_title: '筑大团隐私政策',
+    privacy_title: '主打团隐私政策',
     privacy_body: '隐私政策正文',
     terms_hash: TERMS_HASH,
     target_client: 'operator',

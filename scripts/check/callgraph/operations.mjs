@@ -14,9 +14,16 @@ export function auditOperations(sourceSet, testSet) {
     if (!unique(values, seen, 'OPERATION', location, id)) return;
     if (typeof entry.owner !== 'string' || !entry.owner) values.push(violation('OPERATION_OWNER_MISSING', location, id));
     if (!asArray(entry.requirements).length) values.push(violation('OPERATION_REQUIREMENT_MISSING', location, id));
-    target(values, 'OPERATION', location, id, entry.controller, sourceSet, { name: 'controller' });
-    target(values, 'OPERATION', location, id, entry.handler, sourceSet, { name: 'handler' });
-    target(values, 'OPERATION', location, id, entry.sdk, sourceSet, { name: 'sdk' });
+    for (const field of ['controller', 'handler', 'sdk']) {
+      if (Object.hasOwn(entry, field)) values.push(violation('OPERATION_DUPLICATE_FACT', location, `${id}:${field}`));
+    }
+    const runtime = entry.availability !== 'frozen';
+    if (runtime) {
+      target(values, 'OPERATION', location, id, 'services/commerce/src/foundation/interface/OperationController.ts', sourceSet, { name: 'controller' });
+      target(values, 'OPERATION', location, id, 'services/commerce/src/foundation/application/OperationHandler.ts', sourceSet, { name: 'handler' });
+    }
+    const domain = typeof id === 'string' ? id.split('.')[0] : undefined;
+    target(values, 'OPERATION', location, id, domain === undefined ? undefined : `packages/sdk/src/operations/${domain}.ts`, sourceSet, { name: 'sdk' });
     for (const reference of asArray(entry.tests ?? entry.testReferences)) {
       const test = typeof reference === 'string' ? path.resolve(root, reference) : undefined;
       if (!test || !testSet.has(test)) {

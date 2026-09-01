@@ -69,7 +69,7 @@ export function createFetchReferralSettingsRead(baseUrl: string): OperationMetho
 }
 
 function bindSettingsRead(client: OperationExecutor): OperationMethod<"referral.settings.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.settings.read","method":"GET","path":"/api/v1/referral/settings","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.settings.read","method":"GET","path":"/api/v1/referral/settings","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralSettingsManage(baseUrl: string): OperationMethod<"referral.settings.manage"> {
@@ -77,7 +77,7 @@ export function createFetchReferralSettingsManage(baseUrl: string): OperationMet
 }
 
 function bindSettingsManage(client: OperationExecutor): OperationMethod<"referral.settings.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.settings.manage","method":"PUT","path":"/api/v1/referral/settings","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.settings.manage","method":"PUT","path":"/api/v1/referral/settings","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralProductsRead(baseUrl: string): OperationMethod<"referral.products.read"> {
@@ -85,7 +85,7 @@ export function createFetchReferralProductsRead(baseUrl: string): OperationMetho
 }
 
 function bindProductsRead(client: OperationExecutor): OperationMethod<"referral.products.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.products.read","method":"GET","path":"/api/v1/referral/products","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.products.read","method":"GET","path":"/api/v1/referral/products","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralProductsManage(baseUrl: string): OperationMethod<"referral.products.manage"> {
@@ -93,7 +93,7 @@ export function createFetchReferralProductsManage(baseUrl: string): OperationMet
 }
 
 function bindProductsManage(client: OperationExecutor): OperationMethod<"referral.products.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.products.manage","method":"PUT","path":"/api/v1/referral/products","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.products.manage","method":"PUT","path":"/api/v1/referral/products","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralMembersRead(baseUrl: string): OperationMethod<"referral.members.read"> {
@@ -101,7 +101,7 @@ export function createFetchReferralMembersRead(baseUrl: string): OperationMethod
 }
 
 function bindMembersRead(client: OperationExecutor): OperationMethod<"referral.members.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.members.read","method":"GET","path":"/api/v1/referral/members","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.members.read","method":"GET","path":"/api/v1/referral/members","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralMembersApply(baseUrl: string): OperationMethod<"referral.members.apply"> {
@@ -109,7 +109,7 @@ export function createFetchReferralMembersApply(baseUrl: string): OperationMetho
 }
 
 function bindMembersApply(client: OperationExecutor): OperationMethod<"referral.members.apply"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.members.apply","method":"POST","path":"/api/v1/referral/members/apply","audience":"member","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.members.apply","method":"POST","path":"/api/v1/referral/members/apply","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralMembersApprove(baseUrl: string): OperationMethod<"referral.members.approve"> {
@@ -117,7 +117,7 @@ export function createFetchReferralMembersApprove(baseUrl: string): OperationMet
 }
 
 function bindMembersApprove(client: OperationExecutor): OperationMethod<"referral.members.approve"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.members.approve","method":"POST","path":"/api/v1/referral/members/approve","audience":"operator","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.members.approve","method":"POST","path":"/api/v1/referral/members/approve","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralMembersDisqualify(baseUrl: string): OperationMethod<"referral.members.disqualify"> {
@@ -125,7 +125,7 @@ export function createFetchReferralMembersDisqualify(baseUrl: string): Operation
 }
 
 function bindMembersDisqualify(client: OperationExecutor): OperationMethod<"referral.members.disqualify"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.members.disqualify","method":"POST","path":"/api/v1/referral/members/disqualify","audience":"operator","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.members.disqualify","method":"POST","path":"/api/v1/referral/members/disqualify","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralBindingsRead(baseUrl: string): OperationMethod<"referral.bindings.read"> {
@@ -133,7 +133,7 @@ export function createFetchReferralBindingsRead(baseUrl: string): OperationMetho
 }
 
 function bindBindingsRead(client: OperationExecutor): OperationMethod<"referral.bindings.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.bindings.read","method":"GET","path":"/api/v1/referral/bindings","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.bindings.read","method":"GET","path":"/api/v1/referral/bindings","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralBindingsCreate(baseUrl: string): OperationMethod<"referral.bindings.create"> {
@@ -141,7 +141,7 @@ export function createFetchReferralBindingsCreate(baseUrl: string): OperationMet
 }
 
 function bindBindingsCreate(client: OperationExecutor): OperationMethod<"referral.bindings.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.bindings.create","method":"POST","path":"/api/v1/referral/bindings","audience":"member","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.bindings.create","method":"POST","path":"/api/v1/referral/bindings","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralCommissionsRead(baseUrl: string): OperationMethod<"referral.commissions.read"> {
@@ -149,7 +149,7 @@ export function createFetchReferralCommissionsRead(baseUrl: string): OperationMe
 }
 
 function bindCommissionsRead(client: OperationExecutor): OperationMethod<"referral.commissions.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.commissions.read","method":"GET","path":"/api/v1/referral/commissions","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.commissions.read","method":"GET","path":"/api/v1/referral/commissions","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralEarningsRead(baseUrl: string): OperationMethod<"referral.earnings.read"> {
@@ -157,7 +157,7 @@ export function createFetchReferralEarningsRead(baseUrl: string): OperationMetho
 }
 
 function bindEarningsRead(client: OperationExecutor): OperationMethod<"referral.earnings.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.earnings.read","method":"GET","path":"/api/v1/referral/earnings","audience":"member","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.earnings.read","method":"GET","path":"/api/v1/referral/earnings","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralLinksRead(baseUrl: string): OperationMethod<"referral.links.read"> {
@@ -165,7 +165,7 @@ export function createFetchReferralLinksRead(baseUrl: string): OperationMethod<"
 }
 
 function bindLinksRead(client: OperationExecutor): OperationMethod<"referral.links.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.links.read","method":"GET","path":"/api/v1/referral/links","audience":"member","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.links.read","method":"GET","path":"/api/v1/referral/links","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralWithdrawalsRead(baseUrl: string): OperationMethod<"referral.withdrawals.read"> {
@@ -173,7 +173,7 @@ export function createFetchReferralWithdrawalsRead(baseUrl: string): OperationMe
 }
 
 function bindWithdrawalsRead(client: OperationExecutor): OperationMethod<"referral.withdrawals.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.withdrawals.read","method":"GET","path":"/api/v1/referral/withdrawals","audience":"member","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.withdrawals.read","method":"GET","path":"/api/v1/referral/withdrawals","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchReferralWithdrawalsCreate(baseUrl: string): OperationMethod<"referral.withdrawals.create"> {
@@ -181,5 +181,5 @@ export function createFetchReferralWithdrawalsCreate(baseUrl: string): Operation
 }
 
 function bindWithdrawalsCreate(client: OperationExecutor): OperationMethod<"referral.withdrawals.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"referral.withdrawals.create","method":"POST","path":"/api/v1/referral/withdrawals","audience":"member","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"referral.withdrawals.create","method":"POST","path":"/api/v1/referral/withdrawals","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }

@@ -454,6 +454,18 @@ async function seedCandidate(database: PGlite, key: string, periodState: 'open' 
       '2026-07-31T16:00:00Z','2026-08-31T16:00:00Z')`,
     [targetScope, period, periodState]
   );
+  await database.query(
+    `with current_period as (
+      select to_char(clock_timestamp() at time zone 'Asia/Shanghai','YYYY-MM') value
+    )
+    insert into finance.period(scope_id,period,state,ledger_id,legal_timezone,period_start_at,period_end_at)
+    select $1,value,'open',finance.ledger_id($1,'CNY'),'Asia/Shanghai',
+      to_date(value||'-01','YYYY-MM-DD')::timestamp at time zone 'Asia/Shanghai',
+      (to_date(value||'-01','YYYY-MM-DD')+interval '1 month')::timestamp at time zone 'Asia/Shanghai'
+    from current_period where value<>$2
+    on conflict(scope_id,period) do nothing`,
+    [targetScope, period]
+  );
 }
 
 async function seedRefundCandidate(database: PGlite, key: string, staleEvidence: boolean): Promise<void> {

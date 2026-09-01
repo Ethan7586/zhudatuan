@@ -33,6 +33,7 @@ import { createRiskOperations, type RiskOperations } from './risk';
 import { createAuditOperations, type AuditOperations } from './audit';
 import { createObservabilityOperations, type ObservabilityOperations } from './observability';
 import { createExtensionOperations, type ExtensionOperations } from './extension';
+import { createApprovalOperations, type ApprovalOperations } from './approval';
 
 export type { RuntimeOperations } from './runtime';
 export type { IdentityOperations } from './identity';
@@ -66,6 +67,7 @@ export type { RiskOperations } from './risk';
 export type { AuditOperations } from './audit';
 export type { ObservabilityOperations } from './observability';
 export type { ExtensionOperations } from './extension';
+export type { ApprovalOperations } from './approval';
 export type { OperationMethod } from '../OperationDescriptor';
 
 export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
@@ -319,6 +321,80 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "channel.operations.read",
   "channel.operations.replay",
   "extension.installations.read",
+  "partner.customers.create",
+  "partner.customers.update",
+  "partner.customers.enable",
+  "partner.customers.disable",
+  "partner.customers.get",
+  "partner.customers.list",
+  "partner.customeroptions.list",
+  "voucher.products.create",
+  "voucher.products.revise",
+  "voucher.products.enable",
+  "voucher.products.disable",
+  "voucher.products.get",
+  "voucher.products.list",
+  "voucher.productoptions.list",
+  "voucher.credentialpools.create",
+  "voucher.credentials.generate",
+  "voucher.credentials.import",
+  "voucher.credentialpools.close",
+  "voucher.credentialpools.get",
+  "voucher.credentialpools.list",
+  "voucher.credentials.list",
+  "voucher.credentials.get",
+  "voucher.credentialexports.create",
+  "voucher.jobs.get",
+  "voucher.stockrequests.create",
+  "voucher.stockrequests.update",
+  "voucher.stockrequests.submit",
+  "voucher.stockrequests.cancel",
+  "voucher.stockrequests.get",
+  "voucher.stockrequests.list",
+  "voucher.stockrequestoptions.list",
+  "approval.templates.create",
+  "approval.templates.revise",
+  "approval.templates.enable",
+  "approval.templates.disable",
+  "approval.templates.get",
+  "approval.templates.list",
+  "approval.tasks.list",
+  "approval.tasks.approve",
+  "approval.tasks.reject",
+  "approval.instances.get",
+  "voucher.issueorders.create",
+  "voucher.issueorders.update",
+  "voucher.issueorders.submit",
+  "voucher.issueorders.cancel",
+  "voucher.issueorders.get",
+  "voucher.issueorders.list",
+  "voucher.issuebatches.retry",
+  "voucher.issuebatches.get",
+  "voucher.issueorderexports.create",
+  "voucher.actionbatches.create",
+  "voucher.actionbatches.get",
+  "voucher.actionbatches.list",
+  "voucher.actionbatches.retry",
+  "voucher.actionexports.create",
+  "voucher.search.read",
+  "voucher.activations.secret",
+  "voucher.activations.numbersecret",
+  "voucher.vouchers.bind",
+  "voucher.vouchers.unbind",
+  "voucher.vouchers.get",
+  "voucher.vouchers.getbynumber",
+  "voucher.vouchers.timeline",
+  "voucher.redemptions.quote",
+  "voucher.tenderholds.create",
+  "voucher.tenderholds.consume",
+  "voucher.tenderholds.release",
+  "voucher.redemptions.create",
+  "voucher.refunds.create",
+  "voucher.redemptions.get",
+  "voucher.searchfacets.read",
+  "voucher.searchsnapshots.create",
+  "voucher.searchexports.create",
+  "voucher.exports.get",
 ] as const satisfies readonly OperationId[]);
 
 export interface CommerceClient {
@@ -354,6 +430,7 @@ export interface CommerceClient {
   readonly audit: AuditOperations;
   readonly observability: ObservabilityOperations;
   readonly extension: ExtensionOperations;
+  readonly approval: ApprovalOperations;
 }
 
 export function createCommerceClient(client: OperationExecutor): CommerceClient {
@@ -390,5 +467,6 @@ export function createCommerceClient(client: OperationExecutor): CommerceClient 
     audit: createAuditOperations(client),
     observability: createObservabilityOperations(client),
     extension: createExtensionOperations(client),
+    approval: createApprovalOperations(client),
   });
 }

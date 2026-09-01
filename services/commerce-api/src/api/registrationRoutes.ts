@@ -3,7 +3,7 @@ import { apiError, json, methodNotAllowed } from './http';
 import { readTrustedClientIp } from './loginRateLimitBypass';
 import { generateOtp, hashPassword, maskMobile, normalizeChineseMobile, normalizeLocalUsername, phoneLookupSubject, validRegistrationPassword, verificationCodeHash } from './registrationSecurity';
 import { readJsonBody } from './routerSupport';
-import { deliverOtp, otpDeliveryAvailable } from './otpDelivery';
+import { deliverOtp, OTP_RESEND_AFTER_SECONDS, otpDeliveryAvailable } from './otpDelivery';
 import { SmsDeliveryError } from './smsProvider';
 import { callRpc } from './supabase';
 import type { WorkerEnv } from './types';
@@ -34,7 +34,7 @@ export async function handleRegistrationOtp(request: Request, env: WorkerEnv, re
   if (!created) return apiError(429, 'OTP_RATE_LIMITED', '验证码发送过于频繁，请稍后重试', requestId);
   try {
     const delivery = await deliverOtp(env, { mobile, code, challengeId, purpose: 'registration' });
-    return json({ challengeId, expiresInSeconds: 300, resendAfterSeconds: 60, ...(delivery.debugCode ? { debugCode: delivery.debugCode } : {}), requestId });
+    return json({ challengeId, expiresInSeconds: 300, resendAfterSeconds: OTP_RESEND_AFTER_SECONDS, ...(delivery.debugCode ? { debugCode: delivery.debugCode } : {}), requestId });
   } catch (error) {
     const providerCode = error instanceof SmsDeliveryError ? error.code : 'SMS_DELIVERY_FAILED';
     return apiError(providerCode === 'SMS_PROVIDER_NOT_CONFIGURED' ? 503 : 502, providerCode, '验证码发送失败，请稍后重试', requestId);

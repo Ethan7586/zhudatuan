@@ -28,6 +28,8 @@ jobs:
       VITE_API_BASE_URL: http://127.0.0.1:3001
       VITE_AUTH_BASE_URL: http://127.0.0.1:5176
       VITE_CLIENT_VERSION: 0.0.0
+      VITE_ADMIN_ORIGIN: http://127.0.0.1:4173
+      VITE_STOREFRONT_ORIGIN: http://127.0.0.1:3000
     services:
       postgres:
         image: postgres:17-alpine
@@ -90,6 +92,8 @@ jobs:
       - name: Build locked applications and services
         run: |
           npm run build
+          npx playwright install --with-deps chromium
+          npm run release:console:verify -- --dist apps/console/dist --expected-commit "$GITHUB_SHA" --require-clean
           docker build --file infrastructure/aliyun/Dockerfile --tag zhudatuan-commerce:${{ github.sha }} .
           npm audit --omit=dev --audit-level=high
 

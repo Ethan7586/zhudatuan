@@ -9,6 +9,7 @@ import { materializeConsoleIndexRoute, materializeConsoleModules } from './Conso
 export const consoleScopeChildren = [
   materializeConsoleIndexRoute(consoleModules),
   ...materializeConsoleModules(consoleModules),
+  { path: 'settings/profile', lazy: () => import('../feature/profile/ProfileRoute') },
   { path: '*', lazy: () => import('./NotFoundRoute') },
 ] satisfies RouteObject[];
 

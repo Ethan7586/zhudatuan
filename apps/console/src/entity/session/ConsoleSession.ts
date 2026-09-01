@@ -33,8 +33,15 @@ export const SessionSchema = z.object({
 });
 
 export const ProfileSchema = z.object({
+  id: z.string().min(1).optional(),
   display_name: z.string().min(1),
+  status: z.string().min(1).optional(),
+  mobile_bound: z.boolean().optional(),
+  membership_id: z.string().min(1).optional(),
+  organization_id: z.string().min(1).optional(),
   employee_no: z.string().nullable(),
+  joined_at: z.string().min(1).nullable().optional(),
+  access_version: z.optional(DatabaseIntegerSchema),
 });
 
 export const ScopePageSchema = z.object({
@@ -50,6 +57,7 @@ export type ConsoleProfile = z.infer<typeof ProfileSchema>;
 export interface ConsoleContext {
   readonly session: ConsoleSession;
   readonly profile: ConsoleProfile;
+  readonly profileState?: 'ready' | 'unavailable';
   readonly scopes: readonly ConsoleScope[];
   readonly scope: ConsoleScope;
 }

@@ -12,6 +12,7 @@ export const accessModule = {
       lazy: () => import('./AccessRoute'),
       operations: [
         'access.center.read',
+        'access.roles.manage',
         'access.ownership.read',
         'access.ownership.transfers.preview',
         'access.ownership.transfers.create',

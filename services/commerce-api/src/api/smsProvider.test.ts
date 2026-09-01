@@ -25,7 +25,7 @@ describe('SMS provider', () => {
     const env: WorkerEnv = {
       APP_ENV: 'production',
       SMS_PROVIDER: 'aliyun',
-      ALIYUN_SMS_SIGN_NAME: '智慧翼',
+      ALIYUN_SMS_SIGN_NAME: '主打团',
       ALIYUN_SMS_TEMPLATE_CODE_VERIFICATION: 'SMS_123456789',
     };
 
@@ -38,7 +38,7 @@ describe('SMS provider', () => {
     const [request, runtime] = sendSmsWithOptions.mock.calls[0];
     expect(request).toMatchObject({
       phoneNumbers: input.mobile,
-      signName: '智慧翼',
+      signName: '主打团',
       templateCode: 'SMS_123456789',
       templateParam: JSON.stringify({ code: input.code }),
       outId: input.challengeId,
@@ -52,7 +52,7 @@ describe('SMS provider', () => {
       {
         APP_ENV: 'production',
         SMS_PROVIDER: 'aliyun',
-        ALIYUN_SMS_SIGN_NAME: '智慧翼',
+        ALIYUN_SMS_SIGN_NAME: '主打团',
         ALIYUN_SMS_TEMPLATE_CODE_VERIFICATION: 'SMS_123456789',
       },
       input,

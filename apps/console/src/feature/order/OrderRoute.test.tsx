@@ -134,7 +134,8 @@ describe('Order route', () => {
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeTruthy();
-    expect(screen.getByRole('note').textContent).toBe('当前页导出只使用已经加载的服务端读模型；发货、退款、售后及其他写操作仍保持关闭。');
+    expect(screen.queryByRole('region', { name: '订单系统协同关系' })).toBeNull();
+    expect(screen.getByRole('note').textContent).toBe('当前页导出只包含已经加载的订单；发货、退款和售后操作暂未开放。');
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
     expect(screen.getByText('member:verified-1')).toBeTruthy();
@@ -155,6 +156,47 @@ describe('Order route', () => {
     expect(within(dialog).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
     expect(within(dialog).getByText(/当前读模型未提供审计时间线/)).toBeTruthy();
     expect(within(dialog).queryByText('不应泄漏的演示说明')).toBeNull();
+  });
+
+  it('turns the preview exception view into a vertical responsibility workflow', async () => {
+    const exceptionOrder = {
+      ...order,
+      payment_state: 'partially_refunded',
+      fulfillment_state: 'returned',
+      aftersale_state: 'processing',
+      preview: {
+        ...order.preview,
+        exception: true,
+        operation: { id: 'operation:refund-reconciliation', label: '退款对账等待确认', status: 'failed', at: '2026-08-26T08:28:00.000Z' },
+      },
+    } as const;
+    server.use(
+      http.get('*/api/v1/orders', ({ request }) => {
+        const url = new URL(request.url);
+        getRequests.push(url);
+        if (url.searchParams.get('limit') === '1') return HttpResponse.json({ items: [exceptionOrder], count: 1 });
+        return HttpResponse.json({
+          items: [exceptionOrder],
+          count: 1,
+          preview: { ...listPage.preview, total: 1, counts: { ...listPage.preview.counts, exception: 1 } },
+        });
+      })
+    );
+    const user = userEvent.setup();
+    renderRoute('/orders?view=exception', previewContext);
+
+    expect(await screen.findByRole('heading', { level: 1, name: '订单协同异常' })).toBeTruthy();
+    expect(screen.getByText('找到卡住的订单，确认责任系统，并直接去处理。')).toBeTruthy();
+    expect(await screen.findByRole('list', { name: '异常订单列表' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: new RegExp(order.order_number) }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('list', { name: new RegExp(`${order.order_number} 纵向进度`) })).toBeTruthy();
+    const actionPanel = screen.getByRole('region', { name: '当前卡点与处理动作' });
+    expect(within(actionPanel).getByText('财务与对账台', { exact: true })).toBeTruthy();
+    expect(within(actionPanel).getByRole('button', { name: '进入财务与对账台处理' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: '查看完整订单详情' }));
+    expect(await screen.findByRole('dialog', { name: new RegExp(order.order_number) })).toBeTruthy();
+    expect(postRequests).toHaveLength(0);
   });
 
   it('normalizes preview-only URL filters out of a production scope before presenting results', async () => {

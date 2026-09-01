@@ -1,6 +1,8 @@
 export const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 export type HttpMethod = (typeof HTTP_METHODS)[number];
 export type OperationAudience = 'public' | 'member' | 'operator' | 'provider';
+export type OperationAvailability = 'runtime' | 'frozen';
+export type OperationExecution = 'sync' | 'async';
 export type OperationIdempotency = 'none' | 'required';
 export type OperationPath = `/api/v1/${string}` | `/health/${string}`;
 export type OperationRisk = 'low' | 'elevated' | 'high' | 'critical';
@@ -17,6 +19,9 @@ export interface Operation {
   readonly idempotent: boolean;
   readonly idempotency: OperationIdempotency;
   readonly expectedVersion: OperationVersionPolicy;
+  readonly execution: OperationExecution;
+  readonly availability: OperationAvailability;
+  readonly summary: string;
   readonly risk: OperationRisk;
   readonly stepup: boolean;
   readonly scopeKinds: readonly string[];
@@ -27,6 +32,7 @@ export interface Operation {
 export function operation<const T extends Operation>(definition: T): Readonly<T> {
   if (!/^[a-z]+(?:\.[a-z]+)+$/.test(definition.id)) throw new Error('OPERATION_ID_INVALID');
   if (!definition.path.startsWith('/api/v1/') && !definition.path.startsWith('/health/')) throw new Error('OPERATION_PATH_INVALID');
+  if (definition.summary.trim().length === 0) throw new Error('OPERATION_SUMMARY_INVALID');
   return Object.freeze({
     ...definition,
     scopeKinds: Object.freeze([...definition.scopeKinds]),

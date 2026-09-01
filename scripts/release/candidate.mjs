@@ -4,6 +4,7 @@ import { join, relative, resolve } from 'node:path';
 import { REQUIRED_PROVIDER_IDS } from '../../packages/contract/src/provider/ProviderCatalog.ts';
 import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import { directoryHash, fileHash, hash } from './artifacts.mjs';
+import { readConsoleArtifact } from './console-artifact.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const output = process.argv[2] ? resolve(process.argv[2]) : undefined;
@@ -28,6 +29,7 @@ const sources = Object.freeze({
 mkdirSync(join(output, 'clients'), { recursive: true });
 cpSync(ociSource, join(output, 'commerce.oci.tar'), { errorOnExist: true });
 cpSync(sbomSource, join(output, 'sbom.cdx.json'), { errorOnExist: true });
+readConsoleArtifact(join(root, sources.console), { expectedCommit: commit, requireClean: true });
 const clients = {};
 for (const [client, source] of Object.entries(sources)) {
   const absolute = join(root, source);

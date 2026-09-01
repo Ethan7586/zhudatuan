@@ -52,7 +52,7 @@ export function supportAuthorLabel(authorType: string, author: string | null): s
 }
 
 export function supportAuthorInitial(authorType: string): string {
-  return authorType.toLowerCase() === 'agent' ? '翼' : authorType.toLowerCase() === 'member' ? '客' : '讯';
+  return authorType.toLowerCase() === 'agent' ? '主' : authorType.toLowerCase() === 'member' ? '客' : '讯';
 }
 
 export function supportTime(value: string | null | undefined): string {

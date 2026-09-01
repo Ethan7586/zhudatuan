@@ -4,8 +4,8 @@ export const UNRESOLVED_MALL: EnterpriseMall = {
   id: 'unresolved',
   enterpriseId: '',
   enterpriseName: '尚未连接企业',
-  mallName: '智慧翼福利商城',
-  logoText: '智慧翼',
+  mallName: '主打团福利商城',
+  logoText: '主打团',
   badge: '数据库连接未建立',
   welcomeBanner: '登录后从生产数据库加载企业商品与权益。',
 };

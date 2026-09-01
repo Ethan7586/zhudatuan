@@ -1,18 +1,33 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { execFileSync } from 'node:child_process';
-import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, loadEnv, type Plugin, type PluginOption } from 'vite';
 
-export default defineConfig(() => {
-  const build = buildDefinition();
+const consoleRoot = fileURLToPath(new URL('.', import.meta.url));
+
+export default defineConfig(({ command, mode }) => {
+  const plugins: PluginOption[] = [react(), tailwindcss()];
+  const source = { ...loadEnv(mode, consoleRoot, ''), ...process.env };
+  const build = buildIdentity(source);
+  if (command === 'build') {
+    const environment = clientBuildEnvironment(source);
+    plugins.push(
+      consoleArtifactPlugin({
+        schema: 'shop.console-artifact.v1',
+        ...build,
+        ...environment,
+      })
+    );
+  }
   return {
-    plugins: [react(), tailwindcss()],
+    envDir: consoleRoot,
+    plugins,
     define: {
       __SHOP_BUILD_COMMIT__: JSON.stringify(build.commit),
       __SHOP_BUILD_BRANCH__: JSON.stringify(build.branch),
       __SHOP_BUILD_ID__: JSON.stringify(build.id),
-      __SHOP_BUILD_DIRTY__: JSON.stringify(build.dirty),
+      __SHOP_BUILD_DIRTY__: JSON.stringify(build.sourceTree === 'dirty'),
     },
     build: { manifest: true },
     server: {
@@ -35,16 +50,56 @@ export default defineConfig(() => {
   };
 });
 
-const repositoryRoot = resolve(import.meta.dirname, '../..');
-
-function buildDefinition(): Readonly<{ commit: string; branch: string; id: string; dirty: boolean }> {
-  const commit = process.env.SHOP_BUILD_COMMIT?.trim() || git(['rev-parse', 'HEAD']);
-  const branch = process.env.SHOP_BUILD_BRANCH?.trim() || git(['branch', '--show-current']) || 'detached';
-  const dirty = process.env.SHOP_BUILD_DIRTY === undefined ? git(['status', '--porcelain', '--untracked-files=no']).length > 0 : process.env.SHOP_BUILD_DIRTY === 'true';
-  const id = process.env.SHOP_BUILD_ID?.trim() || `${commit.slice(0, 12)}${dirty ? '-dirty' : ''}`;
-  return Object.freeze({ commit, branch, id, dirty });
+function clientBuildEnvironment(source: Readonly<Record<string, string | undefined>>) {
+  const apiBaseUrl = required(source.VITE_API_BASE_URL, 'CLIENT_API_BASE_URL_MISSING');
+  const authBaseUrl = required(source.VITE_AUTH_BASE_URL, 'CLIENT_AUTH_BASE_URL_MISSING');
+  const clientVersion = required(source.VITE_CLIENT_VERSION, 'CLIENT_VERSION_MISSING');
+  if (!/^https:\/\//.test(apiBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(apiBaseUrl)) {
+    throw new Error('CLIENT_API_BASE_URL_INVALID');
+  }
+  if (!/^https:\/\//.test(authBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(authBaseUrl)) {
+    throw new Error('CLIENT_AUTH_BASE_URL_INVALID');
+  }
+  if (!/^[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?$/i.test(clientVersion)) throw new Error('CLIENT_VERSION_INVALID');
+  return {
+    apiBaseUrl: apiBaseUrl.replace(/\/$/, ''),
+    authBaseUrl: authBaseUrl.replace(/\/$/, ''),
+    clientVersion,
+  } as const;
 }
 
-function git(arguments_: readonly string[]): string {
-  return execFileSync('git', ['-C', repositoryRoot, ...arguments_], { encoding: 'utf8' }).trim();
+function required(value: string | undefined, error: string): string {
+  if (!value?.trim()) throw new Error(error);
+  return value.trim();
+}
+
+function buildIdentity(source: Readonly<Record<string, string | undefined>>) {
+  const commit = source.SHOP_BUILD_COMMIT?.trim() || source.GITHUB_SHA?.trim() || git(['rev-parse', 'HEAD'], 'CONSOLE_BUILD_COMMIT_MISSING');
+  if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error('CONSOLE_BUILD_COMMIT_INVALID');
+  const sourceTree = source.SHOP_SOURCE_TREE?.trim() || (git(['status', '--porcelain', '--untracked-files=all'], 'CONSOLE_BUILD_SOURCE_TREE_UNKNOWN') === '' ? 'clean' : 'dirty');
+  if (!['clean', 'dirty'].includes(sourceTree)) throw new Error('CONSOLE_BUILD_SOURCE_TREE_INVALID');
+  const branch = source.SHOP_BUILD_BRANCH?.trim() || source.GITHUB_REF_NAME?.trim() || git(['branch', '--show-current'], 'CONSOLE_BUILD_BRANCH_MISSING') || 'detached';
+  const id = source.SHOP_BUILD_ID?.trim() || `${commit.slice(0, 12)}${sourceTree === 'dirty' ? '-dirty' : ''}`;
+  return { commit, sourceTree, branch, id } as const;
+}
+
+function git(args: readonly string[], error: string): string {
+  try {
+    return execFileSync('git', args, { cwd: consoleRoot, encoding: 'utf8' }).trim();
+  } catch {
+    throw new Error(error);
+  }
+}
+
+function consoleArtifactPlugin(artifact: Readonly<Record<string, string>>): Plugin {
+  return {
+    name: 'shop-console-artifact',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'console-build.json',
+        source: `${JSON.stringify(artifact, null, 2)}\n`,
+      });
+    },
+  };
 }
