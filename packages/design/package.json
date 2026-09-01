@@ -17,6 +17,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./access-denied": "./src/AccessDenied.tsx",
     "./base.css": "./src/base.css",
     "./tokens.css": "./src/tokens.css",
     "./workspace.css": "./src/workspace.css",

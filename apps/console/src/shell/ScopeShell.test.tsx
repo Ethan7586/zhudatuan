@@ -109,8 +109,8 @@ describe('ScopeShell route handles', () => {
     const { container } = renderShell('/scopes/enterprise/enterprise%3A1/applications');
 
     expect((await screen.findAllByText('商城管理')).length).toBeGreaterThan(0);
-    expect(screen.getByText('创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。')).toBeTruthy();
-    expect(screen.getByRole('button', { name: '商城管理' }).getAttribute('aria-current')).toBe('page');
+    expect(await screen.findByText('创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。')).toBeTruthy();
+    expect((await screen.findByRole('button', { name: '商城管理' })).getAttribute('aria-current')).toBe('page');
     expect(container.querySelector('.consolelayout')?.getAttribute('data-route')).toBe('applications');
     await waitFor(() => expect(document.title).toBe('商城管理 · 主打团'));
   });

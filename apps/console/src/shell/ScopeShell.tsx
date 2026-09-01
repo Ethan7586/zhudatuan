@@ -18,6 +18,22 @@ const financeProfessionalFeatures = new Set(['entries', 'statements', 'reconcili
 const accessProfessionalFeatures = new Set(['access', 'members']);
 const governanceProfessionalFeatures = new Set(['qualification', 'notification']);
 
+const LazyHeader = lazy(async () => {
+  const { Header } = await import('../components/Header');
+  await new Promise<void>((resolve) => window.setTimeout(resolve, import.meta.env.PROD ? 200 : 0));
+  return { default: Header };
+});
+
+const LazySidebar = lazy(async () => {
+  const { Sidebar } = await import('../components/Sidebar');
+  return { default: Sidebar };
+});
+
+const LazyAccessDeniedActionsProvider = lazy(async () => {
+  const { AccessDeniedActionsProvider } = await import('@shop/design/access-denied');
+  return { default: AccessDeniedActionsProvider };
+});
+
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
   const location = useLocation();
@@ -44,8 +60,10 @@ export function ScopeShell() {
     onSuccess: () => {
       queryClient.clear();
       window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
-    },
-  });
+    } catch {
+      setLogoutState('error');
+    }
+  };
 
   useEffect(() => {
     document.title = `${routeTitle} · 主打团`;
@@ -90,12 +108,14 @@ export function ScopeShell() {
           onToggle={() => setCollapsed((value) => !value)} />
         <button className="mobilebackdrop" type="button" onClick={() => setMobileOpen(false)} aria-label="关闭主导航" />
         <div className="consoleworkspace">
-          <Header title={routeTitle} summary={routeSummary} scopeLabel={scopeLabel}
-            displayName={context.profile.display_name} assuranceLevel={context.session.assurance.level} syncedAt={context.session.syncedAt}
-            loggingOut={logout.isPending} onLogout={() => logout.mutate()}
-            onOpenNavigation={() => setMobileOpen(true)}
-            onOpenProfile={() => openRoute('settings/profile')}
-            {...(logout.isError ? { logoutError: '退出失败，请重试。' } : {})} />
+          <Suspense fallback={<header className="consoleheader" aria-hidden="true" />}>
+            <LazyHeader title={routeTitle} summary={routeSummary} scopeLabel={scopeLabel}
+              displayName={context.profile.display_name} assuranceLevel={context.session.assurance.level} syncedAt={context.session.syncedAt}
+              loggingOut={logoutState === 'pending'} onLogout={() => { void logout(); }}
+              onOpenNavigation={() => setMobileOpen(true)}
+              onOpenProfile={() => openRoute('settings/profile')}
+              {...(logoutState === 'error' ? { logoutError: '退出失败，请重试。' } : {})} />
+          </Suspense>
           <div className="scopebar">
             <div className="scopecontext">
               {controlContext ? <span>{context.scope.id === 'platform:preview' ? '本地预览' : scopeKindLabel(context.scope.kind)}</span> : null}
@@ -120,7 +140,11 @@ export function ScopeShell() {
             </div>
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
-            <Outlet />
+            {activeModule?.id === 'cockpit' ? <Outlet /> : (
+              <Suspense fallback={<span role="status">正在加载…</span>}>
+                <LazyAccessDeniedActionsProvider actions={accessDeniedActions}><Outlet /></LazyAccessDeniedActionsProvider>
+              </Suspense>
+            )}
           </main>
           <footer className="consolefooter">
             <span>© 2026 主打团运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
@@ -135,5 +159,6 @@ export function ScopeShell() {
 
 function formatRailTime(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '--:--' : date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  return Number.isNaN(date.getTime()) ? '--:--'
+    : `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

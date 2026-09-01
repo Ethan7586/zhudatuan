@@ -1,4 +1,3 @@
-import { formatCount, formatMinor } from '../../shared/ui/Format';
 import type { CockpitSales } from './CockpitSchema';
 
 export function CockpitMetrics({ sales }: Readonly<{ sales: CockpitSales }>) {
@@ -43,4 +42,19 @@ function percent(value: number | undefined): string {
 
 function signedPercent(value: number): string {
   return `${value >= 0 ? '+' : '−'}${Math.abs(value * 100).toFixed(1)}%`;
+}
+
+function formatMinor(value: number): string {
+  const amount = value / 100;
+  return `${amount < 0 ? '-' : ''}¥${groupDigits(Math.abs(amount).toFixed(2))}`;
+}
+
+function formatCount(value: number): string {
+  return groupDigits(Math.abs(value).toFixed(0)).replace(/^/, value < 0 ? '-' : '');
+}
+
+function groupDigits(value: string): string {
+  const [integer, fraction] = value.split('.');
+  const grouped = (integer ?? '0').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return fraction === undefined ? grouped : `${grouped}.${fraction}`;
 }

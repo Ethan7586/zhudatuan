@@ -5,6 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#143A8F" />
     <meta name="description" content="主打团运营、会员、权限与业务治理后台。" />
+    <link rel="preconnect" href="%VITE_API_BASE_URL%" crossorigin />
+    <script>
+      (() => {
+        const controllers = new Set();
+        window.__consoleAbortDocumentPrefetch = () => {
+          for (const controller of controllers) controller.abort();
+          controllers.clear();
+        };
+        const tracked = (promise) => {
+          const slot = { settled: false, promise: undefined };
+          slot.promise = Promise.resolve(promise).catch(() => undefined).finally(() => { slot.settled = true; });
+          return slot;
+        };
+        const readJson = (url, extraHeaders = {}) => {
+          const controller = new AbortController();
+          controllers.add(controller);
+          const timeout = window.setTimeout(() => controller.abort(), 1_500);
+          const promise = fetch(url, {
+            credentials: 'include',
+            redirect: 'error',
+            signal: controller.signal,
+            headers: {
+              accept: 'application/json',
+              'x-contract-version': '1.0.0',
+              'x-client-version': '%VITE_CLIENT_VERSION%',
+              'x-trace-id': crypto.randomUUID(),
+              ...extraHeaders,
+            },
+          }).then(async (response) => {
+            if (!response.ok) return undefined;
+            try { return await response.json(); } catch { return undefined; }
+          }, () => undefined).finally(() => {
+            window.clearTimeout(timeout);
+            controllers.delete(controller);
+          });
+          return tracked(promise);
+        };
+        const session = readJson('%VITE_API_BASE_URL%/api/v1/identity/session');
+        window.__consoleSessionPrefetch = tracked(session.promise.then((value) => value === undefined ? undefined : { value }));
+        window.__consoleScopePrefetch = tracked(session.promise.then(async (value) => {
+          const consoleKinds = ['platform', 'distributor', 'tenant', 'enterprise', 'mall'];
+          const roots = Array.isArray(value?.scopes) ? value.scopes.filter((scope) => consoleKinds.includes(scope?.kind) && typeof scope?.id === 'string') : [];
+          if (!Number.isInteger(value?.accessVersion) || roots.length === 0) return undefined;
+          const headers = { 'x-access-version': String(value.accessVersion) };
+          const profile = readJson('%VITE_API_BASE_URL%/api/v1/members/me', headers);
+          const canReadLayers = Array.isArray(value.permissions) && value.permissions.includes('organization.layer.read')
+            && Array.isArray(value.capabilities) && value.capabilities.includes('organization.layers.read');
+          const layers = canReadLayers ? roots.map(async (scope) => ({
+            scopeKind: scope.kind,
+            scopeId: scope.id,
+            value: await readJson('%VITE_API_BASE_URL%/api/v1/organizations/layers?limit=1000', {
+              ...headers,
+              'x-scope-hint': scope.id,
+            }).promise,
+          })) : [];
+          return {
+            accessVersion: value.accessVersion,
+            roots: roots.map((scope) => ({ kind: scope.kind, id: scope.id })),
+            profile: await profile.promise,
+            layers: await Promise.all(layers),
+          };
+        }));
+        window.__consoleCockpitPrefetch = tracked(session.promise.then((value) => {
+          const consoleKinds = ['platform', 'distributor', 'tenant', 'enterprise', 'mall'];
+          const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/cockpit\/?$/);
+          let direct;
+          try { direct = match === null ? undefined : { kind: match[1], id: decodeURIComponent(match[2]) }; } catch { direct = undefined; }
+          if (location.pathname !== '/' && direct === undefined) return undefined;
+          const first = direct ?? (Array.isArray(value?.scopes) ? value.scopes.find((scope) => consoleKinds.includes(scope?.kind)) : undefined) ?? value?.scope;
+          if (!consoleKinds.includes(first?.kind) || typeof first?.id !== 'string' || !Number.isInteger(value?.accessVersion)) return undefined;
+          const requested = new URLSearchParams(location.search).get('period');
+          const period = ['realtime', 'yesterday', '7days', '30days'].includes(requested) ? requested : '30days';
+          return readJson(`%VITE_API_BASE_URL%/api/v1/reports/dashboard?period=${period}&limit=100`, {
+            'x-scope-hint': first.id,
+            'x-access-version': String(value.accessVersion),
+          }).promise.then((dashboard) => dashboard === undefined ? undefined : {
+            scopeKind: first.kind, scopeId: first.id, accessVersion: value.accessVersion, period, value: dashboard,
+          });
+        }));
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%brand/favicon.svg" />
     <link rel="manifest" href="%BASE_URL%brand/site.webmanifest" />
     <meta property="og:locale" content="zh_CN" />
@@ -16,7 +97,11 @@
     <title>运营管理后台｜主打团</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="statemain" aria-label="页面加载状态">
+        <p role="status" aria-live="polite">正在加载…</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

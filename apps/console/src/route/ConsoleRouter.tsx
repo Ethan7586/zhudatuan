@@ -8,8 +8,8 @@ export const consoleRouter = createBrowserRouter([
   {
     path: '/',
     loader: landingLoader,
-    HydrateFallback: RouteFallback,
-    errorElement: <RouteError />,
+    HydrateFallback: ConsoleRouteFallback,
+    errorElement: <ConsoleRouteError />,
   },
   {
     id: 'scope',

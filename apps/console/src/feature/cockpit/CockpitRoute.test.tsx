@@ -57,8 +57,8 @@ describe('Cockpit route', () => {
     expect(await screen.findByRole('heading', { level: 1, name: '经营驾驶舱' })).toBeTruthy();
     expect(screen.getByText('¥315.00')).toBeTruthy();
     expect(screen.getByText('环比 +12.8%')).toBeTruthy();
-    expect(screen.getByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '商城经营对比' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '查看售后订单 →' })).toBeTruthy();
+    expect(await screen.findByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '商城经营对比' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: '查看售后订单 →' })).toBeTruthy();
   });
 });
