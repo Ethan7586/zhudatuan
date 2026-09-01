@@ -127,6 +127,7 @@ const REPAIR_FILES = [
   '20260831150000_identity_experience_application_commands.sql',
   '20260901060000_zhudatuan_brand_display_names.sql',
   '20260901070000_identity_notification_challenge_jobs.sql',
+  '20260901100000_access_identity_scope_assignments.sql',
 ];
 
 const mode = process.argv[2];
@@ -335,7 +336,9 @@ async function assertUnsafeInventoryCutoverRejected(database, sql) {
 async function verifyTarget(database) {
   const operationContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'operations.yml'), 'utf8'));
   const eventContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'events.yml'), 'utf8'));
-  const expectedOperations = Array.isArray(operationContract?.operations) ? operationContract.operations.length : -1;
+  const expectedOperations = Array.isArray(operationContract?.operations)
+    ? operationContract.operations.filter((operation) => operation.availability !== 'frozen').length
+    : -1;
   const expectedEvents = Array.isArray(eventContract?.events) ? eventContract.events.length : -1;
   const result = await database.query(`select
     (select count(*)::integer from runtime.operation) operations,

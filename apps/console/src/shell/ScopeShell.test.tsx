@@ -108,11 +108,29 @@ describe('ScopeShell route handles', () => {
   it('renders manifest presentation and active owner through real useMatches data', async () => {
     const { container } = renderShell('/scopes/enterprise/enterprise%3A1/applications');
 
-    expect(await screen.findByText('商城管理')).toBeTruthy();
+    expect((await screen.findAllByText('商城管理')).length).toBeGreaterThan(0);
     expect(screen.getByText('创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。')).toBeTruthy();
-    expect(screen.getByRole('button', { name: '築店 · 商城管理' }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('button', { name: '商城管理' }).getAttribute('aria-current')).toBe('page');
     expect(container.querySelector('.consolelayout')?.getAttribute('data-route')).toBe('applications');
     await waitFor(() => expect(document.title).toBe('商城管理 · 主打团'));
+  });
+
+  it('opens one profile route from both the sidebar and account menu without claiming a business module', async () => {
+    const user = userEvent.setup();
+    const { container, router } = renderShell('/scopes/enterprise/enterprise%3A1/applications');
+
+    await user.click(await screen.findByRole('button', { name: '个人中心：测试运营' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/scopes/enterprise/enterprise%3A1/settings/profile'));
+    expect(container.querySelector('.consolebreadcrumb strong')?.textContent).toBe('个人信息');
+    expect(container.querySelector('.consolelayout')?.getAttribute('data-route')).toBe('profile');
+    expect(screen.getByRole('button', { name: '个人中心：测试运营' }).getAttribute('aria-current')).toBe('page');
+
+    await router.navigate('/scopes/enterprise/enterprise%3A1/applications');
+    await user.click(screen.getByRole('button', { name: '打开 测试运营 的账户菜单' }));
+    expect(screen.getByRole('button', { name: '退出登录' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '个人信息' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/scopes/enterprise/enterprise%3A1/settings/profile'));
+    expect(screen.queryByRole('dialog', { name: '账户菜单' })).toBeNull();
   });
 
   it('uses referral preferredScopeKind from registry navigation when opening the module', async () => {
@@ -159,6 +177,7 @@ function renderShell(initialEntry: string) {
     children: [
       { path: 'applications', Component: FixturePage, handle: handleForPath('applications') },
       { path: 'referral/settings', Component: FixturePage, handle: handleForPath('referral/settings') },
+      { path: 'settings/profile', Component: FixturePage },
       { path: '*', Component: UnknownPage },
     ],
   }], { initialEntries: [initialEntry] });

@@ -1,0 +1,69 @@
+.accessworkspacetabs {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: var(--sw-space-0-5);
+  overflow-x: auto;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+  padding: var(--sw-space-0-5) var(--sw-space-2);
+  scrollbar-width: none;
+}
+
+.accessworkspacetabs::-webkit-scrollbar {
+  display: none;
+}
+
+.accessworkspacetabs button {
+  position: relative;
+  min-width: max-content;
+  min-height: var(--sw-control-touch-target);
+  border: 0;
+  background: transparent;
+  color: var(--sw-muted);
+  padding: var(--sw-space-1) var(--sw-space-2);
+  font: inherit;
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+  cursor: pointer;
+}
+
+.accessworkspacetabs button::after {
+  position: absolute;
+  right: var(--sw-space-1);
+  bottom: 0;
+  left: var(--sw-space-1);
+  height: var(--sw-border-width-strong);
+  border-radius: var(--sw-radius-full);
+  background: transparent;
+  content: '';
+}
+
+.accessworkspacetabs button:hover {
+  color: var(--sw-text-secondary);
+}
+
+.accessworkspacetabs button[aria-current='page'] {
+  color: var(--sw-brand-dark);
+}
+
+.accessworkspacetabs button[aria-current='page']::after {
+  background: var(--sw-brand);
+}
+
+.accessworkspacetabs button:focus-visible {
+  outline: var(--sw-focus-width) solid var(--sw-focus-color);
+  outline-offset: calc(var(--sw-focus-offset) * -1);
+}
+
+@media (max-width: 40rem) {
+  .accessworkspacetabs {
+    padding-inline: var(--sw-space-0-5);
+  }
+
+  .accessworkspacetabs button {
+    flex: 1 0 auto;
+    padding-inline: var(--sw-space-1);
+  }
+}

@@ -7,9 +7,9 @@ import { AccessPageSchema } from './AccessSchema';
 const centerRead = createFetchAccessCenterRead(appConfig.apiBaseUrl);
 
 export const accessKey = (context: ConsoleContext, cursor?: string) => Object.freeze([
-  'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'access.center.read', cursor ?? null, 50,
+  'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'access.center.read', cursor ?? null, 500,
 ] as const);
 export async function readAccess(context: ConsoleContext, cursor: string | undefined, signal: AbortSignal) {
-  return AccessPageSchema.parse(await centerRead({ query: { limit: 50,
+  return AccessPageSchema.parse(await centerRead({ query: { limit: 500,
     ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion)));
 }

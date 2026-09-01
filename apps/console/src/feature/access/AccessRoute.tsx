@@ -1,5 +1,5 @@
-import { MemberAccessWorkspace } from './MemberAccessWorkspace';
+import { RoleAccessWorkspace } from './RoleAccessWorkspace';
 
 export function Component() {
-  return <MemberAccessWorkspace primary="access" />;
+  return <RoleAccessWorkspace />;
 }
