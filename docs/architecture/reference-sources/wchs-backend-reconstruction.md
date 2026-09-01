@@ -2,7 +2,11 @@
 
 > 建立时间：2026-09-02
 > 性质：隔离学习副本，不是 `zdt-next` 主轴
+<<<<<<< HEAD
 > 状态：已建立、已锁定基线、禁止推送、自动下拉
+=======
+> 状态：已建立、已锁定基线、禁止推送
+>>>>>>> 21342f2c (docs(architecture): register wchs reference source)
 
 ## 一、来源身份
 
@@ -143,6 +147,7 @@ wchs
 - 它不会阻止继续逐条收窄其他远程分支。
 - 是否关闭远程 `backend-reconstruction`，必须等学习取证结束并另行获得 Ethan 授权。
 
+<<<<<<< HEAD
 ## 八、自动下拉规则
 
 Codex 自动化 `同步 WCHS 参考分支` 已启用，自动化 ID 为 `wchs`。
@@ -167,3 +172,5 @@ Codex 自动化 `同步 WCHS 参考分支` 已启用，自动化 ID 为 `wchs`�
 7. 出现本地改动、历史分叉、配置保护丢失或抓取失败时，只报告，不覆盖、不重置、不提交、不推送。
 
 因此，朋友提交后会在下一个 72 小时检查周期自动下拉；自动化不会修改 `zdt-next` 主轴或阿里云。
+=======
+>>>>>>> 21342f2c (docs(architecture): register wchs reference source)
