@@ -143,7 +143,7 @@ export const LoginPage: React.FC = () => {
 =======
 =======
   const [loginOtp, setLoginOtp] = useState({ code: '', challengeId: '', challengeMobile: '' });
-  const [loginOtpSeconds, setLoginOtpSeconds] = useState(0);
+  const { seconds: loginOtpSeconds, start: startLoginOtpCooldown, reset: resetLoginOtpCooldown } = useSmsResendCountdown();
   const [loginOtpSending, setLoginOtpSending] = useState(false);
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   const [registrationOpen, setRegistrationOpen] = useState(false);
@@ -161,7 +161,7 @@ export const LoginPage: React.FC = () => {
   const [registrationTermsAccepted, setRegistrationTermsAccepted] = useState(false);
   const [registrationPolicyModal, setRegistrationPolicyModal] = useState<'terms' | 'privacy' | null>(null);
   const [registrationBusy, setRegistrationBusy] = useState<'invite' | 'code' | 'submit' | null>(null);
-  const [registrationCodeSeconds, setRegistrationCodeSeconds] = useState(0);
+  const { seconds: registrationCodeSeconds, start: startRegistrationCodeCooldown, reset: resetRegistrationCodeCooldown } = useSmsResendCountdown();
   const [registrationNotice, setRegistrationNotice] = useState('');
 <<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -199,6 +199,7 @@ export const LoginPage: React.FC = () => {
 <<<<<<< HEAD
   const registrationCopy = registrationPresentation(registrationInvite?.target);
 
+<<<<<<< HEAD
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
     if (val.trim() !== loginOtp.challengeMobile) {
@@ -243,11 +244,13 @@ export const LoginPage: React.FC = () => {
     return () => window.clearInterval(timer);
   }, [loginOtpSeconds]);
 
+=======
+>>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
     if (val.trim() !== loginOtp.challengeMobile) {
       setLoginOtp({ code: '', challengeId: '', challengeMobile: '' });
-      setLoginOtpSeconds(0);
+      resetLoginOtpCooldown();
     }
 <<<<<<< HEAD
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
@@ -329,10 +332,14 @@ export const LoginPage: React.FC = () => {
       const challenge = await createCanonicalLoginChallenge(identifier);
       setLoginOtp({ code: '', challengeId: challenge.challengeId, challengeMobile: identifier.trim() });
 <<<<<<< HEAD
+<<<<<<< HEAD
       startLoginOtpCooldown();
 =======
       setLoginOtpSeconds(SMS_CODE_RESEND_SECONDS);
 >>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
+=======
+      startLoginOtpCooldown();
+>>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
       setFormNotice(`如果该手机号已绑定账号，验证码将发送至 ${maskMobile(identifier)}。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码请求失败');
@@ -356,6 +363,7 @@ export const LoginPage: React.FC = () => {
       setRegistrationTermsAccepted(false);
     }
     if (field === 'mobile' || field === 'inviteCode') resetRegistrationCodeCooldown();
+<<<<<<< HEAD
     setFormError('');
     setRegistrationNotice('');
   };
@@ -447,6 +455,8 @@ export const LoginPage: React.FC = () => {
       setRegistrationTermsAccepted(false);
     }
     if (field === 'mobile') setRegistrationCodeSeconds(0);
+=======
+>>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
     setFormError('');
     setRegistrationNotice('');
   };
@@ -456,7 +466,7 @@ export const LoginPage: React.FC = () => {
     setRegistrationInvite(null);
     setRegistrationTermsAccepted(false);
     setRegistrationPolicyModal(null);
-    setRegistrationCodeSeconds(0);
+    resetRegistrationCodeCooldown();
     setRegistrationBusy(null);
     setRegistrationNotice('');
     setFormError('');
@@ -499,10 +509,14 @@ export const LoginPage: React.FC = () => {
         challengeMobile: current.mobile.trim(),
       }));
 <<<<<<< HEAD
+<<<<<<< HEAD
       setRegistrationCodeSeconds(seconds);
       setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}，请在有效期内完成注册。`);
 =======
       setRegistrationCodeSeconds(Math.min(SMS_CODE_RESEND_SECONDS, validitySeconds));
+=======
+      startRegistrationCodeCooldown(validitySeconds);
+>>>>>>> 31b27b78 (fix(auth): measure SMS cooldown by wall clock)
       setRegistrationNotice(`验证码请求已提交至 ${maskMobile(registration.mobile)}。${SMS_CODE_RESEND_SECONDS} 秒后仍未收到可重新获取；多次请求请使用最后一条。`);
 >>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
     } catch (error) {
