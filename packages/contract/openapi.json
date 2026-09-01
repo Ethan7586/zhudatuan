@@ -17496,7 +17496,6 @@
                 "enum": [
                   "login",
                   "password_reset",
-                  "phone_change",
                   "enrollment"
                 ],
                 "type": "string"
@@ -17527,7 +17526,6 @@
             "enum": [
               "login",
               "password_reset",
-              "phone_change",
               "enrollment"
             ],
             "type": "string"
@@ -18853,6 +18851,48 @@
             "type": "object"
           }
         ]
+      },
+      "IdentityMobileChallengesCreateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {
+              "destination": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "destination"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "type": "object"
+      },
+      "IdentityMobileChallengesCreateOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "purpose": {
+            "const": "phone_change",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "expires_at"
+        ],
+        "type": "object"
       },
       "IdentityMobileManageInput": {
         "additionalProperties": false,
@@ -56601,7 +56641,6 @@
                     "enum": [
                       "login",
                       "password_reset",
-                      "phone_change",
                       "enrollment"
                     ],
                     "type": "string"
@@ -59457,6 +59496,182 @@
         "x-resource-resolver": "identity.resource",
         "x-response-mode": "json",
         "x-risk": "high",
+        "x-scope-kinds": [
+          "self"
+        ],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "storefront"
+        ],
+        "x-timeout-ms": 800
+      }
+    },
+    "/api/v1/identity/mobile/challenges": {
+      "post": {
+        "operationId": "identity.mobile.challenges.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "destination": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "destination"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityMobileChallengesCreateOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "423": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "tags": [
+          "identity"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "public",
+        "x-cache-policy": "none",
+        "x-capability": "identity.mobile.challenges.create",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "IDEMPOTENCY_CONFLICT",
+          "INTERNAL_ERROR",
+          "RATE_LIMITED",
+          "RISK_DENIED",
+          "RISK_REVIEW_REQUIRED",
+          "SCOPE_DENIED",
+          "VALIDATION_FAILED"
+        ],
+        "x-expected-version": "none",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-maker-checker": false,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "identity.assurance.manage",
+        "x-rate-class": "identity",
+        "x-requirements": [
+          "MVPPLATFORM",
+          "MVPDISTRIBUTION",
+          "MVPGROUPDASHBOARD",
+          "MVPGROUPAPPLICATION",
+          "MVPGROUPPOOL",
+          "MVPGROUPORDER",
+          "MVPGROUPVOUCHER",
+          "MVPGROUPFINANCE",
+          "MVPGROUPREPORT",
+          "MVPGROUPSUPPORT",
+          "MVPGROUPSETTING",
+          "MVPMALLDASHBOARD",
+          "MVPMALLDESIGN",
+          "MVPMALLPOOL",
+          "MVPMALLORDER",
+          "MVPMALLVOUCHER",
+          "MVPMALLFINANCE",
+          "MVPMALLREPORT",
+          "MVPMALLSUPPORT",
+          "MVPMALLSETTING",
+          "MVPIDENTITY",
+          "MVPPROVIDER"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "identity.resource",
+        "x-response-mode": "json",
+        "x-risk": "elevated",
         "x-scope-kinds": [
           "self"
         ],

@@ -17,7 +17,7 @@
     "config/navigation.yml"
   ],
   "count": 854,
-  "treeSha256": "1eebffcb52284a8fa1c55f70eb33ebbb0d189de1a44acf8de4129ad55a5ed6c6",
+  "treeSha256": "787519489b6f08d3ab16824fdf029bcd62a01e1f5ded63f6f7c8e5bd1dedfa08",
   "entries": [
     {
       "path": "apps/auth/.env.example",
@@ -3165,8 +3165,8 @@
     },
     {
       "path": "apps/storefront/src/feature/security/infrastructure/SecurityGateway.ts",
-      "sha256": "c911f4f5e66d92d0cae19804a68d18ff53e607b3af7837a7cc224fad524e669f",
-      "size": 2230,
+      "sha256": "e3710048be31cf25313384d55b83914cd19f9b62a913205edc3ea4e04a6f024c",
+      "size": 2190,
       "mode": "0644"
     },
     {
@@ -3801,7 +3801,7 @@
     },
     {
       "path": "packages/config/src/Release.ts",
-      "sha256": "c3da57080b479edaa42f60bd43b56cb241c3dbc93b17ad2e7008c20896dafb0a",
+      "sha256": "875c9abd2b409070fdbbd5ce9c82fb8b6d4350c089399aab993b678b0ca85832",
       "size": 201,
       "mode": "0755"
     },
@@ -3843,8 +3843,8 @@
     },
     {
       "path": "packages/contract/definitions/capabilities.yml",
-      "sha256": "d924945c8c86adae23b45690f1d0cb397aec78b6fe533ae2e0dc86e77f691355",
-      "size": 35893,
+      "sha256": "661a7397a18aec71852b85b184057059b7390da547993180fda77d19dbd29fe3",
+      "size": 36040,
       "mode": "0755"
     },
     {
@@ -3861,8 +3861,8 @@
     },
     {
       "path": "packages/contract/definitions/operations.yml",
-      "sha256": "6437b372f26aace53a34fb4ec35693927c348c17b6c165e930aff82a279d12ce",
-      "size": 345969,
+      "sha256": "18d13645523721228a1ee4a037a4d7602eaf4d8fc3d2804e68d832c54235ae9f",
+      "size": 347333,
       "mode": "0755"
     },
     {
@@ -3879,8 +3879,8 @@
     },
     {
       "path": "packages/contract/openapi.json",
-      "sha256": "10064b7687477e668ccdb8cecba079ad2ff3da1b199bdfb575e07c8e432bfb1e",
-      "size": 2317922,
+      "sha256": "bdbd1570aa22009a3adad4610ba765d63ea07563fd84f9a67615f6315a21a450",
+      "size": 2323695,
       "mode": "0755"
     },
     {
@@ -3909,8 +3909,8 @@
     },
     {
       "path": "packages/contract/src/Contract.test.ts",
-      "sha256": "27c5cf5ad68b6246a52a7e0b051721147df6b04dc356bcb46330d67df4f155c4",
-      "size": 13692,
+      "sha256": "02201e0d6dac0bead058cc0d2fe7f037820e62530c3dba5f39d38d1696674155",
+      "size": 14020,
       "mode": "0755"
     },
     {
@@ -3921,7 +3921,7 @@
     },
     {
       "path": "packages/contract/src/ContractIdentity.ts",
-      "sha256": "560562312df2c18844848c743899f86540eb8031b34a51d868d4dfdb82d0be3e",
+      "sha256": "eefc9f1f2e3002e15b648fcab7932b82d212489f8ac31a9c3c9623b1bb3c1918",
       "size": 214,
       "mode": "0644"
     },
@@ -4023,14 +4023,14 @@
     },
     {
       "path": "packages/contract/src/operations/CommerceCatalog.ts",
-      "sha256": "5e71c3a1b858a6c8d1a1fb7635a58aee6ddcf8a5e6852f342fdc3697f1618c3a",
-      "size": 400410,
+      "sha256": "00de27bae92bec4f4720ee5ed38026be376741ce411e57280d5f93ab2585a5ff",
+      "size": 402256,
       "mode": "0644"
     },
     {
       "path": "packages/contract/src/operations/CommerceSchemas.ts",
-      "sha256": "00fdc551bcb627a6de0f182396f80284f0b92a27284ba3d3761108ecea1078e7",
-      "size": 52906,
+      "sha256": "1c7716f8d4d0a4f170c99747bda9413a58cafd69dca991572211ec320c4d79e5",
+      "size": 53120,
       "mode": "0644"
     },
     {
@@ -4065,7 +4065,7 @@
     },
     {
       "path": "packages/contract/src/RequirementCatalog.ts",
-      "sha256": "822a75310b54b71cb5ca8904c057734c404b1407dd976159779b6ced8df49347",
+      "sha256": "67126348e6a6dd862aba6cf75ee2443ec261672a286dcfe03ff69e89de28d2ed",
       "size": 6465,
       "mode": "0644"
     },
@@ -4143,8 +4143,8 @@
     },
     {
       "path": "packages/contract/src/schema/IdentitySchema.ts",
-      "sha256": "449a333a9b3947e202cf3dd0b9e5b691e7378213052b719130be977bf0b8a417",
-      "size": 4637,
+      "sha256": "e604f88c16c2c8aaf8ae8be5318cc7718b43a92d3fae5d5a34fe63615bebd0da",
+      "size": 4749,
       "mode": "0644"
     },
     {
@@ -4155,8 +4155,8 @@
     },
     {
       "path": "packages/contract/src/schema/index.ts",
-      "sha256": "a09e50ce30ab5254ba26ecbca93a9bab1d97a950ca1c49ba7eb64b3e16cf46f5",
-      "size": 11063,
+      "sha256": "c9e8d432b4e649709f245f991419401937171201789b08b5c2d3beba042142d8",
+      "size": 11129,
       "mode": "0644"
     },
     {
@@ -4707,8 +4707,8 @@
     },
     {
       "path": "packages/sdk/src/operations/CommerceClient.ts",
-      "sha256": "49a835941de6c0f7919a44554cb903db7d5ee9b35126035b1d5fc9cd6361d7ef",
-      "size": 16163,
+      "sha256": "caed1206c0d76107037920b30e43777c376988f8799c92577b76b0bba160f734",
+      "size": 16202,
       "mode": "0644"
     },
     {
@@ -4737,8 +4737,8 @@
     },
     {
       "path": "packages/sdk/src/operations/identity.ts",
-      "sha256": "22233d407cc91065612f1ff0b33e29ccacfe04cd784149411021f47d46159d57",
-      "size": 23851,
+      "sha256": "41c0e9b63da322b5e11f5f70f2d88ce1187c28f0e2297f63bcf5957596b4fe7a",
+      "size": 24641,
       "mode": "0644"
     },
     {

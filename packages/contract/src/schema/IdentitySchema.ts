@@ -74,7 +74,8 @@ export const IDENTITY_OUTPUT_SCHEMAS = {
   IdentitySessionsCreateOutput: discriminatedUnion('kind', [authorization, selection, proof, enrollment]),
   IdentitySessionsCompleteOutput: authorization,
   IdentityTicketsExchangeOutput: strictObject({ returnTarget, expiresIn: number() }),
-  IdentityChallengesCreateOutput: strictObject({ id: string(), purpose: literal(['login', 'password_reset', 'phone_change', 'enrollment']), expires_at: string() }),
+  IdentityChallengesCreateOutput: strictObject({ id: string(), purpose: literal(['login', 'password_reset', 'enrollment']), expires_at: string() }),
+  IdentityMobileChallengesCreateOutput: strictObject({ id: string(), purpose: literal('phone_change'), expires_at: string() }),
   IdentityInvitationsResolveOutput: strictObject({
     kind: literal(['signin', 'enrollment', 'campaign']),
     target,

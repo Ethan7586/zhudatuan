@@ -168,6 +168,11 @@ capabilities:
     owner: identity
     permission: null
     audience: public
+  - code: identity.mobile.challenges.create
+    kind: operation
+    owner: identity
+    permission: identity.assurance.manage
+    audience: public
   - code: identity.invitations.read
     kind: operation
     owner: identity

@@ -51,7 +51,8 @@ export function definedOperationBodySchema(schemaName: string): Schema<ContractJ
     IdentitySessionDeleteInput: empty,
     IdentitySessionsRevokeInput: empty,
     IdentityMembershipsSwitchInput: strictObject({ membershipId: string() }),
-    IdentityChallengesCreateInput: strictObject({ purpose: literal(['login', 'password_reset', 'phone_change', 'enrollment']), destination: string() }),
+    IdentityChallengesCreateInput: strictObject({ purpose: literal(['login', 'password_reset', 'enrollment']), destination: string() }),
+    IdentityMobileChallengesCreateInput: strictObject({ destination: string() }),
     IdentityInvitationsResolveInput: strictObject({ code: string(), target }),
     IdentityInvitationsCreateInput: strictObject({
       kind: literal(['signin', 'enrollment', 'campaign']),

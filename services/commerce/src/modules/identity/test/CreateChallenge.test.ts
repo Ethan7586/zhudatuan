@@ -24,6 +24,28 @@ describe('login challenge destination resolution', () => {
     expect(response.status).toBe(202);
     expect(issued).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ principal: null, ttlMinutes: 10, queueDelivery: false }));
   });
+
+  it('issues phone change only through the authenticated mobile challenge lifecycle', async () => {
+    const issued = vi.fn(async (_context: unknown, value: Record<string, unknown>) => ({ id: String(value.id), purpose: String(value.purpose), expiresAt: new Date('2026-08-31T12:10:00Z') }));
+    const command = createCommand({
+      principal: null,
+      mobileCiphertext: null,
+      decrypt: '+8613800138000',
+      issued,
+      encrypt: vi.fn(async () => ({ ciphertext: 'mobile-challenge-ciphertext', fingerprint: 'f'.repeat(64), keyVersion: 'current' })),
+    });
+    const lifecycle = command.mobile();
+    const operation = mobileRequest();
+    const prepared = await lifecycle.prepare!(operation, undefined);
+
+    const response = await withWriteTransaction(
+      async () => result([]),
+      (context) => lifecycle.execute(operation, context, prepared)
+    );
+
+    expect(response).toMatchObject({ status: 202, body: { purpose: 'phone_change' } });
+    expect(issued).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ principal: 'principal:one', purpose: 'phone_change', destinationHash: expect.stringMatching(/^[a-f0-9]{64}$/), queueDelivery: true, scope: 'mall:one' }));
+  });
 });
 
 function createCommand(input: Readonly<{ principal: string | null; mobileCiphertext: string | null; decrypt: string; issued: ReturnType<typeof vi.fn>; encrypt: ReturnType<typeof vi.fn> }>) {
@@ -55,6 +77,36 @@ function request(destination: string) {
       deadline: Date.now() + 10_000,
       signal: new AbortController().signal,
       idempotency: 'challenge-create',
+    },
+  } as never;
+}
+
+function mobileRequest() {
+  return {
+    type: 'identity.mobile.challenges.create',
+    input: {
+      path: {},
+      query: {},
+      headers: {},
+      body: { destination: '13800138000' },
+      rawBody: '',
+      deadline: Date.now() + 10_000,
+      signal: new AbortController().signal,
+      idempotency: 'mobile-challenge-create',
+    },
+    security: {
+      kind: 'session',
+      access: {
+        actor: { id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'storefront', assurance: { level: 1 } },
+        membership: { id: 'membership:one', permissions: { allows: new Set(['identity.assurance.manage']), denies: new Set() }, scopes: [], active: true, accessVersion: 1 },
+        organization: 'mall:one',
+        scope: { kind: 'mall', id: 'mall:one', path: [] },
+        capabilities: new Set(['identity.mobile.challenges.create']),
+        capabilityVersion: 1,
+        accessVersion: 1,
+        assurance: { level: 1 },
+        trace: 'trace:mobile-challenge',
+      },
     },
   } as never;
 }

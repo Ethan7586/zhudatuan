@@ -87,6 +87,7 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "identity.memberships.read",
   "identity.memberships.switch",
   "identity.challenges.create",
+  "identity.mobile.challenges.create",
   "identity.invitations.resolve",
   "identity.invitations.read",
   "identity.invitations.create",

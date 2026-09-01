@@ -276,7 +276,7 @@ mvp:
     status: Designed
     release: required
     modules: [identity, member]
-    operations: [identity.sessions.create, identity.sessions.complete, identity.challenges.create, identity.invitations.resolve, identity.enrollments.complete, identity.password.reset]
+    operations: [identity.sessions.create, identity.sessions.complete, identity.challenges.create, identity.mobile.challenges.create, identity.invitations.resolve, identity.enrollments.complete, identity.password.reset]
     journeys: [tests/journey/IdentityJourney.spec.ts]
     providers: []
     clarifications: []

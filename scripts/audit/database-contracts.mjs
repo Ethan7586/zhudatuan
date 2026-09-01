@@ -141,6 +141,7 @@ const REPAIR_FILES = [
   '20260901010000_move_address_to_member.sql',
   '20260901011000_resolve_payment_webhook_scope.sql',
   '20260901012000_resolve_access_role_scope.sql',
+  '20260901013000_publish_mobile_challenge_contract.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v3_catalog_contract.sql',

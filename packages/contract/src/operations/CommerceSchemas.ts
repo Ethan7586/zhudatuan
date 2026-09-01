@@ -18,6 +18,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "identity.memberships.read": Object.freeze({ input: exactOperationInput("IdentityMembershipsReadInput", [] as const, false), output: exactOperationOutput("IdentityMembershipsReadOutput") }),
   "identity.memberships.switch": Object.freeze({ input: exactOperationInput("IdentityMembershipsSwitchInput", [] as const, true), output: exactOperationOutput("IdentityMembershipsSwitchOutput") }),
   "identity.challenges.create": Object.freeze({ input: exactOperationInput("IdentityChallengesCreateInput", [] as const, true), output: exactOperationOutput("IdentityChallengesCreateOutput") }),
+  "identity.mobile.challenges.create": Object.freeze({ input: exactOperationInput("IdentityMobileChallengesCreateInput", [] as const, true), output: exactOperationOutput("IdentityMobileChallengesCreateOutput") }),
   "identity.invitations.resolve": Object.freeze({ input: exactOperationInput("IdentityInvitationsResolveInput", [] as const, true), output: exactOperationOutput("IdentityInvitationsResolveOutput") }),
   "identity.invitations.read": Object.freeze({ input: exactOperationInput("IdentityInvitationsReadInput", [] as const, false), output: exactOperationOutput("IdentityInvitationsReadOutput") }),
   "identity.invitations.create": Object.freeze({ input: exactOperationInput("IdentityInvitationsCreateInput", [] as const, true), output: exactOperationOutput("IdentityInvitationsCreateOutput") }),

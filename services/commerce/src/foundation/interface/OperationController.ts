@@ -16,6 +16,7 @@ export const CONTROLLER_OPERATIONS = Object.freeze([
   "identity.memberships.read",
   "identity.memberships.switch",
   "identity.challenges.create",
+  "identity.mobile.challenges.create",
   "identity.invitations.resolve",
   "identity.invitations.read",
   "identity.invitations.create",

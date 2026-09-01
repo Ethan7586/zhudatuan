@@ -107,6 +107,7 @@ import { SessionsRevokeHandler } from './application/handler/SessionsRevokeHandl
 import { MembershipsReadHandler } from './application/handler/MembershipsReadHandler';
 import { MembershipsSwitchHandler } from './application/handler/MembershipsSwitchHandler';
 import { ChallengesCreateHandler } from './application/handler/ChallengesCreateHandler';
+import { MobileChallengesCreateHandler } from './application/handler/MobileChallengesCreateHandler';
 import { InvitationsResolveHandler } from './application/handler/InvitationsResolveHandler';
 import { InvitationsReadHandler } from './application/handler/InvitationsReadHandler';
 import { InvitationsCreateHandler } from './application/handler/InvitationsCreateHandler';
@@ -174,6 +175,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   const sessionRepository = new PgSessionRepository();
   const sessions = new DefaultSessionIssuer(csrf, keys.identity, identityAccess, cookies, sessionRepository);
   const challenges = new PgChallenge();
+  const challengeCommands = new CreateChallenge(kms, context.service(RISK_GATE), challenges, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members);
   const providerClient = new ProviderHttpClient(context.service(SECRET_STORE));
   const providers = new PgProviderRepository(providerClient, keys.identity);
   const resolver = new ProviderResolver(providers, identityProviderRegistry(providerClient, keys.identity));
@@ -259,7 +261,8 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
     new SessionsRevokeHandler(revocation.selected()),
     new MembershipsReadHandler(new ReadMemberships(members, identityAccess, context.ports.get(IDENTITY_ORGANIZATION_PORT)).action()),
     new MembershipsSwitchHandler(new SwitchMembership(members, identityAccess, sessions, sessionRepository, events).action()),
-    new ChallengesCreateHandler(new CreateChallenge(kms, context.service(RISK_GATE), challenges, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members).lifecycle()),
+    new ChallengesCreateHandler(challengeCommands.lifecycle()),
+    new MobileChallengesCreateHandler(challengeCommands.mobile()),
     new InvitationsResolveHandler(new ResolveInvitation(invitationLookup, invitationGuard, telemetry, registrations)),
     new InvitationsReadHandler(new ReadInvitations(repository).action()),
     new InvitationsCreateHandler(new CreateInvitation(repository, invitationAccess, new InvitationGenerator(), hasher, registrations, events, telemetry).action()),

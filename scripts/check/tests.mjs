@@ -27,13 +27,13 @@ for (const layer of requiredCommerceLayers) {
 
 const operations = Array.isArray(operationAuthority?.operations) ? operationAuthority.operations : [];
 const handlerPaths = new Set(operations.map(({ handler }) => handler));
-if (operations.length !== 269 || handlerPaths.size !== 269) failures.push(`HANDLER_TEST_MATRIX_CARDINALITY_INVALID:${operations.length}:${handlerPaths.size}`);
+if (operations.length !== 270 || handlerPaths.size !== 270) failures.push(`HANDLER_TEST_MATRIX_CARDINALITY_INVALID:${operations.length}:${handlerPaths.size}`);
 for (const operation of operations) {
   if (typeof operation?.handler !== 'string' || !existsSync(join(root, operation.handler))) failures.push(`HANDLER_TEST_TARGET_MISSING:${operation?.id ?? 'unknown'}`);
 }
 const handlerContractPath = join(root, 'services/commerce/tests/handler/Handler.test.ts');
 const handlerContract = existsSync(handlerContractPath) ? readFileSync(handlerContractPath, 'utf8') : '';
-for (const proof of ['describe.each(operations)', 'toHaveLength(269)', 'schema.input.parse', 'this.policy.authorize', 'this.idempotency', 'this.audit']) {
+for (const proof of ['describe.each(operations)', 'toHaveLength(270)', 'schema.input.parse', 'this.policy.authorize', 'this.idempotency', 'this.audit']) {
   if (!handlerContract.includes(proof)) failures.push(`HANDLER_TEST_MATRIX_PROOF_MISSING:${proof}`);
 }
 

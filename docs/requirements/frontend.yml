@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
 navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
-contractSha256: b4e31745c41ffe493cfd1b1b8bf853009b7a27cb0d9efe5839ecfc404abd4e75
+contractSha256: 78e6f4a3775fd59743df8ac111ed52a39b4e0f6d56dbb18c06050bb06e580bdf
 generated: true
 count: 296
 chain:

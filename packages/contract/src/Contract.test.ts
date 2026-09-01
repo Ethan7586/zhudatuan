@@ -34,6 +34,8 @@ describe('contract truth', () => {
     expect(() => schema.parse({ body: { method: 'invitation', code: 'invite', subject: '13800138000', target: 'storefront', authorization } })).toThrow();
     expect(() => schema.parse({ body: { method: 'invitation', code: 'invite', target: 'storefront', authorization, role: 'owner' } })).toThrow();
     expect(OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'enrollment', destination: '13800138000' } })).toEqual({ body: { purpose: 'enrollment', destination: '13800138000' } });
+    expect(() => OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'phone_change', destination: '13800138000' } })).toThrow();
+    expect(OPERATION_SCHEMAS['identity.mobile.challenges.create'].input.parse({ body: { destination: '13800138000' } })).toEqual({ body: { destination: '13800138000' } });
   });
 
   it('keeps every operation on explicit request and response schemas', () => {

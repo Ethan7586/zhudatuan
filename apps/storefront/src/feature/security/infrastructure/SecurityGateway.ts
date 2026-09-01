@@ -13,7 +13,7 @@ export const SecurityGateway = Object.freeze({
     await storefrontClient.commerce.identity.passwordChange({ body: { currentPassword, newPassword } }, storefrontClient.context(session, { write: true, includeScope: false, expectedVersion: session.accessVersion, idempotencyKey: key }));
   },
   async challenge(session: StorefrontSession, mobile: string, key: string): Promise<string> {
-    const value = await storefrontClient.commerce.identity.challengesCreate({ body: { purpose: 'phone_change', destination: mobile } }, storefrontClient.context(session, { write: true, includeScope: false, idempotencyKey: key }));
+    const value = await storefrontClient.commerce.identity.mobileChallengesCreate({ body: { destination: mobile } }, storefrontClient.context(session, { write: true, idempotencyKey: key }));
     return value.id;
   },
   async mobile(session: StorefrontSession, mobile: string, challenge: string, code: string, key: string): Promise<void> {

@@ -15,6 +15,7 @@ export const IDENTITY_OPERATION_IDS = Object.freeze([
   "identity.memberships.read",
   "identity.memberships.switch",
   "identity.challenges.create",
+  "identity.mobile.challenges.create",
   "identity.invitations.resolve",
   "identity.invitations.read",
   "identity.invitations.create",
@@ -51,6 +52,7 @@ export interface IdentityOperations {
   readonly membershipsRead: OperationMethod<"identity.memberships.read">;
   readonly membershipsSwitch: OperationMethod<"identity.memberships.switch">;
   readonly challengesCreate: OperationMethod<"identity.challenges.create">;
+  readonly mobileChallengesCreate: OperationMethod<"identity.mobile.challenges.create">;
   readonly invitationsResolve: OperationMethod<"identity.invitations.resolve">;
   readonly invitationsRead: OperationMethod<"identity.invitations.read">;
   readonly invitationsCreate: OperationMethod<"identity.invitations.create">;
@@ -89,6 +91,7 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     membershipsRead: bindMembershipsRead(client),
     membershipsSwitch: bindMembershipsSwitch(client),
     challengesCreate: bindChallengesCreate(client),
+    mobileChallengesCreate: bindMobileChallengesCreate(client),
     invitationsResolve: bindInvitationsResolve(client),
     invitationsRead: bindInvitationsRead(client),
     invitationsCreate: bindInvitationsCreate(client),
@@ -153,6 +156,10 @@ function bindMembershipsSwitch(client: OperationExecutor): OperationMethod<"iden
 export function createFetchIdentityChallengesCreate(baseUrl: string): OperationMethod<"identity.challenges.create"> { return bindChallengesCreate(new ApiClient(baseUrl, new FetchTransport())); }
 
 function bindChallengesCreate(client: OperationExecutor): OperationMethod<"identity.challenges.create"> { return bindOperation(client, defineOperation({"id":"identity.challenges.create","method":"POST","path":"/api/v1/identity/challenges","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":false,"timeout":800})); }
+
+export function createFetchIdentityMobileChallengesCreate(baseUrl: string): OperationMethod<"identity.mobile.challenges.create"> { return bindMobileChallengesCreate(new ApiClient(baseUrl, new FetchTransport())); }
+
+function bindMobileChallengesCreate(client: OperationExecutor): OperationMethod<"identity.mobile.challenges.create"> { return bindOperation(client, defineOperation({"id":"identity.mobile.challenges.create","method":"POST","path":"/api/v1/identity/mobile/challenges","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":false,"timeout":800})); }
 
 export function createFetchIdentityInvitationsResolve(baseUrl: string): OperationMethod<"identity.invitations.resolve"> { return bindInvitationsResolve(new ApiClient(baseUrl, new FetchTransport())); }
 

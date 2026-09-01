@@ -17,6 +17,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('identity.memberships.read','identity','GET','/api/v1/identity/memberships','3.0.0'),
   ('identity.memberships.switch','identity','PUT','/api/v1/identity/memberships/current','3.0.0'),
   ('identity.challenges.create','identity','POST','/api/v1/identity/challenges','3.0.0'),
+  ('identity.mobile.challenges.create','identity','POST','/api/v1/identity/mobile/challenges','3.0.0'),
   ('identity.invitations.resolve','identity','POST','/api/v1/identity/invitations/resolve','3.0.0'),
   ('identity.invitations.read','identity','GET','/api/v1/identity/invitations','3.0.0'),
   ('identity.invitations.create','identity','POST','/api/v1/identity/invitations','3.0.0'),
@@ -609,6 +610,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('identity.memberships.read','operation','identity.memberships.read',3,'active'),
   ('identity.memberships.switch','operation','identity.memberships.switch',3,'active'),
   ('identity.challenges.create','operation','identity.challenges.create',3,'active'),
+  ('identity.mobile.challenges.create','operation','identity.mobile.challenges.create',3,'active'),
   ('identity.invitations.resolve','operation','identity.invitations.resolve',3,'active'),
   ('identity.invitations.read','operation','identity.invitations.read',3,'active'),
   ('identity.invitations.create','operation','identity.invitations.create',3,'active'),
@@ -880,6 +882,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.memberships.read','identity.memberships.read','identity.session.read','storefront'),
   ('identity.memberships.switch','identity.memberships.switch','identity.session.manage','storefront'),
   ('identity.challenges.create','identity.challenges.create',null,'public'),
+  ('identity.mobile.challenges.create','identity.mobile.challenges.create','identity.assurance.manage','public'),
   ('identity.invitations.resolve','identity.invitations.resolve',null,'public'),
   ('identity.invitations.read','identity.invitations.read','identity.invitation.read','console'),
   ('identity.invitations.create','identity.invitations.create','identity.invitation.issue','console'),
@@ -1516,6 +1519,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','a9846680ce3534a98a0e2c44b2050a0b3bb2c1fba3413da8675e757a922ccb8d');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','b6a6803d866fe082b61511eb434b3223e027162f805f47505745113624a96390');
 
 commit;
