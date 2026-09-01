@@ -30,8 +30,7 @@ export async function createIdentityNotificationJobsRuntime(environment: JobsEnv
   const connection = await secrets.read(requiredValue(environment.DATABASE_JOB_CONNECTION_REF, 'DATABASE_JOB_CONNECTION_REF_MISSING'));
   const pool = createPool(connection, 'jobs');
   try {
-    await assertIdentityNotificationRuntimeCompatibility(pool)
-      .catch((cause: unknown) => console.warn('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_WARNING', cause));
+    await assertIdentityNotificationRuntimeCompatibility(pool);
     const [configurationSource] = await Promise.all([
       secrets.read(requiredValue(environment.IDENTITY_NOTIFICATION_CONFIG_REF, 'IDENTITY_NOTIFICATION_CONFIG_REF_MISSING')),
     ]);

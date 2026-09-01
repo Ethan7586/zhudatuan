@@ -45,12 +45,14 @@ import {
 import {
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
+  canonicalRegistrationMobile,
   resolveCanonicalInvite,
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
 import { registrationPresentation } from './registrationPresentation';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
+const REGISTRATION_CODE_RESEND_SECONDS = 60;
 
 function isStrongRegistrationPassword(value: string): boolean {
   return value.length >= 12 && value.length <= 128
@@ -201,13 +203,16 @@ export const LoginPage: React.FC = () => {
       if (field === 'mobile') {
         return { ...current, mobile: value, code: '', challengeId: '', challengeMobile: '' };
       }
+      if (field === 'inviteCode') {
+        return { ...current, inviteCode: value, code: '', challengeId: '', challengeMobile: '' };
+      }
       return { ...current, [field]: value };
     });
     if (field === 'inviteCode') {
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(false);
     }
-    if (field === 'mobile') setRegistrationCodeSeconds(0);
+    if (field === 'mobile' || field === 'inviteCode') setRegistrationCodeSeconds(0);
     setFormError('');
     setRegistrationNotice('');
   };
@@ -252,15 +257,16 @@ export const LoginPage: React.FC = () => {
     setRegistrationNotice('');
     try {
       const challenge = await createCanonicalRegistrationChallenge(registration.mobile, registration.inviteCode);
-      const seconds = Math.max(1, Math.floor((new Date(challenge.expiresAt).getTime() - Date.now()) / 1000));
+      const validitySeconds = Math.max(1, Math.floor((new Date(challenge.expiresAt).getTime() - Date.now()) / 1000));
+      const mobile = canonicalRegistrationMobile(registration.mobile);
       setRegistration((current) => ({
         ...current,
         code: '',
         challengeId: challenge.challengeId,
-        challengeMobile: current.mobile.trim(),
+        challengeMobile: mobile,
       }));
-      setRegistrationCodeSeconds(seconds);
-      setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}，请在有效期内完成注册。`);
+      setRegistrationCodeSeconds(Math.min(REGISTRATION_CODE_RESEND_SECONDS, validitySeconds));
+      setRegistrationNotice(`验证码请求已提交至 ${maskMobile(registration.mobile)}。60 秒后仍未收到可重新获取；多次请求请使用最后一条。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码发送失败');
     } finally {
@@ -271,7 +277,13 @@ export const LoginPage: React.FC = () => {
   const handleRegistrationSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!registrationInvite) return setFormError('请先验证企业邀请码');
-    if (!registration.challengeId || registration.challengeMobile !== registration.mobile.trim()) return setFormError('请为当前手机号重新获取验证码');
+    let mobile: string;
+    try {
+      mobile = canonicalRegistrationMobile(registration.mobile);
+    } catch (error) {
+      return setFormError(error instanceof Error ? error.message : '请输入有效的手机号');
+    }
+    if (!registration.challengeId || registration.challengeMobile !== mobile) return setFormError('请为当前手机号重新获取验证码');
     if (!/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
     if (!registrationTermsAccepted) return setFormError('请先阅读并同意本次邀请绑定的服务协议与隐私政策');
     if (!isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
@@ -311,7 +323,7 @@ export const LoginPage: React.FC = () => {
     try {
       const challenge = await createCanonicalPasswordResetChallenge(resetForm.mobile);
       setResetForm((current) => ({ ...current, challengeId: challenge.challengeId, code: '' }));
-      setRegistrationNotice('验证码已发送');
+      setRegistrationNotice('验证码请求已提交，未收到请稍后重新获取。');
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码发送失败');
     } finally {
