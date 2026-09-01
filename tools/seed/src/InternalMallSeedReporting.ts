@@ -1,6 +1,6 @@
 import type { Client } from 'pg';
 
-import { INTERNAL_MALL_DATASET, metadata, stableHash, type DatasetOptions, type InternalMallPlan, type OrderFixture } from './InternalMallFixtures';
+import { INTERNAL_MALL_DATASET, metadata, stableHash, stableId, type DatasetOptions, type InternalMallPlan, type OrderFixture } from './InternalMallFixtures';
 import { insertRows, stage } from './InternalMallDatabase';
 import { MALL_ID, STORE_IDS, SUPPLIER_IDS } from './InternalMallSeedCore';
 import type { CommerceSeedState, PaymentFixture } from './InternalMallSeedCommerce';
@@ -28,6 +28,10 @@ export async function seedReporting(
 
 async function seedDailyStatements(database: Client, plan: InternalMallPlan, payments: readonly PaymentFixture[]): Promise<number> {
   const paymentByOrder = new Map(payments.map((payment) => [payment.order.id, payment]));
+  const ledgerId = (await database.query<{ readonly id: string }>(
+    "select finance.ledger_id($1,'CNY') id",
+    [MALL_ID],
+  )).rows[0]!.id;
   let opening = 0;
   const statements: unknown[][] = [];
   const projections: unknown[][] = [];
@@ -40,15 +44,16 @@ async function seedDailyStatements(database: Client, plan: InternalMallPlan, pay
     const date = dayDate(dayIndex);
     const id = `itht:statement:${date}`;
     const generated = `${date}T23:55:00+08:00`;
-    statements.push([id, MALL_ID, date, date, 'CNY', opening, debit, credit, closing, 'final', `internal://statements/${date}`,
-      stableHash('daily-statement', dayIndex, opening, debit, credit, closing), generated]);
+    const sourceHash = stableHash('daily-statement', dayIndex, opening, debit, credit, closing);
+    statements.push([id, MALL_ID, date, date, 'CNY', opening, debit, credit, closing, 'replaced', `internal://statements/${date}`,
+      sourceHash, generated, ledgerId, 'Asia/Shanghai', `${date}T00:00:00+08:00`, `${dayDate(dayIndex + 1)}T00:00:00+08:00`, sourceHash]);
     projections.push([id, MALL_ID, date, date, 'CNY', opening, debit, credit, closing, 'final', generated, 1]);
     channelStatements.push([`itht:channel-statement:${date}`, 'itht:connection:payment', 'mock-payment', MALL_ID, MALL_ID, date, date, 'Asia/Shanghai',
       `internal://channel-statements/${date}`, stableHash('channel-statement', date), generated]);
     opening = closing;
   }
   await insertRows(database, 'finance.statement', ['id', 'scope_id', 'period_start', 'period_end', 'currency', 'opening_minor', 'debit_minor', 'credit_minor',
-    'closing_minor', 'state', 'object_ref', 'sha256', 'generated_at'], statements);
+    'closing_minor', 'state', 'object_ref', 'sha256', 'generated_at', 'ledger_id', 'legal_timezone', 'period_start_at', 'period_end_at', 'source_hash'], statements);
   await insertRows(database, 'reporting.financeprojection', ['statement_id', 'scope_id', 'period_start', 'period_end', 'currency', 'opening_minor', 'debit_minor',
     'credit_minor', 'closing_minor', 'state', 'watermark', 'projection_version'], projections);
   await insertRows(database, 'channel.statement', ['id', 'connection_id', 'provider', 'scope_id', 'partner_id', 'period_start', 'period_end', 'timezone',
@@ -109,6 +114,8 @@ async function seedFacts(database: Client, plan: InternalMallPlan, payments: rea
 async function seedReconciliations(database: Client, options: DatasetOptions, plan: InternalMallPlan): Promise<number> {
   const ranges = periodRanges(options.days, Math.min(4, options.days));
   const reconciliations: unknown[][] = [];
+  const reconciliationConnections = new Map<string, readonly [string, string]>();
+  const reconciliationStatements: unknown[][] = [];
   const statementLines: unknown[][] = [];
   const items: unknown[][] = [];
   const settlements: unknown[][] = [];
@@ -134,13 +141,18 @@ async function seedReconciliations(database: Client, options: DatasetOptions, pl
       const itemId = `itht:reconciliation-item:${String(sequence).padStart(4, '0')}`;
       const providerKind = partner === MALL_ID ? 'mall' : partner.startsWith('itht:supplier:') ? 'supplier' : 'store';
       const provider = `mock-${providerKind}-${partner.slice(-2)}`;
+      const connectionId = stableId('reconciliation-connection', partner);
+      const providerStatementId = `itht:reconciliation-statement:${String(sequence).padStart(4, '0')}`;
       const statementHash = stableHash('reconciliation', periodIndex, partner, gross, refund);
-      reconciliations.push([id, MALL_ID, provider, partner, period, `internal://reconciliation/${sequence}`, statementHash, 'approved', net, 0, 0,
+      reconciliationConnections.set(partner, [connectionId, provider]);
+      reconciliationStatements.push([providerStatementId, connectionId, provider, MALL_ID, partner, dayDate(range.start), dayDate(range.end),
+        'Asia/Shanghai', `internal://reconciliation/${sequence}`, statementHash, `${dayDate(range.end)}T23:30:00+08:00`]);
+      reconciliations.push([id, MALL_ID, provider, partner, period, providerStatementId, statementHash, 'approved', net, net, 0,
         'itht:system:reconciliation', 'itht:system:approver', metadata({ gross_minor: gross, refund_minor: refund, orders: orders.length }),
         `${dayDate(range.end)}T23:50:00+08:00`, 0]);
       statementLines.push([statementLineId, id, MALL_ID, 1, `MOCK-SUPPLIER-RECON-${String(sequence).padStart(4, '0')}`, 'payment', net, 0, 'CNY',
         `${dayDate(range.end)}T23:30:00+08:00`, stableHash('reconciliation-line', sequence)]);
-      items.push([itemId, id, statementLineId, MALL_ID, 'aggregate', `ITHT-RECON-${String(sequence).padStart(4, '0')}`, net, net, 0, 'matched', null,
+      items.push([itemId, id, statementLineId, MALL_ID, 'payment', 'aggregate', `ITHT-RECON-${String(sequence).padStart(4, '0')}`, net, net, 0, 'matched', null,
         metadata({ partner, period }), null, null, null, null, null, 0]);
       if (partner !== MALL_ID) {
         const rawFee = orders.reduce((sum, order) => sum + settlementFee(order, partner), 0);
@@ -160,11 +172,17 @@ async function seedReconciliations(database: Client, options: DatasetOptions, pl
       }
     }
   }
+  await insertRows(database, 'channel.connection', ['id', 'provider', 'scope_id', 'status', 'contract_version', 'secret_ref', 'configuration',
+    'connection_timeout_ms', 'response_timeout_ms', 'total_deadline_ms', 'max_concurrency', 'requests_per_second', 'max_attempts', 'failure_threshold',
+    'recovery_ms', 'region', 'version'], [...reconciliationConnections.values()].map(([id, provider]) => [id, provider, MALL_ID, 'disabled',
+      'mock.v1', null, metadata({ network: 'disabled', purpose: 'reconciliation' }), 100, 200, 1_000, 8, 100, 3, 5, 1_000, 'local', 0]));
+  await insertRows(database, 'channel.statement', ['id', 'connection_id', 'provider', 'scope_id', 'partner_id', 'period_start', 'period_end', 'timezone',
+    'object_ref', 'sha256', 'generated_at'], reconciliationStatements);
   await insertRows(database, 'finance.reconciliation', ['id', 'scope_id', 'provider', 'partner_id', 'period', 'statement_ref', 'statement_hash', 'state',
     'debit_minor', 'credit_minor', 'difference_minor', 'created_by', 'approved_by', 'evidence', 'updated_at', 'version'], reconciliations);
   await insertRows(database, 'finance.statementline', ['id', 'reconciliation_id', 'scope_id', 'sequence', 'external_reference', 'kind', 'amount_minor',
     'tax_minor', 'currency', 'occurred_at', 'raw_hash'], statementLines);
-  await insertRows(database, 'finance.reconciliationitem', ['id', 'reconciliation_id', 'statement_line_id', 'scope_id', 'internal_type', 'internal_id',
+  await insertRows(database, 'finance.reconciliationitem', ['id', 'reconciliation_id', 'statement_line_id', 'scope_id', 'kind', 'internal_type', 'internal_id',
     'external_minor', 'internal_minor', 'difference_minor', 'state', 'reason_code', 'evidence', 'resolution', 'resolved_by', 'approved_by', 'resolved_at',
     'approved_at', 'version'], items);
   await insertRows(database, 'finance.settlement', ['id', 'partner_id', 'period', 'reconciliation_id', 'amount_minor', 'currency', 'state', 'scope_id',

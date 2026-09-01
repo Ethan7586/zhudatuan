@@ -276,6 +276,9 @@ async function seedPayments(
     const voucher = order.voucherIndex === null ? null : core.vouchers[order.voucherIndex]!;
     if (voucher) await database.query(`update voucher.voucher set member_id=$2,state='bound',version=version+1 where id=$1`, [voucher.id, order.member.id]);
     const tenders = buildTenders(order, benefit, voucher);
+    const externalTenderMinor = tenders
+      .filter((tender) => tender.kind === 'wechat')
+      .reduce((sum, tender) => sum + tender.amountMinor, 0);
     const intentId = stableId('payment-intent', order.index);
     const paymentId = stableId('payment', order.index);
     const attemptId = stableId('payment-attempt', order.index);
@@ -308,8 +311,8 @@ async function seedPayments(
         benefitReservationRows.push([stableId('benefit-reservation', order.index), benefit.accountId, order.id, tender.amountMinor, 'consumed', plusMinutes(order.times.createdAt, 30)]);
         benefitMovementRows.push([consumeId, benefit.lotId, 'consume', tender.amountMinor, 'order', order.id, null, order.times.paidAt]);
         await postFinance(database, {
-          amountMinor: tender.amountMinor, creditCode: 'itht.commerce.benefit', creditKind: 'income',
-          debitCode: `itht.benefit.${String(order.member.index).padStart(3, '0')}`, debitKind: 'liability', description: INTERNAL_MALL_REMARK,
+          amountMinor: tender.amountMinor, creditCode: 'commerce.benefit', creditKind: 'income',
+          debitCode: `benefit.itht.${String(order.member.index).padStart(3, '0')}`, debitKind: 'liability', description: INTERNAL_MALL_REMARK,
           occurredAt: order.times.paidAt!, referenceId: `${benefit.accountId}:${order.id}`, referenceType: 'benefit.consume', scope: MALL_ID,
         });
       } else if (tender.kind === 'voucher' && voucher) {
@@ -323,21 +326,25 @@ async function seedPayments(
         voucherStatusRows.push([voucher.id, 5, 'reserved', balance.state, 'orderpayment', 'itht:system:payment', order.times.paidAt]);
         voucherRedemptionByOrder.set(order.id, { amount: tender.amountMinor, id: redemptionId, voucher });
         await postFinance(database, {
-          amountMinor: tender.amountMinor, creditCode: 'itht.commerce.voucher.revenue', creditKind: 'income',
+          amountMinor: tender.amountMinor, creditCode: 'commerce.clearing', creditKind: 'income',
           debitCode: `voucher.program.${voucher.programId}`, debitKind: 'liability', description: INTERNAL_MALL_REMARK,
           occurredAt: order.times.paidAt!, referenceId: `${order.id}:${voucher.id}`, referenceType: 'voucher.redeem', scope: MALL_ID,
         });
       }
     }
 
-    await postFinance(database, {
-      amountMinor: order.totalMinor, creditCode: 'itht.commerce.sales', creditKind: 'income', debitCode: 'itht.commerce.clearing', debitKind: 'asset',
-      description: INTERNAL_MALL_REMARK, occurredAt: order.times.paidAt!, referenceId: order.id, referenceType: 'payment.capture', scope: MALL_ID,
-    });
-    if (order.serviceFeeMinor > 0) await postFinance(database, {
-      amountMinor: order.serviceFeeMinor, creditCode: 'itht.commerce.servicefee', creditKind: 'income', debitCode: 'itht.commerce.sales', debitKind: 'income',
-      description: INTERNAL_MALL_REMARK, occurredAt: order.times.paidAt!, referenceId: order.id, referenceType: 'service.fee', scope: MALL_ID,
-    });
+    if (externalTenderMinor > 0) {
+      await postFinance(database, {
+        amountMinor: externalTenderMinor, creditCode: 'commerce.revenue', creditKind: 'income',
+        debitCode: `order.receivable.${order.id}`, debitKind: 'asset', description: INTERNAL_MALL_REMARK,
+        occurredAt: order.times.createdAt, referenceId: order.id, referenceType: 'order.placed', scope: MALL_ID,
+      });
+      await postFinance(database, {
+        amountMinor: externalTenderMinor, creditCode: `order.receivable.${order.id}`, creditKind: 'asset',
+        debitCode: 'channel.clearing.mock-wechat', debitKind: 'asset', description: INTERNAL_MALL_REMARK,
+        occurredAt: order.times.paidAt!, referenceId: paymentId, referenceType: 'payment.succeeded', scope: MALL_ID,
+      });
+    }
 
     if (refundId) {
       const aftersale = aftersaleByOrder.get(order.id)!;
@@ -345,6 +352,9 @@ async function seedPayments(
         `MOCK-REFUND-TXN-${String(order.index).padStart(5, '0')}`, `ITHT-REFUND-${String(order.index).padStart(5, '0')}`, order.refundMinor,
         'CNY', 'succeeded', `${INTERNAL_MALL_REMARK}:合成退款`, 0, aftersale.id]);
       const refundTenders = allocateRefund(order.refundMinor, tenders);
+      const externalRefundMinor = refundTenders
+        .filter((tender) => tender.kind === 'wechat')
+        .reduce((sum, tender) => sum + tender.amountMinor, 0);
       refundTenders.forEach((tender, index) => refundTenderRows.push([refundId, index + 1, tender.kind, tender.referenceId,
         tender.amountMinor, 'succeeded', `MOCK-REFUND-TENDER-${String(order.index).padStart(5, '0')}-${index + 1}`]));
       const retry = refundRows.length <= 5;
@@ -360,8 +370,8 @@ async function seedPayments(
           const consumeId = stableId('benefit-consume', order.index);
           benefitMovementRows.push([stableId('benefit-refund', order.index), benefit.lotId, 'refund', tender.amountMinor, 'refund', refundId, consumeId, order.times.refundedAt]);
           await postFinance(database, {
-            amountMinor: tender.amountMinor, creditCode: `itht.benefit.${String(order.member.index).padStart(3, '0')}`, creditKind: 'liability',
-            debitCode: 'itht.benefit.refund', debitKind: 'expense', description: INTERNAL_MALL_REMARK, occurredAt: order.times.refundedAt!,
+            amountMinor: tender.amountMinor, creditCode: `benefit.itht.${String(order.member.index).padStart(3, '0')}`, creditKind: 'liability',
+            debitCode: 'benefit.refund', debitKind: 'expense', description: INTERNAL_MALL_REMARK, occurredAt: order.times.refundedAt!,
             referenceId: `${benefit.accountId}:${refundId}`, referenceType: 'benefit.refund', scope: MALL_ID,
           });
         } else if (tender.kind === 'voucher') {
@@ -377,14 +387,15 @@ async function seedPayments(
           if (redemptionRow && tender.amountMinor >= redemption.amount) redemptionRow[6] = order.times.refundedAt;
           await postFinance(database, {
             amountMinor: tender.amountMinor, creditCode: `voucher.program.${redemption.voucher.programId}`, creditKind: 'liability',
-            debitCode: 'itht.commerce.refund', debitKind: 'expense', description: INTERNAL_MALL_REMARK, occurredAt: order.times.refundedAt!,
+            debitCode: 'commerce.refund', debitKind: 'expense', description: INTERNAL_MALL_REMARK, occurredAt: order.times.refundedAt!,
             referenceId: `${refundId}:${redemption.voucher.id}`, referenceType: 'voucher.refund', scope: MALL_ID,
           });
         }
       }
-      await postFinance(database, {
-        amountMinor: order.refundMinor, creditCode: 'itht.commerce.clearing', creditKind: 'asset', debitCode: 'itht.commerce.refund', debitKind: 'expense',
-        description: INTERNAL_MALL_REMARK, occurredAt: order.times.refundedAt!, referenceId: refundId, referenceType: 'payment.refund', scope: MALL_ID,
+      if (externalRefundMinor > 0) await postFinance(database, {
+        amountMinor: externalRefundMinor, creditCode: 'channel.clearing.mock-wechat', creditKind: 'asset',
+        debitCode: 'commerce.refund', debitKind: 'expense', description: INTERNAL_MALL_REMARK,
+        occurredAt: order.times.refundedAt!, referenceId: refundId, referenceType: 'payment.refunded', scope: MALL_ID,
       });
     }
     paymentFixtures.push(Object.freeze({ attemptId, intentId, order, paymentId, refundId, tenders }));

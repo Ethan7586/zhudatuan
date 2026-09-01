@@ -105,7 +105,17 @@ async function seedOrganizations(database: Client): Promise<void> {
   await insertRows(database, 'experience.application', ['id', 'scope_id', 'code', 'public_slug', 'name', 'status', 'head_version_id', 'created_at', 'updated_at', 'version'], [[
     APPLICATION_ID, MALL_ID, 'INTERNAL_HONGTAI', 'internal-hongtai', '[内测] 宏泰甄选', 'active', null, created, created, 0,
   ]]);
-  await insertRows(database, 'finance.period', ['scope_id', 'period', 'state', 'closed_at', 'closed_by'], [[MALL_ID, '2026-08', 'open', null, null]]);
+  const ledger = await database.query<{ readonly id: string; readonly legal_timezone: string }>(`
+    insert into finance.ledger(id,scope_id,code,name,currency,legal_timezone,state,version)
+    values(finance.ledger_id($1,'CNY'),$1,'general','General ledger','CNY',$2,'active',0)
+    on conflict(scope_id,code,currency) do update set state='active'
+    returning id,legal_timezone`, [MALL_ID, INTERNAL_MALL_TIMEZONE]);
+  await insertRows(database, 'finance.period', [
+    'scope_id', 'period', 'state', 'closed_at', 'closed_by', 'ledger_id', 'legal_timezone', 'period_start_at', 'period_end_at',
+  ], [[
+    MALL_ID, '2026-08', 'open', null, null, ledger.rows[0]!.id, ledger.rows[0]!.legal_timezone,
+    '2026-08-01T00:00:00+08:00', '2026-09-01T00:00:00+08:00',
+  ]]);
   stage('organizations', { enterprise: 1, groups: 8, mall: 1, tenant: 1 });
 }
 
@@ -175,7 +185,7 @@ async function seedMembers(
   for (const member of active) {
     const accountId = `itht:benefit-account:${String(member.index).padStart(3, '0')}`;
     const lotId = `itht:benefit-lot:${String(member.index).padStart(3, '0')}`;
-    const code = `itht.benefit.${String(member.index).padStart(3, '0')}`;
+    const code = `benefit.itht.${String(member.index).padStart(3, '0')}`;
     let financeAccount;
     try {
       financeAccount = await database.query<{ readonly id: string }>('select finance.ensure_account($1,$2,$3,$4) id', [MALL_ID, code, 'CNY', 'liability']);
@@ -194,9 +204,9 @@ async function seedMembers(
   await insertRows(database, 'benefit.lotmovement', ['id', 'lot_id', 'kind', 'amount_minor', 'reference_type', 'reference_id', 'source_id', 'occurred_at'], movementRows);
   for (const benefit of benefits.values()) await postFinance(database, {
     amountMinor: MEMBER_GRANT_MINOR,
-    creditCode: `itht.benefit.${String(benefit.member.index).padStart(3, '0')}`,
+    creditCode: `benefit.itht.${String(benefit.member.index).padStart(3, '0')}`,
     creditKind: 'liability',
-    debitCode: 'itht.benefit.grant.expense',
+    debitCode: 'benefit.expense',
     debitKind: 'expense',
     description: INTERNAL_MALL_REMARK,
     occurredAt: created,
@@ -321,7 +331,7 @@ async function seedVouchers(database: Client, members: readonly MemberFixture[])
     amountMinor: VOUCHER_VALUES[index]! * 25,
     creditCode: `voucher.program.${VOUCHER_PROGRAM_IDS[index]}`,
     creditKind: 'liability',
-    debitCode: 'itht.voucher.issue.expense',
+    debitCode: 'voucher.issue',
     debitKind: 'expense',
     description: INTERNAL_MALL_REMARK,
     occurredAt: created,
