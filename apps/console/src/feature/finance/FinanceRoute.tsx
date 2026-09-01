@@ -53,7 +53,7 @@ export function Component() {
   const [headerAction, setHeaderAction] = useState<FinanceHeaderAction>();
   const [importOpen, setImportOpen] = useState(false);
   const searchRef = useRef(new URLSearchParams(search));
-  const pendingSearchKey = useRef<string>();
+  const pendingSearchKey = useRef<string | undefined>(undefined);
   const searchKey = search.toString();
   const scopeKey = `${context.scope.kind}:${context.scope.id}`;
   const previousScope = useRef(scopeKey);
