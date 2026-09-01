@@ -1,0 +1,45 @@
+{
+  "schema": "zdt.branch-closure-evidence.v1",
+  "sequence": 3,
+  "completedAt": "2026-09-02T00:55:59+08:00",
+  "repository": "https://github.com/Ethan7586/zhudatuan.git",
+  "branch": {
+    "name": "codex/graceful-preview-access-20260830",
+    "ref": "refs/heads/codex/graceful-preview-access-20260830",
+    "tip": "433e0b94015f529585b95ecbcc3dbf971c39fe53",
+    "subject": "fix(console): make unavailable preview pages graceful",
+    "committedAt": "2026-08-30T09:49:45+08:00"
+  },
+  "preconditions": {
+    "remoteBranchCount": 30,
+    "uniqueCommitsVersusStableSurvivors": 0,
+    "containedBy": [
+      "main",
+      "codex/full-production-20260830"
+    ],
+    "tipAliyunOrDeploymentPathMatches": 0,
+    "registeredWorktrees": 0
+  },
+  "action": {
+    "remoteBranchDeleted": true,
+    "localBranchDeleted": true,
+    "remoteTrackingRefsPruned": true
+  },
+  "postconditions": {
+    "remoteBranchCount": 29,
+    "remoteRefMatches": 0,
+    "localRefMatches": 0,
+    "worktreeRegistrations": 0,
+    "recoverableFromMain": true
+  },
+  "recovery": {
+    "sourceCommit": "433e0b94015f529585b95ecbcc3dbf971c39fe53",
+    "ref": "refs/heads/codex/graceful-preview-access-20260830"
+  },
+  "safety": {
+    "aliyunConnected": false,
+    "aliyunMutated": false,
+    "servicesRestarted": false,
+    "routesChanged": false
+  }
+}

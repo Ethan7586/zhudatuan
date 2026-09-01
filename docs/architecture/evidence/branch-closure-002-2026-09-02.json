@@ -1,0 +1,50 @@
+{
+  "schema": "zdt.branch-closure-evidence.v1",
+  "sequence": 2,
+  "completedAt": "2026-09-02T00:55:00+08:00",
+  "repository": "https://github.com/Ethan7586/zhudatuan.git",
+  "branch": {
+    "name": "codex/purchase-readiness-finance-guard",
+    "ref": "refs/heads/codex/purchase-readiness-finance-guard",
+    "tip": "9734c2ec064e1e31765593a6a524a27d38bd9881",
+    "subject": "fix(commerce): verify denied finance function safely",
+    "committedAt": "2026-08-29T03:02:36+08:00"
+  },
+  "preconditions": {
+    "remoteBranchCount": 31,
+    "uniqueCommitsVersusStableSurvivors": 0,
+    "containedBy": [
+      "main",
+      "codex/full-production-20260830",
+      "backend-reconstruction"
+    ],
+    "tipAliyunOrDeploymentPathMatches": 0,
+    "registeredWorktrees": 1,
+    "worktreeClean": true,
+    "worktreeSize": "1.3G"
+  },
+  "action": {
+    "remoteBranchDeleted": true,
+    "localBranchDeleted": true,
+    "worktreeRemoved": "/private/tmp/zhudatuan-release-bef0989",
+    "remoteTrackingRefsPruned": true
+  },
+  "postconditions": {
+    "remoteBranchCount": 30,
+    "remoteRefMatches": 0,
+    "localRefMatches": 0,
+    "worktreeRegistrations": 0,
+    "worktreePathExists": false,
+    "recoverableFromMain": true
+  },
+  "recovery": {
+    "sourceCommit": "9734c2ec064e1e31765593a6a524a27d38bd9881",
+    "ref": "refs/heads/codex/purchase-readiness-finance-guard"
+  },
+  "safety": {
+    "aliyunConnected": false,
+    "aliyunMutated": false,
+    "servicesRestarted": false,
+    "routesChanged": false
+  }
+}

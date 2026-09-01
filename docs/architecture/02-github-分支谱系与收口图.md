@@ -5,7 +5,7 @@
 > 范围：GitHub `origin/*`，不把本地未推送分支混入远程结论
 > 初始状态：只读取证时共有 32 条远程分支
 
-## 状态更新：关闭 001
+## 状态更新：关闭 001–004
 
 2026-09-02 已关闭 `codex/canonical-registration-release@71280439c5`：
 
@@ -14,7 +14,17 @@
 - 仍由 `full-production`、`backend-reconstruction` 和旧 `main` 承接。
 - 详细证据：`branch-closures/001-canonical-registration-release.md`。
 
-本文件后续谱系图保留首次收口前的 32 分支基线，便于追踪每次减少；已关闭的是分支引用，图中的祖先提交仍然存在。
+同日 Ethan 明确授权再关闭三条“零独有、远古或已完全承接、与阿里云操作无关”的分支。三条均按顺序单独复核和删除：
+
+| 编号 | 关闭分支 | tip SHA | 独有提交 | 分支数变化 | 本地结果 |
+|---:|---|---|---:|---:|---|
+| 002 | `codex/purchase-readiness-finance-guard` | `9734c2ec06` | 0 | 31 → 30 | 清除 1.3G 干净 worktree 与本地引用 |
+| 003 | `codex/graceful-preview-access-20260830` | `433e0b9401` | 0 | 30 → 29 | 本地引用与 worktree 均为 0 |
+| 004 | `codex/dim-denied-surfaces-20260830` | `b933686885` | 0 | 29 → 28 | 本地引用与 worktree 均为 0 |
+
+三条 tip 均被 `main` 与 `codex/full-production-20260830` 承接，tip 的阿里云、Caddy、systemd 和部署路径匹配数均为 0。本轮没有连接或修改阿里云。
+
+当前远程分支数为 28。本文件后续谱系图仍保留首次收口前的 32 分支基线，便于追踪每次减少；已关闭的是分支引用，图中的祖先提交仍然存在。
 
 ## 一、当前结论
 
@@ -230,7 +240,7 @@ flowchart LR
 4. 对照 `01-zdt-next-目标系统架构图.md` 决定每项资产的去向。
 5. 先迁移最小、边界清晰且可独立验证的资产。
 6. 每完成一个资产批次，提交到 `zdt-next` 并记录来源 SHA。
-7. 11 条祖先分支已经被 `full-production` 完整包含，不需要再次 Git merge；待清单与验证完成后，再由 Ethan 一条一条确认删除。
+7. 首次基线中的 11 条祖先分支已经被 `full-production` 完整包含，不需要再次 Git merge；其中 4 条已按 001–004 账本关闭，剩余 7 条仍须逐条取证和授权。
 8. `full-production` 自身最后处理，在其他家族尚未清点前不得删除。
 
 ## 九、本地后续线说明
@@ -249,4 +259,4 @@ codex/auth-password-recovery-20260831@0fc4993eed8f
 
 > `codex/full-production-20260830@a509e3aedcd0`
 
-本阶段只完成识别、画图和收口设计。下一阶段才开始对它的 24 个远程独有提交逐项分类，不执行旧分支删除，也不直接合并到 `zdt-next`。
+当前已经进入逐支收口阶段：001–004 已完成，但不直接合并旧历史到 `zdt-next`。`full-production` 的 24 个远程独有提交仍须逐项分类；下一条删除必须重新取证并获得 Ethan 授权。

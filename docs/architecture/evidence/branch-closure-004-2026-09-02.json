@@ -1,0 +1,45 @@
+{
+  "schema": "zdt.branch-closure-evidence.v1",
+  "sequence": 4,
+  "completedAt": "2026-09-02T00:56:40+08:00",
+  "repository": "https://github.com/Ethan7586/zhudatuan.git",
+  "branch": {
+    "name": "codex/dim-denied-surfaces-20260830",
+    "ref": "refs/heads/codex/dim-denied-surfaces-20260830",
+    "tip": "b9336868857998c874e0da2aa8f5905f6cc3c802",
+    "subject": "fix(console): dim unauthorized surfaces",
+    "committedAt": "2026-08-30T10:29:34+08:00"
+  },
+  "preconditions": {
+    "remoteBranchCount": 29,
+    "uniqueCommitsVersusStableSurvivors": 0,
+    "containedBy": [
+      "main",
+      "codex/full-production-20260830"
+    ],
+    "tipAliyunOrDeploymentPathMatches": 0,
+    "registeredWorktrees": 0
+  },
+  "action": {
+    "remoteBranchDeleted": true,
+    "localBranchDeleted": true,
+    "remoteTrackingRefsPruned": true
+  },
+  "postconditions": {
+    "remoteBranchCount": 28,
+    "remoteRefMatches": 0,
+    "localRefMatches": 0,
+    "worktreeRegistrations": 0,
+    "recoverableFromMain": true
+  },
+  "recovery": {
+    "sourceCommit": "b9336868857998c874e0da2aa8f5905f6cc3c802",
+    "ref": "refs/heads/codex/dim-denied-surfaces-20260830"
+  },
+  "safety": {
+    "aliyunConnected": false,
+    "aliyunMutated": false,
+    "servicesRestarted": false,
+    "routesChanged": false
+  }
+}
