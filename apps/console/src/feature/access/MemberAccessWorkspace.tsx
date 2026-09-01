@@ -292,8 +292,7 @@ function mergeRows(members: readonly Member[], access: readonly AccessMembership
   const memberById = new Map(members.map((member) => [member.membership_id, member]));
   const accessById = new Map(access.map((membership) => [membership.id, membership]));
   const primaryIds = primary === 'members' ? members.map((member) => member.membership_id) : access.map((membership) => membership.id);
-  const secondaryIds = primary === 'members' ? access.map((membership) => membership.id) : members.map((member) => member.membership_id);
-  return [...new Set([...primaryIds, ...secondaryIds])].map((id) => {
+  return [...new Set(primaryIds)].map((id) => {
     const member = memberById.get(id);
     const membership = accessById.get(id);
     return { id, ...(member === undefined ? {} : { member }), ...(membership === undefined ? {} : { access: membership }) };
