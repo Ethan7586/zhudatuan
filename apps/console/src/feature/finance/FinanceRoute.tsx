@@ -104,7 +104,7 @@ export function Component() {
 <<<<<<< HEAD
   const [importOpen, setImportOpen] = useState(false);
   const searchRef = useRef(new URLSearchParams(search));
-  const pendingSearchKey = useRef<string>();
+  const pendingSearchKey = useRef<string | undefined>(undefined);
   const searchKey = search.toString();
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)

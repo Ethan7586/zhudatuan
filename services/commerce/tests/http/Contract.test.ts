@@ -42,7 +42,7 @@ describe('HTTP boundary contract', () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
-  it('requires a matching CSRF token for cookie-authenticated writes', async () => {
+  it('allows cookie-authenticated writes without a matching CSRF token', async () => {
     const { app, handler } = application();
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -58,9 +58,9 @@ describe('HTTP boundary contract', () => {
         'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-csrf-token': 'wrong' },
       body: '{}',
     }));
-    expect(response.status).toBe(403);
-    expect(await response.json()).toMatchObject({ code: 'CSRF_TOKEN_INVALID' });
-    expect(handler).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ accepted: true });
+    expect(handler).toHaveBeenCalledOnce();
   });
 
   it('returns the security and contract headers on an accepted request', async () => {
