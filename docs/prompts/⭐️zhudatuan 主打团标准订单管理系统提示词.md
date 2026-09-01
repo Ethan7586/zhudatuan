@@ -1,10 +1,11 @@
-# **主打团标准订单管理系统提示词**
+# **zhudatuan 主打团标准订单管理系统提示词**
 
 ## **适用范围与使用方法**
 
 本提示词体系只用于升级 zhudatuan 主打团订单管理系统，目标产品名称为：
 
-> **Smart Wing OMS 2.0**  
+> **zhudatuan 主打团 OMS 2.0**
+>
 > **WCHS-MCBS Order Profile 1.0**
 
 目标公式：
@@ -34,7 +35,7 @@
 
 ### **项目名称**
 
-zhudatuan 主打团 Smart Wing OMS 2.0 升级
+zhudatuan 主打团 OMS 2.0 升级
 
 ### **一、9.5 分的可测量定义**
 
@@ -65,7 +66,7 @@ zhudatuan 主打团 Smart Wing OMS 2.0 升级
 
 ### **二、核心术语**
 
-1. “Smart Wing OMS 2.0”是订单运营控制面，不是商城首页，也不是营销展示页。
+1. “zhudatuan 主打团 OMS 2.0”是订单运营控制面，不是商城首页，也不是营销展示页。
 2. “订单事实”指订单自身拥有的稳定业务事实，包括订单、订单行、子订单、订单快照、订单生命周期、售后、标签、备注和人工采购标识。
 3. “跨系统摘要”指支付、履约、渠道、财务、发票、组织和客服系统通过契约提供给订单工作台的只读事实，不等于订单模块拥有这些事实。
 4. “Order Workspace Projection”是为订单列表、筛选、指标、异常和导出构建的可重建读模型，不得反向写业务表。
@@ -397,11 +398,11 @@ modules/order/
 
 ### **任务名称**
 
-zhudatuan Smart Wing OMS 2.0 现状审计与 8.2 → 9.5 差距评估
+zhudatuan 主打团 OMS 2.0 现状审计与 8.2 → 9.5 差距评估
 
 ### **任务要求**
 
-请严格遵守《主打团标准订单管理系统永久业务与工程基线》。
+请严格遵守《zhudatuan 主打团标准订单管理系统永久业务与工程基线》。
 
 唯一目标：
 
@@ -497,7 +498,7 @@ zhudatuan Smart Wing OMS 2.0 现状审计与 8.2 → 9.5 差距评估
 4. 不得因为当前页面视觉好看而高估真实业务闭环。
 5. 不得因为某个接口存在就认定功能完成；必须通过角色 Journey。
 6. 只允许创建：
-   `/Users/Ethan/Desktop/zhudatuan主打团-订单管理系统现状审计-2026-09-01.md`
+   `/Users/Ethan/Desktop/zhudatuan 主打团-订单管理系统现状审计-2026-09-01.md`
 7. 不得修改仓库。
 
 ### **时间盒**
@@ -512,12 +513,12 @@ zhudatuan Smart Wing OMS 2.0 现状审计与 8.2 → 9.5 差距评估
 
 ### **任务名称**
 
-zhudatuan Smart Wing OMS 2.0 目标架构与 9.5 分产品蓝图
+zhudatuan 主打团 OMS 2.0 目标架构与 9.5 分产品蓝图
 
 ### **输入**
 
-1. 《主打团标准订单管理系统永久业务与工程基线》。
-2. `/Users/Ethan/Desktop/zhudatuan主打团-订单管理系统现状审计-2026-09-01.md`。
+1. 《zhudatuan 主打团标准订单管理系统永久业务与工程基线》。
+2. `/Users/Ethan/Desktop/zhudatuan 主打团-订单管理系统现状审计-2026-09-01.md`。
 3. `/Users/Ethan/Desktop/2026-4-30需求整理.xlsx`。
 4. `/Users/Ethan/Desktop/Projects/zhudatuan/main/docs/订单管理升级前详细预案-WCHS-MCBS-20260901.md`。
 5. 已确认的 Smart Wing VI 1.2 设计资料。
@@ -526,7 +527,7 @@ zhudatuan Smart Wing OMS 2.0 目标架构与 9.5 分产品蓝图
 
 ### **唯一目标**
 
-设计一套达到 95/100 且没有红线缺口的 Smart Wing OMS 2.0。蓝图必须同时闭合产品、交互、数据、状态、跨系统契约、后端实现标准、故障恢复、测试和发布，不得只画页面或只画后端目录。
+设计一套达到 95/100 且没有红线缺口的 zhudatuan 主打团 OMS 2.0。蓝图必须同时闭合产品、交互、数据、状态、跨系统契约、后端实现标准、故障恢复、测试和发布，不得只画页面或只画后端目录。
 
 本阶段只设计，不修改业务代码、数据库、迁移或部署状态。
 
@@ -751,11 +752,11 @@ Projection 只能消费事件或窄读契约，不得跨 Schema 即席 Join 后�
 
 ### **交付物**
 
-1. `/Users/Ethan/Desktop/zhudatuan主打团-订单管理系统9.5分目标蓝图-2026-09-01.md`
-2. `/Users/Ethan/Desktop/zhudatuan主打团-订单系统协同架构图-2026-09-01.svg`
-3. `/Users/Ethan/Desktop/zhudatuan主打团-订单系统协同架构图-2026-09-01.png`
-4. `/Users/Ethan/Desktop/zhudatuan主打团-订单关键页面交互图-2026-09-01.svg`
-5. `/Users/Ethan/Desktop/zhudatuan主打团-订单关键页面交互图-2026-09-01.png`
+1. `/Users/Ethan/Desktop/zhudatuan 主打团-订单管理系统9.5分目标蓝图-2026-09-01.md`
+2. `/Users/Ethan/Desktop/zhudatuan 主打团-订单系统协同架构图-2026-09-01.svg`
+3. `/Users/Ethan/Desktop/zhudatuan 主打团-订单系统协同架构图-2026-09-01.png`
+4. `/Users/Ethan/Desktop/zhudatuan 主打团-订单关键页面交互图-2026-09-01.svg`
+5. `/Users/Ethan/Desktop/zhudatuan 主打团-订单关键页面交互图-2026-09-01.png`
 
 架构图用于设计和研发理解，关键页面交互图用于产品实现；两者不得混为一张图。五个文件的术语、状态、角色和节点必须一致。
 
@@ -781,7 +782,7 @@ Projection 只能消费事件或窄读契约，不得跨 Schema 即席 Join 后�
 
 ### **任务名称**
 
-zhudatuan Smart Wing OMS 2.0 升级修改清单
+zhudatuan 主打团 OMS 2.0 升级修改清单
 
 ### **输入**
 
@@ -863,7 +864,7 @@ zhudatuan Smart Wing OMS 2.0 升级修改清单
 
 ### **唯一允许创建的文件**
 
-`/Users/Ethan/Desktop/zhudatuan主打团-订单管理系统9.5分升级修改清单-2026-09-01.md`
+`/Users/Ethan/Desktop/zhudatuan 主打团-订单管理系统9.5分升级修改清单-2026-09-01.md`
 
 禁止修改仓库。
 
@@ -873,11 +874,11 @@ zhudatuan Smart Wing OMS 2.0 升级修改清单
 
 ### **任务名称**
 
-实施 Smart Wing OMS 2.0 工作包【填写工作包编号和名称】
+实施 zhudatuan 主打团 OMS 2.0 工作包【填写工作包编号和名称】
 
 ### **输入**
 
-1. 《主打团标准订单管理系统永久业务与工程基线》。
+1. 《zhudatuan 主打团标准订单管理系统永久业务与工程基线》。
 2. 已确认并锁定的 OMS 2.0 目标蓝图。
 3. OMS 2.0 升级修改清单。
 4. 本工作包对应的 Requirement Mapping 和评分项。
@@ -985,7 +986,7 @@ zhudatuan Smart Wing OMS 2.0 升级修改清单
 
 ### **任务名称**
 
-zhudatuan Smart Wing OMS 2.0 独立验收与 9.5 分评分
+zhudatuan 主打团 OMS 2.0 独立验收与 9.5 分评分
 
 ### **目标**
 
@@ -1112,7 +1113,7 @@ zhudatuan Smart Wing OMS 2.0 独立验收与 9.5 分评分
 
 只允许创建：
 
-`/Users/Ethan/Desktop/zhudatuan主打团-订单管理系统9.5分独立验收-2026-09-01.md`
+`/Users/Ethan/Desktop/zhudatuan 主打团-订单管理系统9.5分独立验收-2026-09-01.md`
 
 未经 Ethan 当前任务明确要求，不得直接修复、提交、推送或部署。
 
@@ -1120,7 +1121,7 @@ zhudatuan Smart Wing OMS 2.0 独立验收与 9.5 分评分
 
 ## **最终产品结论**
 
-Smart Wing OMS 2.0 的目标不是把现有订单页面做得更大、更蓝或更复杂，而是让运营人员能够在同一个可信工作台中：
+zhudatuan 主打团 OMS 2.0 的目标不是把现有订单页面做得更大、更蓝或更复杂，而是让运营人员能够在同一个可信工作台中：
 
 > **看见真实订单 → 理解当前状态 → 定位责任系统 → 执行允许动作 → 处理异常 → 验证结果 → 保留完整证据。**
 

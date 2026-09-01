@@ -1,4 +1,4 @@
-# **主打团标准商城提示词**
+# **zhudatuan 主打团标准商城提示词**
 
 ## **适用范围与使用方法**
 
@@ -150,7 +150,7 @@ zhudatuan 主打团标准商城 Mall Core 现状审计
 2. 不得用“可能符合 DDD”等抽象描述代替代码证据。
 3. 不得输出实现代码。
 4. 只允许创建：
-   /Users/Ethan/Desktop/zhudatuan主打团-标准商城现状审计-2026-09-01.md
+   /Users/Ethan/Desktop/zhudatuan 主打团-标准商城现状审计-2026-09-01.md
 5. 不得修改仓库。
 
 ### **时间盒**
@@ -170,7 +170,7 @@ zhudatuan 主打团标准商城 Mall Core 目标架构蓝图
 ### **输入**
 
 1. 《zhudatuan 主打团标准商城永久业务基线》。
-2. /Users/Ethan/Desktop/zhudatuan主打团-标准商城现状审计-2026-09-01.md。
+2. /Users/Ethan/Desktop/zhudatuan 主打团-标准商城现状审计-2026-09-01.md。
 3. /Users/Ethan/Desktop/other/2026-4-30需求整理.xlsx。
 4. 当前仓库代码作为现状证据。
 
@@ -425,9 +425,9 @@ zhudatuan 主打团标准商城 Mall Core 目标架构蓝图
 
 ### **交付物**
 
-1. /Users/Ethan/Desktop/zhudatuan主打团-标准商城目标蓝图-2026-09-01.md
-2. /Users/Ethan/Desktop/zhudatuan主打团-标准商城四线架构-2026-09-01.svg
-3. /Users/Ethan/Desktop/zhudatuan主打团-标准商城四线架构-2026-09-01.png
+1. /Users/Ethan/Desktop/zhudatuan 主打团-标准商城目标蓝图-2026-09-01.md
+2. /Users/Ethan/Desktop/zhudatuan 主打团-标准商城四线架构-2026-09-01.svg
+3. /Users/Ethan/Desktop/zhudatuan 主打团-标准商城四线架构-2026-09-01.png
 
 三个文件的术语、节点、颜色和状态必须完全一致。
 
@@ -524,7 +524,7 @@ zhudatuan 主打团标准商城升级修改清单
 
 ### **唯一允许创建的文件**
 
-/Users/Ethan/Desktop/zhudatuan主打团-标准商城升级修改清单-2026-09-01.md
+/Users/Ethan/Desktop/zhudatuan 主打团-标准商城升级修改清单-2026-09-01.md
 
 禁止修改仓库。
 
