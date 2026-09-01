@@ -30,21 +30,13 @@ export class ApiClient implements OperationExecutor {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
     const parsed = operation.input.parse(input);
-    const value = await this.send(operation.path, operation.method, parsed, context, operation.responseMode, operation.idempotent, operation.timeout, operation.output);
+    const value = await this.send(operation.path, operation.method, parsed, context, operation.responseMode, operation.idempotent, operation.output);
     return value;
   }
 
-  private async send<TOutput>(
-    path: string,
-    method: string,
-    input: WireInput,
-    context: RequestContext,
-    responseMode: OperationDescriptor<OperationId>['responseMode'],
-    idempotent: boolean,
-    timeout: number,
-    output: Schema<TOutput>
-  ): Promise<TOutput> {
-    const deadline = Deadline.after(Math.min(timeout, RUNTIME_LIMITS.http.totalDeadlineMilliseconds), context.signal);
+  private async send<TOutput>(path: string, method: string, input: WireInput, context: RequestContext, responseMode: OperationDescriptor<OperationId>['responseMode'], idempotent: boolean, output: Schema<TOutput>): Promise<TOutput> {
+    // Operation timeouts are service SLO budgets; public network latency is governed by the configured HTTP deadline.
+    const deadline = Deadline.after(RUNTIME_LIMITS.http.totalDeadlineMilliseconds, context.signal);
     const request = this.request(path, method, input, context, deadline.signal);
     const canRetry = idempotent || context.idempotencyKey !== undefined;
     let attempt = 1;

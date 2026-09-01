@@ -1,5 +1,5 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiClient } from './ApiClient';
 import { createCatalogOperations } from './operations/catalog';
 import { createOrderOperations } from './operations/order';
@@ -20,6 +20,8 @@ class RecordingTransport implements Transport {
 }
 
 describe('ApiClient contract identity', () => {
+  afterEach(() => vi.useRealTimers());
+
   it('pins every SDK request to the generated contract version', async () => {
     const transport = new RecordingTransport();
     const client = new ApiClient('https://shop.example', transport);
@@ -102,6 +104,29 @@ describe('ApiClient contract identity', () => {
     controller.abort(new Error('scope changed'));
     await expect(pending).rejects.toThrow('scope changed');
     expect(networkSignal?.aborted).toBe(true);
+  });
+
+  it('keeps service SLO budgets separate from the public network deadline', async () => {
+    vi.useFakeTimers();
+    const client = new ApiClient('https://shop.example', {
+      send: (request) =>
+        new Promise((resolve, reject) => {
+          const timer = setTimeout(() => resolve({ status: 200, headers: {}, body: JSON.stringify({ status: 'live', eventLoop: 'responsive' }) }), 1_000);
+          request.signal?.addEventListener(
+            'abort',
+            () => {
+              clearTimeout(timer);
+              const cause: unknown = request.signal?.reason;
+              reject(cause instanceof Error ? cause : new Error('REQUEST_ABORTED', { cause }));
+            },
+            { once: true }
+          );
+        }),
+    });
+
+    const pending = createRuntimeOperations(client).healthLive({}, context());
+    await vi.advanceTimersByTimeAsync(1_000);
+    await expect(pending).resolves.toEqual({ status: 'live', eventLoop: 'responsive' });
   });
 
   it('returns a contract-validated Location for a declared 303 operation', async () => {
