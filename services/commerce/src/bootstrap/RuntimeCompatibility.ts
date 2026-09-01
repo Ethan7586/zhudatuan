@@ -1,5 +1,5 @@
-import { COMMERCE_EVENTS, CONTRACT_CHECKSUM, OperationCatalog } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD } from '@shop/config/server';
+import { COMMERCE_EVENTS, OperationCatalog } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import { JOB_CATALOG } from '../app/jobs';
 import type { CacheState } from '../foundation/cache/Cache';
 import type { DatabasePool } from '../foundation/persistence/Pool';
@@ -40,7 +40,7 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
   try {
     await client.query('begin');
     await client.query("select set_config('app.workload',$1,true)", [workload]);
-    result = await client.query<DatabaseCompatibility>(statement, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
+    result = await client.query<DatabaseCompatibility>(statement, [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
     await client.query('commit');
   } catch (cause) {
     await client.query('rollback').catch(() => undefined);
@@ -66,7 +66,7 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
     && health.every(({ state }) => state === 'healthy');
   return Object.freeze({
     healthy,
-    contract: Object.freeze({ checksum: CONTRACT_CHECKSUM, matches: database.contract }),
+    contract: Object.freeze({ checksum: RUNTIME_CONTRACT_CHECKSUM, matches: database.contract }),
     schema: Object.freeze({ version: TARGET_SCHEMA_HEAD, matches: database.schema }),
     registries,
     cache: Object.freeze({ ...cache }),
