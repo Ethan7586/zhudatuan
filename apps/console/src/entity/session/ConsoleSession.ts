@@ -51,6 +51,7 @@ export type ConsoleProfile = z.infer<typeof ProfileSchema>;
 export interface ConsoleContext {
   readonly session: ConsoleSession;
   readonly profile: ConsoleProfile;
+  readonly profileState?: 'ready' | 'unavailable';
   readonly scopes: readonly ConsoleScope[];
   readonly scope: ConsoleScope;
 }

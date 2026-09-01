@@ -249,6 +249,23 @@ test('IAM-004 覆盖加载、空数据与读取错误状态', async ({ page, con
   await errorPage.close();
 });
 
+test('IAM-004 个人资料故障不再阻断已授权工作空间', async ({ page }) => {
+  const roles = initialRoles();
+  const api = accessApi(page, roles, [], {
+    profile: { code: 'SCOPE_DENIED', message: 'controlled profile scope failure', requestId: 'request:iam004:profile' },
+    profileStatus: 403,
+  });
+  await api.install();
+
+  await page.goto(`${consoleOrigin}/scopes/tenant/tenant%3Ae2e/settings/access`);
+  await expect(page.getByRole('heading', { level: 1, name: '会员与权限' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '没有权限' })).toHaveCount(0);
+  await page.getByRole('button', { name: '个人中心：当前用户' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: '个人信息' })).toBeVisible();
+  await expect(page.getByText('个人资料暂不可用')).toBeVisible();
+  expect(api.unmatched).toEqual([]);
+});
+
 test('IAM-004 覆盖保存中、正式回读成功与版本冲突', async ({ page, context }) => {
   const roles = initialRoles();
   const member = memberFixture();
@@ -295,6 +312,8 @@ interface AccessApiOptions {
   readonly centerStatus?: number;
   readonly command?: (call: OperationCall) => unknown;
   readonly commandStatus?: number;
+  readonly profile?: unknown;
+  readonly profileStatus?: number;
 }
 
 function accessApi(page: Page, roles: WireRole[], members: WireMembership[] = [], options: AccessApiOptions = {}): OperationMock {
@@ -307,7 +326,7 @@ function accessApi(page: Page, roles: WireRole[], members: WireMembership[] = []
       capabilities: ['access.center.read', 'access.roles.manage', 'access.scopes.manage', 'member.members.read'],
       csrf: 'csrf:e2e:iam002:token', assurance: { level: 2, verified: 'password' },
     })
-    .get('/api/v1/members/me', { display_name: 'Ethan', employee_no: 'OWNER001' })
+    .get('/api/v1/members/me', options.profile ?? { display_name: 'Ethan', employee_no: 'OWNER001' }, options.profileStatus)
     .get('/api/v1/access/center', options.center ?? (() => ({ items: members, count: members.length, roles })), options.centerStatus)
     .get('/api/v1/members', { items: [], count: 0 })
     .put('/api/v1/access/roles/:roleid', options.command ?? ((call) => roleCommand(call, roles, members)), options.commandStatus);

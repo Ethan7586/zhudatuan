@@ -109,7 +109,7 @@ try {
     applied += 1;
   }
   if (mode !== '--inventory-cutover-unsafe') {
-    await verifyTarget(database);
+  await verifyTarget(database);
     if (mode === '--mvp-kernel') {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
       await verifyMvpKernel(database);

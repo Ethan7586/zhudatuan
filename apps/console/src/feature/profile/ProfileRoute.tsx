@@ -41,6 +41,12 @@ export function Component() {
     : assignmentState.label;
 
   const profileMaster = <div className="profilestack">
+    {context.profileState === 'unavailable' ? (
+      <Surface className="profiledegradednotice" depth="low" padding="compact" role="status">
+        <strong>个人资料暂不可用</strong>
+        <span>工作空间和业务功能仍可继续使用，请稍后刷新重试。</span>
+      </Surface>
+    ) : null}
     <Surface className="profilepanel profilebasicpanel" depth="low" padding="spacious" role="region" aria-labelledby="profilebasictitle">
       <SectionHeading eyebrow="ACCOUNT" title="基本资料" description="账户归属个人，与工作身份分开管理。" id="profilebasictitle" />
       <div className="profileidentity">
