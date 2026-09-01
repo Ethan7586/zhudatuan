@@ -3,6 +3,7 @@
 > 快照日期：2026-09-02
 > 远程：`https://github.com/Ethan7586/zhudatuan.git`
 > 范围：GitHub `origin/*`，不把本地未推送分支混入远程结论
+<<<<<<< HEAD
 > 初始状态：只读取证时共有 32 条远程分支
 
 > **并发变化提示（2026-09-02 02:08 +08:00）**：远程新增 `codex/hongtai-fullchain-release-20260902@483ee84`，`ethan/iam-reliability-95` 从 `807ca31` 前进到 `0d9bcb1`，当前远程分支数为 `29`。下文 28 条与 20 条零独有结论是固定时间快照；执行下一条关闭前必须全部重算。
@@ -37,6 +38,13 @@
 ## 一、当前结论
 
 GitHub 首次收口前有 32 条真实远程分支、31 个不同的分支末端 SHA。把已被其他分支包含的祖先折叠后，实际形成 9 个独立末端家族。
+=======
+> 当前状态：只读取证；尚未合并、改名或删除任何旧分支
+
+## 一、当前结论
+
+GitHub 当前有 32 条真实远程分支、31 个不同的分支末端 SHA。把已被其他分支包含的祖先折叠后，实际形成 9 个独立末端家族。
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
 
 按“包含的远程分支节点数 → 可达提交数 → 远程独有提交数”排序，第一条最粗汇聚线是：
 
@@ -248,7 +256,11 @@ flowchart LR
 4. 对照 `01-zdt-next-目标系统架构图.md` 决定每项资产的去向。
 5. 先迁移最小、边界清晰且可独立验证的资产。
 6. 每完成一个资产批次，提交到 `zdt-next` 并记录来源 SHA。
+<<<<<<< HEAD
 7. 首次基线中的 11 条祖先分支已经被 `full-production` 完整包含，不需要再次 Git merge；其中 4 条已按 001–004 账本关闭，剩余 7 条仍须逐条取证和授权。
+=======
+7. 11 条祖先分支已经被 `full-production` 完整包含，不需要再次 Git merge；待清单与验证完成后，再由 Ethan 一条一条确认删除。
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
 8. `full-production` 自身最后处理，在其他家族尚未清点前不得删除。
 
 ## 九、本地后续线说明
@@ -267,4 +279,8 @@ codex/auth-password-recovery-20260831@0fc4993eed8f
 
 > `codex/full-production-20260830@a509e3aedcd0`
 
+<<<<<<< HEAD
 当前已经进入逐支收口阶段：001–004 已完成，但不直接合并旧历史到 `zdt-next`。`full-production` 的 24 个远程独有提交仍须逐项分类；下一条删除必须重新取证并获得 Ethan 授权。
+=======
+本阶段只完成识别、画图和收口设计。下一阶段才开始对它的 24 个远程独有提交逐项分类，不执行旧分支删除，也不直接合并到 `zdt-next`。
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)

@@ -1,9 +1,16 @@
 # zdt-next 目标系统架构图
 
+<<<<<<< HEAD
 > 版本：架构草图 v0.2
 > 日期：2026-09-02
 > 状态：供 Ethan 审核，尚未成为最终实现授权
 > 依据：`00-zhudatuan-架构审计.md`、`03-阿里云运行真值与生产反推架构.md`、`05-Mall产品边界取证与裁定.md` 与当前 `ZHU-VI-1.3` 资产
+=======
+> 版本：架构草图 v0.1
+> 日期：2026-09-02
+> 状态：供 Ethan 审核，尚未成为最终实现授权
+> 依据：`00-zhudatuan-架构审计.md` 与当前 `ZHU-VI-1.3` 资产
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
 
 ## 一、结论
 
@@ -61,6 +68,7 @@ flowchart TB
 
 旧结构的核心问题不是模块少，而是同一个业务问题可能同时经过两份合同、两套权限、两个数据库轨道和多个前端数据源。
 
+<<<<<<< HEAD
 ## 二之二、Mall 产品边界纠正
 
 `zhudatuan 主打团` 是平台与品牌根；**商城系统 Mall 是其下的完整产品系统**，不是只有一个 `mall_id`、一个组织节点或一个后端模块。
@@ -88,6 +96,8 @@ zhudatuan 主打团
 
 代码中的 `MallContext` 只负责解析当前商城身份与数据范围，是 **Mall Scope**；它不能代替上图的 **Mall Product Boundary**。物理目录暂时仍可保持单仓结构，但所有前端、后端、API、合同和商城数据层都必须在架构清单中登记为 Mall 所有。
 
+=======
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
 ## 三、zdt-next 目标逻辑架构
 
 ```mermaid
@@ -96,6 +106,7 @@ flowchart TB
     ActorOperator[运营人员]
     ActorOwner[Owner / 管理员]
 
+<<<<<<< HEAD
     subgraph Zhudatuan["zhudatuan 主打团"]
       subgraph MallProduct["商城系统 Mall（产品边界）"]
         subgraph Experience[体验层]
@@ -146,6 +157,52 @@ flowchart TB
           Observability[Log / Metric / Trace]
           Release[版本化 Release Manifest]
       end
+=======
+    subgraph Experience[体验层]
+        Storefront[统一 Storefront]
+        Console[运营 Console]
+        Account[账户与身份入口]
+        ChannelAdapters[小程序 / 移动端渠道适配]
+        VI["ZHU-VI Design System<br/>Token + Component + Pattern"]
+    end
+
+    subgraph Contract[唯一合同层]
+        Operations[Operations]
+        Capabilities[Capabilities]
+        Errors[Errors]
+        Events[Events]
+        SDK[Generated SDK]
+    end
+
+    subgraph Kernel[Commerce 业务内核]
+        IAM[Identity & Access]
+        Org[Organization & Member]
+        Merchandise[Catalog / Pricing / Inventory]
+        Purchase[Cart / Checkout / Order]
+        Settlement[Payment / Finance / Fulfillment]
+        Growth[Channel / Referral / Benefit / Voucher]
+        OperationsDomain[Support / Notification / Risk / Audit / Reporting]
+        Integration[Extension / Provider Ports]
+    end
+
+    subgraph Runtime[运行层]
+        API[Commerce API]
+        JobRuntime[Commerce Jobs]
+        Outbox[Outbox Dispatcher]
+        ProviderAdapters[Provider / Vendor Adapters]
+    end
+
+    subgraph Data[数据层]
+        Postgres[(Canonical PostgreSQL)]
+        Cache[(Redis / Cache)]
+        ObjectStore[(Object Storage)]
+    end
+
+    subgraph OperationsPlatform[交付与运行保障]
+        Config[统一环境配置]
+        Observability[Log / Metric / Trace]
+        Release[版本化 Release Manifest]
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
     end
 
     ActorCustomer --> Storefront
@@ -169,9 +226,13 @@ flowchart TB
     API --> IAM
     API --> Org
     API --> Merchandise
+<<<<<<< HEAD
     API --> Inventory
     API --> Purchase
     API --> OMS
+=======
+    API --> Purchase
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
     API --> Settlement
     API --> Growth
     API --> OperationsDomain
@@ -179,9 +240,13 @@ flowchart TB
     IAM --> Postgres
     Org --> Postgres
     Merchandise --> Postgres
+<<<<<<< HEAD
     Inventory --> Postgres
     Purchase --> Postgres
     OMS --> Postgres
+=======
+    Purchase --> Postgres
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
     Settlement --> Postgres
     Growth --> Postgres
     OperationsDomain --> Postgres
@@ -189,7 +254,10 @@ flowchart TB
     Merchandise --> ObjectStore
 
     Purchase --> Outbox
+<<<<<<< HEAD
     OMS --> Outbox
+=======
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
     Settlement --> Outbox
     Growth --> Outbox
     Outbox --> JobRuntime
@@ -208,7 +276,11 @@ flowchart TB
     classDef domain fill:#eefaf1,stroke:#239b56,color:#145a32;
     classDef data fill:#fff8e7,stroke:#b9770e,color:#7e5109;
     class Operations,Capabilities,Errors,Events,SDK truth;
+<<<<<<< HEAD
     class IAM,Org,Merchandise,Inventory,Purchase,OMS,Settlement,Growth,OperationsDomain,Integration domain;
+=======
+    class IAM,Org,Merchandise,Purchase,Settlement,Growth,OperationsDomain,Integration domain;
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
     class Postgres,Cache,ObjectStore data;
 ```
 
@@ -218,10 +290,15 @@ flowchart TB
 |---|---|---|
 | Identity & Access | 登录身份、凭据、会话、角色、能力判定 | 直接写会员、订单或财务数据 |
 | Organization & Member | 组织、门店、会员、邀请、归属关系 | 自行定义第二套身份和权限 |
+<<<<<<< HEAD
 | Catalog / Pricing | 商品、类目、价格、可售规则 | 直接完成支付或财务入账 |
 | Inventory | 库存事实、预占、释放和同步 | 把库存状态当成订单主状态 |
 | Cart / Checkout | 购物车、报价、结算编排 | 取代订单事实源或直接修改支付通道内部状态 |
 | OMS / Order | 订单事实、生命周期、异常、售后协同和运营工作台 | 把 Checkout、Inventory、Benefit、Voucher 或 Reporting 收为子模块 |
+=======
+| Catalog / Pricing / Inventory | 商品、类目、价格、库存、可售性 | 直接完成支付或财务入账 |
+| Cart / Checkout / Order | 购物车、结算、订单状态机 | 直接修改支付通道内部状态 |
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
 | Payment / Finance / Fulfillment | 支付、账务、履约、一致性 | 反向控制商品和会员模型 |
 | Growth | 渠道、推荐、权益、券、活动 | 绕过订单与财务边界直接记账 |
 | Operations | 客服、通知、风险、审计、报表 | 成为第二套交易内核 |
@@ -256,7 +333,11 @@ sequenceDiagram
 
 ## 六、运行与发布单元
 
+<<<<<<< HEAD
 目标逻辑上保留五类独立发布单元，具体技术栈由 Ethan 后续确认；五类全部属于商城系统 Mall：
+=======
+目标逻辑上保留五类独立发布单元，具体技术栈由 Ethan 后续确认：
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
 
 1. Storefront Web / 渠道前端。
 2. Console Web。
@@ -304,6 +385,7 @@ flowchart LR
 
 禁止把旧 `main` 或任何旧大分支使用 `--allow-unrelated-histories` 整体合入 `zdt-next`。旧分支的“收回”表示清点、提炼、验证和关闭，不表示把旧目录树原样倒入新主轴。
 
+<<<<<<< HEAD
 ## 九、生产反推后的交付架构
 
 阿里云取证证明，业务组件可以独立发布，但“一个会移动的全局 `current`”无法准确描述实际运行版本。`zdt-next` 必须增加一个机器可读的 Production State Manifest：
@@ -334,6 +416,9 @@ Manifest 至少逐组件记录：
 允许 Storefront、API、Jobs 等组件独立发版，但每个活跃版本都必须被同一个 Manifest 明确描述；不得再通过目录名、全局 symlink 或进程启动时间推断生产真值。完整生产拓扑和迁移保护规则见 `03-阿里云运行真值与生产反推架构.md`。
 
 ## 十、尚待 Ethan 定稿的决策
+=======
+## 九、尚待 Ethan 定稿的决策
+>>>>>>> 677513d4 (docs(architecture): map target system and branch consolidation)
 
 以下内容在本图中只保留逻辑边界，不擅自确定实现：
 
