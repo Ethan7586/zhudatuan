@@ -19,7 +19,6 @@ import {
   materializeConsoleModules,
   selectDefaultConsoleEntry,
 } from './ConsoleModuleRoutes';
-import { ModuleDisabledRoute } from './ModuleDisabledRoute';
 
 afterEach(cleanup);
 
@@ -42,10 +41,9 @@ describe('Console module route materializer', () => {
     const lazy = vi.fn(async () => ({ Component: BusinessRoute }));
     const routes = materializeConsoleModule(fixtureModule('disabled', lazy));
 
-    expect(routes.every(({ Component }) => Component === ModuleDisabledRoute)).toBe(true);
-    expect(routes.every((route) => !('lazy' in route) && !('element' in route))).toBe(true);
+    expect(routes.every((route) => typeof route.lazy === 'function' && !('element' in route))).toBe(true);
     renderRouteObjects(routes, '/cockpit');
-    expect(await screen.findByText('模块已停用')).toBeTruthy();
+    expect(await screen.findByText('模块已停用', {}, { timeout: 5_000 })).toBeTruthy();
     expect(lazy).not.toHaveBeenCalled();
   });
 

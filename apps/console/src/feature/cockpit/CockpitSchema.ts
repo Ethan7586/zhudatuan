@@ -1,82 +1,176 @@
-import { z } from 'zod';
+export interface CockpitMetric {
+  readonly code: string;
+  readonly version: number;
+  readonly scope: string;
+  readonly period: Readonly<{ from: string; to: string; timezone: string }>;
+  readonly dimensions: Readonly<Record<string, string>>;
+  readonly value: number;
+  readonly unit: 'minor' | 'count' | 'ratio';
+  readonly watermark: string;
+  readonly projectionVersion: number;
+}
 
-const MetricSchema = z.object({
-  code: z.string().min(1),
-  version: z.number().int().nonnegative(),
-  scope: z.string().min(1),
-  period: z.object({ from: z.string().min(1), to: z.string().min(1), timezone: z.string().min(1) }),
-  dimensions: z.record(z.string(), z.string()),
-  value: z.number().finite(),
-  unit: z.enum(['minor', 'count', 'ratio']),
-  watermark: z.string().min(1),
-  projectionVersion: z.number().int().nonnegative(),
+export interface CockpitSales {
+  readonly asOf: string;
+  readonly cumulativeSalesCents: number;
+  readonly paidOrderCount: number;
+  readonly averageOrderValueCents: number;
+  readonly periodSalesCents: number;
+  readonly periodPaidOrderCount: number;
+  readonly refundedCents: number;
+  readonly activeProductCount: number;
+  readonly soldProductCount: number;
+  readonly unsoldActiveProductCount: number;
+  readonly trend: readonly Trend[];
+  readonly weeklyTrend?: readonly Trend[];
+  readonly categories: readonly Readonly<{ name: string; salesCents: number; share: number }>[];
+  readonly topProducts: readonly unknown[];
+  readonly period?: Readonly<{ from: string; to: string }>;
+  readonly conclusion?: string;
+  readonly deltas?: Readonly<{
+    netSalesRatio?: number;
+    paidOrdersRatio?: number;
+    averageOrderRatio?: number;
+    refundRate?: number;
+    refundRateDeltaPoints?: number;
+  }>;
+  readonly malls?: readonly MallPerformance[];
+  readonly events?: readonly BusinessEvent[];
+  readonly insights?: readonly BusinessInsight[];
+}
+
+export interface Trend { readonly date: string; readonly salesCents: number; readonly orderCount: number }
+export interface MallPerformance {
+  readonly id: string;
+  readonly name: string;
+  readonly salesCents: number;
+  readonly paidOrderCount: number;
+  readonly refundRate: number;
+}
+export interface BusinessEvent {
+  readonly id: string;
+  readonly kind: 'calendar' | 'warning' | 'sync';
+  readonly title: string;
+  readonly metric: string;
+  readonly time: string;
+  readonly date?: string;
+}
+export interface BusinessInsight {
+  readonly id: string;
+  readonly tone: 'warning' | 'positive';
+  readonly title: string;
+  readonly detail?: string;
+  readonly action: string;
+  readonly target?: 'orders' | 'reports';
+}
+export interface CockpitData {
+  readonly items: readonly CockpitMetric[];
+  readonly count: number;
+  readonly nextCursor?: string;
+  readonly summary: Readonly<{
+    catalogCount: number;
+    availableStock: number;
+    orderCount: number;
+    afterSaleCount: number;
+    sales: CockpitSales;
+  }>;
+}
+
+export const CockpitSchema = Object.freeze({
+  parse(value: unknown): CockpitData {
+    if (!isCockpitData(value)) throw new Error('COCKPIT_SCHEMA_INVALID');
+    return value;
+  },
+  safeParse(value: unknown): Readonly<{ success: true; data: CockpitData } | { success: false; error: Error }> {
+    return isCockpitData(value)
+      ? { success: true, data: value }
+      : { success: false, error: new Error('COCKPIT_SCHEMA_INVALID') };
+  },
 });
 
-const SalesSchema = z.object({
-  asOf: z.string().min(1),
-  cumulativeSalesCents: z.number().finite(),
-  paidOrderCount: z.number().finite(),
-  averageOrderValueCents: z.number().finite(),
-  periodSalesCents: z.number().finite(),
-  periodPaidOrderCount: z.number().finite(),
-  refundedCents: z.number().finite(),
-  activeProductCount: z.number().finite(),
-  soldProductCount: z.number().finite(),
-  unsoldActiveProductCount: z.number().finite(),
-  trend: z.array(z.object({ date: z.string().min(1), salesCents: z.number().finite(), orderCount: z.number().finite() })),
-  weeklyTrend: z.array(z.object({ date: z.string().min(1), salesCents: z.number().finite(), orderCount: z.number().finite() })).optional(),
-  categories: z.array(z.object({ name: z.string().min(1), salesCents: z.number().finite(), share: z.number().finite() })),
-  topProducts: z.array(z.unknown()),
-  period: z.object({ from: z.string().min(1), to: z.string().min(1) }).optional(),
-  conclusion: z.string().min(1).optional(),
-  deltas: z.object({
-    netSalesRatio: z.number().finite().optional(),
-    paidOrdersRatio: z.number().finite().optional(),
-    averageOrderRatio: z.number().finite().optional(),
-    refundRate: z.number().finite().optional(),
-    refundRateDeltaPoints: z.number().finite().optional(),
-  }).optional(),
-  malls: z.array(z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    salesCents: z.number().finite(),
-    paidOrderCount: z.number().int().nonnegative(),
-    refundRate: z.number().finite(),
-  })).optional(),
-  events: z.array(z.object({
-    id: z.string().min(1),
-    kind: z.enum(['calendar', 'warning', 'sync']),
-    title: z.string().min(1),
-    metric: z.string().min(1),
-    time: z.string().min(1),
-    date: z.string().min(1).optional(),
-  })).optional(),
-  insights: z.array(z.object({
-    id: z.string().min(1),
-    tone: z.enum(['warning', 'positive']),
-    title: z.string().min(1),
-    detail: z.string().min(1).optional(),
-    action: z.string().min(1),
-    target: z.enum(['orders', 'reports']).optional(),
-  })).optional(),
-});
+function isCockpitData(value: unknown): value is CockpitData {
+  if (!isRecord(value) || !Array.isArray(value.items) || !value.items.every(isMetric)
+    || !nonNegativeInteger(value.count) || !optionalNonEmpty(value.nextCursor) || !isRecord(value.summary)) return false;
+  const summary = value.summary;
+  return finite(summary.catalogCount) && finite(summary.availableStock) && finite(summary.orderCount)
+    && finite(summary.afterSaleCount) && isSales(summary.sales);
+}
 
-export const CockpitSchema = z.object({
-  items: z.array(MetricSchema),
-  count: z.number().int().nonnegative(),
-  nextCursor: z.string().min(1).optional(),
-  summary: z.object({
-    catalogCount: z.number().finite(),
-    availableStock: z.number().finite(),
-    orderCount: z.number().finite(),
-    afterSaleCount: z.number().finite(),
-    sales: SalesSchema,
-  }),
-});
+function isMetric(value: unknown): value is CockpitMetric {
+  return isRecord(value) && nonEmpty(value.code) && nonNegativeInteger(value.version) && nonEmpty(value.scope)
+    && isPeriod(value.period, true) && isRecord(value.dimensions) && Object.values(value.dimensions).every((item) => typeof item === 'string')
+    && finite(value.value) && ['minor', 'count', 'ratio'].includes(value.unit as string)
+    && nonEmpty(value.watermark) && nonNegativeInteger(value.projectionVersion);
+}
 
-export type CockpitData = z.infer<typeof CockpitSchema>;
-export type Trend = CockpitData['summary']['sales']['trend'][number];
-export type CockpitSales = CockpitData['summary']['sales'];
-export type MallPerformance = NonNullable<CockpitSales['malls']>[number];
-export type BusinessEvent = NonNullable<CockpitSales['events']>[number];
-export type BusinessInsight = NonNullable<CockpitSales['insights']>[number];
+function isSales(value: unknown): value is CockpitSales {
+  return isRecord(value) && nonEmpty(value.asOf)
+    && ['cumulativeSalesCents', 'paidOrderCount', 'averageOrderValueCents', 'periodSalesCents', 'periodPaidOrderCount',
+      'refundedCents', 'activeProductCount', 'soldProductCount', 'unsoldActiveProductCount'].every((key) => finite(value[key]))
+    && isArrayOf(value.trend, isTrend) && optionalArrayOf(value.weeklyTrend, isTrend)
+    && isArrayOf(value.categories, isCategory) && Array.isArray(value.topProducts)
+    && (value.period === undefined || isPeriod(value.period, false)) && optionalNonEmpty(value.conclusion)
+    && (value.deltas === undefined || isDeltas(value.deltas)) && optionalArrayOf(value.malls, isMall)
+    && optionalArrayOf(value.events, isEvent) && optionalArrayOf(value.insights, isInsight);
+}
+
+function isTrend(value: unknown): value is Trend {
+  return isRecord(value) && nonEmpty(value.date) && finite(value.salesCents) && finite(value.orderCount);
+}
+
+function isCategory(value: unknown): value is CockpitSales['categories'][number] {
+  return isRecord(value) && nonEmpty(value.name) && finite(value.salesCents) && finite(value.share);
+}
+
+function isMall(value: unknown): value is MallPerformance {
+  return isRecord(value) && nonEmpty(value.id) && nonEmpty(value.name) && finite(value.salesCents)
+    && nonNegativeInteger(value.paidOrderCount) && finite(value.refundRate);
+}
+
+function isEvent(value: unknown): value is BusinessEvent {
+  return isRecord(value) && nonEmpty(value.id) && ['calendar', 'warning', 'sync'].includes(value.kind as string)
+    && nonEmpty(value.title) && nonEmpty(value.metric) && nonEmpty(value.time) && optionalNonEmpty(value.date);
+}
+
+function isInsight(value: unknown): value is BusinessInsight {
+  return isRecord(value) && nonEmpty(value.id) && ['warning', 'positive'].includes(value.tone as string)
+    && nonEmpty(value.title) && optionalNonEmpty(value.detail) && nonEmpty(value.action)
+    && (value.target === undefined || ['orders', 'reports'].includes(value.target as string));
+}
+
+function isDeltas(value: unknown): value is NonNullable<CockpitSales['deltas']> {
+  return isRecord(value) && ['netSalesRatio', 'paidOrdersRatio', 'averageOrderRatio', 'refundRate', 'refundRateDeltaPoints']
+    .every((key) => value[key] === undefined || finite(value[key]));
+}
+
+function isPeriod(value: unknown, timezone: boolean): value is Readonly<{ from: string; to: string; timezone?: string }> {
+  return isRecord(value) && nonEmpty(value.from) && nonEmpty(value.to) && (!timezone || nonEmpty(value.timezone));
+}
+
+function isArrayOf<T>(value: unknown, validate: (item: unknown) => item is T): value is readonly T[] {
+  return Array.isArray(value) && value.every(validate);
+}
+
+function optionalArrayOf<T>(value: unknown, validate: (item: unknown) => item is T): value is readonly T[] | undefined {
+  return value === undefined || isArrayOf(value, validate);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function nonEmpty(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
+function optionalNonEmpty(value: unknown): value is string | undefined {
+  return value === undefined || nonEmpty(value);
+}
+
+function finite(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function nonNegativeInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}

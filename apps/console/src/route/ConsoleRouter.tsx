@@ -1,10 +1,22 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
-import { RouteFallback } from '@shop/design';
-import { RouteError } from './RouteError';
+import { lazy, Suspense } from 'react';
 import { ScopeShell } from '../shell/ScopeShell';
 import { landingLoader, scopeLoader } from './SessionLoader';
 import { consoleModules } from './ConsoleModuleRegistry';
 import { materializeConsoleIndexRoute, materializeConsoleModules } from './ConsoleModuleRoutes';
+
+const LazyRouteError = lazy(async () => {
+  const { RouteError } = await import('./RouteError');
+  return { default: RouteError };
+});
+
+function ConsoleRouteError() {
+  return <Suspense fallback={<ConsoleRouteFallback />}><LazyRouteError /></Suspense>;
+}
+
+function ConsoleRouteFallback() {
+  return <main className="statemain" aria-label="页面加载状态"><p role="status">正在加载…</p></main>;
+}
 
 export const consoleScopeChildren = [
   materializeConsoleIndexRoute(consoleModules),
@@ -19,16 +31,16 @@ export const consoleRouter = createBrowserRouter([
   {
     path: '/',
     loader: landingLoader,
-    HydrateFallback: RouteFallback,
-    errorElement: <RouteError />,
+    HydrateFallback: ConsoleRouteFallback,
+    errorElement: <ConsoleRouteError />,
   },
   {
     id: 'scope',
     path: '/scopes/:scopeKind/:scopeId',
     loader: scopeLoader,
     Component: ScopeShell,
-    HydrateFallback: RouteFallback,
-    errorElement: <RouteError />,
+    HydrateFallback: ConsoleRouteFallback,
+    errorElement: <ConsoleRouteError />,
     children: consoleScopeChildren,
   },
   { path: '*', lazy: () => import('./NotFoundRoute') },

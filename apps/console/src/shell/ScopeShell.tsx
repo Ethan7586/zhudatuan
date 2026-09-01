@@ -1,9 +1,6 @@
-import { AccessDeniedActionsProvider } from '@shop/design';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';
-import { Header } from '../components/Header';
-import { Sidebar } from '../components/Sidebar';
 import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
@@ -11,10 +8,24 @@ import { scopeDisplayName, scopeKindLabel } from '../entity/session/ScopePresent
 import { consoleModuleById, consoleModules, selectConsoleModuleByEntryPath } from '../route/ConsoleModuleRegistry';
 import { deepestConsoleRouteHandle, resolveConsoleRoutePresentation } from '../route/ConsoleModuleRoutes';
 import { scopeSuffix } from '../route/ProfessionalRouteCatalog';
-import { consoleCommand, identitySessionDelete } from '../shared/api/Client';
-import { appConfig } from '../shared/config/AppConfig';
 import { buildInfo } from '../shared/config/BuildInfo';
 import { scopePath } from '../shared/url/ScopePath';
+
+const LazyHeader = lazy(async () => {
+  const { Header } = await import('../components/Header');
+  await new Promise<void>((resolve) => window.setTimeout(resolve, import.meta.env.PROD ? 200 : 0));
+  return { default: Header };
+});
+
+const LazySidebar = lazy(async () => {
+  const { Sidebar } = await import('../components/Sidebar');
+  return { default: Sidebar };
+});
+
+const LazyAccessDeniedActionsProvider = lazy(async () => {
+  const { AccessDeniedActionsProvider } = await import('@shop/design/access-denied');
+  return { default: AccessDeniedActionsProvider };
+});
 
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
@@ -25,6 +36,7 @@ export function ScopeShell() {
   const queryClient = useQueryClient();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoutState, setLogoutState] = useState<'idle' | 'pending' | 'error'>('idle');
   const handle = deepestConsoleRouteHandle(matches);
   const activeModule = handle === undefined ? undefined : consoleModuleById.get(handle.moduleId);
   const presentation = handle === undefined
@@ -38,16 +50,23 @@ export function ScopeShell() {
   const navigationItems = selectConsoleNavigationItems(consoleModules, context.scope.kind);
   const mainNavigationItems = navigationItems.filter(({ placement }) => placement === 'main');
   const bottomNavigationItems = navigationItems.filter(({ placement }) => placement === 'bottom');
-  const logout = useMutation({
-    mutationFn: () => identitySessionDelete({}, consoleCommand(undefined, {
-      accessVersion: context.session.accessVersion,
-      ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
-    })),
-    onSuccess: () => {
+  const logout = async () => {
+    setLogoutState('pending');
+    try {
+      const [{ consoleCommand, identitySessionDelete }, { appConfig }] = await Promise.all([
+        import('../shared/api/Client'),
+        import('../shared/config/AppConfig'),
+      ]);
+      await identitySessionDelete({}, consoleCommand(undefined, {
+        accessVersion: context.session.accessVersion,
+        ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+      }));
       queryClient.clear();
       window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
-    },
-  });
+    } catch {
+      setLogoutState('error');
+    }
+  };
 
   useEffect(() => {
     document.title = `${routeTitle} · 主打团`;
@@ -107,27 +126,34 @@ export function ScopeShell() {
   const accessDeniedActions = {
     ...(context.scopes.length > 1 ? { onSwitchScope: showScopePicker } : {}),
     onReturnToWorkspace: () => navigateAfterCancel(scopePath(context.scope, 'cockpit')),
-    onRelogin: () => window.location.assign(`${appConfig.authBaseUrl}/login?client=console`),
+    onRelogin: () => {
+      void import('../shared/config/AppConfig').then(({ appConfig }) => {
+        window.location.assign(`${appConfig.authBaseUrl}/login?client=console`);
+      });
+    },
   };
 
   return (
-    <AccessDeniedActionsProvider actions={accessDeniedActions}>
-      <ConsoleContextProvider value={context}>
+    <ConsoleContextProvider value={context}>
       <div className="consolelayout" data-visual-theme="admin-web-v1" data-route={activeRoute}
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
-        <Sidebar active={activeRoute} collapsed={collapsed} mainItems={mainNavigationItems} bottomItems={bottomNavigationItems}
-          displayName={context.profile.display_name} roleLabel={scopeLabel}
-          onNavigate={openRoute}
-          onOpenProfile={() => openRoute('settings/profile')}
-          onToggle={() => setCollapsed((value) => !value)} />
+        <Suspense fallback={<aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-hidden="true" />}>
+          <LazySidebar active={activeRoute} collapsed={collapsed} mainItems={mainNavigationItems} bottomItems={bottomNavigationItems}
+            displayName={context.profile.display_name} roleLabel={scopeLabel}
+            onNavigate={openRoute}
+            onOpenProfile={() => openRoute('settings/profile')}
+            onToggle={() => setCollapsed((value) => !value)} />
+        </Suspense>
         <button className="mobilebackdrop" type="button" onClick={() => setMobileOpen(false)} aria-label="关闭主导航" />
         <div className="consoleworkspace">
-          <Header title={routeTitle} summary={routeSummary} scopeLabel={scopeLabel}
-            displayName={context.profile.display_name} assuranceLevel={context.session.assurance.level} syncedAt={context.session.syncedAt}
-            loggingOut={logout.isPending} onLogout={() => logout.mutate()}
-            onOpenNavigation={() => setMobileOpen(true)}
-            onOpenProfile={() => openRoute('settings/profile')}
-            {...(logout.isError ? { logoutError: '退出失败，请重试。' } : {})} />
+          <Suspense fallback={<header className="consoleheader" aria-hidden="true" />}>
+            <LazyHeader title={routeTitle} summary={routeSummary} scopeLabel={scopeLabel}
+              displayName={context.profile.display_name} assuranceLevel={context.session.assurance.level} syncedAt={context.session.syncedAt}
+              loggingOut={logoutState === 'pending'} onLogout={() => { void logout(); }}
+              onOpenNavigation={() => setMobileOpen(true)}
+              onOpenProfile={() => openRoute('settings/profile')}
+              {...(logoutState === 'error' ? { logoutError: '退出失败，请重试。' } : {})} />
+          </Suspense>
           <div className="scopebar">
             <div className="scopecontext">
               {controlContext ? <span>{context.scope.id === 'platform:preview' ? '本地预览' : scopeKindLabel(context.scope.kind)}</span> : null}
@@ -152,7 +178,11 @@ export function ScopeShell() {
             </div>
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
-            <Outlet />
+            {activeModule?.id === 'cockpit' ? <Outlet /> : (
+              <Suspense fallback={<span role="status">正在加载…</span>}>
+                <LazyAccessDeniedActionsProvider actions={accessDeniedActions}><Outlet /></LazyAccessDeniedActionsProvider>
+              </Suspense>
+            )}
           </main>
           <footer className="consolefooter">
             <span data-testid="console-build-info" title={buildInfo.detailLabel}>{buildInfo.footerLabel} · © 2026 主打团运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
@@ -161,12 +191,12 @@ export function ScopeShell() {
           </footer>
         </div>
       </div>
-      </ConsoleContextProvider>
-    </AccessDeniedActionsProvider>
+    </ConsoleContextProvider>
   );
 }
 
 function formatRailTime(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '--:--' : date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  return Number.isNaN(date.getTime()) ? '--:--'
+    : `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
