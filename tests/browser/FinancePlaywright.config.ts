@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const consoleOrigin = 'http://127.0.0.1:4183';
+process.env.FINANCE_CONSOLE_ORIGIN = consoleOrigin;
 const environment = 'VITE_API_BASE_URL=http://127.0.0.1:4311 VITE_AUTH_BASE_URL=http://127.0.0.1:4176 VITE_CLIENT_VERSION=1.0.0-finance.e2e DISABLE_HMR=true';
 
 export default defineConfig({
