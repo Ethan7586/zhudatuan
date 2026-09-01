@@ -1,5 +1,4 @@
-import { CONTRACT_CHECKSUM } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD, requiredValue, type JobsEnvironment } from '@shop/config/server';
+import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, requiredValue, type JobsEnvironment } from '@shop/config/server';
 import type { Job } from '../foundation/application/Job';
 import { QueueJob } from '../foundation/infrastructure/QueueJob';
 import { KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -14,7 +13,7 @@ import { parseIdentityNotificationConfiguration } from '../modules/notification/
 import { PgNotificationRepository } from '../modules/notification/infrastructure/persistence/PgNotificationRepository';
 import { IdentityNotificationBacklogMonitor } from '../modules/notification/interface/job/IdentityNotificationBacklogMonitor';
 import { IdentityNotificationJobProcessor, type IdentityChallengeDispatcher } from '../modules/notification/interface/job/NotificationJob';
-import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
+import { assertIdentityRuntimeDatabaseBoundary } from './LiveDatabaseBoundary';
 
 export interface IdentityNotificationJobsRuntime {
   readonly job: Job<void>;
@@ -91,11 +90,11 @@ export async function assertIdentityNotificationRuntimeCompatibility(pool: Datab
     to_regclass('identity.challenge') is not null challenge,
     to_regclass('identity.challengesecret') is not null challenge_secret,
     to_regclass('identity.challengedelivery') is not null challenge_delivery`,
-  [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM]);
+  [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanidentityjob' || !state.writable || !state.schema || !state.contract || !state.registration || !state.runtime_job
     || !state.challenge || !state.challenge_secret || !state.challenge_delivery) {
     throw new Error('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
   }
-  await assertLiveDatabaseBoundary(pool, 'zhudatuanidentityjob');
+  await assertIdentityRuntimeDatabaseBoundary(pool, 'zhudatuanidentityjob');
 }
