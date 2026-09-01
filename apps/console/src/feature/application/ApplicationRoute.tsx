@@ -1,5 +1,5 @@
 import { Button, ResourcePanel } from '@shop/design';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -12,6 +12,23 @@ import type { Application } from './ApplicationSchema';
 import { applicationScopePresentation, type CommerceWorkspaceMode } from './ApplicationScope';
 import { ApplicationTable } from './ApplicationTable';
 import { CommerceSolutionCenter, commerceSolutionName, readCommerceSolution, type CommerceSolutionId } from './CommerceSolutionCenter';
+import {
+  canCreateMall,
+  completeMallCreateStepup,
+  createMall,
+  isMallStepupRequired,
+  mallCreationError,
+  mallCreationRequiresStepup,
+  mallEnterpriseScopes,
+  mallProvisioningScope,
+  newMallCreateAttempt,
+  startMallCreateStepup,
+  type CreatedMall,
+  type MallCreateAttempt,
+  type MallCreateDraft,
+  type MallStepupChallenge,
+} from './MallCreateCommand';
+import { MallCreateDialog, type MallCreatePhase } from './MallCreateDialog';
 import './application-workspace.css';
 import './application-table.css';
 import './application-dialogs.css';
@@ -29,10 +46,21 @@ const views: readonly Readonly<{ key: CommerceView; label: string }>[] = Object.
 
 export function Component() {
   const context = useConsoleContext();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
   const [flowOpen, setFlowOpen] = useState(false);
   const [solutionOpen, setSolutionOpen] = useState(false);
+  const [mallCreateOpen, setMallCreateOpen] = useState(false);
+  const [mallCreatePhase, setMallCreatePhase] = useState<MallCreatePhase>('form');
+  const [mallCreateError, setMallCreateError] = useState<string>();
+  const [mallCreateAttempt, setMallCreateAttempt] = useState<MallCreateAttempt>();
+  const [mallCreateChallenge, setMallCreateChallenge] = useState<MallStepupChallenge>();
+  const [mallCreateResult, setMallCreateResult] = useState<CreatedMall>();
+  const [mallStepupCompleted, setMallStepupCompleted] = useState(false);
   const presentation = applicationScopePresentation(context.scope.kind);
+  const provisioningScope = mallProvisioningScope(context);
+  const enterpriseScopes = mallEnterpriseScopes(context);
+  const mallCreateAvailable = canCreateMall(context, provisioningScope);
   const cursor = search.get('cursor') ?? undefined;
   const query = useQuery({
     queryKey: applicationKey(context, cursor),
@@ -53,10 +81,13 @@ export function Component() {
   const selectedSolution = readSolution(search);
   const q = (search.get('q') ?? '').trim().toLowerCase();
   const selectedId = search.get('selected') ?? undefined;
-  const selected = data?.items.find((record) => record.id === selectedId);
-  const rows = useMemo(() => (data?.items ?? []).filter((record) => matchesView(record, view)
-    && (q === '' || searchable(record).includes(q))), [data?.items, q, view]);
-  const summary = useMemo(() => applicationSummary(data?.items ?? []), [data?.items]);
+  const records = useMemo(() => presentation.mode === 'management'
+    ? (data?.items ?? []).filter((record) => record.mall_id !== null && record.mall_id !== undefined)
+    : (data?.items ?? []), [data?.items, presentation.mode]);
+  const selected = records.find((record) => record.id === selectedId);
+  const rows = useMemo(() => records.filter((record) => matchesView(record, view)
+    && (q === '' || searchable(record).includes(q))), [q, records, view]);
+  const summary = useMemo(() => applicationSummary(records), [records]);
   const flow = commerceFlow(presentation.mode);
 
   const updateSearch = useCallback((mutate: (next: URLSearchParams) => void) => {
@@ -80,12 +111,110 @@ export function Component() {
   const closeRecord = useCallback(() => updateSearch((next) => next.delete('selected')), [updateSearch]);
   const scopeName = context.scope.name ?? context.scope.id;
 
+  const closeMallCreate = () => {
+    if (mallCreatePhase === 'starting' || mallCreatePhase === 'verifying' || mallCreatePhase === 'creating') return;
+    setMallCreateOpen(false);
+    setMallCreatePhase('form');
+    setMallCreateError(undefined);
+    setMallCreateAttempt(undefined);
+    setMallCreateChallenge(undefined);
+    setMallCreateResult(undefined);
+    setMallStepupCompleted(false);
+  };
+
+  const openPrimaryAction = () => {
+    closeRecord();
+    setSolutionOpen(false);
+    if (presentation.mode !== 'management') {
+      setFlowOpen(true);
+      return;
+    }
+    setFlowOpen(false);
+    setMallCreateError(undefined);
+    setMallCreatePhase('form');
+    setMallCreateOpen(true);
+  };
+
+  const requestMallStepup = async (attempt: MallCreateAttempt) => {
+    if (provisioningScope === undefined) {
+      setMallCreateError(mallCreationError(new Error('MALL_CREATE_NOT_AVAILABLE')));
+      setMallCreatePhase('form');
+      return;
+    }
+    setMallCreatePhase('starting');
+    try {
+      const challenge = await startMallCreateStepup(context, provisioningScope);
+      setMallCreateAttempt(attempt);
+      setMallCreateChallenge(challenge);
+      setMallCreatePhase('verification');
+    } catch (cause) {
+      setMallCreateError(mallCreationError(cause));
+      setMallCreatePhase('form');
+    }
+  };
+
+  const provisionMall = async (attempt: MallCreateAttempt) => {
+    if (provisioningScope === undefined) {
+      setMallCreateError(mallCreationError(new Error('MALL_CREATE_NOT_AVAILABLE')));
+      setMallCreatePhase('form');
+      return;
+    }
+    setMallCreatePhase('creating');
+    try {
+      const result = await createMall(context, provisioningScope, attempt);
+      setMallCreateResult(result);
+      setMallCreateError(undefined);
+      setMallCreatePhase('success');
+      await queryClient.invalidateQueries({ queryKey: [
+        'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'experience.applications.read',
+      ] });
+    } catch (cause) {
+      if (isMallStepupRequired(cause)) {
+        setMallStepupCompleted(false);
+        await requestMallStepup(attempt);
+        return;
+      }
+      setMallCreateError(mallCreationError(cause));
+      setMallCreatePhase('form');
+    }
+  };
+
+  const beginMallCreate = async (draft: MallCreateDraft) => {
+    if (!mallCreateAvailable || provisioningScope === undefined) {
+      setMallCreateError(mallCreationError(new Error('MALL_CREATE_NOT_AVAILABLE')));
+      return;
+    }
+    setMallCreateError(undefined);
+    const attempt = sameMallDraft(mallCreateAttempt, draft) ? mallCreateAttempt : newMallCreateAttempt(draft);
+    setMallCreateAttempt(attempt);
+    if (mallCreationRequiresStepup(context) && !mallStepupCompleted) {
+      await requestMallStepup(attempt);
+      return;
+    }
+    await provisionMall(attempt);
+  };
+
+  const verifyAndCreateMall = async (code: string) => {
+    if (provisioningScope === undefined || mallCreateChallenge === undefined || mallCreateAttempt === undefined) return;
+    setMallCreateError(undefined);
+    setMallCreatePhase('verifying');
+    try {
+      await completeMallCreateStepup(context, provisioningScope, mallCreateChallenge.id, code);
+      setMallStepupCompleted(true);
+      setMallCreateChallenge(undefined);
+      await provisionMall(mallCreateAttempt);
+    } catch (cause) {
+      setMallCreateError(mallCreationError(cause));
+      setMallCreatePhase('verification');
+    }
+  };
+
   return <div className="commerceworkspace" data-mode={presentation.mode}>
     <ResourcePanel title={presentation.title} eyebrow={presentation.eyebrow} description={presentation.description}
       condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}
       actions={<><Button onPress={() => { closeRecord(); setFlowOpen(false); setSolutionOpen(true); }}>建店方案（3 套）</Button>
         <Button onPress={() => { void query.refetch(); }}>刷新数据</Button>
-        <Button tone="primary" onPress={() => { closeRecord(); setSolutionOpen(false); setFlowOpen(true); }}>{presentation.primaryAction}</Button></>}>
+        <Button tone="primary" onPress={openPrimaryAction}>{presentation.primaryAction}</Button></>}>
       <div className="commercecontent">
         <section className="commerceownership" role="note"><span aria-hidden="true">域</span><div>
           <strong>{presentation.ownership}：{scopeName}</strong><p>{presentation.ownershipDetail}</p>
@@ -97,7 +226,7 @@ export function Component() {
           </article>)}
         </section>
         <section className="commerceboundarybanner" role="note"><span aria-hidden="true">!</span><div>
-          <strong>{presentation.mode === 'management' ? '建店提交等待 mall.bootstrap' : '高风险写操作继续关闭'}</strong>
+          <strong>{presentation.mode === 'management' ? '商城创建发动机已接通' : '高风险写操作继续关闭'}</strong>
           <p>{boundaryMessage(presentation.mode)}</p>
         </div><button type="button" onClick={() => setFlowOpen(true)}>查看安全流程</button></section>
         <ol className="commerceflow" aria-label={`${presentation.title}业务闭环`}>
@@ -108,17 +237,17 @@ export function Component() {
             {views.map((candidate) => <button key={candidate.key} type="button" aria-pressed={candidate.key === view}
               onClick={() => selectView(candidate.key)}>{candidate.label}</button>)}
           </nav>
-          <div className="commercefilterbar"><div><strong id="commerceboardtitle">商城应用清单</strong>
-            <span>应用、绑定、草稿、校验与发布状态来自同一权威读模型</span></div>
+          <div className="commercefilterbar"><div><strong id="commerceboardtitle">{presentation.mode === 'management' ? '商城清单' : '商城应用清单'}</strong>
+            <span>商城身份、应用、商品池、草稿与发布状态来自同一权威读模型</span></div>
             <label className="commercesearch"><span className="sr-only">搜索商城应用</span><input type="search" value={search.get('q') ?? ''}
               onChange={(event) => updateQuery(event.target.value)} placeholder="搜索名称、代码、商城或域名" /></label></div>
-          <p className="commercefiltermeta">当前页筛选 · 显示 {rows.length} / {data?.items.length ?? 0} 条 · 不推断未返回的商城总量</p>
-          {data !== undefined && data.items.length === 0 ? <section className="commerceempty" role="status"><strong>当前范围暂无商城应用</strong>
-            <p>{presentation.mode === 'management' ? '可先查看六步建店流程；待 mall.bootstrap 补齐后再正式创建。' : '切换数据范围或刷新后再查看。'}</p></section> : null}
-          {data !== undefined && data.items.length > 0 && rows.length === 0 ? <section className="commerceempty" role="status"><strong>当前页没有匹配记录</strong>
+          <p className="commercefiltermeta">当前页筛选 · 显示 {rows.length} / {records.length} 条 · 不推断未返回的商城总量</p>
+          {data !== undefined && records.length === 0 ? <section className="commerceempty" role="status"><strong>当前范围暂无商城</strong>
+            <p>{presentation.mode === 'management' ? '点击“创建商城”，即可建立第一家独立商城。' : '切换数据范围或刷新后再查看。'}</p></section> : null}
+          {data !== undefined && records.length > 0 && rows.length === 0 ? <section className="commerceempty" role="status"><strong>当前页没有匹配记录</strong>
             <p>调整状态视图或搜索词即可恢复列表。</p><button type="button" onClick={() => clearFilters(search, setSearch)}>清除筛选</button></section> : null}
           {rows.length > 0 ? <ApplicationTable rows={rows} mode={presentation.mode} onOpen={openRecord} /> : null}
-          <footer className="commercepagination"><span>服务端返回 {data?.count ?? 0} 条 · 游标分页</span>
+          <footer className="commercepagination"><span>当前页 {records.length} 家商城 · 游标分页</span>
             <Button onPress={() => { if (data?.nextCursor !== undefined) setSearch(pageCursor(search, data.nextCursor)); }}
               isDisabled={data?.nextCursor === undefined}>下一页</Button></footer>
         </section>
@@ -129,6 +258,11 @@ export function Component() {
     <CommerceSolutionCenter open={solutionOpen} selected={selectedSolution}
       onSelect={(solution) => updateSearch((next) => { next.set('solution', solution); next.delete('theme'); })}
       onClose={() => setSolutionOpen(false)} />
+    {mallCreateOpen ? <MallCreateDialog open phase={mallCreatePhase} enterprises={enterpriseScopes}
+      preferredEnterpriseId={context.scope.kind === 'enterprise' ? context.scope.id : enterpriseScopes[0]?.id}
+      available={mallCreateAvailable} challengeExpiresAt={mallCreateChallenge?.expires_at}
+      error={mallCreateError} result={mallCreateResult}
+      onSubmit={(draft) => { void beginMallCreate(draft); }} onVerify={(code) => { void verifyAndCreateMall(code); }} onClose={closeMallCreate} /> : null}
   </div>;
 }
 
@@ -152,9 +286,17 @@ function searchable(row: Application): string {
 }
 
 function boundaryMessage(mode: CommerceWorkspaceMode): string {
-  if (mode === 'management') return '服务端需原子建立商城、组织关系、商城应用、初始商品池和开店草稿；当前预览绝不分步写入。';
+  if (mode === 'management') return '平台一次建立商城身份、组织关系、独立商品池、商城应用和开店草稿；失败不会留下半成品。';
   if (mode === 'design') return '保存、校验、预览、发布与恢复需完整 expectedVersion / proof 旅程；当前页面只读取权威状态。';
   return '平台可查看准入与异常，但正式审批必须进入系统治理并与商户权限隔离。';
+}
+
+function sameMallDraft(attempt: MallCreateAttempt | undefined, draft: MallCreateDraft): attempt is MallCreateAttempt {
+  return attempt !== undefined
+    && attempt.enterpriseId === draft.enterpriseId.trim()
+    && attempt.name === draft.name.trim()
+    && attempt.code === draft.code.trim()
+    && attempt.publicSlug === draft.publicSlug.trim();
 }
 
 function clearFilters(search: URLSearchParams, setSearch: ReturnType<typeof useSearchParams>[1]) {

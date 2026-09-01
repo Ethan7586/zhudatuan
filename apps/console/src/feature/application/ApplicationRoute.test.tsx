@@ -11,8 +11,38 @@ import { Component } from './ApplicationRoute';
 import { commerceSolutions, readCommerceSolution } from './CommerceSolutionCenter';
 
 const writes: string[] = [];
+let applicationItems = initialApplications();
+let provisioningRequest: Readonly<{ scope: string | null; idempotencyKey: string | null; enterpriseId: string }> | undefined;
 const server = setupServer(
-  http.get('*/api/v1/experiences/applications', () => HttpResponse.json(applications)),
+  http.get('*/api/v1/experiences/applications', () => HttpResponse.json({ items: applicationItems, count: applicationItems.length })),
+  http.post('*/api/v1/identity/stepup/challenges', () => {
+    writes.push('identity.stepup.start');
+    return HttpResponse.json({ id: 'challenge:mall-create', purpose: 'stepup', expires_at: '2026-09-01T23:59:00.000Z' }, { status: 202 });
+  }),
+  http.post('*/api/v1/identity/stepup/verifications', async ({ request }) => {
+    const body = await request.json() as { challenge?: string; code?: string };
+    if (body.challenge !== 'challenge:mall-create' || body.code !== '123456') return HttpResponse.json({ code: 'INVALID_CODE' }, { status: 400 });
+    writes.push('identity.stepup.complete');
+    return HttpResponse.json({ id: 'session:commerce', assurance_level: 3 });
+  }),
+  http.post('*/api/v1/provisioning/malls', async ({ request }) => {
+    const body = await request.json() as { enterpriseId: string; name: string; code: string; publicSlug: string };
+    writes.push('provisioning.malls.create');
+    provisioningRequest = {
+      scope: request.headers.get('x-scope-hint'),
+      idempotencyKey: request.headers.get('idempotency-key'),
+      enterpriseId: body.enterpriseId,
+    };
+    applicationItems = [{
+      id: 'application:zhenxuan', code: body.code, public_slug: body.publicSlug, name: body.name, status: 'draft', version: 0,
+      head_sequence: 1, head_validation_state: 'valid', published_sequence: null, domain: null,
+      mall_id: 'mall:zhenxuan', pool_id: 'pool:zhenxuan', updated_at: '2026-09-01T23:20:00.000Z',
+    }, ...applicationItems];
+    return HttpResponse.json({
+      mallId: 'mall:zhenxuan', enterpriseId: body.enterpriseId, applicationId: 'application:zhenxuan', poolId: 'pool:zhenxuan',
+      code: body.code, publicSlug: body.publicSlug, name: body.name, state: 'ready', publicationState: 'draft',
+    }, { status: 201 });
+  }),
   http.all('*/api/v1/experiences/**', ({ request }) => {
     writes.push(request.method);
     return HttpResponse.json({ code: 'UNEXPECTED_APPLICATION_WRITE' }, { status: 500 });
@@ -20,16 +50,23 @@ const server = setupServer(
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterEach(() => { cleanup(); server.resetHandlers(); writes.length = 0; currentSearch = ''; });
+afterEach(() => {
+  cleanup();
+  server.resetHandlers();
+  writes.length = 0;
+  currentSearch = '';
+  applicationItems = initialApplications();
+  provisioningRequest = undefined;
+});
 afterAll(() => server.close());
 
 describe('Commerce application workspace', () => {
-  it('renders application governance for platform scope and opens a read-only record', async () => {
+  it('renders mall management for platform scope and opens a read-only record', async () => {
     const user = userEvent.setup();
     renderRoute('/applications', scope('platform', 'platform:preview', '智慧翼平台'));
-    expect(await screen.findByRole('heading', { level: 1, name: '应用治理' })).toBeTruthy();
-    expect(await screen.findByRole('table', { name: '应用治理列表' })).toBeTruthy();
-    expect(screen.getByText('平台治理视角：智慧翼平台')).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: '商城管理' })).toBeTruthy();
+    expect(await screen.findByRole('table', { name: '商城列表' })).toBeTruthy();
+    expect(screen.getByText('商城控制面：智慧翼平台')).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '查看鸿泰惠民通摘要' }));
     const drawer = await screen.findByRole('dialog', { name: '鸿泰惠民通' });
@@ -37,18 +74,34 @@ describe('Commerce application workspace', () => {
     expect(writes).toHaveLength(0);
   });
 
-  it('shows the enterprise six-step bootstrap as a safe non-mutating preview', async () => {
+  it('creates a mall through platform scope after step-up and refreshes the mall list', async () => {
     const user = userEvent.setup();
     renderRoute('/applications', scope('enterprise', 'enterprise:hongtai', '鸿泰集团'));
     expect(await screen.findByRole('heading', { level: 1, name: '商城管理' })).toBeTruthy();
-    expect(await screen.findByRole('table', { name: '集团商城列表' })).toBeTruthy();
-    expect(screen.getByText('建店提交等待 mall.bootstrap')).toBeTruthy();
+    expect(await screen.findByRole('table', { name: '商城列表' })).toBeTruthy();
+    expect(screen.getByText('商城创建发动机已接通')).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '创建商城' }));
-    const dialog = await screen.findByRole('dialog', { name: '创建商城 · 六步安全预览' });
-    expect(within(dialog).getByText('等待原子化 mall.bootstrap')).toBeTruthy();
-    expect(within(dialog).getAllByRole('listitem')).toHaveLength(6);
-    expect(writes).toHaveLength(0);
+    let dialog = await screen.findByRole('dialog', { name: '创建商城' });
+    expect((within(dialog).getByRole('combobox', { name: '所属集团' }) as HTMLSelectElement).value).toBe('enterprise:hongtai');
+    await user.type(within(dialog).getByRole('textbox', { name: '商城名称' }), '主打团甄选商城');
+    await user.type(within(dialog).getByRole('textbox', { name: '商城代码' }), 'ZDT_SELECT');
+    await user.type(within(dialog).getByRole('textbox', { name: '访问标识' }), 'zdt-select');
+    await user.click(within(dialog).getByRole('button', { name: '确认创建' }));
+
+    dialog = await screen.findByRole('dialog', { name: '验证后创建商城' });
+    await user.type(within(dialog).getByRole('textbox', { name: '六位验证码' }), '123456');
+    await user.click(within(dialog).getByRole('button', { name: '验证并创建' }));
+
+    dialog = await screen.findByRole('dialog', { name: '商城创建完成' });
+    expect(within(dialog).getByText('mall:zhenxuan')).toBeTruthy();
+    expect(within(dialog).getByText('草稿，等待店铺装修')).toBeTruthy();
+    expect(writes).toEqual(['identity.stepup.start', 'identity.stepup.complete', 'provisioning.malls.create']);
+    expect(provisioningRequest?.scope).toBe('organization-platform-root');
+    expect(provisioningRequest?.enterpriseId).toBe('enterprise:hongtai');
+    expect(provisioningRequest?.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
+    await user.click(within(dialog).getByRole('button', { name: '完成' }));
+    expect(await screen.findByText('主打团甄选商城')).toBeTruthy();
   });
 
   it('keeps the three official solutions stable and maps the old preview aliases', () => {
@@ -65,7 +118,7 @@ describe('Commerce application workspace', () => {
   it('commits a candidate only after confirmation and preserves unrelated URL state', async () => {
     const user = userEvent.setup();
     renderRoute('/applications?campaign=keep', scope('platform', 'platform:preview', '智慧翼平台'));
-    await screen.findByRole('table', { name: '应用治理列表' });
+    await screen.findByRole('table', { name: '商城列表' });
 
     await user.click(screen.getByRole('button', { name: '建店方案（3 套）' }));
     let dialog = await screen.findByRole('dialog', { name: '建店方案中心' });
@@ -98,7 +151,7 @@ describe('Commerce application workspace', () => {
   it('discards on Escape and loads only the requested original in the full preview', async () => {
     const user = userEvent.setup();
     renderRoute('/applications?campaign=keep', scope('platform', 'platform:preview', '智慧翼平台'));
-    await screen.findByRole('table', { name: '应用治理列表' });
+    await screen.findByRole('table', { name: '商城列表' });
 
     await user.click(screen.getByRole('button', { name: '建店方案（3 套）' }));
     let dialog = await screen.findByRole('dialog', { name: '建店方案中心' });
@@ -167,26 +220,49 @@ function scope(kind: ConsoleScope['kind'], id: string, name: string): ConsoleSco
 }
 
 function contextFor(activeScope: ConsoleScope): ConsoleContext {
+  const management = activeScope.kind === 'platform' || activeScope.kind === 'enterprise';
+  const platform = activeScope.kind === 'platform' ? activeScope : scope('platform', 'organization-platform-root', '主打团平台');
+  const scopes = management
+    ? activeScope.kind === 'platform'
+      ? [activeScope, scope('enterprise', 'enterprise:hongtai', '鸿泰集团')]
+      : [platform, activeScope]
+    : [activeScope];
   return {
     session: {
       actor: 'actor:commerce', membership: 'membership:commerce', accessVersion: 11,
-      permissions: ['experience.application.read'], capabilities: ['experience.applications.read'], target: 'console',
-      scope: activeScope, scopes: [activeScope], assurance: { level: 2 }, syncedAt: '2026-08-27T05:00:00.000Z',
+      permissions: ['experience.application.read', ...(management ? ['organization.layer.manage'] : [])],
+      capabilities: ['experience.applications.read', ...(management ? ['provisioning.malls.create'] : [])], target: 'console',
+      scope: activeScope, scopes, assurance: { level: 2 }, csrf: 'csrf-token-for-console-tests', syncedAt: '2026-08-27T05:00:00.000Z',
     },
     profile: { display_name: '商城运营', employee_no: null },
     scope: activeScope,
-    scopes: [activeScope],
+    scopes,
   };
 }
 
-const applications = {
-  items: [
+interface ApplicationFixture {
+  readonly id: string;
+  readonly code: string;
+  readonly public_slug: string;
+  readonly name: string;
+  readonly status: string;
+  readonly version: number;
+  readonly head_sequence: number;
+  readonly head_validation_state: string;
+  readonly published_sequence: number | null;
+  readonly domain: string | null;
+  readonly mall_id: string;
+  readonly pool_id: string;
+  readonly updated_at: string;
+}
+
+function initialApplications(): ApplicationFixture[] {
+  return [
     { id: 'application:benefits', code: 'BENEFITS', public_slug: 'benefits', name: '鸿泰惠民通', status: 'active', version: 12,
       head_sequence: 8, head_validation_state: 'valid', published_sequence: 8, domain: 'benefits.example.cn',
       mall_id: 'mall:benefits', pool_id: 'pool:benefits', updated_at: '2026-08-27T04:00:00.000Z' },
     { id: 'application:select', code: 'SELECT', public_slug: 'select', name: '鸿泰甄选', status: 'draft', version: 5,
       head_sequence: 5, head_validation_state: 'invalid', published_sequence: 3, domain: 'select.example.cn',
       mall_id: 'mall:select', pool_id: 'pool:select', updated_at: '2026-08-27T03:00:00.000Z' },
-  ],
-  count: 2,
-};
+  ];
+}
