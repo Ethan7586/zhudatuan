@@ -1,5 +1,11 @@
 import type { OperationId } from '@shop/contract';
+import type {
+  ConsoleModuleId,
+  ConsoleModuleManifest,
+  ConsoleModuleRoute,
+} from '../entity/navigation/ConsoleModuleManifest';
 import type { IconName } from '../shared/ui/Icon';
+import { consoleModuleById } from './ConsoleModuleRegistry';
 
 export interface ProfessionalRoute {
   readonly featureKey: string;
@@ -15,43 +21,44 @@ export interface ProfessionalRoute {
 }
 
 export const professionalRoutes: readonly ProfessionalRoute[] = Object.freeze([
-  route('applications', 'applications', /^applications$/, '商城管理', '创建、查找和管理独立商城，并进入店铺装修', '业务运营', 'application',
+  projectRoute('applications', 'applications', 'applications.index', /^applications$/, '业务运营', 'application',
     'experience.applications.read'),
-  route('vouchers', 'vouchers', /^vouchers$/, '卡券治理台', '按当前网站范围管理卡券方案、卡号库、备券申请与发行批次', '业务运营', 'voucher',
-    'voucher.programs.read', ['voucher.cardlibraries.read', 'voucher.programs.read', 'voucher.reserves.read', 'voucher.batches.read']),
-  route('reports', 'reports', /^reports$/, '数据报表', '商品、商城、分类、渠道和卡券投影', '业务运营', 'report',
-    'reporting.sales.read', ['reporting.sales.read', 'reporting.products.read', 'reporting.malls.read', 'reporting.categories.read',
-      'reporting.channels.read', 'reporting.powderclass.read', 'reporting.voucherconsumption.read']),
-  route('support', 'support', /^support(?:\/[^/]+)?$/, '客服中心', '工单、对话、分派和 SLA 状态', '业务运营', 'support',
-    'support.cases.read', ['support.cases.read', 'support.messages.read']),
-  route('channels', 'channels', /^channels$/, '渠道管理', '连接、同步批次和外部操作回执', '业务运营', 'channel',
-    'channel.connections.read', ['channel.connections.read', 'channel.syncruns.read', 'channel.operations.read']),
-  route('imports', 'imports/member/:jobId', /^imports\/(?:member|catalog|voucher)\/[^/]+$/, '导入结果',
-    '导入进度、错误行和服务端报告', '业务运营', 'import', null,
-    ['member.imports.read', 'catalog.imports.read', 'voucher.imports.read']),
-  route('entries', 'finance/entries', /^finance\/entries$/, '财务分录', '不可变借贷分录和业务引用', '财务运营', 'finance', 'finance.entries.read'),
-  route('statements', 'finance/statements', /^finance\/statements$/, '账单', '服务端生成的期间账单', '财务运营', 'finance',
+  projectRoute('vouchers', 'vouchers', 'vouchers.index', /^vouchers$/, '业务运营', 'voucher', 'voucher.programs.read'),
+  projectRoute('reports', 'reports', 'reports.index', /^reports$/, '业务运营', 'report', 'reporting.sales.read'),
+  projectRoute('support', 'support', 'support.index', /^support(?:\/[^/]+)?$/, '业务运营', 'support', 'support.cases.read', 'support'),
+  projectRoute('referralhome', 'referral', 'referral.root', /^referral$/, '业务运营', 'channel', 'referral.settings.read'),
+  projectRoute('referralsettings', 'referral', 'referral.settings', /^referral\/settings$/, '业务运营', 'channel',
+    'referral.settings.read'),
+  projectRoute('referralproducts', 'referral', 'referral.products', /^referral\/products$/, '业务运营', 'channel',
+    'referral.products.read'),
+  projectRoute('referralreview', 'referral', 'referral.review', /^referral\/review$/, '业务运营', 'channel',
+    'referral.members.read'),
+  projectRoute('referralbindings', 'referral', 'referral.bindings', /^referral\/bindings$/, '业务运营', 'channel',
+    'referral.bindings.read'),
+  projectRoute('referralwithdrawals', 'referral', 'referral.withdrawals', /^referral\/withdrawals$/, '财务运营', 'finance',
+    'referral.commissions.read'),
+  projectRoute('referralpromotion', 'referral', 'referral.promotion', /^referral\/promotion$/, '业务运营', 'channel',
+    'referral.commissions.read'),
+  projectRoute('channels', 'channels', 'channels.index', /^channels$/, '业务运营', 'channel', 'channel.connections.read'),
+  projectImports(),
+  projectRoute('entries', 'finance', 'finance.entries', /^finance\/entries$/, '财务运营', 'finance', 'finance.entries.read'),
+  projectRoute('statements', 'finance', 'finance.statements', /^finance\/statements$/, '财务运营', 'finance',
     'finance.statements.read'),
-  route('reconciliations', 'finance/reconciliations', /^finance\/reconciliations$/, '对账', '渠道账单匹配、差异和证据',
-    '财务运营', 'finance', 'finance.reconciliations.read'),
-  route('settlements', 'finance/settlements', /^finance\/settlements$/, '结算', '冻结结算、分账和调整状态', '财务运营', 'finance',
+  projectRoute('reconciliations', 'finance', 'finance.reconciliations', /^finance\/reconciliations$/, '财务运营', 'finance',
+    'finance.reconciliations.read'),
+  projectRoute('settlements', 'finance', 'finance.settlements', /^finance\/settlements$/, '财务运营', 'finance',
     'finance.settlements.read'),
-  route('withdrawals', 'finance/withdrawals', /^finance\/withdrawals$/, '提现', '提现申请和支付终态', '财务运营', 'finance',
+  projectRoute('withdrawals', 'finance', 'finance.withdrawals', /^finance\/withdrawals$/, '财务运营', 'finance',
     'finance.withdrawals.read'),
-  route('invoices', 'finance/invoices', /^finance\/invoices$/, '发票', '开票申请、金额和文档状态', '财务运营', 'finance',
-    'invoice.requests.read'),
-  route('access', 'settings/access', /^settings\/access$/, '权限中心', '成员角色、授权范围和 Access Version', '组织设置',
-    'access', 'access.center.read'),
-  route('members', 'settings/members', /^settings\/members$/, '成员管理', '成员、员工号和入会状态', '组织设置', 'member',
-    'member.members.read'),
-  route('qualification', 'settings/qualification', /^settings\/qualification$/, '资格管理', '资格策略、版本和发布状态',
-    '组织设置', 'qualification', 'qualification.center.read'),
-  route('notification', 'settings/notification', /^settings\/notification$/, '通知管理', '模板、公告和发送边界', '组织设置',
-    'notification', 'notification.templates.read', ['notification.templates.read', 'notification.announcements.read']),
-  route('productdetail', 'products/:productId', /^products\/[^/]+$/, '商品详情', '单商品权威详情', '业务运营', 'product', null, [],
-    '缺少 catalog.product.detail.read Operation，页面必须 fail-closed。'),
-  route('orderdetail', 'orders/:orderId', /^orders\/[^/]+$/, '订单详情', '订单、支付、履约和售后终态', '业务运营', 'orders',
-    'order.orders.read'),
+  projectRoute('invoices', 'finance', 'finance.invoices', /^finance\/invoices$/, '财务运营', 'finance', 'invoice.requests.read'),
+  projectRoute('access', 'access', 'access.index', /^settings\/access$/, '组织设置', 'access', 'access.center.read'),
+  projectRoute('members', 'access', 'access.members', /^settings\/members$/, '组织设置', 'member', 'member.members.read'),
+  projectRoute('qualification', 'qualification', 'qualification.index', /^settings\/qualification$/, '组织设置',
+    'qualification', 'qualification.center.read'),
+  projectRoute('notification', 'qualification', 'qualification.notification', /^settings\/notification$/, '组织设置',
+    'notification', 'notification.templates.read'),
+  projectRoute('productdetail', 'products', 'products.detail', /^products\/[^/]+$/, '业务运营', 'product', null),
+  projectRoute('orderdetail', 'orders', 'orders.detail', /^orders\/[^/]+$/, '业务运营', 'orders', 'order.orders.read'),
 ]);
 
 export function professionalRouteFromPath(pathname: string): ProfessionalRoute | undefined {
@@ -63,18 +70,52 @@ export function scopeSuffix(pathname: string): string {
   return pathname.split('/').filter(Boolean).slice(3).join('/');
 }
 
-function route(
+function registryRoute<TModuleId extends ConsoleModuleId>(
+  moduleId: TModuleId,
+  routeId: `${TModuleId}.${string}`,
+): ConsoleModuleRoute<TModuleId> {
+  const module = consoleModuleById.get(moduleId) as ConsoleModuleManifest<TModuleId>;
+  return module.routes.find(({ id }) => id === routeId)!;
+}
+
+function projectRoute<TModuleId extends ConsoleModuleId>(
   featureKey: string,
-  suffix: string,
+  moduleId: TModuleId,
+  routeId: `${TModuleId}.${string}`,
   pattern: RegExp,
-  title: string,
-  summary: string,
   section: ProfessionalRoute['section'],
   icon: IconName,
   operation: OperationId | null,
-  operations: readonly OperationId[] = operation === null ? [] : [operation],
-  blocker?: string,
+  legacySuffix?: string,
 ): ProfessionalRoute {
-  return Object.freeze({ featureKey, suffix, pattern, title, summary, section, icon, operation,
-    operations: Object.freeze([...operations]), ...(blocker === undefined ? {} : { blocker }) });
+  const route = registryRoute(moduleId, routeId);
+  return Object.freeze({
+    featureKey,
+    suffix: legacySuffix ?? route.path,
+    pattern,
+    title: route.presentation.title,
+    summary: route.presentation.summary,
+    section,
+    icon,
+    operation,
+    operations: Object.freeze([...route.operations]),
+    ...('blocker' in route && route.blocker !== undefined ? { blocker: route.blocker } : {}),
+  });
+}
+
+function projectImports(): ProfessionalRoute {
+  const member = registryRoute('access', 'access.member-import');
+  const catalog = registryRoute('products', 'products.catalog-import');
+  const voucher = registryRoute('vouchers', 'vouchers.import');
+  return Object.freeze({
+    featureKey: 'imports',
+    suffix: 'imports/member/:jobId',
+    pattern: /^imports\/(?:member|catalog|voucher)\/[^/]+$/,
+    title: member.presentation.title,
+    summary: member.presentation.summary,
+    section: '业务运营',
+    icon: 'import',
+    operation: null,
+    operations: Object.freeze([...member.operations, ...catalog.operations, ...voucher.operations]),
+  });
 }

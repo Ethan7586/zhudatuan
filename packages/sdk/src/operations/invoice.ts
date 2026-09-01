@@ -7,6 +7,7 @@ import { bindOperation, defineStructuralOperation, type OperationExecutor, type 
 export const INVOICE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "invoice.profiles.manage",
   "invoice.profiles.read",
+  "invoice.operatorprofiles.read",
   "invoice.requests.create",
   "invoice.requests.read",
   "invoice.requests.cancel",
@@ -17,6 +18,7 @@ export const INVOICE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 export interface InvoiceOperations {
   readonly profilesManage: OperationMethod<"invoice.profiles.manage">;
   readonly profilesRead: OperationMethod<"invoice.profiles.read">;
+  readonly operatorprofilesRead: OperationMethod<"invoice.operatorprofiles.read">;
   readonly requestsCreate: OperationMethod<"invoice.requests.create">;
   readonly requestsRead: OperationMethod<"invoice.requests.read">;
   readonly requestsCancel: OperationMethod<"invoice.requests.cancel">;
@@ -32,6 +34,7 @@ export function createInvoiceOperations(client: OperationExecutor): InvoiceOpera
   return Object.freeze({
     profilesManage: bindProfilesManage(client),
     profilesRead: bindProfilesRead(client),
+    operatorprofilesRead: bindOperatorprofilesRead(client),
     requestsCreate: bindRequestsCreate(client),
     requestsRead: bindRequestsRead(client),
     requestsCancel: bindRequestsCancel(client),
@@ -45,7 +48,7 @@ export function createFetchInvoiceProfilesManage(baseUrl: string): OperationMeth
 }
 
 function bindProfilesManage(client: OperationExecutor): OperationMethod<"invoice.profiles.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.profiles.manage","method":"PUT","path":"/api/v1/invoices/profiles/{profileid}","audience":"operator","idempotent":true,"pathKeys":["profileid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.profiles.manage","method":"PUT","path":"/api/v1/invoices/profiles/{profileid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["profileid"]}));
 }
 
 export function createFetchInvoiceProfilesRead(baseUrl: string): OperationMethod<"invoice.profiles.read"> {
@@ -53,7 +56,15 @@ export function createFetchInvoiceProfilesRead(baseUrl: string): OperationMethod
 }
 
 function bindProfilesRead(client: OperationExecutor): OperationMethod<"invoice.profiles.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.profiles.read","method":"GET","path":"/api/v1/invoices/profiles","audience":"member","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.profiles.read","method":"GET","path":"/api/v1/invoices/profiles","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchInvoiceOperatorprofilesRead(baseUrl: string): OperationMethod<"invoice.operatorprofiles.read"> {
+  return bindOperatorprofilesRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindOperatorprofilesRead(client: OperationExecutor): OperationMethod<"invoice.operatorprofiles.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.operatorprofiles.read","method":"GET","path":"/api/v1/invoices/operator-profiles","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchInvoiceRequestsCreate(baseUrl: string): OperationMethod<"invoice.requests.create"> {
@@ -61,7 +72,7 @@ export function createFetchInvoiceRequestsCreate(baseUrl: string): OperationMeth
 }
 
 function bindRequestsCreate(client: OperationExecutor): OperationMethod<"invoice.requests.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.create","method":"POST","path":"/api/v1/invoices/requests","audience":"member","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.create","method":"POST","path":"/api/v1/invoices/requests","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchInvoiceRequestsRead(baseUrl: string): OperationMethod<"invoice.requests.read"> {
@@ -69,7 +80,7 @@ export function createFetchInvoiceRequestsRead(baseUrl: string): OperationMethod
 }
 
 function bindRequestsRead(client: OperationExecutor): OperationMethod<"invoice.requests.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.read","method":"GET","path":"/api/v1/invoices/requests","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.read","method":"GET","path":"/api/v1/invoices/requests","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchInvoiceRequestsCancel(baseUrl: string): OperationMethod<"invoice.requests.cancel"> {
@@ -77,7 +88,7 @@ export function createFetchInvoiceRequestsCancel(baseUrl: string): OperationMeth
 }
 
 function bindRequestsCancel(client: OperationExecutor): OperationMethod<"invoice.requests.cancel"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.cancel","method":"DELETE","path":"/api/v1/invoices/requests/{requestid}","audience":"operator","idempotent":true,"pathKeys":["requestid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.cancel","method":"DELETE","path":"/api/v1/invoices/requests/{requestid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["requestid"]}));
 }
 
 export function createFetchInvoiceRequestsDecide(baseUrl: string): OperationMethod<"invoice.requests.decide"> {
@@ -85,7 +96,7 @@ export function createFetchInvoiceRequestsDecide(baseUrl: string): OperationMeth
 }
 
 function bindRequestsDecide(client: OperationExecutor): OperationMethod<"invoice.requests.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.decide","method":"POST","path":"/api/v1/invoices/requests/{requestid}/decide","audience":"operator","idempotent":false,"pathKeys":["requestid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.decide","method":"POST","path":"/api/v1/invoices/requests/{requestid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["requestid"]}));
 }
 
 export function createFetchInvoiceRequestsRed(baseUrl: string): OperationMethod<"invoice.requests.red"> {
@@ -93,5 +104,5 @@ export function createFetchInvoiceRequestsRed(baseUrl: string): OperationMethod<
 }
 
 function bindRequestsRed(client: OperationExecutor): OperationMethod<"invoice.requests.red"> {
-  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.red","method":"POST","path":"/api/v1/invoices/requests/{requestid}/red","audience":"operator","idempotent":false,"pathKeys":["requestid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"invoice.requests.red","method":"POST","path":"/api/v1/invoices/requests/{requestid}/red","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["requestid"]}));
 }

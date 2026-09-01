@@ -1,18 +1,22 @@
+import { MetricCard, MetricGrid, ResourceState, Surface } from '@shop/design';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
+import { downloadCurrentPageCsv, timestampedCsvFilename, type CsvColumn } from '../../shared/export/CurrentPageCsv';
+import { LocalImportDialog } from '../../shared/ui/LocalImportDialog';
 import { formatOrderTime } from './OrderPresentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey } from './OrderDetailQuery';
 import { OrderDrawer } from './OrderDrawer';
+import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
 import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
 import { OrderPageHeader } from './OrderPageHeader';
 import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
-import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
+import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderRecord, type OrderView } from './OrderSchema';
 import { OrderStatusTabs } from './OrderStatusTabs';
 import './order-layout.css';
 import './order-controls.css';
@@ -20,14 +24,37 @@ import './order-table.css';
 import './order-drawer.css';
 import './order-drawer-panels.css';
 import './order-preview-actions.css';
+import './order-exception-shell.css';
+import './order-exception-list.css';
+import './order-exception-timeline.css';
+import './order-exception-action.css';
+import './order-exception-responsive.css';
 
 const previewOnlySearchKeys = ['placed', 'lifecycle', 'payment', 'fulfillment', 'mall', 'view'] as const;
 const emptyChecked: ReadonlySet<string> = new Set();
+const orderCsvColumns: readonly CsvColumn<OrderRecord>[] = Object.freeze([
+  { header: '内部订单ID', value: (row) => row.id },
+  { header: '订单号', value: (row) => row.order_number },
+  { header: '范围ID', value: (row) => row.scope_id },
+  { header: '会员ID', value: (row) => row.member_id },
+  { header: '商城ID', value: (row) => row.mall_id },
+  { header: '总金额（最小单位）', value: (row) => row.total_minor },
+  { header: '币种', value: (row) => row.currency },
+  { header: '支付状态', value: (row) => row.payment_state },
+  { header: '履约状态', value: (row) => row.fulfillment_state },
+  { header: '售后状态', value: (row) => row.aftersale_state },
+  { header: '生命周期', value: (row) => row.lifecycle_state },
+  { header: '创建时间', value: (row) => row.created_at },
+  { header: '更新时间', value: (row) => row.updated_at },
+  { header: '版本', value: (row) => row.version },
+]);
 
 export function Component() {
   const context = useConsoleContext();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
+  const [importOpen, setImportOpen] = useState(false);
   const previewEnabled = isOrderPreviewContext(context);
   const filter = readFilter(search, previewEnabled);
   const view = readView(search, previewEnabled);
@@ -49,7 +76,19 @@ export function Component() {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<OrderColumnKey>>(() => new Set(defaultOrderColumns));
   const previewPage = previewEnabled && page?.preview?.source === 'local-preview' ? page.preview : undefined;
+  const pageOrders = page?.items ?? [];
+  const paidCount = pageOrders.filter((order) => order.payment_state === 'paid').length;
+  const fulfillmentCount = pageOrders.filter((order) => !['delivered', 'completed'].includes(order.fulfillment_state)).length;
+  const attentionCount = pageOrders.filter((order) => order.aftersale_state !== 'none' || order.lifecycle_state === 'cancelled').length;
   const error = safeQueryError(query.error);
+  const listCondition = queryCondition({
+    pending: query.isPending,
+    fetching: query.isFetching,
+    error: query.error,
+    hasData: page !== undefined,
+    empty: page?.items.length === 0,
+    stale: query.isStale,
+  });
 
   useEffect(() => {
     if (previewEnabled || !previewOnlySearchKeys.some((key) => search.has(key))) return;
@@ -134,71 +173,137 @@ export function Component() {
       return { boundary: selectionBoundary, ids: next };
     });
 
+  if (listCondition === 'unauthenticated' || listCondition === 'denied') {
+    return (
+      <section className="orderworkspace" aria-label="订单管理系统">
+        <ResourceState condition={listCondition} resourceLabel="订单管理系统" {...(error === undefined ? {} : { error })}>
+          <span />
+        </ResourceState>
+      </section>
+    );
+  }
+
   return (
-    <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
-      <OrderPageHeader previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
-
-      <p id="orderwriteboundary" className="ordercontractnote" role="note">
-        {previewEnabled ? '本地预览范围：可点击查看安全预览，但不会执行导出、发货、退款或售后写入。' : '当前生产读合同仅保证 member audience 范围、内部订单 ID 精确筛选与游标分页；组织级完整性和最终动作合同尚不可用。'}
-      </p>
-
-      <OrderStatusTabs active={view} previewEnabled={previewEnabled} page={page} onChange={selectView} />
-      <div className="orderfilterarea">
-        <OrderFilterForm value={filter} previewEnabled={previewEnabled} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
-        <OrderColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
-        <div className="orderfiltermeta">
-          <span>{previewPage === undefined ? '服务端筛选 · 更新时间未提供' : `服务端实时筛选 · ${formatOrderTime(previewPage.updatedAt)}`}</span>
-        </div>
-      </div>
-
-      {checked.size === 0 ? null : (
-        <p className="orderselectionnote" role="status">
-          已选择 {checked.size} 条当前页订单；跨页动作等待 Filter Snapshot 与 Preview 证明。
-        </p>
-      )}
-      <div id="orderlistpanel" className="orderlistpanel" aria-busy={query.isFetching}>
-        {query.isPending ? (
-          <p className="orderliststate" role="status">
-            正在读取订单…
-          </p>
-        ) : null}
-        {query.isError && page === undefined ? (
-          <section className="orderliststate" role="alert">
-            <strong>订单读取失败</strong>
-            <p>{error}</p>
-            <button type="button" onClick={refresh}>
-              重试
-            </button>
-          </section>
-        ) : null}
-        {query.isError && page !== undefined ? (
-          <p className="orderstalebanner" role="status">
-            刷新失败，当前保留最近一次已验证数据：{error}
-          </p>
-        ) : null}
-        {page?.items.length === 0 ? (
-          <section className="orderliststate" role="status">
-            <OrderIcon name="order" />
-            <strong>暂无符合条件的订单</strong>
-            <p>请调整服务端筛选条件后重试。</p>
-          </section>
-        ) : null}
-        {page === undefined || page.items.length === 0 ? null : (
-          <OrderTable
-            rows={page.items}
-            previewEnabled={previewEnabled}
-            visible={visibleColumns}
-            checked={checked}
-            {...(selected === undefined ? {} : { activeOrder: selected })}
-            onCheck={toggleChecked}
-            onCheckAll={togglePage}
-            onOpen={openOrder}
+    <section className="orderworkspace ordervi12workspace" aria-labelledby={view === 'exception' && previewEnabled ? 'orderexceptiontitle' : 'ordermanagementtitle'}>
+      {view === 'exception' && previewEnabled ? (
+        <OrderExceptionWorkbench
+          page={page}
+          isPending={query.isPending}
+          isFetching={query.isFetching}
+          error={error}
+          onBack={() => selectView('all')}
+          onRefresh={refresh}
+          onOpenOrder={openOrder}
+          onOpenSystem={(route) => navigate(`../${route}`)}
+        />
+      ) : (
+        <>
+          <OrderPageHeader
+            isFetching={query.isFetching}
+            exportReady={page !== undefined}
+            onImport={() => setImportOpen(true)}
+            onExport={() => {
+              if (page === undefined) return;
+              downloadCurrentPageCsv({ rows: page.items, columns: orderCsvColumns, filename: timestampedCsvFilename('orders-current-page') });
+            }}
+            onRefresh={refresh}
           />
-        )}
-      </div>
 
-      {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
+          <section className="ordervi12section" aria-labelledby="ordermetricstitle">
+            <header className="ordervi12sectionhead">
+              <p className="swoverline">订单概览</p>
+              <h2 id="ordermetricstitle">当前页订单态势</h2>
+            </header>
+            <MetricGrid columns="four">
+              <MetricCard label="当前页订单" value={page === undefined ? '—' : pageOrders.length} trend={query.isFetching ? '同步中' : '已同步'} description="当前筛选结果" tone="info" icon={<OrderIcon name="order" />} />
+              <MetricCard label="已支付" value={page === undefined ? '—' : paidCount} trend="当前页" description="支付状态" tone="success" icon={<OrderIcon name="check" />} />
+              <MetricCard label="待履约" value={page === undefined ? '—' : fulfillmentCount} trend="需跟进" description="当前页未完成履约" tone="warning" icon={<OrderIcon name="truck" />} />
+              <MetricCard
+                label="售后或取消"
+                value={page === undefined ? '—' : attentionCount}
+                trend={attentionCount === 0 ? '稳定' : '需关注'}
+                description="售后和取消订单"
+                tone={attentionCount === 0 ? 'neutral' : 'danger'}
+                icon={<OrderIcon name="clock" />}
+              />
+            </MetricGrid>
+          </section>
+
+          <section className="ordervi12section" aria-labelledby="orderworkspacetitle">
+            <header className="ordervi12sectionhead">
+              <p className="swoverline">订单管理</p>
+              <h2 id="orderworkspacetitle">订单列表</h2>
+            </header>
+            <Surface className="ordervi12listsurface" depth="raised" padding="none" radius="extraLarge">
+              <div className="ordervi12statusbar">
+                <OrderStatusTabs active={view} previewEnabled={previewEnabled} page={page} onChange={selectView} />
+              </div>
+
+              <p id="orderwriteboundary" className="ordercontractnote" role="note">
+                当前页导出只包含已经加载的订单；发货、退款和售后操作暂未开放。
+              </p>
+
+              <div className="orderfilterarea">
+                <OrderFilterForm value={filter} previewEnabled={previewEnabled} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
+                <OrderColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
+                <div className="orderfiltermeta">
+                  <span>{previewPage === undefined ? '服务端筛选 · 更新时间未提供' : `服务端实时筛选 · ${formatOrderTime(previewPage.updatedAt)}`}</span>
+                </div>
+              </div>
+
+              {checked.size === 0 ? null : (
+                <p className="orderselectionnote" role="status">
+                  已选择 {checked.size} 条当前页订单；跨页动作等待 Filter Snapshot 与 Preview 证明。
+                </p>
+              )}
+              <div id="orderlistpanel" className="orderlistpanel" aria-busy={query.isFetching}>
+                {query.isPending ? (
+                  <p className="orderliststate" role="status">
+                    正在读取订单…
+                  </p>
+                ) : null}
+                {query.isError && page === undefined ? (
+                  <section className="orderliststate" role="alert">
+                    <strong>订单读取失败</strong>
+                    <p>{error}</p>
+                    <button type="button" onClick={refresh}>
+                      重试
+                    </button>
+                  </section>
+                ) : null}
+                {query.isError && page !== undefined ? (
+                  <p className="orderstalebanner" role="status">
+                    刷新失败，当前保留最近一次已验证数据：{error}
+                  </p>
+                ) : null}
+                {page?.items.length === 0 ? (
+                  <section className="orderliststate" role="status">
+                    <OrderIcon name="order" />
+                    <strong>暂无符合条件的订单</strong>
+                    <p>请调整服务端筛选条件后重试。</p>
+                  </section>
+                ) : null}
+                {page === undefined || page.items.length === 0 ? null : (
+                  <OrderTable
+                    rows={page.items}
+                    previewEnabled={previewEnabled}
+                    visible={visibleColumns}
+                    checked={checked}
+                    {...(selected === undefined ? {} : { activeOrder: selected })}
+                    onCheck={toggleChecked}
+                    onCheckAll={togglePage}
+                    onOpen={openOrder}
+                  />
+                )}
+              </div>
+
+              {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
+            </Surface>
+          </section>
+        </>
+      )}
       {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} onTab={selectTab} onClose={closeOrder} />}
+      <LocalImportDialog open={importOpen} title="导入订单" resourceLabel="订单" onClose={() => setImportOpen(false)} />
     </section>
   );
 }

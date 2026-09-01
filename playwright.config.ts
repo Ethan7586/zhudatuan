@@ -1,18 +1,30 @@
 import { defineConfig, devices } from '@playwright/test';
+import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './tests/browser/Origins';
 
-const apiOrigin = 'http://127.0.0.1:4311';
-const authOrigin = 'http://127.0.0.1:4176';
-const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
+const clientVersion = '1.0.0-e2e';
 
-function webServer(workspace: string, port: number) {
+function webServer(workspace: string, origin: string, environment: Readonly<Record<string, string>>) {
+  const port = new URL(origin).port;
+  const variables = Object.entries(environment).map(([name, value]) => `${name}=${shell(value)}`).join(' ');
   return {
-    command: `${environment} npm run dev --workspace ${workspace} -- --host 127.0.0.1 --port ${port} --strictPort`,
-    url: `http://127.0.0.1:${port}`,
+    command: `${variables} npm run dev --workspace ${shell(workspace)} -- --host 127.0.0.1 --port ${port} --strictPort`,
+    url: origin,
     reuseExistingServer: false,
     timeout: 120_000,
     stdout: 'pipe' as const,
     stderr: 'pipe' as const,
   };
+}
+
+const viteEnvironment = Object.freeze({
+  VITE_API_BASE_URL: API_ORIGIN,
+  VITE_AUTH_BASE_URL: AUTH_ORIGIN,
+  VITE_CLIENT_VERSION: clientVersion,
+  DISABLE_HMR: 'true',
+});
+
+function shell(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
 }
 
 export default defineConfig({
@@ -28,12 +40,23 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'tmp/playwright/report', open: 'never' }]],
   use: {
     ...devices['Desktop Chrome'],
+    baseURL: CONSOLE_ORIGIN,
     locale: 'zh-CN',
     timezoneId: 'Asia/Shanghai',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-  webServer: [webServer('@shop/auth', 4176), webServer('@shop/console', 4173), webServer('@shop/store', 4174), webServer('@shop/supplier', 4175), webServer('@shop/storefront', 4177)],
+  webServer: [
+    webServer('@smart-wing/auth-web', AUTH_ORIGIN, viteEnvironment),
+    webServer('@shop/console', CONSOLE_ORIGIN, viteEnvironment),
+    webServer('@smart-wing/storefront-web', STOREFRONT_ORIGIN, {
+      NEXT_PUBLIC_API_BASE_URL: API_ORIGIN,
+      NEXT_PUBLIC_API_ORIGIN: API_ORIGIN,
+      NEXT_PUBLIC_AUTH_ORIGIN: AUTH_ORIGIN,
+      NEXT_PUBLIC_CLIENT_VERSION: clientVersion,
+      DISABLE_HMR: 'true',
+    }),
+  ],
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

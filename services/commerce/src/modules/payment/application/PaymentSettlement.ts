@@ -6,6 +6,7 @@ import { inventoryPort } from '../../inventory/InventoryModule';
 import { marketingPort } from '../../marketing/MarketingModule';
 import { fulfillmentPort } from '../../fulfillment/FulfillmentModule';
 import { orderPort } from '../../order/OrderModule';
+import { providerOccurredAt as requireProviderOccurredAt } from './port/PaymentGateway';
 
 const benefit = new BenefitPort();
 const voucher = new VoucherPort();
@@ -23,7 +24,10 @@ export interface SettlementTarget {
 interface PlanRow { readonly sequence: number; readonly kind: 'wechat' | 'benefit' | 'voucher'; readonly reference_id: string | null; readonly amount_minor: number; readonly state: string }
 
 export class PaymentSettlement {
-  async capture(database: OperationDatabase, target: SettlementTarget, source: 'wechat' | 'internal' | 'mixed'): Promise<string> {
+  async capture(database: OperationDatabase, target: SettlementTarget, source: 'wechat' | 'internal' | 'mixed', providerCompletion?: string): Promise<string> {
+    const accountingOccurredAt = source === 'internal' ? null
+      : requireProviderOccurredAt(providerCompletion, 'PAYMENT_CAPTURE_PROVIDER_OCCURRED_AT_REQUIRED');
+    if (source === 'internal' && providerCompletion !== undefined) throw new Error('PAYMENT_INTERNAL_CAPTURE_PROVIDER_OCCURRED_AT_FORBIDDEN');
     const locked = await database.query<{ state: string }>(`select state from payment.intent
       where id=$1 and order_id=$2 and mall_id=$3 for update`, [target.intent, target.order, target.mall]);
     const intentState = locked.rows[0]?.state;
@@ -61,7 +65,7 @@ export class PaymentSettlement {
       mall: target.mall, member: target.member, order: target.order, payment,
     });
     for (const fulfillment of fulfillments) await enqueue(database, target.mall, fulfillment);
-    await events(database, target, payment);
+    await events(database, target, payment, accountingOccurredAt);
     return payment;
   }
 }
@@ -91,13 +95,13 @@ async function enqueue(database: OperationDatabase, scope: string, fulfillment: 
   [`job:${randomUUID()}`, scope, fulfillment]);
 }
 
-async function events(database: OperationDatabase, target: SettlementTarget, payment: string): Promise<void> {
+async function events(database: OperationDatabase, target: SettlementTarget, payment: string, providerOccurredAt: string | null): Promise<void> {
   const snapshot = (await database.query<{ payload: unknown }>(`select payload from runtime.outbox where event_type='order.placed'
     and aggregate_id=$1 order by occurred_at desc,id desc limit 1`, [target.order])).rows[0]?.payload ?? null;
-  for (const [type, aggregate, payload] of [
-    ['payment.succeeded', payment, { payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency, member: target.member, snapshot }],
-    ['order.paid', target.order, { payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency, member: target.member, snapshot }],
+  for (const [type, aggregate, payload, occurredAt] of [
+    ['payment.succeeded', payment, { payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency, member: target.member, snapshot }, providerOccurredAt],
+    ['order.paid', target.order, { payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency, member: target.member, snapshot }, null],
   ] as const) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-    occurred_at,available_at) values($1,$2,1,$3,$4,$5,$6::jsonb,$1,clock_timestamp(),clock_timestamp())`,
-  [`event:${randomUUID()}`, type, type.split('.')[0], aggregate, target.scope, JSON.stringify(payload)]);
+    occurred_at,available_at) values($1,$2,1,$3,$4,$5,$6::jsonb,$1,coalesce($7::timestamptz,clock_timestamp()),clock_timestamp())`,
+  [`event:${randomUUID()}`, type, type.split('.')[0], aggregate, target.scope, JSON.stringify(payload), occurredAt]);
 }

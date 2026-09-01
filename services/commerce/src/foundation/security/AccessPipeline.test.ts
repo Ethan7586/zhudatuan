@@ -10,12 +10,14 @@ import { HttpApp } from '../interface/HttpApp';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS, registerOperationRoutes } from '../interface/OperationController';
 import { AccessPipeline } from './AccessPipeline';
 import type { Actor } from './AccessContext';
+import type { ActionProofVerifier } from './ActionProof';
 import { PipelineAuthorizer } from './PipelineAuthorizer';
 
 const NOW = new Date('2026-08-27T00:00:00.000Z');
 const PLATFORM: Scope = Object.freeze({ kind: 'platform', id: 'platform:one', path: [] });
 const OWNER: Scope = Object.freeze({ kind: 'owner', id: 'member:one', path: [] });
-const MALL: Scope = Object.freeze({ kind: 'mall', id: 'mall:one', path: [{ kind: 'platform' as const, id: 'platform:one' }] });
+const MALL: Scope = Object.freeze({ kind: 'mall', id: 'mall:one', tenant: 'tenant:one',
+  path: [{ kind: 'platform' as const, id: 'platform:one' }, { kind: 'tenant' as const, id: 'tenant:one' }] });
 
 describe('AccessPipeline audience boundary', () => {
   it.each(['storefront', 'store', 'supplier'] as const)('returns 403 before an operator handler for a %s session', async (target) => {
@@ -83,7 +85,7 @@ describe('AccessPipeline audience boundary', () => {
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
   });
 
-  it('passes one authorized mall to a handler even when the request body names another mall', async () => {
+  it('passes the authorized mall to a handler even when the request body names another mall', async () => {
     const fixture = accessFixture('console', 'catalog.products.create', 'catalog.product.manage', MALL);
     const invoke = vi.fn(async () => ({ status: 201, body: { created: true } }) as const);
     const container = new Container();
@@ -117,10 +119,55 @@ describe('AccessPipeline audience boundary', () => {
       access: expect.objectContaining({ mall_id: 'mall:one', mallContext: { mall_id: 'mall:one' } }),
     }));
   });
+
+  it('validates but does not consume a Level 3 proof during authorization', async () => {
+    const validate = vi.fn(() => true);
+    const fixture = accessFixture('console', 'finance.settlements.decide', 'finance.settlement.decide', PLATFORM, {
+      assurance: { level: 3, verified: NOW },
+      actionProof: { validate },
+    });
+
+    await expect(
+      fixture.pipeline.authorize(
+        {
+          'x-action-proof': 'a'.repeat(64),
+          'idempotency-key': 'settlement-decision:one',
+          'if-match': 'W/"7"',
+        },
+        'finance.settlements.decide',
+        'finance.settlement.decide',
+        'settlement:one'
+      )
+    ).resolves.toMatchObject({ scope: PLATFORM });
+    expect(validate).toHaveBeenCalledWith('a'.repeat(64));
+  });
+
+  it('fails closed before transaction entry when a required binding is missing', async () => {
+    const validate = vi.fn(() => true);
+    const fixture = accessFixture('console', 'finance.settlements.decide', 'finance.settlement.decide', PLATFORM, {
+      assurance: { level: 3, verified: NOW },
+      actionProof: { validate },
+    });
+
+    await expect(
+      fixture.pipeline.authorize(
+        {
+          'x-action-proof': 'a'.repeat(64),
+          'idempotency-key': 'settlement-decision:one',
+        },
+        'finance.settlements.decide',
+        'finance.settlement.decide',
+        'settlement:one'
+      )
+    ).rejects.toMatchObject({
+      code: 'ACTION_PROOF_REQUIRED',
+    });
+    expect(validate).not.toHaveBeenCalled();
+  });
 });
 
-function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope) {
-  const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
+function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope, options: Readonly<{ assurance?: Actor['assurance']; actionProof?: ActionProofVerifier }> = {}) {
+  const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: options.assurance ?? { level: 1 } });
   const membershipAccess: MembershipAccess = Object.freeze({
     id: actor.membership,
     active: true,
@@ -139,7 +186,9 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
     { resolve: vi.fn(async () => [operation]) },
     { now: () => NOW },
     { evaluate: risk },
-    { append: decisions }
+    { append: decisions },
+    undefined,
+    options.actionProof
   );
   return { pipeline, membership, risk, decisions };
 }

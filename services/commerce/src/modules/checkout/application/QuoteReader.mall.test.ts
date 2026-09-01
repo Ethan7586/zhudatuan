@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { QueryResult, QueryResultRow } from 'pg';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { CheckoutSelection } from '../domain/model/CheckoutQuote';
+import { BenefitPort } from '../../benefit/BenefitPort';
+import { VoucherPort } from '../../voucher/application/port/VoucherPort';
 import { QuoteReader } from './QuoteReader';
 
 const selection: CheckoutSelection = Object.freeze({
@@ -17,7 +19,7 @@ describe('QuoteReader mall purchase history isolation', () => {
     const historyQueries: unknown[][] = [];
     const historySql: string[] = [];
     const database = quoteDatabase(historyQueries, historySql);
-    const reader = new QuoteReader();
+    const reader = new QuoteReader(new BenefitPort(), new VoucherPort());
 
     const mallA = await reader.read(database, 'membership:mall-a', selection);
     const mallB = await reader.read(database, 'membership:mall-b', selection);

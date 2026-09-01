@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './OrderRoute';
@@ -121,6 +121,7 @@ const server = setupServer(
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   server.resetHandlers();
   getRequests.length = 0;
   postRequests.length = 0;
@@ -133,7 +134,8 @@ describe('Order route', () => {
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeTruthy();
-    expect(screen.getByRole('note').textContent).toContain('当前生产读合同仅保证');
+    expect(screen.queryByRole('region', { name: '订单系统协同关系' })).toBeNull();
+    expect(screen.getByRole('note').textContent).toBe('当前页导出只包含已经加载的订单；发货、退款和售后操作暂未开放。');
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
     expect(screen.getByText('member:verified-1')).toBeTruthy();
@@ -154,6 +156,47 @@ describe('Order route', () => {
     expect(within(dialog).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
     expect(within(dialog).getByText(/当前读模型未提供审计时间线/)).toBeTruthy();
     expect(within(dialog).queryByText('不应泄漏的演示说明')).toBeNull();
+  });
+
+  it('turns the preview exception view into a vertical responsibility workflow', async () => {
+    const exceptionOrder = {
+      ...order,
+      payment_state: 'partially_refunded',
+      fulfillment_state: 'returned',
+      aftersale_state: 'processing',
+      preview: {
+        ...order.preview,
+        exception: true,
+        operation: { id: 'operation:refund-reconciliation', label: '退款对账等待确认', status: 'failed', at: '2026-08-26T08:28:00.000Z' },
+      },
+    } as const;
+    server.use(
+      http.get('*/api/v1/orders', ({ request }) => {
+        const url = new URL(request.url);
+        getRequests.push(url);
+        if (url.searchParams.get('limit') === '1') return HttpResponse.json({ items: [exceptionOrder], count: 1 });
+        return HttpResponse.json({
+          items: [exceptionOrder],
+          count: 1,
+          preview: { ...listPage.preview, total: 1, counts: { ...listPage.preview.counts, exception: 1 } },
+        });
+      })
+    );
+    const user = userEvent.setup();
+    renderRoute('/orders?view=exception', previewContext);
+
+    expect(await screen.findByRole('heading', { level: 1, name: '订单协同异常' })).toBeTruthy();
+    expect(screen.getByText('找到卡住的订单，确认责任系统，并直接去处理。')).toBeTruthy();
+    expect(await screen.findByRole('list', { name: '异常订单列表' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: new RegExp(order.order_number) }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('list', { name: new RegExp(`${order.order_number} 纵向进度`) })).toBeTruthy();
+    const actionPanel = screen.getByRole('region', { name: '当前卡点与处理动作' });
+    expect(within(actionPanel).getByText('财务与对账台', { exact: true })).toBeTruthy();
+    expect(within(actionPanel).getByRole('button', { name: '进入财务与对账台处理' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: '查看完整订单详情' }));
+    expect(await screen.findByRole('dialog', { name: new RegExp(order.order_number) })).toBeTruthy();
+    expect(postRequests).toHaveLength(0);
   });
 
   it('normalizes preview-only URL filters out of a production scope before presenting results', async () => {
@@ -283,23 +326,32 @@ describe('Order route', () => {
     expect(screen.getByText('本页 0 条 · 全量总数不可用')).toBeTruthy();
   });
 
-  it('renders a read error and retries it without inventing stale data', async () => {
+  it('renders the calm access boundary for a denied order read without offering a futile retry', async () => {
+    server.use(http.get('*/api/v1/orders', () => HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:failed' }, { status: 403 })));
+    renderRoute();
+
+    const boundary = await screen.findByRole('region', { name: '没有权限' });
+    expect(within(boundary).getByText('「订单管理系统」不可访问')).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
+    expect(within(boundary).queryByRole('button', { name: '重试' })).toBeNull();
+  });
+
+  it('hides cached order rows immediately when a refresh loses access', async () => {
     let attempts = 0;
     server.use(
       http.get('*/api/v1/orders', () => {
         attempts += 1;
-        return attempts === 1 ? HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:failed' }, { status: 403 }) : HttpResponse.json(listPage);
+        return attempts === 1 ? HttpResponse.json(listPage) : HttpResponse.json({ code: 'ORDER_READ_DENIED', requestId: 'request:revoked' }, { status: 403 });
       })
     );
     const user = userEvent.setup();
     renderRoute();
-
-    const alert = await screen.findByRole('alert');
-    expect(within(alert).getByText('订单读取失败')).toBeTruthy();
-    expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
-    await user.click(within(alert).getByRole('button', { name: '重试' }));
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
-    expect(attempts).toBe(2);
+
+    await user.click(screen.getByRole('button', { name: '刷新数据' }));
+    expect(await screen.findByRole('region', { name: '没有权限' })).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
+    expect(screen.queryByText(order.order_number)).toBeNull();
   });
 
   it('configures optional columns and selecting a row never opens its drawer', async () => {
@@ -360,18 +412,38 @@ describe('Order route', () => {
     await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('limit') === '50' && url.searchParams.get('order') === 'order:searched' && !url.searchParams.has('cursor'))).toBe(true));
   });
 
-  it('keeps every exposed final action disabled and sends no POST even with AAL2 and write permissions', async () => {
+  it('downloads exactly the loaded order page, opens local import, and sends no additional request', async () => {
+    const user = userEvent.setup();
+    const download = captureDownload();
+    renderRoute();
+    await screen.findByRole('table', { name: '订单列表' });
+    await waitFor(() => expect(orderRequestCount('50')).toBe(1));
+
+    const exportButton = screen.getByRole<HTMLButtonElement>('button', { name: '导出当前页' });
+    expect(exportButton.disabled).toBe(false);
+    expect(exportButton.title).toBe('仅导出当前已加载页，不包含其他分页');
+    await user.click(exportButton);
+
+    expect(download.filenames[0]).toMatch(/^orders-current-page-\d{8}-\d{6}\.csv$/);
+    expect(csvRowCount(await readBlob(download.blobs[0]!))).toBe(listPage.items.length + 1);
+    expect(orderRequestCount('50')).toBe(1);
+    expect(postRequests).toHaveLength(0);
+
+    await user.click(screen.getByRole('button', { name: '导入' }));
+    expect(await screen.findByRole('dialog', { name: '导入订单' })).toBeTruthy();
+    expect(orderRequestCount('50')).toBe(1);
+    expect(postRequests).toHaveLength(0);
+  });
+
+  it('keeps every exposed write action disabled even with AAL2 and write permissions', async () => {
     const user = userEvent.setup();
     renderRoute();
     await screen.findByRole('table', { name: '订单列表' });
 
-    const exportButton = screen.getByRole<HTMLButtonElement>('button', { name: '导出订单' });
     const moreFilters = screen.getByRole<HTMLButtonElement>('button', { name: '更多筛选' });
     const rowMore = screen.getByRole<HTMLButtonElement>('button', { name: `订单 ${order.order_number} 更多操作` });
-    expect(exportButton.disabled).toBe(true);
     expect(moreFilters.disabled).toBe(true);
     expect(rowMore.disabled).toBe(true);
-    await user.click(exportButton);
     await user.click(moreFilters);
     await user.click(rowMore);
 
@@ -392,7 +464,6 @@ describe('Order route', () => {
     renderRoute('/orders', previewContext);
     await screen.findByRole('table', { name: '订单列表' });
 
-    await openAndCloseSafePreview(user, screen.getByRole('button', { name: '导出订单' }), '导出订单预览');
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: '更多筛选' }), '更多筛选');
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: `订单 ${order.order_number} 更多操作` }), `订单操作预览 ${order.order_number}`);
 
@@ -449,4 +520,34 @@ function currentParams(): URLSearchParams {
 
 function orderRequestCount(limit: string): number {
   return getRequests.filter((url) => url.searchParams.get('limit') === limit).length;
+}
+
+function captureDownload() {
+  const blobs: Blob[] = [];
+  const filenames: string[] = [];
+  Object.defineProperty(URL, 'createObjectURL', {
+    configurable: true,
+    value: vi.fn((blob: Blob) => {
+      blobs.push(blob);
+      return `blob:order-${blobs.length}`;
+    }),
+  });
+  Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function captureFilename(this: HTMLAnchorElement) {
+    filenames.push(this.download);
+  });
+  return { blobs, filenames };
+}
+
+async function readBlob(blob: Blob): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => resolve(String(reader.result)));
+    reader.addEventListener('error', () => reject(reader.error));
+    reader.readAsText(blob);
+  });
+}
+
+function csvRowCount(csv: string): number {
+  return csv.split('\r\n').filter((line) => line !== '').length;
 }

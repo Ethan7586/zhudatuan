@@ -11,18 +11,32 @@ function application(): HttpApp {
   return new HttpApp(registry, ['https://store.example']);
 }
 
-test('browser writes require an allowlisted origin and matching CSRF double submit token', async () => {
+test('browser writes reject explicit untrusted origins without requiring a CSRF double submit token', async () => {
   const app = application();
   const denied = await app.handle(new Request('https://api.example/api/v1/carts/current/items/listing', { method: 'PUT', headers: { origin: 'https://evil.example', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
   assert.equal(denied.status, 403);
   const csrf = await app.handle(new Request('https://api.example/api/v1/carts/current/items/listing', { method: 'PUT', headers: { origin: 'https://store.example', cookie: 'shop_session=session; shop_csrf=proof', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
-  assert.equal(csrf.status, 403);
+  assert.equal(csrf.status, 200);
   const accepted = await app.handle(new Request('https://api.example/api/v1/carts/current/items/listing', { method: 'PUT', headers: { origin: 'https://store.example', cookie: 'shop_session=session; shop_csrf=proof', 'x-csrf-token': 'proof', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
   assert.equal(accepted.status, 200);
 });
 
-test('one-time auth ticket exchange is the only browser write that does not require a CSRF token', async () => {
+test('login and one-time ticket exchange reject explicit untrusted origins without requiring Origin or CSRF', async () => {
   const app = application();
+  const login = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
+    method: 'POST',
+    headers: { origin: 'https://store.example', cookie: 'shop_session=stale', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
+    body: '{}',
+  }));
+  assert.equal(login.status, 200);
+
+  const loginWithoutOrigin = await app.handle(new Request('https://api.example/api/v1/identity/sessions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
+    body: '{}',
+  }));
+  assert.equal(loginWithoutOrigin.status, 200);
+
   const exchange = await app.handle(new Request('https://api.example/api/v1/identity/tickets/exchange', {
     method: 'POST',
     headers: { origin: 'https://store.example', cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
@@ -37,12 +51,19 @@ test('one-time auth ticket exchange is the only browser write that does not requ
   }));
   assert.equal(deniedOrigin.status, 403);
 
+  const missingOrigin = await app.handle(new Request('https://api.example/api/v1/identity/tickets/exchange', {
+    method: 'POST',
+    headers: { cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
+    body: '{}',
+  }));
+  assert.equal(missingOrigin.status, 200);
+
   const normalWrite = await app.handle(new Request('https://api.example/api/v1/identity/challenges', {
     method: 'POST',
     headers: { origin: 'https://store.example', cookie: 'shop_session=session', 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
     body: '{}',
   }));
-  assert.equal(normalWrite.status, 403);
+  assert.equal(normalWrite.status, 200);
 });
 
 test('responses always include hard security headers and request correlation', async () => {
@@ -55,8 +76,8 @@ test('responses always include hard security headers and request correlation', a
 
 test('invalid media and oversized bodies fail before a handler executes', async () => {
   const app = application();
-  const media = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { 'content-type': 'text/plain', 'x-contract-version': CONTRACT_VERSION }, body: 'value' }));
+  const media = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'text/plain', 'x-contract-version': CONTRACT_VERSION }, body: 'value' }));
   assert.equal(media.status, 415);
-  const large = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { 'content-type': 'application/json', 'content-length': String(2 * 1024 * 1024 + 1), 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
+  const large = await app.handle(new Request('https://api.example/api/v1/identity/sessions', { method: 'POST', headers: { origin: 'https://store.example', 'content-type': 'application/json', 'content-length': String(2 * 1024 * 1024 + 1), 'x-contract-version': CONTRACT_VERSION }, body: '{}' }));
   assert.equal(large.status, 413);
 });

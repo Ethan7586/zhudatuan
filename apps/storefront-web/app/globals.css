@@ -25,7 +25,7 @@ textarea {
 }
 
 /*
- * Smart Wing consumer Web component standard.
+ * ZHUDATUAN consumer Web component standard.
  * Laptop and 27-inch desktop share one component tree; only density changes.
  */
 @media (min-width: 1536px) {

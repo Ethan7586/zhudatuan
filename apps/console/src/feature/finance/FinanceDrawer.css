@@ -109,7 +109,7 @@
   height: 15px;
   color: var(--sw-warning-strong);
 }
-.financeimmutablealert p {
+.financedrawer .financedrawerheader .financeimmutablealert p {
   margin: 0;
   color: var(--sw-warning-strong);
   font-size: 9px;

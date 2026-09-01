@@ -7,6 +7,8 @@ import type { CatalogSyncStatus, SessionStatus } from './MallContext.types';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 import { mergeAuthenticatedMemberProfile } from './storefrontMemberProfile';
 import { createCatalogPublisher } from './catalogSync';
+import { captureBrowserReferralAttribution } from '../services/referralAttribution';
+import { canonicalizeProductBrand } from '../domain/brand/productBrand';
 
 interface ProductionSyncSetters {
   setProducts: Dispatch<SetStateAction<Product[]>>;
@@ -105,6 +107,13 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       return;
     }
     const { bootstrap, accounts, orders: orderResult, accountLedgers: ledgerResult } = snapshot;
+    // The URL contributes only the validated referral candidate. Mall and
+    // member identity come from this authenticated server snapshot, while the
+    // server remains authoritative for first-touch conflicts.
+    void captureBrowserReferralAttribution({
+      mallId: bootstrap.scope.mallId,
+      memberId: bootstrap.actor.userId,
+    });
     const welfare = accounts.items.find((account) => account.type === 'welfare');
     const meal = accounts.items.find((account) => account.type === 'meal');
     setters.setUser((previous) => ({
@@ -115,11 +124,11 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     const resolvedMall: EnterpriseMall = {
       id: bootstrap.scope.mallId,
       enterpriseId: bootstrap.scope.enterpriseId,
-      enterpriseName: bootstrap.scope.enterpriseName,
-      mallName: bootstrap.scope.mallName,
-      logoText: bootstrap.scope.brandName,
+      enterpriseName: canonicalizeProductBrand(bootstrap.scope.enterpriseName),
+      mallName: canonicalizeProductBrand(bootstrap.scope.mallName),
+      logoText: canonicalizeProductBrand(bootstrap.scope.brandName),
       badge: '企业福利专享',
-      welcomeBanner: `${bootstrap.scope.enterpriseName}员工福利商城已开放，实际权益以企业发放为准。`,
+      welcomeBanner: `${canonicalizeProductBrand(bootstrap.scope.enterpriseName)}员工福利商城已开放，实际权益以企业发放为准。`,
     };
     setters.setCurrentMall(resolvedMall);
     setters.setMalls([resolvedMall]);

@@ -33,7 +33,7 @@ export function createFetchRiskCenterRead(baseUrl: string): OperationMethod<"ris
 }
 
 function bindCenterRead(client: OperationExecutor): OperationMethod<"risk.center.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"risk.center.read","method":"GET","path":"/api/v1/risks","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"risk.center.read","method":"GET","path":"/api/v1/risks","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchRiskPoliciesManage(baseUrl: string): OperationMethod<"risk.policies.manage"> {
@@ -41,7 +41,7 @@ export function createFetchRiskPoliciesManage(baseUrl: string): OperationMethod<
 }
 
 function bindPoliciesManage(client: OperationExecutor): OperationMethod<"risk.policies.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"risk.policies.manage","method":"PUT","path":"/api/v1/risks/policies/{policyid}","audience":"operator","idempotent":true,"pathKeys":["policyid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"risk.policies.manage","method":"PUT","path":"/api/v1/risks/policies/{policyid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["policyid"]}));
 }
 
 export function createFetchRiskCasesReview(baseUrl: string): OperationMethod<"risk.cases.review"> {
@@ -49,5 +49,5 @@ export function createFetchRiskCasesReview(baseUrl: string): OperationMethod<"ri
 }
 
 function bindCasesReview(client: OperationExecutor): OperationMethod<"risk.cases.review"> {
-  return bindOperation(client, defineStructuralOperation({"id":"risk.cases.review","method":"PUT","path":"/api/v1/risks/cases/{caseid}","audience":"operator","idempotent":true,"pathKeys":["caseid"]}));
+  return bindOperation(client, defineStructuralOperation({"id":"risk.cases.review","method":"PUT","path":"/api/v1/risks/cases/{caseid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
 }

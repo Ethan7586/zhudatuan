@@ -27,5 +27,5 @@ export function createFetchProvisioningMallsCreate(baseUrl: string): OperationMe
 }
 
 function bindMallsCreate(client: OperationExecutor): OperationMethod<"provisioning.malls.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"provisioning.malls.create","method":"POST","path":"/api/v1/provisioning/malls","audience":"operator","idempotent":false,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"provisioning.malls.create","method":"POST","path":"/api/v1/provisioning/malls","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }

@@ -151,8 +151,8 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
 function ConversationWelcome() {
   return (
     <section className="supportconversation supportconversationwelcome" aria-labelledby="supportconversationtitle">
-      <span className="supportwelcomeicon" aria-hidden="true">翼</span>
-      <p>SMART WING SUPPORT</p>
+      <span className="supportwelcomeicon" aria-hidden="true">主</span>
+      <p>ZHUDATUAN SUPPORT</p>
       <h2 id="supportconversationtitle">选择一条工单开始处理</h2>
       <span>从左侧会话队列打开工单，这里会展示经服务端解密的真实消息记录。</span>
     </section>

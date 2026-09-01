@@ -88,7 +88,7 @@ export function Component() {
     <section className="supportworkspace">
       <header className="supportworkspaceheader">
         <div>
-          <p>SMART WING · CUSTOMER CARE</p>
+          <p>ZHUDATUAN · CUSTOMER CARE</p>
           <h1 tabIndex={-1}>客服系统</h1>
           <span>统一处理福利平台咨询与售后工单，消息读取、发送和权限均走正式客服服务。</span>
         </div>

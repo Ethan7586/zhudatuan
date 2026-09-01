@@ -6,9 +6,13 @@ export interface OperationDefinition {
   readonly audience: 'public' | 'member' | 'operator' | 'provider';
   readonly permission?: string;
   readonly idempotent: boolean;
+  readonly idempotency: 'none' | 'required';
+  readonly expectedVersion: 'none' | 'optional' | 'required';
+  readonly execution: 'sync' | 'async';
+  readonly availability: 'runtime' | 'frozen';
+  readonly summary: string;
   readonly schema: 'exact' | 'structural';
   readonly requirements: readonly string[];
-  readonly sdk: string;
 }
 
 export interface PermissionMetadata {
@@ -29,6 +33,7 @@ export function buildOpenapi(
     paths[operation.path] ??= {};
     paths[operation.path]![operation.method.toLowerCase()] = compact({
       operationId: operation.id,
+      summary: operation.summary,
       tags: [operation.owner],
       parameters: pathKeys(operation.path).map((name) => ({
         name,
@@ -41,9 +46,11 @@ export function buildOpenapi(
         content: { 'application/json': { schema: reference('JsonValue') } },
       },
       'x-audience': operation.audience,
-      'x-idempotency': operation.method === 'GET' || operation.audience === 'provider' ? 'none' : 'required',
+      'x-availability': operation.availability,
+      'x-execution': operation.execution,
+      'x-idempotency': operation.idempotency,
       'x-idempotent': operation.idempotent,
-      'x-expected-version': operation.method === 'GET' ? 'none' : 'optional',
+      'x-expected-version': operation.expectedVersion,
       'x-permission': operation.permission ?? null,
       'x-requirements': operation.requirements,
       'x-risk': metadata?.risk ?? 'low',
@@ -52,8 +59,8 @@ export function buildOpenapi(
       'x-stepup': metadata?.stepup ?? false,
       security: operation.audience === 'public' || operation.audience === 'provider' ? [] : [{ session: [] }],
       responses: {
-        '200': success,
-        '204': { description: 'Success without content' },
+        [operation.execution === 'async' ? '202' : '200']: success,
+        ...(operation.execution === 'sync' ? { '204': { description: 'Success without content' } } : {}),
         '400': failure,
         '401': failure,
         '403': failure,
@@ -85,13 +92,11 @@ export function operationSource(
     const metadata = item.permission === undefined ? undefined : permissions.get(item.permission);
     return `  ${JSON.stringify([
     item.id, item.method, item.path, item.owner, item.audience, item.permission ?? null,
-    item.idempotent,
-    item.method === 'GET' || item.audience === 'provider' ? 'none' : 'required',
-    item.method === 'GET' ? 'none' : 'optional',
+    item.idempotent, item.idempotency, item.expectedVersion, item.execution, item.availability, item.summary,
     metadata?.risk ?? 'low', metadata?.stepup ?? false, metadata?.scopes ?? [], item.schema, item.requirements,
   ])},`;
   }).join('\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport { operation, type HttpMethod, type OperationAudience, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';\n\ntype Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];\n\nconst rows = [\n${rows}\n] as const satisfies readonly Row[];\n\nexport const COMMERCE_OPERATIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], risk: row[9], stepup: row[10], scopeKinds: row[11], schema: row[12], requirements: row[13] })));\n`;
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport { operation, type HttpMethod, type OperationAudience, type OperationAvailability, type OperationExecution, type OperationIdempotency, type OperationPath, type OperationRisk, type OperationSchemaFidelity, type OperationVersionPolicy } from '../Operation';\n\ntype Row = readonly [string, HttpMethod, OperationPath, string, OperationAudience, string | null, boolean, OperationIdempotency, OperationVersionPolicy, OperationExecution, OperationAvailability, string, OperationRisk, boolean, readonly string[], OperationSchemaFidelity, readonly string[]];\n\nconst rows = [\n${rows}\n] as const satisfies readonly Row[];\n\nexport const COMMERCE_OPERATION_DEFINITIONS = Object.freeze(rows.map((row) => operation({ id: row[0], method: row[1], path: row[2], module: row[3], audience: row[4], ...(row[5] === null ? {} : { permission: row[5] }), idempotent: row[6], idempotency: row[7], expectedVersion: row[8], execution: row[9], availability: row[10], summary: row[11], risk: row[12], stepup: row[13], scopeKinds: row[14], schema: row[15], requirements: row[16] })));\nexport const COMMERCE_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'runtime'));\nexport const FROZEN_OPERATIONS = Object.freeze(COMMERCE_OPERATION_DEFINITIONS.filter((definition) => definition.availability === 'frozen'));\n`;
 }
 
 export function schemaSource(values: readonly OperationDefinition[]): string {
@@ -129,6 +134,10 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
       path: operation.path,
       audience: operation.audience,
       idempotent: operation.idempotent,
+      idempotency: operation.idempotency,
+      expectedVersion: operation.expectedVersion,
+      execution: operation.execution,
+      availability: operation.availability,
       pathKeys: pathKeys(operation.path),
     });
     return `export function createFetch${name}${method}(baseUrl: string): OperationMethod<${JSON.stringify(operation.id)}> {\n  return bind${method}(new ApiClient(baseUrl, new FetchTransport()));\n}\n\nfunction bind${method}(client: OperationExecutor): OperationMethod<${JSON.stringify(operation.id)}> {\n  return bindOperation(client, defineStructuralOperation(${descriptor}));\n}`;

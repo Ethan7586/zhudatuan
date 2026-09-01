@@ -25,6 +25,7 @@ describe('member registration routes', () => {
     const payload = (await response.json()) as Record<string, unknown>;
     expect(payload.challengeId).toEqual(expect.any(String));
     expect(payload.debugCode).toMatch(/^\d{6}$/);
+    expect(payload.resendAfterSeconds).toBe(30);
     expect(database.mock.calls.map(([input]) => String(input))).toEqual([expect.stringContaining('/rpc/api_create_registration_challenge'), expect.stringContaining('/rpc/api_record_phone_challenge_delivery')]);
 
     const production = await handleRegistrationOtp(post('/otp', { mobile: '13800138000' }), { ...env, APP_ENV: 'production', SMS_PROVIDER: 'debug' }, 'prod-request');

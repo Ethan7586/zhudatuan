@@ -66,7 +66,7 @@ export function DesktopFullViPreview() {
         style={{ width: displayWidth, height: displayHeight, visibility: isMeasured ? 'visible' : 'hidden' }}
       >
         <iframe
-          title="智慧翼商城 27英寸完整桌面 VI"
+          title="主打团商城 27英寸完整桌面 VI"
           src="/desktop-1920/frame"
           width={FULL_VI_PROFILE.cssWidth}
           height={FULL_VI_PROFILE.cssHeight}
@@ -135,7 +135,7 @@ export function Desktop1920Preview() {
             <img src="/icon.svg" alt="" className="h-9 w-9 rounded-lg" />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <strong className="text-sm">智慧翼消费者商城 · PC 画布验收台</strong>
+                <strong className="text-sm">主打团消费者商城 · PC 画布验收台</strong>
                 <span className="rounded-full border border-blue-400/40 bg-blue-500/20 px-2 py-0.5 text-[11px] text-blue-100">Desktop 1920×1080</span>
               </div>
               <p className="mt-0.5 truncate text-[11px] text-blue-200">恢复原 PC 大屏展示链路；预览数据与正式商城后端完全隔离</p>
@@ -197,7 +197,7 @@ export function Desktop1920Preview() {
         >
           <div className="mx-auto" style={{ width: displayWidth, height: displayHeight, visibility: isMeasured ? 'visible' : 'hidden' }}>
             <iframe
-              title={`智慧翼商城 ${profile.label} 预览`}
+              title={`主打团商城 ${profile.label} 预览`}
               src="/desktop-1920/frame"
               width={profile.cssWidth}
               height={profile.cssHeight}

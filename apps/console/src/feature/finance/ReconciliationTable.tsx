@@ -9,6 +9,7 @@ export const defaultFinanceColumns: ReadonlySet<FinanceColumnKey> = new Set(['ch
 
 export function ReconciliationTable({
   page,
+  caption,
   previewEnabled,
   visible,
   selected,
@@ -17,6 +18,7 @@ export function ReconciliationTable({
   onOpen,
 }: Readonly<{
   page: FinanceReconciliationPage;
+  caption: string;
   previewEnabled: boolean;
   visible: ReadonlySet<FinanceColumnKey>;
   selected: ReadonlySet<string>;
@@ -28,7 +30,7 @@ export function ReconciliationTable({
   return (
     <div className="financetablewrap">
       <table className="financetable">
-        <caption className="sr-only">支付对账批次</caption>
+        <caption className="sr-only">{caption}</caption>
         <thead>
           <tr>
             <th className="financecheckcell">
@@ -74,7 +76,7 @@ function ReconciliationRow({
   onOpen: () => void;
 }>) {
   const preview = previewEnabled && row.preview?.source === 'local-preview' ? row.preview : undefined;
-  const canOpen = row.items.length > 0;
+  const canOpen = row.items.some((item) => item.state === 'difference' || item.state === 'resolutionpending');
   return (
     <tr className={row.state === 'difference' || row.state === 'resolutionpending' ? 'hasdifference' : undefined} onClick={canOpen ? onOpen : undefined}>
       <td className="financecheckcell" onClick={(event) => event.stopPropagation()}>

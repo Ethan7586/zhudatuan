@@ -27,5 +27,5 @@ export function createFetchMarketingCampaignsRead(baseUrl: string): OperationMet
 }
 
 function bindCampaignsRead(client: OperationExecutor): OperationMethod<"marketing.campaigns.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"marketing.campaigns.read","method":"GET","path":"/api/v1/marketing/campaigns","audience":"operator","idempotent":true,"pathKeys":[]}));
+  return bindOperation(client, defineStructuralOperation({"id":"marketing.campaigns.read","method":"GET","path":"/api/v1/marketing/campaigns","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }

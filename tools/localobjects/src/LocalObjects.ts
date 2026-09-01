@@ -73,7 +73,8 @@ export class LocalObjects {
     const bytes = Buffer.concat(upload.parts.map(part => Buffer.from(part)));
     const sha256 = createHash('sha256').update(bytes).digest('hex');
     if (sha256 !== expectedHash) throw new LocalHttpError(400, 'OBJECT_UPLOAD_INTEGRITY_INVALID');
-    const reference = `local:object:${sha256}`;
+    const referenceHash = createHash('sha256').update(`${id}\n${upload.path}\n${sha256}`, 'utf8').digest('hex');
+    const reference = `local:object:${referenceHash}`;
     const metadata: ObjectMetadata = Object.freeze({
       contentType: upload.contentType,
       path: upload.path,
@@ -84,9 +85,11 @@ export class LocalObjects {
     });
     const temporary = join(this.directory, 'temporary', `${id}.object`);
     await writeFile(temporary, bytes, { mode: 0o600 });
-    await rename(temporary, join(this.directory, 'objects', sha256));
-    await writeFile(this.metadataFile(sha256), JSON.stringify(metadata), { mode: 0o600 });
+    const previous = await this.find(upload.path);
+    await rename(temporary, join(this.directory, 'objects', referenceHash));
+    await writeFile(this.metadataFile(referenceHash), JSON.stringify(metadata), { mode: 0o600 });
     await writeFile(this.pathFile(upload.path), reference, { mode: 0o600 });
+    if (previous !== undefined) await this.delete(previous.reference);
     this.uploads.delete(id);
     return metadata;
   }
@@ -115,7 +118,23 @@ export class LocalObjects {
 
   async read(reference: string): Promise<Readonly<{ bytes: Uint8Array; metadata: ObjectMetadata }>> {
     const metadata = await this.inspect(reference);
-    return Object.freeze({ bytes: new Uint8Array(await readFile(join(this.directory, 'objects', metadata.sha256))), metadata });
+    const bytes = new Uint8Array(await readFile(join(this.directory, 'objects', this.hash(reference))));
+    if (createHash('sha256').update(bytes).digest('hex') !== metadata.sha256 || bytes.byteLength !== metadata.size) {
+      throw new Error('LOCAL_OBJECT_DATA_CORRUPT');
+    }
+    return Object.freeze({ bytes, metadata });
+  }
+
+  async delete(reference: string): Promise<void> {
+    const metadata = await this.inspect(reference);
+    const path = this.pathFile(metadata.path);
+    try {
+      if ((await readFile(path, 'utf8')).trim() === reference) await rm(path);
+    } catch (cause) {
+      if (!isMissing(cause)) throw cause;
+    }
+    await rm(this.metadataFile(this.hash(reference)), { force: true });
+    await rm(join(this.directory, 'objects', this.hash(reference)), { force: true });
   }
 
   async authorize(reference: string, expiresIn: unknown): Promise<Readonly<{ expiresAt: string; url: string }>> {

@@ -1,4 +1,4 @@
-export { FinancePort, type HoldIntent, type PostingIntent } from './application/port/FinancePort';
+export { FinancePort, type HoldIntent, type PostingIntent, type ReversalIntent } from './application/port/FinancePort';
 export type { Account, AccountKind } from './domain/model/Account';
 export type { Hold, HoldState } from './domain/model/Hold';
 export type { Journal } from './domain/model/Journal';

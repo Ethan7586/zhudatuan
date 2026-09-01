@@ -37,7 +37,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe('storefront bootstrap member identity', () => {
   it('returns the authenticated database profile instead of a demo person', async () => {
     const responses = [
-      { mallName: '智慧翼商城', brandName: '智慧翼', enterpriseName: '演示企业' },
+      { mallName: '主打团商城', brandName: '主打团', enterpriseName: '演示企业' },
       {
         level: 'account',
         accountAuthenticated: true,
@@ -64,7 +64,7 @@ describe('storefront bootstrap member identity', () => {
   });
 
   it('fails closed when the authenticated member profile cannot be resolved', async () => {
-    const responses = [{ mallName: '智慧翼商城', brandName: '智慧翼', enterpriseName: '演示企业' }, null, null];
+    const responses = [{ mallName: '主打团商城', brandName: '主打团', enterpriseName: '演示企业' }, null, null];
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify(responses.shift()), { status: 200, headers: { 'content-type': 'application/json' } }))

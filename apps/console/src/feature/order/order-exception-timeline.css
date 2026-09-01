@@ -1,0 +1,141 @@
+.orderexceptiontimelinebody {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: var(--sw-space-2);
+}
+
+.orderexceptiontimelinetitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  margin-bottom: var(--sw-space-1-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderexceptiontimelinetitle span {
+  color: var(--sw-muted);
+}
+
+.orderexceptiontimeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orderexceptiontimeline li {
+  position: relative;
+  min-height: 3.25rem;
+  padding-left: 2.75rem;
+}
+
+.orderexceptiontimeline li:not(:last-child)::before {
+  position: absolute;
+  top: 1.6rem;
+  bottom: 0;
+  left: 0.78rem;
+  width: 2px;
+  background: var(--sw-divider);
+  content: '';
+}
+
+.orderexceptiontimeline li[data-state='done']:not(:last-child)::before {
+  background: color-mix(in srgb, var(--sw-success) 36%, var(--sw-divider));
+}
+
+.orderexceptiontimelinenode {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border: 2px solid var(--sw-border-strong);
+  border-radius: 50%;
+  background: var(--sw-surface);
+  color: var(--sw-muted);
+}
+
+.orderexceptiontimelinenode svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  stroke-width: 2.4;
+}
+
+.orderexceptiontimeline li[data-state='done'] .orderexceptiontimelinenode {
+  border-color: var(--sw-success);
+  background: var(--sw-success);
+  color: var(--sw-text-inverse);
+  box-shadow: 0 0 0 0.25rem var(--sw-success-surface);
+}
+
+.orderexceptiontimeline li[data-state='current'] .orderexceptiontimelinenode {
+  border-color: var(--sw-danger);
+  background: var(--sw-danger);
+  color: var(--sw-text-inverse);
+  box-shadow: 0 0 0 0.3rem var(--sw-danger-surface);
+}
+
+.orderexceptiontimelinecontent {
+  display: flex;
+  min-width: 0;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  padding: var(--sw-space-0-5) 0 var(--sw-space-1-5);
+}
+
+.orderexceptiontimelinecontent strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.orderexceptiontimelinecontent p {
+  margin: var(--sw-space-0-5) 0 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderexceptiontimelinecontent time {
+  flex: none;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderexceptiontimelinecontent small {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-danger-strong);
+  font-size: var(--sw-font-size-caption);
+  font-weight: 700;
+}
+
+.orderexceptiontimelinecontent small::before {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--sw-danger);
+  content: '';
+}
+
+.orderexceptiontimeline li[data-state='current'] {
+  min-height: 5rem;
+}
+
+.orderexceptiontimeline li[data-state='current'] .orderexceptiontimelinecontent {
+  margin-left: calc(var(--sw-space-1) * -1);
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-danger) 36%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: linear-gradient(100deg, var(--sw-danger-surface), var(--sw-surface));
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+}
+
+.orderexceptiontimeline li[data-state='current'] .orderexceptiontimelinecontent strong {
+  color: var(--sw-danger-strong);
+}

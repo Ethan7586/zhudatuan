@@ -125,6 +125,8 @@ interface OrderSeed {
   readonly lifecycleState: OrderLifecycleState;
   readonly createdAt: string;
   readonly slaMinutes?: number;
+  readonly operationLabel?: string;
+  readonly waitMinutes?: number;
   readonly exception: boolean;
 }
 
@@ -144,6 +146,9 @@ const referenceSeeds: readonly OrderSeed[] = Object.freeze([
     lifecycleState: 'active',
     createdAt: '2026-08-24T12:42:00.000Z',
     slaMinutes: 18,
+    operationLabel: '发货任务超过 SLA',
+    waitMinutes: 18,
+    exception: true,
   }),
   seed({
     orderNumber: 'SW202608240002',
@@ -159,6 +164,9 @@ const referenceSeeds: readonly OrderSeed[] = Object.freeze([
     aftersaleState: 'none',
     lifecycleState: 'created',
     createdAt: '2026-08-24T12:08:00.000Z',
+    operationLabel: '渠道状态等待同步',
+    waitMinutes: 8,
+    exception: true,
   }),
   seed({
     orderNumber: 'SW202608240003',
@@ -174,6 +182,9 @@ const referenceSeeds: readonly OrderSeed[] = Object.freeze([
     aftersaleState: 'none',
     lifecycleState: 'active',
     createdAt: '2026-08-24T11:36:00.000Z',
+    operationLabel: '佣金归因等待确认',
+    waitMinutes: 5,
+    exception: true,
   }),
   seed({
     orderNumber: 'SW202608230004',
@@ -204,6 +215,9 @@ const referenceSeeds: readonly OrderSeed[] = Object.freeze([
     aftersaleState: 'requested',
     lifecycleState: 'active',
     createdAt: '2026-08-22T08:52:00.000Z',
+    operationLabel: '售后工单等待回写',
+    waitMinutes: 3,
+    exception: true,
   }),
   seed({
     orderNumber: 'SW202608210006',
@@ -219,6 +233,8 @@ const referenceSeeds: readonly OrderSeed[] = Object.freeze([
     aftersaleState: 'processing',
     lifecycleState: 'active',
     createdAt: '2026-08-21T07:46:00.000Z',
+    operationLabel: '退款对账等待确认',
+    waitMinutes: 32,
     exception: true,
   }),
   seed({
@@ -235,6 +251,9 @@ const referenceSeeds: readonly OrderSeed[] = Object.freeze([
     aftersaleState: 'resolved',
     lifecycleState: 'completed',
     createdAt: '2026-08-18T06:30:00.000Z',
+    operationLabel: '退款结果投影等待确认',
+    waitMinutes: 2,
+    exception: true,
   }),
 ]);
 
@@ -322,6 +341,7 @@ function orderRecord(index: number, value: OrderSeed): OrderPreviewRecord {
   const mallName = value.mall === 'huimin' ? '鸿泰惠民通' : '鸿泰甄选';
   const paidAt = new Date(new Date(value.createdAt).getTime() + 4 * 60_000).toISOString();
   const updatedAt = new Date(new Date(value.createdAt).getTime() + 22 * 60_000).toISOString();
+  const operationAt = value.exception && value.waitMinutes !== undefined ? new Date(new Date(ORDER_PREVIEW_UPDATED_AT).getTime() - value.waitMinutes * 60_000).toISOString() : updatedAt;
   const benefitMinor = Math.min(value.paidMinor, Math.floor(value.paidMinor * 0.4));
   const milestones = milestonesFor(value, paidAt, updatedAt);
   return Object.freeze({
@@ -371,9 +391,9 @@ function orderRecord(index: number, value: OrderSeed): OrderPreviewRecord {
       milestones,
       operation: Object.freeze({
         id: `OP-240824-${String(1_185 + index).padStart(4, '0')}`,
-        label: value.exception ? '履约异常等待人工核对' : '订单快照读取完成',
+        label: value.operationLabel ?? (value.exception ? '履约异常等待人工核对' : '订单快照读取完成'),
         status: value.exception ? 'failed' : 'succeeded',
-        at: updatedAt,
+        at: operationAt,
       }),
       exception: value.exception,
     }),

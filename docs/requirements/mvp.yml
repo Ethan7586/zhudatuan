@@ -31,6 +31,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -74,6 +75,16 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+      - voucher.credentialpools.create
+      - voucher.credentials.generate
+      - voucher.credentials.import
+      - voucher.credentialpools.close
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.list
+      - voucher.credentials.get
+      - voucher.credentialexports.create
+      - voucher.jobs.get
     modules:
       - audit
       - benefit
@@ -151,6 +162,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -169,6 +181,21 @@ requirements:
       - pricing.offers.read
       - inventory.availability.read
       - marketing.campaigns.read
+      - referral.settings.read
+      - referral.settings.manage
+      - referral.products.read
+      - referral.products.manage
+      - referral.members.read
+      - referral.members.apply
+      - referral.members.approve
+      - referral.members.disqualify
+      - referral.bindings.read
+      - referral.bindings.create
+      - referral.commissions.read
+      - referral.earnings.read
+      - referral.links.read
+      - referral.withdrawals.read
+      - referral.withdrawals.create
       - cart.current.read
       - cart.items.put
       - cart.items.batch
@@ -216,6 +243,7 @@ requirements:
       - order
       - payment
       - pricing
+      - referral
       - runtime
       - verification
       - voucher
@@ -240,6 +268,7 @@ requirements:
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
+      - services/commerce/src/modules/referral
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
@@ -281,6 +310,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -393,6 +423,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -518,6 +549,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -644,6 +676,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -771,6 +804,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -828,7 +862,82 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+      - partner.customers.create
+      - partner.customers.update
+      - partner.customers.enable
+      - partner.customers.disable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customeroptions.list
+      - voucher.products.create
+      - voucher.products.revise
+      - voucher.products.enable
+      - voucher.products.disable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.productoptions.list
+      - voucher.credentialpools.create
+      - voucher.credentials.generate
+      - voucher.credentials.import
+      - voucher.credentialpools.close
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.list
+      - voucher.credentials.get
+      - voucher.credentialexports.create
+      - voucher.jobs.get
+      - voucher.stockrequests.create
+      - voucher.stockrequests.update
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequestoptions.list
+      - approval.templates.create
+      - approval.templates.revise
+      - approval.templates.enable
+      - approval.templates.disable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.tasks.list
+      - approval.tasks.approve
+      - approval.tasks.reject
+      - approval.instances.get
+      - voucher.issueorders.create
+      - voucher.issueorders.update
+      - voucher.issueorders.submit
+      - voucher.issueorders.cancel
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issuebatches.retry
+      - voucher.issuebatches.get
+      - voucher.issueorderexports.create
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.search.read
+      - voucher.activations.secret
+      - voucher.activations.numbersecret
+      - voucher.vouchers.bind
+      - voucher.vouchers.unbind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.redemptions.quote
+      - voucher.tenderholds.create
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.release
+      - voucher.redemptions.create
+      - voucher.refunds.create
+      - voucher.redemptions.get
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.searchexports.create
+      - voucher.exports.get
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -840,6 +949,7 @@ requirements:
       - member
       - notification
       - order
+      - partner
       - payment
       - pricing
       - runtime
@@ -851,6 +961,7 @@ requirements:
       - voucher.voucher
       - voucher.redemption
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -862,6 +973,7 @@ requirements:
       - services/commerce/src/modules/member
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -907,6 +1019,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -947,6 +1060,11 @@ requirements:
       - finance.statements.export
       - finance.reconciliations.manage
       - finance.reconciliations.read
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.submit
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.reverse
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -960,8 +1078,12 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
+      - invoice.operatorprofiles.read
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -1048,6 +1170,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1171,6 +1294,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1311,15 +1435,24 @@ requirements:
       - identity.invitations.revoke
       - identity.members.create
       - identity.members.manage
+      - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.ownership.read
+      - access.ownership.transfers.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -1460,6 +1593,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1572,6 +1706,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1697,6 +1832,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1822,6 +1958,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -1952,6 +2089,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2009,7 +2147,82 @@ requirements:
       - notification.preferences.manage
       - notification.endpoints.manage
       - audit.records.read
+      - partner.customers.create
+      - partner.customers.update
+      - partner.customers.enable
+      - partner.customers.disable
+      - partner.customers.get
+      - partner.customers.list
+      - partner.customeroptions.list
+      - voucher.products.create
+      - voucher.products.revise
+      - voucher.products.enable
+      - voucher.products.disable
+      - voucher.products.get
+      - voucher.products.list
+      - voucher.productoptions.list
+      - voucher.credentialpools.create
+      - voucher.credentials.generate
+      - voucher.credentials.import
+      - voucher.credentialpools.close
+      - voucher.credentialpools.get
+      - voucher.credentialpools.list
+      - voucher.credentials.list
+      - voucher.credentials.get
+      - voucher.credentialexports.create
+      - voucher.jobs.get
+      - voucher.stockrequests.create
+      - voucher.stockrequests.update
+      - voucher.stockrequests.submit
+      - voucher.stockrequests.cancel
+      - voucher.stockrequests.get
+      - voucher.stockrequests.list
+      - voucher.stockrequestoptions.list
+      - approval.templates.create
+      - approval.templates.revise
+      - approval.templates.enable
+      - approval.templates.disable
+      - approval.templates.get
+      - approval.templates.list
+      - approval.tasks.list
+      - approval.tasks.approve
+      - approval.tasks.reject
+      - approval.instances.get
+      - voucher.issueorders.create
+      - voucher.issueorders.update
+      - voucher.issueorders.submit
+      - voucher.issueorders.cancel
+      - voucher.issueorders.get
+      - voucher.issueorders.list
+      - voucher.issuebatches.retry
+      - voucher.issuebatches.get
+      - voucher.issueorderexports.create
+      - voucher.actionbatches.create
+      - voucher.actionbatches.get
+      - voucher.actionbatches.list
+      - voucher.actionbatches.retry
+      - voucher.actionexports.create
+      - voucher.search.read
+      - voucher.activations.secret
+      - voucher.activations.numbersecret
+      - voucher.vouchers.bind
+      - voucher.vouchers.unbind
+      - voucher.vouchers.get
+      - voucher.vouchers.getbynumber
+      - voucher.vouchers.timeline
+      - voucher.redemptions.quote
+      - voucher.tenderholds.create
+      - voucher.tenderholds.consume
+      - voucher.tenderholds.release
+      - voucher.redemptions.create
+      - voucher.refunds.create
+      - voucher.redemptions.get
+      - voucher.searchfacets.read
+      - voucher.searchsnapshots.create
+      - voucher.searchexports.create
+      - voucher.exports.get
     modules:
+      - approval
       - audit
       - benefit
       - cart
@@ -2021,6 +2234,7 @@ requirements:
       - member
       - notification
       - order
+      - partner
       - payment
       - pricing
       - runtime
@@ -2031,6 +2245,7 @@ requirements:
       - voucher.redemption
       - voucher.reversal
     moduleSources:
+      - services/commerce/src/modules/approval
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -2042,6 +2257,7 @@ requirements:
       - services/commerce/src/modules/member
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
+      - services/commerce/src/modules/partner
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -2087,6 +2303,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2127,6 +2344,11 @@ requirements:
       - finance.statements.export
       - finance.reconciliations.manage
       - finance.reconciliations.read
+      - finance.reconciliationrepairs.read
+      - finance.reconciliationrepairs.preview
+      - finance.reconciliationrepairs.submit
+      - finance.reconciliationrepairs.decide
+      - finance.reconciliationrepairs.reverse
       - finance.settlements.read
       - finance.settlements.decide
       - finance.settlements.adjust
@@ -2140,8 +2362,12 @@ requirements:
       - finance.backfills.read
       - finance.backfills.decide
       - finance.policies.manage
+      - finance.policies.preview
+      - finance.policies.read
+      - finance.audit.read
       - invoice.profiles.manage
       - invoice.profiles.read
+      - invoice.operatorprofiles.read
       - invoice.requests.create
       - invoice.requests.read
       - invoice.requests.cancel
@@ -2227,6 +2453,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2352,6 +2579,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
@@ -2493,15 +2721,24 @@ requirements:
       - identity.invitations.revoke
       - identity.members.create
       - identity.members.manage
+      - identity.members.reset
       - identity.password.change
       - identity.password.verify
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.ownership.read
+      - access.ownership.transfers.preview
+      - access.ownership.transfers.create
+      - access.ownership.transfers.accept.preview
+      - access.ownership.transfers.accept
+      - access.ownership.transfers.cancel
+      - access.ownership.transfers.cancel.preview
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -2644,6 +2881,7 @@ requirements:
       - identity.members.create
       - identity.password.change
       - identity.password.reset
+      - identity.mobile.challenge
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete

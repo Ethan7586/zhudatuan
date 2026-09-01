@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMall } from '../../context/MallContext';
+import { mallShortName } from '../../domain/brand/productBrand';
 import { Wifi, Signal, Battery, MoreHorizontal, Circle, Building2, ChevronDown } from 'lucide-react';
 
 interface WeChatCapsuleProps {
@@ -40,7 +41,7 @@ export const WeChatCapsule: React.FC<WeChatCapsuleProps> = ({ title, showBack, o
                 className="bg-white/15 hover:bg-white/25 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1 transition-colors border border-white/20 cursor-pointer"
               >
                 <Building2 className="w-3 h-3 text-yellow-300 flex-shrink-0" />
-                <span className="truncate max-w-[110px]">{currentMall.mallName.replace('智慧翼福利商城 - ', '')}</span>
+                <span className="truncate max-w-[110px]">{mallShortName(currentMall.mallName)}</span>
                 <ChevronDown className="w-3 h-3 opacity-80 flex-shrink-0" />
               </button>
 

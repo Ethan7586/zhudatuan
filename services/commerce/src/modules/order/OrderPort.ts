@@ -54,10 +54,14 @@ export class OrderPort {
       where id=$1 and state in('approved','processing')`, [input.aftersale]);
   }
 
-  async completeFulfillment(database: OperationDatabase, order: string): Promise<void> {
+  async completeFulfillment(database: OperationDatabase, order: string): Promise<boolean> {
     const changed = await database.query(`update ordering.orderrecord set fulfillment_state='delivered',lifecycle_state='completed',
-      version=version+1,updated_at=clock_timestamp() where id=$1 returning id`, [order]);
-    if (!changed.rows[0]) throw new Error('ORDER_NOT_FOUND');
+      version=version+1,updated_at=clock_timestamp() where id=$1 and fulfillment_state<>'delivered'
+      and not exists(select 1 from fulfillment.fulfillmentorder where order_id=$1 and state<>'completed') returning id`, [order]);
+    if (changed.rows[0]) return true;
+    const existing = await database.query(`select 1 from ordering.orderrecord where id=$1`, [order]);
+    if (!existing.rows[0]) throw new Error('ORDER_NOT_FOUND');
+    return false;
   }
 }
 

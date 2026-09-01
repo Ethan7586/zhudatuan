@@ -12,8 +12,16 @@ export interface BrandProps {
 }
 
 export function Brand({ variant = 'lockup', product, inverse = false }: BrandProps): ReactElement<{ readonly className: string }> {
-  return <span className={`swbrand swbrand-${variant}${inverse ? ' swbrand-inverse' : ''}`}>
-    <img src={assets[variant]} alt={variant === 'lockup' ? '智慧翼 Smart Wing 企业福利商城' : '智慧翼 Smart Wing'} />
-    {product === undefined ? null : <span className="swbrandcopy"><strong>智慧翼</strong><small>{product}</small></span>}
-  </span>;
+  const accessibleName = product === undefined ? (variant === 'lockup' ? '主打团 ZHUDATUAN 企业福利商城' : '主打团 ZHUDATUAN') : '';
+  return (
+    <span className={`swbrand swbrand-${variant}${inverse ? ' swbrand-inverse' : ''}`}>
+      <img src={assets[variant]} alt={accessibleName} />
+      {product === undefined ? null : (
+        <span className="swbrandcopy">
+          <strong>主打团 ZHUDATUAN</strong>
+          <small>{product}</small>
+        </span>
+      )}
+    </span>
+  );
 }

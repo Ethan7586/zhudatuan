@@ -27,6 +27,7 @@ const server = setupServer(http.get('*', ({ request }) => {
   requests.push(pathname);
   if (pathname.includes('/imports/')) return HttpResponse.json(importJob);
   if (pathname.endsWith('/messages')) return HttpResponse.json({ ...empty, attachments: [] });
+  if (pathname === '/api/v1/access/center') return HttpResponse.json({ ...empty, roles: [] });
   return HttpResponse.json(empty);
 }));
 

@@ -189,7 +189,7 @@ export const MPProfilePage: React.FC = () => {
         </div>
 
         <div className="text-center py-2 text-[10px] text-gray-400">
-          <div>智慧翼企业福利商城 v2.8.0</div>
+          <div>主打团企业福利商城 v2.8.0</div>
           <div>技术服务方：雍彻科技（SGSYEN TECH）</div>
         </div>
       </div>

@@ -1,0 +1,44 @@
+[Unit]
+Description=Zhudatuan identity notification worker
+Requires=zhudatuan-internal-runtime.service docker.service
+After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service docker.service
+ConditionPathExists=/opt/zhudatuan/current/services/commerce/dist/IdentityNotificationJobsOnlyMain.js
+ConditionPathExists=/opt/zhudatuan/current/services/commerce/dist/IdentityNotificationJobsReadyMain.js
+ConditionPathExists=/opt/zhudatuan/shared/identity-notification-jobs.env
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+WorkingDirectory=/opt/zhudatuan/current
+Environment=NODE_ENV=production
+Environment=JOB_RUNTIME_PROFILE=identity-notification-only
+EnvironmentFile=/opt/zhudatuan/shared/identity-notification-jobs.env
+ExecStartPre=/usr/bin/node services/commerce/dist/IdentityNotificationJobsReadyMain.js
+ExecStart=/usr/bin/node services/commerce/dist/IdentityNotificationJobsOnlyMain.js
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=45
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/zhudatuan/current /opt/zhudatuan/shared
+InaccessiblePaths=-/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+[Install]
+WantedBy=multi-user.target

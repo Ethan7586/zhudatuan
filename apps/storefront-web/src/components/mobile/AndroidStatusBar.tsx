@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMall, AndroidAppPage } from '../../context/MallContext';
+import { mallShortName } from '../../domain/brand/productBrand';
 import { Signal, Wifi, Battery, ArrowLeft, Search, ShoppingBag, Building2, ChevronDown, RefreshCw } from 'lucide-react';
 
 interface AndroidStatusBarProps {
@@ -43,7 +44,7 @@ export const AndroidStatusBar: React.FC<AndroidStatusBarProps> = ({ title, showB
                 className="bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors border border-white/20 cursor-pointer"
               >
                 <Building2 className="w-3.5 h-3.5 text-yellow-300" />
-                <span className="truncate max-w-[130px]">{currentMall.mallName.replace('智慧翼福利商城 - ', '')}</span>
+                <span className="truncate max-w-[130px]">{mallShortName(currentMall.mallName)}</span>
                 <ChevronDown className="w-3 h-3 opacity-80" />
               </button>
 

@@ -1,11 +1,5 @@
-import type {
-  ContractJsonValue,
-  OperationId,
-  OperationInputFor,
-  OperationOutputFor,
-  OperationQuery,
-  Schema,
-} from '@shop/contract';
+import type { ContractJsonValue, OperationId, OperationInputFor, OperationOutputFor, OperationQuery, Schema } from '@shop/contract';
+import { canonicalFinancialActionRequest, requiresFinancialActionProof } from '@shop/contract';
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Deadline } from '@shop/kernel/deadline';
@@ -26,33 +20,30 @@ export class ApiClient implements OperationExecutor {
   constructor(
     private readonly baseUrl: string,
     private readonly transport: Transport,
-    private readonly retry = new RetryPolicy(),
+    private readonly retry = new RetryPolicy()
   ) {
     if (!/^https?:\/\//.test(baseUrl)) throw new Error('SDK_BASE_URL_INVALID');
   }
 
-  async execute<TKey extends OperationId>(
-    operation: OperationDescriptor<TKey>,
-    input: OperationInputFor<TKey>,
-    context: RequestContext,
-  ): Promise<OperationOutputFor<TKey>> {
+  async execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>> {
     if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
-    if (operation.method !== 'GET' && operation.audience !== 'provider' && context.idempotencyKey === undefined) {
+    if (operation.availability === 'frozen') throw new Error('SDK_OPERATION_FROZEN');
+    if (operation.idempotency === 'required' && context.idempotencyKey === undefined) {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
+    if (operation.expectedVersion === 'required' && context.expectedVersion === undefined) {
+      throw new Error('SDK_EXPECTED_VERSION_REQUIRED');
+    }
+    if (requiresFinancialActionProof(operation.id) && context.proof === undefined) {
+      throw new Error('SDK_ACTION_PROOF_REQUIRED');
+    }
     const parsed = operation.input.parse(input);
-    const value = await this.send(operation.path, operation.method, parsed, context, operation.idempotent, operation.output);
+    const prepared = operation.id === 'identity.stepup.complete' ? await bindStepupActionRequestHash(parsed) : parsed;
+    const value = await this.send(operation.path, operation.method, prepared, context, operation.idempotent, operation.output);
     return value;
   }
 
-  private async send<TOutput>(
-    path: string,
-    method: string,
-    input: WireInput,
-    context: RequestContext,
-    idempotent: boolean,
-    output: Schema<TOutput>,
-  ): Promise<TOutput> {
+  private async send<TOutput>(path: string, method: string, input: WireInput, context: RequestContext, idempotent: boolean, output: Schema<TOutput>): Promise<TOutput> {
     const deadline = Deadline.after(RUNTIME_LIMITS.http.totalDeadlineMilliseconds, context.signal);
     const request = this.request(path, method, input, context, deadline.signal);
     const canRetry = idempotent || context.idempotencyKey !== undefined;
@@ -118,11 +109,55 @@ export class ApiClient implements OperationExecutor {
       signal,
     };
   }
+}
 
+async function bindStepupActionRequestHash(input: WireInput): Promise<WireInput> {
+  const body = objectValue(input.body);
+  const actionValue = Reflect.get(body, 'action');
+  if (actionValue === undefined || actionValue === null) return input;
+  const action = objectValue(actionValue);
+  const operation = Reflect.get(action, 'operation');
+  const request = objectValue(Reflect.get(action, 'request'));
+  if (typeof operation !== 'string' || !requiresFinancialActionProof(operation)) {
+    throw new Error('SDK_ACTION_REQUEST_INVALID');
+  }
+  let canonical: string;
+  try {
+    canonical = canonicalFinancialActionRequest({
+      operation,
+      path: Reflect.get(request, 'path'),
+      query: Reflect.get(request, 'query'),
+      body: Reflect.get(request, 'body'),
+    });
+  } catch {
+    throw new Error('SDK_ACTION_REQUEST_INVALID');
+  }
+  const requestHash = await sha256(canonical);
+  const provided = Reflect.get(action, 'requestHash');
+  if (provided !== undefined && provided !== requestHash) throw new Error('SDK_ACTION_REQUEST_HASH_MISMATCH');
+  return {
+    ...input,
+    body: {
+      ...body,
+      action: { ...action, requestHash },
+    } as ContractJsonValue,
+  };
+}
+
+function objectValue(value: unknown): Readonly<Record<string, ContractJsonValue | undefined>> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('SDK_ACTION_REQUEST_INVALID');
+  return value as Readonly<Record<string, ContractJsonValue | undefined>>;
+}
+
+async function sha256(value: string): Promise<string> {
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) throw new Error('SDK_SECURE_HASH_SOURCE_UNAVAILABLE');
+  const digest = await subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 function decode(body: string): unknown {
-  return body.length === 0 ? undefined : JSON.parse(body) as unknown;
+  return body.length === 0 ? undefined : (JSON.parse(body) as unknown);
 }
 
 async function delay(milliseconds: number, signal?: AbortSignal): Promise<void> {

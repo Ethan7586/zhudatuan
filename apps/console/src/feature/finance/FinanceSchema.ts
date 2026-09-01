@@ -1,14 +1,19 @@
 import { z } from 'zod';
 
+const SignedDatabaseIntegerSchema = z
+  .union([z.number().int(), z.string().regex(/^-?(?:0|[1-9][0-9]*)$/)])
+  .transform((value) => (typeof value === 'number' ? value : Number(value)))
+  .refine(Number.isSafeInteger, 'DATABASE_INTEGER_OUT_OF_RANGE');
+
 export const FinanceOverviewSchema = z.object({
   items: z.array(
     z.object({
       currency: z.string().min(3).max(3),
-      balance_minor: z.number().finite(),
-      liability_minor: z.number().finite(),
-      income_minor: z.number().finite(),
-      expense_minor: z.number().finite(),
-      cash_minor: z.number().finite(),
+      balance_minor: SignedDatabaseIntegerSchema,
+      liability_minor: SignedDatabaseIntegerSchema,
+      income_minor: SignedDatabaseIntegerSchema,
+      expense_minor: SignedDatabaseIntegerSchema,
+      cash_minor: SignedDatabaseIntegerSchema,
       journal_count: z.number().int().nonnegative(),
       watermark: z.string().nullable(),
     })

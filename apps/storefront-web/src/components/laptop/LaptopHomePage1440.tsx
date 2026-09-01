@@ -62,7 +62,7 @@ export const LaptopHomePage1440: React.FC<LaptopHomePage1440Props> = ({ onSelect
                 <div key={idx} onClick={() => onSelectTab('category')} className="p-2.5 hover:bg-blue-50/70 transition-colors cursor-pointer group flex items-center justify-between">
                   <div className="min-w-0 pr-1">
                     <div className="font-bold text-gray-800 group-hover:text-[var(--sw-brand)] truncate text-xs leading-tight">{cat.name}</div>
-                    <div className="text-[10px] text-gray-400 truncate mt-0.5">{cat.sub}</div>
+                    <div className="text-[10px] text-gray-600 truncate mt-0.5">{cat.sub}</div>
                   </div>
                   <span className="text-[9px] bg-blue-50 text-[var(--sw-brand)] border border-blue-200 font-medium px-1 rounded flex-shrink-0">{cat.badge}</span>
                 </div>
@@ -75,7 +75,7 @@ export const LaptopHomePage1440: React.FC<LaptopHomePage1440Props> = ({ onSelect
                   <Zap className="w-4 h-4 text-yellow-300" />
                   <span>企业专享补贴通道</span>
                 </div>
-                <div className="text-[10px] text-blue-100 mt-0.5">支持增值税专票自动生成</div>
+                <div className="text-[10px] text-white mt-0.5">支持增值税专票自动生成</div>
               </div>
             </div>
           </div>

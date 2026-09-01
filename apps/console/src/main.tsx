@@ -2,7 +2,9 @@ import { createRoot } from 'react-dom/client';
 import { bootstrapApplication } from '@shop/design';
 import '@shop/design/tokens.css';
 import '@shop/design/base.css';
+import '@shop/design/components.css';
 import '@shop/design/workspace.css';
+import '@shop/design/components.css';
 import './style.css';
 
 const root = document.getElementById('root');

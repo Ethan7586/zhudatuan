@@ -10,6 +10,7 @@ import { useToasts } from './useToasts';
 import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
+import { storefrontAuthHref } from '../config/storefrontAuth';
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 
@@ -127,19 +128,10 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     setOrders([]);
   };
 
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+  const login = async (_credentials: LoginCredentials): Promise<boolean> => {
     setSessionError(null);
-    try {
-      await productionApi.login(credentials);
-      await refreshProductionData();
-      showToast('安全登录成功，已同步福利账户与订单', 'success');
-      return true;
-    } catch (error) {
-      const message = error instanceof ProductionApiError ? error.message : '登录服务暂时不可用';
-      setSessionStatus('guest');
-      setSessionError(message);
-      return false;
-    }
+    window.location.assign(storefrontAuthHref());
+    return false;
   };
   const logout = async () => {
     const revokeRequest = productionApi.logout();
@@ -203,7 +195,8 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     if (sessionStatus === 'authenticated' && product.skuId) {
       try {
-        await productionApi.upsertCartItem({ skuId: product.skuId, quantity, selected: true });
+        const existing = cart.find((item) => item.product.id === product.id);
+        await productionApi.upsertCartItem({ listingId: product.id, quantity: (existing?.quantity ?? 0) + quantity });
         await refreshServerCart();
         showToast(`已将“${product.title.slice(0, 16)}...”加入购物车`, 'success');
       } catch {
@@ -226,7 +219,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const handleUpdateCartQuantity = (cartItemId: string, quantity: number) => {
     if (sessionStatus === 'authenticated') {
       const item = cart.find((candidate) => candidate.id === cartItemId);
-      if (!item?.product.skuId) return;
+      if (!item?.product.id) return;
       if (quantity <= 0) {
         void productionApi
           .deleteCartItem(cartItemId)
@@ -234,7 +227,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
           .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
       } else {
         void productionApi
-          .upsertCartItem({ skuId: item.product.skuId, quantity, selected: item.selected })
+          .upsertCartItem({ listingId: item.product.id, quantity })
           .then(refreshServerCart)
           .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
       }
@@ -245,12 +238,9 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleToggleCartItemSelected = (cartItemId: string) => {
     if (sessionStatus === 'authenticated') {
-      const item = cart.find((candidate) => candidate.id === cartItemId);
-      if (!item?.product.skuId) return;
-      void productionApi
-        .upsertCartItem({ skuId: item.product.skuId, quantity: item.quantity, selected: !item.selected })
-        .then(refreshServerCart)
-        .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
+      // Canonical cart does not persist a selected flag. Selection is a UI
+      // concern; checkout fails closed unless every server item is selected.
+      setCart((items) => items.map((item) => (item.id === cartItemId ? { ...item, selected: !item.selected } : item)));
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleCartItemSelected(cartItemId));
@@ -258,10 +248,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
 
   const handleToggleSelectAllCart = (selected: boolean) => {
     if (sessionStatus === 'authenticated') {
-      const updates = cart.filter((item) => item.product.skuId).map((item) => productionApi.upsertCartItem({ skuId: item.product.skuId!, quantity: item.quantity, selected }));
-      void Promise.all(updates)
-        .then(refreshServerCart)
-        .catch(() => showToast('购物车更新失败，请稍后重试', 'error'));
+      setCart((items) => items.map((item) => ({ ...item, selected })));
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleSelectAllCart(selected));
@@ -289,14 +276,17 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     setIsSubmittingOrder(true);
     try {
-      const { selectedItems } = await checkoutSelectedCartRequest(cart, addresses, user);
-      await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
+      await checkoutSelectedCartRequest(cart, addresses, user);
       await refreshServerCart();
       await refreshProductionData();
       showToast('订单已安全写入数据库并完成福利账户支付', 'success');
       return true;
     } catch (error) {
       const message = error instanceof ProductionApiError ? error.message : '订单服务暂时不可用';
+      // Quote/order/payment are separate authoritative operations. A late
+      // payment error can occur after the order has already consumed the cart,
+      // so reconcile both views before the user attempts another checkout.
+      void Promise.allSettled([refreshServerCart(), refreshProductionData()]);
       showToast(`订单提交失败：${message}`, 'error');
       return false;
     } finally {

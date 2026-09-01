@@ -40,6 +40,16 @@ describe('mall provisioning engine', () => {
     expect(calls.some(({ text }) => text.startsWith('insert into experience.application'))).toBe(true);
     expect(calls.some(({ text }) => text.startsWith('insert into experience.version'))).toBe(true);
     expect(calls.some(({ text }) => text.startsWith('insert into experience.binding'))).toBe(true);
+    const pool = calls.find(({ text }) => text.startsWith('insert into catalog.pool('));
+    const poolBinding = calls.find(({ text }) => text.startsWith('insert into catalog.poolbinding'));
+    const application = calls.find(({ text }) => text.startsWith('insert into experience.application'));
+    const binding = calls.find(({ text }) => text.startsWith('insert into experience.binding'));
+    expect(pool?.values[1]).toBe(plan.mall);
+    expect(poolBinding?.values[0]).toBe(plan.mall);
+    expect(application?.values[1]).toBe(plan.mall);
+    expect(binding?.values[2]).toBe(plan.mall);
+    expect(calls.some(({ text }) => /insert into (?:catalog\.(?:product|sku|listing)|inventory\.|ordering\.|payment\.|finance\.)/.test(text)))
+      .toBe(false);
     const version = calls.find(({ text }) => text.startsWith('insert into experience.version'));
     expect(JSON.parse(String(version?.values[2]))).toMatchObject({ version: 2, application: plan.application });
   });

@@ -1,7 +1,7 @@
 import type { QueryResultRow } from 'pg';
 import type { OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { operationLifecycle, requireAccess } from '../../../../foundation/application/ModuleOperations';
-import { keysetResult, queryPage } from '../../../../foundation/interface/Validation';
+import { encodeCursor, keysetResult, queryPage } from '../../../../foundation/interface/Validation';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { SupportPortFactory } from '../port/SupportPort';
 
@@ -30,13 +30,17 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
           message.conversation_id,message.created_at from support.message message join support.ticket ticket
           on ticket.conversation_id=message.conversation_id join support.conversation conversation on conversation.id=ticket.conversation_id
           where ticket.id=$1 and (conversation.member_id=$3 or exists(select 1 from organization.unitclosure where ancestor_id=$2
-          and descendant_id=ticket.scope_id)) and ($4::timestamptz is null or (message.created_at,message.id)>($4::timestamptz,$5))
-          order by message.created_at,message.id limit $6`, [request.input.path.caseid!, access.scope.id, member, page.sort, page.id, page.fetch]);
+          and descendant_id=ticket.scope_id)) and ($4::timestamptz is null or (message.created_at,message.id)<($4::timestamptz,$5))
+          order by message.created_at desc,message.id desc limit $6`, [request.input.path.caseid!, access.scope.id, member, page.sort, page.id, page.fetch]);
         const attachments = await database.query(`select evidence.id,evidence.object_ref,evidence.sha256,evidence.kind,evidence.size_bytes,
           evidence.created_at from support.evidence evidence join support.ticket ticket on ticket.conversation_id=evidence.conversation_id
           where ticket.id=$1 and evidence.state='clean' order by evidence.created_at,evidence.id`, [request.input.path.caseid!]);
-        const paged = keysetResult(result, page, 'created_at');
-        return { ...paged, body: { ...(paged.body as object), attachments: attachments.rows } };
+        const more = result.rows.length > page.limit;
+        const descending = more ? result.rows.slice(0, page.limit) : result.rows;
+        const oldest = descending.at(-1);
+        return { status: 200, body: { items: [...descending].reverse(), count: descending.length,
+          ...(more && oldest ? { nextCursor: encodeCursor({ sort: timestamp(oldest.created_at), id: oldest.id }) } : {}),
+          attachments: attachments.rows } };
       },
       finalize: async (_request, result) => {
         const body = result.body as { readonly items: readonly MessageRow[]; readonly attachments: readonly unknown[];
@@ -49,4 +53,8 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
       },
     }),
   };
+}
+
+function timestamp(value: string | Date): string {
+  return value instanceof Date ? value.toISOString() : value;
 }

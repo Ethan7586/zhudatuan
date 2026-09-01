@@ -10,15 +10,18 @@ export function sendMessageOperations(kms: KmsClient, ports: SupportPortFactory)
     'support.messages.send': operationLifecycle({
       prepare: async (request) => {
         const access = requireAccess(request); const ticket = request.input.path.caseid!; const body = bodyRecord(request);
-        return { access, ticket, message: await encrypt(kms, textField(body, 'message', 4000)) };
+        if (request.input.expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
+        return { access, ticket, expectedVersion: request.input.expectedVersion,
+          message: await encrypt(kms, textField(body, 'message', 4000)) };
       },
-      execute: async (_request, database, { access, ticket, message }) => {
+      execute: async (_request, database, { access, ticket, expectedVersion, message }) => {
         const repository = ports(database); const member = await repository.member(access.membership.id);
         const selected = await database.query<{ conversation_id: string; scope_id: string }>(`select ticket.conversation_id,ticket.scope_id
           from support.ticket ticket join support.conversation conversation on conversation.id=ticket.conversation_id where ticket.id=$1
           and ticket.state<>'closed' and (conversation.member_id=$3 or exists(select 1 from organization.unitclosure
-          where ancestor_id=$2 and descendant_id=ticket.scope_id)) for update of ticket`, [ticket, access.scope.id, member]);
-        const target = selected.rows[0]; if (!target) throw new Error('SUPPORT_TICKET_NOT_WRITABLE');
+          where ancestor_id=$2 and descendant_id=ticket.scope_id)) and ticket.version=$4 for update of ticket`,
+        [ticket, access.scope.id, member, expectedVersion]);
+        const target = selected.rows[0]; if (!target) throw new Error('VERSION_CONFLICT');
         const author = access.actor.target === 'storefront' ? 'member' : 'agent';
         const result = await repository.message(ticket, target.conversation_id, target.scope_id, author, access.actor.id, message);
         await database.query(`update support.ticket set state=case when $2='member' then 'open' else 'waiting' end,

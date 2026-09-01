@@ -7,6 +7,7 @@ identity="${SHOP_RELEASE_IDENTITY:-https://github.com/example/shop/.github/workf
 issuer="${SHOP_RELEASE_ISSUER:-https://token.actions.githubusercontent.com}"
 cutover="${SHOP_CUTOVER_CONTROLLER:-}"
 cutover_evidence="${SHOP_CUTOVER_EVIDENCE:-}"
+production_evidence_root="${SHOP_PRODUCTION_EVIDENCE_ROOT:-/var/lib/shop/production-evidence}"
 
 fail() { printf 'release refused: %s\n' "$*" >&2; exit 1; }
 command -v cosign >/dev/null || fail 'cosign is required'
@@ -14,7 +15,9 @@ command -v jq >/dev/null || fail 'jq is required'
 command -v kubectl >/dev/null || fail 'kubectl is required'
 command -v ossutil >/dev/null || fail 'ossutil is required'
 [[ "$cutover" == /* && -x "$cutover" ]] || fail 'SHOP_CUTOVER_CONTROLLER must be an absolute audited executable'
+[[ "$production_evidence_root" == /* && "$production_evidence_root" != / ]] || fail 'SHOP_PRODUCTION_EVIDENCE_ROOT must be an absolute non-root path'
 [[ "$cutover_evidence" == /* && "$cutover_evidence" != / && ! -e "$cutover_evidence" ]] || fail 'SHOP_CUTOVER_EVIDENCE must be a new absolute non-root file'
+[[ "$cutover_evidence" == "$production_evidence_root"/* ]] || fail 'SHOP_CUTOVER_EVIDENCE must be inside the production-evidence root'
 [[ "$release_root" == /* && "$release_root" != / ]] || fail 'signed release directory must be an absolute non-root path'
 [[ -d "$release_root" ]] || fail 'signed release directory does not exist'
 

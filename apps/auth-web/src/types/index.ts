@@ -1,5 +1,5 @@
 /**
- * 智慧翼企业福利商城 - 类型定义
+ * 主打团企业福利商城 - 类型定义
  * 技术服务方：雍彻科技
  */
 
@@ -31,12 +31,6 @@ export interface PreAuthContext {
   loginMethod: LoginMethod;
   requiresPasswordReset?: boolean;
   memberships: Membership[];
-}
-
-export interface LockoutState {
-  isLocked: boolean;
-  remainingSeconds: number;
-  failedAttempts: number;
 }
 
 export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';

@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import type { PaymentGateway } from './application/port/PaymentGateway';
+import { providerOccurredAt, type PaymentGateway } from './application/port/PaymentGateway';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 import type { PaymentApplication } from './application/port/PaymentGateway';
 
@@ -45,10 +45,17 @@ export function assertProviderAmount(selected: IntentTarget, observed: ProviderO
 }
 
 export async function recordProviderObservation(pool: DatabasePool, selected: IntentTarget, observed: ProviderObservation, source: 'query' | 'close'): Promise<void> {
-  const evidence = JSON.stringify({ source, state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor });
-  const event = `${source}:${paymentDigest(`${selected.intent}:${evidence}`)}`;
-  await pool.query(`insert into payment.observation(id,mall_id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at)
-    values($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp()) on conflict(mall_id,provider_event_id) do nothing`,
+  const occurredAt = observed.occurredAt === undefined ? null : providerOccurredAt(observed.occurredAt);
+  const identity = JSON.stringify({ source, state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor, occurredAt });
+  const evidence = JSON.stringify({ version: 1, provider: 'wechat', kind: 'payment.observation', occurredAt, source,
+    state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor, currency: selected.currency,
+    receipt: observed.evidence });
+  const event = `${source}:${paymentDigest(`${selected.intent}:${identity}`)}`;
+  await pool.query(`insert into payment.observation(id,mall_id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at,
+    provider_occurred_at,provider_effect,provider_effect_hash)
+    values($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp(),$9::timestamptz,$10::jsonb,
+      case when $9::timestamptz is null then null else encode(public.digest($10::jsonb::text,'sha256'),'hex') end)
+    on conflict(mall_id,provider_event_id) do nothing`,
   [`observation:${paymentDigest(event)}`, selected.mall_id, selected.attempt, event, observed.state, observed.amountMinor,
-    selected.currency, paymentDigest(evidence)]);
+    selected.currency, paymentDigest(evidence), occurredAt, occurredAt === null ? null : evidence]);
 }

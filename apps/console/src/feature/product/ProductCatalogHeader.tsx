@@ -5,6 +5,9 @@ interface ProductCatalogHeaderProps {
   readonly page?: ListingPage;
   readonly previewEnabled: boolean;
   readonly status: string;
+  readonly exportReady: boolean;
+  readonly onImport: () => void;
+  readonly onExport: () => void;
   readonly onStatus: (status: string) => void;
 }
 
@@ -15,7 +18,7 @@ const tabs = Object.freeze([
   { key: 'unpublished', label: '已下架' },
 ] as const);
 
-export function ProductCatalogHeader({ page, previewEnabled, status, onStatus }: ProductCatalogHeaderProps) {
+export function ProductCatalogHeader({ page, previewEnabled, status, exportReady, onImport, onExport, onStatus }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? undefined : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
   const description = preview === undefined ? '当前范围商品按服务端过滤与游标分页读取；总量尚未由列表合同返回。' : `当前范围内共 ${formatCount(coreTotal ?? preview.totalCount)} 件核心商品`;
@@ -29,12 +32,25 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus }:
           <p>{description}</p>
         </div>
         <div className="productheroactions" role="group" aria-label="商品管理操作">
-          <UnavailableAction icon="upload" label="导入" reason="导入任务合同尚未接入此工作台" />
-          <UnavailableAction icon="download" label="导出" reason="导出快照合同尚未提供" />
+          <button className="productaction" type="button" title="选择本地 CSV 文件，本期不会上传" aria-describedby="productcontractnotice" onClick={onImport}>
+            <ProductIcon name="upload" />
+            导入
+          </button>
+          <button
+            className="productaction"
+            type="button"
+            disabled={!exportReady}
+            title={exportReady ? '仅导出当前已加载页，不包含其他分页' : '数据加载中'}
+            aria-describedby="productcontractnotice"
+            onClick={onExport}
+          >
+            <ProductIcon name="download" />
+            导出当前页
+          </button>
           <UnavailableAction primary icon="plus" label="新建商品" reason="商品创建表单与操作回执尚未闭合" />
         </div>
         <p id="productcontractnotice" className="sr-only">
-          这些写操作保持不可用，直到服务端 Operation、权限、版本校验和回执合同全部就绪。
+          导入只提供本地文件交互预览，文件不会上传；当前页导出只使用浏览器已经加载的服务端读模型。新建商品保持不可用。
         </p>
       </header>
       <nav className="producttabs" aria-label="商品状态">

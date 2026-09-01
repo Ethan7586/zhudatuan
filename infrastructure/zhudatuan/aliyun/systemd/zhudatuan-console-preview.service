@@ -1,0 +1,19 @@
+[Unit]
+Description=ZhudaTuan referral read-only preview API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/srv/zhudatuan-display/referral-current
+Environment=NODE_ENV=production
+Environment=CONSOLE_PREVIEW_API_PORT=4312
+ExecStart=/usr/bin/node --import tsx tests/browser/ConsolePreviewServer.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

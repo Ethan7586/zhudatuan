@@ -85,7 +85,7 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
             </button>
             <span className="text-blue-400/60">|</span>
             {isGuest ? (
-              <a href={storefrontAuthHref()} className="flex items-center gap-1 text-yellow-300 font-medium hover:text-yellow-200 transition-colors" aria-label="登录或注册智慧翼账户">
+              <a href={storefrontAuthHref()} className="flex items-center gap-1 text-yellow-300 font-medium hover:text-yellow-200 transition-colors" aria-label="登录或注册主打团账户">
                 <User className="w-3 h-3" />
                 <span>登录 / 注册</span>
               </a>
@@ -109,10 +109,10 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
             <img src="/icon.svg" alt="" className="h-8 w-8 rounded-lg shadow-xs" />
             <div>
               <div className="font-extrabold text-sm tracking-tight text-[var(--sw-brand-dark)] leading-none flex items-center gap-1">
-                <span>智慧翼企业福利商城</span>
+                <span>主打团企业福利商城</span>
                 <span className="text-[9px] bg-red-100 text-[#E5484D] font-bold px-1 py-0.2 rounded">{surfaceCopy.headerBadge}</span>
               </div>
-              <div className="text-[9px] text-gray-400 font-medium tracking-tight mt-0.5">SMART WING ENTERPRISE BENEFITS</div>
+              <div className="text-[9px] text-gray-600 font-medium tracking-tight mt-0.5">ZHUDATUAN ENTERPRISE BENEFITS</div>
             </div>
           </div>
 

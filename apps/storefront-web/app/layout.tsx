@@ -3,9 +3,9 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://zhudatuan.com'),
-  title: '智慧翼企业福利商城｜企业员工福利平台',
+  title: '主打团企业福利商城｜企业员工福利平台',
   description: '面向企业员工的福利商品、卡券、生活服务和订单管理平台，由雍彻科技提供技术服务。',
-  applicationName: '智慧翼企业福利商城',
+  applicationName: '主打团企业福利商城',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
@@ -15,14 +15,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'zh_CN',
     url: '/',
-    siteName: '智慧翼 Smart Wing',
-    title: '智慧翼企业福利商城｜企业员工福利平台',
+    siteName: '主打团 ZHUDATUAN',
+    title: '主打团企业福利商城｜企业员工福利平台',
     description: '面向企业员工的福利商品、卡券、生活服务和订单管理平台。',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: '智慧翼企业福利商城' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: '主打团企业福利商城' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '智慧翼企业福利商城｜企业员工福利平台',
+    title: '主打团企业福利商城｜企业员工福利平台',
     description: '面向企业员工的福利商品、卡券、生活服务和订单管理平台。',
     images: ['/opengraph-image.png'],
   },
