@@ -39,6 +39,7 @@ gitpointer.broken.txt
 # Local Codex previews and spreadsheet inspection output.
 .codex-preview-*.png
 .codex-xlsx/
+.codex-tmp/
 
 # Payment certificates and private keys belong in Secret Manager, never the workspace.
 config/payment/
