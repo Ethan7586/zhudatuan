@@ -19,5 +19,7 @@
 ## 当前入口
 
 - 旧系统架构审计：`architecture/00-zhudatuan-架构审计.md`
+- zdt-next 目标系统架构图：`architecture/01-zdt-next-目标系统架构图.md`
+- GitHub 分支谱系与收口图：`architecture/02-github-分支谱系与收口图.md`
 - 标准与专项提示词：`prompts/`
 - 新系统总说明：`zdt.md`（待 Ethan 定稿后建立）
