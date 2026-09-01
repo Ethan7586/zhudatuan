@@ -18,6 +18,11 @@
     "B_PRODUCTION_EVIDENCE_THEN_CLOSE": 4,
     "C_DEFER": 4
   },
+  "mutualDuplicateConstraint": {
+    "tip": "c36a8f917174d1bcb9d4f8d6328d14fe149a2a26",
+    "branches": ["main", "ethan/order-release-gates-20260901"],
+    "rule": "Close order-release-gates only while main still exists at the exact tip. Recompute main after that deletion; do not use the removed branch as main's future carrier."
+  },
   "candidates": [
     {
       "index": 1,
@@ -332,7 +337,8 @@
         "size": "1.4G",
         "dirtyEntries": 0
       },
-      "classification": "A_ARCHIVE_THEN_CLOSE"
+      "classification": "A_ARCHIVE_THEN_CLOSE",
+      "pairConstraint": "main must remain at c36a8f917174d1bcb9d4f8d6328d14fe149a2a26 during this closure"
     },
     {
       "index": 20,
@@ -352,7 +358,8 @@
         "dirtyEntries": 419
       },
       "classification": "C_DEFER",
-      "deferReasons": ["GitHub default branch", "local tip differs from remote", "dirty shared worktree"]
+      "deferReasons": ["GitHub default branch", "local tip differs from remote", "dirty shared worktree", "current same-tip carrier is scheduled to close first"],
+      "futurePrerequisites": ["move GitHub default branch", "create an independent carrier or immutable evidence for c36a8f917174d1bcb9d4f8d6328d14fe149a2a26", "recompute unique commits after order-release-gates is gone"]
     }
   ],
   "nonZeroRemoteHeads": [
