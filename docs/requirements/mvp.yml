@@ -83,6 +83,9 @@ requirements:
       - notification.endpoints.manage
       - audit.records.read
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - voucher.credentialpools.create
       - voucher.credentials.generate
       - voucher.credentials.import
@@ -93,8 +96,11 @@ requirements:
       - voucher.credentials.get
       - voucher.credentialexports.create
       - voucher.jobs.get
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
     modules:
       - audit
       - benefit
@@ -938,6 +944,9 @@ requirements:
       - notification.endpoints.manage
       - audit.records.read
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - partner.customers.create
       - partner.customers.update
       - partner.customers.enable
@@ -1014,9 +1023,12 @@ requirements:
       - voucher.exports.get
     modules:
       - approval
+<<<<<<< HEAD
 =======
     modules:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - audit
       - benefit
       - cart
@@ -1029,9 +1041,13 @@ requirements:
       - notification
       - order
 <<<<<<< HEAD
+<<<<<<< HEAD
       - partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - partner
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - payment
       - pricing
       - runtime
@@ -1044,9 +1060,13 @@ requirements:
       - voucher.redemption
     moduleSources:
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/approval
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - services/commerce/src/modules/approval
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -1059,9 +1079,13 @@ requirements:
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - services/commerce/src/modules/partner
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime
@@ -2333,6 +2357,9 @@ requirements:
       - notification.endpoints.manage
       - audit.records.read
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - partner.customers.create
       - partner.customers.update
       - partner.customers.enable
@@ -2409,9 +2436,12 @@ requirements:
       - voucher.exports.get
     modules:
       - approval
+<<<<<<< HEAD
 =======
     modules:
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - audit
       - benefit
       - cart
@@ -2424,9 +2454,13 @@ requirements:
       - notification
       - order
 <<<<<<< HEAD
+<<<<<<< HEAD
       - partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - partner
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - payment
       - pricing
       - runtime
@@ -2438,9 +2472,13 @@ requirements:
       - voucher.reversal
     moduleSources:
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/approval
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - services/commerce/src/modules/approval
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/benefit
       - services/commerce/src/modules/cart
@@ -2453,9 +2491,13 @@ requirements:
       - services/commerce/src/modules/notification
       - services/commerce/src/modules/order
 <<<<<<< HEAD
+<<<<<<< HEAD
       - services/commerce/src/modules/partner
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+      - services/commerce/src/modules/partner
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
       - services/commerce/src/modules/runtime

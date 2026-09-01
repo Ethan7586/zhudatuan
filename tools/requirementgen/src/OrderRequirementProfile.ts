@@ -72,9 +72,12 @@ interface OperationRecord {
   readonly owner: string;
   readonly handler: string;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   readonly controller: string;
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
   readonly requirements: readonly string[];
 }
 
@@ -268,15 +271,20 @@ function requirementValue(
 
 async function loadOperations(root: string): Promise<readonly OperationRecord[]> {
 <<<<<<< HEAD
+<<<<<<< HEAD
   const sharedHandler = 'services/commerce/src/foundation/application/OperationHandler.ts';
 =======
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+  const sharedHandler = 'services/commerce/src/foundation/application/OperationHandler.ts';
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
   const document = objectValue(parse(await readFile(resolve(root, 'packages/contract/definitions/operations.yml'), 'utf8')), 'operations');
   return arrayValue(document.operations, 'operations').map((value, index) => {
     const operation = objectValue(value, 'operations:' + index);
     return deepFreeze({
       id: stringValue(operation.id, 'operations:' + index + ':id'),
       owner: stringValue(operation.owner, 'operations:' + index + ':owner'),
+<<<<<<< HEAD
 <<<<<<< HEAD
       handler: operation.handler === undefined
         ? sharedHandler
@@ -285,6 +293,11 @@ async function loadOperations(root: string): Promise<readonly OperationRecord[]>
       handler: stringValue(operation.handler, 'operations:' + index + ':handler'),
       controller: stringValue(operation.controller, 'operations:' + index + ':controller'),
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
+=======
+      handler: operation.handler === undefined
+        ? sharedHandler
+        : stringValue(operation.handler, 'operations:' + index + ':handler'),
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
       requirements: stringArray(operation.requirements, 'operations:' + index + ':requirements'),
     });
   });

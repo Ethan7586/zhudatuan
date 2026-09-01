@@ -58,6 +58,7 @@ describe('SDK client artifacts', () => {
     expect(openapi).toContain('OMS-001');
     expect(source).toContain('OMS-001');
 <<<<<<< HEAD
+<<<<<<< HEAD
     expect(source.match(/\["identity\.session\.read",/g)).toHaveLength(1);
   });
 =======
@@ -66,6 +67,9 @@ describe('SDK client artifacts', () => {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 =======
     expect(source.match(/identity\.session\.read/g)).toHaveLength(1);
+=======
+    expect(source.match(/\["identity\.session\.read",/g)).toHaveLength(1);
+>>>>>>> c71368a3 (fix(release): align production generated artifacts)
   });
 >>>>>>> b9d67316 (feat(requirements): add OMS requirement trace)
 });
