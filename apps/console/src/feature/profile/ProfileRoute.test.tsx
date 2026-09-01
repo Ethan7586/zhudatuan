@@ -72,6 +72,18 @@ describe('personal profile workspace', () => {
     expect(screen.getByText('当前会话没有返回任何生效权限。')).toBeTruthy();
   });
 
+  it('shows an explicit degraded profile state without hiding the workspace', () => {
+    renderProfile({
+      ...context,
+      profile: { display_name: '当前用户', employee_no: null },
+      profileState: 'unavailable',
+    });
+
+    expect(screen.getByText('个人资料暂不可用')).toBeTruthy();
+    expect(screen.getByText('工作空间和业务功能仍可继续使用，请稍后刷新重试。')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: '个人信息' })).toBeTruthy();
+  });
+
   it('locks the desktop, narrow-tablet, mobile, and minimum-width responsive modes', () => {
     const css = ['profile.css', 'profile-access.css', 'profile-responsive.css']
       .map((file) => readFileSync(`src/feature/profile/${file}`, 'utf8')).join('\n');

@@ -121,6 +121,20 @@
   gap: var(--sw-space-3);
 }
 
+.profiledegradednotice {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border-color: color-mix(in srgb, var(--sw-warning) 32%, var(--sw-border));
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+
+.profiledegradednotice span {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
 .profilesectionheading {
   display: flex;
   min-width: 0;
