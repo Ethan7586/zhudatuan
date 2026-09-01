@@ -30,7 +30,7 @@ export function RoleEditor({ context, role, members, onEdit, onRefresh, onSaved,
   members: readonly AccessMembership[];
   onEdit: () => void;
   onRefresh: () => Promise<Readonly<{ roles: readonly AccessRole[]; items: readonly AccessMembership[] }>>;
-  onSaved: (role: AccessRole) => void;
+  onSaved: (role: AccessRole, affected: readonly Readonly<{ membership: string; access_version: number }>[]) => void;
   onNotice: (notice: string) => void;
   onDeleted: () => void;
 }>) {
@@ -52,9 +52,10 @@ export function RoleEditor({ context, role, members, onEdit, onRefresh, onSaved,
       const draft = { id: role.id, name: normalizedName, permissions, ...(role.version === undefined ? {} : { version: role.version }) };
       const receipt = await saveAccessRole(context, draft);
       const reread = await onRefresh();
-      return verifyAccessRoleSave(draft, receipt, reread.roles);
+      return { saved: verifyAccessRoleSave(draft, receipt, reread.roles, members, reread.items),
+        affected: receipt.affected_memberships };
     },
-    onSuccess: onSaved,
+    onSuccess: ({ saved, affected }) => onSaved(saved, affected),
   });
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -40,6 +40,20 @@ test('IAM-002 自定义身份创建、正式回读与响应式工作台', async 
   const writeIndex = api.calls.findIndex((call) => call === write);
   expect(api.calls.slice(writeIndex + 1).some((call) => call.path === '/api/v1/access/center')).toBe(true);
 
+  await page.getByPlaceholder('例如：财务').fill('财务主管');
+  await page.getByRole('button', { name: '保存身份' }).click();
+  await expect(page.getByText(/“财务主管”已保存/)).toBeVisible();
+  await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(permissions.length);
+  const renameWrite = api.calls.filter((call) => call.method === 'PUT' && call.path.startsWith('/api/v1/access/roles/')).at(-1);
+  expect(renameWrite?.body).toEqual({ name: '财务主管', permissions });
+  expect(renameWrite?.headers['if-match']).toBe('"0"');
+
+  await page.getByRole('checkbox', { name: /catalog\.product\.manage/ }).uncheck();
+  await page.getByRole('button', { name: '保存身份' }).click();
+  await expect(page.getByText(/“财务主管”已保存/)).toBeVisible();
+  const permissionWrite = api.calls.filter((call) => call.method === 'PUT' && call.path.startsWith('/api/v1/access/roles/')).at(-1);
+  expect(permissionWrite?.body).toEqual({ name: '财务主管', permissions: ['finance.overview.read', 'order.read'] });
+
   await page.setViewportSize({ width: 1314, height: 1000 });
   await expectNoHorizontalOverflow(page);
   await page.setViewportSize({ width: 1024, height: 900 });
@@ -110,8 +124,9 @@ test('IAM-003 身份范围、成员分配撤销与删除闭环', async ({ page }
   expect(member.effective_permissions).toEqual(['catalog.product.manage', 'order.read']);
 
   await page.getByRole('button', { name: '＋ 分配成员' }).click();
+  await page.getByLabel('范围来源').selectOption('inherited');
   await page.getByRole('button', { name: '确认分配并重读' }).click();
-  await expect(page.getByText(/“财务观察”已分配给 张三/)).toBeVisible();
+  await expect(page.getByText(/“财务观察”已分配给 张三，继承来源/)).toBeVisible();
   await page.getByRole('button', { name: '删除身份' }).click();
   await page.getByRole('button', { name: '确认删除“财务观察”' }).click();
   await expect(page.getByText(/成员关系已解除，身份已删除/)).toBeVisible();
@@ -126,7 +141,163 @@ test('IAM-003 身份范围、成员分配撤销与删除闭环', async ({ page }
   expect(browserErrors).toEqual([]);
 });
 
-function accessApi(page: Page, roles: WireRole[], members: WireMembership[] = []): OperationMock {
+test('IAM-004 双入口进入同一个人信息页，并在五档宽度保持概念与布局边界', async ({ page }) => {
+  const browserErrors: string[] = [];
+  page.on('console', (message) => { if (message.type() === 'error') browserErrors.push(message.text()); });
+  page.on('pageerror', (error) => browserErrors.push(error.message));
+  const roles = initialRoles();
+  roles.push(
+    governanceRole('role-merchant-owner', 'Owner'),
+    governanceRole('role-senior-administrator', '高级管理员'),
+    governanceRole('role-normal-administrator', '普通管理员'),
+    { id: 'role-custom-administrator', name: '管理员', status: 'active', version: '1', permissions: ['order.read'],
+      member_count: '0', governance: false, editable: true, members: [], scopes: [] },
+  );
+  const member = memberFixture();
+  member.id = consoleSession.membership;
+  member.member_id = 'member:ethan';
+  member.display_name = 'Ethan';
+  member.employee_no = 'OWNER001';
+  member.roles.push(
+    assignment('role-platform-owner-v2', '平台 Owner', tenantScope, 'direct'),
+    assignment('role-merchant-owner', 'Owner', tenantScope, 'direct'),
+    assignment('role-senior-administrator', '高级管理员', tenantScope, 'direct'),
+    assignment('role-normal-administrator', '普通管理员', tenantScope, 'direct'),
+    assignment('role-custom-administrator', '管理员', tenantScope, 'direct'),
+  );
+  const members = [member];
+  recompute(member, roles);
+  syncRoleMetadata(roles, members);
+  const api = accessApi(page, roles, members);
+  await api.install();
+  const accessUrl = `${consoleOrigin}/scopes/tenant/tenant%3Ae2e/settings/access`;
+  const profilePath = '/scopes/tenant/tenant%3Ae2e/settings/profile';
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(accessUrl);
+  await page.getByRole('button', { name: '个人中心：Ethan' }).click();
+  await expect(page).toHaveURL(new RegExp(`${profilePath}$`));
+  const leftEntryUrl = page.url();
+  await expect(page.getByRole('heading', { level: 1, name: '个人信息' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '基本资料' })).toBeVisible();
+  await expect(page.getByText('治理级别', { exact: true })).toBeVisible();
+  await expect(page.getByText('自定义业务身份', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '权限组合' })).toBeVisible();
+  await expect(page.getByText('当前生效范围', { exact: true })).toBeVisible();
+  const governance = page.locator('.profilegovernancecard');
+  await expect(governance).toContainText('平台 Owner');
+  await expect(governance).toContainText('商户 Owner');
+  await expect(governance).toContainText('高级管理员');
+  await expect(governance).toContainText('普通管理员');
+  await expect(page.locator('.profilebusinesscard')).toContainText('管理员');
+  await expect(page.locator('.profilebusinesscard')).not.toContainText('普通管理员');
+  await screenshot(page, 'iam-004-profile-1440.png');
+
+  for (const width of [1440, 1314, 1024, 768, 390]) {
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+    await expectNoHorizontalOverflow(page);
+    await expectElementsWithinViewport(page, [
+      '.profileworkspace', '.profilemasterdetail', '.swmasterdetailmaster', '.swmasterdetailcontent',
+      '.profileidentitysummary', '.profileeffectivescope', '.profilepermissiongroups',
+    ]);
+    if (width <= 1314) await expectStackedMasterDetail(page, '.profilemasterdetail');
+  }
+  const permissionHelp = page.getByRole('button', { name: '查看权限说明 →' });
+  await permissionHelp.scrollIntoViewIfNeeded();
+  await permissionHelp.click();
+  await expect(page.getByRole('heading', { name: '权限组合' })).toBeVisible();
+  await screenshot(page, 'iam-004-profile-mobile.png');
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(accessUrl);
+  await page.getByRole('button', { name: '打开 Ethan 的账户菜单' }).click();
+  await page.getByRole('button', { name: '个人信息' }).click();
+  await expect(page).toHaveURL(leftEntryUrl);
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: '个人信息' })).toBeVisible();
+  const copy = await page.locator('body').innerText();
+  expect(copy).not.toMatch(/Smart Wing|智慧翼|築店|租户/);
+  expect(api.unmatched).toEqual([]);
+  expect(browserErrors).toEqual([]);
+});
+
+test('IAM-004 覆盖加载、空数据与读取错误状态', async ({ page, context }) => {
+  const roles: WireRole[] = [];
+  let releaseCenter: () => void = () => undefined;
+  const centerGate = new Promise<void>((resolve) => { releaseCenter = resolve; });
+  const loadingApi = accessApi(page, roles, [], {
+    center: async () => { await centerGate; return { items: [], count: 0, roles }; },
+  });
+  await loadingApi.install();
+
+  await page.goto(`${consoleOrigin}/scopes/tenant/tenant%3Ae2e/settings/access`);
+  await expect(page.getByText('正在加载身份与权限目录…')).toBeVisible();
+  releaseCenter();
+  await expect(page.getByText('暂无自定义身份')).toBeVisible();
+  expect(loadingApi.unmatched).toEqual([]);
+
+  const errorPage = await context.newPage();
+  const errorApi = accessApi(errorPage, [], [], {
+    center: () => ({ code: 'REQUEST_FAILED', message: 'controlled access read failure', requestId: 'request:iam004:error' }),
+    centerStatus: 500,
+  });
+  await errorApi.install();
+  await errorPage.goto(`${consoleOrigin}/scopes/tenant/tenant%3Ae2e/settings/access`);
+  await expect(errorPage.getByRole('alert')).toContainText('身份目录读取失败');
+  await expect(errorPage.getByRole('button', { name: '重试' })).toBeVisible();
+  expect(errorApi.unmatched).toEqual([]);
+  await errorPage.close();
+});
+
+test('IAM-004 覆盖保存中、正式回读成功与版本冲突', async ({ page, context }) => {
+  const roles = initialRoles();
+  const member = memberFixture();
+  member.roles.push(assignment('role-finance', '财务观察', tenantScope, 'direct'));
+  member.denies = ['finance.overview.read'];
+  const members = [member];
+  recompute(member, roles);
+  syncRoleMetadata(roles, members);
+  let releaseSave: () => void = () => undefined;
+  const saveGate = new Promise<void>((resolve) => { releaseSave = resolve; });
+  const api = accessApi(page, roles, members, {
+    command: async (call) => { await saveGate; return roleCommand(call, roles, members); },
+  });
+  await api.install();
+  await page.goto(`${consoleOrigin}/scopes/tenant/tenant%3Ae2e/settings/access`);
+  await page.getByRole('checkbox', { name: /catalog\.product\.manage/ }).check();
+  await page.getByRole('button', { name: '保存身份' }).click();
+  await expect(page.getByRole('button', { name: '正在保存并重读核对…' })).toBeVisible();
+  releaseSave();
+  await expect(page.getByText(/Access Version v4/)).toBeVisible();
+  expect(member.access_version).toBe('4');
+  expect(member.denies).toEqual(['finance.overview.read']);
+  expect(member.effective_permissions).toEqual(['catalog.product.manage', 'order.read']);
+  expect(api.unmatched).toEqual([]);
+
+  const conflictPage = await context.newPage();
+  const conflictApi = accessApi(conflictPage, initialRoles(), [], {
+    command: () => ({ code: 'VERSION_CONFLICT', message: 'stale role version', requestId: 'request:iam004:conflict' }),
+    commandStatus: 409,
+  });
+  await conflictApi.install();
+  await conflictPage.goto(`${consoleOrigin}/scopes/tenant/tenant%3Ae2e/settings/access`);
+  await conflictPage.getByPlaceholder('例如：财务').fill('冲突中的财务');
+  await conflictPage.getByRole('button', { name: '保存身份' }).click();
+  await expect(conflictPage.getByRole('alert')).toContainText('版本冲突');
+  await expect(conflictPage.getByText(/当前草稿未保存/)).toBeVisible();
+  await expect(conflictPage.getByText(/已保存，并已通过正式接口/)).toHaveCount(0);
+  expect(conflictApi.unmatched).toEqual([]);
+  await conflictPage.close();
+});
+
+interface AccessApiOptions {
+  readonly center?: (call: OperationCall) => unknown;
+  readonly centerStatus?: number;
+  readonly command?: (call: OperationCall) => unknown;
+  readonly commandStatus?: number;
+}
+
+function accessApi(page: Page, roles: WireRole[], members: WireMembership[] = [], options: AccessApiOptions = {}): OperationMock {
   return new OperationMock(page)
     .get('/api/v1/identity/session', {
       ...consoleSession,
@@ -137,9 +308,9 @@ function accessApi(page: Page, roles: WireRole[], members: WireMembership[] = []
       csrf: 'csrf:e2e:iam002:token', assurance: { level: 2, verified: 'password' },
     })
     .get('/api/v1/members/me', { display_name: 'Ethan', employee_no: 'OWNER001' })
-    .get('/api/v1/access/center', () => ({ items: members, count: members.length, roles }))
+    .get('/api/v1/access/center', options.center ?? (() => ({ items: members, count: members.length, roles })), options.centerStatus)
     .get('/api/v1/members', { items: [], count: 0 })
-    .put('/api/v1/access/roles/:roleid', (call) => roleCommand(call, roles, members));
+    .put('/api/v1/access/roles/:roleid', options.command ?? ((call) => roleCommand(call, roles, members)), options.commandStatus);
 }
 
 function roleCommand(call: OperationCall, roles: WireRole[], members: WireMembership[]) {
@@ -154,7 +325,14 @@ function roleCommand(call: OperationCall, roles: WireRole[], members: WireMember
     permissions: body.permissions, member_count: current?.member_count ?? '0', governance: false, editable: true,
     members: current?.members ?? [], scopes: current?.scopes ?? [] };
   roles.splice(0, roles.length, ...roles.filter((candidate) => candidate.id !== id), role);
-  return role;
+  const affected = members.flatMap((member) => {
+    if (!member.roles.some((assignment) => assignment.role === id)) return [];
+    member.access_version = String(Number(member.access_version) + 1);
+    recompute(member, roles);
+    return [{ membership: member.id, access_version: member.access_version }];
+  });
+  syncRoleMetadata(roles, members);
+  return { ...roles.find((candidate) => candidate.id === id), affected_memberships: affected };
 }
 
 async function expectNoHorizontalOverflow(page: Page) {
@@ -162,7 +340,7 @@ async function expectNoHorizontalOverflow(page: Page) {
 }
 
 async function expectCoreContentWithinViewport(page: Page) {
-  const clipped = await page.locator([
+  await expectElementsWithinViewport(page, [
     '.roleaccessworkspace',
     '.roleaccessmasterdetail',
     '.swmasterdetailmaster',
@@ -172,7 +350,11 @@ async function expectCoreContentWithinViewport(page: Page) {
     '.roleeditorrail',
     '.rolescopesummary',
     '.roleassignedmembers',
-  ].join(',')).evaluateAll((elements) => elements.flatMap((element) => {
+  ]);
+}
+
+async function expectElementsWithinViewport(page: Page, selectors: readonly string[]) {
+  const clipped = await page.locator(selectors.join(',')).evaluateAll((elements) => elements.flatMap((element) => {
     const box = element.getBoundingClientRect();
     return box.left < 0 || box.right > window.innerWidth
       ? [{ className: element.getAttribute('class'), left: box.left, right: box.right }]
@@ -181,8 +363,8 @@ async function expectCoreContentWithinViewport(page: Page) {
   expect(clipped).toEqual([]);
 }
 
-async function expectStackedMasterDetail(page: Page) {
-  const stacked = await page.locator('.roleaccessmasterdetail').evaluate((workspace) => {
+async function expectStackedMasterDetail(page: Page, selector = '.roleaccessmasterdetail') {
+  const stacked = await page.locator(selector).evaluate((workspace) => {
     const master = workspace.querySelector('.swmasterdetailmaster')?.getBoundingClientRect();
     const detail = workspace.querySelector('.swmasterdetailcontent')?.getBoundingClientRect();
     return master !== undefined && detail !== undefined && detail.top >= master.bottom - 1;
@@ -212,6 +394,11 @@ function initialRoles(): WireRole[] {
     { id: 'role-platform-owner-v2', name: '平台 Owner', status: 'active', version: '9', permissions: ['access.role.manage'], member_count: '1', governance: true, editable: false, members: [], scopes: [] },
     { id: 'role-finance', name: '财务观察', status: 'active', version: '1', permissions: ['finance.overview.read', 'order.read'], member_count: '4', governance: false, editable: true, members: [], scopes: [] },
   ];
+}
+
+function governanceRole(id: string, name: string): WireRole {
+  return { id, name, status: 'active', version: '1', permissions: [], member_count: '0',
+    governance: true, editable: false, members: [], scopes: [] };
 }
 
 interface WireScope {

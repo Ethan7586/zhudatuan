@@ -6,9 +6,10 @@ import {
   scopeIdentifierLabel,
   scopeKindLabel,
 } from '../../entity/session/ScopePresentation';
-import type { AccessMembership } from '../access/AccessSchema';
+import type { AccessMembership, AccessRole } from '../access/AccessSchema';
 
 type AssignedRole = Pick<AccessMembership['roles'][number], 'role' | 'name'>;
+type RoleDefinition = Pick<AccessRole, 'id' | 'name' | 'governance'>;
 
 export interface PermissionGroup {
   readonly category: string;
@@ -73,15 +74,11 @@ const categoryOrder = new Map(
     .map((category, index) => [category, index] as const),
 );
 
-const governanceNames: ReadonlyMap<string, string> = new Map([
-  ['平台 owner', '平台 Owner'],
-  ['平台业主', '平台 Owner'],
-  ['商户 owner', '商户 Owner'],
-  ['高级管理员', '高级管理员'],
-  ['普通管理员', '普通管理员'],
-  ['管理员', '管理员'],
-  ['待授权管理员', '待授权管理员'],
-] as const);
+const canonicalGovernanceRoles = new Set([
+  'role-platform-owner-v2',
+  'role-platform-owner-successor-v1',
+  'role-zhudatuan-pending-operator',
+]);
 
 export function permissionGroupsOf(permissions: readonly string[]): readonly PermissionGroup[] {
   const grouped = new Map<string, string[]>();
@@ -104,13 +101,18 @@ export function permissionGroupsOf(permissions: readonly string[]): readonly Per
 export function partitionAssignedRoles(
   roles: readonly AssignedRole[],
   scopeKind: ConsoleScope['kind'],
+  definitions: readonly RoleDefinition[] = [],
 ): RolePartition {
   const governance: PresentedRole[] = [];
   const business: PresentedRole[] = [];
+  const definitionById = new Map(definitions.map((role) => [role.id, role] as const));
   for (const role of roles) {
-    const governanceLabel = governanceLabelFor(role, scopeKind);
-    const presented = Object.freeze({ id: role.role, label: governanceLabel ?? normalizeConsoleCopy(role.name) });
-    (governanceLabel === undefined ? business : governance).push(presented);
+    if (role.role === 'role:self') continue;
+    const isGovernance = canonicalGovernanceRoles.has(role.role) || definitionById.get(role.role)?.governance === true;
+    const presented = Object.freeze({ id: role.role, label: isGovernance
+      ? governanceLabelFor(role, scopeKind)
+      : normalizeConsoleCopy(role.name) });
+    (isGovernance ? governance : business).push(presented);
   }
   return Object.freeze({ governance: Object.freeze(governance), business: Object.freeze(business) });
 }
@@ -147,11 +149,11 @@ export function profileStatusOf(status: string | undefined): Readonly<{
   return { label: normalizeConsoleCopy(status), tone: 'neutral' };
 }
 
-function governanceLabelFor(role: AssignedRole, scopeKind: ConsoleScope['kind']): string | undefined {
+function governanceLabelFor(role: AssignedRole, scopeKind: ConsoleScope['kind']): string {
   if (role.role === 'role-platform-owner-v2') return '平台 Owner';
   if (role.role === 'role-platform-owner-successor-v1') return 'Owner 受让候选人';
   if (role.role === 'role-zhudatuan-pending-operator') return '待授权管理员';
   const normalizedName = normalizeConsoleCopy(role.name).trim();
   if (normalizedName.toLocaleLowerCase() === 'owner') return scopeKind === 'platform' ? '平台 Owner' : '商户 Owner';
-  return governanceNames.get(normalizedName.toLocaleLowerCase());
+  return normalizedName;
 }

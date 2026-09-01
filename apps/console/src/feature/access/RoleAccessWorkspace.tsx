@@ -103,10 +103,13 @@ export function RoleAccessWorkspace() {
                 onEdit={() => setNotice(undefined)}
                 onNotice={setNotice}
                 onDeleted={() => { setDraftId(undefined); setSelectedId(undefined); }}
-                onSaved={(saved) => {
+                onSaved={(saved, affected) => {
                   setDraftId(undefined);
                   setSelectedId(saved.id);
-                  setNotice(`“${saved.name}”已保存，并已通过正式接口重读核对名称、权限与版本 v${saved.version}。`);
+                  const versions = [...new Set(affected.map(({ access_version: version }) => `v${version}`))].join('、');
+                  setNotice(`“${saved.name}”已保存，并已通过正式接口重读核对名称、权限与版本 v${saved.version}${affected.length === 0
+                    ? '；当前无受影响成员。'
+                    : `；同时核对 ${affected.length} 位成员的身份、有效权限、范围与 Access Version ${versions}。`}`);
                 }}
               />
             )}

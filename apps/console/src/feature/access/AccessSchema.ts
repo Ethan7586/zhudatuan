@@ -39,7 +39,9 @@ export const AccessRoleSchema = z.object({
   })).default([]),
 }).passthrough();
 export const AccessPageSchema = pageEnvelope(AccessMembershipSchema).extend({ roles: z.array(AccessRoleSchema) });
-export const AccessRoleWriteReceiptSchema = AccessRoleSchema.pick({ id: true, name: true, status: true, version: true }).passthrough();
+export const AccessRoleWriteReceiptSchema = AccessRoleSchema.pick({ id: true, name: true, status: true, version: true }).extend({
+  affected_memberships: z.array(z.object({ membership: z.string().min(1), access_version: DatabaseIntegerSchema })).default([]),
+}).passthrough();
 export const AccessRoleAssignmentReceiptSchema = z.object({
   action: z.enum(['assign', 'revoke']), changed: z.boolean(), role: z.string().min(1), membership: z.string().min(1),
   scope: ScopeSchema, scope_source: z.enum(['direct', 'inherited']), access_version: DatabaseIntegerSchema,

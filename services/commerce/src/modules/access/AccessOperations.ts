@@ -40,7 +40,15 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
           select $1,permission.id,'allow' from access.permission permission where permission.code=any($4::text[]) returning role_id
         ) select * from target`, [role, access.scope.id, textField(body, 'name'), permissions, request.input.expectedVersion ?? null]);
       if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
-      return rowResult(result);
+      const affected = (await database.query<{ id: string; access_version: string | number }>(`update access.membership membership
+        set access_version=membership.access_version+1 from (
+          select distinct assignment.membership_id from access.membershiprole assignment
+          where assignment.role_id=$1 and assignment.effective_at<=clock_timestamp()
+            and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+        ) assignment where membership.id=assignment.membership_id returning membership.id,membership.access_version`, [role]))
+        .rows.map((row) => ({ membership: row.id, access_version: numericVersion(row.access_version) }));
+      const saved = rowResult(result);
+      return { ...saved, body: Object.freeze({ ...(saved.body as Readonly<Record<string, unknown>>), affected_memberships: affected }) };
     },
     'access.scopes.manage': async (request, database) => {
       const access = requireAccess(request);

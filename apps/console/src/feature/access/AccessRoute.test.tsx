@@ -52,7 +52,14 @@ const server = setupServer(
       members: current?.members ?? [], scopes: current?.scopes ?? [],
     };
     roles = [...roles.filter(({ id }) => id !== saved.id), saved];
-    return HttpResponse.json(saved);
+    const affected = members.flatMap((member) => {
+      if (!member.roles.some((assignment) => assignment.role === saved.id)) return [];
+      member.access_version = String(Number(member.access_version) + 1);
+      recompute(member);
+      return [{ membership: member.id, access_version: member.access_version }];
+    });
+    syncRoleMetadata();
+    return HttpResponse.json({ ...roles.find(({ id }) => id === saved.id), affected_memberships: affected });
   }),
 );
 
@@ -125,6 +132,29 @@ describe('custom identity and permission directory', () => {
     await waitFor(() => expect(writes).toHaveLength(2));
     expect(writes[1]?.body.name).toBe('财务主管');
     expect(writes[1]?.body.permissions).toEqual(['finance.overview.read', 'order.read', 'catalog.product.manage']);
+  });
+
+  it('rereads affected members, effective permissions, scopes, denies and Access Version after an identity save', async () => {
+    const member = memberFixture();
+    member.roles.push(assignment('role-finance', '财务观察', tenantScope, 'direct'));
+    member.denies = ['finance.overview.read'];
+    members = [member];
+    recompute(member);
+    syncRoleMetadata();
+    const scopesBefore = structuredClone(member.scopes);
+    const user = userEvent.setup();
+    renderWorkspace();
+    await screen.findByRole('heading', { name: '编辑身份' });
+
+    await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
+    await user.click(screen.getByRole('button', { name: '保存身份' }));
+
+    expect(await screen.findByText(/Access Version v4/)).toBeTruthy();
+    expect(member.access_version).toBe('4');
+    expect(member.roles.map(({ role }) => role)).toEqual(['role-finance']);
+    expect(member.scopes).toEqual(scopesBefore);
+    expect(member.denies).toEqual(['finance.overview.read']);
+    expect(member.effective_permissions).toEqual(['catalog.product.manage', 'order.read']);
   });
 
   it('shows a version conflict without claiming that the draft was saved', async () => {

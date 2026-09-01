@@ -73,15 +73,28 @@ export async function deleteAccessRole(context: ConsoleContext, role: Pick<Acces
   return AccessRoleDeleteReceiptSchema.parse(response);
 }
 
-export function verifyAccessRoleSave(draft: AccessRoleDraft, receipt: Readonly<{ version: number }>, roles: readonly AccessRole[]): AccessRole {
+export function verifyAccessRoleSave(draft: AccessRoleDraft, receipt: Readonly<{
+  version: number;
+  affected_memberships: readonly Readonly<{ membership: string; access_version: number }>[];
+}>, roles: readonly AccessRole[], beforeMembers: readonly AccessMembership[], members: readonly AccessMembership[]): AccessRole {
   const saved = roles.find(({ id }) => id === draft.id);
   const requestedPermissions = [...new Set(draft.permissions)].sort();
   const savedPermissions = saved === undefined ? [] : [...new Set(saved.permissions)].sort();
+  const affected = new Map(receipt.affected_memberships.map((item) => [item.membership, item.access_version]));
+  const assignedBefore = beforeMembers.filter((member) => member.roles.some((assignment) => assignment.role === draft.id));
+  const membersVerified = assignedBefore.every((before) => {
+    const member = members.find(({ id }) => id === before.id);
+    const accessVersion = affected.get(before.id);
+    return member !== undefined && accessVersion !== undefined && accessVersion > before.access_version
+      && member.access_version === accessVersion && assignmentsMatch(before, member)
+      && scopesMatch(before, member) && effectivePermissionsMatch(member, roles);
+  });
   if (saved === undefined
     || saved.name !== draft.name
     || saved.version !== receipt.version
     || requestedPermissions.length !== savedPermissions.length
-    || requestedPermissions.some((permission, index) => permission !== savedPermissions[index])) {
+    || requestedPermissions.some((permission, index) => permission !== savedPermissions[index])
+    || !membersVerified) {
     throw new Error('ACCESS_ROLE_SAVE_VERIFICATION_FAILED');
   }
   return saved;
@@ -129,6 +142,19 @@ function effectivePermissionsMatch(member: AccessMembership, roles: readonly Acc
   if ([...denied].some((permission) => effective.has(permission))) return false;
   return member.roles.every((assignment) => (rolePermissions.get(assignment.role) ?? [])
     .filter((permission) => !denied.has(permission)).every((permission) => effective.has(permission)));
+}
+
+function assignmentsMatch(before: AccessMembership, member: AccessMembership): boolean {
+  const expected = assignmentKeys(before.roles).sort();
+  const actual = assignmentKeys(member.roles).sort();
+  return expected.length === actual.length && expected.every((key, index) => key === actual[index]);
+}
+
+function scopesMatch(before: AccessMembership, member: AccessMembership): boolean {
+  const key = (scope: AccessMembership['scopes'][number]) => `${scope.id}\u0000${scope.kind}\u0000${scope.scope}\u0000${scope.effect}\u0000${scope.expires ?? ''}`;
+  const expected = before.scopes.map(key).sort();
+  const actual = member.scopes.map(key).sort();
+  return expected.length === actual.length && expected.every((value, index) => value === actual[index]);
 }
 
 function assignmentKeys(assignments: AccessMembership['roles']): string[] {
