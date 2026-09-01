@@ -36,9 +36,13 @@
   "localCleanup": {
     "completedAt": "2026-09-02T00:34:13+08:00",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "finalVerifiedAt": "2026-09-02T00:36:35+08:00",
 =======
 >>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
+=======
+    "finalVerifiedAt": "2026-09-02T00:36:35+08:00",
+>>>>>>> c3f2a5b7 (docs(branches): finalize local cleanup state)
     "repositoriesChecked": [
       "/Users/Ethan/Desktop/zdt-next",
       "/Users/Ethan/Desktop/Projects/zhudatuan/main"
@@ -56,6 +60,7 @@
       "nonMissingTrackedDifferences": 0,
       "untrackedGeneratedFiles": 208,
 <<<<<<< HEAD
+<<<<<<< HEAD
       "disposition": "removed-from-source-and-trash",
       "trashPath": "/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt",
       "sourcePathExistsAfter": false,
@@ -67,8 +72,13 @@
 >>>>>>> 0a6459e3 (docs(branches): record first legacy branch closure)
 =======
       "disposition": "moved-to-trash",
+=======
+      "disposition": "removed-from-source-and-trash",
+>>>>>>> c3f2a5b7 (docs(branches): finalize local cleanup state)
       "trashPath": "/Users/Ethan/.Trash/zhudatuan-auth-registration.MeOwKt",
-      "sourcePathExistsAfter": false
+      "sourcePathExistsAfter": false,
+      "trashPathExistsAfter": false,
+      "otherTrashItemsTouched": false
     }
 >>>>>>> e254db12 (docs(branches): record local cleanup for closure 001)
   },
