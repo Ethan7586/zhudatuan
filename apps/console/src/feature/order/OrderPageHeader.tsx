@@ -1,3 +1,4 @@
+import { Brand, Button, WorkspaceHero } from '@shop/design';
 import { OrderIcon } from './OrderIcon';
 import { OrderPreviewAction } from './OrderPreviewAction';
 
