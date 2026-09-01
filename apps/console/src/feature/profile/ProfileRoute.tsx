@@ -39,6 +39,9 @@ export function Component() {
   const businessIdentity = assignmentState.ready
     ? roles.business.map(({ label }) => label).join(' + ') || '未分配业务身份'
     : assignmentState.label;
+  const governanceIdentity = assignmentState.ready
+    ? roles.governance.map(({ label }) => label).join(' + ')
+    : '';
 
   const profileMaster = <div className="profilestack">
     {context.profileState === 'unavailable' ? (
@@ -139,7 +142,13 @@ export function Component() {
   return (
     <section className="profileworkspace" aria-label="个人信息工作台">
       <WorkspaceHero className="profilepagehero" eyebrow="PERSONAL CENTER · ACCOUNT & ACCESS" title="个人信息"
-        description="管理账户资料，并清楚了解“我以什么身份、在哪个范围、可以做什么”。" />
+        description="管理账户资料，并清楚了解“我以什么身份、在哪个范围、可以做什么”。"
+        meta={governanceIdentity === '' ? undefined : (
+          <div className="profileprimaryidentity" role="status" aria-label={`当前治理身份：${governanceIdentity}`}>
+            <span>当前治理身份</span>
+            <strong>{governanceIdentity}</strong>
+          </div>
+        )} />
 
       <Surface className="profileinfobanner" depth="flat" padding="default" radius="large">
         <span className="profileinfoicon" aria-hidden="true">i</span>

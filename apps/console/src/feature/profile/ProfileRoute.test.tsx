@@ -47,7 +47,8 @@ describe('personal profile workspace', () => {
     expect(screen.getAllByText('Ethan').length).toBeGreaterThan(0);
     expect(screen.getAllByText('ETHAN-001').length).toBeGreaterThan(0);
     expect(screen.getAllByText('134****7586').length).toBeGreaterThan(0);
-    expect(await screen.findByText('平台 Owner')).toBeTruthy();
+    expect(await screen.findByRole('status', { name: '当前治理身份：平台 Owner' })).toBeTruthy();
+    expect(screen.getAllByText('平台 Owner').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('财务').length).toBeGreaterThan(0);
     expect(screen.getByText('access.center.read')).toBeTruthy();
     expect(screen.getByText('order.read')).toBeTruthy();

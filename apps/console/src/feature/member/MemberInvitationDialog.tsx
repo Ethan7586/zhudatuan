@@ -118,7 +118,15 @@ export function MemberInvitationDialog({
       ) : (
         <section className="memberinvitationreceipt" aria-live="polite">
           <p className="notice">邀请码只在本次成功回执中显示。关闭后无法再次查看，请现在复制并通过可信渠道发送。</p>
-          <div>
+          <button
+            type="button"
+            className="memberinvitationcode"
+            data-copy-state={copyState}
+            aria-label={copyState === 'copied' ? '管理员邀请码已复制' : '复制管理员邀请码'}
+            onClick={() => {
+              void copy();
+            }}
+          >
             <span>管理员邀请码</span>
             <code>{mutation.data.code}</code>
           </div>
@@ -143,7 +151,7 @@ export function MemberInvitationDialog({
                 void copy();
               }}
             >
-              复制邀请码
+              {copyState === 'copied' ? '已复制' : copyState === 'failed' ? '复制失败，重试' : '复制邀请码'}
             </Button>
             <Button tone="primary" onPress={close}>
               我已保存，关闭

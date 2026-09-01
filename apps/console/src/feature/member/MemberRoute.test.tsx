@@ -61,6 +61,9 @@ describe('member administrator invitation', () => {
 
     await user.click(within(receipt).getByRole('button', { name: '复制邀请码' }));
     expect(writeText).toHaveBeenCalledWith('A'.repeat(32));
+    expect(within(receipt).getByText('✓ 已复制')).toBeTruthy();
+    expect(within(receipt).getByRole('button', { name: '管理员邀请码已复制' })).toBeTruthy();
+    expect(within(receipt).getByRole('button', { name: '已复制' })).toBeTruthy();
     expect((await within(receipt).findByRole('status')).textContent).toContain('已复制到剪贴板');
     await user.click(within(receipt).getByRole('button', { name: '我已保存，关闭' }));
     await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));

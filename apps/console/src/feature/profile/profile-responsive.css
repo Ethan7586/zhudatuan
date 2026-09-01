@@ -58,6 +58,15 @@
 }
 
 @media (max-width: 48rem) {
+  .profilepagehero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profilepagehero .swworkspaceheroside,
+  .profileprimaryidentity {
+    width: 100%;
+  }
+
   .profileidentitysummary,
   .profilestack,
   .profilepermissiongroups {

@@ -20,11 +20,38 @@
 
 .memberinvitationreceipt > div:first-of-type {
   display: grid;
+  width: 100%;
   gap: var(--sw-space-1);
   border: 0.0625rem solid var(--sw-brand);
   border-radius: var(--sw-radius-md);
   background: var(--sw-brand-light);
   padding: var(--sw-space-2);
+  text-align: left;
+  cursor: pointer;
+}
+
+.memberinvitationcode:hover {
+  border-color: var(--sw-brand-dark);
+}
+
+.memberinvitationcode:focus-visible {
+  outline: var(--sw-focus-ring-width) solid var(--sw-focus-ring-color);
+  outline-offset: var(--sw-focus-ring-offset);
+}
+
+.memberinvitationcode[data-copy-state='copied'] {
+  border-color: var(--sw-success);
+  background: var(--sw-success-surface);
+}
+
+.memberinvitationcode small {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-bold);
+}
+
+.memberinvitationcode[data-copy-state='copied'] small {
+  color: var(--sw-success-strong);
 }
 
 .memberinvitationreceipt span,
