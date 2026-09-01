@@ -13,7 +13,6 @@ import {
   type FinanceReconciliationRecord,
 } from './FinancePreviewFixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
-import { CONSOLE_ORIGIN } from './Origins';
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
 const previewSession = Object.freeze({
@@ -24,7 +23,7 @@ const previewSession = Object.freeze({
   capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policies.read', 'finance.audit.read']),
   assurance: Object.freeze({ level: 3, verified: 'step-up' }),
 });
-const financeUrl = `${process.env.FINANCE_CONSOLE_ORIGIN ?? CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/finance`;
+const financeUrl = '/scopes/platform/platform%3Apreview/finance';
 const differenceReconciliation = financePreviewReconciliations[0]!;
 
 test('Console 财务工作台呈现参考页头、状态、页签与服务端对账表', async ({ page }) => {
@@ -35,7 +34,7 @@ test('Console 财务工作台呈现参考页头、状态、页签与服务端对
   await expect(page.getByRole('heading', { level: 1, name: '财务与对账系统' })).toBeVisible();
   await expect(page.getByText('FINANCE CONTROL', { exact: true })).toBeVisible();
   await expect(page.getByText('核对支付、退款、渠道账单与账本记录，确保每笔账款可追溯、可复核', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '导出对账单' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: '导出当前页' })).toBeEnabled();
   await expect(page.getByRole('button', { name: '发起对账' })).toBeEnabled();
 
   const summary = page.getByRole('region', { name: '财务状态摘要' });
@@ -66,11 +65,11 @@ test('Console 财务工作台呈现参考页头、状态、页签与服务端对
   await expect(search).toBeFocused();
   expect(await search.locator('..').evaluate((node) => getComputedStyle(node).boxShadow)).not.toBe('none');
 
-  await page.getByRole('button', { name: '导出对账单' }).click();
-  const exportPreview = page.getByRole('dialog', { name: '导出对账单 · 安全预览' });
-  await expect(exportPreview.getByText('当前不会生成或下载正式账单', { exact: true })).toBeVisible();
-  await exportPreview.getByRole('button', { name: '我知道了' }).click();
-  await expect(exportPreview).toBeHidden();
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: '导出当前页' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/^finance-payments-current-page-.*\.csv$/);
 
   await page.getByRole('button', { name: '发起对账' }).click();
   const startPreview = page.getByRole('dialog', { name: '发起对账 · 安全预览' });

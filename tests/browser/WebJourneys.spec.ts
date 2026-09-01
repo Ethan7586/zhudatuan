@@ -20,7 +20,7 @@ test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) 
   await page.goto(`${AUTH_ORIGIN}/login?client=console`);
   await expect(page.getByRole('heading', { level: 1, name: /企业福利\s*全新定义/ })).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: '统一账号认证' })).toBeVisible();
-  await expect(page).toHaveTitle('统一登录｜智慧翼企业福利商城');
+  await expect(page).toHaveTitle('统一登录｜主打团企业福利商城');
 
   await page.getByLabel('登录账号或已绑定手机号').fill('e2e-user');
   await page.getByRole('textbox', { name: '密码', exact: true }).fill('correct-horse');
@@ -43,11 +43,11 @@ test('Console 经营驾驶舱深链展示权威读模型并满足 WCAG A/AA', as
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/cockpit?period=30days`);
   const heading = page.getByRole('heading', { level: 1, name: '经营驾驶舱' });
   await expect(heading).toBeFocused();
-  await expect(page).toHaveTitle('经营驾驶舱 · 智慧翼');
+  await expect(page).toHaveTitle('经营驾驶舱 · 主打团');
   await expect(page.getByRole('region', { name: '经营摘要' })).toContainText('¥2,486,320.00');
   await expect(page.getByRole('heading', { name: '商城经营对比' })).toBeVisible();
   await expect(page.getByRole('button', { name: '经营驾驶舱' })).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('button', { name: '智慧翼中控台' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '主打团中控台' })).toBeVisible();
   expect(api.unmatched).toEqual([]);
   await expectWcagAA(page);
 });
@@ -87,11 +87,11 @@ test('Console 中控台展示权威健康读模型并闭合恢复确认边界', 
   await api.install();
 
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/control`);
-  const heading = page.getByRole('heading', { level: 1, name: '智慧翼中控台' });
+  const heading = page.getByRole('heading', { level: 1, name: '主打团中控台' });
   await expect(heading).toBeVisible();
-  await expect(page).toHaveTitle('中控台 · 智慧翼');
+  await expect(page).toHaveTitle('中控台 · 主打团');
   await expect(page.getByText(controlHealth.controlPlane.conclusion, { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '智慧翼中控台', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('button', { name: '主打团中控台', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { name: '平台能力链' })).toBeVisible();
   expect(healthReads).toBeGreaterThanOrEqual(1);
   const healthReadsBeforeRefresh = healthReads;
@@ -123,8 +123,8 @@ test('Storefront 未登录首页只读取会话并失败关闭且满足 WCAG A/A
   await api.install();
 
   await page.goto(STOREFRONT_ORIGIN);
-  await expect(page).toHaveTitle('智慧翼企业福利商城｜企业员工福利平台');
-  await expect(page.getByRole('link', { name: '登录或注册智慧翼账户' })).toBeVisible();
+  await expect(page).toHaveTitle('主打团企业福利商城｜企业员工福利平台');
+  await expect(page.getByRole('link', { name: '登录或注册主打团账户' })).toBeVisible();
   await expect(page.getByText('登录 / 注册', { exact: true })).toBeVisible();
   await expect(page.getByText('登录后从生产数据库加载企业商品与权益。', { exact: true })).toBeVisible();
   await expect.poll(() => api.calls.length).toBeGreaterThan(0);

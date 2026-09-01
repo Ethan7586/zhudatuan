@@ -1,8 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { OperationMock } from './OperationMock';
+import { CONSOLE_ORIGIN } from './Origins';
 
-const consoleOrigin = 'http://127.0.0.1:4184';
+const membersPath = '/scopes/platform/platform%3Ae2e/settings/members';
 
 const scenarios = [
   { name: 'wide-1500', viewport: { width: 1500, height: 900 }, expectedWidth: 760 },
@@ -11,17 +12,17 @@ const scenarios = [
 ] as const;
 
 for (const scenario of scenarios) {
-  test(`管理员邀请在 ${scenario.name} 保持同一响应式外壳且成功回执不能误关闭`, async ({ page }, testInfo) => {
+  test(`管理员邀请在 ${scenario.name} 保持同一响应式外壳且成功回执不能误关闭`, async ({ page, baseURL }, testInfo) => {
     const browserErrors: string[] = [];
     page.on('console', (message) => {
       if (message.type() === 'error') browserErrors.push(message.text());
     });
     await page.setViewportSize(scenario.viewport);
-    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: consoleOrigin });
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(baseURL ?? CONSOLE_ORIGIN).origin });
     const api = invitationApi(page);
     await api.install();
 
-    await page.goto(`${consoleOrigin}/scopes/platform/platform%3Ae2e/settings/members`);
+    await page.goto(membersPath);
     await expect(page.getByRole('heading', { name: '会员与权限控制中心' })).toBeVisible();
     await page.getByRole('button', { name: '生成管理员邀请码' }).click();
 
@@ -78,7 +79,7 @@ test('生成请求处理中不能通过关闭按钮、Esc 或遮罩误关', asyn
   const api = invitationApi(page, () => delayedReceipt);
   await api.install();
 
-  await page.goto(`${consoleOrigin}/scopes/platform/platform%3Ae2e/settings/members`);
+  await page.goto(membersPath);
   await page.getByRole('button', { name: '生成管理员邀请码' }).click();
   const dialog = page.getByRole('dialog', { name: '生成管理员邀请码' });
   await dialog.getByLabel('目标租户').selectOption('tenant-zhudatuan');

@@ -40,6 +40,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'tmp/playwright/report', open: 'never' }]],
   use: {
     ...devices['Desktop Chrome'],
+    baseURL: CONSOLE_ORIGIN,
     locale: 'zh-CN',
     timezoneId: 'Asia/Shanghai',
     trace: 'retain-on-failure',

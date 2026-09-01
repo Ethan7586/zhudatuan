@@ -23,8 +23,19 @@ test('Console 商品工作台只在平台预览 Scope 展示演示详情并保�
   const table = page.getByRole('table', { name: '商品列表' });
   await expect(table.locator('tbody tr')).toHaveCount(50);
 
-  await expect(page.getByRole('button', { name: '导入', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '导出', exact: true })).toBeDisabled();
+  const importButton = page.getByRole('button', { name: '导入', exact: true });
+  await expect(importButton).toBeEnabled();
+  await importButton.click();
+  const importDialog = page.getByRole('dialog', { name: '导入商品' });
+  await expect(importDialog.getByText('选择本地 CSV 文件预览商品导入交互；本期不会上传文件。', { exact: true })).toBeVisible();
+  await importDialog.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(importDialog).toBeHidden();
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: '导出当前页', exact: true }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/^products-current-page-.*\.csv$/);
   await expect(page.getByRole('button', { name: '新建商品', exact: true })).toBeDisabled();
 
   const jiuyangRow = table.getByRole('row', { name: /九阳5\.5L大容量可视空气炸锅/ });
