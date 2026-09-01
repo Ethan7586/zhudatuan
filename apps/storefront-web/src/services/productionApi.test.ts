@@ -115,7 +115,7 @@ describe('canonical storefront production API', () => {
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
 
-    await expect(productionApi.checkoutWithInternalBenefits({
+    await expect(productionApi.checkout({
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:test',
@@ -129,32 +129,52 @@ describe('canonical storefront production API', () => {
     }
   });
 
-  it('does not create an order when the authoritative quote requires external payment', async () => {
+  it('creates the external-payment order, invokes WeChat once, and reports authorizing without claiming paid', async () => {
     const fetcher = apiFetch({ personalMinor: 100 });
+    const invoke = wechatBridge('get_brand_wcpay_request:ok');
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
 
-    await expect(productionApi.checkoutWithInternalBenefits({
+    await expect(productionApi.checkout({
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:external',
-    })).rejects.toMatchObject({ code: 'EXTERNAL_PAYMENT_REQUIRED' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'authorizing' });
     const postOrder = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === '/api/v1/orders' && init?.method === 'POST');
-    expect(postOrder).toBeUndefined();
+    expect(postOrder).toBeTruthy();
+    expect(invoke).toHaveBeenCalledOnce();
+    expect(invoke).toHaveBeenCalledWith('getBrandWCPayRequest', expect.objectContaining({
+      appId: 'wx-public-mall', package: 'prepay_id=public-mall', paySign: 'signed',
+    }), expect.any(Function));
   });
 
-  it('does not report purchase success when the payment intent is not captured', async () => {
-    const fetcher = apiFetch({ paymentState: 'reconciling' });
+  it('reports reconciling without reopening WeChat when the server is already querying an uncertain result', async () => {
+    const fetcher = apiFetch({ personalMinor: 100, paymentState: 'reconciling' });
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
 
-    await expect(productionApi.checkoutWithInternalBenefits({
+    await expect(productionApi.checkout({
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:pending',
-    })).rejects.toMatchObject({ code: 'PAYMENT_NOT_CAPTURED' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
+  });
+
+  it('preserves the created order and reports an explicit cancellation when the user closes WeChat Pay', async () => {
+    const fetcher = apiFetch({ personalMinor: 100 });
+    wechatBridge('get_brand_wcpay_request:cancel');
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(productionApi.checkout({
+      addressId: 'address:one',
+      items: [{ listingId: 'listing:one', quantity: 1 }],
+      idempotencyKey: 'checkout:cancelled',
+    })).rejects.toMatchObject({ code: 'PAYMENT_CANCELLED' });
+    expect(requestInit(fetcher, '/api/v1/orders', 'POST')).toBeTruthy();
   });
 });
 
@@ -174,10 +194,28 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
     if (path.startsWith('/api/v1/carts/current/items/') && method === 'PUT') return json({ id: 'cart:one', version: 4 });
     if (path.startsWith('/api/v1/members/me/addresses/') && method === 'PUT') return json({ id: decodeURIComponent(path.split('/').at(-1)!), status: 'active', version: 0 });
     if (path === '/api/v1/checkouts/quotes' && method === 'POST') return json({ quote: { id: 'quote:one', personalMinor: options.personalMinor ?? 0, rejections: [] } }, 201);
-    if (path === '/api/v1/orders' && method === 'POST') return json({ id: 'order:one', payment: { intent: 'intent:one', personalMinor: 0 } }, 201);
-    if (path === '/api/v1/payments/intents' && method === 'POST') return json({ intent: 'intent:one', state: options.paymentState ?? 'captured', payment: 'payment:one' });
+    if (path === '/api/v1/orders' && method === 'POST') return json({ id: 'order:one', payment: {
+      intent: 'intent:one', personalMinor: options.personalMinor ?? 0,
+    } }, 201);
+    if (path === '/api/v1/payments/intents' && method === 'POST') {
+      if ((options.personalMinor ?? 0) > 0 && options.paymentState === undefined) return json({
+        intent: 'intent:one', parameters: {
+          appId: 'wx-public-mall', timeStamp: '1788336000', nonceStr: 'public-mall', package: 'prepay_id=public-mall',
+          signType: 'RSA', paySign: 'signed', providerRequestId: 'provider:one',
+        },
+      }, 201);
+      return json({ intent: 'intent:one', state: options.paymentState ?? 'captured', payment: 'payment:one' });
+    }
     return json({ code: 'NOT_FOUND', message: 'NOT_FOUND', requestId: 'request:not-found' }, 404);
   });
+}
+
+function wechatBridge(message: string) {
+  const invoke = vi.fn((_operation: string, _parameters: Record<string, string>, callback: (result: Record<string, string>) => void) => {
+    callback({ err_msg: message });
+  });
+  vi.stubGlobal('window', { WeixinJSBridge: { invoke } });
+  return invoke;
 }
 
 function json(value: unknown, status = 200) {

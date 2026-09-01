@@ -1,5 +1,5 @@
 import { canonicalCall, canonicalClient, anonymousContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
-import { checkoutWithCanonicalBenefits } from './canonicalCheckout';
+import { checkoutWithCanonicalPayment } from './canonicalCheckout';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
 import { mapCanonicalAccounts, mapCanonicalCart, mapCanonicalLedgers, mapCanonicalOrders } from './canonicalCommerceMapper';
 import { mapCanonicalAddresses, mapCanonicalBootstrap, mapCanonicalSession } from './canonicalIdentityMapper';
@@ -160,5 +160,5 @@ export const productionApi = {
     return { removed: true };
   },
 
-  checkoutWithInternalBenefits: checkoutWithCanonicalBenefits,
+  checkout: checkoutWithCanonicalPayment,
 };

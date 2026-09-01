@@ -21,6 +21,10 @@ function valid() {
     QUOTE_KEY_REF: 'zhudatuan/purchase/checkout/quote',
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
     SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
+    KMS_ENDPOINT: 'https://127.0.0.1:8544',
+    KMS_BEARER_TOKEN: 'k'.repeat(43),
+    WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/purchase/wechat/applications',
+    WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/purchase/payment/wechat',
   };
 }
 
@@ -41,10 +45,6 @@ describe('purchase API environment', () => {
       ['PII_KEY_REF', 'legacy/pii'],
       ['EXTENSION_MANIFEST_KEY_REF', 'legacy/extensions'],
       ['OBJECT_STORE_ENDPOINT', 'https://objects.internal'],
-      ['KMS_ENDPOINT', 'https://kms.internal'],
-      ['KMS_BEARER_TOKEN', 'k'.repeat(43)],
-      ['WECHAT_APPLICATION_CONFIG_REF', 'legacy/wechat-applications'],
-      ['WECHAT_PAYMENT_CONFIG_REF', 'legacy/wechat-payment'],
       ['WECHAT_IDENTITY_CONFIG_REF', 'legacy/wechat-identity'],
     ] as const) {
       expect(() => purchaseApiEnvironment({ ...valid(), [key]: value }))
@@ -69,5 +69,9 @@ describe('purchase API environment', () => {
       .toThrow('PURCHASE_API_SECRET_STORE_ENDPOINT_INVALID');
     expect(() => purchaseApiEnvironment({ ...valid(), SECRET_STORE_BEARER_TOKEN: 'short' }))
       .toThrow('SECRET_STORE_BEARER_TOKEN_INVALID');
+    expect(() => purchaseApiEnvironment({ ...valid(), KMS_ENDPOINT: 'http://127.0.0.1:8544' }))
+      .toThrow('KMS_ENDPOINT_INVALID');
+    expect(() => purchaseApiEnvironment({ ...valid(), KMS_BEARER_TOKEN: 'short' }))
+      .toThrow('KMS_BEARER_TOKEN_INVALID');
   });
 });

@@ -152,6 +152,7 @@ const REPAIR_FILES = [
   '20260901222000_add_inventory_mall_identity.sql',
   '20260901223000_publish_mall_provisioning.sql',
   '20260902010000_restore_public_mall_role_contracts.sql',
+  '20260902011000_enable_public_mall_external_payment.sql',
 ];
 
 const mode = process.argv[2];
@@ -799,7 +800,8 @@ async function verifyRuntimeSchemaVisibility(database) {
     ['zhudatuanidentityapi', ['20260821032000', '20260821054000', '20260828170000', '20260829060000']],
     ['zhudatuanidentityjob', ['20260821032000', '20260821054000', '20260828170000']],
     ['zhudatuanwebapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
-    ['zhudatuanpurchaseapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
+    ['zhudatuanpurchaseapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000',
+      '20260902010000', '20260902011000']],
   ]);
   for (const [role, expectedVersions] of expectations) {
     await database.exec(`begin; set local role ${role};`);

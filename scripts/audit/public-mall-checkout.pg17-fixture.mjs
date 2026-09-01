@@ -25,18 +25,20 @@ try {
   const adminUrl = `postgresql://postgres:${password}@127.0.0.1:${port}/${database}`;
   const webUrl = `postgresql://zhudatuanwebapi:${password}@127.0.0.1:${port}/${database}`;
   const purchaseUrl = `postgresql://zhudatuanpurchaseapi:${password}@127.0.0.1:${port}/${database}`;
+  const jobUrl = `postgresql://shopjob:${password}@127.0.0.1:${port}/${database}`;
   await run('node', ['scripts/audit/database-contracts.mjs', '--postgres-fresh', adminUrl]);
   await run('docker', ['exec', container, 'psql', '-X', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', database,
-    '-c', `alter role zhudatuanwebapi login password '${password}'; alter role zhudatuanpurchaseapi login password '${password}';`],
+    '-c', `alter role zhudatuanwebapi login password '${password}'; alter role zhudatuanpurchaseapi login password '${password}'; alter role shopjob login password '${password}';`],
   { quiet: true });
   await run('npm', ['--workspace', '@shop/commerce', 'run', 'test:integration', '--', 'PublicMallCheckout.test.ts'], {
     environment: {
       SHOP_TEST_ADMIN_DATABASE_URL: adminUrl,
       SHOP_TEST_WEB_DATABASE_URL: webUrl,
       SHOP_TEST_PURCHASE_DATABASE_URL: purchaseUrl,
+      SHOP_TEST_JOB_DATABASE_URL: jobUrl,
     },
   });
-  console.log('public Mall Core PostgreSQL 17 acceptance passed: web cart -> purchase quote -> external-payment order');
+  console.log('public Mall Core PostgreSQL 17 acceptance passed: web cart -> purchase quote -> WeChat prepay -> paid order');
 } finally {
   await run('docker', ['rm', '-f', container], { allowFailure: true, quiet: true });
 }

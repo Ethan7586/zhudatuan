@@ -6,18 +6,29 @@ import type { ModuleContext } from '../../src/bootstrap/ModuleRegistry';
 import type { AuditSink } from '../../src/foundation/application/AuditSink';
 import { AUDIT_SINK } from '../../src/foundation/application/AuditSink';
 import type { OperationRequest, OperationResult } from '../../src/foundation/application/OperationHandler';
+import { KMS_CLIENT, type KmsClient } from '../../src/foundation/infrastructure/KmsClient';
 import { DATABASE_POOL, createPool, type DatabasePool } from '../../src/foundation/persistence/Pool';
+import { DECISION_SINK, type DecisionSink } from '../../src/foundation/security/DecisionSink';
+import { RISK_GATE, type RiskGate } from '../../src/foundation/security/RiskGate';
 import { cartOperations } from '../../src/modules/cart/CartOperations';
+import { PAYMENT_GATEWAY, type PaymentGateway } from '../../src/modules/payment/application/port/PaymentGateway';
+import { PaymentJobProcessor } from '../../src/modules/payment/PaymentJobs';
+import { webCatalogOperations } from '../../src/modules/webbusiness/WebCatalogOperations';
+import { webInventoryOperations } from '../../src/modules/webbusiness/WebInventoryOperations';
+import { webPricingOperations } from '../../src/modules/webbusiness/WebPricingOperations';
 import {
   PURCHASE_QUOTE_KEY,
   purchaseCheckoutOperations,
   purchaseOrderOperations,
+  purchasePaymentOperations,
 } from '../../src/modules/purchase/PurchaseOperations';
 
 const adminConnection = process.env.SHOP_TEST_ADMIN_DATABASE_URL;
 const webConnection = process.env.SHOP_TEST_WEB_DATABASE_URL;
 const purchaseConnection = process.env.SHOP_TEST_PURCHASE_DATABASE_URL;
-const endpointAvailable = adminConnection !== undefined && webConnection !== undefined && purchaseConnection !== undefined;
+const jobConnection = process.env.SHOP_TEST_JOB_DATABASE_URL;
+const endpointAvailable = adminConnection !== undefined && webConnection !== undefined && purchaseConnection !== undefined
+  && jobConnection !== undefined;
 
 interface PublicMallFixture {
   readonly enterprise: string;
@@ -28,6 +39,7 @@ interface PublicMallFixture {
   readonly membership: string;
   readonly session: string;
   readonly assurance: string;
+  readonly federatedIdentity: string;
   readonly category: string;
   readonly product: string;
   readonly sku: string;
@@ -56,6 +68,7 @@ describe.runIf(endpointAvailable)('public Mall Core checkout on PostgreSQL', () 
     membership: `membership:public:${suffix}`,
     session: `session:public:${suffix}`,
     assurance: `assurance:public:${suffix}`,
+    federatedIdentity: `federated:public:${suffix}`,
     category: `category:public:${suffix}`,
     product: `product:public:${suffix}`,
     sku: `sku:public:${suffix}`,
@@ -76,9 +89,17 @@ describe.runIf(endpointAvailable)('public Mall Core checkout on PostgreSQL', () 
   let admin: Client;
   let webPool: DatabasePool;
   let purchasePool: DatabasePool;
+  let jobPool: DatabasePool;
   let cart: ReturnType<typeof cartOperations>;
+  let catalog: ReturnType<typeof webCatalogOperations>;
+  let pricing: ReturnType<typeof webPricingOperations>;
+  let inventory: ReturnType<typeof webInventoryOperations>;
   let checkout: ReturnType<typeof purchaseCheckoutOperations>;
   let order: ReturnType<typeof purchaseOrderOperations>;
+  let payment: ReturnType<typeof purchasePaymentOperations>;
+  let paymentJob: PaymentJobProcessor;
+  let gateway: PaymentGateway;
+  let prepayCalls = 0;
 
   beforeAll(async () => {
     admin = new Client({ connectionString: adminConnection, connectionTimeoutMillis: 5_000, statement_timeout: 20_000 });
@@ -86,17 +107,32 @@ describe.runIf(endpointAvailable)('public Mall Core checkout on PostgreSQL', () 
     await seed(admin, fixture);
     webPool = createPool(webConnection!, 'api');
     purchasePool = createPool(purchaseConnection!, 'api');
+    jobPool = createPool(jobConnection!, 'jobs');
     cart = cartOperations(context(webPool));
+    catalog = webCatalogOperations(context(webPool));
+    pricing = webPricingOperations(context(webPool));
+    inventory = webInventoryOperations(context(webPool));
     checkout = purchaseCheckoutOperations(context(purchasePool, quoteKey));
     order = purchaseOrderOperations(context(purchasePool, quoteKey));
+    gateway = publicMallGateway(suffix, () => { prepayCalls += 1; });
+    payment = purchasePaymentOperations(paymentContext(purchasePool, quoteKey, gateway));
+    paymentJob = new PaymentJobProcessor(jobPool, gateway, 'paymentquery');
   });
 
   afterAll(async () => {
-    await Promise.all([webPool?.end(), purchasePool?.end()]);
+    await Promise.all([webPool?.end(), purchasePool?.end(), jobPool?.end()]);
     await admin?.end();
   });
 
-  it('uses the Web role to create a mall-scoped cart and rejects another mall listing atomically', async () => {
+  it('uses the Web role to browse one mall, create its cart, and reject another mall listing atomically', async () => {
+    const listings = await catalog.invoke(request('catalog.listings.read', {}, {}, `browse:${suffix}`));
+    expect(listings).toMatchObject({ status: 200, body: { items: [{ id: fixture.listing, sku_id: fixture.sku }] } });
+    expect(JSON.stringify(listings)).not.toContain(fixture.otherListing);
+    const offers = await pricing.invoke(request('pricing.offers.read', {}, {}, `offers:${suffix}`, { sku: fixture.sku }));
+    expect(offers).toMatchObject({ status: 200, body: { items: [{ sku_id: fixture.sku, amount_minor: '2590' }] } });
+    const availability = await inventory.invoke(request('inventory.availability.read', {}, {}, `stock:${suffix}`, { sku: fixture.sku }));
+    expect(availability).toMatchObject({ status: 200, body: { items: [{ sku_id: fixture.sku, available: '95' }] } });
+
     const added = await cart.invoke(request('cart.items.put', { quantity: 2 }, { listingid: fixture.listing }, `cart:${suffix}`));
     expect(added).toMatchObject({ status: 200, body: { member_id: fixture.member, mall_id: fixture.mall, state: 'active', version: '1' } });
 
@@ -111,7 +147,7 @@ describe.runIf(endpointAvailable)('public Mall Core checkout on PostgreSQL', () 
     expect(evidence).toEqual({ own: 1, foreign: 0 });
   });
 
-  it('quotes and creates one external-payment order exactly once under the Purchase role', async () => {
+  it('quotes, orders, and creates one WeChat prepay exactly once under the Purchase role', async () => {
     const quoted = await checkout.invoke(request('checkout.quote.create', {
       address: fixture.address,
       delivery: { mode: 'express' },
@@ -157,39 +193,114 @@ describe.runIf(endpointAvailable)('public Mall Core checkout on PostgreSQL', () 
       tender_kind: 'wechat',
       tender_state: 'planned',
     });
+
+    const paymentCommand = request('payment.intents.create', { order: orderId, scene: 'jsapi' }, {}, `payment:${suffix}`);
+    const prepared = await payment.invoke(paymentCommand);
+    const replayed = await payment.invoke(paymentCommand);
+    expect(replayed).toEqual(prepared);
+    expect(prepared).toMatchObject({ status: 201, body: { parameters: {
+      package: 'prepay_id=public-mall', providerRequestId: `provider:${suffix}`,
+    } } });
+    expect(prepayCalls).toBe(1);
+
+    const paymentEvidence = (await admin.query<{
+      payment_state: string; intent_state: string; attempts: number; attempt_state: string;
+      attempt_mall: string; prepays: number; prepay_mall: string; recovery_jobs: number;
+    }>(`select
+      (select payment_state from ordering.orderrecord where id=$1) payment_state,
+      (select state from payment.intent where order_id=$1 and mall_id=$2) intent_state,
+      (select count(*)::integer from payment.attempt attempt join payment.intent intent
+        on intent.mall_id=attempt.mall_id and intent.id=attempt.intent_id where intent.order_id=$1) attempts,
+      (select attempt.state from payment.attempt attempt join payment.intent intent
+        on intent.mall_id=attempt.mall_id and intent.id=attempt.intent_id where intent.order_id=$1) attempt_state,
+      (select attempt.mall_id from payment.attempt attempt join payment.intent intent
+        on intent.mall_id=attempt.mall_id and intent.id=attempt.intent_id where intent.order_id=$1) attempt_mall,
+      (select count(*)::integer from payment.prepay prepay join payment.intent intent
+        on intent.mall_id=prepay.mall_id and intent.id=prepay.intent_id where intent.order_id=$1) prepays,
+      (select prepay.mall_id from payment.prepay prepay join payment.intent intent
+        on intent.mall_id=prepay.mall_id and intent.id=prepay.intent_id where intent.order_id=$1) prepay_mall,
+      (select count(*)::integer from runtime.job where kind='paymentquery' and scope_id=$2 and payload->>'intent'=
+        (select id from payment.intent where order_id=$1 and mall_id=$2)) recovery_jobs`, [orderId, fixture.mall])).rows[0];
+    expect(paymentEvidence).toEqual({
+      payment_state: 'authorizing', intent_state: 'authorizing', attempts: 1, attempt_state: 'pending',
+      attempt_mall: fixture.mall, prepays: 1, prepay_mall: fixture.mall, recovery_jobs: 1,
+    });
+
+    const intent = String((prepared.body as { intent?: unknown }).intent);
+    const paymentQuery = {
+      id: `job:query:${intent}`, kind: 'paymentquery', scope_id: fixture.mall, payload: { intent }, attempts: 0,
+    };
+    await paymentJob.process(paymentQuery, new AbortController().signal);
+    await paymentJob.process(paymentQuery, new AbortController().signal);
+
+    const paidEvidence = (await admin.query<{
+      payment_state: string; lifecycle_state: string; fulfillment_state: string; intent_state: string;
+      tender_state: string; attempt_state: string; payments: number; captures: number; allocations: number;
+      reservation_state: string; onhand: number; fulfillments: number; fulfillment_mall: string;
+      payment_events: number; order_events: number;
+    }>(`select
+      (select payment_state from ordering.orderrecord where id=$1) payment_state,
+      (select lifecycle_state from ordering.orderrecord where id=$1) lifecycle_state,
+      (select fulfillment_state from ordering.orderrecord where id=$1) fulfillment_state,
+      (select state from payment.intent where id=$2 and mall_id=$3) intent_state,
+      (select state from payment.intenttender where intent_id=$2 and mall_id=$3 and kind='wechat') tender_state,
+      (select state from payment.attempt where intent_id=$2 and mall_id=$3) attempt_state,
+      (select count(*)::integer from payment.payment where intent_id=$2 and mall_id=$3) payments,
+      (select count(*)::integer from payment.capture where order_id=$1 and mall_id=$3) captures,
+      (select count(*)::integer from payment.allocation where target_id=$1 and mall_id=$3) allocations,
+      (select state from inventory.reservation where owner_id=$1 and mall_id=$3) reservation_state,
+      (select onhand::float8 from inventory.stockitem where id=$4 and scope_id=$3) onhand,
+      (select count(*)::integer from fulfillment.fulfillmentorder where order_id=$1 and mall_id=$3) fulfillments,
+      (select mall_id from fulfillment.fulfillmentorder where order_id=$1 and mall_id=$3) fulfillment_mall,
+      (select count(*)::integer from runtime.outbox where event_type='payment.succeeded' and scope_id=$3
+        and payload->>'order'=$1) payment_events,
+      (select count(*)::integer from runtime.outbox where event_type='order.paid' and scope_id=$3
+        and aggregate_id=$1) order_events`, [orderId, intent, fixture.mall, fixture.stock])).rows[0];
+    expect(paidEvidence).toEqual({
+      payment_state: 'paid', lifecycle_state: 'active', fulfillment_state: 'allocated', intent_state: 'captured',
+      tender_state: 'captured', attempt_state: 'succeeded', payments: 1, captures: 1, allocations: 1,
+      reservation_state: 'committed', onhand: 98, fulfillments: 1, fulfillment_mall: fixture.mall,
+      payment_events: 1, order_events: 1,
+    });
   });
 
-  it('keeps authority tables closed while exposing only the two Purchase projections', async () => {
+  it('keeps authority tables closed while exposing only the three Purchase projections', async () => {
     const boundary = (await admin.query<{ web_membership: boolean; web_checkout: boolean; purchase_membership: boolean;
-      purchase_checkout: boolean; purchase_quote: boolean }>(`select
+      purchase_checkout: boolean; purchase_quote: boolean; purchase_payment: boolean }>(`select
       has_table_privilege('zhudatuanwebapi','access.membership','SELECT') web_membership,
       has_function_privilege('zhudatuanwebapi','access.purchase_checkout_context(text,text,text,text)','EXECUTE') web_checkout,
       has_table_privilege('zhudatuanpurchaseapi','access.membership','SELECT') purchase_membership,
       has_function_privilege('zhudatuanpurchaseapi','access.purchase_checkout_context(text,text,text,text)','EXECUTE') purchase_checkout,
-      has_function_privilege('zhudatuanpurchaseapi','access.purchase_order_quote(text,text,text)','EXECUTE') purchase_quote`)).rows[0];
+      has_function_privilege('zhudatuanpurchaseapi','access.purchase_order_quote(text,text,text)','EXECUTE') purchase_quote,
+      has_function_privilege('zhudatuanpurchaseapi',
+        'access.purchase_payment_intent_context(text,text,text,text,text)','EXECUTE') purchase_payment`)).rows[0];
     expect(boundary).toEqual({ web_membership: false, web_checkout: false, purchase_membership: false,
-      purchase_checkout: true, purchase_quote: true });
+      purchase_checkout: true, purchase_quote: true, purchase_payment: true });
   });
 
   function request(type: OperationRequest['type'], body: Readonly<Record<string, unknown>>, path: Readonly<Record<string, string>>,
-    idempotency: string): OperationRequest {
+    idempotency: string, query: Readonly<Record<string, string>> = {}): OperationRequest {
+    const browsing = type === 'catalog.listings.read' || type === 'pricing.offers.read' || type === 'inventory.availability.read';
     return {
       type,
       access: {
         actor: { id: fixture.principal, session: fixture.session, membership: fixture.membership, credentialVersion: 1,
           accessVersion: 1, target: 'storefront', assurance: { level: 2 } },
         membership: { id: fixture.membership, active: true, accessVersion: 1, denies: [], grants: [] },
-        scope: { id: fixture.member, kind: 'owner', tenant: fixture.mall, path: [] },
+        scope: browsing
+          ? { id: fixture.mall, kind: 'mall', tenant: fixture.enterprise, path: [] }
+          : { id: fixture.member, kind: 'owner', tenant: fixture.mall, path: [] },
         mallContext: { mall_id: fixture.mall },
         mall_id: fixture.mall,
         accessVersion: 1,
-        capabilities: ['cart.items.put', 'checkout.quote.create', 'order.orders.create'],
+        capabilities: ['catalog.listings.read', 'pricing.offers.read', 'inventory.availability.read',
+          'cart.items.put', 'checkout.quote.create', 'order.orders.create', 'payment.intents.create'],
         assurance: { level: 2 },
         trace: `trace:${suffix}`,
       },
       input: {
         path,
-        query: {},
+        query,
         headers: {},
         body,
         rawBody: JSON.stringify(body),
@@ -208,6 +319,37 @@ function context(pool: DatabasePool, quoteKey?: string): ModuleContext {
   container.bind(AUDIT_SINK, audit);
   if (quoteKey !== undefined) container.bind(PURCHASE_QUOTE_KEY, quoteKey);
   return { container } as unknown as ModuleContext;
+}
+
+function paymentContext(pool: DatabasePool, quoteKey: string, gateway: PaymentGateway): ModuleContext {
+  const module = context(pool, quoteKey);
+  const kms = { decrypt: async () => 'openid-public-mall' } as unknown as KmsClient;
+  const risk: RiskGate = { evaluate: async () => ({ outcome: 'allow', safeReason: 'amount', decision: null }) };
+  const decisions: DecisionSink = { append: async () => undefined };
+  module.container.bind(PAYMENT_GATEWAY, gateway);
+  module.container.bind(KMS_CLIENT, kms);
+  module.container.bind(RISK_GATE, risk);
+  module.container.bind(DECISION_SINK, decisions);
+  return module;
+}
+
+function publicMallGateway(suffix: string, prepayCalled: () => void): PaymentGateway {
+  return {
+    application: (scene) => ({ scene, applicationHash: 'a'.repeat(64) }),
+    prepay: async () => {
+      prepayCalled();
+      return {
+        appId: 'wx-public-mall', timeStamp: '1788336000', nonceStr: 'public-mall',
+        package: 'prepay_id=public-mall', signType: 'RSA', paySign: 'signed', providerRequestId: `provider:${suffix}`,
+      };
+    },
+    query: async () => ({ state: 'succeeded', transaction: `wechat:${suffix}`, amountMinor: 5180,
+      occurredAt: '2026-09-02T03:00:00Z', evidence: { source: 'public-mall-postgres-test' } }),
+    close: async () => undefined,
+    refund: async () => ({ state: 'processing', reference: 'refund:pending', evidence: {} }),
+    queryRefund: async () => ({ state: 'processing', reference: 'refund:pending', evidence: {} }),
+    verifyNotification: async () => { throw new Error('NOT_USED'); },
+  };
 }
 
 function quoteId(result: OperationResult): string {
@@ -240,6 +382,10 @@ async function seed(admin: Client, fixture: PublicMallFixture): Promise<void> {
   await admin.query(`insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
     values($1,$2,$3,'phone_otp',2,repeat('3',64),clock_timestamp(),clock_timestamp()+interval '30 minutes')`,
   [fixture.assurance, fixture.principal, fixture.session]);
+  await admin.query(`insert into identity.federatedidentity(id,principal_id,membership_id,provider,application_hash,subject_hash,
+    subject_ciphertext,subject_key_version,status,bound_at,created_at,updated_at)
+    values($1,$2,$3,'wechat',repeat('a',64),repeat('c',64),'ciphertext-public-mall','v1','active',clock_timestamp(),clock_timestamp(),clock_timestamp())`,
+  [fixture.federatedIdentity, fixture.principal, fixture.membership]);
   await admin.query(`insert into qualification.profile(member_id,scope_id,city_code,city_name,attributes,status,version,updated_at)
     values($1,$2,'310000','上海市','{}','active',1,clock_timestamp())`, [fixture.member, fixture.mall]);
   await admin.query(`insert into catalog.category(id,code,name,status,sort_order) values($1,$2,'公开商城商品','active',1)`,

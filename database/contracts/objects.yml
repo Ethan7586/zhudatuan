@@ -178,6 +178,18 @@ objects:
     source: database/supabase/migrations/20260902010000_restore_public_mall_role_contracts.sql
     callers:
       - services/commerce/src/modules/purchase/PurchaseOrderQuoteStore.ts
+  - id: access.purchase_payment_intent_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchasePaymentIntentContext.ts
+  - id: access.purchase_enqueue_payment_query
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchasePaymentRecoveryQueue.ts
   - id: access.purchase_quote_allowed
     kind: function
     owner: access
@@ -18909,6 +18921,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.attempt.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.attempt.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.attempt.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
   - id: payment.capture.appscope
     kind: policy
     owner: payment
@@ -19013,6 +19037,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.prepay.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.prepay.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.prepay.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
   - id: payment.providerattempt.appscope
     kind: policy
     owner: payment
