@@ -41,11 +41,14 @@ import {
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
 import { SMS_CODE_RESEND_SECONDS } from '../services/otpPolicy';
+<<<<<<< HEAD
 =======
   resolveCanonicalInvite,
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+>>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
 import { registrationPresentation } from './registrationPresentation';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
@@ -325,7 +328,11 @@ export const LoginPage: React.FC = () => {
     try {
       const challenge = await createCanonicalLoginChallenge(identifier);
       setLoginOtp({ code: '', challengeId: challenge.challengeId, challengeMobile: identifier.trim() });
+<<<<<<< HEAD
       startLoginOtpCooldown();
+=======
+      setLoginOtpSeconds(SMS_CODE_RESEND_SECONDS);
+>>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
       setFormNotice(`如果该手机号已绑定账号，验证码将发送至 ${maskMobile(identifier)}。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码请求失败');
@@ -491,8 +498,13 @@ export const LoginPage: React.FC = () => {
         challengeId: challenge.challengeId,
         challengeMobile: current.mobile.trim(),
       }));
+<<<<<<< HEAD
       setRegistrationCodeSeconds(seconds);
       setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}，请在有效期内完成注册。`);
+=======
+      setRegistrationCodeSeconds(Math.min(SMS_CODE_RESEND_SECONDS, validitySeconds));
+      setRegistrationNotice(`验证码请求已提交至 ${maskMobile(registration.mobile)}。${SMS_CODE_RESEND_SECONDS} 秒后仍未收到可重新获取；多次请求请使用最后一条。`);
+>>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码发送失败');
     } finally {

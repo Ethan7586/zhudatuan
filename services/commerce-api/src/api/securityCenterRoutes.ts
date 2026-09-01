@@ -6,10 +6,14 @@ import { resolveMembershipRuntime } from './membershipContext';
 import { generateOtp, hashPassword, maskMobile, normalizeChineseMobile, phoneLookupSubject, validRegistrationPassword, verificationCodeHash } from './registrationSecurity';
 import { readJsonBody } from './routerSupport';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { deliverOtp, OTP_RESEND_AFTER_SECONDS, otpDeliveryAvailable } from './otpDelivery';
 =======
 import { deliverOtp, otpDeliveryAvailable } from './otpDelivery';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { deliverOtp, OTP_RESEND_AFTER_SECONDS, otpDeliveryAvailable } from './otpDelivery';
+>>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
 import { SmsDeliveryError } from './smsProvider';
 import { clearSessionCookie, readSession } from './session';
 import { callRpc } from './supabase';
@@ -66,10 +70,14 @@ export async function handleSecurityOtp(request: Request, env: WorkerEnv, reques
   try {
     const delivery = await deliverOtp(env, { mobile, code, challengeId, purpose });
 <<<<<<< HEAD
+<<<<<<< HEAD
     return json({ challengeId, expiresInSeconds: 300, resendAfterSeconds: OTP_RESEND_AFTER_SECONDS, ...(delivery.debugCode ? { debugCode: delivery.debugCode } : {}), requestId });
 =======
     return json({ challengeId, expiresInSeconds: 300, resendAfterSeconds: 60, ...(delivery.debugCode ? { debugCode: delivery.debugCode } : {}), requestId });
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    return json({ challengeId, expiresInSeconds: 300, resendAfterSeconds: OTP_RESEND_AFTER_SECONDS, ...(delivery.debugCode ? { debugCode: delivery.debugCode } : {}), requestId });
+>>>>>>> 4dd41dd1 (fix(auth): cap SMS resend wait at 30 seconds)
   } catch (error) {
     const providerCode = error instanceof SmsDeliveryError ? error.code : 'SMS_DELIVERY_FAILED';
     return apiError(providerCode === 'SMS_PROVIDER_NOT_CONFIGURED' ? 503 : 502, providerCode, '验证码发送失败，请稍后重试', requestId);
