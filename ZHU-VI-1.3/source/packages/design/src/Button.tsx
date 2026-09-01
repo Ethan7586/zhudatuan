@@ -1,0 +1,34 @@
+import type { ReactNode } from 'react';
+import { Button as AriaButton, Tooltip, TooltipTrigger, type ButtonProps as AriaButtonProps } from 'react-aria-components';
+
+export type ButtonTone = 'default' | 'primary' | 'danger' | 'quiet';
+export type ButtonSize = 'compact' | 'default' | 'large';
+
+export interface ButtonProps extends Omit<AriaButtonProps, 'className'> {
+  readonly className?: string;
+  readonly iconOnly?: boolean;
+  readonly size?: ButtonSize;
+  readonly tone?: ButtonTone;
+}
+
+export function Button({ className, iconOnly = false, size = 'default', tone = 'default', ...props }: ButtonProps) {
+  const sizeClass = size === 'default' ? null : `shopbutton${size}`;
+  const classes = ['shopbutton', `shopbutton${tone}`, sizeClass, iconOnly ? 'shopbuttonicononly' : null, className].filter(Boolean).join(' ');
+  return <AriaButton {...props} aria-busy={props.isPending || undefined} className={classes} />;
+}
+
+export interface IconButtonProps extends Omit<ButtonProps, 'aria-label' | 'children' | 'iconOnly'> {
+  readonly children: ReactNode;
+  readonly label: string;
+}
+
+export function IconButton({ children, label, ...props }: IconButtonProps) {
+  return (
+    <TooltipTrigger delay={600} closeDelay={0}>
+      <Button {...props} aria-label={label} iconOnly>
+        {children}
+      </Button>
+      <Tooltip className="swtooltip">{label}</Tooltip>
+    </TooltipTrigger>
+  );
+}

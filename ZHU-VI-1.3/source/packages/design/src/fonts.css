@@ -1,0 +1,18 @@
+/* Smart Wing VI 1.3 — deterministic cross-platform font delivery. */
+/* Font binaries are self-hosted. Their licenses are stored beside the files. */
+
+@font-face {
+  font-family: 'SW Inter';
+  src: url('./fonts/Inter-Variable.woff2') format('woff2-variations');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SW Noto Sans SC';
+  src: url('./fonts/NotoSansSC-Variable.woff2') format('woff2-variations');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}

@@ -1,0 +1,108 @@
+/* Smart Wing VI 1.3 — Simplified Chinese typography template. */
+
+:where(:lang(zh-CN), [lang='zh-CN']) {
+  line-break: strict;
+  overflow-wrap: break-word;
+  text-autospace: normal;
+}
+
+.sw-han {
+  font-family: var(--sw-font-han);
+  font-synthesis: none;
+  letter-spacing: var(--sw-letter-spacing-han);
+}
+
+.swtype-display,
+.swtype-h1,
+.swtype-h2,
+.swtype-h3,
+.swtype-body,
+.swtype-body-sm,
+.swtype-caption,
+.swtype-label,
+.swtype-label-sm,
+.swtype-han-kicker {
+  margin: 0;
+}
+
+.swtype-display {
+  font-size: var(--sw-font-size-display);
+  font-weight: var(--sw-font-weight-bold);
+  letter-spacing: var(--sw-letter-spacing-tight);
+  line-height: var(--sw-line-height-display);
+}
+
+.swtype-h1 {
+  font-size: var(--sw-font-size-h1);
+  font-weight: var(--sw-font-weight-bold);
+  letter-spacing: var(--sw-letter-spacing-tight);
+  line-height: var(--sw-line-height-h1);
+}
+
+.swtype-h2 {
+  font-size: var(--sw-font-size-h2);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-h2);
+}
+
+.swtype-h3 {
+  font-size: var(--sw-font-size-h3);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-h3);
+}
+
+.swtype-body {
+  font-size: var(--sw-font-size-body);
+  font-weight: var(--sw-font-weight-regular);
+  line-height: var(--sw-line-height-body);
+}
+
+.swtype-body-sm {
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-regular);
+  line-height: var(--sw-line-height-body-sm);
+}
+
+.swtype-caption {
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-regular);
+  line-height: var(--sw-line-height-caption);
+}
+
+.swtype-label {
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-label);
+}
+
+.swtype-label-sm {
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-label-sm);
+}
+
+.swtype-han-kicker {
+  font-family: var(--sw-font-han);
+  font-size: var(--sw-font-size-han-kicker);
+  font-weight: var(--sw-font-weight-semibold);
+  letter-spacing: var(--sw-letter-spacing-han);
+  line-height: var(--sw-line-height-han-kicker);
+}
+
+.swtype-number,
+.swtype-amount {
+  font-family: var(--sw-font-financial);
+  font-variant-numeric: tabular-nums;
+}
+
+.swtype-code,
+.swtype-identifier {
+  font-family: var(--sw-font-mono);
+  font-size: var(--sw-font-size-code);
+  line-height: var(--sw-line-height-code);
+  overflow-wrap: anywhere;
+}
+
+.swtype-nowrap {
+  white-space: nowrap;
+}
