@@ -1,7 +1,7 @@
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import type { CsrfProtector } from '../../../../foundation/security/CsrfProtector';
 import type { SessionIssue, SessionIssuer, IssuedSession } from '../port/SessionIssuer';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import { SessionPolicy } from '../../domain/policy/SessionPolicy';
 import type { IdentityAccessPort } from '../../../access/public';
@@ -19,9 +19,9 @@ export class DefaultSessionIssuer implements SessionIssuer {
   ) {
     if (identitykey.length < 32) throw new Error('SESSION_ISSUER_KEY_INVALID');
   }
-  async issue(database: OperationDatabase, value: SessionIssue): Promise<IssuedSession> {
+  async issue(context: WriteTransactionContext, value: SessionIssue): Promise<IssuedSession> {
     const assurance = this.policy.assurance(value.assurance);
-    const [membership, credentialVersion] = await Promise.all([this.access.session(database, value.membership, value.target), this.repository.credentialVersion(database, value.principal)]);
+    const [membership, credentialVersion] = await Promise.all([this.access.session(context, value.membership, value.target), this.repository.credentialVersion(context, value.principal)]);
     const now = new Date();
     const token = randomBytes(48).toString('base64url');
     const session = new Session({
@@ -34,7 +34,7 @@ export class DefaultSessionIssuer implements SessionIssuer {
       assurance,
       expiresAt: new Date(now.getTime() + this.policy.ttlSeconds * 1000),
     });
-    await this.repository.create(database, { session, tokenHash: hash(token), ipHash: this.digest(value.peer), userAgent: value.agent.slice(0, 512), deviceLabel: value.device.slice(0, 128), trace: value.trace });
+    await this.repository.create(context, { session, tokenHash: hash(token), ipHash: this.digest(value.peer), userAgent: value.agent.slice(0, 512), deviceLabel: value.device.slice(0, 128), trace: value.trace });
     const expiresin = session.ttlSeconds(now);
     const csrf = this.csrf.issue(token, session.target, expiresin);
     return Object.freeze({ session: session.id, membership: session.membership, target: session.target, expiresin, headers: this.cookies.session(session.target, token, csrf, expiresin) });

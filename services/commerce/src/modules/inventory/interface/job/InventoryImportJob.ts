@@ -1,11 +1,12 @@
-import { BatchImportProcessor } from '../../../../foundation/application/BatchImport';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { PgInventoryImport } from '../../infrastructure/persistence/PgInventoryImport';
-import type { CatalogSku } from '../../../catalog/public/index';
+import { importId } from '../../../../foundation/application/BatchImport';
+import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { InventoryImportProcess } from '../../application/process/InventoryImportProcess';
 
-export class InventoryImportProcessor extends BatchImportProcessor {
-  constructor(pool: DatabasePool, objects: ObjectStore, catalog: CatalogSku) {
-    super('inventoryimport', 'inventory', objects, new PgInventoryImport(pool, catalog));
+export class InventoryImportJob implements JobProcessor {
+  constructor(private readonly imports: InventoryImportProcess) {}
+
+  process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
+    if (job.kind !== 'inventoryimport') throw new Error('JOB_KIND_MISMATCH');
+    return this.imports.execute(importId(job.payload, 'INVENTORYIMPORT_REQUIRED'), job.scope_id ?? 'organization-platform-root', signal, deadline);
   }
 }

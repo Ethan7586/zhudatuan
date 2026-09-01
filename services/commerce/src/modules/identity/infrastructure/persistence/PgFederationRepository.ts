@@ -1,13 +1,15 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+
 import type { CreateFederation, FederationCallbackRecord, FederationRepository, FederationResolution } from '../../application/port/FederationRepository';
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 import { FederationTransaction } from '../../domain/model/FederationTransaction';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { IdentityAccessPort } from '../../../access/public';
 import type { AuthTicketBinding } from '../../application/port/AuthTicketPort';
-
 interface TransactionRow {
   readonly id: string;
   readonly provider_id: string;
@@ -29,11 +31,13 @@ interface CallbackRow extends TransactionRow {
   readonly auth_pkce_challenge: string;
 }
 export class PgFederationRepository implements FederationRepository {
+  private readonly transactions = new PgTransactionAccess();
   constructor(
     private readonly members: IdentityMemberPort,
     private readonly access: IdentityAccessPort
   ) {}
-  async create(database: OperationDatabase, value: CreateFederation): Promise<FederationTransaction> {
+  async create(context: WriteTransactionContext, value: CreateFederation): Promise<FederationTransaction> {
+    const database = this.transactions.database(context);
     const id = randomUUID();
     const result = await database.query<TransactionRow>(
       `insert into identity.federationtransaction(id,provider_id,state_hash,nonce_hash,pkce_challenge,
@@ -64,17 +68,19 @@ export class PgFederationRepository implements FederationRepository {
     );
     return transaction(result.rows[0]);
   }
-  async redirected(database: OperationDatabase, value: FederationTransaction): Promise<FederationTransaction> {
+  async redirected(context: WriteTransactionContext, value: FederationTransaction): Promise<FederationTransaction> {
+    const database = this.transactions.database(context);
     const next = value.transition('redirected', new Date());
     await transition(database, next, value.version);
     return next;
   }
-  async callback(database: OperationDatabase, provider: string, statehash: Buffer): Promise<FederationCallbackRecord> {
+  async pending(context: ReadTransactionContext, provider: string, statehash: Buffer): Promise<FederationCallbackRecord> {
+    const database = this.transactions.database(context);
     const result = await database.query<CallbackRow>(
-      `update identity.federationtransaction set status='callbackreceived',version=version+1,
-        updated_at=clock_timestamp() where provider_id=$1 and state_hash=$2 and status='redirected' and consumed_at is null
-        and expires_at>clock_timestamp() returning id,provider_id,status,version,expires_at,target,purpose,link_principal_id,link_membership_id,nonce_hash,verifier_ciphertext,
-          return_target_ref,browser_hash,auth_state_hash,auth_nonce_hash,auth_pkce_challenge`,
+      `select id,provider_id,status,version,expires_at,target,purpose,link_principal_id,link_membership_id,nonce_hash,verifier_ciphertext,
+        return_target_ref,browser_hash,auth_state_hash,auth_nonce_hash,auth_pkce_challenge
+      from identity.federationtransaction where provider_id=$1 and state_hash=$2 and status='redirected' and consumed_at is null
+        and expires_at>clock_timestamp()`,
       [provider, statehash]
     );
     const accepted = result.rows[0];
@@ -87,35 +93,57 @@ export class PgFederationRepository implements FederationRepository {
         browserhash: accepted.browser_hash,
         authorization: Object.freeze({ stateHash: accepted.auth_state_hash, nonceHash: accepted.auth_nonce_hash, challenge: accepted.auth_pkce_challenge }),
       });
-    const existing = await database.query<{ status: string; expires_at: Date; consumed_at: Date | null }>('select status,expires_at,consumed_at from identity.federationtransaction where provider_id=$1 and state_hash=$2', [
-      provider,
-      statehash,
-    ]);
+    const existing = await database.query<{
+      status: string;
+      expires_at: Date;
+      consumed_at: Date | null;
+    }>('select status,expires_at,consumed_at from identity.federationtransaction where provider_id=$1 and state_hash=$2', [provider, statehash]);
     const row = existing.rows[0];
     if (row?.consumed_at || row?.status === 'completed') throw new DomainError('FEDERATION_TRANSACTION_CONSUMED');
     if (row && row.expires_at <= new Date()) throw new DomainError('FEDERATION_TRANSACTION_EXPIRED');
     throw new DomainError('FEDERATION_TRANSACTION_INVALID');
   }
-  async advance(database: OperationDatabase, value: FederationTransaction, state: 'linkrequired' | 'rejected' | 'expired') {
+  async accept(context: WriteTransactionContext, value: FederationTransaction): Promise<FederationTransaction> {
+    const database = this.transactions.database(context);
+    const next = value.transition('callbackreceived', new Date());
+    await transition(database, next, value.version);
+    return next;
+  }
+  async advance(context: WriteTransactionContext, value: FederationTransaction, state: 'linkrequired' | 'rejected' | 'expired') {
+    const database = this.transactions.database(context);
     const next = value.transition(state, new Date());
     await transition(database, next, value.version);
     return next;
   }
-  async verified(database: OperationDatabase, value: FederationTransaction, subject: FederatedSubject, subjecthash: Buffer): Promise<FederationResolution> {
+  async verified(context: WriteTransactionContext, value: FederationTransaction, subject: FederatedSubject, subjecthash: Buffer): Promise<FederationResolution> {
+    const database = this.transactions.database(context);
     const advanced = value.transition('verified', new Date());
     await transition(database, advanced, value.version);
-    const found = await database.query<{ principal_id: string }>(
+    const found = await database.query<{
+      principal_id: string;
+    }>(
       `select principal_id from identity.federatedidentity
       where provider_instance_id=$1 and normalized_subject_hash=$2 and status='active' and revoked_at is null`,
       [subject.instance, subjecthash]
     );
     const principals = [...new Set(found.rows.map(({ principal_id }) => principal_id).filter(Boolean))];
     if (principals.length !== 1) return Object.freeze({ principal: null, memberships: Object.freeze([]), conflict: principals.length > 1 });
-    const member = await this.members.memberForPrincipal(database, principals[0]!);
-    const memberships = await this.access.memberships(database, member, value.target);
+    const member = await this.members.memberForPrincipal(context, principals[0]!);
+    const memberships = await this.access.memberships(context, member, value.target);
     return Object.freeze({ principal: principals[0]!, memberships: Object.freeze(memberships.map(({ id, target }) => Object.freeze({ id, name: id, target }))), conflict: false });
   }
-  async bindDirectory(database: OperationDatabase, input: Readonly<{ provider: string; principal: string; membership: string; subjecthash: Buffer; ciphertext: string; keyversion: string }>): Promise<void> {
+  async bindDirectory(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      provider: string;
+      principal: string;
+      membership: string;
+      subjecthash: Buffer;
+      ciphertext: string;
+      keyversion: string;
+    }>
+  ): Promise<void> {
+    const database = this.transactions.database(context);
     const result = await database.query(
       `insert into identity.federatedidentity(id,principal_id,membership_id,provider,subject_ciphertext,subject_key_version,status,
       bound_at,provider_instance_id,provider_tenant_hash,normalized_subject_hash,linked_at,verified_at,last_seen_at,source,version,created_at,updated_at)
@@ -134,7 +162,7 @@ export class PgFederationRepository implements FederationRepository {
     }
   }
   async preauthorize(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     value: FederationTransaction,
     principal: string,
     memberships: FederationResolution['memberships'],
@@ -142,7 +170,12 @@ export class PgFederationRepository implements FederationRepository {
     devicehash: Buffer,
     assurance: number,
     authorization: AuthTicketBinding
-  ): Promise<Readonly<{ token: string }>> {
+  ): Promise<
+    Readonly<{
+      token: string;
+    }>
+  > {
+    const database = this.transactions.database(context);
     const next = value.transition('selectionrequired', new Date());
     await transition(database, next, value.version);
     const token = randomBytes(48).toString('base64url');
@@ -156,7 +189,8 @@ export class PgFederationRepository implements FederationRepository {
     );
     return Object.freeze({ token });
   }
-  async complete(database: OperationDatabase, id: string, expected: number): Promise<void> {
+  async complete(context: WriteTransactionContext, id: string, expected: number): Promise<void> {
+    const database = this.transactions.database(context);
     const result = await database.query(
       `update identity.federationtransaction set status='completed',consumed_at=clock_timestamp(),version=version+1,
       updated_at=clock_timestamp() where id=$1 and version=$2 and status in('verified','selectionrequired','linkrequired') and consumed_at is null`,
@@ -164,8 +198,11 @@ export class PgFederationRepository implements FederationRepository {
     );
     if (result.rowCount !== 1) throw new DomainError('FEDERATION_TRANSACTION_CONSUMED');
   }
-  async version(database: OperationDatabase, id: string): Promise<number> {
-    const result = await database.query<{ version: number }>('select version from identity.federationtransaction where id=$1::uuid', [id]);
+  async version(context: ReadTransactionContext, id: string): Promise<number> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      version: number;
+    }>('select version from identity.federationtransaction where id=$1::uuid', [id]);
     return result.rows[0]?.version ?? -1;
   }
 }
@@ -183,7 +220,7 @@ function transaction(row: TransactionRow | undefined): FederationTransaction {
     membership: row.link_membership_id,
   });
 }
-async function transition(database: OperationDatabase, value: FederationTransaction, expected: number): Promise<void> {
+async function transition(database: SqlExecutor, value: FederationTransaction, expected: number): Promise<void> {
   const result = await database.query(
     `update identity.federationtransaction set status=$2,version=version+1,updated_at=clock_timestamp()
     where id=$1 and version=$3 and consumed_at is null`,

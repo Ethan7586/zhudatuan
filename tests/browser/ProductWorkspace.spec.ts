@@ -6,17 +6,33 @@ import { productListing, productPage } from './ProductFixtures';
 
 const productsUrl = 'http://127.0.0.1:4173/scopes/enterprise/enterprise%3Ae2e/products';
 const listing = productListing(1, '生产合同商品');
+const listingDetail = Object.freeze({
+  id: listing.product_id,
+  title: listing.title,
+  product_type: listing.product_type,
+  status: 'active',
+  version: '3',
+  category_id: 'category:office',
+  brand_id: null,
+  owner_partner_id: null,
+  cover_url: null,
+  subtitle: listing.subtitle,
+  skus: [],
+  listings: [],
+  inventory: [],
+  prices: [],
+});
 
-test('Console 商品工作台只呈现列表合同事实并关闭未闭合写操作', async ({ page }) => {
+test('Console 商品治理台按列表与详情合同呈现权威事实和可用操作', async ({ page }) => {
   const api = consoleProductApi(page, () => productPage([listing]));
   await api.install();
   await page.goto(productsUrl);
 
-  await expect(page.getByRole('heading', { level: 1, name: '商品管理' })).toBeFocused();
-  await expect(page.getByRole('button', { name: '导入', exact: true })).toBeDisabled();
+  await expect(page.getByRole('heading', { level: 1, name: '商品治理台' })).toBeFocused();
+  await expect(page.getByRole('button', { name: '商品池', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: '导出', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '新建商品', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '待完善' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '新建商品', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: '待完善' })).toBeEnabled();
   await expect(page.getByRole('combobox', { name: '供应商' })).toBeDisabled();
 
   const table = page.getByRole('table', { name: '商品列表' });
@@ -29,25 +45,26 @@ test('Console 商品工作台只呈现列表合同事实并关闭未闭合写操
   const drawer = page.getByRole('dialog', { name: '生产合同商品' });
   await expect(drawer).toBeVisible();
   const tabs = [
-    ['概览', '商品概览合同待补齐'],
-    ['SKU与库存', 'SKU 与库存合同待补齐'],
-    ['商城与售价', '商城与售价合同待补齐'],
-    ['来源与供货', '来源与供货合同待补齐'],
-    ['变更记录', '变更记录合同待补齐'],
+    ['概览', '商品概览'],
+    ['SKU与库存', 'SKU 与库存'],
+    ['商城与售价', '商城与售价'],
+    ['来源与供货', '来源与供货'],
+    ['变更记录', '当前版本证据'],
   ] as const;
   for (const [label, boundary] of tabs) {
     await drawer.getByRole('tab', { name: label, exact: true }).click();
     await expect(drawer.getByRole('heading', { name: boundary })).toBeVisible();
   }
-  await expect(drawer.getByRole('button', { name: '编辑商品' })).toBeDisabled();
+  await expect(drawer.getByRole('button', { name: '编辑商品' })).toBeEnabled();
   await expect(drawer).not.toContainText('¥219.00');
   await expect(drawer).not.toContainText('1,500');
   await drawer.getByRole('button', { name: '关闭商品详情' }).click();
   await expect(drawer).toBeHidden();
 
   await row.getByRole('checkbox', { name: '选择 生产合同商品' }).check();
-  await expect(page.getByRole('button', { name: '预览影响' })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '批量执行' })).toBeDisabled();
+  await expect(page.getByRole('status')).toContainText('已选择当前页 1 项');
+  await expect(page.getByRole('button', { name: '批量上架' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: '批量下架' })).toBeEnabled();
   expectProductReadsOnly(api);
 });
 
@@ -93,7 +110,7 @@ test('Console 商品详情深链只呈现当前授权范围的服务端聚合', 
   await api.install();
   await page.goto(`${productsUrl}/product1`);
 
-  await expect(page.getByRole('heading', { level: 1, name: '商品管理' })).toBeFocused();
+  await expect(page.getByRole('heading', { level: 1, name: '商品治理台' })).toBeFocused();
   await expect(page.getByText('九阳空气炸锅 · 服务端商品主档 · product1', { exact: true })).toBeVisible();
   await expect(page.getByText('商品主档来自 Catalog；SKU、商城上架、库存与价格由服务端按 enterprise:e2e 授权范围聚合，只呈现合同允许的字段。')).toBeVisible();
   await expect(page.getByRole('table', { name: '商品 SKU 与规格' })).toContainText('容量：5.5L');
@@ -107,7 +124,7 @@ test('Console 商品详情深链只呈现当前授权范围的服务端聚合', 
 });
 
 function consoleProductApi(page: Page, products: (call: OperationCall) => unknown): OperationMock {
-  return createConsoleMock(page, consoleSession).get('/api/v1/catalog/listings', products);
+  return createConsoleMock(page, consoleSession).get('/api/v1/catalog/listings', products).get('/api/v1/catalog/products/product%3A1', listingDetail);
 }
 
 function productCalls(api: OperationMock): readonly OperationCall[] {

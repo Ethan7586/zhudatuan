@@ -1,4 +1,5 @@
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 import type { ConsoleScopeKind } from '@shop/authz';
 
@@ -11,6 +12,6 @@ export interface NavigationScope {
   readonly default: boolean;
 }
 export interface NavigationOrganizationPort {
-  read(database: DatabasePool, memberships: readonly string[]): Promise<readonly NavigationScope[]>;
+  read(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly NavigationScope[]>;
 }
 export const NAVIGATION_ORGANIZATION_PORT = publicPort<NavigationOrganizationPort>('organization', 'navigation');

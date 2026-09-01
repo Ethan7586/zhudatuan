@@ -13,6 +13,7 @@ import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 import { navigationPath } from '../../../shared/url/NavigationPath';
 import { RiskWorkspace } from './RiskWorkspace';
 import './Risk.css';
+import './RiskResponsive.css';
 
 const centerRead = createFetchRiskCenterRead(appConfig.apiBaseUrl);
 

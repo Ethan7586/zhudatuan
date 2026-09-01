@@ -1,12 +1,13 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-export type { ProviderPrice } from '../PricingPort';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+export type { ProviderPrice } from './ProviderPrice';
+
 export interface CheckoutPricingPort {
-  offers(database: OperationDatabase, scope: string, skus: readonly string[]): Promise<readonly CheckoutPrice[]>;
-  rules(database: OperationDatabase, scope: string): Promise<readonly CheckoutPriceRule[]>;
-  quote(database: OperationDatabase, quote: string, member: string, mall: string): Promise<StoredPriceQuote>;
+  offers(context: ReadTransactionContext, scope: string, skus: readonly string[]): Promise<readonly CheckoutPrice[]>;
+  rules(context: ReadTransactionContext, scope: string): Promise<readonly CheckoutPriceRule[]>;
+  quote(context: ReadTransactionContext, quote: string, member: string, mall: string): Promise<StoredPriceQuote>;
   saveQuote(
-    database: OperationDatabase,
+    context: ReadTransactionContext,
     input: Readonly<{
       id: string;
       member: string;
@@ -46,20 +47,22 @@ export interface StoredPriceQuote {
   readonly signature: string;
 }
 export interface ChannelPricingPort {
-  ensureProviderBook(database: OperationDatabase, id: string, scope: string, provider: string): Promise<void>;
-  saveProviderPrice(database: OperationDatabase, input: import('../PricingPort').ProviderPrice): Promise<void>;
+  ensureProviderBook(context: WriteTransactionContext, id: string, scope: string, provider: string): Promise<void>;
+  saveProviderPrice(context: WriteTransactionContext, input: import('./ProviderPrice').ProviderPrice): Promise<void>;
 }
 export interface PricingRetentionPort {
-  purgeQuotes(database: OperationDatabase, retained?: readonly string[]): Promise<void>;
+  purgeQuotes(context: WriteTransactionContext, retained?: readonly string[]): Promise<void>;
 }
+export const RUNTIME_PRICING_PORT = publicPort<PricingRetentionPort>('pricing', 'runtime');
+export const PROVIDER_PRICING_PORT = publicPort<ChannelPricingPort>('pricing', 'providersync');
 export interface CartPricingPort {
-  current(database: OperationDatabase, scope: string, sku: string): Promise<Readonly<{ amountMinor: number; currency: string; version: string }> | null>;
-  currentMany(database: OperationDatabase, scope: string, skus: readonly string[]): Promise<ReadonlyMap<string, Readonly<{ amountMinor: number; currency: string; version: string }>>>;
+  current(context: ReadTransactionContext, scope: string, sku: string): Promise<Readonly<{ amountMinor: number; currency: string; version: string }> | null>;
+  currentMany(context: ReadTransactionContext, scope: string, skus: readonly string[]): Promise<ReadonlyMap<string, Readonly<{ amountMinor: number; currency: string; version: string }>>>;
 }
 export interface CatalogPricingPort {
-  prices(database: OperationDatabase, skus: readonly string[], scopes: readonly string[]): Promise<readonly Readonly<Record<string, unknown>>[]>;
+  prices(context: ReadTransactionContext, skus: readonly string[], scopes: readonly string[]): Promise<readonly Readonly<Record<string, unknown>>[]>;
 }
 export const CHECKOUT_PRICING_PORT = publicPort<CheckoutPricingPort>('pricing', 'checkout');
 export const CART_PRICING_PORT = publicPort<CartPricingPort>('pricing', 'cart');
 export const CATALOG_PRICING_PORT = publicPort<CatalogPricingPort>('pricing', 'catalog');
-export { PRICING_READ_PORT, PgPricingReadPort, type PricingReadPort, type StorefrontPrice } from './PricingReadPort';
+export { PRICING_READ_PORT, type PricingReadPort, type StorefrontPrice } from './PricingReadPort';

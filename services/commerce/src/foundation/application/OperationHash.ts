@@ -1,16 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { OperationRequest } from './OperationExecution';
+import { operationFingerprint, type OperationId } from '@shop/contract';
 
-export function operationRequestHash(request: OperationRequest): string {
-  return createHash('sha256')
-    .update(
-      JSON.stringify({
-        type: request.type,
-        path: request.input.path,
-        query: request.input.query,
-        body: request.input.body,
-        expectedVersion: request.input.expectedVersion ?? null,
-      })
-    )
-    .digest('hex');
+export function executionRequestHash(operation: OperationId, input: unknown, expectedVersion?: number): string {
+  return createHash('sha256').update(JSON.stringify(operationFingerprint(operation, input, expectedVersion))).digest('hex');
 }

@@ -7,7 +7,7 @@ import { parse, stringify } from 'yaml';
 import { loadRequirementAuthority } from './Authority';
 import { executionTrace } from './FrontendTrace';
 import { loadRequirementSource } from './RequirementSource';
-import { journeyFor, moduleFor, operationFor, priorityFrom, routeFor, stepupFor, TABLE_BY_MODULE, type OperationDefinition } from './RequirementTrace';
+import { operationForBinding, priorityFrom, stepupFor, type OperationDefinition } from './RequirementTrace';
 import { sharedStrings, worksheet } from './WorkbookReader';
 
 const root = resolve(import.meta.dirname, '../../..');
@@ -50,14 +50,16 @@ for (const sheet of requirementSource.sheets) {
     const title = provider?.label ?? (first || second || third || fourth || sheet.label + '第' + row + '行');
     const description = sheet.prefix === 'INTEG' ? title : [second, third, fourth].filter((value, index, items) => value && value !== title && items.indexOf(value) === index).join('；') || title;
     const text = section + ' ' + title + ' ' + description;
-    const module = moduleFor(sheet.prefix, text);
-    const operation = operationFor(operationDocument.operations, module, text);
+    const requirementId = sheet.prefix + String(ordinal + 1).padStart(3, '0');
+    const binding = requirementSource.bindings[requirementId]!;
+    const module = binding.module;
+    const operation = operationForBinding(operationDocument.operations, requirementId, binding);
     const excluded = sheet.prefix === 'GROUP' && [62, 66, 67].includes(row) && third === '不需要';
-    const uiRoute = routeFor(sheet.prefix, module);
-    const journeyTest = journeyFor(sheet.prefix, module);
+    const uiRoute = binding.route;
+    const journeyTest = binding.journey;
     const frontend = executionTrace({ prefix: sheet.prefix, module, route: uiRoute, operation: operation.id, test: journeyTest });
     requirements.push({
-      id: sheet.prefix + String(ordinal + 1).padStart(3, '0'),
+      id: requirementId,
       version: 1,
       source: { sheet: sheet.name, row, columns: sheet.prefix === 'INTEG' ? ['A', 'B', 'D'] : ['A', 'B', 'C', 'D'] },
       section,
@@ -69,7 +71,7 @@ for (const sheet of requirementSource.sheets) {
       scope: sheet.scope,
       prerequisites: ['authenticated session', 'active membership', 'granted capability', 'authorized scope'],
       inputs: operation.method === 'GET' ? ['scope', 'cursor', 'filters'] : ['scope', 'idempotency key', 'command'],
-      mainFlow: ['client route', operation.id, module + ' application', TABLE_BY_MODULE[module]],
+      mainFlow: ['client route', operation.id, module + ' application', binding.table],
       stateTransitions: operation.method === 'GET' ? ['none-query-only'] : ['validated', 'committed', 'outbox-recorded'],
       exceptionFlow: ['validation rejected', 'authorization denied', 'conflict or retry', 'dependency failure surfaced'],
       permission: operation.permission ?? null,
@@ -79,11 +81,11 @@ for (const sheet of requirementSource.sheets) {
       capability: operation.id,
       api: operation.method + ' ' + operation.path,
       commandOrQuery: operation.method === 'GET' ? 'query' : 'command',
-      tableOrProjection: TABLE_BY_MODULE[module],
+      tableOrProjection: binding.table,
       client: frontend.client,
       feature: frontend.feature,
       uiRoute,
-      tests: ['services/commerce/src/modules/ModuleCatalog.test.ts', 'services/commerce/src/modules/DomainPolicy.test.ts', 'tests/integration/registry.spec.ts', journeyTest],
+      tests: ['services/commerce/src/test/architecture/ModuleCatalog.test.ts', 'services/commerce/src/test/architecture/DomainPolicy.test.ts', 'tests/integration/registry.spec.ts', journeyTest],
       performance: operation.method === 'GET' ? 'p95<=300ms; bounded cursor page' : 'p95<=500ms; idempotent retry',
       externalDependencies: module === 'channel' || module === 'extension' ? ['signed provider contract'] : [],
       owner: module,
@@ -122,7 +124,7 @@ const mvpRequirements = requirementSource.mvp.map((definition) => {
     modules: [...new Set([...definition.modules, ...operations.map(({ owner }) => owner)])].sort(),
     tables: definition.tables,
     moduleSources: [...new Set(operations.map(({ owner }) => 'services/commerce/src/modules/' + owner))].sort(),
-    unitTests: ['services/commerce/src/modules/ModuleCatalog.test.ts', 'services/commerce/src/modules/DomainPolicy.test.ts'],
+    unitTests: ['services/commerce/src/test/architecture/ModuleCatalog.test.ts', 'services/commerce/src/test/architecture/DomainPolicy.test.ts'],
     contractTest: id === 'MVPPROVIDER' ? 'tests/contract/providers.spec.ts' : 'tests/integration/registry.spec.ts',
     journeyTest: definition.journeys[0]!,
     dashboard: 'docs/metrics/catalog.md',

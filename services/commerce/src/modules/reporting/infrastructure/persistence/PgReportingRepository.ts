@@ -1,10 +1,10 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { ReportingPort } from '../../application/port/ReportingPort';
 import type { ExportJob, ExportReport } from '../../domain/model/ExportJob';
 import type { CockpitSummary, Metric, MetricQuery, MetricRow } from '../../domain/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../../domain/model/Projection';
 import { PgReportingExportRepository } from './PgReportingExportRepository';
 import { cockpitSummary, exportJob, exportSelect, integer, metricRow, object, required, text, utcTime, type ExportRecord, type MetricRecord } from './ReportingRecord';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 
 export class PgReportingRepository extends PgReportingExportRepository implements ReportingPort {
   async cockpit(scope: string): Promise<CockpitSummary> {
@@ -47,11 +47,7 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       expires_at "expiresAt",created_at "createdAt",generated_at "generatedAt"`,
       [input.id, input.scope, input.report, JSON.stringify(input.filter), authorization]
     );
-    await this.database.query(
-      `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-      values($1,'export','reporting',$2,jsonb_build_object('export',$3),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
-      [`job:${input.id}`, input.scope, input.id]
-    );
+    await new PgRuntimeWriter(this.database).schedule({ id: `job:${input.id}`, kind: 'export', owner: 'reporting', scope: input.scope, payload: { export: input.id }, priority: 100 });
     return exportJob(required(result.rows[0], 'REPORT_EXPORT_CREATE_FAILED'));
   }
 
@@ -68,23 +64,11 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       values($1,$2,$3,$4::jsonb,$5::jsonb,'queued',null,0,$6) on conflict(id) do nothing`,
       [id, event.scope, report, JSON.stringify(filter), JSON.stringify(authorization), event.occurredAt]
     );
-    await this.database.query(
-      `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-      values($1,'export','reporting',$2,jsonb_build_object('export',$3),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())
-      on conflict(id) do nothing`,
-      [`job:${id}`, event.scope, id]
-    );
+    await new PgRuntimeWriter(this.database).schedule({ id: `job:${id}`, kind: 'export', owner: 'reporting', scope: event.scope, payload: { export: id }, priority: 100 });
   }
 
   async claimEvent(event: string): Promise<ProjectionEvent | null> {
-    const result = await this.database.query<{ id: string; type: string; version: number; aggregate: string; scope: string; payload: Record<string, unknown>; occurredAt: string }>(
-      `select inbox.event_id id,inbox.event_type type,inbox.event_version version,
-      outbox.aggregate_id aggregate,outbox.scope_id scope,inbox.payload,outbox.occurred_at "occurredAt" from runtime.inbox inbox
-      join runtime.outbox outbox on outbox.id=inbox.event_id where inbox.consumer='job:projection' and inbox.event_id=$1
-      and inbox.processed_at is null for update of inbox`,
-      [event]
-    );
-    return result.rows[0] ? Object.freeze(result.rows[0]) : null;
+    return new PgRuntimeWriter(this.database).claim('job:projection', event);
   }
 
   async period(occurredAt: string, timezone: string): Promise<Readonly<{ from: string; to: string }>> {
@@ -189,20 +173,7 @@ export class PgReportingRepository extends PgReportingExportRepository implement
       values($1,$2,$3,$4,$5,$6,clock_timestamp()) on conflict(event_id) do nothing`,
       [event.id, event.type, event.version, event.aggregate, event.scope, event.occurredAt]
     );
-    const completed = await this.database.query(
-      `update runtime.inbox set processed_at=clock_timestamp(),attempts=attempts+1
-      where consumer='job:projection' and event_id=$1 and processed_at is null`,
-      [event.id]
-    );
-    if (completed.rowCount !== 1) throw new Error('REPORT_INBOX_LEASE_LOST');
-    const offset = await this.database.query<{ scope: string; version: number }>(
-      `insert into runtime.projectionoffset(projection,shard,offset_value,watermark,version)
-      select 'commerce',scope,$2,$3,1 from unnest($1::text[]) scope on conflict(projection,shard) do update set offset_value=excluded.offset_value,
-      watermark=greatest(runtime.projectionoffset.watermark,excluded.watermark),version=runtime.projectionoffset.version+1
-      returning shard scope,version`,
-      [[...new Set(scopes)], event.id, event.occurredAt]
-    );
-    if (offset.rows.length === 0) throw new Error('REPORT_PROJECTION_OFFSET_FAILED');
+    const offset = await new PgRuntimeWriter(this.database).completeProjection('job:projection', event, scopes);
     await this.database.query(
       `insert into reporting.watermark(projection,scope_id,event_id,occurred_at,version,advanced_at)
       select 'commerce',scope,$2,$3,1,clock_timestamp() from unnest($1::text[]) scope
@@ -212,6 +183,6 @@ export class PgReportingRepository extends PgReportingExportRepository implement
         advanced_at=clock_timestamp()`,
       [[...new Set(scopes)], event.id, event.occurredAt]
     );
-    return Object.freeze(offset.rows);
+    return offset;
   }
 }

@@ -25,7 +25,7 @@ test('Console 财务工作台只呈现严格合同内的权威对账事实', asy
   await api.install();
   await page.goto(financeUrl);
 
-  await expect(page.getByRole('heading', { level: 1, name: '财务系统' })).toBeFocused();
+  await expect(page.getByRole('heading', { level: 1, name: '财务与对账台' })).toBeFocused();
   await expect(page.getByText('FINANCE CONTROL', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '导出对账单' })).toBeDisabled();
   await expect(page.getByRole('button', { name: '发起对账' })).toBeDisabled();

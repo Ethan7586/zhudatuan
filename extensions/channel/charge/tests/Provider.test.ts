@@ -7,13 +7,13 @@ import { checkChargeHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { ChargeMapper } from '../Mapper';
 import { ChargeWebhook } from '../Webhook';
-import { ChargeOperations } from '../capability';
+import { ChargeCapabilities } from '../capability';
 
 describe('charge provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('charge');
     expect(ChargeProvider.definition.id).toBe('charge');
-    expect(() => assertProviderCapabilities(ChargeProvider.definition, ChargeOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(ChargeProvider.definition, ChargeCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('CHARGE_MANIFEST_SIGNATURE_MISSING');
   });

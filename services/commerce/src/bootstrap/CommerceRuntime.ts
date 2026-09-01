@@ -4,7 +4,7 @@ import { apiReturnTargets, WechatApplicationCatalog, type ApiEnvironment, type J
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
 import { CSRF_PROTECTOR, CsrfProtector } from '../foundation/security/CsrfProtector';
 import { PgSessionResolver } from '../foundation/security/PgSessionResolver';
-import { ReadAuthorizationSnapshot } from '../modules/access/application/query/ReadAuthorizationSnapshot';
+import { ReadAuthorizationSnapshot } from '../modules/access/application/service/ReadAuthorizationSnapshot';
 import { PgAuthorizationRepository } from '../modules/access/infrastructure/persistence/PgAuthorizationRepository';
 import type { PreauthResolver } from '../foundation/security/PreauthResolver';
 import { OPERATION_POLICY, SecureOperationPolicy } from '../foundation/application/OperationPolicy';
@@ -19,12 +19,12 @@ import { MANIFEST_VERIFIER, SignatureVerifier } from './SignatureVerifier';
 import { providerCatalogLoader } from './ProviderLoader';
 import type { Container } from './Container';
 import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
-import { PgSessionSecurity } from '../modules/identity/infrastructure/PgSessionSecurity';
+import { PgSessionSecurity } from '../modules/identity/infrastructure/persistence/PgSessionSecurity';
 import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { PAYMENT_GATEWAY } from '../modules/payment/application/port/PaymentGateway';
 import { WechatGateway } from '../modules/payment/infrastructure/adapter/WechatGateway';
-import { DELIVERY_REGISTRY, DeliveryRegistry } from '../modules/notification/application/DeliveryRegistry';
+import { DELIVERY_REGISTRY, DeliveryRegistry } from '../modules/notification/infrastructure/registry/DeliveryRegistry';
 import { SmsFactory } from '@shop/notificationsms';
 import { InappFactory } from '@shop/notificationinapp';
 import { EmailChannel } from '../modules/notification/infrastructure/adapter/EmailChannel';
@@ -39,7 +39,7 @@ import { CACHE } from '../foundation/cache/Cache';
 import { RedisCache } from '../foundation/cache/RedisCache';
 import { RETURN_TARGETS } from '../modules/identity/infrastructure/security/ReturnTargetCatalog';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
-import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
+import { RecordAudit } from '../modules/audit/application/service/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
 import { AUDIT_PORT } from '../modules/audit/application/port/AuditPort';
 import { EXTENSION_LOADER } from '../modules/extension/application/port/ExtensionLoader';
@@ -53,6 +53,7 @@ import { FederationProtector } from '../modules/identity/domain/service/Federati
 import { PublicActorFingerprint } from '../foundation/security/PublicActorFingerprint';
 import { PUBLIC_ACTOR_FINGERPRINT } from '../foundation/security/PublicActorFingerprintToken';
 import { InvitationHasher } from '../modules/identity/infrastructure/security/InvitationHasher';
+import { PgTransactionManager } from '../adapter/database/PgTransactionManager';
 
 export interface CommerceRuntime {
   readonly pool: DatabasePool;
@@ -117,19 +118,26 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
   const extensions = new ExtensionRegistry(verifier);
   const extensionLoader = workload === 'api' ? providerCatalogLoader() : null;
   const risk = new RiskCheckAdapter(pool);
-  const decisions = new PgDecisionSink(pool, new PgSessionSecurity());
-  const preauth: PreauthResolver =
-    security === null
-      ? {
-          resolve: async () => {
-            throw new Error('PREAUTH_SECURITY_UNAVAILABLE');
-          },
-        }
-      : new PgPreauthResolver(pool, new FederationProtector(security.session));
+  const transactions = new PgTransactionManager(pool);
+  const decisions = workload === 'api' ? new PgDecisionSink(transactions, new PgSessionSecurity()) : null;
+  const preauth: PreauthResolver | null =
+    workload !== 'api'
+      ? null
+      : security === null
+        ? {
+            resolve: async () => {
+              throw new Error('PREAUTH_SECURITY_UNAVAILABLE');
+            },
+          }
+        : new PgPreauthResolver(pool, new FederationProtector(security.session));
   const invitationKeyVersions = security === null ? Object.freeze([]) : new InvitationHasher(security.invitation).versions();
   const auditRepository = new PgAuditRepository();
   const audit = new RecordAudit(auditRepository);
-  const access = new AccessPipeline(new PgSessionResolver(pool), new ReadAuthorizationSnapshot(new PgAuthorizationRepository(), pool, telemetry), new SystemClock(), risk, decisions);
+  const queryPool = apiQueryPool(pool, workload);
+  const access =
+    queryPool !== null && decisions !== null && preauth !== null
+      ? new AccessPipeline(new PgSessionResolver(pool), new ReadAuthorizationSnapshot(new PgAuthorizationRepository(), new PgTransactionManager(queryPool), telemetry), new SystemClock(), risk, decisions)
+      : null;
   return {
     pool,
     cache,
@@ -137,7 +145,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     telemetry,
     invitationKeyVersions,
     configure(container) {
-      container.bind(OPERATION_POLICY, new SecureOperationPolicy(access, preauth, risk, decisions));
+      if (access !== null && preauth !== null && decisions !== null) container.bind(OPERATION_POLICY, new SecureOperationPolicy(access, preauth, risk, decisions));
       container.bind(DATABASE_POOL, pool);
       container.bind(QUERY_METRICS, queryMetrics);
       container.bind(TELEMETRY, telemetry);
@@ -172,6 +180,10 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
       await pool.end();
     },
   };
+}
+
+export function apiQueryPool(pool: DatabasePool, workload: 'api' | 'jobs'): DatabasePool | null {
+  return workload === 'api' ? pool.workload('query') : null;
 }
 
 function required(value: string | undefined, code: string): string {

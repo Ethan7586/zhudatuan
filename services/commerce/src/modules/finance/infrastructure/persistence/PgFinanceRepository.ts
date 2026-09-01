@@ -1,28 +1,24 @@
+import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { FinanceRepository } from '../../application/port/FinanceRepository';
+
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+
+export type FinanceRepositoryFactory = (database: SqlExecutor) => PgFinanceRepository;
 
 /** Finance-owned persistence primitives shared by commands; callers retain the surrounding unit of work. */
-export class PgFinanceRepository implements FinanceRepository {
-  constructor(private readonly database: OperationDatabase) {}
+export class PgFinanceRepository {
+  constructor(private readonly database: SqlExecutor) {}
 
   async enqueue(kind: 'reconciliation' | 'settlement' | 'invoice', scope: string, payload: unknown, id: string, replay = false, priority = 20): Promise<void> {
-    await this.database.query(
-      `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-      values($1,$2,'finance',$3,$4::jsonb,'queued',$5,clock_timestamp(),clock_timestamp(),clock_timestamp()) on conflict(id) do update
-      set state='queued',attempts=0,last_error=null,available_at=clock_timestamp(),updated_at=clock_timestamp()
-      where $6::boolean and runtime.job.state='failed'`,
-      [id, kind, scope, JSON.stringify(payload), priority, replay]
-    );
+    const job = { id, kind, owner: 'finance', scope, payload: record(payload), priority } as const;
+    const runtime = new PgRuntimeWriter(this.database);
+    if (replay) await runtime.retryFailed(job);
+    else await runtime.schedule(job);
   }
 
   async event(type: string, aggregateType: string, aggregate: string, scope: string, payload: unknown, stableId?: string): Promise<void> {
     const id = stableId ?? `event:${randomUUID()}`;
-    await this.database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) values($1,$2,1,$3,$4,$5,$6::jsonb,$1,clock_timestamp(),clock_timestamp()) on conflict(id) do nothing`,
-      [id, type, aggregateType, aggregate, scope, JSON.stringify(payload)]
-    );
+    await new PgRuntimeWriter(this.database).append({ id, type, aggregateType, aggregate, scope, payload: record(payload), trace: id });
   }
 
   managePolicy(input: Readonly<{ id: string; scopeId: string; kind: string; rule: Readonly<Record<string, unknown>>; expectedVersion: number | null }>) {
@@ -86,4 +82,9 @@ export class PgFinanceRepository implements FinanceRepository {
       ]
     );
   }
+}
+
+function record(value: unknown): Readonly<Record<string, unknown>> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('FINANCE_RUNTIME_PAYLOAD_INVALID');
+  return value as Readonly<Record<string, unknown>>;
 }

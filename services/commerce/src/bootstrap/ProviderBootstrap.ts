@@ -4,9 +4,11 @@ import type { DatabasePool } from '../foundation/persistence/Pool';
 import { Container } from './Container';
 import type { ExtensionRegistry } from './ExtensionRegistry';
 import { JobRegistry } from './JobRegistry';
-import { registerProviders } from '../app/providers';
+import { HandlerRegistry } from '../foundation/application/HandlerRegistry';
+import { ModuleRegistry, type CommerceModule } from './ModuleRegistry';
 
 export interface ProviderBootstrapOptions {
+  readonly modules: readonly CommerceModule[];
   readonly extensions: ExtensionRegistry;
   readonly worker: string;
   readonly configure?: (container: Container) => void | Promise<void>;
@@ -16,7 +18,9 @@ export async function bootstrapProvider(options: ProviderBootstrapOptions): Prom
   const container = new Container();
   await options.configure?.(container);
   const jobs = new JobRegistry();
-  registerProviders(jobs, container, options.extensions, options.worker);
+  const modules = new ModuleRegistry();
+  for (const module of options.modules) modules.add(module);
+  await modules.load({ workload: 'provider', container, handlers: new HandlerRegistry(), jobs, worker: options.worker });
   jobs.freeze();
   options.extensions.freeze();
   container.freeze();

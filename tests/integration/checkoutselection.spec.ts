@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { checkoutSelection } from '../../services/commerce/src/modules/checkout/domain/model/CheckoutSelection';
-import { PgCheckoutRepository } from '../../services/commerce/src/modules/checkout/infrastructure/persistence/PgCheckoutRepository';
+import { PgCheckoutSessionStore } from '../../services/commerce/src/modules/checkout/infrastructure/persistence/PgCheckoutSessionStore';
 import { CHECKOUT_LOCK_ORDER, LockOrderGuard } from '../../services/commerce/src/modules/checkout/domain/policy/LockOrderGuard';
+import { withWriteTransaction } from '../../services/commerce/src/test/TransactionFixture';
 
 test('checkout quote binds only explicit selected lines and canonicalizes resource locks', () => {
   const selection = checkoutSelection({
@@ -37,8 +38,8 @@ test('concurrent confirmation of one quote succeeds once', async () => {
       return { rows: [{ id: 'checkout:one' }], rowCount: 1 };
     },
   };
-  const repository = new PgCheckoutRepository();
-  const outcomes = await Promise.allSettled([repository.confirm(database as never, 'checkout:one'), repository.confirm(database as never, 'checkout:one')]);
+  const repository = new PgCheckoutSessionStore();
+  const outcomes = await Promise.allSettled([withWriteTransaction(database.query, (context) => repository.confirm(context, 'checkout:one')), withWriteTransaction(database.query, (context) => repository.confirm(context, 'checkout:one'))]);
   assert.equal(outcomes.filter(({ status }) => status === 'fulfilled').length, 1);
   assert.equal(outcomes.filter(({ status }) => status === 'rejected').length, 1);
 });

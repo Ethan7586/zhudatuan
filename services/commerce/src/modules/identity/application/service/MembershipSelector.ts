@@ -1,5 +1,7 @@
+import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { FederationProtector } from '../../domain/service/FederationProtector';
 import type { MembershipSelectionPort, MembershipCandidate } from '../port/MembershipSelectionPort';
@@ -21,11 +23,11 @@ export class MembershipSelector {
     private readonly cookies: SessionCookiePort
   ) {}
   async begin(
-    database: OperationDatabase,
+    database: ReadTransactionContext,
     input: Readonly<{ principal: string; target: 'console' | 'storefront'; memberships: readonly MembershipCandidate[]; assurance: number; authorization: AuthTransaction }>,
     context: Readonly<{ peer: string; agent: string; device: string }>
   ) {
-    const selection = await this.repository.create(database, {
+    const selection = await this.repository.create(requireWriteTransaction(database), {
       principal: input.principal,
       target: input.target,
       memberships: input.memberships,
@@ -36,16 +38,16 @@ export class MembershipSelector {
     });
     return Object.freeze({ id: selection.id, headers: Object.freeze({ 'set-cookie': this.cookies.preauth(selection.token) }) });
   }
-  read(database: OperationDatabase, id: string) {
+  read(database: ReadTransactionContext, id: string) {
     return this.repository.read(database, id);
   }
-  async select(database: OperationDatabase, id: string, membership: string, context: Readonly<{ peer: string; agent: string; device: string; trace: string }>) {
+  async select(database: ReadTransactionContext, id: string, membership: string, context: Readonly<{ peer: string; agent: string; device: string; trace: string }>) {
     const browser = this.protector.browser(context.peer, context.agent, context.device);
-    const selected = await this.repository.consume(database, id, browser, this.protector.device(context.device), membership);
+    const selected = await this.repository.consume(requireWriteTransaction(database), id, browser, this.protector.device(context.device), membership);
     const member = await this.members.memberForPrincipal(database, selected.principal);
     const active = await this.access.memberships(database, member, selected.target);
     if (!active.some((candidate) => candidate.id === membership)) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
-    const issued = await this.sessions.issue(database, {
+    const issued = await this.sessions.issue(requireWriteTransaction(database), {
       principal: selected.principal,
       membership,
       assurance: selected.assurance,
@@ -55,7 +57,7 @@ export class MembershipSelector {
       agent: context.agent,
       trace: context.trace,
     });
-    if (selected.transaction !== null) await this.federations.complete(database, selected.transaction, await this.federations.version(database, selected.transaction));
+    if (selected.transaction !== null) await this.federations.complete(requireWriteTransaction(database), selected.transaction, await this.federations.version(database, selected.transaction));
     return Object.freeze({ headers: issued.headers, destination: this.returns.issue(selected.target).url });
   }
 }

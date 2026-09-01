@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 import type { AuthTicketBinding } from './AuthTicketPort';
 
 export interface MembershipCandidate {
@@ -18,13 +19,13 @@ export interface MembershipSelectionValue {
 
 export interface MembershipSelectionPort {
   create(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     input: Omit<MembershipSelectionValue, 'id' | 'expiresAt' | 'transaction'> &
       Readonly<{
         browser: Buffer;
         device: Buffer;
       }>
   ): Promise<Readonly<{ id: string; token: string }>>;
-  read(database: OperationDatabase, id: string): Promise<MembershipSelectionValue>;
-  consume(database: OperationDatabase, id: string, browser: Buffer, device: Buffer, membership: string): Promise<MembershipSelectionValue>;
+  read(context: ReadTransactionContext, id: string): Promise<MembershipSelectionValue>;
+  consume(context: WriteTransactionContext, id: string, browser: Buffer, device: Buffer, membership: string): Promise<MembershipSelectionValue>;
 }

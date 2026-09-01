@@ -1,16 +1,16 @@
 import type { ManifestVerifier } from '../../../bootstrap/SignatureVerifier';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { InstallExtension } from '../application/command/InstallExtension';
-import type { EnableExtension } from '../application/command/EnableExtension';
-import type { DisableExtension } from '../application/command/DisableExtension';
-import type { ExtensionLoader, ExtensionRepositoryFactory } from '../application/port/ExtensionLoader';
+import type { InstallExtension } from '../application/service/InstallExtension';
+import type { EnableExtension } from '../application/service/EnableExtension';
+import type { DisableExtension } from '../application/service/DisableExtension';
+import type { ExtensionLoader, ExtensionRepository } from '../application/port/ExtensionLoader';
 
 export type InstallExtensionPort = Pick<InstallExtension, 'execute' | 'reconfigure'>;
 export type EnableExtensionPort = Pick<EnableExtension, 'test' | 'enable'>;
 export type DisableExtensionPort = Pick<DisableExtension, 'execute'>;
 
 export interface ChannelExtensionPort {
-  readonly repositories: ExtensionRepositoryFactory;
+  readonly repository: ExtensionRepository;
   install(verifier: ManifestVerifier, loader: ExtensionLoader): InstallExtensionPort;
   enable(): EnableExtensionPort;
   disable(): DisableExtensionPort;

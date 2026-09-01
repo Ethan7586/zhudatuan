@@ -16,7 +16,7 @@ objects:
     owner: access
     source: database/migrations/20260830128000_complete_authorization_snapshot.sql
     callers:
-      - services/commerce/src/foundation/security/MakerCheckerPolicy.ts
+      - services/commerce/src/modules/access/infrastructure/persistence/PgMakerCheckerGuard.ts
   - id: access.effective_permissions
     kind: function
     owner: access
@@ -113,6 +113,11 @@ objects:
     owner: access
     source: database/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: access
+  - id: access.role_scope
+    kind: function
+    owner: access
+    source: database/migrations/20260901012000_resolve_access_role_scope.sql
+    operationalOwner: access
   - id: access.scope_allowed
     kind: function
     owner: access
@@ -198,7 +203,7 @@ objects:
     owner: capability
     source: database/migrations/20260829115000_add_navigation_read_functions.sql
     callers:
-      - services/commerce/src/modules/capability/infrastructure/PgNavigationCapability.ts
+      - services/commerce/src/modules/capability/infrastructure/persistence/PgNavigationCapability.ts
   - id: channel.accept_webhook
     kind: function
     owner: channel
@@ -214,49 +219,49 @@ objects:
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.cancel_supplier_order
     kind: function
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.pull_supplier_catalog
     kind: function
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.pull_supplier_stock
     kind: function
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.pull_supplier_tracking
     kind: function
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.submit_supplier_order
     kind: function
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.submit_supplier_refund
     kind: function
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.supplier_enabled
     kind: function
     owner: channel
     source: database/migrations/20260830150000_hardcut_provider_ids.sql
     callers:
-      - services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts
+      - services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts
   - id: channel.webhook_context
     kind: function
     owner: channel
@@ -272,7 +277,7 @@ objects:
     owner: experience
     source: database/migrations/20260831031000_resolve_storefront_tenant_boundary.sql
     callers:
-      - services/commerce/src/modules/experience/public/ExperienceReadPort.ts
+      - services/commerce/src/modules/experience/infrastructure/persistence/PgExperienceReadPort.ts
   - id: extension.enabled_installations
     kind: function
     owner: extension
@@ -365,7 +370,7 @@ objects:
     owner: identity
     source: database/migrations/20260829115000_add_navigation_read_functions.sql
     callers:
-      - services/commerce/src/modules/identity/infrastructure/PgNavigationIdentity.ts
+      - services/commerce/src/modules/identity/infrastructure/persistence/PgNavigationIdentity.ts
   - id: identity.notification_recipient
     kind: function
     owner: identity
@@ -421,30 +426,36 @@ objects:
       - services/commerce/src/modules/notification/infrastructure/persistence/PgNotificationRepository.ts
   - id: ordering.assert_aftersale_line_quantity
     kind: function
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: ordering.enforce_aftersale_line_quantity
     kind: function
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
-    operationalOwner: ordering
+    operationalOwner: order
+  - id: ordering.payment_webhook_scope
+    kind: function
+    owner: order
+    source: database/migrations/20260901011000_resolve_payment_webhook_scope.sql
+    callers:
+      - services/commerce/src/modules/order/infrastructure/persistence/PgPaymentWebhookScopeReader.ts
   - id: ordering.protect_order_snapshot
     kind: function
-    owner: ordering
+    owner: order
     source: database/migrations/20260829109000_runtime_role_hardcut.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: ordering.reject_receipt_mutation
     kind: function
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: organization.navigation_scopes
     kind: function
     owner: organization
     source: database/migrations/20260829115000_add_navigation_read_functions.sql
     callers:
-      - services/commerce/src/modules/organization/infrastructure/PgNavigationOrganization.ts
+      - services/commerce/src/modules/organization/infrastructure/persistence/PgNavigationOrganization.ts
   - id: organization.receive_directory_event
     kind: function
     owner: organization
@@ -517,7 +528,7 @@ objects:
     owner: runtime
     source: database/migrations/20260831016000_isolate_provider_workload.sql
     callers:
-      - services/commerce/src/foundation/application/JobRunner.ts
+      - services/commerce/src/adapter/database/PgJobRepository.ts
   - id: runtime.complete_outbox_envelope
     kind: function
     owner: runtime
@@ -876,6 +887,14 @@ objects:
     objectType: function
     target: notification.visible_notifications(text,boolean)
     privilege: execute
+  - id: shopapp:function:ordering.payment_webhook_scope(text):execute
+    kind: grant
+    owner: order
+    source: database/migrations/20260901011000_resolve_payment_webhook_scope.sql
+    role: shopapp
+    objectType: function
+    target: ordering.payment_webhook_scope(text)
+    privilege: execute
   - id: shopapp:function:organization.navigation_scopes(text[]):execute
     kind: grant
     owner: organization
@@ -1038,7 +1057,7 @@ objects:
     privilege: usage
   - id: shopapp:schema:invoice:usage
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: schema
@@ -1070,7 +1089,7 @@ objects:
     privilege: usage
   - id: shopapp:schema:ordering:usage
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: schema
@@ -3003,38 +3022,6 @@ objects:
     role: shopapp
     objectType: table
     target: channel.webhookinbox
-    privilege: update
-  - id: shopapp:table:checkout.address:delete
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: checkout.address
-    privilege: delete
-  - id: shopapp:table:checkout.address:insert
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: checkout.address
-    privilege: insert
-  - id: shopapp:table:checkout.address:select
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: checkout.address
-    privilege: select
-  - id: shopapp:table:checkout.address:update
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopapp
-    objectType: table
-    target: checkout.address
     privilege: update
   - id: shopapp:table:checkout.evidence:delete
     kind: grant
@@ -5110,7 +5097,7 @@ objects:
     privilege: update
   - id: shopapp:table:invoice.document:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5118,7 +5105,7 @@ objects:
     privilege: delete
   - id: shopapp:table:invoice.document:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5126,7 +5113,7 @@ objects:
     privilege: insert
   - id: shopapp:table:invoice.document:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5134,7 +5121,7 @@ objects:
     privilege: select
   - id: shopapp:table:invoice.document:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5142,7 +5129,7 @@ objects:
     privilege: update
   - id: shopapp:table:invoice.line:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5150,7 +5137,7 @@ objects:
     privilege: delete
   - id: shopapp:table:invoice.line:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5158,7 +5145,7 @@ objects:
     privilege: insert
   - id: shopapp:table:invoice.line:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5166,7 +5153,7 @@ objects:
     privilege: select
   - id: shopapp:table:invoice.line:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5174,7 +5161,7 @@ objects:
     privilege: update
   - id: shopapp:table:invoice.profile:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5182,7 +5169,7 @@ objects:
     privilege: delete
   - id: shopapp:table:invoice.profile:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5190,7 +5177,7 @@ objects:
     privilege: insert
   - id: shopapp:table:invoice.profile:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5198,7 +5185,7 @@ objects:
     privilege: select
   - id: shopapp:table:invoice.profile:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5206,7 +5193,7 @@ objects:
     privilege: update
   - id: shopapp:table:invoice.request:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5214,7 +5201,7 @@ objects:
     privilege: delete
   - id: shopapp:table:invoice.request:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5222,7 +5209,7 @@ objects:
     privilege: insert
   - id: shopapp:table:invoice.request:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5230,7 +5217,7 @@ objects:
     privilege: select
   - id: shopapp:table:invoice.request:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5238,7 +5225,7 @@ objects:
     privilege: update
   - id: shopapp:table:invoice.requestline:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5246,7 +5233,7 @@ objects:
     privilege: delete
   - id: shopapp:table:invoice.requestline:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5254,7 +5241,7 @@ objects:
     privilege: insert
   - id: shopapp:table:invoice.requestline:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5262,7 +5249,7 @@ objects:
     privilege: select
   - id: shopapp:table:invoice.requestline:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5270,7 +5257,7 @@ objects:
     privilege: update
   - id: shopapp:table:invoice.requestprofile:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5278,7 +5265,7 @@ objects:
     privilege: delete
   - id: shopapp:table:invoice.requestprofile:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5286,7 +5273,7 @@ objects:
     privilege: insert
   - id: shopapp:table:invoice.requestprofile:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5294,7 +5281,7 @@ objects:
     privilege: select
   - id: shopapp:table:invoice.requestprofile:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5302,7 +5289,7 @@ objects:
     privilege: update
   - id: shopapp:table:invoice.statusevent:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5310,7 +5297,7 @@ objects:
     privilege: delete
   - id: shopapp:table:invoice.statusevent:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5318,7 +5305,7 @@ objects:
     privilege: insert
   - id: shopapp:table:invoice.statusevent:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5326,7 +5313,7 @@ objects:
     privilege: select
   - id: shopapp:table:invoice.statusevent:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5395,6 +5382,38 @@ objects:
     role: shopapp
     objectType: table
     target: marketing.redemption
+    privilege: update
+  - id: shopapp:table:member.address:delete
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: member.address
+    privilege: delete
+  - id: shopapp:table:member.address:insert
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: member.address
+    privilege: insert
+  - id: shopapp:table:member.address:select
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: member.address
+    privilege: select
+  - id: shopapp:table:member.address:update
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopapp
+    objectType: table
+    target: member.address
     privilege: update
   - id: shopapp:table:member.favorite:delete
     kind: grant
@@ -5766,7 +5785,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.aftersale:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5774,7 +5793,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.aftersale:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5782,7 +5801,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.aftersale:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5790,7 +5809,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.aftersale:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5798,7 +5817,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.aftersaleattachment:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5806,7 +5825,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.aftersaleattachment:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5814,7 +5833,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.aftersaleattachment:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5822,7 +5841,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.aftersaleattachment:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5830,7 +5849,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.aftersaleline:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5838,7 +5857,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.aftersaleline:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5846,7 +5865,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.aftersaleline:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5854,7 +5873,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.aftersaleline:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5862,7 +5881,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.aftersaletimeline:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5870,7 +5889,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.aftersaletimeline:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5878,7 +5897,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.aftersaletimeline:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5886,7 +5905,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.aftersaletimeline:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopapp
     objectType: table
@@ -5894,7 +5913,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.line:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5902,7 +5921,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.line:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5910,7 +5929,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.line:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5918,7 +5937,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.line:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5926,7 +5945,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.orderrecord:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5934,7 +5953,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.orderrecord:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5942,7 +5961,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.orderrecord:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5950,7 +5969,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.orderrecord:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -5958,7 +5977,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.receipt:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
     role: shopapp
     objectType: table
@@ -5966,7 +5985,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.receipt:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
     role: shopapp
     objectType: table
@@ -5974,7 +5993,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.reminder:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopapp
     objectType: table
@@ -5982,7 +6001,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.reminder:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopapp
     objectType: table
@@ -5990,7 +6009,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.reminder:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopapp
     objectType: table
@@ -5998,7 +6017,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.reminder:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopapp
     objectType: table
@@ -6006,7 +6025,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.reviewaction:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6014,7 +6033,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.reviewaction:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6022,7 +6041,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.reviewaction:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6030,7 +6049,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.reviewaction:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6038,7 +6057,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.stateevent:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6046,7 +6065,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.stateevent:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6054,7 +6073,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.stateevent:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6062,7 +6081,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.stateevent:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6070,7 +6089,7 @@ objects:
     privilege: update
   - id: shopapp:table:ordering.suborder:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6078,7 +6097,7 @@ objects:
     privilege: delete
   - id: shopapp:table:ordering.suborder:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6086,7 +6105,7 @@ objects:
     privilege: insert
   - id: shopapp:table:ordering.suborder:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -6094,7 +6113,7 @@ objects:
     privilege: select
   - id: shopapp:table:ordering.suborder:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopapp
     objectType: table
@@ -9958,7 +9977,7 @@ objects:
     privilege: usage
   - id: shopjob:schema:invoice:usage
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: schema
@@ -9990,7 +10009,7 @@ objects:
     privilege: usage
   - id: shopjob:schema:ordering:usage
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: schema
@@ -11979,38 +11998,6 @@ objects:
     role: shopjob
     objectType: table
     target: channel.webhookinbox
-    privilege: update
-  - id: shopjob:table:checkout.address:delete
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: checkout.address
-    privilege: delete
-  - id: shopjob:table:checkout.address:insert
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: checkout.address
-    privilege: insert
-  - id: shopjob:table:checkout.address:select
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: checkout.address
-    privilege: select
-  - id: shopjob:table:checkout.address:update
-    kind: grant
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-    role: shopjob
-    objectType: table
-    target: checkout.address
     privilege: update
   - id: shopjob:table:checkout.evidence:delete
     kind: grant
@@ -14070,7 +14057,7 @@ objects:
     privilege: update
   - id: shopjob:table:invoice.document:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14078,7 +14065,7 @@ objects:
     privilege: delete
   - id: shopjob:table:invoice.document:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14086,7 +14073,7 @@ objects:
     privilege: insert
   - id: shopjob:table:invoice.document:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14094,7 +14081,7 @@ objects:
     privilege: select
   - id: shopjob:table:invoice.document:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14102,7 +14089,7 @@ objects:
     privilege: update
   - id: shopjob:table:invoice.line:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14110,7 +14097,7 @@ objects:
     privilege: delete
   - id: shopjob:table:invoice.line:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14118,7 +14105,7 @@ objects:
     privilege: insert
   - id: shopjob:table:invoice.line:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14126,7 +14113,7 @@ objects:
     privilege: select
   - id: shopjob:table:invoice.line:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14134,7 +14121,7 @@ objects:
     privilege: update
   - id: shopjob:table:invoice.profile:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14142,7 +14129,7 @@ objects:
     privilege: delete
   - id: shopjob:table:invoice.profile:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14150,7 +14137,7 @@ objects:
     privilege: insert
   - id: shopjob:table:invoice.profile:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14158,7 +14145,7 @@ objects:
     privilege: select
   - id: shopjob:table:invoice.profile:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14166,7 +14153,7 @@ objects:
     privilege: update
   - id: shopjob:table:invoice.request:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14174,7 +14161,7 @@ objects:
     privilege: delete
   - id: shopjob:table:invoice.request:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14182,7 +14169,7 @@ objects:
     privilege: insert
   - id: shopjob:table:invoice.request:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14190,7 +14177,7 @@ objects:
     privilege: select
   - id: shopjob:table:invoice.request:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14198,7 +14185,7 @@ objects:
     privilege: update
   - id: shopjob:table:invoice.requestline:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14206,7 +14193,7 @@ objects:
     privilege: delete
   - id: shopjob:table:invoice.requestline:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14214,7 +14201,7 @@ objects:
     privilege: insert
   - id: shopjob:table:invoice.requestline:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14222,7 +14209,7 @@ objects:
     privilege: select
   - id: shopjob:table:invoice.requestline:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14230,7 +14217,7 @@ objects:
     privilege: update
   - id: shopjob:table:invoice.requestprofile:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14238,7 +14225,7 @@ objects:
     privilege: delete
   - id: shopjob:table:invoice.requestprofile:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14246,7 +14233,7 @@ objects:
     privilege: insert
   - id: shopjob:table:invoice.requestprofile:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14254,7 +14241,7 @@ objects:
     privilege: select
   - id: shopjob:table:invoice.requestprofile:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14262,7 +14249,7 @@ objects:
     privilege: update
   - id: shopjob:table:invoice.statusevent:delete
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14270,7 +14257,7 @@ objects:
     privilege: delete
   - id: shopjob:table:invoice.statusevent:insert
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14278,7 +14265,7 @@ objects:
     privilege: insert
   - id: shopjob:table:invoice.statusevent:select
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14286,7 +14273,7 @@ objects:
     privilege: select
   - id: shopjob:table:invoice.statusevent:update
     kind: grant
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14355,6 +14342,38 @@ objects:
     role: shopjob
     objectType: table
     target: marketing.redemption
+    privilege: update
+  - id: shopjob:table:member.address:delete
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.address
+    privilege: delete
+  - id: shopjob:table:member.address:insert
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.address
+    privilege: insert
+  - id: shopjob:table:member.address:select
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.address
+    privilege: select
+  - id: shopjob:table:member.address:update
+    kind: grant
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+    role: shopjob
+    objectType: table
+    target: member.address
     privilege: update
   - id: shopjob:table:member.favorite:delete
     kind: grant
@@ -14758,7 +14777,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.aftersale:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14766,7 +14785,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.aftersale:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14774,7 +14793,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.aftersale:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14782,7 +14801,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.aftersale:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14790,7 +14809,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.aftersaleattachment:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14798,7 +14817,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.aftersaleattachment:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14806,7 +14825,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.aftersaleattachment:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14814,7 +14833,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.aftersaleattachment:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14822,7 +14841,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.aftersaleline:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14830,7 +14849,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.aftersaleline:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14838,7 +14857,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.aftersaleline:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14846,7 +14865,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.aftersaleline:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14854,7 +14873,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.aftersaletimeline:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14862,7 +14881,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.aftersaletimeline:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14870,7 +14889,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.aftersaletimeline:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14878,7 +14897,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.aftersaletimeline:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     role: shopjob
     objectType: table
@@ -14886,7 +14905,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.line:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14894,7 +14913,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.line:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14902,7 +14921,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.line:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14910,7 +14929,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.line:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14918,7 +14937,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.orderrecord:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14926,7 +14945,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.orderrecord:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14934,7 +14953,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.orderrecord:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14942,7 +14961,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.orderrecord:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -14950,7 +14969,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.receipt:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
     role: shopjob
     objectType: table
@@ -14958,7 +14977,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.receipt:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
     role: shopjob
     objectType: table
@@ -14966,7 +14985,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.reminder:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopjob
     objectType: table
@@ -14974,7 +14993,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.reminder:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopjob
     objectType: table
@@ -14982,7 +15001,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.reminder:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopjob
     objectType: table
@@ -14990,7 +15009,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.reminder:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     role: shopjob
     objectType: table
@@ -14998,7 +15017,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.reviewaction:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15006,7 +15025,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.reviewaction:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15014,7 +15033,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.reviewaction:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15022,7 +15041,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.reviewaction:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15030,7 +15049,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.stateevent:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15038,7 +15057,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.stateevent:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15046,7 +15065,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.stateevent:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15054,7 +15073,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.stateevent:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15062,7 +15081,7 @@ objects:
     privilege: update
   - id: shopjob:table:ordering.suborder:delete
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15070,7 +15089,7 @@ objects:
     privilege: delete
   - id: shopjob:table:ordering.suborder:insert
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15078,7 +15097,7 @@ objects:
     privilege: insert
   - id: shopjob:table:ordering.suborder:select
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -15086,7 +15105,7 @@ objects:
     privilege: select
   - id: shopjob:table:ordering.suborder:update
     kind: grant
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
     role: shopjob
     objectType: table
@@ -19440,14 +19459,6 @@ objects:
     kind: policy
     owner: channel
     source: database/migrations/20260831016000_isolate_provider_workload.sql
-  - id: checkout.address.appscope
-    kind: policy
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: checkout.address.jobscope
-    kind: policy
-    owner: checkout
-    source: database/migrations/20260821030000_revoke_public_access.sql
   - id: checkout.evidence.appscope
     kind: policy
     owner: checkout
@@ -20246,59 +20257,59 @@ objects:
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: invoice.document.appscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260831017000_publish_storefront_contract.sql
   - id: invoice.document.jobscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.line.appscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260831017000_publish_storefront_contract.sql
   - id: invoice.line.jobscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.profile.appscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260831017000_publish_storefront_contract.sql
   - id: invoice.profile.jobscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.request.appscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260831017000_publish_storefront_contract.sql
   - id: invoice.request.jobscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.requestline.appscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260831017000_publish_storefront_contract.sql
   - id: invoice.requestline.jobscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
   - id: invoice.requestprofile.appscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260831017000_publish_storefront_contract.sql
   - id: invoice.requestprofile.jobscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
   - id: invoice.statusevent.appscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: invoice.statusevent.jobscope
     kind: policy
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: marketing.campaign.appscope
     kind: policy
@@ -20315,6 +20326,14 @@ objects:
   - id: marketing.redemption.jobscope
     kind: policy
     owner: marketing
+    source: database/migrations/20260821030000_revoke_public_access.sql
+  - id: member.address.appscope
+    kind: policy
+    owner: member
+    source: database/migrations/20260821030000_revoke_public_access.sql
+  - id: member.address.jobscope
+    kind: policy
+    owner: member
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: member.favorite.appscope
     kind: policy
@@ -20418,135 +20437,135 @@ objects:
     source: database/migrations/20260821047000_notification_lifecycle.sql
   - id: ordering.aftersale.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.aftersale.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.aftersale.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.aftersaleattachment.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
   - id: ordering.aftersaleattachment.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
   - id: ordering.aftersaleattachment.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.aftersaleline.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
   - id: ordering.aftersaleline.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
   - id: ordering.aftersaleline.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.aftersaletimeline.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
   - id: ordering.aftersaletimeline.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
   - id: ordering.aftersaletimeline.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.line.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.line.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.line.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.orderrecord.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.orderrecord.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.orderrecord.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.receipt.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
   - id: ordering.receipt.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
   - id: ordering.receipt.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.reminder.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
   - id: ordering.reminder.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
   - id: ordering.reminder.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.reviewaction.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.reviewaction.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.reviewaction.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.stateevent.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.stateevent.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.stateevent.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: ordering.suborder.appscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.suborder.jobscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260821030000_revoke_public_access.sql
   - id: ordering.suborder.providerscope
     kind: policy
-    owner: ordering
+    owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
   - id: organization.assignment.appscope
     kind: policy
@@ -21754,7 +21773,7 @@ objects:
     source: database/migrations/20260821011000_create_domain_schemas.sql
   - id: invoice
     kind: schema
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821011000_create_domain_schemas.sql
   - id: marketing
     kind: schema
@@ -21770,7 +21789,7 @@ objects:
     source: database/migrations/20260821011000_create_domain_schemas.sql
   - id: ordering
     kind: schema
-    owner: ordering
+    owner: order
     source: database/migrations/20260821011000_create_domain_schemas.sql
   - id: organization
     kind: schema
@@ -22119,11 +22138,6 @@ objects:
     kind: table
     owner: channel
     source: database/migrations/20260821044000_channel_lifecycle.sql
-    rls: true
-  - id: checkout.address
-    kind: table
-    owner: checkout
-    source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
   - id: checkout.evidence
     kind: table
@@ -22492,37 +22506,37 @@ objects:
     rls: true
   - id: invoice.document
     kind: table
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821022000_create_finance_channel.sql
     rls: true
   - id: invoice.line
     kind: table
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821022000_create_finance_channel.sql
     rls: true
   - id: invoice.profile
     kind: table
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821022000_create_finance_channel.sql
     rls: true
   - id: invoice.request
     kind: table
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821022000_create_finance_channel.sql
     rls: true
   - id: invoice.requestline
     kind: table
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     rls: true
   - id: invoice.requestprofile
     kind: table
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
     rls: true
   - id: invoice.statusevent
     kind: table
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821022000_create_finance_channel.sql
     rls: true
   - id: marketing.campaign
@@ -22534,6 +22548,11 @@ objects:
     kind: table
     owner: marketing
     source: database/migrations/20260821018000_create_inventory_experience.sql
+    rls: true
+  - id: member.address
+    kind: table
+    owner: member
+    source: database/migrations/20260901010000_move_address_to_member.sql
     rls: true
   - id: member.favorite
     kind: table
@@ -22602,57 +22621,57 @@ objects:
     rls: true
   - id: ordering.aftersale
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
   - id: ordering.aftersaleattachment
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     rls: true
   - id: ordering.aftersaleline
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     rls: true
   - id: ordering.aftersaletimeline
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     rls: true
   - id: ordering.line
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
   - id: ordering.orderrecord
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
   - id: ordering.receipt
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
     rls: true
   - id: ordering.reminder
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260821037000_add_member_journey.sql
     rls: true
   - id: ordering.reviewaction
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
   - id: ordering.stateevent
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
   - id: ordering.suborder
     kind: table
-    owner: ordering
+    owner: order
     source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
   - id: organization.assignment
@@ -23407,39 +23426,39 @@ objects:
     operationalOwner: identity
   - id: invoice.requestline.invoice_requestline_immutable
     kind: trigger
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
-    operationalOwner: invoice
+    operationalOwner: finance
   - id: invoice.requestprofile.invoice_requestprofile_immutable
     kind: trigger
-    owner: invoice
+    owner: finance
     source: database/migrations/20260821043000_finance_lifecycle.sql
-    operationalOwner: invoice
+    operationalOwner: finance
   - id: ordering.aftersale.enforce_aftersale_state_quantity
     kind: trigger
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: ordering.aftersaleline.enforce_aftersale_line_quantity
     kind: trigger
-    owner: ordering
+    owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: ordering.line.ordering_line_immutable
     kind: trigger
-    owner: ordering
+    owner: order
     source: database/migrations/20260829109000_runtime_role_hardcut.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: ordering.orderrecord.ordering_orderrecord_snapshot
     kind: trigger
-    owner: ordering
+    owner: order
     source: database/migrations/20260829109000_runtime_role_hardcut.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: ordering.receipt.ordering_receipt_immutable
     kind: trigger
-    owner: ordering
+    owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
-    operationalOwner: ordering
+    operationalOwner: order
   - id: payment.capture.payment_capture_immutable
     kind: trigger
     owner: payment

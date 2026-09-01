@@ -2,7 +2,7 @@
   "source": "RepositoryAuthority docs/福利商城功能清单.xlsx",
   "workbookSha256": "f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f",
   "navigationCatalogSha256": "342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48",
-  "contractSha256": "e43962c59027687e19e380eb26298c55f53c0a461bb3c52405b9f27c749abd1d",
+  "contractSha256": "b4e31745c41ffe493cfd1b1b8bf853009b7a27cb0d9efe5839ecfc404abd4e75",
   "parserVersion": 3,
   "generatorVersion": 3,
   "generatedAt": "2026-08-31T12:35:48.000Z",
@@ -67,8 +67,8 @@
       "feature": "platform/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -162,8 +162,8 @@
       "feature": "platform/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -255,8 +255,8 @@
       "feature": "platform/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -348,8 +348,8 @@
       "feature": "platform/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -443,8 +443,8 @@
       "feature": "platform/pricing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -538,8 +538,8 @@
       "feature": "platform/access",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -633,8 +633,8 @@
       "feature": "platform/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -728,8 +728,8 @@
       "feature": "platform/pricing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -823,8 +823,8 @@
       "feature": "platform/access",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -918,8 +918,8 @@
       "feature": "platform/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1013,8 +1013,8 @@
       "feature": "platform/access",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1108,8 +1108,8 @@
       "feature": "platform/capability",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1203,8 +1203,8 @@
       "feature": "platform/capability",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1298,8 +1298,8 @@
       "feature": "platform/capability",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1393,8 +1393,8 @@
       "feature": "platform/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1488,8 +1488,8 @@
       "feature": "platform/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1583,8 +1583,8 @@
       "feature": "platform/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1678,8 +1678,8 @@
       "feature": "platform/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1773,8 +1773,8 @@
       "feature": "platform/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1868,8 +1868,8 @@
       "feature": "platform/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -1963,8 +1963,8 @@
       "feature": "platform/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2058,8 +2058,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2153,8 +2153,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2248,8 +2248,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2341,8 +2341,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2434,8 +2434,8 @@
       "feature": "platform/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2527,8 +2527,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2620,8 +2620,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2713,8 +2713,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2808,8 +2808,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2903,8 +2903,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -2998,8 +2998,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3093,8 +3093,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3188,8 +3188,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3283,8 +3283,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3378,8 +3378,8 @@
       "feature": "platform/pricing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3473,8 +3473,8 @@
       "feature": "platform/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3568,8 +3568,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3663,8 +3663,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3758,8 +3758,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3853,8 +3853,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -3946,8 +3946,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4041,8 +4041,8 @@
       "feature": "platform/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4136,8 +4136,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4231,8 +4231,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4326,8 +4326,8 @@
       "feature": "platform/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4421,8 +4421,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4516,8 +4516,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4611,8 +4611,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4706,8 +4706,8 @@
       "feature": "platform/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4801,8 +4801,8 @@
       "feature": "platform/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4896,8 +4896,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -4991,8 +4991,8 @@
       "feature": "platform/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5084,8 +5084,8 @@
       "feature": "platform/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5179,8 +5179,8 @@
       "feature": "platform/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5274,8 +5274,8 @@
       "feature": "platform/capability",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5369,8 +5369,8 @@
       "feature": "platform/capability",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5464,8 +5464,8 @@
       "feature": "platform/capability",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5559,8 +5559,8 @@
       "feature": "platform/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5654,8 +5654,8 @@
       "feature": "platform/risk",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5749,8 +5749,8 @@
       "feature": "platform/notification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5844,8 +5844,8 @@
       "feature": "platform/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -5939,8 +5939,8 @@
       "feature": "platform/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -6034,8 +6034,8 @@
       "feature": "platform/risk",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -6129,8 +6129,8 @@
       "feature": "platform/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -6224,8 +6224,8 @@
       "feature": "platform/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -6319,8 +6319,8 @@
       "feature": "platform/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -6414,8 +6414,8 @@
       "feature": "platform/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -6507,8 +6507,8 @@
       "feature": "distribution/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -6602,8 +6602,8 @@
       "feature": "distribution/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -6695,8 +6695,8 @@
       "feature": "distribution/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -6788,8 +6788,8 @@
       "feature": "distribution/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -6883,8 +6883,8 @@
       "feature": "distribution/pricing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -6978,8 +6978,8 @@
       "feature": "distribution/access",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7073,8 +7073,8 @@
       "feature": "distribution/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7168,8 +7168,8 @@
       "feature": "distribution/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7263,8 +7263,8 @@
       "feature": "distribution/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7358,8 +7358,8 @@
       "feature": "distribution/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7453,8 +7453,8 @@
       "feature": "distribution/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7548,8 +7548,8 @@
       "feature": "distribution/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7643,8 +7643,8 @@
       "feature": "distribution/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7738,8 +7738,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7833,8 +7833,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -7928,8 +7928,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8021,8 +8021,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8114,8 +8114,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8207,8 +8207,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8300,8 +8300,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8395,8 +8395,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8490,8 +8490,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8585,8 +8585,8 @@
       "feature": "distribution/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8678,8 +8678,8 @@
       "feature": "distribution/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8773,8 +8773,8 @@
       "feature": "distribution/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8868,8 +8868,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -8963,8 +8963,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9058,8 +9058,8 @@
       "feature": "distribution/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9153,8 +9153,8 @@
       "feature": "distribution/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9248,8 +9248,8 @@
       "feature": "distribution/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9343,8 +9343,8 @@
       "feature": "distribution/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9438,8 +9438,8 @@
       "feature": "distribution/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9533,8 +9533,8 @@
       "feature": "distribution/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9628,8 +9628,8 @@
       "feature": "distribution/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9723,8 +9723,8 @@
       "feature": "distribution/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9818,8 +9818,8 @@
       "feature": "distribution/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -9913,8 +9913,8 @@
       "feature": "distribution/risk",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -10008,8 +10008,8 @@
       "feature": "distribution/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -10103,8 +10103,8 @@
       "feature": "distribution/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -10198,8 +10198,8 @@
       "feature": "distribution/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -10293,8 +10293,8 @@
       "feature": "distribution/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/DistributionJourney.spec.ts"
       ],
@@ -10388,8 +10388,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -10483,8 +10483,8 @@
       "feature": "enterprise/pricing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -10578,8 +10578,8 @@
       "feature": "enterprise/pricing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -10671,8 +10671,8 @@
       "feature": "enterprise/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -10766,8 +10766,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -10861,8 +10861,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -10956,8 +10956,8 @@
       "feature": "enterprise/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -11051,8 +11051,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -11146,8 +11146,8 @@
       "feature": "enterprise/pricing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -11239,8 +11239,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -11334,8 +11334,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -11429,8 +11429,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -11524,8 +11524,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -11619,8 +11619,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -11714,8 +11714,8 @@
       "feature": "enterprise/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -11809,8 +11809,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -11904,8 +11904,8 @@
       "feature": "enterprise/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -11999,8 +11999,8 @@
       "feature": "enterprise/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -12094,8 +12094,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -12189,8 +12189,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -12284,8 +12284,8 @@
       "feature": "enterprise/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -12377,8 +12377,8 @@
       "feature": "enterprise/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -12470,8 +12470,8 @@
       "feature": "enterprise/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -12563,8 +12563,8 @@
       "feature": "enterprise/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -12658,8 +12658,8 @@
       "feature": "enterprise/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -12753,8 +12753,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -12848,8 +12848,8 @@
       "feature": "enterprise/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSupportJourney.spec.ts"
       ],
@@ -12943,8 +12943,8 @@
       "feature": "enterprise/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSupportJourney.spec.ts"
       ],
@@ -13038,8 +13038,8 @@
       "feature": "enterprise/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSupportJourney.spec.ts"
       ],
@@ -13131,8 +13131,8 @@
       "feature": "enterprise/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSupportJourney.spec.ts"
       ],
@@ -13226,8 +13226,8 @@
       "feature": "enterprise/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -13321,8 +13321,8 @@
       "feature": "enterprise/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -13416,8 +13416,8 @@
       "feature": "enterprise/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -13511,8 +13511,8 @@
       "feature": "enterprise/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupVoucherJourney.spec.ts"
       ],
@@ -13606,8 +13606,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -13701,8 +13701,8 @@
       "feature": "enterprise/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -13796,8 +13796,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -13891,8 +13891,8 @@
       "feature": "enterprise/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -13986,8 +13986,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -14081,8 +14081,8 @@
       "feature": "enterprise/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -14176,8 +14176,8 @@
       "feature": "enterprise/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSupportJourney.spec.ts"
       ],
@@ -14271,8 +14271,8 @@
       "feature": "enterprise/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSupportJourney.spec.ts"
       ],
@@ -14366,8 +14366,8 @@
       "feature": "enterprise/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -14461,8 +14461,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -14556,8 +14556,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -14651,8 +14651,8 @@
       "feature": "enterprise/notification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -14746,8 +14746,8 @@
       "feature": "enterprise/notification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -14841,8 +14841,8 @@
       "feature": "enterprise/notification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -14934,8 +14934,8 @@
       "feature": "enterprise/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupFinanceJourney.spec.ts"
       ],
@@ -15029,8 +15029,8 @@
       "feature": "enterprise/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupFinanceJourney.spec.ts"
       ],
@@ -15124,8 +15124,8 @@
       "feature": "enterprise/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupFinanceJourney.spec.ts"
       ],
@@ -15217,8 +15217,8 @@
       "feature": "enterprise/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupFinanceJourney.spec.ts"
       ],
@@ -15312,8 +15312,8 @@
       "feature": "enterprise/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupFinanceJourney.spec.ts"
       ],
@@ -15405,8 +15405,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -15498,8 +15498,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -15591,8 +15591,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -15684,8 +15684,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -15777,8 +15777,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -15870,8 +15870,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -15963,8 +15963,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -16056,8 +16056,8 @@
       "feature": "enterprise/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupDashboardJourney.spec.ts"
       ],
@@ -16151,8 +16151,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -16246,8 +16246,8 @@
       "feature": "enterprise/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -16341,8 +16341,8 @@
       "feature": "enterprise/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSettingJourney.spec.ts"
       ],
@@ -16436,8 +16436,8 @@
       "feature": "enterprise/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupProductJourney.spec.ts"
       ],
@@ -16531,8 +16531,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -16626,8 +16626,8 @@
       "feature": "enterprise/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupOrderJourney.spec.ts"
       ],
@@ -16721,8 +16721,8 @@
       "feature": "enterprise/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/GroupSupportJourney.spec.ts"
       ],
@@ -16814,8 +16814,8 @@
       "feature": "mall/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallDashboardJourney.spec.ts"
       ],
@@ -16909,8 +16909,8 @@
       "feature": "mall/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallProductJourney.spec.ts"
       ],
@@ -17004,8 +17004,8 @@
       "feature": "mall/experience",
       "uiRoute": "/scopes/:scopeKind/:scopeId/experience",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallDesignJourney.spec.ts"
       ],
@@ -17099,8 +17099,8 @@
       "feature": "mall/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -17194,8 +17194,8 @@
       "feature": "mall/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -17289,8 +17289,8 @@
       "feature": "mall/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallProductJourney.spec.ts"
       ],
@@ -17384,8 +17384,8 @@
       "feature": "mall/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -17479,8 +17479,8 @@
       "feature": "mall/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -17572,8 +17572,8 @@
       "feature": "mall/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -17665,8 +17665,8 @@
       "feature": "mall/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -17760,8 +17760,8 @@
       "feature": "mall/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -17853,8 +17853,8 @@
       "feature": "mall/marketing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -17948,8 +17948,8 @@
       "feature": "mall/voucher",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -18041,8 +18041,8 @@
       "feature": "mall/marketing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -18136,8 +18136,8 @@
       "feature": "mall/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallProductJourney.spec.ts"
       ],
@@ -18231,8 +18231,8 @@
       "feature": "mall/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallProductJourney.spec.ts"
       ],
@@ -18326,8 +18326,8 @@
       "feature": "mall/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallProductJourney.spec.ts"
       ],
@@ -18419,8 +18419,8 @@
       "feature": "mall/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallOrderJourney.spec.ts"
       ],
@@ -18514,8 +18514,8 @@
       "feature": "mall/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallOrderJourney.spec.ts"
       ],
@@ -18607,8 +18607,8 @@
       "feature": "mall/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallFinanceJourney.spec.ts"
       ],
@@ -18702,8 +18702,8 @@
       "feature": "mall/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallDashboardJourney.spec.ts"
       ],
@@ -18797,8 +18797,8 @@
       "feature": "mall/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -18892,8 +18892,8 @@
       "feature": "mall/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -18987,8 +18987,8 @@
       "feature": "mall/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -19082,8 +19082,8 @@
       "feature": "mall/support",
       "uiRoute": "/scopes/:scopeKind/:scopeId/support",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSupportJourney.spec.ts"
       ],
@@ -19177,8 +19177,8 @@
       "feature": "mall/access",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -19272,8 +19272,8 @@
       "feature": "mall/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -19367,8 +19367,8 @@
       "feature": "mall/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -19462,8 +19462,8 @@
       "feature": "mall/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallDashboardJourney.spec.ts"
       ],
@@ -19555,8 +19555,8 @@
       "feature": "mall/marketing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -19648,8 +19648,8 @@
       "feature": "mall/marketing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -19741,8 +19741,8 @@
       "feature": "mall/marketing",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -19836,8 +19836,8 @@
       "feature": "mall/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallDashboardJourney.spec.ts"
       ],
@@ -19931,8 +19931,8 @@
       "feature": "mall/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallDashboardJourney.spec.ts"
       ],
@@ -20026,8 +20026,8 @@
       "feature": "mall/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -20121,8 +20121,8 @@
       "feature": "mall/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -20216,8 +20216,8 @@
       "feature": "mall/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallOrderJourney.spec.ts"
       ],
@@ -20311,8 +20311,8 @@
       "feature": "mall/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -20406,8 +20406,8 @@
       "feature": "mall/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallOrderJourney.spec.ts"
       ],
@@ -20501,8 +20501,8 @@
       "feature": "mall/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallFinanceJourney.spec.ts"
       ],
@@ -20596,8 +20596,8 @@
       "feature": "mall/organization",
       "uiRoute": "/scopes/:scopeKind/:scopeId/control",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -20691,8 +20691,8 @@
       "feature": "mall/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -20784,8 +20784,8 @@
       "feature": "mall/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallVoucherJourney.spec.ts"
       ],
@@ -20879,8 +20879,8 @@
       "feature": "mall/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallDashboardJourney.spec.ts"
       ],
@@ -20974,8 +20974,8 @@
       "feature": "mall/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -21069,8 +21069,8 @@
       "feature": "mall/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -21164,8 +21164,8 @@
       "feature": "mall/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallOrderJourney.spec.ts"
       ],
@@ -21257,8 +21257,8 @@
       "feature": "mall/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallOrderJourney.spec.ts"
       ],
@@ -21352,8 +21352,8 @@
       "feature": "mall/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallFinanceJourney.spec.ts"
       ],
@@ -21447,8 +21447,8 @@
       "feature": "mall/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallFinanceJourney.spec.ts"
       ],
@@ -21542,8 +21542,8 @@
       "feature": "mall/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallProductJourney.spec.ts"
       ],
@@ -21637,8 +21637,8 @@
       "feature": "mall/notification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/MallSettingJourney.spec.ts"
       ],
@@ -21730,8 +21730,8 @@
       "feature": "store/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -21823,8 +21823,8 @@
       "feature": "store/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -21918,8 +21918,8 @@
       "feature": "store/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22013,8 +22013,8 @@
       "feature": "store/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22108,8 +22108,8 @@
       "feature": "store/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22203,8 +22203,8 @@
       "feature": "store/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22298,8 +22298,8 @@
       "feature": "store/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22393,8 +22393,8 @@
       "feature": "store/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22488,8 +22488,8 @@
       "feature": "store/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22583,8 +22583,8 @@
       "feature": "store/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22678,8 +22678,8 @@
       "feature": "store/verification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/vouchers",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22773,8 +22773,8 @@
       "feature": "store/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22868,8 +22868,8 @@
       "feature": "store/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -22963,8 +22963,8 @@
       "feature": "store/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -23058,8 +23058,8 @@
       "feature": "store/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -23153,8 +23153,8 @@
       "feature": "store/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -23248,8 +23248,8 @@
       "feature": "store/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -23343,8 +23343,8 @@
       "feature": "store/risk",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -23438,8 +23438,8 @@
       "feature": "store/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -23533,8 +23533,8 @@
       "feature": "store/notification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/PlatformJourney.spec.ts"
       ],
@@ -23626,8 +23626,8 @@
       "feature": "supplier/reporting",
       "uiRoute": "/scopes/:scopeKind/:scopeId/reporting",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -23719,8 +23719,8 @@
       "feature": "supplier/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -23814,8 +23814,8 @@
       "feature": "supplier/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -23909,8 +23909,8 @@
       "feature": "supplier/partner",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24004,8 +24004,8 @@
       "feature": "supplier/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24099,8 +24099,8 @@
       "feature": "supplier/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24194,8 +24194,8 @@
       "feature": "supplier/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24289,8 +24289,8 @@
       "feature": "supplier/order",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24384,8 +24384,8 @@
       "feature": "supplier/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24479,8 +24479,8 @@
       "feature": "supplier/member",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24574,8 +24574,8 @@
       "feature": "supplier/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24669,8 +24669,8 @@
       "feature": "supplier/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24764,8 +24764,8 @@
       "feature": "supplier/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24859,8 +24859,8 @@
       "feature": "supplier/finance",
       "uiRoute": "/scopes/:scopeKind/:scopeId/finance",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -24954,8 +24954,8 @@
       "feature": "supplier/risk",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25049,8 +25049,8 @@
       "feature": "supplier/fulfillment",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25144,8 +25144,8 @@
       "feature": "supplier/fulfillment",
       "uiRoute": "/scopes/:scopeKind/:scopeId/orders",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25239,8 +25239,8 @@
       "feature": "supplier/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25334,8 +25334,8 @@
       "feature": "supplier/catalog",
       "uiRoute": "/scopes/:scopeKind/:scopeId/products",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25429,8 +25429,8 @@
       "feature": "supplier/notification",
       "uiRoute": "/scopes/:scopeKind/:scopeId/settings",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25524,8 +25524,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25621,8 +25621,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25718,8 +25718,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25815,8 +25815,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -25912,8 +25912,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26009,8 +26009,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26106,8 +26106,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26202,8 +26202,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26298,8 +26298,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26394,8 +26394,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26490,8 +26490,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26586,8 +26586,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26682,8 +26682,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26778,8 +26778,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26874,8 +26874,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -26970,8 +26970,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27066,8 +27066,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27162,8 +27162,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27258,8 +27258,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27354,8 +27354,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27450,8 +27450,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27546,8 +27546,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27642,8 +27642,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27738,8 +27738,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27834,8 +27834,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -27930,8 +27930,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],
@@ -28026,8 +28026,8 @@
       "feature": "platform/channel",
       "uiRoute": "/scopes/:scopeKind/:scopeId/channels",
       "tests": [
-        "services/commerce/src/modules/ModuleCatalog.test.ts",
-        "services/commerce/src/modules/DomainPolicy.test.ts",
+        "services/commerce/src/test/architecture/ModuleCatalog.test.ts",
+        "services/commerce/src/test/architecture/DomainPolicy.test.ts",
         "tests/integration/registry.spec.ts",
         "tests/journey/ProviderJourney.spec.ts"
       ],

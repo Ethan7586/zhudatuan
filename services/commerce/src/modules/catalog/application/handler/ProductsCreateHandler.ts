@@ -1,3 +1,26 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
+import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { ProductRepository } from '../port/ProductRepository';
 
-export const ProductsCreateHandler = defineOperationHandler('catalog.products.create');
+export class ProductsCreateHandler implements OperationHandler<'catalog.products.create', 'write'> {
+  readonly operation = 'catalog.products.create' as const;
+  readonly mode = 'write' as const;
+  constructor(private readonly products: ProductRepository) {}
+  async execute(input: OperationInputFor<'catalog.products.create'>, context: WriteHandlerContext<'catalog.products.create'>): Promise<OperationReply<OperationOutputFor<'catalog.products.create'>>> {
+    const access = requireSession(context.security);
+    const body = bodyRecord(input);
+    const created = await this.products.create(context.transaction, {
+      scope: access.scope.id,
+      owner: typeof body.owner === 'string' ? body.owner : null,
+      brand: typeof body.brand === 'string' ? body.brand : null,
+      category: textField(body, 'category'),
+      title: textField(body, 'title', 300),
+      kind: typeof body.type === 'string' ? body.type : 'physical',
+      attributes: body.attributes && typeof body.attributes === 'object' && !Array.isArray(body.attributes) ? (body.attributes as Readonly<Record<string, unknown>>) : Object.freeze({}),
+    });
+    return { status: 201, body: created as unknown as OperationOutputFor<'catalog.products.create'> };
+  }
+}

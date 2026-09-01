@@ -49,9 +49,18 @@ export interface ClarificationDefinition {
   readonly reason: string;
 }
 
+export interface RequirementBinding {
+  readonly module: string;
+  readonly operation: string;
+  readonly route: string;
+  readonly journey: string;
+  readonly table: string;
+}
+
 export interface RequirementSource {
   readonly version: number;
   readonly sheets: readonly SheetDefinition[];
+  readonly bindings: Readonly<Record<string, RequirementBinding>>;
   readonly providers: readonly ProviderDefinition[];
   readonly mvp: readonly MvpDefinition[];
   readonly clarifications: readonly ClarificationDefinition[];
@@ -60,6 +69,7 @@ export interface RequirementSource {
 interface SourceDocument {
   readonly version?: number;
   readonly sheets?: readonly SheetRecord[];
+  readonly bindings?: Readonly<Record<string, RequirementBinding>>;
   readonly providers?: readonly ProviderDefinition[];
   readonly mvp?: readonly MvpDefinition[];
   readonly clarifications?: readonly ClarificationDefinition[];
@@ -75,8 +85,9 @@ interface SheetRecord extends Omit<SheetDefinition, 'rows'> {
 export async function loadRequirementSource(root: string): Promise<RequirementSource> {
   const path = resolve(root, 'config/requirements.yml');
   const document = parse(await readFile(path, 'utf8')) as SourceDocument;
-  if (document.version !== 3) throw new Error('REQUIREMENT_SOURCE_VERSION_INVALID:' + String(document.version));
+  if (document.version !== 4) throw new Error('REQUIREMENT_SOURCE_VERSION_INVALID:' + String(document.version));
   const sheets = Object.freeze((document.sheets ?? []).map(expandSheet));
+  const bindings = Object.freeze({ ...(document.bindings ?? {}) });
   const providers = Object.freeze([...(document.providers ?? [])]);
   const mvp = Object.freeze([...(document.mvp ?? [])]);
   const clarifications = Object.freeze([...(document.clarifications ?? [])]);
@@ -84,6 +95,13 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
     sheets.map(({ prefix }) => prefix),
     'REQUIREMENT_SHEET_PREFIX_DUPLICATE'
   );
+  const expectedBindings = sheets.flatMap(({ prefix, rows }) => rows.map((_row, index) => prefix + String(index + 1).padStart(3, '0')));
+  assertExactKeys(Object.keys(bindings), expectedBindings, 'REQUIREMENT_BINDING');
+  for (const [id, binding] of Object.entries(bindings)) {
+    if (!binding.module || !binding.operation || !binding.route.startsWith('/') || !binding.journey.endsWith('.spec.ts') || !binding.table.includes('.')) {
+      throw new Error('REQUIREMENT_BINDING_INVALID:' + id);
+    }
+  }
   assertUnique(
     providers.map(({ id }) => id),
     'REQUIREMENT_PROVIDER_ID_DUPLICATE'
@@ -122,7 +140,7 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
   ) {
     throw new Error('REQUIREMENT_CLARIFICATION_INVALID');
   }
-  return Object.freeze({ version: document.version, sheets, providers, mvp, clarifications });
+  return Object.freeze({ version: document.version, sheets, bindings, providers, mvp, clarifications });
 }
 
 function expandSheet(record: SheetRecord): SheetDefinition {
@@ -153,4 +171,14 @@ function range(start: number, end: number): readonly number[] {
 
 function assertUnique(values: readonly string[], code: string): void {
   if (new Set(values).size !== values.length) throw new Error(code);
+}
+
+function assertExactKeys(actual: readonly string[], expected: readonly string[], code: string): void {
+  const actualSet = new Set(actual);
+  const expectedSet = new Set(expected);
+  const missing = expected.filter((value) => !actualSet.has(value));
+  const unexpected = actual.filter((value) => !expectedSet.has(value));
+  if (missing.length > 0 || unexpected.length > 0) {
+    throw new Error(code + '_KEYS_INVALID:missing=' + missing.join(',') + ':unexpected=' + unexpected.join(','));
+  }
 }

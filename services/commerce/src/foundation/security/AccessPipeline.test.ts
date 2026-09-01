@@ -12,7 +12,7 @@ describe('AccessPipeline audience boundary', () => {
   it('denies a console operation before membership resolution for a storefront session', async () => {
     const target = 'storefront' as const;
     const fixture = accessFixture(target, 'access.center.read', 'access.center.read', PLATFORM);
-    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read')).rejects.toMatchObject({
+    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read', Date.now() + 10_000, new AbortController().signal)).rejects.toMatchObject({
       code: 'PERMISSION_DENIED',
       details: { reason: 'AUDIENCE_TARGET_MISMATCH', audience: 'console', target },
     });
@@ -29,7 +29,7 @@ describe('AccessPipeline audience boundary', () => {
   it('allows an operator operation for a console session', async () => {
     const fixture = accessFixture('console', 'access.center.read', 'access.center.read', PLATFORM);
 
-    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read')).resolves.toMatchObject({
+    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read', Date.now() + 10_000, new AbortController().signal)).resolves.toMatchObject({
       actor: { target: 'console' },
       scope: PLATFORM,
     });
@@ -39,7 +39,7 @@ describe('AccessPipeline audience boundary', () => {
   it('keeps storefront member operations authorized through the normal policy pipeline', async () => {
     const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER);
 
-    await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read')).resolves.toMatchObject({
+    await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read', Date.now() + 10_000, new AbortController().signal)).resolves.toMatchObject({
       actor: { target: 'storefront' },
       scope: OWNER,
     });
@@ -50,7 +50,7 @@ describe('AccessPipeline audience boundary', () => {
   it('preserves the authoritative risk reason for immediate session invalidation', async () => {
     const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER, 'deny');
 
-    await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read')).rejects.toMatchObject({
+    await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read', Date.now() + 10_000, new AbortController().signal)).rejects.toMatchObject({
       code: 'AUTHORIZATION_DENIED',
       details: { reason: 'RISK_DENIED' },
     });
@@ -65,7 +65,7 @@ describe('AccessPipeline audience boundary', () => {
 
   it('rejects a session when the canonical credential version changed', async () => {
     const fixture = accessFixture('console', 'access.center.read', 'access.center.read', PLATFORM, 'allow', 2);
-    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read')).rejects.toMatchObject({
+    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read', Date.now() + 10_000, new AbortController().signal)).rejects.toMatchObject({
       code: 'AUTHENTICATION_REQUIRED',
       details: { reason: 'CREDENTIAL_VERSION_STALE' },
     });

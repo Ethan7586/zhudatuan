@@ -7,13 +7,13 @@ import { checkMovieHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { MovieMapper } from '../Mapper';
 import { MovieWebhook } from '../Webhook';
-import { MovieOperations } from '../capability';
+import { MovieCapabilities } from '../capability';
 
 describe('movie provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('movie');
     expect(MovieProvider.definition.id).toBe('movie');
-    expect(() => assertProviderCapabilities(MovieProvider.definition, MovieOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(MovieProvider.definition, MovieCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('MOVIE_MANIFEST_SIGNATURE_MISSING');
   });

@@ -8,7 +8,7 @@ describe('identity notification job processor', () => {
     const dispatch = vi.fn(async () => undefined);
     const processor = new IdentityNotificationJobProcessor({ challenge: dispatch });
     await processor.process({ id: 'job:1', kind: 'identitynotification', scope_id: null, payload: { challenge }, attempts: 1, fencing_token: 1 }, new AbortController().signal);
-    expect(dispatch).toHaveBeenCalledExactlyOnceWith(challenge);
+    expect(dispatch).toHaveBeenCalledExactlyOnceWith(challenge, expect.objectContaining({ scope: 'identity', trace: 'job:1', signal: expect.any(AbortSignal), deadline: expect.any(Number) }));
   });
 
   it.each([

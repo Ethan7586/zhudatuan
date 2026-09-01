@@ -8,13 +8,13 @@ import { manifest } from '../Manifest';
 import { MealMapper } from '../Mapper';
 import { MealWebhook } from '../Webhook';
 import { MEAL_BRANDS } from '../BrandCatalog';
-import { MealOperations } from '../capability';
+import { MealCapabilities } from '../capability';
 
 describe('meal provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('meal');
     expect(MealProvider.definition.id).toBe('meal');
-    expect(() => assertProviderCapabilities(MealProvider.definition, MealOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(MealProvider.definition, MealCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('MEAL_MANIFEST_SIGNATURE_MISSING');
     expect(MEAL_BRANDS).toEqual(['KFC', 'MCDONALDS', 'LUCKIN', 'STARBUCKS', 'COTTI']);

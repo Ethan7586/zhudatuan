@@ -1,4 +1,6 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+
 import type { InvitationAccessPort } from '../../../access/public';
 import type { Invitation } from '../../domain/model/Invitation';
 import type { InvitationReceipt } from '../../domain/model/InvitationReceipt';
@@ -13,21 +15,21 @@ export class InvitationRedeemer {
     private readonly telemetry: Telemetry
   ) {}
 
-  validate(database: OperationDatabase, invitation: Invitation, target: 'console' | 'storefront'): Promise<void> {
+  validate(database: ReadTransactionContext, invitation: Invitation, target: 'console' | 'storefront'): Promise<void> {
     const state = invitation.state;
     if (!state.membership) throw new Error('INVITATION_MEMBERSHIP_MISSING');
     return this.access.validate(database, { issuer: state.issuer, issuerAccessVersion: state.issuerAccessVersion, membership: state.membership, grantDigest: state.grantDigest, organization: state.organization, target });
   }
 
   async consume(
-    database: OperationDatabase,
+    database: WriteTransactionContext,
     invitation: Invitation,
     input: Readonly<{ session: string | null; assurance: 1 | 2 | 3; trace: string; claim?: Readonly<{ id: string; version: number }>; principal?: string; membership?: string }>
   ): Promise<InvitationReceipt> {
     const started = performance.now();
     const base = { requestId: input.trace, traceId: input.trace, module: 'identity', operation: 'identity.invitation.redeem', resourceType: invitation.state.kind };
     try {
-      const receipt = await this.repository.consume(database, invitation, {
+      const receipt = await this.repository.consume(requireWriteTransaction(database), invitation, {
         session: input.session,
         assurance: input.assurance,
         trace: input.trace,

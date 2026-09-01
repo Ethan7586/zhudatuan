@@ -1,19 +1,29 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import { SystemClock, type Clock } from '../../../../foundation/domain/Clock';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { Invitation, type InvitationState } from '../../domain/model/Invitation';
 import { InvitationClaim } from '../../domain/model/InvitationClaim';
 import { InvitationReceipt } from '../../domain/model/InvitationReceipt';
-
 export class PgInvitationRedemption {
+  protected readonly transactions = new PgTransactionAccess();
   constructor(protected readonly clock: Clock = SystemClock) {}
-
   async reserve(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     invitation: Invitation,
-    input: Readonly<{ claim: string; preauth: Buffer; browser: Buffer; device: Buffer; recipient: Buffer | null; principal: string | null; proof: 'otp' | 'sso' | 'terms' }>
+    input: Readonly<{
+      claim: string;
+      preauth: Buffer;
+      browser: Buffer;
+      device: Buffer;
+      recipient: Buffer | null;
+      principal: string | null;
+      proof: 'otp' | 'sso' | 'terms';
+    }>
   ): Promise<InvitationClaim> {
+    const database = this.transactions.database(context);
     invitation.reserve(this.clock.now(), 0);
     await database.query(
       `update identity.invitationclaim set state='expired',updated_at=clock_timestamp(),version=version+1
@@ -51,12 +61,15 @@ export class PgInvitationRedemption {
       $5,$6,$7,$8,'active',0)`,
       [randomUUID(), input.principal, input.preauth, input.browser, invitation.state.kind === 'signin' ? 'invitationproof' : 'enrollment', invitation.state.target, input.claim, input.device]
     );
-    await database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) values($1,'identity.invitation.reserved',1,'invitation',$2,$3,
-      jsonb_build_object('invitationId',$2::text,'target',$4::text,'kind',$5::text),$6,clock_timestamp(),clock_timestamp())`,
-      [`event:${randomUUID()}`, invitation.state.id, invitation.state.organization, invitation.state.target, invitation.state.kind, input.claim]
-    );
+    await new PgRuntimeWriter(database).append({
+      id: `event:${randomUUID()}`,
+      type: 'identity.invitation.reserved',
+      aggregateType: 'invitation',
+      aggregate: invitation.state.id,
+      scope: invitation.state.organization,
+      payload: { invitationId: invitation.state.id, target: invitation.state.target, kind: invitation.state.kind },
+      trace: input.claim,
+    });
     return new InvitationClaim({
       id: row.id,
       invitation: row.invitation_id,
@@ -70,8 +83,18 @@ export class PgInvitationRedemption {
       version: Number(row.version),
     });
   }
-
-  async consume(database: OperationDatabase, invitation: Invitation, input: Readonly<{ session: string | null; assurance: 1 | 2 | 3; trace: string; principal?: string; membership?: string }>): Promise<InvitationReceipt> {
+  async consume(
+    context: WriteTransactionContext,
+    invitation: Invitation,
+    input: Readonly<{
+      session: string | null;
+      assurance: 1 | 2 | 3;
+      trace: string;
+      principal?: string;
+      membership?: string;
+    }>
+  ): Promise<InvitationReceipt> {
+    const database = this.transactions.database(context);
     const next = invitation.consume(this.clock.now());
     const consumed = await database.query(
       `update identity.invitation set use_count=$3,status=$4,version=$5,updated_at=clock_timestamp()
@@ -106,12 +129,16 @@ export class PgInvitationRedemption {
         input.trace,
       ]
     );
-    await database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-      values($1,'identity.invitation.redeemed',1,'invitation',$2,$3,jsonb_build_object('invitationId',$2::text,'membershipId',$4::text,'target',$5::text),
-      $6,clock_timestamp(),clock_timestamp())`,
-      [`event:${randomUUID()}`, invitation.state.id, invitation.state.organization, input.membership ?? invitation.state.membership, invitation.state.target, input.trace]
-    );
+    const membership = input.membership ?? invitation.state.membership;
+    await new PgRuntimeWriter(database).append({
+      id: `event:${randomUUID()}`,
+      type: 'identity.invitation.redeemed',
+      aggregateType: 'invitation',
+      aggregate: invitation.state.id,
+      scope: invitation.state.organization,
+      payload: { invitationId: invitation.state.id, membershipId: membership, target: invitation.state.target },
+      trace: input.trace,
+    });
     const row = receipt.rows[0];
     if (!row) throw new DomainError('INVITATION_INVALID');
     return new InvitationReceipt({
@@ -127,8 +154,8 @@ export class PgInvitationRedemption {
       trace: row.trace_id,
     });
   }
-
-  async consumeClaim(database: OperationDatabase, claim: string, version: number): Promise<void> {
+  async consumeClaim(context: WriteTransactionContext, claim: string, version: number): Promise<void> {
+    const database = this.transactions.database(context);
     const result = await database.query(
       `update identity.invitationclaim set state='consumed',proved_at=coalesce(proved_at,clock_timestamp()),
       consumed_at=clock_timestamp(),updated_at=clock_timestamp(),version=version+1

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { HttpClient } from '../../services/commerce/src/foundation/http/HttpClient';
 import { NetworkPolicy } from '../../services/commerce/src/foundation/security/NetworkPolicy';
-import { AfterSaleAttachments } from '../../services/commerce/src/modules/order/application/AfterSaleAttachments';
+import { AfterSaleAttachmentService } from '../../services/commerce/src/modules/order/application/service/AfterSaleAttachmentService';
 
 test('provider egress rejects SSRF, DNS rebinding and oversized responses', async () => {
   await assert.rejects(new NetworkPolicy({ hosts: ['provider.example'] }, async () => ['169.254.169.254']).assert('https://provider.example/order'), /NETWORK_ADDRESS_DENIED/);
@@ -18,7 +18,7 @@ test('provider egress rejects SSRF, DNS rebinding and oversized responses', asyn
 test('attachments reject spoofed type, excessive size and malicious scan state', async () => {
   const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1]);
   const data = Buffer.from(png).toString('base64');
-  const attachments = new AfterSaleAttachments({
+  const attachments = new AfterSaleAttachmentService({
     create: async () =>
       ({
         append: async () => undefined,
@@ -26,9 +26,9 @@ test('attachments reject spoofed type, excessive size and malicious scan state',
         abort: async () => undefined,
       }) as never,
   });
-  await assert.rejects(attachments.verify(request([{ data, contentType: 'image/jpeg', name: 'spoof.jpg' }])), /VALIDATION_FAILED/);
-  await assert.rejects(attachments.verify(request([{ data: 'A'.repeat(1_400_000), contentType: 'image/png', name: 'large.png' }])), /VALIDATION_FAILED/);
-  await assert.rejects(attachments.verify(request([{ data, contentType: 'image/png', name: 'infected.png' }])), /VALIDATION_FAILED/);
+  await assert.rejects(attachments.verify(request([{ data, contentType: 'image/jpeg', name: 'spoof.jpg' }]), 'membership:one'), /VALIDATION_FAILED/);
+  await assert.rejects(attachments.verify(request([{ data: 'A'.repeat(1_400_000), contentType: 'image/png', name: 'large.png' }]), 'membership:one'), /VALIDATION_FAILED/);
+  await assert.rejects(attachments.verify(request([{ data, contentType: 'image/png', name: 'infected.png' }]), 'membership:one'), /VALIDATION_FAILED/);
 });
 
 test('API runtime cannot load extension provider credentials', () => {
@@ -42,21 +42,5 @@ test('API runtime cannot load extension provider credentials', () => {
 });
 
 function request(attachments: readonly unknown[]) {
-  return {
-    type: 'order.aftersales.apply',
-    input: { path: { orderid: 'order:one' }, query: {}, headers: {}, body: { attachments }, rawBody: '', deadline: Date.now() + 1000, signal: new AbortController().signal },
-    security: {
-      kind: 'session',
-      access: {
-        actor: { id: 'principal:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'storefront', assurance: { level: 2 } },
-        membership: { id: 'membership:one', active: true, accessVersion: 1, permissions: { allows: new Set(['order.aftersale.apply']), denies: new Set() }, scopes: [] },
-        scope: { id: 'mall:one', kind: 'owner', path: [] },
-        accessVersion: 1,
-        capabilities: new Set(['order.aftersales.apply']),
-        capabilityVersion: 1,
-        assurance: { level: 2 },
-        trace: 'trace:one',
-      },
-    },
-  } as never;
+  return { path: { orderid: 'order:one' }, query: {}, headers: {}, body: { attachments }, rawBody: '', deadline: Date.now() + 1000, signal: new AbortController().signal } as never;
 }

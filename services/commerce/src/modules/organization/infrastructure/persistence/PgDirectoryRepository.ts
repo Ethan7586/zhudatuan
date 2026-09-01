@@ -1,5 +1,6 @@
+import { PgTransactionAccess, type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { createHash, randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { DirectoryRepository, DirectoryCounts, StagedSubject, CurrentDirectorySubject, DirectoryApplyKind, DirectoryDeparture } from '../../application/port/DirectoryRepository';
 import type { DirectoryPage } from '../../application/port/DirectoryProvider';
 import { DirectoryConnection, type DirectoryConnectionValue } from '../../domain/model/DirectoryConnection';
@@ -7,9 +8,11 @@ import type { SyncRun, SyncMode } from '../../domain/model/SyncRun';
 import { DirectorySubject } from '../../domain/model/DirectorySubject';
 import { DirectoryMembership } from '../../domain/model/DirectoryMembership';
 import { mapConnection, mapRun, type ConnectionRow, type ConnectionSummaryRow, type RunRow, type RunSummaryRow } from './DirectoryRecord';
-
+import { writeDirectoryOrganization } from './DirectoryOrganizationWriter';
 export class PgDirectoryRepository implements DirectoryRepository {
-  async list(database: OperationDatabase, scope: string, after: string | null, limit: number) {
+  private readonly transactions = new PgTransactionAccess();
+  async list(context: ReadTransactionContext, scope: string, after: string | null, limit: number) {
+    const database = this.transactions.database(context);
     const result = await database.query<ConnectionSummaryRow>(
       `select connection.id,connection.organization_id,connection.provider_type type,connection.status,connection.successful_version,
       connection.version,connection.updated_at,(select max(completed_at) from organization.syncrun run where run.connection_id=connection.id and run.state='completed') last_success_at
@@ -24,19 +27,26 @@ export class PgDirectoryRepository implements DirectoryRepository {
       )
     );
   }
-  async require(database: OperationDatabase, id: string, lock = false): Promise<DirectoryConnection> {
+  async require(context: ReadTransactionContext, id: string): Promise<DirectoryConnection> {
+    return this.load(this.transactions.database(context), id, false);
+  }
+  async lock(context: WriteTransactionContext, id: string): Promise<DirectoryConnection> {
+    return this.load(this.transactions.database(context), id, true);
+  }
+  private async load(database: SqlExecutor, id: string, lock: boolean): Promise<DirectoryConnection> {
     const result = await database.query<ConnectionRow>(
       `select connection.id,connection.tenant_id,connection.organization_id,connection.provider_instance_id,
       connection.provider_type,connection.secret_ref,connection.cursor_ciphertext,connection.successful_version,connection.status,connection.version
       from organization.directoryconnection connection
-      where connection.id=$1 ${lock ? 'for update of connection' : ''}`,
+      where connection.id=$1${lock ? ' for update' : ''}`,
       [id]
     );
     const row = result.rows[0];
     if (!row) throw new Error('DIRECTORY_NOT_FOUND');
     return mapConnection(row);
   }
-  async requireWebhook(database: OperationDatabase, id: string): Promise<DirectoryConnection> {
+  async requireWebhook(context: ReadTransactionContext, id: string): Promise<DirectoryConnection> {
+    const database = this.transactions.database(context);
     const result = await database.query<ConnectionRow>(
       `select id,tenant_id,organization_id,provider_instance_id,provider_type,secret_ref,
       cursor_ciphertext,successful_version,status,version from organization.webhook_directory($1)`,
@@ -46,7 +56,8 @@ export class PgDirectoryRepository implements DirectoryRepository {
     if (!row) throw new Error('DIRECTORY_NOT_FOUND');
     return mapConnection(row);
   }
-  async save(database: OperationDatabase, value: DirectoryConnectionValue, expected: number): Promise<DirectoryConnection> {
+  async save(context: WriteTransactionContext, value: DirectoryConnectionValue, expected: number): Promise<DirectoryConnection> {
+    const database = this.transactions.database(context);
     const validated = new DirectoryConnection(value);
     const result = await database.query<ConnectionRow>(
       `insert into organization.directoryconnection(
@@ -63,7 +74,8 @@ export class PgDirectoryRepository implements DirectoryRepository {
     if (!row) throw new Error('EXPECTED_VERSION_MISMATCH');
     return mapConnection(row);
   }
-  async runs(database: OperationDatabase, connection: string, after: string | null, limit: number) {
+  async runs(context: ReadTransactionContext, connection: string, after: string | null, limit: number) {
+    const database = this.transactions.database(context);
     const result = await database.query<RunSummaryRow>(
       `select id,mode,state,read_count,applied_count,conflict_count,ignored_count,watermark,started_at,completed_at,created_at
       from organization.syncrun where connection_id=$1 and ($2::uuid is null or id<$2) order by created_at desc,id desc limit $3`,
@@ -85,7 +97,8 @@ export class PgDirectoryRepository implements DirectoryRepository {
       )
     );
   }
-  async createRun(database: OperationDatabase, connection: string, mode: SyncMode, key: string): Promise<SyncRun> {
+  async createRun(context: WriteTransactionContext, connection: string, mode: SyncMode, key: string): Promise<SyncRun> {
+    const database = this.transactions.database(context);
     const id = randomUUID();
     const result = await database.query<RunRow>(
       `insert into organization.syncrun(id,connection_id,provider_run_id,mode,state,cursor_ciphertext,created_at)
@@ -99,7 +112,8 @@ export class PgDirectoryRepository implements DirectoryRepository {
     if (!row) throw new Error('DIRECTORY_SYNC_CREATE_FAILED');
     return mapRun(row);
   }
-  async startRun(database: OperationDatabase, run: string): Promise<SyncRun> {
+  async startRun(context: WriteTransactionContext, run: string): Promise<SyncRun> {
+    const database = this.transactions.database(context);
     const result = await database.query<RunRow>(
       `update organization.syncrun set state='running',started_at=coalesce(started_at,clock_timestamp())
       where id=$1 and state in('queued','running') returning id,connection_id,provider_run_id,mode,state,cursor_ciphertext,read_count,applied_count,conflict_count,ignored_count`,
@@ -109,8 +123,20 @@ export class PgDirectoryRepository implements DirectoryRepository {
     if (!row) throw new Error('DIRECTORY_SYNC_STATE_INVALID');
     return mapRun(row);
   }
-  async event(database: OperationDatabase, run: string): Promise<Readonly<{ eventid: string; envelope: string }>> {
-    const result = await database.query<{ eventid: string; envelope: string }>(
+  async event(
+    context: ReadTransactionContext,
+    run: string
+  ): Promise<
+    Readonly<{
+      eventid: string;
+      envelope: string;
+    }>
+  > {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      eventid: string;
+      envelope: string;
+    }>(
       `select inbox.provider_event_id eventid,inbox.envelope_ciphertext envelope
       from organization.syncrun run join organization.directoryinbox inbox on inbox.connection_id=run.connection_id
         and run.provider_run_id='event:'||inbox.provider_event_id where run.id=$1 and run.mode='event' and inbox.state='received'`,
@@ -120,7 +146,8 @@ export class PgDirectoryRepository implements DirectoryRepository {
     if (!row || !row.envelope) throw new Error('DIRECTORY_EVENT_NOT_FOUND');
     return Object.freeze(row);
   }
-  async stage(database: OperationDatabase, run: SyncRun, page: DirectoryPage, subjects: readonly StagedSubject[]): Promise<boolean> {
+  async stage(context: WriteTransactionContext, run: SyncRun, page: DirectoryPage, subjects: readonly StagedSubject[]): Promise<boolean> {
+    const database = this.transactions.database(context);
     const projection = subjects.map((item) => ({ hash: item.hash.toString('hex'), status: item.status, type: item.type, version: item.sourceversion }));
     const hash = createHash('sha256').update(JSON.stringify(projection)).digest('hex');
     const result = await database.query(
@@ -130,9 +157,17 @@ export class PgDirectoryRepository implements DirectoryRepository {
     );
     return result.rowCount === 1;
   }
-  async current(database: OperationDatabase, connection: string, hashes: readonly Buffer[]): Promise<ReadonlyMap<string, CurrentDirectorySubject>> {
+  async current(context: ReadTransactionContext, connection: string, hashes: readonly Buffer[]): Promise<ReadonlyMap<string, CurrentDirectorySubject>> {
+    const database = this.transactions.database(context);
     if (hashes.length === 0) return new Map();
-    const result = await database.query<{ hash: string; id: string; status: string; sourceversion: number; missingcount: number; membership: string | null }>(
+    const result = await database.query<{
+      hash: string;
+      id: string;
+      status: string;
+      sourceversion: number;
+      missingcount: number;
+      membership: string | null;
+    }>(
       `select encode(subject.subject_hash,'hex') hash,subject.id,subject.status,subject.source_version sourceversion,subject.missing_count missingcount,
         (select membership.membership_id from organization.directorymembership membership where membership.subject_id=subject.id and membership.membership_id is not null order by membership.version desc limit 1) membership
        from organization.directorysubject subject where subject.connection_id=$1 and subject.subject_hash=any($2::bytea[])`,
@@ -140,8 +175,9 @@ export class PgDirectoryRepository implements DirectoryRepository {
     );
     return new Map(result.rows.map((row) => [row.hash, Object.freeze(row)]));
   }
-  async apply(database: OperationDatabase, connection: DirectoryConnection, subject: StagedSubject, kind: DirectoryApplyKind): Promise<void> {
-    if (subject.type === 'department') await this.organization(database, connection, subject);
+  async apply(context: WriteTransactionContext, connection: DirectoryConnection, subject: StagedSubject, kind: DirectoryApplyKind): Promise<void> {
+    const database = this.transactions.database(context);
+    if (subject.type === 'department') await writeDirectoryOrganization(database, connection, subject);
     const stored = kind === 'conflict' ? 'conflict' : subject.status;
     const entity = new DirectorySubject({ id: subject.id, connectionid: connection.id, hash: subject.hash, type: subject.type, status: stored, attributes: subject.attributes, sourceversion: subject.sourceversion, version: 0 });
     await database.query(
@@ -179,7 +215,8 @@ export class PgDirectoryRepository implements DirectoryRepository {
       );
     }
   }
-  async advance(database: OperationDatabase, run: string, page: DirectoryPage, counts: DirectoryCounts): Promise<void> {
+  async advance(context: WriteTransactionContext, run: string, page: DirectoryPage, counts: DirectoryCounts): Promise<void> {
+    const database = this.transactions.database(context);
     await database.query(
       `update organization.syncrun set cursor_ciphertext=$2,read_count=read_count+$3,applied_count=applied_count+$4,
       conflict_count=conflict_count+$5,ignored_count=ignored_count+$6,watermark=clock_timestamp(),
@@ -187,8 +224,12 @@ export class PgDirectoryRepository implements DirectoryRepository {
       [run, page.cursor, counts.read, counts.applied, counts.conflicts, counts.ignored, page.eventid, page.version]
     );
   }
-  async complete(database: OperationDatabase, run: string, connection: string, version: number, cursor: string | null): Promise<void> {
-    const result = await database.query<{ started_at: Date; mode: SyncMode }>(
+  async complete(context: WriteTransactionContext, run: string, connection: string, version: number, cursor: string | null): Promise<void> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      started_at: Date;
+      mode: SyncMode;
+    }>(
       `update organization.syncrun set state='completed',completed_at=clock_timestamp(),watermark=clock_timestamp()
       where id=$1 and state='running' and checksum is not null returning started_at,mode`,
       [run]
@@ -207,7 +248,8 @@ export class PgDirectoryRepository implements DirectoryRepository {
       [connection, version, cursor]
     );
   }
-  async departures(database: OperationDatabase, connection: string): Promise<readonly DirectoryDeparture[]> {
+  async departures(context: ReadTransactionContext, connection: string): Promise<readonly DirectoryDeparture[]> {
+    const database = this.transactions.database(context);
     const result = await database.query<DirectoryDeparture>(
       `select subject.id subject,membership.membership_id membership,membership.organization_id organization
       from organization.directorysubject subject join organization.directorymembership membership on membership.subject_id=subject.id
@@ -217,54 +259,20 @@ export class PgDirectoryRepository implements DirectoryRepository {
     );
     return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
-  async freeze(database: OperationDatabase, connection: string, subject: string): Promise<void> {
+  async freeze(context: WriteTransactionContext, connection: string, subject: string): Promise<void> {
+    const database = this.transactions.database(context);
     await database.query(`update organization.directorysubject set status='inactive',version=version+1 where id=$1 and connection_id=$2 and status='active'`, [subject, connection]);
     await database.query(`update organization.directorymembership set status='inactive',version=version+1 where subject_id=$1 and connection_id=$2 and status='active'`, [subject, connection]);
   }
-  async fail(database: OperationDatabase, run: string, code: string): Promise<void> {
+  async fail(context: WriteTransactionContext, run: string, code: string): Promise<void> {
+    const database = this.transactions.database(context);
     await database.query(
       `update organization.syncrun set state='failed',
     error_summary=$2,completed_at=clock_timestamp() where id=$1 and state in('queued','running')`,
       [run, code.slice(0, 200)]
     );
   }
-
-  private async organization(database: OperationDatabase, connection: DirectoryConnection, subject: StagedSubject): Promise<void> {
-    const parent = subject.parentorganization ?? connection.organizationid;
-    const parentExists = await database.query("select id from organization.organization where id=$1 and status='active'", [parent]);
-    if (!parentExists.rows[0]) throw new Error('DIRECTORY_PARENT_NOT_FOUND');
-    const current = await database.query<{ parent_id: string | null }>('select parent_id from organization.organization where id=$1 for update', [subject.organization]);
-    if (current.rows[0]?.parent_id !== undefined && current.rows[0].parent_id !== parent) {
-      const cycle = await database.query('select 1 from organization.unitclosure where ancestor_id=$1 and descendant_id=$2', [subject.organization, parent]);
-      if (cycle.rows[0]) throw new Error('DIRECTORY_HIERARCHY_CYCLE');
-      await database.query(
-        `delete from organization.unitclosure closure using organization.unitclosure subtree
-        where subtree.ancestor_id=$1 and closure.descendant_id=subtree.descendant_id
-          and closure.ancestor_id not in(select descendant_id from organization.unitclosure where ancestor_id=$1)`,
-        [subject.organization]
-      );
-    }
-    await database.query(
-      `insert into organization.organization(id,kind,parent_id,name,timezone,status,version,created_at,updated_at)
-      select $1,'department',$2,$3,parent.timezone,'active',0,clock_timestamp(),clock_timestamp() from organization.organization parent where parent.id=$2
-      on conflict(id) do update set parent_id=excluded.parent_id,name=excluded.name,status='active',version=organization.organization.version+1,updated_at=clock_timestamp()`,
-      [subject.organization, parent, subject.displayname]
-    );
-    await database.query(
-      `insert into organization.sourcebinding(source_type,source_id,organization_id,source_code) values('directory',$1,$2,$3)
-      on conflict(source_type,source_id) do update set organization_id=excluded.organization_id`,
-      [subject.id, subject.organization, connection.providertype]
-    );
-    await database.query(
-      `with subtree as(
-        select descendant_id,depth from organization.unitclosure where ancestor_id=$1
-        union all select $1,0 where not exists(select 1 from organization.unitclosure where ancestor_id=$1 and descendant_id=$1)
-      ) insert into organization.unitclosure(ancestor_id,descendant_id,depth)
-      select supertree.ancestor_id,subtree.descendant_id,supertree.depth+subtree.depth+1
-      from organization.unitclosure supertree cross join subtree where supertree.descendant_id=$2
-      union all select $1,descendant_id,depth from subtree
-      on conflict(ancestor_id,descendant_id) do update set depth=excluded.depth`,
-      [subject.organization, parent]
-    );
+  async markEventProcessed(context: WriteTransactionContext, connection: string, event: string): Promise<void> {
+    await this.transactions.database(context).query(`update organization.directoryinbox set state='processed',processed_at=clock_timestamp() where connection_id=$1 and provider_event_id=$2`, [connection, event]);
   }
 }

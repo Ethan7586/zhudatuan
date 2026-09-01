@@ -8,6 +8,7 @@ import type { Listing } from './ProductSchema';
 import { StatusBadge } from './ProductTable';
 import type { ProductAction } from './ProductActions';
 import { productDetailKey, readProductDetail } from './ProductQuery';
+import { canChangeListingPublication, isPublishedListing, productStatus } from './ProductPublication';
 
 const tabs: readonly Readonly<{ key: ProductDrawerTab; label: string }>[] = Object.freeze([
   { key: 'overview', label: '概览' },
@@ -54,6 +55,8 @@ function ProductDrawerContent({
   const [tab, setTab] = useState<ProductDrawerTab>('overview');
   const context = useConsoleContext();
   const detail = useQuery({ queryKey: productDetailKey(context, listing.product_id), queryFn: ({ signal }) => readProductDetail(context, listing.product_id, signal), staleTime: 60_000 });
+  const published = isPublishedListing(listing.status);
+  const canChangePublication = canChangeListingPublication(listing.status, detail.data?.status);
   return (
     <>
       <header className="productdrawerheader">
@@ -91,12 +94,14 @@ function ProductDrawerContent({
         </button>
         <button
           type="button"
+          disabled={!canChangePublication}
+          title={!canChangePublication ? '请先把商品状态设为启用' : undefined}
           onClick={() => {
             onClose();
-            onAction({ kind: listing.status === 'published' || listing.status === 'available' ? 'unpublish' : 'publish', listing });
+            onAction({ kind: published ? 'unpublish' : 'publish', listing });
           }}
         >
-          {listing.status === 'published' || listing.status === 'available' ? '下架' : '上架'}
+          {published ? '下架' : '上架'}
         </button>
         <button
           type="button"
@@ -121,7 +126,7 @@ function ProductDrawerContent({
           type="button"
           onClick={() => {
             onClose();
-            onAction({ kind: 'edit', listing });
+            onAction({ kind: 'edit', listing, status: productStatus(detail.data?.status) });
           }}
         >
           <ProductIcon name="edit" />

@@ -7,6 +7,7 @@ import type { HttpResponse } from '../interface/HttpResponse';
 import type { HandlerRegistry } from './HandlerRegistry';
 import type { OperationPolicy } from './OperationPolicy';
 import type { PublicActorFingerprint } from '../security/PublicActorFingerprint';
+import type { OperationExecutor } from './OperationExecutor';
 
 export class OperationPipeline {
   private readonly bulkhead = new Bulkhead(RUNTIME_LIMITS.http.maximumConcurrency, RUNTIME_LIMITS.http.maximumQueue);
@@ -14,7 +15,8 @@ export class OperationPipeline {
   constructor(
     private readonly handlers: HandlerRegistry,
     private readonly policy: OperationPolicy,
-    private readonly publicActors: PublicActorFingerprint
+    private readonly publicActors: PublicActorFingerprint,
+    private readonly executor: OperationExecutor
   ) {}
 
   execute<TKey extends OperationId>(operationId: TKey, request: HttpRequest): Promise<HttpResponse> {
@@ -40,28 +42,29 @@ export class OperationPipeline {
     }
     const expectedVersion = expectedVersionOf(request.headers['if-match']);
     if (operation.expectedVersion === 'required' && expectedVersion === undefined) throw new ApplicationError('EXPECTED_VERSION_REQUIRED');
-    const security = await this.policy.authorize({ operation, input, headers: request.headers });
+    const security = await this.policy.authorize({ operation, input, headers: request.headers, deadline: request.deadline, signal: request.signal });
     const publicActor = security.kind === 'session' ? undefined : this.publicActors.create(operation, input, request.headers);
     const handler = this.handlers.get(operationId);
-    const reply = await handler
-      .handle(input as OperationInputFor<TKey>, {
-        requestId: request.headers['x-request-id'] ?? 'request:missing',
-        traceId: request.headers['x-trace-id'] ?? request.headers['x-request-id'] ?? 'trace:missing',
-        deadline: request.deadline,
-        signal: request.signal,
-        security,
-        headers: request.headers,
-        rawBody: request.rawBody,
-        ...(publicActor === undefined ? {} : { publicActor }),
-        ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
-        ...(expectedVersion === undefined ? {} : { expectedVersion }),
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof ApplicationError && !(operation.errorUnion as readonly string[]).includes(cause.code)) {
-          throw new ApplicationError('INTERNAL_ERROR', {}, cause);
-        }
-        throw cause;
-      });
+    const context = {
+      requestId: request.headers['x-request-id'] ?? 'request:missing',
+      traceId: request.headers['x-trace-id'] ?? request.headers['x-request-id'] ?? 'trace:missing',
+      deadline: request.deadline,
+      signal: request.signal,
+      operation: operationId,
+      security,
+      headers: request.headers,
+      rawBody: request.rawBody,
+      ...(publicActor === undefined ? {} : { publicActor }),
+      ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
+      ...(expectedVersion === undefined ? {} : { expectedVersion }),
+      ...(request.headers['x-action-proof'] === undefined ? {} : { actionProof: request.headers['x-action-proof'] }),
+    } as const;
+    const reply = await this.executor.execute(handler, input as OperationInputFor<TKey>, context).catch((cause: unknown) => {
+      if (cause instanceof ApplicationError && !(operation.errorUnion as readonly string[]).includes(cause.code)) {
+        throw new ApplicationError('INTERNAL_ERROR', {}, cause);
+      }
+      throw cause;
+    });
     if (!operationSuccess(operation.responseMode, reply.status)) throw operationError(operation.errorUnion, reply.status, reply.body);
     const output = schema.output.parse(normalizeContractOutput(operation.responseMode === 'redirect' ? { location: reply.headers?.location } : reply.body));
     return { status: reply.status, body: operation.responseMode === 'redirect' ? undefined : output, ...(reply.headers === undefined ? {} : { headers: reply.headers }) };

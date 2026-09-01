@@ -1,14 +1,16 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
+
 import type { IdentityLinkRepository } from '../port/IdentityLinkRepository';
 export class IdentityLinker {
   constructor(private readonly links: IdentityLinkRepository) {}
-  list(database: OperationDatabase, principal: string) {
+  list(database: ReadTransactionContext, principal: string) {
     return this.links.list(database, principal);
   }
-  create(database: OperationDatabase, input: Parameters<IdentityLinkRepository['create']>[1]) {
-    return this.links.create(database, input);
+  create(database: ReadTransactionContext, input: Parameters<IdentityLinkRepository['create']>[1]) {
+    return this.links.create(requireWriteTransaction(database), input);
   }
-  revoke(database: OperationDatabase, principal: string, link: string) {
-    return this.links.revoke(database, principal, link);
+  revoke(database: ReadTransactionContext, principal: string, link: string) {
+    return this.links.revoke(requireWriteTransaction(database), principal, link);
   }
 }

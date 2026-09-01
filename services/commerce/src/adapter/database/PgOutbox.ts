@@ -1,32 +1,31 @@
 import type { QueryResultRow } from 'pg';
-import type { Transaction } from '../../foundation/persistence/UnitOfWork';
-import type { DatabasePool } from '../../foundation/persistence/Pool';
 import { retryDelay } from '../../foundation/performance/Retry';
 import type { DomainEvent } from '../../foundation/domain/DomainEvent';
 import type { OutboxMessage, OutboxWriter } from '../../foundation/messaging/Outbox';
-import { DeadletterStore } from '../../foundation/infrastructure/DeadletterStore';
-import { PgUnitOfWork } from './PgUnitOfWork';
+import type { DeadletterStore } from '../../foundation/infrastructure/DeadletterStore';
+import { PgDeadletterStore } from './PgDeadletterStore';
 import { safeErrorCode } from '../../foundation/domain/SafeError';
 import { parseEventPayload } from '@shop/contract';
+import type { WriteTransactionContext } from '../../foundation/persistence/TransactionContext';
+import type { TransactionManager } from '../../foundation/persistence/TransactionManager';
+import { PgTransactionAccess } from './PgTransactionAccess';
 
 interface PgOutboxRow extends QueryResultRow, OutboxMessage {}
 
 export class PgOutbox implements OutboxWriter {
-  private readonly unit: PgUnitOfWork;
+  private readonly transactions = new PgTransactionAccess();
 
   constructor(
-    private readonly pool: DatabasePool,
-    private readonly deadletters = new DeadletterStore()
-  ) {
-    this.unit = new PgUnitOfWork(pool);
-  }
+    private readonly manager: TransactionManager,
+    private readonly deadletters: DeadletterStore = new PgDeadletterStore()
+  ) {}
 
-  claim(owner: string, batch: number, leaseSeconds = 30): Promise<readonly OutboxMessage[]> {
+  claim(owner: string, batch: number, signal: AbortSignal, deadline: number, leaseSeconds = 30): Promise<readonly OutboxMessage[]> {
     if (!owner || !Number.isSafeInteger(batch) || batch < 1 || batch > 1000 || !Number.isSafeInteger(leaseSeconds) || leaseSeconds < 5 || leaseSeconds > 900) {
       throw new Error('OUTBOX_CLAIM_INVALID');
     }
-    return this.unit.execute(runtimeContext(owner), async (transaction) => {
-      const result = await transaction.query<PgOutboxRow>(
+    return this.manager.write(runtimeOptions(owner, signal, deadline, 'claim'), async (context) => {
+      const result = await this.transactions.database(context).query<PgOutboxRow>(
         `with eligible as (
         select target.id,row_number() over(partition by target.aggregate_id order by target.occurred_at,target.id) aggregate_sequence
         from runtime.outbox target where target.published_at is null and target.failed_at is null and target.available_at<=clock_timestamp()
@@ -46,22 +45,24 @@ export class PgOutbox implements OutboxWriter {
     });
   }
 
-  async published(event: OutboxMessage, owner: string): Promise<void> {
-    const result = await this.pool.query(
-      `update runtime.outbox set published_at=clock_timestamp(),claimed_by=null,claim_until=null
-      where id=$1 and claimed_by=$2 and fencing_token=$3 and published_at is null`,
-      [event.id, owner, event.fencing_token]
-    );
-    if (result.rowCount !== 1) throw new Error('OUTBOX_LEASE_LOST');
+  published(event: OutboxMessage, owner: string, signal: AbortSignal, deadline: number): Promise<void> {
+    return this.manager.write(runtimeOptions(owner, signal, deadline, 'published'), async (context) => {
+      const result = await this.transactions.database(context).query(
+        `update runtime.outbox set published_at=clock_timestamp(),claimed_by=null,claim_until=null
+        where id=$1 and claimed_by=$2 and fencing_token=$3 and published_at is null`,
+        [event.id, owner, event.fencing_token]
+      );
+      if (result.rowCount !== 1) throw new Error('OUTBOX_LEASE_LOST');
+    });
   }
 
-  fail(event: OutboxMessage, owner: string, cause: unknown, maximumAttempts = 8): Promise<void> {
+  fail(event: OutboxMessage, owner: string, cause: unknown, signal: AbortSignal, deadline: number, maximumAttempts = 8): Promise<void> {
     const error = safeErrorCode(cause, 'OUTBOX_PUBLISH_FAILED');
     const terminal = event.attempts >= maximumAttempts;
-    return this.unit.execute(runtimeContext(owner), async (transaction) => {
-      if (terminal) await this.deadletters.record(transaction, { id: `outbox:${event.id}`, kind: 'outbox', source: event.id, owner: 'runtime', payload: event.payload, error, attempts: event.attempts });
+    return this.manager.write(runtimeOptions(owner, signal, deadline, 'fail'), async (context) => {
+      if (terminal) await this.deadletters.record(context, { id: `outbox:${event.id}`, kind: 'outbox', source: event.id, owner: 'runtime', payload: event.payload, error, attempts: event.attempts });
       const delay = retryDelay(event.attempts, 250, 60_000);
-      const result = await transaction.query(
+      const result = await this.transactions.database(context).query(
         `update runtime.outbox set claimed_by=null,claim_until=null,error_code=$3,
         failed_at=case when $4 then clock_timestamp() else null end,
         available_at=case when $4 then available_at else clock_timestamp()+make_interval(secs=>$5::double precision/1000) end
@@ -71,7 +72,8 @@ export class PgOutbox implements OutboxWriter {
       if (result.rowCount !== 1) throw new Error('OUTBOX_LEASE_LOST');
     });
   }
-  async append(transaction: Transaction, event: DomainEvent): Promise<void> {
+  async append(context: WriteTransactionContext, event: DomainEvent): Promise<void> {
+    const transaction = this.transactions.database(context);
     const payload = parseEventPayload(event.type, event.payload);
     await transaction.query(
       `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,aggregate_version,scope_id,payload,
@@ -97,6 +99,6 @@ export class PgOutbox implements OutboxWriter {
   }
 }
 
-function runtimeContext(owner: string) {
-  return { tenant: '', membership: '', scope: 'runtime', actor: owner, trace: `outbox:${owner}`, workload: 'worker' } as const;
+function runtimeOptions(owner: string, signal: AbortSignal, deadline: number, action: string) {
+  return { tenant: '', membership: '', scope: 'runtime', actor: owner, trace: `outbox:${owner}`, operation: `runtime.outbox.${action}`, deadline, signal, workload: 'jobs' as const };
 }

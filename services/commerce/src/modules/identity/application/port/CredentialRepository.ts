@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface PasswordCredential {
   readonly id: string;
@@ -17,11 +17,11 @@ export interface CredentialSecurity {
 }
 
 export interface CredentialRepository {
-  matchPassword(database: OperationDatabase, subjectHashes: readonly string[]): Promise<PasswordCredential | null>;
-  password(database: OperationDatabase, principal: string, lock: boolean): Promise<PasswordCredential | null>;
-  principalForSubject(database: OperationDatabase, subjectHash: string): Promise<string | null>;
-  changePassword(database: OperationDatabase, principal: string, credential: string, secretHash: string, currentSession: string): Promise<CredentialVersion>;
-  resetPassword(database: OperationDatabase, principal: string, secretHash: string): Promise<CredentialVersion>;
-  changeSubject(database: OperationDatabase, principal: string, subjectHash: string, currentSession: string): Promise<void>;
-  security(database: OperationDatabase, principal: string): Promise<CredentialSecurity>;
+  matchPassword(context: WriteTransactionContext, subjectHashes: readonly string[]): Promise<PasswordCredential | null>;
+  password(context: WriteTransactionContext, principal: string): Promise<PasswordCredential | null>;
+  principalForSubject(context: ReadTransactionContext, subjectHash: string): Promise<string | null>;
+  changePassword(context: WriteTransactionContext, principal: string, credential: string, secretHash: string, currentSession: string): Promise<CredentialVersion>;
+  resetPassword(context: WriteTransactionContext, principal: string, secretHash: string): Promise<CredentialVersion>;
+  changeSubject(context: WriteTransactionContext, principal: string, subjectHash: string, currentSession: string): Promise<void>;
+  security(context: ReadTransactionContext, principal: string): Promise<CredentialSecurity>;
 }

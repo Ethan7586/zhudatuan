@@ -1,4 +1,4 @@
-import { OperationCatalog, type OperationId } from '@shop/contract';
+import { operationFingerprint, OperationCatalog, type OperationId } from '@shop/contract';
 
 export interface ActionRequest {
   readonly version: 1;
@@ -14,7 +14,7 @@ export async function createActionRequest(operation: OperationId, input: Readonl
   const path: Readonly<Record<string, string>> = input.path ?? Object.freeze({});
   const resource = Object.values(path)[0] ?? scopeResource;
   if (!resource) throw new Error('ACTION_REQUEST_RESOURCE_REQUIRED');
-  const requestHash = await sha256(JSON.stringify({ type: operation, path, query: {}, body: input.body, expectedVersion }));
+  const requestHash = await sha256(JSON.stringify(operationFingerprint(operation, input, expectedVersion)));
   return encode({ version: 1, operation, resource, requestHash, expectedVersion, makerMembership });
 }
 

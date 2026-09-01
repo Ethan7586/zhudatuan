@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
 navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
-contractSha256: e43962c59027687e19e380eb26298c55f53c0a461bb3c52405b9f27c749abd1d
+contractSha256: b4e31745c41ffe493cfd1b1b8bf853009b7a27cb0d9efe5839ecfc404abd4e75
 generated: true
 chain:
   - WorkbookCell
@@ -221,8 +221,8 @@ requirements:
       - catalog.poolbinding
       - voucher.cardpool
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/PlatformJourney.spec.ts
     runbook: docs/operations/catalogsync.md
@@ -417,8 +417,8 @@ requirements:
       - channel.connection
       - capability.assignment
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/DistributionJourney.spec.ts
     runbook: docs/operations/catalogsync.md
@@ -555,8 +555,8 @@ requirements:
       - reporting.fact
       - reporting.orderprojection
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupDashboardJourney.spec.ts
     runbook: docs/operations/projection.md
@@ -710,8 +710,8 @@ requirements:
       - experience.release
       - experience.publication
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupApplicationJourney.spec.ts
     runbook: docs/operations/experiencepublish.md
@@ -879,8 +879,8 @@ requirements:
       - catalog.listing
       - pricing.rule
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupProductJourney.spec.ts
     runbook: docs/operations/catalogsync.md
@@ -1041,8 +1041,8 @@ requirements:
       - fulfillment.fulfillmentorder
       - payment.refund
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupOrderJourney.spec.ts
     runbook: docs/operations/fulfillment.md
@@ -1216,8 +1216,8 @@ requirements:
       - voucher.voucher
       - voucher.redemption
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupVoucherJourney.spec.ts
     runbook: docs/operations/benefitgrant.md
@@ -1420,8 +1420,8 @@ requirements:
       - finance.statement
       - invoice.request
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupFinanceJourney.spec.ts
     runbook: docs/operations/reconciliation.md
@@ -1574,8 +1574,8 @@ requirements:
       - reporting.fact
       - reporting.export
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupReportJourney.spec.ts
     runbook: docs/operations/export.md
@@ -1752,8 +1752,8 @@ requirements:
       - support.assignment
       - support.sla
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupSupportJourney.spec.ts
     runbook: docs/operations/supportsla.md
@@ -2010,8 +2010,8 @@ requirements:
       - notification.template
       - risk.policy
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/GroupSettingJourney.spec.ts
     runbook: docs/operations/riskscan.md
@@ -2151,8 +2151,8 @@ requirements:
       - reporting.fact
       - reporting.orderprojection
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallDashboardJourney.spec.ts
     runbook: docs/operations/projection.md
@@ -2308,8 +2308,8 @@ requirements:
       - experience.release
       - experience.publication
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallDesignJourney.spec.ts
     runbook: docs/operations/experiencepublish.md
@@ -2492,8 +2492,8 @@ requirements:
       - catalog.listing
       - pricing.rule
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallProductJourney.spec.ts
     runbook: docs/operations/pricesync.md
@@ -2679,8 +2679,8 @@ requirements:
       - fulfillment.fulfillmentorder
       - payment.refund
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallOrderJourney.spec.ts
     runbook: docs/operations/paymentrefund.md
@@ -2857,8 +2857,8 @@ requirements:
       - voucher.redemption
       - voucher.reversal
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallVoucherJourney.spec.ts
     runbook: docs/operations/voucherexpiry.md
@@ -3066,8 +3066,8 @@ requirements:
       - finance.statement
       - invoice.request
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallFinanceJourney.spec.ts
     runbook: docs/operations/reconciliation.md
@@ -3220,8 +3220,8 @@ requirements:
       - reporting.fact
       - reporting.export
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallReportJourney.spec.ts
     runbook: docs/operations/export.md
@@ -3411,8 +3411,8 @@ requirements:
       - support.assignment
       - support.sla
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallSupportJourney.spec.ts
     runbook: docs/operations/supportsla.md
@@ -3677,8 +3677,8 @@ requirements:
       - notification.template
       - risk.policy
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/MallSettingJourney.spec.ts
     runbook: docs/operations/riskscan.md
@@ -3818,8 +3818,8 @@ requirements:
       - access.membership
       - member.profile
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/integration/registry.spec.ts
       - tests/journey/IdentityJourney.spec.ts
     runbook: docs/operations/identityrecovery.md
@@ -3992,8 +3992,8 @@ requirements:
       - channel.provideroperation
       - extension.installation
     tests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - tests/contract/providers.spec.ts
       - tests/journey/ProviderJourney.spec.ts
     runbook: docs/operations/catalogsync.md

@@ -1,5 +1,8 @@
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface IdentityPrincipal {
-  ensurePending(database: OperationDatabase, principal: string): Promise<void>;
+  ensurePending(context: WriteTransactionContext, principal: string): Promise<void>;
 }
+
+export const MEMBER_IMPORT_IDENTITY_PORT = publicPort<IdentityPrincipal>('identity', 'memberimport');

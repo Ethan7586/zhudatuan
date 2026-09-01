@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { PutCartItem } from '../../services/commerce/src/modules/cart/application/command/PutCartItem';
+import { ItemsPutHandler } from '../../services/commerce/src/modules/cart/application/handler/ItemsPutHandler';
 
 test('two writes with the same cart version allow exactly one mutation', async () => {
   const carts = new SerialCart();
-  const command = new PutCartItem(
-    { profile: async () => ({ id: 'membership:one', member: 'member:one', organization: 'mall:one', employee: null, status: 'active', accessversion: 1, joinedat: null }) } as never,
-    { active: async () => 'application:one' } as never,
-    { purchasable: async () => ({ sku: 'sku:one', title: '福利商品', version: 3 }) } as never,
-    { current: async () => ({ amountMinor: 100, currency: 'CNY', version: 'price:one' }) } as never,
-    carts as never
+  const handler = new ItemsPutHandler(
+    carts as never,
+    { resolve: async () => ({ member: 'member:one', mall: 'mall:one', application: 'application:one' }) } as never,
+    {
+      resolve: async () => new Map([['listing:one', { listing: 'listing:one', sku: 'sku:one', title: '福利商品', listingVersion: 'listing:3', unitMinor: 100, currency: 'CNY', priceVersion: 'price:one' }]]),
+    } as never
   );
-  const writes = await Promise.allSettled([command.execute(request(), {} as never), command.execute(request(), {} as never)]);
+  const writes = await Promise.allSettled([handler.execute(request().input, context()), handler.execute(request().input, context())]);
   assert.equal(writes.filter(({ status }) => status === 'fulfilled').length, 1);
   assert.equal(writes.filter(({ status }) => status === 'rejected').length, 1);
   assert.equal(carts.version, 1);
@@ -57,6 +57,22 @@ function request() {
     type: 'cart.items.put',
     input: { path: { listingid: 'listing:one' }, query: {}, headers: {}, body: { quantity: 1, lineVersion: null }, rawBody: '', expectedVersion: 0, deadline: Date.now() + 1_000, signal: new AbortController().signal },
     security: { kind: 'session', access: access() },
+  } as never;
+}
+
+function context() {
+  const value = request();
+  return {
+    requestId: 'request:cart',
+    traceId: 'trace:cart',
+    operation: 'cart.items.put',
+    deadline: value.input.deadline,
+    signal: value.input.signal,
+    expectedVersion: value.input.expectedVersion,
+    transaction: {} as never,
+    security: value.security,
+    headers: value.input.headers,
+    rawBody: value.input.rawBody,
   } as never;
 }
 

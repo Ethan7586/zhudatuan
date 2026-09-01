@@ -7,13 +7,13 @@ import { checkJdfreshHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { JdfreshMapper } from '../Mapper';
 import { JdfreshWebhook } from '../Webhook';
-import { JdfreshOperations } from '../capability';
+import { JdfreshCapabilities } from '../capability';
 
 describe('jdfresh provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('jdfresh');
     expect(JdfreshProvider.definition.id).toBe('jdfresh');
-    expect(() => assertProviderCapabilities(JdfreshProvider.definition, JdfreshOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(JdfreshProvider.definition, JdfreshCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('JDFRESH_MANIFEST_SIGNATURE_MISSING');
   });

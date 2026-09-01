@@ -7,13 +7,13 @@ import { checkTmallHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { TmallMapper } from '../Mapper';
 import { TmallWebhook } from '../Webhook';
-import { TmallOperations } from '../capability';
+import { TmallCapabilities } from '../capability';
 
 describe('tmall provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('tmall');
     expect(TmallProvider.definition.id).toBe('tmall');
-    expect(() => assertProviderCapabilities(TmallProvider.definition, TmallOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(TmallProvider.definition, TmallCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('TMALL_MANIFEST_SIGNATURE_MISSING');
   });

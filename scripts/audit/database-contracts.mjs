@@ -137,6 +137,9 @@ const REPAIR_FILES = [
   '20260831043000_publish_invitation_receipt_returning.sql',
   '20260831044000_restore_owner_voucher_delegation.sql',
   '20260831045000_publish_owner_voucher_delegation.sql',
+  '20260901010000_move_address_to_member.sql',
+  '20260901011000_resolve_payment_webhook_scope.sql',
+  '20260901012000_resolve_access_role_scope.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v3_catalog_contract.sql',

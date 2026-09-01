@@ -3,7 +3,7 @@ import { join, relative, resolve } from 'node:path';
 
 import { REQUIRED_PROVIDER_IDS } from '../../packages/contract/src/provider/ProviderCatalog.ts';
 import { TARGET_SCHEMA_HEAD } from '@shop/config/server';
-import { JOB_CATALOG } from '../../services/commerce/src/app/jobs.ts';
+import { JOB_CATALOG } from '../../services/commerce/src/foundation/application/JobCatalog.ts';
 import { productionSources } from '../check/source.mjs';
 import { directoryHash, fileHash, hash, manifestHash } from './artifacts.mjs';
 

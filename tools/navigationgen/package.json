@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "prettier": "3.5.3",
     "yaml": "2.9.0"
   },
   "devDependencies": {

@@ -1,8 +1,9 @@
-import type { OperationRequest } from '../../../../foundation/application/OperationExecution';
+import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
 import type { RiskGate } from '../../../../foundation/security/RiskGate';
 import type { FederationProtector } from '../../domain/service/FederationProtector';
 import { InvitationRatePolicy } from '../../domain/policy/InvitationRatePolicy';
 import type { InvitationRatePort } from '../port/InvitationRatePort';
+import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { assertPublicRisk } from './PublicRisk';
 
 export class InvitationGuard {
@@ -23,7 +24,7 @@ export class InvitationGuard {
     const networkHash = this.protector.risk(peer, agent).toString('hex');
     const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency ?? actor;
     await Promise.all([
-      this.rates.consume({ operation: request.type, actor, trace, rules: this.policy.rules(target, { code: codeHash, device: deviceHash, network: networkHash }) }),
+      this.rates.consume({ operation: request.type, actor, trace, deadline: request.input.deadline, signal: request.input.signal, rules: this.policy.rules(target, { code: codeHash, device: deviceHash, network: networkHash }) }),
       assertPublicRisk(this.risk, request, codeHash, deviceHash, target, { 'invitation.code': 1, 'invitation.device': 1, 'invitation.network': 1 }),
     ]);
   }
@@ -31,6 +32,26 @@ export class InvitationGuard {
   assertRecipient(request: OperationRequest, target: 'console' | 'storefront', recipient: Buffer | null): Promise<void> {
     if (recipient === null) return Promise.resolve();
     const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency ?? request.input.publicActor ?? 'public:invitation';
-    return this.rates.consume({ operation: request.type, actor: request.input.publicActor ?? `public:${recipient.toString('hex')}`, trace, rules: [this.policy.recipient(target, recipient.toString('hex'))] });
+    return this.rates.consume({
+      operation: request.type,
+      actor: request.input.publicActor ?? `public:${recipient.toString('hex')}`,
+      trace,
+      deadline: request.input.deadline,
+      signal: request.input.signal,
+      rules: [this.policy.recipient(target, recipient.toString('hex'))],
+    });
+  }
+
+  assertRecipientWithin(context: WriteTransactionContext, request: OperationRequest, target: 'console' | 'storefront', recipient: Buffer | null): Promise<void> {
+    if (recipient === null) return Promise.resolve();
+    const trace = request.input.headers['x-trace-id'] ?? request.input.idempotency ?? request.input.publicActor ?? 'public:invitation';
+    return this.rates.consumeWithin(context, {
+      operation: request.type,
+      actor: request.input.publicActor ?? `public:${recipient.toString('hex')}`,
+      trace,
+      deadline: request.input.deadline,
+      signal: request.input.signal,
+      rules: [this.policy.recipient(target, recipient.toString('hex'))],
+    });
   }
 }

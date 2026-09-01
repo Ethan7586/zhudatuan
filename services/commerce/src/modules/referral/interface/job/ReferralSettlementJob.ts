@@ -1,23 +1,17 @@
 import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { SettleCommissions } from '../../application/command/SettleCommissions';
-import type { FinancePoster } from '../../application/port/FinancePoster';
+import type { SettleReferral } from '../../application/process/SettleReferral';
 
 export class ReferralSettlementJob implements JobProcessor {
-  private readonly settle: SettleCommissions;
+  constructor(private readonly settle: SettleReferral) {}
 
-  constructor(pool: DatabasePool, finance: FinancePoster) {
-    this.settle = new SettleCommissions(pool, finance);
-  }
-
-  async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
+  async process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'referralsettlement') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
     const scopeId = text(payload.scopeId, 'REFERRAL_SCOPE_REQUIRED');
     if (job.scope_id !== scopeId) throw new Error('REFERRAL_SCOPE_MISMATCH');
     const orderId = payload.orderId === null || payload.orderId === undefined ? null : text(payload.orderId, 'REFERRAL_ORDER_REFERENCE_INVALID');
-    await this.settle.execute(scopeId, orderId);
+    await this.settle.execute(scopeId, orderId, signal, deadline);
   }
 }
 

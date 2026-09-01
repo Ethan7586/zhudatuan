@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface ChallengeIssue {
   readonly id: string;
@@ -22,21 +22,21 @@ export interface IssuedChallenge {
 }
 
 export interface ChallengePort {
-  issue(database: OperationDatabase, challenge: ChallengeIssue): Promise<IssuedChallenge>;
+  issue(context: WriteTransactionContext, challenge: ChallengeIssue): Promise<IssuedChallenge>;
   consume(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     challenge: string,
     code: string,
     digest: (id: string, code: string) => string,
     principal?: string,
     expected?: Readonly<{ purpose?: string; destinationHash?: string }>
   ): Promise<{ principal_id: string | null }>;
-  verify(database: OperationDatabase, challenge: string, code: string, digest: (id: string, code: string) => string, expected: Readonly<{ purpose: string; destinationHash: string }>): Promise<{ principal_id: string | null }>;
-  throttle(database: OperationDatabase, keys: readonly (readonly [string, string])[]): Promise<void>;
+  verify(context: WriteTransactionContext, challenge: string, code: string, digest: (id: string, code: string) => string, expected: Readonly<{ purpose: string; destinationHash: string }>): Promise<{ principal_id: string | null }>;
+  throttle(context: WriteTransactionContext, keys: readonly (readonly [string, string])[]): Promise<void>;
 }
 
 export interface LoginGuardPort {
-  assertAllowed(database: OperationDatabase, keys: readonly (readonly [string, string])[]): Promise<void>;
-  recordFailure(database: OperationDatabase, keys: readonly (readonly [string, string])[]): Promise<void>;
-  clear(database: OperationDatabase, subjectHashes: readonly string[], client: string): Promise<void>;
+  assertAllowed(context: WriteTransactionContext, keys: readonly (readonly [string, string])[]): Promise<void>;
+  recordFailure(context: WriteTransactionContext, keys: readonly (readonly [string, string])[]): Promise<void>;
+  clear(context: WriteTransactionContext, subjectHashes: readonly string[], client: string): Promise<void>;
 }

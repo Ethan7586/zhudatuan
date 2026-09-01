@@ -1,9 +1,5 @@
-import type { QueryResult, QueryResultRow } from 'pg';
-
-export interface SessionSecurityDatabase {
-  query<R extends QueryResultRow = QueryResultRow>(text: string, values?: readonly unknown[]): Promise<QueryResult<R>>;
-}
+import type { WriteTransactionContext } from '../persistence/TransactionContext';
 
 export interface SessionSecurity {
-  invalidate(database: SessionSecurityDatabase, principal: string, reason: 'risk_event'): Promise<void>;
+  invalidate(context: WriteTransactionContext, principal: string, reason: 'risk_event'): Promise<void>;
 }

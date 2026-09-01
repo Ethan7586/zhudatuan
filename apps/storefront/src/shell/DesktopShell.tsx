@@ -1,12 +1,13 @@
-import type { ReactNode } from 'react';
-import { Footer } from './Footer';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { Header } from './Header';
 import { LaptopTopSwitcher } from './Navigation';
 import { ToastContainer } from '../shared/ui/ToastContainer';
-import { QuickViewModal } from '../feature/product/ui/QuickViewModal';
 import { useSession } from '../shared/runtime/SessionContext';
 import { routeForPage, useRoutePage } from '../route/Routes';
 import { useNavigate } from 'react-router';
+import { QuickView } from './QuickView';
+
+const Footer = lazy(() => import('./Footer').then((module) => ({ default: module.Footer })));
 
 export function DesktopShell({ children }: { readonly children: ReactNode }) {
   const { toasts, removeToast } = useSession();
@@ -17,9 +18,11 @@ export function DesktopShell({ children }: { readonly children: ReactNode }) {
       <LaptopTopSwitcher />
       <Header activeTab={page} onSelectTab={(next) => void navigate(routeForPage(next))} />
       <main className="flex-1 w-full overflow-x-hidden">{children}</main>
-      <QuickViewModal />
+      <QuickView />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

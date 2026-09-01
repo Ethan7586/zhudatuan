@@ -63,7 +63,7 @@ export const storefrontBootstrap = Object.freeze({
     pool: 'pool:e2e',
     release: 'release:e2e',
     version: 'binding:1',
-    scope: 'enterprise:e2e',
+    tenant: 'enterprise:e2e',
   },
   identity: {
     state: 'complete',

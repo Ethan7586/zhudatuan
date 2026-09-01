@@ -2,7 +2,7 @@ import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { NAVIGATION_CONFIGURATION } from '@shop/config/server';
 import type { Telemetry } from '@shop/telemetry';
 import type { Cache } from '../../../../foundation/cache/Cache';
-import type { NavigationCache } from '../../application/port/NavigationCache';
+import type { NavigationCacheRepository } from '../../application/port/NavigationCacheRepository';
 import type { NavigationKey } from '../../domain/model/NavigationKey';
 import { NavigationTree, type NavigationTreeValue } from '../../domain/model/NavigationTree';
 
@@ -17,7 +17,7 @@ interface CacheEnvelope {
   readonly signature: string;
 }
 
-export class RedisNavigationCache implements NavigationCache {
+export class RedisNavigationCache implements NavigationCacheRepository {
   constructor(
     private readonly cache: Cache,
     private readonly secret: string,

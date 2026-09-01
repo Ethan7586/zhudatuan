@@ -1,4 +1,4 @@
-import { COMMERCE_OPERATIONS } from './operations/CommerceOperations';
+import { COMMERCE_OPERATIONS } from './operations/CommerceCatalog';
 
 export type OperationDefinition = (typeof COMMERCE_OPERATIONS)[number];
 export type OperationId = OperationDefinition['id'];

@@ -1,8 +1,8 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { Scope, ScopeGrant } from '@shop/authz';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { AuthorizationRepository, AuthorizationSnapshotRecord, EffectivePermissionRecord, EffectiveScopeRecord, NavigationAuthorizationRecord } from '../../application/port/AuthorizationRepository';
 import type { AuthorizationRole } from '../../../../foundation/security/AuthorizationSnapshot';
-
 interface SnapshotRow {
   readonly membership_id: string;
   readonly membership_active: boolean;
@@ -32,9 +32,18 @@ interface ScopeRow {
   readonly scope_id: string;
   readonly effect: 'allow' | 'deny';
 }
-
 export class PgAuthorizationRepository implements AuthorizationRepository {
-  async snapshot(database: OperationDatabase, input: Readonly<{ membership: string; target: 'console' | 'storefront'; operation: string; resource: string | null }>): Promise<AuthorizationSnapshotRecord | null> {
+  private readonly transactions = new PgTransactionAccess();
+  async snapshot(
+    context: ReadTransactionContext,
+    input: Readonly<{
+      membership: string;
+      target: 'console' | 'storefront';
+      operation: string;
+      resource: string | null;
+    }>
+  ): Promise<AuthorizationSnapshotRecord | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<SnapshotRow>(
       `select membership_id,membership_active,access_version,credential_version,
       organization_id,target,role_assignments,permission_allows,permission_denies,scopes,resource_scope,operation_ids,capability_version
@@ -60,8 +69,8 @@ export class PgAuthorizationRepository implements AuthorizationRepository {
         })
       : null;
   }
-
-  async navigation(database: OperationDatabase, memberships: readonly string[]): Promise<readonly NavigationAuthorizationRecord[]> {
+  async navigation(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly NavigationAuthorizationRecord[]> {
+    const database = this.transactions.database(context);
     if (memberships.length === 0) return Object.freeze([]);
     const result = await database.query<NavigationRow>(
       `select membership_id,permission_code,effect,access_version
@@ -70,13 +79,13 @@ export class PgAuthorizationRepository implements AuthorizationRepository {
     );
     return Object.freeze(result.rows.map((row) => Object.freeze({ membership: row.membership_id, permission: row.permission_code, effect: row.effect, accessVersion: Number(row.access_version) })));
   }
-
-  async permissions(database: OperationDatabase, membership: string): Promise<readonly EffectivePermissionRecord[]> {
+  async permissions(context: ReadTransactionContext, membership: string): Promise<readonly EffectivePermissionRecord[]> {
+    const database = this.transactions.database(context);
     const result = await database.query<PermissionRow>('select permission_code,effect from access.effective_permissions($1)', [membership]);
     return Object.freeze(result.rows.map((row) => Object.freeze({ permission: row.permission_code, effect: row.effect })));
   }
-
-  async scopes(database: OperationDatabase, membership: string): Promise<readonly EffectiveScopeRecord[]> {
+  async scopes(context: ReadTransactionContext, membership: string): Promise<readonly EffectiveScopeRecord[]> {
+    const database = this.transactions.database(context);
     const result = await database.query<ScopeRow>(`select scope->>'id' scope_id,effect from access.effective_scopes($1)`, [membership]);
     return Object.freeze(result.rows.map((row) => Object.freeze({ scope: row.scope_id, effect: row.effect })));
   }

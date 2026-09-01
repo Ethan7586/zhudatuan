@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { Invitation } from '../../domain/model/Invitation';
@@ -14,7 +15,15 @@ export class InvitationLookup {
     private readonly hasher: InvitationHashPort
   ) {}
 
-  async find(database: OperationDatabase, raw: unknown, target: 'console' | 'storefront', lock: boolean): Promise<Invitation> {
+  find(database: ReadTransactionContext, raw: unknown, target: 'console' | 'storefront'): Promise<Invitation> {
+    return this.resolve(raw, (hashes) => this.repository.find(database, hashes, target));
+  }
+
+  lock(database: WriteTransactionContext, raw: unknown, target: 'console' | 'storefront'): Promise<Invitation> {
+    return this.resolve(raw, (hashes) => this.repository.lock(database, hashes, target));
+  }
+
+  private async resolve(raw: unknown, lookup: (hashes: ReturnType<InvitationHashPort['candidates']>) => Promise<Invitation>): Promise<Invitation> {
     let valid = true;
     let code = DECOY;
     try {
@@ -25,7 +34,7 @@ export class InvitationLookup {
     }
     let invitation: Invitation;
     try {
-      invitation = await this.repository.find(database, this.hasher.candidates(code), target, lock);
+      invitation = await lookup(this.hasher.candidates(code));
     } catch (cause) {
       if (cause instanceof ApplicationError) throw new DomainError('INVITATION_INVALID');
       throw cause;

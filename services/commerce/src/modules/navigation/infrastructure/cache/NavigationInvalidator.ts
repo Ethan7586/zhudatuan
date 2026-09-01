@@ -1,5 +1,5 @@
 import type { NavigationClock } from '../../application/port/NavigationClock';
-import type { NavigationCache, NavigationInvalidationState } from '../../application/port/NavigationCache';
+import type { NavigationCacheRepository, NavigationInvalidationPort } from '../../application/port/NavigationCacheRepository';
 import { NavigationKey } from '../../domain/model/NavigationKey';
 
 export interface NavigationInvalidation {
@@ -10,10 +10,10 @@ export interface NavigationInvalidation {
   readonly catalog?: boolean;
 }
 
-export class NavigationInvalidator implements NavigationInvalidationState {
+export class NavigationInvalidator implements NavigationInvalidationPort {
   private latest: string | null = null;
   constructor(
-    private readonly cache: NavigationCache,
+    private readonly cache: NavigationCacheRepository,
     private readonly secret: string,
     private readonly clock: NavigationClock
   ) {}

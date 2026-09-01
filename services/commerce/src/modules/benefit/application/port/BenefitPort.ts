@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface BenefitChoice {
   readonly id: string;
@@ -22,10 +22,10 @@ export interface BenefitRefund {
 }
 
 export interface BenefitGateway {
-  preview(database: OperationDatabase, member: string, scope: string, accounts: readonly string[]): Promise<readonly BenefitChoice[]>;
-  available(database: OperationDatabase, member: string, scope: string): Promise<readonly BenefitChoice[]>;
-  reserve(database: OperationDatabase, order: string, member: string, scope: string, tenders: readonly BenefitTender[]): Promise<void>;
-  consume(database: OperationDatabase, order: string, account: string, amountMinor: number): Promise<void>;
-  refund(database: OperationDatabase, input: BenefitRefund): Promise<void>;
-  release(database: OperationDatabase, order: string): Promise<void>;
+  preview(context: ReadTransactionContext, member: string, scope: string, accounts: readonly string[]): Promise<readonly BenefitChoice[]>;
+  available(context: ReadTransactionContext, member: string, scope: string): Promise<readonly BenefitChoice[]>;
+  reserve(context: WriteTransactionContext, order: string, member: string, scope: string, tenders: readonly BenefitTender[]): Promise<void>;
+  consume(context: WriteTransactionContext, order: string, account: string, amountMinor: number): Promise<void>;
+  refund(context: WriteTransactionContext, input: BenefitRefund): Promise<void>;
+  release(context: WriteTransactionContext, order: string): Promise<void>;
 }

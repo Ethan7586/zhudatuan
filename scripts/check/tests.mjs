@@ -2,19 +2,50 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { parse } from 'yaml';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
+import { architectureDiagnostics } from '../audit/boundary.mjs';
 
 const root = repositoryRoot;
 const failures = [];
-const requiredCommerceLayers = ['repository', 'http', 'event', 'job'];
+const requiredCommerceLayers = ['handler', 'repository', 'http', 'event', 'job'];
 const providerRoot = join(root, 'extensions/channel');
 const requirements = parse(readFileSync(join(root, 'config/requirements.yml'), 'utf8'));
 const providerAuthority = parse(readFileSync(join(root, 'config/providers.yml'), 'utf8'));
+const boundaryFixtures = parse(readFileSync(join(root, 'scripts/check/fixtures/Boundary.yml'), 'utf8'));
+const operationAuthority = parse(readFileSync(join(root, 'packages/contract/definitions/operations.yml'), 'utf8'), { merge: true });
+
+const fixtureCodes = (boundaryFixtures.cases ?? []).map(({ code }) => code);
+if (JSON.stringify(fixtureCodes) !== JSON.stringify(architectureDiagnostics)) failures.push(`BOUNDARY_FIXTURE_CATALOG_INVALID:${fixtureCodes.length}`);
+for (const fixture of boundaryFixtures.cases ?? []) {
+  if (!fixture.positive || !fixture.negative || fixture.positive === fixture.negative) failures.push(`BOUNDARY_FIXTURE_INVALID:${fixture.code}`);
+}
 
 for (const layer of requiredCommerceLayers) {
   const directory = join(root, 'services/commerce/tests', layer);
   const files = existsSync(directory) ? readdirSync(directory).filter((name) => name.endsWith('.test.ts')) : [];
   if (files.length === 0) failures.push(`COMMERCE_TEST_LAYER_MISSING:${layer}`);
 }
+
+const operations = Array.isArray(operationAuthority?.operations) ? operationAuthority.operations : [];
+const handlerPaths = new Set(operations.map(({ handler }) => handler));
+if (operations.length !== 269 || handlerPaths.size !== 269) failures.push(`HANDLER_TEST_MATRIX_CARDINALITY_INVALID:${operations.length}:${handlerPaths.size}`);
+for (const operation of operations) {
+  if (typeof operation?.handler !== 'string' || !existsSync(join(root, operation.handler))) failures.push(`HANDLER_TEST_TARGET_MISSING:${operation?.id ?? 'unknown'}`);
+}
+const handlerContractPath = join(root, 'services/commerce/tests/handler/Handler.test.ts');
+const handlerContract = existsSync(handlerContractPath) ? readFileSync(handlerContractPath, 'utf8') : '';
+for (const proof of ['describe.each(operations)', 'toHaveLength(269)', 'schema.input.parse', 'this.policy.authorize', 'this.idempotency', 'this.audit']) {
+  if (!handlerContract.includes(proof)) failures.push(`HANDLER_TEST_MATRIX_PROOF_MISSING:${proof}`);
+}
+
+const repositoryImplementations = allFiles(join(root, 'services/commerce/src/modules')).filter(
+  (name) => /\/infrastructure\/persistence\/(?:Pg|Telemetry|Extension)[A-Za-z0-9]*Repository\.ts$/.test(name) && /export class [A-Z][A-Za-z0-9]*Repository\b/.test(readFileSync(name, 'utf8'))
+);
+const repositoryContractPath = join(root, 'services/commerce/tests/repository/Repository.test.ts');
+const repositoryContract = existsSync(repositoryContractPath) ? readFileSync(repositoryContractPath, 'utf8') : '';
+for (const proof of ['describe.each(repositorySources)', 'schemaOwnership(objectAuthority.objects)', 'offset', 'select', 'PoolClient|DatabasePool']) {
+  if (!repositoryContract.includes(proof)) failures.push(`REPOSITORY_TEST_MATRIX_PROOF_MISSING:${proof}`);
+}
+if (repositoryImplementations.length === 0) failures.push('REPOSITORY_TEST_MATRIX_EMPTY');
 
 const mvp = Array.isArray(requirements?.mvp) ? requirements.mvp : [];
 if (mvp.length !== 22) failures.push(`MVP_REQUIREMENT_COUNT_INVALID:${mvp.length}`);
@@ -72,7 +103,7 @@ if (failures.length > 0) {
   for (const failure of failures) console.error(failure);
   process.exit(1);
 }
-console.log('test topology accepted: commerce=4 mvp=22 providers=11 clients=3 productionTestingImports=0');
+console.log(`test topology accepted: commerce=5 handlers=${operations.length} repositories=${repositoryImplementations.length} mvp=22 providers=11 clients=3 productionTestingImports=0`);
 
 function manifests(directory, result = []) {
   if (!existsSync(directory)) return result;

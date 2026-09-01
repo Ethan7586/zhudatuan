@@ -1,4 +1,5 @@
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface NavigationIdentity {
@@ -10,7 +11,7 @@ export interface NavigationIdentity {
 }
 
 export interface NavigationIdentityPort {
-  read(database: DatabasePool, principal: string, membership: string): Promise<NavigationIdentity>;
+  read(context: ReadTransactionContext, principal: string, membership: string): Promise<NavigationIdentity>;
 }
 
 export const NAVIGATION_IDENTITY_PORT = publicPort<NavigationIdentityPort>('identity', 'navigation');

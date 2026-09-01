@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BootstrapQuery, canonicalHost } from '../../services/commerce/src/app/storefront/BootstrapQuery';
+import { BootstrapQuery, canonicalHost } from '../../services/commerce/src/modules/navigation/application/service/BootstrapQuery';
+import { result as databaseResult, withReadTransaction } from '../../services/commerce/src/test/TransactionFixture';
 
 test('storefront bootstrap resolves the trusted host and returns one coherent anonymous snapshot', async () => {
   const calls: string[] = [];
@@ -23,17 +24,20 @@ test('storefront bootstrap resolves the trusted host and returns one coherent an
       },
     },
     experience: {
-      resolveHost: async (host) => {
+      resolveHost: async (_context, host) => {
         calls.push(`host:${host}`);
         return { application: 'application:one', mall: 'mall:one', pool: 'pool:one', release: 'release:one', version: 'binding:1', tenant: 'tenant:one' };
       },
       published: async () => ({ document: { sections: [] }, version: 'experience:1', asOf: '2026-08-31T00:00:00.000Z' }),
     },
   } as never);
-  const result = await query.execute(request({ host: 'Mall.Example:443', 'x-forwarded-host': 'mall.example' }));
-  const body = result.body as Record<string, any>;
-  assert.equal(result.status, 200);
-  assert.equal(result.headers?.['cache-control'], 'public,max-age=30');
+  const response = await withReadTransaction(
+    async () => databaseResult([]),
+    (transaction) => query.execute({} as never, context(transaction, { host: 'Mall.Example:443', 'x-forwarded-host': 'mall.example' }))
+  );
+  const body = response.body as Record<string, any>;
+  assert.equal(response.status, 200);
+  assert.equal(response.headers?.['cache-control'], 'public,max-age=30');
   assert.equal(body.state, 'complete');
   assert.equal(body.binding.mall, 'mall:one');
   assert.equal(body.identity.data.state, 'anonymous');
@@ -47,10 +51,17 @@ test('storefront bootstrap rejects forwarded-host confusion before a binding loo
   assert.throws(() => canonicalHost({ host: 'mall.example/path' }), /STOREFRONT_HOST_INVALID/);
 });
 
-function request(headers: Readonly<Record<string, string>>) {
+function context(transaction: unknown, headers: Readonly<Record<string, string>>) {
   return {
-    type: 'storefront.bootstrap.read',
-    input: { path: {}, query: {}, headers, body: undefined, rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal },
+    requestId: 'request:bootstrap',
+    traceId: 'trace:bootstrap',
+    operation: 'storefront.bootstrap.read',
+    transaction,
+    headers,
+    rawBody: '',
+    deadline: Date.now() + 1_000,
+    signal: new AbortController().signal,
     security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:bootstrap' },
-  } as const;
+    publicActor: 'public:bootstrap',
+  } as never;
 }

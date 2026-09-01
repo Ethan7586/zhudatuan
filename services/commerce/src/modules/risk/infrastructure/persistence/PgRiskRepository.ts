@@ -1,8 +1,10 @@
+import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { createHash, randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+
 import { signal, type Signal } from '../../domain/model/Signal';
 import type { RiskOutcome } from '../../domain/model/RiskPolicy';
 import type { RiskCheckInput, RiskPolicyRecord, RiskRepository } from '../../application/port/RiskCheck';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 
 interface PolicyRow {
   readonly id: string;
@@ -15,7 +17,7 @@ interface PolicyRow {
 }
 
 export class PgRiskRepository implements RiskRepository {
-  constructor(private readonly database: OperationDatabase) {}
+  constructor(private readonly database: SqlExecutor) {}
 
   async policies(scopes: readonly string[]): Promise<readonly RiskPolicyRecord[]> {
     const result = await this.database.query<PolicyRow>(
@@ -68,20 +70,18 @@ export class PgRiskRepository implements RiskRepository {
       [id, input.check.scope, input.check.operation, input.check.actor, input.check.resource, input.policy, input.version, input.outcome, input.score, input.safeReason, JSON.stringify(input.evidence), input.check.trace]
     );
     if (input.outcome === 'deny')
-      await this.database.query(
-        `insert into runtime.outbox(
-      id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-      values($1,'risk.transaction.blocked',1,'riskdecision',$2,$3,jsonb_build_object('decision',$2,'operation',$4,'reason',$5),$6,
-      clock_timestamp(),clock_timestamp())`,
-        [`event:risk:block:${id}`, id, input.check.scope, input.check.operation, input.safeReason, input.check.trace]
-      );
+      await new PgRuntimeWriter(this.database).append({
+        id: `event:risk:block:${id}`,
+        type: 'risk.transaction.blocked',
+        aggregateType: 'riskdecision',
+        aggregate: id,
+        scope: input.check.scope,
+        payload: { decision: id, operation: input.check.operation, reason: input.safeReason },
+        trace: input.check.trace,
+      });
     if (input.outcome === 'review' || input.outcome === 'deny') await this.openCase(id, input);
     if (input.outcome === 'deny' && input.check.resource && input.check.operation.startsWith('catalog.listings.')) {
-      await this.database.query(
-        `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-        values($1,'riskscan','risk',$2,jsonb_build_object('catalogDecision',$3),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
-        [`job:risk:catalog:${id}`, input.check.scope, id]
-      );
+      await new PgRuntimeWriter(this.database).schedule({ id: `job:risk:catalog:${id}`, kind: 'riskscan', owner: 'risk', scope: input.check.scope, payload: { catalogDecision: id }, priority: 1 });
     }
     return id;
   }
@@ -126,15 +126,17 @@ export class PgRiskRepository implements RiskRepository {
         target.updated_at,target.next_version,target.next_version-1 candidate_version from target),
       version as(insert into risk.policyversion(policy_id,version,rule,rule_hash,rollout_percent,status,created_by,created_at)
         select id,candidate_version,$4::jsonb,$5,$6,'candidate',$7,clock_timestamp() from candidate returning *),
-      replay as(insert into risk.replay(policy_id,candidate_version,state,created_at) select policy_id,version,'queued',clock_timestamp() from version returning *),
-      job as(insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-        select $8,'riskscan','risk',$2,jsonb_build_object('policy',policy_id,'version',version),'queued',20,clock_timestamp(),clock_timestamp(),clock_timestamp() from version)
+      replay as(insert into risk.replay(policy_id,candidate_version,state,created_at) select policy_id,version,'queued',clock_timestamp() from version returning *)
       select candidate.id,candidate.scope_id,candidate.name,candidate.status,candidate.active_version,version.version candidate_version,
         version.rule_hash,version.rollout_percent,replay.state replay_state from candidate join version on version.policy_id=candidate.id
         and version.version=candidate.candidate_version join replay on replay.policy_id=version.policy_id and replay.candidate_version=version.version`,
-      [input.id, input.scope, input.name, JSON.stringify(input.rule), input.ruleHash, input.rolloutPercent, input.actor, `job:${randomUUID()}`]
+      [input.id, input.scope, input.name, JSON.stringify(input.rule), input.ruleHash, input.rolloutPercent, input.actor]
     );
-    return required(result.rows[0], 'RISK_POLICY_SAVE_FAILED');
+    const saved = required(result.rows[0] as Readonly<Record<string, unknown>> | undefined, 'RISK_POLICY_SAVE_FAILED');
+    const version = Number(saved.candidate_version);
+    if (!Number.isSafeInteger(version)) throw new Error('RISK_POLICY_VERSION_INVALID');
+    await new PgRuntimeWriter(this.database).schedule({ id: `job:${randomUUID()}`, kind: 'riskscan', owner: 'risk', scope: input.scope, payload: { policy: input.id, version }, priority: 20 });
+    return saved;
   }
 
   async activatePolicy(input: Readonly<{ id: string; scope: string; version: number; rolloutPercent: number; actor: string; trace: string }>): Promise<Readonly<Record<string, unknown>>> {
@@ -158,12 +160,15 @@ export class PgRiskRepository implements RiskRepository {
       [input.id, input.scope, input.version, input.rolloutPercent, input.actor]
     );
     const activated = required(result.rows[0], 'RISK_POLICY_ACTIVATION_NOT_ALLOWED');
-    await this.database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-      values($1,'risk.policy.activated',1,'riskpolicy',$2,$3,jsonb_build_object('policy',$2,'version',$4,'rolloutPercent',$5),$6,
-      clock_timestamp(),clock_timestamp())`,
-      [`event:${randomUUID()}`, input.id, input.scope, input.version, input.rolloutPercent, input.trace]
-    );
+    await new PgRuntimeWriter(this.database).append({
+      id: `event:${randomUUID()}`,
+      type: 'risk.policy.activated',
+      aggregateType: 'riskpolicy',
+      aggregate: input.id,
+      scope: input.scope,
+      payload: { policy: input.id, version: input.version, rolloutPercent: input.rolloutPercent },
+      trace: input.trace,
+    });
     return activated;
   }
 
@@ -198,12 +203,15 @@ export class PgRiskRepository implements RiskRepository {
     );
     const reviewed = required(result.rows[0], 'RISK_CASE_REVIEW_FAILED');
     if (input.state === 'cleared' || input.state === 'confirmed' || input.state === 'closed')
-      await this.database.query(
-        `insert into runtime.outbox(
-      id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-      values($1,'risk.case.resolved',1,'riskcase',$2,$3,jsonb_build_object('case',$2,'state',$4),$5,clock_timestamp(),clock_timestamp())`,
-        [`event:${randomUUID()}`, input.id, input.scope, input.state, input.trace]
-      );
+      await new PgRuntimeWriter(this.database).append({
+        id: `event:${randomUUID()}`,
+        type: 'risk.case.resolved',
+        aggregateType: 'riskcase',
+        aggregate: input.id,
+        scope: input.scope,
+        payload: { case: input.id, state: input.state },
+        trace: input.trace,
+      });
     return reviewed;
   }
 
@@ -257,11 +265,15 @@ export class PgRiskRepository implements RiskRepository {
       values($1,$2,$3,'open',$4,$5,null,clock_timestamp())`,
       [id, input.check.scope, decision, input.outcome, input.safeReason]
     );
-    await this.database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)
-      values($1,'risk.case.opened',1,'riskcase',$2,$3,jsonb_build_object('case',$2,'decision',$4,'outcome',$5),$6,clock_timestamp(),clock_timestamp())`,
-      [`event:${randomUUID()}`, id, input.check.scope, decision, input.outcome, input.check.trace]
-    );
+    await new PgRuntimeWriter(this.database).append({
+      id: `event:${randomUUID()}`,
+      type: 'risk.case.opened',
+      aggregateType: 'riskcase',
+      aggregate: id,
+      scope: input.check.scope,
+      payload: { case: id, decision, outcome: input.outcome },
+      trace: input.check.trace,
+    });
   }
 }
 

@@ -1,18 +1,20 @@
+import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+
 import { AssignmentRule } from '../../domain/model/AssignmentRule';
 import type { TicketPriority } from '../../domain/model/Ticket';
 import type { Agent } from '../../domain/policy/AssignmentPolicy';
 import { Message } from '../../domain/model/Message';
-import type { EncryptedMessage, SlaPolicy, SupportPort } from '../../application/port/SupportPort';
+import type { EncryptedMessage, SlaPolicy, SupportPersistencePort } from './SupportPersistencePort';
 import type { GetOrderSummary } from '../../../order/public/index';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { MemberAccessPort } from '../../../access/public';
 import type { SupportBenefitPort } from '../../../benefit/public';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 
-export class PgSupportRepository implements SupportPort {
+export class PgSupportRepository implements SupportPersistencePort {
   constructor(
-    private readonly database: OperationDatabase,
+    private readonly database: SqlExecutor,
     private readonly orders: Pick<GetOrderSummary, 'execute'>,
     private readonly organizations: OrganizationReadPort,
     private readonly members: MemberAccessPort,
@@ -20,21 +22,21 @@ export class PgSupportRepository implements SupportPort {
   ) {}
 
   async member(membership: string): Promise<string> {
-    return this.members.member(this.database, membership);
+    return this.members.member(this.database.transaction, membership);
   }
 
   descendants(scope: string): Promise<readonly string[]> {
-    return this.organizations.descendants(this.database, scope);
+    return this.organizations.descendants(this.database.transaction, scope);
   }
 
   async assertOrder(order: string, scope: string, member: string, memberOnly: boolean): Promise<void> {
-    const scopes = memberOnly ? [] : await this.organizations.descendants(this.database, scope);
-    if (!(await this.orders.execute(this.database, order, scopes, member, memberOnly))) throw new Error('SUPPORT_ORDER_SCOPE_INVALID');
+    const scopes = memberOnly ? [] : await this.organizations.descendants(this.database.transaction, scope);
+    if (!(await this.orders.execute(this.database.transaction, order, scopes, member, memberOnly))) throw new Error('SUPPORT_ORDER_SCOPE_INVALID');
   }
 
   async benefit(type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>> {
     if (type !== 'benefitlot') throw new Error('SUPPORT_REFERENCE_TYPE_INVALID');
-    const result = await this.benefits.lot(this.database, id, member, await this.descendants(scope));
+    const result = await this.benefits.lot(this.database.transaction, id, member, await this.descendants(scope));
     if (!result) throw new Error('SUPPORT_BENEFIT_REFERENCE_INVALID');
     return result;
   }
@@ -60,7 +62,7 @@ export class PgSupportRepository implements SupportPort {
   }
 
   async sla(scope: string, priority: TicketPriority): Promise<SlaPolicy> {
-    const organization = await this.organizations.scope(this.database, scope);
+    const organization = await this.organizations.scope(this.database.transaction, scope);
     const scopes = [organization.id, ...organization.ancestors];
     const result = await this.database.query<{ response_seconds: number; resolution_seconds: number }>(
       `select sla.response_seconds,sla.resolution_seconds from support.sla sla where sla.scope_id=any($1::text[])
@@ -81,13 +83,20 @@ export class PgSupportRepository implements SupportPort {
     const appended = result.rows[0];
     if (!appended) throw new Error('SUPPORT_MESSAGE_APPEND_FAILED');
     new Message(appended.id, conversation, appended.author_type, appended.author_id, message.fingerprint, appended.created_at);
-    await this.database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) select $1,'support.message.sent',1,'conversation',$2,$3,
-      jsonb_build_object('ticket',$4::text,'conversation',$2::text,'message',$5::text,'authorType',$6::text,'member',target.member_id),$1,
-      clock_timestamp(),clock_timestamp() from support.conversation target where target.id=$2 and target.member_id is not null`,
-      [`event:${randomUUID()}`, conversation, scope, ticket, message.id, author]
-    );
+    const target = await this.database.query<{ member_id: string | null }>('select member_id from support.conversation where id=$1', [conversation]);
+    const member = target.rows[0]?.member_id;
+    if (member) {
+      const event = `event:${randomUUID()}`;
+      await new PgRuntimeWriter(this.database).append({
+        id: event,
+        type: 'support.message.sent',
+        aggregateType: 'conversation',
+        aggregate: conversation,
+        scope,
+        payload: { ticket, conversation, message: message.id, authorType: author, member },
+        trace: event,
+      });
+    }
     return result;
   }
 
@@ -100,10 +109,14 @@ export class PgSupportRepository implements SupportPort {
   }
 
   async enqueue(kind: 'supportsla' | 'supportscan', scope: string, payload: Readonly<Record<string, unknown>>, availableAt?: Date | string, stableId?: string): Promise<void> {
-    await this.database.query(
-      `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-      values($1,$2,'support',$3,$4::jsonb,'queued',10,coalesce($5::timestamptz,clock_timestamp()),clock_timestamp(),clock_timestamp())`,
-      [stableId ?? `job:${randomUUID()}`, kind, scope, JSON.stringify(payload), availableAt ?? null]
-    );
+    await new PgRuntimeWriter(this.database).schedule({
+      id: stableId ?? `job:${randomUUID()}`,
+      kind,
+      owner: 'support',
+      scope,
+      payload,
+      priority: 10,
+      ...(availableAt === undefined ? {} : { availableAt: availableAt instanceof Date ? availableAt.toISOString() : availableAt }),
+    });
   }
 }

@@ -12,9 +12,9 @@ test('Console 订单管理只呈现生产权威字段和服务端精确筛选', 
   await api.install();
   await page.goto(ordersUrl);
 
-  await expect(page.getByRole('heading', { level: 1, name: '订单管理' })).toBeFocused();
-  await expect(page).toHaveTitle('订单管理 · 智慧翼');
-  await expect(page.getByRole('note')).toContainText('仅支持内部订单 ID 精确筛选与游标分页');
+  await expect(page.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeFocused();
+  await expect(page).toHaveTitle('订单管理系统 · 智慧翼');
+  await expect(page.getByRole('note')).toContainText('内部订单 ID 精确筛选与游标分页');
   await expect(page.getByRole('button', { name: '导出订单' })).toBeDisabled();
   await expect(page.getByRole('button', { name: '更多筛选' })).toBeDisabled();
   await expect(page.getByRole('combobox', { name: '支付状态' })).toBeDisabled();

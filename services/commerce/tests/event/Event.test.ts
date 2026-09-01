@@ -1,20 +1,25 @@
 import { COMMERCE_EVENTS } from '@shop/contract';
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it } from 'vitest';
-import { EVENT_HANDLERS, EVENT_SCHEMA_TYPES, eventVersion } from '../../src/app/events';
+import { EVENT_SCHEMA_TYPES, eventVersion } from '../../src/app/events';
+import { EVENT_SUBSCRIPTIONS } from '../../src/generated/EventSubscriptions';
 import type { DatabasePool } from '../../src/foundation/persistence/Pool';
 import { RuntimeEventPublisher } from '../../src/adapter/messaging/RuntimeEventPublisher';
 import type { OutboxMessage } from '../../src/foundation/messaging/Outbox';
 import { EventRegistry } from '../../src/bootstrap/EventRegistry';
 
 describe('event contract and replay', () => {
-  it('has one exact runtime version and handler declaration for every event schema', () => {
+  it('has one exact runtime version and only declared event subscriptions', () => {
     expect(EVENT_SCHEMA_TYPES).toEqual(COMMERCE_EVENTS.map(({ type }) => type));
     expect(new Set(EVENT_SCHEMA_TYPES).size).toBe(EVENT_SCHEMA_TYPES.length);
     for (const event of COMMERCE_EVENTS) {
       expect(eventVersion(event.type)).toBe(event.version);
-      expect(EVENT_HANDLERS.has(event.type)).toBe(true);
     }
+    expect(
+      Object.values(EVENT_SUBSCRIPTIONS)
+        .flat()
+        .every((event) => EVENT_SCHEMA_TYPES.includes(event as never))
+    ).toBe(true);
     expect(() => eventVersion('undeclared.event')).toThrow('EVENT_SCHEMA_UNKNOWN');
   });
 
@@ -42,9 +47,9 @@ describe('event contract and replay', () => {
     };
     const event = sampleEvent();
     const publisher = new RuntimeEventPublisher(pool, eventRegistry());
-    await publisher.publish(event);
-    await publisher.publish(event);
-    expect(observed.filter((value) => value.startsWith('insert into'))).toHaveLength(EVENT_HANDLERS.get(event.event_type)!.length);
+    await publisher.publish(event, new AbortController().signal, Date.now() + 10_000);
+    await publisher.publish(event, new AbortController().signal, Date.now() + 10_000);
+    expect(observed.filter((value) => value.startsWith('insert into'))).toHaveLength(subscribers(event.event_type).length);
     expect(observed.filter((value) => value === 'commit')).toHaveLength(2);
     expect(observed).not.toContain('rollback');
   });
@@ -54,7 +59,7 @@ describe('event contract and replay', () => {
       throw new Error('DATABASE_MUST_NOT_BE_REACHED');
     };
     const pool: DatabasePool = { connect, query: async () => ({ rows: [], rowCount: 0 }) as unknown as QueryResult, workload: () => pool, end: async () => undefined };
-    await expect(new RuntimeEventPublisher(pool, eventRegistry()).publish({ ...sampleEvent(), event_version: 999 })).rejects.toThrow('EVENT_VERSION_UNSUPPORTED');
+    await expect(new RuntimeEventPublisher(pool, eventRegistry()).publish({ ...sampleEvent(), event_version: 999 }, new AbortController().signal, Date.now() + 10_000)).rejects.toThrow('EVENT_VERSION_UNSUPPORTED');
   });
 });
 
@@ -86,7 +91,14 @@ function sampleEvent(): OutboxMessage {
 
 function eventRegistry(): EventRegistry {
   const registry = new EventRegistry();
-  for (const [event, subscribers] of EVENT_HANDLERS) registry.register(event, subscribers);
+  for (const event of EVENT_SCHEMA_TYPES) registry.declare(event);
+  for (const [subscriber, events] of Object.entries(EVENT_SUBSCRIPTIONS)) for (const event of events) registry.subscribe(event, subscriber);
   registry.freeze();
   return registry;
+}
+
+function subscribers(event: string): readonly string[] {
+  return Object.entries(EVENT_SUBSCRIPTIONS)
+    .filter(([, events]) => events.includes(event as never))
+    .map(([subscriber]) => subscriber);
 }

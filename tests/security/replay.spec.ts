@@ -4,26 +4,41 @@ import { test } from 'node:test';
 import { assertWechatPayTransactionMatchesExpected, verifyWechatPaySignedBody } from '@shop/wechatpayment';
 import { createPorts } from '@shop/providercore';
 import { createWechatPayTestKeys, signedProviderHeaders } from '../../extensions/payment/wechat/test/TestKeys';
-import { claimPaymentRequest } from '../../services/commerce/src/modules/payment/PaymentOperationSupport';
+import { PgIdempotencyRepository } from '../../services/commerce/src/adapter/database/PgIdempotencyRepository';
+import { PgTransactionAccess } from '../../services/commerce/src/adapter/database/PgTransactionAccess';
+import { PgTransactionManager } from '../../services/commerce/src/adapter/database/PgTransactionManager';
 
 test('an idempotency key replay with a different canonical request is rejected', async () => {
-  let calls = 0;
-  const database = {
-    query: async () => {
-      calls += 1;
-      return calls === 1 ? { rows: [], rowCount: 1 } : { rows: [{ request_hash: '0'.repeat(64), state: 'started', response: null }], rowCount: 1 };
+  const client = {
+    query: async (sql: string) => {
+      if (sql.startsWith('select request_hash')) return { rows: [{ request_hash: '0'.repeat(64), state: 'started', response: null }], rowCount: 1 };
+      return { rows: [], rowCount: 1 };
     },
+    release: () => undefined,
   };
+  const manager = new PgTransactionManager({ workload: () => ({ connect: async () => client }) } as never);
+  const repository = new PgIdempotencyRepository(new PgTransactionAccess());
+  const signal = new AbortController().signal;
   await assert.rejects(
-    claimPaymentRequest(
-      database as never,
+    manager.write(
       {
-        type: 'payment.refunds.request',
-        input: { path: {}, query: {}, headers: {}, body: { payment: 'payment:one', amountMinor: 100 }, rawBody: '', idempotency: 'same-key', deadline: Date.now() + 1000, signal: new AbortController().signal },
-        security: { kind: 'anonymous', channel: 'system', target: null, trace: 'trace:replay' },
+        tenant: 'tenant:one',
+        membership: 'membership:one',
+        scope: 'mall:one',
+        actor: 'principal:one',
+        trace: 'trace:replay',
+        operation: 'payment.refunds.request',
+        deadline: Date.now() + 1000,
+        signal,
       },
-      'principal:one',
-      'mall:one'
+      (transaction) =>
+        repository.claim(transaction, {
+          scope: 'mall:one',
+          actor: 'principal:one',
+          operation: 'payment.refunds.request',
+          key: 'same-key',
+          requestHash: '1'.repeat(64),
+        })
     ),
     /IDEMPOTENCY_KEY_REUSED/
   );

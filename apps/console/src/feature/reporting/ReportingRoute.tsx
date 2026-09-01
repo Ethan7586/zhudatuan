@@ -8,6 +8,7 @@ import { PagedResource } from '../../shared/ui/PagedResource';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { readReport, reportKey, reportPeriods, reportViews } from './ReportingQuery';
 import type { ReportMetric, ReportPeriod, ReportView } from './ReportingSchema';
+import { reportMetricKey } from './ReportingKey';
 
 const columns: readonly DataColumn<ReportMetric>[] = [
   { key: 'code', label: '指标', render: (row) => row.code },
@@ -54,7 +55,7 @@ export function Component() {
       {...(error === undefined ? {} : { error })}
       rows={data?.items ?? []}
       columns={columns}
-      rowKey={(row) => `${row.code}:${row.version}:${JSON.stringify(row.dimensions)}`}
+      rowKey={reportMetricKey}
       count={data?.count ?? 0}
       {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
       actions={

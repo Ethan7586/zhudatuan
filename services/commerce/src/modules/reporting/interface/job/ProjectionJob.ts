@@ -1,49 +1,23 @@
 import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import type { Cache } from '../../../../foundation/cache/Cache';
-import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
-import { ProjectEvent } from '../../application/command/ProjectEvent';
-import { PgReportingRepository } from '../../infrastructure/persistence/PgReportingRepository';
+import type { ProjectReporting } from '../../application/process/ProjectReporting';
 
-export class ProjectionJobProcessor implements JobProcessor {
-  constructor(
-    private readonly pool: DatabasePool,
-    private readonly cache: Cache
-  ) {}
+export class ProjectionJob implements JobProcessor {
+  constructor(private readonly projection: ProjectReporting) {}
 
-  async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
+  process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'projection') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
-    const eventid = text(object(job.payload).eventId, 'EVENT_ID_REQUIRED');
-    const client = await this.pool.connect();
-    let projected: readonly Readonly<{ scope: string; version: number }>[] = [];
-    try {
-      await client.query('begin');
-      const repository = new PgReportingRepository(client);
-      const event = await repository.claimEvent(eventid);
-      if (event) projected = await new ProjectEvent(repository).execute(event);
-      await client.query('commit');
-    } catch (cause) {
-      await client.query('rollback');
-      throw cause;
-    } finally {
-      client.release();
-    }
-    const keys = projected.filter(({ version }) => version > 1).flatMap(({ scope, version }) => cacheKeys(scope, version - 1));
-    if (keys.length > 0) await this.cache.remove(...keys);
+    const event = text(object(job.payload).eventId, 'EVENT_ID_REQUIRED');
+    return this.projection.execute(event, { scope: job.scope_id ?? 'reporting', trace: job.id, signal, deadline });
   }
 }
 
-function object(value: unknown): Record<string, unknown> {
+function object(value: unknown): Readonly<Record<string, unknown>> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('JOB_PAYLOAD_INVALID');
-  return value as Record<string, unknown>;
+  return value as Readonly<Record<string, unknown>>;
 }
+
 function text(value: unknown, code: string): string {
   if (typeof value !== 'string' || !value) throw new Error(code);
   return value;
-}
-function cacheKeys(scope: string, projectionversion: number): readonly string[] {
-  const metrics = ['dashboard', 'sales', 'product', 'mall', 'category', 'channel', 'powderclass', 'voucher'] as const;
-  const periods = ['realtime', 'yesterday', '7days', '30days'] as const;
-  return metrics.flatMap((metric) => periods.map((period) => VersionedKey.create('reporting', { scope, metric, period, projectionversion })));
 }

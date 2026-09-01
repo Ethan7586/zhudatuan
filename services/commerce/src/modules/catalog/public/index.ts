@@ -1,17 +1,25 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../bootstrap/ModuleRegistry';
 export type { CatalogSku } from '../application/port/CatalogSku';
-export type { CatalogSourceInput } from '../CatalogSourcePort';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+export type { CatalogSourceInput } from './CatalogSource';
+
 export interface ChannelCatalogPort {
-  accept(database: OperationDatabase, input: import('../CatalogSourcePort').CatalogSourceInput): Promise<void>;
-  sku(database: OperationDatabase, provider: string, scope: string, external: string): Promise<string | null>;
-  keys(database: OperationDatabase, provider: string, scope: string, after: string | null): Promise<readonly string[]>;
+  accept(context: WriteTransactionContext, input: import('./CatalogSource').CatalogSourceInput): Promise<void>;
+  sku(context: ReadTransactionContext, provider: string, scope: string, external: string): Promise<string | null>;
+  keys(context: ReadTransactionContext, provider: string, scope: string, after: string | null): Promise<readonly string[]>;
 }
+export interface InventoryCatalogPort {
+  find(context: ReadTransactionContext, scope: string, reference: string): Promise<string | null>;
+}
+export const PROVIDER_CATALOG_PORT = publicPort<ChannelCatalogPort>('catalog', 'providersync');
+export const INVENTORY_CATALOG_PORT = publicPort<InventoryCatalogPort>('catalog', 'inventoryimport');
 export interface CatalogRiskDecisionPort {
-  execute(database: OperationDatabase, command: Readonly<{ decision: string; scope: string; listing: string }>): Promise<void>;
+  execute(context: WriteTransactionContext, command: Readonly<{ decision: string; scope: string; listing: string }>): Promise<void>;
 }
-export { REFERRAL_CATALOG_PORT, PgReferralCatalogPort, type ReferralCatalogPort } from './ReferralCatalogPort';
-export { CART_CATALOG_PORT, PgCartCatalogPort, type CartCatalogPort, type CartListingSnapshot } from './CartCatalogPort';
-export { CHECKOUT_CATALOG_PORT, PgCheckoutCatalogPort, type CheckoutCatalogItem, type CheckoutCatalogPort } from './CheckoutCatalogPort';
-export { EXPERIENCE_CATALOG_PORT, PgExperienceCatalogPort, type ExperienceCatalogPort, type ExperienceCatalogReferences } from './ExperienceCatalogPort';
-export { CATALOG_READ_PORT, PgCatalogReadPort, type CatalogPosition, type CatalogReadPort, type StorefrontListing } from './CatalogReadPort';
-export { MEMBER_CATALOG_PORT, PgMemberCatalogPort, type MemberCatalogPort } from './MemberCatalogPort';
+export const RISK_CATALOG_PORT = publicPort<CatalogRiskDecisionPort>('catalog', 'risk');
+export { REFERRAL_CATALOG_PORT, type ReferralCatalogPort } from './ReferralCatalogPort';
+export { CART_CATALOG_PORT, type CartCatalogPort, type CartListingSnapshot } from './CartCatalogPort';
+export { CHECKOUT_CATALOG_PORT, type CheckoutCatalogItem, type CheckoutCatalogPort } from './CheckoutCatalogPort';
+export { EXPERIENCE_CATALOG_PORT, type ExperienceCatalogPort, type ExperienceCatalogReferences } from './ExperienceCatalogPort';
+export { CATALOG_READ_PORT, type CatalogPosition, type CatalogReadPort, type StorefrontListing } from './CatalogReadPort';
+export { MEMBER_CATALOG_PORT, type MemberCatalogPort } from './MemberCatalogPort';

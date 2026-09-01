@@ -1,22 +1,17 @@
 import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import type { FinancePoster } from '../../application/port/FinancePoster';
-import { ProcessOrderEvent } from '../../application/command/ProcessOrderEvent';
+import type { ProcessReferralEvent } from '../../application/process/ProcessReferralEvent';
 import { OrderPaidSubscriber } from '../event/OrderPaidSubscriber';
 import { OrderReceivedSubscriber } from '../event/OrderReceivedSubscriber';
 import { RefundCompletedSubscriber } from '../event/RefundCompletedSubscriber';
 
 export class ReferralEventJob implements JobProcessor {
-  private readonly processor: ProcessOrderEvent;
   private readonly paid = new OrderPaidSubscriber();
   private readonly received = new OrderReceivedSubscriber();
   private readonly refunded = new RefundCompletedSubscriber();
 
-  constructor(pool: DatabasePool, finance: FinancePoster) {
-    this.processor = new ProcessOrderEvent(pool, finance);
-  }
+  constructor(private readonly processor: ProcessReferralEvent) {}
 
-  async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
+  async process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'referralevent') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const envelope = object(job.payload);
@@ -34,7 +29,7 @@ export class ReferralEventJob implements JobProcessor {
             ? this.refunded.receive(eventId, scopeId, payload)
             : null;
     if (!event) throw new Error('REFERRAL_EVENT_UNSUPPORTED');
-    await this.processor.execute(event);
+    await this.processor.execute(event, signal, deadline);
   }
 }
 

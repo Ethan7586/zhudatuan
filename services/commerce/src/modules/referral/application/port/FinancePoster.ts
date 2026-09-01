@@ -1,5 +1,8 @@
+import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 export interface FinancePoster {
   post(
+    context: WriteTransactionContext,
     input: Readonly<{
       businessKey: string;
       scopeId: string;

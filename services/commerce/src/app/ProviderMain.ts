@@ -1,13 +1,14 @@
 import { providerWorkerEnvironment } from '@shop/config/server';
 import { mapParallel } from '../foundation/performance/Parallel';
 import { bootstrapProvider, assertProviderReady } from '../bootstrap/ProviderBootstrap';
+import { COMMERCE_MODULES } from './modules';
 import { createProviderRuntime } from '../bootstrap/ProviderRuntime';
-import { PROVIDER_JOB_CATALOG } from './providers';
+import { PROVIDER_JOB_CATALOG } from '../foundation/application/JobCatalog';
 
 const environment = providerWorkerEnvironment();
 const runtime = await createProviderRuntime(environment);
 const worker = environment.PROVIDER_WORKER_ID!;
-const jobs = await bootstrapProvider({ extensions: runtime.extensions, worker, configure: runtime.configure });
+const jobs = await bootstrapProvider({ modules: COMMERCE_MODULES, extensions: runtime.extensions, worker, configure: runtime.configure });
 const registered = jobs
   .all()
   .map(({ id }) => id)

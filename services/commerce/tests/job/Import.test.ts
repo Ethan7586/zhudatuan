@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import { BatchImportProcessor, type BatchImportPort, type ImportTarget } from '../../src/foundation/application/BatchImport';
-import type { ClaimedJob } from '../../src/foundation/application/JobRunner';
+import type { BatchImportProcessPort, ImportTarget } from '../../src/foundation/application/BatchImport';
+import { ProcessBatchImport } from '../../src/foundation/application/process/ProcessBatchImport';
 import type { ObjectStore, ObjectUpload, StoredObject } from '../../src/foundation/infrastructure/ObjectStore';
 
 describe('batch import lifecycle', () => {
@@ -9,11 +9,11 @@ describe('batch import lifecycle', () => {
     const source = new TextEncoder().encode('title,sku,category\nProduct,SKU-1,CATEGORY-1\n');
     const objects = objectStore(source);
     const port = importPort();
-    const processor = new BatchImportProcessor('catalogimport', 'catalog', objects.store, port.value);
-    await processor.process(job('catalogimport'), new AbortController().signal);
-    expect(port.stage).toHaveBeenCalledWith(expect.objectContaining({ scope: 'supplier:test' }), [{ title: 'Product', sku: 'SKU-1', category: 'CATEGORY-1' }]);
+    const process = new ProcessBatchImport('catalog', objects.store, port.value);
+    await process.execute('catalogimport:00000000-0000-4000-8000-000000000001', 'supplier:test', new AbortController().signal, Date.now() + 30_000);
+    expect(port.stage).toHaveBeenCalledWith(expect.objectContaining({ scope: 'supplier:test' }), [{ title: 'Product', sku: 'SKU-1', category: 'CATEGORY-1' }], expect.objectContaining({ scope: 'supplier:test' }));
     expect(port.process).toHaveBeenCalledOnce();
-    expect(port.complete).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ scan: 'clean' }));
+    expect(port.complete).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ scan: 'clean' }), expect.objectContaining({ scope: 'supplier:test' }));
     expect(new TextDecoder().decode(objects.report())).toContain("'=HYPERLINK");
   });
 
@@ -21,9 +21,9 @@ describe('batch import lifecycle', () => {
     const source = new TextEncoder().encode('sku,location,onhand\nSKU-1,MAIN,10\n');
     const objects = objectStore(source);
     const port = importPort({ ...target('inventoryimport'), sha256: '0'.repeat(64) });
-    const processor = new BatchImportProcessor('inventoryimport', 'inventory', objects.store, port.value);
-    await processor.process(job('inventoryimport'), new AbortController().signal);
-    expect(port.reject).toHaveBeenCalledWith(expect.anything(), 'IMPORT_OBJECT_INVALID', 'IMPORT_OBJECT_INVALID');
+    const process = new ProcessBatchImport('inventory', objects.store, port.value);
+    await process.execute('inventoryimport:00000000-0000-4000-8000-000000000001', 'supplier:test', new AbortController().signal, Date.now() + 30_000);
+    expect(port.reject).toHaveBeenCalledWith(expect.anything(), 'IMPORT_OBJECT_INVALID', 'IMPORT_OBJECT_INVALID', expect.objectContaining({ scope: 'supplier:test' }));
     expect(port.stage).not.toHaveBeenCalled();
     expect(port.complete).not.toHaveBeenCalled();
   });
@@ -35,7 +35,7 @@ describe('batch import lifecycle', () => {
     const source = new TextEncoder().encode(csv);
     const objects = objectStore(source);
     const port = importPort(target(kind, source));
-    await new BatchImportProcessor(kind, owner, objects.store, port.value).process(job(kind), new AbortController().signal);
+    await new ProcessBatchImport(owner, objects.store, port.value).execute(`${kind}:00000000-0000-4000-8000-000000000001`, 'supplier:test', new AbortController().signal, Date.now() + 30_000);
     expect(port.stage).toHaveBeenCalledOnce();
     expect(port.process).toHaveBeenCalledOnce();
     expect(port.complete).toHaveBeenCalledOnce();
@@ -47,7 +47,7 @@ function importPort(candidate = target('catalogimport')) {
   const process = vi.fn(async () => true);
   const complete = vi.fn(async () => undefined);
   const reject = vi.fn(async () => undefined);
-  const value: BatchImportPort = {
+  const value: BatchImportProcessPort = {
     find: async () => candidate,
     stage,
     process,
@@ -64,10 +64,6 @@ type ImportKind = 'catalogimport' | 'inventoryimport' | 'memberimport' | 'vouche
 function target(kind: ImportKind, source?: Uint8Array): ImportTarget {
   const bytes = source ?? (kind === 'catalogimport' ? new TextEncoder().encode('title,sku,category\nProduct,SKU-1,CATEGORY-1\n') : new TextEncoder().encode('sku,location,onhand\nSKU-1,MAIN,10\n'));
   return { id: `${kind}:00000000-0000-4000-8000-000000000001`, scope: 'supplier:test', reference: 'object:source', sha256: createHash('sha256').update(bytes).digest('hex'), state: 'uploaded' };
-}
-
-function job(kind: ImportKind): ClaimedJob {
-  return { id: `job:${kind}`, kind, scope_id: 'supplier:test', payload: { import: `${kind}:00000000-0000-4000-8000-000000000001` }, attempts: 1, fencing_token: 1 };
 }
 
 function objectStore(source: Uint8Array) {

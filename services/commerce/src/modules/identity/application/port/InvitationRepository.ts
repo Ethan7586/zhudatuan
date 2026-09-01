@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 import type { Invitation, InvitationKind, InvitationStatus, InvitationTarget } from '../../domain/model/Invitation';
 import type { InvitationClaim } from '../../domain/model/InvitationClaim';
 import type { InvitationReceipt } from '../../domain/model/InvitationReceipt';
@@ -71,18 +72,20 @@ export interface InvitationRevokedRecord {
 }
 
 export interface InvitationRepository {
-  find(database: OperationDatabase, hashes: readonly InvitationDigest[], target: 'console' | 'storefront', lock: boolean): Promise<Invitation>;
-  claimed(database: OperationDatabase, claim: string, target: 'console' | 'storefront', lock: boolean): Promise<Invitation>;
-  claim(database: OperationDatabase, id: string): Promise<InvitationClaim>;
-  bindRecipient(database: OperationDatabase, id: string, recipient: Buffer): Promise<InvitationClaim>;
-  create(database: OperationDatabase, invitation: NewInvitation): Promise<InvitationCreatedRecord>;
-  read(database: OperationDatabase, filter: InvitationFilter): Promise<readonly InvitationListRecord[]>;
-  revoke(database: OperationDatabase, id: string, actor: string, reason: string, version: number): Promise<InvitationRevokedRecord>;
+  find(context: ReadTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront'): Promise<Invitation>;
+  lock(context: WriteTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront'): Promise<Invitation>;
+  claimed(context: ReadTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<Invitation>;
+  lockClaimed(context: WriteTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<Invitation>;
+  claim(context: WriteTransactionContext, id: string): Promise<InvitationClaim>;
+  bindRecipient(context: WriteTransactionContext, id: string, recipient: Buffer): Promise<InvitationClaim>;
+  create(context: WriteTransactionContext, invitation: NewInvitation): Promise<InvitationCreatedRecord>;
+  read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationListRecord[]>;
+  revoke(context: WriteTransactionContext, id: string, actor: string, reason: string, version: number): Promise<InvitationRevokedRecord>;
   reserve(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     invitation: Invitation,
     input: Readonly<{ claim: string; preauth: Buffer; browser: Buffer; device: Buffer; recipient: Buffer | null; principal: string | null; proof: 'otp' | 'sso' | 'terms' }>
   ): Promise<InvitationClaim>;
-  consume(database: OperationDatabase, invitation: Invitation, input: Readonly<{ session: string | null; assurance: 1 | 2 | 3; trace: string; principal?: string; membership?: string }>): Promise<InvitationReceipt>;
-  consumeClaim(database: OperationDatabase, claim: string, version: number): Promise<void>;
+  consume(context: WriteTransactionContext, invitation: Invitation, input: Readonly<{ session: string | null; assurance: 1 | 2 | 3; trace: string; principal?: string; membership?: string }>): Promise<InvitationReceipt>;
+  consumeClaim(context: WriteTransactionContext, claim: string, version: number): Promise<void>;
 }

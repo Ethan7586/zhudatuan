@@ -1,21 +1,29 @@
-import type { QueryResult } from 'pg';
-import type { Transaction } from '../../../../foundation/persistence/UnitOfWork';
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-
-export class PgReferralRepository {
-  constructor(private readonly transaction: Transaction) {}
-
-  setting(scopeId: string): Promise<QueryResult> {
-    return this.transaction.query(
-      `select id,scope_id "scopeId",enabled,first_touch_days "firstTouchDays",rate_basis_points "rateBasisPoints",
-      minimum_withdrawal_minor "minimumWithdrawalMinor",currency,version,updated_at "updatedAt"
-      from referral.setting where scope_id=$1`,
-      [scopeId]
-    );
+import type { ReferralMemberPort } from '../../../member/public';
+import type { ReferralRepository } from '../../application/port/ReferralRepository';
+export class PgReferralRepository implements ReferralRepository {
+  constructor(
+    private readonly transactions: PgTransactionAccess,
+    private readonly memberPort: ReferralMemberPort
+  ) {}
+  eligible(context: ReadTransactionContext, scope: string, membership: string) {
+    const database = this.transactions.database(context);
+    return this.memberPort.eligible(context, scope, membership);
   }
-
-  manageSetting(input: Readonly<{ id: string; scopeId: string; enabled: boolean; firstTouchDays: number; rateBasisPoints: number; minimumWithdrawalMinor: number; currency: string; expectedVersion: number }>): Promise<QueryResult> {
-    return this.transaction.query(
+  async setting(context: ReadTransactionContext, scope: string) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
+      `select id,scope_id "scopeId",enabled,first_touch_days "firstTouchDays",rate_basis_points "rateBasisPoints",
+      minimum_withdrawal_minor "minimumWithdrawalMinor",currency,version,updated_at "updatedAt" from referral.setting where scope_id=$1`,
+      [scope]
+    );
+    return result.rows[0] ? Object.freeze({ ...result.rows[0] }) : null;
+  }
+  async manageSetting(context: WriteTransactionContext, input: Parameters<ReferralRepository['manageSetting']>[1]) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `insert into referral.setting(id,scope_id,enabled,first_touch_days,rate_basis_points,minimum_withdrawal_minor,currency,version,created_at,updated_at)
       values($1,$2,$3,$4,$5,$6,$7,1,clock_timestamp(),clock_timestamp()) on conflict(id) do update set enabled=excluded.enabled,
       first_touch_days=excluded.first_touch_days,rate_basis_points=excluded.rate_basis_points,minimum_withdrawal_minor=excluded.minimum_withdrawal_minor,
@@ -25,18 +33,20 @@ export class PgReferralRepository {
       minimum_withdrawal_minor "minimumWithdrawalMinor",currency,version,updated_at "updatedAt"`,
       [input.id, input.scopeId, input.enabled, input.firstTouchDays, input.rateBasisPoints, input.minimumWithdrawalMinor, input.currency, input.expectedVersion]
     );
+    return required(result.rows[0], 'VERSION_CONFLICT');
   }
-
-  products(scopeId: string, page: Readonly<{ cursor: string | null; limit: number }>): Promise<QueryResult> {
-    return this.transaction.query(
+  async products(context: ReadTransactionContext, scope: string, page: Parameters<ReferralRepository['products']>[2]) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `select id,product_id "productId",enabled,rate_basis_points "rateBasisPoints",version,updated_at "updatedAt"
       from referral.product where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
-      [scopeId, page.cursor, page.limit]
+      [scope, page.id, page.fetch]
     );
+    return rows(result.rows);
   }
-
-  manageProduct(input: Readonly<{ id: string; scopeId: string; productId: string; enabled: boolean; rateBasisPoints: number; expectedVersion: number }>): Promise<QueryResult> {
-    return this.transaction.query(
+  async manageProduct(context: WriteTransactionContext, input: Parameters<ReferralRepository['manageProduct']>[1]) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `insert into referral.product(id,scope_id,product_id,enabled,rate_basis_points,version,created_at,updated_at)
       values($1,$2,$3,$4,$5,1,clock_timestamp(),clock_timestamp()) on conflict(id) do update set enabled=excluded.enabled,
       rate_basis_points=excluded.rate_basis_points,version=referral.product.version+1,updated_at=clock_timestamp()
@@ -44,64 +54,72 @@ export class PgReferralRepository {
       returning id,product_id "productId",enabled,rate_basis_points "rateBasisPoints",version,updated_at "updatedAt"`,
       [input.id, input.scopeId, input.productId, input.enabled, input.rateBasisPoints, input.expectedVersion]
     );
+    return required(result.rows[0], 'VERSION_CONFLICT');
   }
-
-  members(scopeId: string, page: Readonly<{ cursor: string | null; limit: number }>): Promise<QueryResult> {
-    return this.transaction.query(
+  async members(context: ReadTransactionContext, scope: string, page: Parameters<ReferralRepository['members']>[2]) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `select id,member_id "memberId",state status,applied_at "appliedAt",approved_at "approvedAt",disqualified_at "disqualifiedAt",version
       from referral.member where scope_id=$1 and ($2::text is null or id>$2) order by id limit $3`,
-      [scopeId, page.cursor, page.limit]
+      [scope, page.id, page.fetch]
     );
+    return rows(result.rows);
   }
-
-  member(scopeId: string, id: string): Promise<QueryResult> {
-    return this.transaction.query(
-      `select id,scope_id "scopeId",member_id "memberId",state,version,maker_id "makerId"
-      from referral.member where scope_id=$1 and id=$2 for update`,
-      [scopeId, id]
-    );
+  async member(context: WriteTransactionContext, scope: string, id: string) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query<{
+      id: string;
+      scopeId: string;
+      memberId: string;
+      state: 'applied' | 'active' | 'disqualified';
+      version: number;
+      makerId: string;
+    }>(`select id,scope_id "scopeId",member_id "memberId",state,version,maker_id "makerId" from referral.member where scope_id=$1 and id=$2 for update`, [scope, id]);
+    return result.rows[0] ? Object.freeze({ ...result.rows[0] }) : null;
   }
-
-  applyMember(input: Readonly<{ id: string; scopeId: string; memberId: string; displayName: string; mobile: string; makerId: string; reason: string }>): Promise<QueryResult> {
-    return this.transaction.query(
+  async applyMember(context: WriteTransactionContext, input: Parameters<ReferralRepository['applyMember']>[1]) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `insert into referral.member(id,scope_id,member_id,display_name,mobile_masked,state,maker_id,reason,applied_at,version)
-      values($1,$2,$3,$4,$5,'applied',$6,$7,clock_timestamp(),1)
-      on conflict(scope_id,member_id) do nothing
+      values($1,$2,$3,$4,$5,'applied',$6,$7,clock_timestamp(),1) on conflict(scope_id,member_id) do nothing
       returning id,member_id "memberId",state status,applied_at "appliedAt",approved_at "approvedAt",disqualified_at "disqualifiedAt",version`,
       [input.id, input.scopeId, input.memberId, input.displayName, maskMobile(input.mobile), input.makerId, input.reason]
     );
+    return required(result.rows[0], 'REFERRAL_NOT_ELIGIBLE');
   }
-
-  decideMember(input: Readonly<{ id: string; scopeId: string; actorId: string; expectedVersion: number; next: 'active' | 'disqualified'; reason: string }>): Promise<QueryResult> {
+  async decideMember(context: WriteTransactionContext, input: Parameters<ReferralRepository['decideMember']>[1]) {
+    const database = this.transactions.database(context);
     const previous = input.next === 'active' ? 'applied' : 'active';
-    return this.transaction.query(
+    const result = await this.transactions.database(context).query(
       `update referral.member set state=$4,checker_id=$3,reason=$5,approved_at=case when $4='active' then clock_timestamp() else approved_at end,
       disqualified_at=case when $4='disqualified' then clock_timestamp() else null end,version=version+1
       where id=$1 and scope_id=$2 and state=$6 and maker_id<>$3 and version=$7
       returning id,member_id "memberId",state status,applied_at "appliedAt",approved_at "approvedAt",disqualified_at "disqualifiedAt",version`,
       [input.id, input.scopeId, input.actorId, input.next, input.reason, previous, input.expectedVersion]
     );
+    return required(result.rows[0], 'VERSION_CONFLICT');
   }
-
-  bindings(scopeId: string, customerId: string | null, page: Readonly<{ cursor: string | null; limit: number }>): Promise<QueryResult> {
-    return this.transaction.query(
+  async bindings(context: ReadTransactionContext, scope: string, customer: string | null, page: Parameters<ReferralRepository['bindings']>[3]) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `select id,promoter_id "promoterId",customer_id "memberId",source,bound_at "boundAt",version
       from referral.binding where scope_id=$1 and ($2::text is null or customer_id=$2) and ($3::text is null or id>$3) order by id limit $4`,
-      [scopeId, customerId, page.cursor, page.limit]
+      [scope, customer, page.id, page.fetch]
     );
+    return rows(result.rows);
   }
-
-  binding(scopeId: string, customerId: string): Promise<QueryResult> {
-    return this.transaction.query(
+  async binding(context: WriteTransactionContext, scope: string, customer: string) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `select id,scope_id "scopeId",customer_id "customerId",promoter_id "promoterId",
-      token_fingerprint "tokenFingerprint",bound_at "boundAt",version
-      from referral.binding where scope_id=$1 and customer_id=$2 for share`,
-      [scopeId, customerId]
+      token_fingerprint "tokenFingerprint",bound_at "boundAt",version from referral.binding where scope_id=$1 and customer_id=$2 for share`,
+      [scope, customer]
     );
+    return result.rows[0] ? Object.freeze({ ...result.rows[0] }) : null;
   }
-
-  bind(input: Readonly<{ id: string; scopeId: string; customerId: string; promoterId: string; fingerprint: string; source: string }>): Promise<QueryResult> {
-    return this.transaction.query(
+  async bind(context: WriteTransactionContext, input: Parameters<ReferralRepository['bind']>[1]) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query(
       `insert into referral.binding(id,scope_id,customer_id,promoter_id,token_fingerprint,source,bound_at,version)
       select $1,$2,$3,promoter.id,$5,$6,clock_timestamp(),1 from referral.member promoter
       join referral.setting setting on setting.scope_id=promoter.scope_id and setting.enabled
@@ -110,9 +128,31 @@ export class PgReferralRepository {
       returning id,promoter_id "promoterId",customer_id "memberId",source,bound_at "boundAt",version`,
       [input.id, input.scopeId, input.customerId, input.promoterId, input.fingerprint, input.source]
     );
+    return required(result.rows[0], 'REFERRAL_ALREADY_BOUND');
+  }
+  async link(context: ReadTransactionContext, scope: string, member: string) {
+    const database = this.transactions.database(context);
+    const result = await this.transactions.database(context).query<{
+      id: string;
+      version: number;
+      first_touch_days: number;
+    }>(
+      `select referralmember.id,setting.version,setting.first_touch_days from referral.member referralmember
+      join referral.setting setting on setting.scope_id=referralmember.scope_id and setting.enabled
+      where referralmember.scope_id=$1 and referralmember.member_id=$2 and referralmember.state='active'`,
+      [scope, member]
+    );
+    const row = result.rows[0];
+    return row ? Object.freeze({ promoterId: row.id, settingVersion: row.version, firstTouchDays: row.first_touch_days }) : null;
   }
 }
-
+function required(row: Readonly<Record<string, unknown>> | undefined, code: 'VERSION_CONFLICT' | 'REFERRAL_NOT_ELIGIBLE' | 'REFERRAL_ALREADY_BOUND') {
+  if (!row) throw new DomainError(code);
+  return Object.freeze({ ...row });
+}
+function rows(value: readonly Readonly<Record<string, unknown>>[]) {
+  return Object.freeze(value.map((row) => Object.freeze({ ...row })));
+}
 function maskMobile(value: string): string {
   if (!/^\+?\d{6,20}$/.test(value)) throw new DomainError('VALIDATION_FAILED', { field: 'mobile' });
   return `${value.slice(0, 3)}****${value.slice(-4)}`;

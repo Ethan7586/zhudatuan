@@ -1,1 +1,0 @@
-export const FoodvoucherOperations = Object.freeze({ catalog: 'voucher.product.pull', order: 'voucher.issue', cancel: 'voucher.void', refund: 'voucher.refund.submit', statement: 'voucher.statement.pull', verification: 'voucher.verify' });

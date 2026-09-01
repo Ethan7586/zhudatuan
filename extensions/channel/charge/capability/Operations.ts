@@ -1,1 +1,0 @@
-export const ChargeOperations = Object.freeze({ catalog: 'charge.product.pull', order: 'charge.submit', tracking: 'charge.query', refund: 'charge.refund.submit', statement: 'charge.statement.pull', verification: 'charge.verify' });

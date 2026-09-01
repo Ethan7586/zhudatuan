@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto';
-import type { AuditDatabase } from '../../../../foundation/application/AuditSink';
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { AccessRecord } from '../../domain/model/AccessRecord';
 import type { AuditRecord } from '../../domain/model/AuditRecord';
 import type { ArchiveBatch, AuditPort } from '../../application/port/AuditPort';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 
 interface ArchiveRow {
   readonly id: string;
@@ -14,7 +16,10 @@ interface ArchiveRow {
 }
 
 export class PgAuditRepository implements AuditPort {
-  async previous(database: AuditDatabase, scope: string): Promise<string | null> {
+  private readonly transactions = new PgTransactionAccess();
+
+  async previous(context: WriteTransactionContext, scope: string): Promise<string | null> {
+    const database = this.transactions.database(context);
     await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${scope}`]);
     const result = await database.query<{ record_hash: string }>(
       `select record_hash from(
@@ -27,7 +32,8 @@ export class PgAuditRepository implements AuditPort {
     return result.rows[0]?.record_hash ?? null;
   }
 
-  async appendRecord(database: AuditDatabase, record: AuditRecord): Promise<void> {
+  async appendRecord(context: WriteTransactionContext, record: AuditRecord): Promise<void> {
+    const database = this.transactions.database(context);
     const { input } = record;
     await database.query(
       `insert into audit.record(id,scope_id,actor_id,actor_type,action,resource_type,resource_id,before_hash,after_hash,evidence,
@@ -51,7 +57,8 @@ export class PgAuditRepository implements AuditPort {
     );
   }
 
-  async appendAccess(database: AuditDatabase, record: AccessRecord): Promise<void> {
+  async appendAccess(context: WriteTransactionContext, record: AccessRecord): Promise<void> {
+    const database = this.transactions.database(context);
     const { input } = record;
     await database.query(
       `insert into audit.accessrecord(id,scope_id,actor_id,actor_type,resource_type,resource_id,fields,purpose,trace_id,
@@ -60,7 +67,8 @@ export class PgAuditRepository implements AuditPort {
     );
   }
 
-  async records(database: AuditDatabase, scope: string, cursor: Readonly<{ sort: string | null; id: string | null }>, fetch: number) {
+  async records(context: ReadTransactionContext, scope: string, cursor: Readonly<{ sort: string | null; id: string | null }>, fetch: number) {
+    const database = this.transactions.database(context);
     const result = await database.query(
       `select history.id,history.kind,history.scope_id,history.actor_id,history.actor_type,history.action,
       history.resource_type,history.resource_id,history.before_hash,history.after_hash,history.evidence,history.trace_id,
@@ -84,7 +92,8 @@ export class PgAuditRepository implements AuditPort {
     return result.rows;
   }
 
-  async archiveBatch(database: AuditDatabase, limit: number): Promise<ArchiveBatch | null> {
+  async archiveBatch(context: ReadTransactionContext, limit: number): Promise<ArchiveBatch | null> {
+    const database = this.transactions.database(context);
     const target = await database.query<{ scope: string; archive_years: number; hot_days: number }>(`with source as(
       select record.scope_id,min(record.recorded_at) oldest from audit.record record where not exists(
         select 1 from audit.archiveitem item where item.record_kind='command' and item.record_id=record.id) group by record.scope_id
@@ -128,7 +137,8 @@ export class PgAuditRepository implements AuditPort {
     });
   }
 
-  async completeArchive(database: AuditDatabase, batch: ArchiveBatch, object: Readonly<{ reference: string; sha256: string; size: number; keyVersion: string; expiresAt: string }>): Promise<void> {
+  async completeArchive(context: WriteTransactionContext, batch: ArchiveBatch, object: Readonly<{ reference: string; sha256: string; size: number; keyVersion: string; expiresAt: string }>): Promise<void> {
+    const database = this.transactions.database(context);
     await database.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [`audit:${batch.scope}`]);
     const id = `archive:${createHash('sha256').update(`${batch.scope}:${batch.start}:${batch.end}:${batch.lastHash}`).digest('hex').slice(0, 32)}`;
     await database.query(
@@ -156,13 +166,24 @@ export class PgAuditRepository implements AuditPort {
     if (mapped.rows[0]?.count !== batch.rows.length) throw new Error('AUDIT_ARCHIVE_SOURCE_CHANGED');
   }
 
-  async scheduleArchive(database: AuditDatabase, immediate: boolean): Promise<void> {
-    await database.query(
-      `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
-      select 'job:auditarchive:'||to_char(next_at,'YYYYMMDDHH24MI'),'auditarchive','audit','organization-platform-root','{}'::jsonb,
-        'queued',80,next_at,clock_timestamp(),clock_timestamp() from(select case when $1 then date_trunc('minute',clock_timestamp())+interval '1 minute'
-        else date_trunc('hour',clock_timestamp()+interval '1 hour') end next_at) schedule on conflict(id) do nothing`,
-      [immediate]
-    );
+  async scheduleArchive(context: WriteTransactionContext, immediate: boolean): Promise<void> {
+    const database = this.transactions.database(context);
+    const next = nextArchiveAt(immediate);
+    await new PgRuntimeWriter(database).schedule({ id: `job:auditarchive:${minuteKey(next)}`, kind: 'auditarchive', owner: 'audit', scope: 'organization-platform-root', payload: {}, priority: 80, availableAt: next.toISOString() });
   }
+}
+
+function nextArchiveAt(immediate: boolean): Date {
+  const next = new Date();
+  next.setUTCSeconds(0, 0);
+  if (immediate) next.setUTCMinutes(next.getUTCMinutes() + 1);
+  else {
+    next.setUTCMinutes(0);
+    next.setUTCHours(next.getUTCHours() + 1);
+  }
+  return next;
+}
+
+function minuteKey(value: Date): string {
+  return value.toISOString().replace(/[-:T]/g, '').slice(0, 12);
 }

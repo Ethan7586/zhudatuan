@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consoleCommand } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
+import { experienceCopyIdentity } from './ExperienceCopy';
 import type { Experience } from './ExperienceSchema';
 
 const commands = createFetchExperience(appConfig.apiBaseUrl);
@@ -17,9 +18,10 @@ export function ExperienceActionDialog({ action, context, onClose, onDone }: Rea
 
 function ExperienceActionForm({ action, context, onClose, onDone }: Readonly<{ action: ExperienceAction; context: ConsoleContext; onClose: () => void; onDone: () => void }>) {
   const record = 'record' in action ? action.record : undefined;
-  const [name, setName] = useState(action.kind === 'copy' ? `${action.record.name} 副本` : (record?.name ?? '主打团员工福利商城'));
-  const [code, setCode] = useState(record === undefined ? 'ZHUDATUAN_EMPLOYEE' : `${record.code}_COPY`);
-  const [slug, setSlug] = useState(record === undefined ? 'zhudatuan-employee' : `${record.public_slug}-copy`);
+  const [copyIdentity] = useState(() => (action.kind === 'copy' ? experienceCopyIdentity(action.record) : undefined));
+  const [name, setName] = useState(copyIdentity?.name ?? record?.name ?? '主打团员工福利商城');
+  const [code, setCode] = useState(copyIdentity?.code ?? 'ZHUDATUAN_EMPLOYEE');
+  const [slug, setSlug] = useState(copyIdentity?.slug ?? 'zhudatuan-employee');
   const [status, setStatus] = useState(record?.status ?? 'draft');
   const currentContent = experienceContent(record);
   const [title, setTitle] = useState(currentContent.title);

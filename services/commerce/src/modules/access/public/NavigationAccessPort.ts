@@ -1,4 +1,5 @@
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
+
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface NavigationAccess {
@@ -8,7 +9,7 @@ export interface NavigationAccess {
 }
 
 export interface NavigationAccessPort {
-  read(database: DatabasePool, memberships: readonly string[]): Promise<readonly NavigationAccess[]>;
+  read(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly NavigationAccess[]>;
 }
 
 export const NAVIGATION_ACCESS_PORT = publicPort<NavigationAccessPort>('access', 'navigation');

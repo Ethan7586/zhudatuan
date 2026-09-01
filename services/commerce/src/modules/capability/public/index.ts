@@ -1,9 +1,19 @@
+import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { QueryResult } from 'pg';
-export type { EntitlementInput } from '../CapabilityPort';
+
+export type { EntitlementInput } from './Entitlement';
+export interface ChannelEntitlement {
+  readonly id: string;
+  readonly scopeId: string;
+  readonly capabilityId: string;
+  readonly state: 'enabled' | 'disabled';
+  readonly quota: number | null;
+  readonly effectiveAt: string;
+  readonly expiresAt: string | null;
+  readonly version: number;
+}
 export interface ChannelCapabilityPort {
-  save(database: OperationDatabase, input: import('../CapabilityPort').EntitlementInput): Promise<QueryResult<Readonly<Record<string, unknown>>>>;
+  save(context: WriteTransactionContext, input: import('./Entitlement').EntitlementInput): Promise<ChannelEntitlement | null>;
 }
 export const CHANNEL_CAPABILITY_PORT = publicPort<ChannelCapabilityPort>('capability', 'channel');
 export { NAVIGATION_CAPABILITY_PORT, type NavigationCapability, type NavigationCapabilityPort } from './NavigationCapabilityPort';

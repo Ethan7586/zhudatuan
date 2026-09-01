@@ -1,5 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface CatalogSku {
-  find(database: OperationDatabase, scope: string, reference: string): Promise<string | null>;
+  find(context: ReadTransactionContext, scope: string, reference: string): Promise<string | null>;
 }

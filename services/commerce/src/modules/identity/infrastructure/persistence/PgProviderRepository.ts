@@ -1,11 +1,11 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, createHmac } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { ProviderRepository, ProviderSummary } from '../../application/port/ProviderRepository';
 import { ProviderInstance, type ProviderInstanceValue } from '../../domain/model/ProviderInstance';
 import type { ProviderHttpClient } from '../security/ProviderHttpClient';
-
 interface ProviderRow {
   readonly id: string;
   readonly tenant_id: string;
@@ -19,13 +19,15 @@ interface ProviderRow {
   readonly updated_at: Date;
 }
 export class PgProviderRepository implements ProviderRepository {
+  private readonly transactions = new PgTransactionAccess();
   constructor(
     private readonly client: ProviderHttpClient,
     private readonly hashkey: string
   ) {
     if (hashkey.length < 32) throw new Error('IDENTITY_PROVIDER_HASH_KEY_INVALID');
   }
-  async list(database: OperationDatabase, tenant?: string): Promise<readonly ProviderSummary[]> {
+  async list(context: ReadTransactionContext, tenant?: string): Promise<readonly ProviderSummary[]> {
+    const database = this.transactions.database(context);
     const result = await database.query<ProviderRow>(
       `select id,tenant_id,type,secret_ref,redirect_uri,scopes,status,version,created_at,updated_at
       from identity.provider where status='enabled' and ($1::uuid is null or tenant_id=$1) order by type,id limit 64`,
@@ -33,7 +35,8 @@ export class PgProviderRepository implements ProviderRepository {
     );
     return Object.freeze(result.rows.map((row) => Object.freeze({ id: row.id, type: row.type, status: row.status })));
   }
-  async require(database: OperationDatabase, id: string): Promise<ProviderInstance> {
+  async require(context: ReadTransactionContext, id: string): Promise<ProviderInstance> {
+    const database = this.transactions.database(context);
     const result = await database.query<ProviderRow>(
       `select id,tenant_id,type,secret_ref,redirect_uri,scopes,status,version,created_at,updated_at
       from identity.provider where id=$1`,
@@ -43,7 +46,8 @@ export class PgProviderRepository implements ProviderRepository {
     if (!row) throw new DomainError('IDENTITY_PROVIDER_CONFIGURATION_INVALID');
     return this.map(row);
   }
-  async save(database: OperationDatabase, value: ProviderInstanceValue, expected: number, _kms: KmsClient): Promise<ProviderInstance> {
+  async save(context: WriteTransactionContext, value: ProviderInstanceValue, expected: number, _kms: KmsClient): Promise<ProviderInstance> {
+    const database = this.transactions.database(context);
     const validated = new ProviderInstance(value);
     const credentials = await this.client.credentials(validated.secretref);
     if (credentials.clientid !== validated.clientid || (credentials.issuer ?? null) !== validated.issuer) {

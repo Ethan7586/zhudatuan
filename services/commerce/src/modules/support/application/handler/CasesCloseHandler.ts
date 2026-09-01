@@ -1,3 +1,14 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { CaseRepository } from '../port/SupportRepositories';
 
-export const CasesCloseHandler = defineOperationHandler('support.cases.close');
+export class CasesCloseHandler implements OperationHandler<'support.cases.close', 'write'> {
+  readonly operation = 'support.cases.close' as const;
+  readonly mode = 'write' as const;
+  constructor(private readonly cases: CaseRepository) {}
+  execute(input: OperationInputFor<'support.cases.close'>, context: WriteHandlerContext<'support.cases.close'>): Promise<OperationReply<OperationOutputFor<'support.cases.close'>>> {
+    const transaction = context.transaction;
+    return this.cases.closeCase(transaction, input, context);
+  }
+}

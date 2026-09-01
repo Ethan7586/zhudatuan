@@ -1,23 +1,35 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { MembershipSelectionPort, MembershipSelectionValue } from '../../application/port/MembershipSelectionPort';
-
 interface SelectionRow {
   readonly id: string;
   readonly transaction_id: string | null;
   readonly principal_id: string;
   readonly target: 'console' | 'storefront';
-  readonly candidate_memberships: readonly Readonly<{ id: string; target: 'console' | 'storefront' }>[];
+  readonly candidate_memberships: readonly Readonly<{
+    id: string;
+    target: 'console' | 'storefront';
+  }>[];
   readonly expires_at: Date;
   readonly auth_state_hash: string;
   readonly auth_nonce_hash: string;
   readonly auth_pkce_challenge: string;
   readonly assurance: number;
 }
-
 export class PgMembershipSelection implements MembershipSelectionPort {
-  async create(database: OperationDatabase, input: Omit<MembershipSelectionValue, 'id' | 'expiresAt' | 'transaction'> & Readonly<{ browser: Buffer; device: Buffer }>) {
+  private readonly transactions = new PgTransactionAccess();
+  async create(
+    context: WriteTransactionContext,
+    input: Omit<MembershipSelectionValue, 'id' | 'expiresAt' | 'transaction'> &
+      Readonly<{
+        browser: Buffer;
+        device: Buffer;
+      }>
+  ) {
+    const database = this.transactions.database(context);
     const id = randomUUID();
     const token = randomBytes(48).toString('base64url');
     const candidates = JSON.stringify(input.memberships);
@@ -30,8 +42,8 @@ export class PgMembershipSelection implements MembershipSelectionPort {
     );
     return Object.freeze({ id, token });
   }
-
-  async read(database: OperationDatabase, id: string): Promise<MembershipSelectionValue> {
+  async read(context: ReadTransactionContext, id: string): Promise<MembershipSelectionValue> {
+    const database = this.transactions.database(context);
     const result = await database.query<SelectionRow>(
       `select id::text,transaction_id::text,principal_id,target,candidate_memberships,
       expires_at,auth_state_hash,auth_nonce_hash,auth_pkce_challenge,assurance from identity.preauth where id=$1::uuid
@@ -40,9 +52,9 @@ export class PgMembershipSelection implements MembershipSelectionPort {
     );
     return selection(result.rows[0]);
   }
-
-  async consume(database: OperationDatabase, id: string, browser: Buffer, device: Buffer, membership: string): Promise<MembershipSelectionValue> {
-    const current = await this.read(database, id);
+  async consume(context: WriteTransactionContext, id: string, browser: Buffer, device: Buffer, membership: string): Promise<MembershipSelectionValue> {
+    const database = this.transactions.database(context);
+    const current = await this.read(context, id);
     if (!current.memberships.some((candidate) => candidate.id === membership && candidate.target === current.target)) {
       throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
     }
@@ -56,7 +68,6 @@ export class PgMembershipSelection implements MembershipSelectionPort {
     return selection(result.rows[0]);
   }
 }
-
 function selection(row: SelectionRow | undefined): MembershipSelectionValue {
   if (!row) throw new DomainError('FEDERATION_TRANSACTION_EXPIRED');
   return Object.freeze({

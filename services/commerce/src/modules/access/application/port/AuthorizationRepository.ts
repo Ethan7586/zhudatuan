@@ -1,5 +1,6 @@
+import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { Scope, ScopeGrant } from '@shop/authz';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+
 import type { AuthorizationRole } from '../../../../foundation/security/AuthorizationSnapshot';
 
 export interface AuthorizationSnapshotRecord {
@@ -36,8 +37,8 @@ export interface EffectiveScopeRecord {
 }
 
 export interface AuthorizationRepository {
-  snapshot(database: OperationDatabase, input: Readonly<{ membership: string; target: 'console' | 'storefront'; operation: string; resource: string | null }>): Promise<AuthorizationSnapshotRecord | null>;
-  navigation(database: OperationDatabase, memberships: readonly string[]): Promise<readonly NavigationAuthorizationRecord[]>;
-  permissions(database: OperationDatabase, membership: string): Promise<readonly EffectivePermissionRecord[]>;
-  scopes(database: OperationDatabase, membership: string): Promise<readonly EffectiveScopeRecord[]>;
+  snapshot(context: ReadTransactionContext, input: Readonly<{ membership: string; target: 'console' | 'storefront'; operation: string; resource: string | null }>): Promise<AuthorizationSnapshotRecord | null>;
+  navigation(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly NavigationAuthorizationRecord[]>;
+  permissions(context: ReadTransactionContext, membership: string): Promise<readonly EffectivePermissionRecord[]>;
+  scopes(context: ReadTransactionContext, membership: string): Promise<readonly EffectiveScopeRecord[]>;
 }

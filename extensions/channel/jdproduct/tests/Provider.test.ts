@@ -7,13 +7,13 @@ import { checkJdproductHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { JdproductMapper } from '../Mapper';
 import { JdproductWebhook } from '../Webhook';
-import { JdproductOperations } from '../capability';
+import { JdproductCapabilities } from '../capability';
 
 describe('jdproduct provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('jdproduct');
     expect(JdproductProvider.definition.id).toBe('jdproduct');
-    expect(() => assertProviderCapabilities(JdproductProvider.definition, JdproductOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(JdproductProvider.definition, JdproductCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('JDPRODUCT_MANIFEST_SIGNATURE_MISSING');
   });

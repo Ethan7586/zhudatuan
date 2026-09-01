@@ -1,9 +1,9 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import type { ExportJob, ExportReport, ExportRow } from '../../domain/model/ExportJob';
 import { exportJob, type ExportRecord } from './ReportingRecord';
 
 export class PgReportingExportRepository {
-  constructor(protected readonly database: OperationDatabase) {}
+  constructor(protected readonly database: SqlExecutor) {}
   async claimExport(id: string): Promise<ExportJob | null> {
     const result = await this.database.query<ExportRecord>(
       `update reporting.export job set state='running',started_at=coalesce(started_at,clock_timestamp()),

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { OperationCatalog, type OperationId } from '@shop/contract';
 import { SDK_OPERATION_IDS } from '@shop/sdk';
+import { ROUTE_KEYS } from '../../apps/storefront/src/generated/NavigationBinding';
 
 export interface StorefrontEvidence {
   readonly operations: readonly OperationId[];
@@ -14,7 +15,7 @@ export interface StorefrontEvidence {
 
 const root = process.cwd();
 const sdk = new Set<OperationId>(SDK_OPERATION_IDS);
-const routeCatalog = source('apps/storefront/src/generated/NavigationBinding.ts');
+const routeCatalog = new Set<string>(ROUTE_KEYS);
 
 export function storefrontJourney(name: string, evidence: StorefrontEvidence): void {
   test(`${name} uses only canonical named operations`, () => {
@@ -31,7 +32,7 @@ export function storefrontJourney(name: string, evidence: StorefrontEvidence): v
 
   test(`${name} is reachable from canonical deep links`, () => {
     assert.ok(evidence.routes.length > 0);
-    for (const route of evidence.routes) assert.ok(routeCatalog.includes(`\"${route}\"`), `${route} is not generated navigation authority`);
+    for (const route of evidence.routes) assert.ok(routeCatalog.has(route), `${route} is not generated navigation authority`);
   });
 
   test(`${name} has executable failure and recovery evidence without mock state`, () => {

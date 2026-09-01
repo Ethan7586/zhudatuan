@@ -14,11 +14,11 @@ test('payment query, close and late-success paths are deterministic', () => {
 });
 
 test('webhook and active query race converge on one locked payment and one recovery resource', () => {
-  const jobs = text('../../services/commerce/src/modules/payment/PaymentJobs.ts');
-  const webhook = text('../../services/commerce/src/modules/payment/PaymentWebhook.ts');
+  const jobs = text('../../services/commerce/src/modules/payment/infrastructure/persistence/PgPaymentRecoveryProcess.ts');
+  const webhook = text('../../services/commerce/src/modules/payment/infrastructure/persistence/PgWebhookInboxRepository.ts');
   const schema = text('../../database/migrations/20260821021000_create_payment_voucher_benefit.sql');
   assert.match(jobs, /for update of intent,attempt/);
-  assert.match(jobs, /if \(current\.payment\)[\s\S]+commit/);
+  assert.match(jobs, /if \(current\.payment\) \{[\s\S]+return;[\s\S]+\}/);
   assert.match(jobs, /recovery:late:\$\{selected\.intent\}/);
   assert.match(webhook, /runtime\.accept_provider_webhook/);
   assert.match(webhook, /PAYMENT_WEBHOOK_INTEGRITY_MISMATCH/);

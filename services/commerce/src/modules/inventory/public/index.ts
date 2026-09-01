@@ -1,9 +1,10 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-export type { StockDemand } from '../InventoryPort';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+export type { StockDemand } from './StockDemand';
+
 export interface CheckoutInventoryPort {
-  availability(database: OperationDatabase, scope: string, skus: readonly string[]): Promise<readonly CheckoutStock[]>;
-  reserve(database: OperationDatabase, order: string, scope: string, demand: readonly import('../InventoryPort').StockDemand[]): Promise<void>;
+  availability(context: ReadTransactionContext, scope: string, skus: readonly string[]): Promise<readonly CheckoutStock[]>;
+  reserve(context: WriteTransactionContext, order: string, scope: string, demand: readonly import('./StockDemand').StockDemand[]): Promise<void>;
 }
 export interface CheckoutStock {
   readonly sku: string;
@@ -14,19 +15,21 @@ export interface CheckoutStock {
   readonly version: number;
 }
 export interface PaymentInventoryPort {
-  commit(database: OperationDatabase, order: string): Promise<void>;
-  release(database: OperationDatabase, order: string): Promise<void>;
+  commit(context: WriteTransactionContext, order: string): Promise<void>;
+  release(context: WriteTransactionContext, order: string): Promise<void>;
 }
 export interface ChannelInventoryPort {
-  observe(database: OperationDatabase, input: Readonly<{ id: string; scope: string; sku: string; location: string; onhand: number; safety: number; provider: string; version: string }>): Promise<void>;
+  observe(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; sku: string; location: string; onhand: number; safety: number; provider: string; version: string }>): Promise<void>;
 }
 export interface OrderExpiryInventoryPort {
-  expireCheckout(database: OperationDatabase, checkout: string): Promise<void>;
+  expireCheckout(context: WriteTransactionContext, checkout: string): Promise<void>;
 }
 export interface CatalogInventoryPort {
-  stock(database: OperationDatabase, skus: readonly string[], scopes: readonly string[]): Promise<readonly Readonly<Record<string, unknown>>[]>;
+  stock(context: ReadTransactionContext, skus: readonly string[], scopes: readonly string[]): Promise<readonly Readonly<Record<string, unknown>>[]>;
 }
 export const CHECKOUT_INVENTORY_PORT = publicPort<CheckoutInventoryPort>('inventory', 'checkout');
 export const PAYMENT_INVENTORY_PORT = publicPort<PaymentInventoryPort>('inventory', 'payment');
 export const CATALOG_INVENTORY_PORT = publicPort<CatalogInventoryPort>('inventory', 'catalog');
-export { INVENTORY_READ_PORT, PgInventoryReadPort, type InventoryReadPort, type StorefrontAvailability } from './InventoryReadPort';
+export const ORDER_EXPIRY_INVENTORY_PORT = publicPort<OrderExpiryInventoryPort>('inventory', 'orderexpiry');
+export const PROVIDER_INVENTORY_PORT = publicPort<ChannelInventoryPort>('inventory', 'providersync');
+export { INVENTORY_READ_PORT, type InventoryReadPort, type StorefrontAvailability } from './InventoryReadPort';

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DatabasePool } from '../../../foundation/persistence/Pool';
-import { PgNavigationOrganization } from './PgNavigationOrganization';
+import { PgNavigationOrganization } from './persistence/PgNavigationOrganization';
+import { result, withReadTransaction } from '../../../test/TransactionFixture';
 
 describe('PgNavigationOrganization', () => {
   it('projects only the four Console scope kinds from a mixed organization hierarchy', async () => {
@@ -13,9 +14,8 @@ describe('PgNavigationOrganization', () => {
       row('store:one', 'store'),
       row('supplier:one', 'supplier'),
     ];
-    const database = { query: vi.fn(async () => ({ rows })) } as unknown as DatabasePool;
-
-    const scopes = await new PgNavigationOrganization().read(database, ['membership:one']);
+    const query = vi.fn(async () => result(rows));
+    const scopes = await withReadTransaction(query, (context) => new PgNavigationOrganization().read(context, ['membership:one']));
 
     expect(scopes.map((scope) => scope.kind)).toEqual(['platform', 'distributor', 'enterprise', 'mall']);
     expect(scopes.find((scope) => scope.default)?.id).toBe('platform:root');

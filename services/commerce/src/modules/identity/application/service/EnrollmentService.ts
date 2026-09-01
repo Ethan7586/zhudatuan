@@ -1,8 +1,10 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { requireWriteTransaction } from '../../../../foundation/persistence/TransactionContext';
 import { createHmac, randomUUID } from 'node:crypto';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { ApplicationError } from '../../../../foundation/domain/ApplicationError';
-import { publicOperationScope, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationExecution';
+
+import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationRequest';
 import { textField } from '../../../../foundation/interface/Validation';
 import { requirePreauth } from '../../../../foundation/security/OperationSecurityContext';
 import type { CipherEnvelope } from '../../../../foundation/infrastructure/KmsClient';
@@ -18,21 +20,27 @@ import type { LinkCaseRepository } from '../port/LinkCaseRepository';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { AssuranceRepository } from '../port/AssuranceRepository';
 import type { EnrollmentRepository } from '../port/EnrollmentRepository';
-import type { IdentityEventPort } from '../port/IdentityEventPort';
+import type { IdentityEventRepository } from '../port/IdentityEventRepository';
 import { EnrollmentPolicy } from '../../domain/policy/EnrollmentPolicy';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { InvitationRedeemer } from './InvitationRedeemer';
 import type { Telemetry } from '@shop/telemetry';
 import type { InvitationFailure } from './InvitationFailure';
 import type { IdentityEnrollmentsCompleteBody } from '@shop/contract';
-import { applyApiScope } from '../../../../foundation/infrastructure/DatabaseContext';
 
 export interface EnrollmentDraft {
+  readonly invitation: string;
+  readonly scope: string;
   readonly body: IdentityEnrollmentsCompleteBody;
   readonly subject: string;
   readonly password: string;
   readonly mobile: CipherEnvelope;
   readonly principal: string;
+}
+
+export interface EnrollmentInvitationScope {
+  readonly invitation: string;
+  readonly scope: string;
 }
 
 export class EnrollmentService {
@@ -53,12 +61,17 @@ export class EnrollmentService {
     private readonly telemetry: Telemetry,
     private readonly enrollments: EnrollmentRepository,
     private readonly assurances: AssuranceRepository,
-    private readonly events: IdentityEventPort,
+    private readonly events: IdentityEventRepository,
     private readonly failures: InvitationFailure,
     private readonly policy = new EnrollmentPolicy()
   ) {}
 
-  async complete(request: OperationRequest, database: OperationDatabase, prepared: EnrollmentDraft): Promise<OperationResult> {
+  async load(context: ReadTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<EnrollmentInvitationScope> {
+    const invitation = await this.repository.claimed(context, claim, target);
+    return Object.freeze({ invitation: invitation.state.id, scope: invitation.state.organization });
+  }
+
+  async complete(request: OperationRequest, database: WriteTransactionContext, prepared: EnrollmentDraft): Promise<OperationResult> {
     const preauth = requirePreauth(request.security, 'enrollment');
     const base = { requestId: preauth.trace, traceId: preauth.trace, module: 'identity', operation: 'identity.enrollments.complete' };
     try {
@@ -75,96 +88,76 @@ export class EnrollmentService {
     }
   }
 
-  private async perform(request: OperationRequest, database: OperationDatabase, prepared: EnrollmentDraft): Promise<OperationResult> {
+  private async perform(request: OperationRequest, database: WriteTransactionContext, prepared: EnrollmentDraft): Promise<OperationResult> {
     const preauth = requirePreauth(request.security, 'enrollment');
     if (request.input.path.id !== preauth.reference) throw new DomainError('PREAUTH_REQUIRED');
-    const invitation = await this.repository.claimed(database, preauth.reference, preauth.target, true);
-    const claim = await this.repository.claim(database, preauth.reference);
-    if (claim.invitation !== invitation.state.id || claim.kind !== invitation.state.kind || claim.target !== preauth.target || !claim.recipientHash || !invitation.state.termsHash) throw new DomainError('INVITATION_INVALID');
+    const invitation = await this.repository.lockClaimed(requireWriteTransaction(database), preauth.reference, preauth.target);
+    const claim = await this.repository.claim(requireWriteTransaction(database), preauth.reference);
+    if (
+      invitation.state.id !== prepared.invitation ||
+      invitation.state.organization !== prepared.scope ||
+      claim.invitation !== invitation.state.id ||
+      claim.kind !== invitation.state.kind ||
+      claim.target !== preauth.target ||
+      !claim.recipientHash ||
+      !invitation.state.termsHash
+    )
+      throw new DomainError('INVITATION_INVALID');
     if (!this.hasher.matchesRecipient(prepared.subject, claim.recipientHash) || (invitation.state.recipientHash && !this.hasher.matchesRecipient(prepared.subject, invitation.state.recipientHash))) {
       throw new DomainError('INVITATION_INVALID');
     }
-    await applyApiScope(database, invitation.state.organization);
     try {
-      try {
-        if (invitation.state.kind === 'campaign') {
-          await this.access.validateCampaign(database, {
-            issuer: invitation.state.issuer,
-            issuerAccessVersion: invitation.state.issuerAccessVersion,
-            grantDigest: invitation.state.grantDigest,
-            organization: invitation.state.organization,
-            policy: invitation.state.policy,
-            termsHash: invitation.state.termsHash,
-            expiresAt: invitation.state.expiresAt,
-          });
-        } else await this.redeemer.validate(database, invitation, 'storefront');
-      } catch (cause) {
-        return this.failures.reject(database, request, invitation.state.id, invitation.state.organization, cause, 'INVITATION_INVALID');
-      }
-      try {
-        await this.challenges.consume(database, textField(prepared.body, 'challenge'), textField(prepared.body, 'code', 16), (id, code) => this.code(id, code), preauth.principal ?? undefined, {
-          purpose: 'enrollment',
-          destinationHash: claim.recipientHash.toString('hex'),
-        });
-      } catch (cause) {
-        await this.failures.record(database, request, invitation.state.id, invitation.state.organization, cause);
-        throw cause;
-      }
-      this.policy.complete({ termsAccepted: prepared.body.termsAccepted === true, termsHash: textField(prepared.body, 'termsHash', 64), expectedTermsHash: invitation.state.termsHash });
-      const subjectHash = this.subject(prepared.subject);
-      const existing = await this.enrollments.findPrincipal(database, subjectHash);
-      let principal = prepared.principal;
-      let member: string;
-      let membership: string;
-      let activationDigest = invitation.state.grantDigest;
       if (invitation.state.kind === 'campaign') {
-        member = `member:${randomUUID()}`;
-        membership = `membership:${randomUUID()}`;
-      } else {
-        if (!invitation.state.membership || !preauth.principal) throw new DomainError('INVITATION_INVALID');
-        membership = invitation.state.membership;
-        const pending = await this.members.pending(database, await this.access.pending(database, membership));
-        if (pending.principal !== preauth.principal || prepared.principal !== preauth.principal) throw new DomainError('INVITATION_INVALID');
-        principal = pending.principal;
-        member = pending.member;
-      }
-      const mobileOwner = await this.members.mobileOwner(database, prepared.mobile.fingerprint, invitation.state.kind === 'campaign' ? undefined : member);
-      const candidate = existing ?? mobileOwner?.principal ?? null;
-      if (candidate) {
-        const conflict = await this.linkcases.enrollment(database, invitation.state.organization, preauth.reference, Buffer.from(subjectHash, 'hex'), candidate);
-        await this.events.publish(database, 'identity.link.required', 'linkcase', conflict.id, invitation.state.organization, preauth.trace, { linkCase: conflict.id, invitation: invitation.state.id, reason: 'subjectconflict' });
-        return { status: 409, body: { code: 'IDENTITY_LINK_REQUIRED', linkCase: conflict.id } };
-      }
-      if (invitation.state.kind === 'campaign') {
-        await this.enrollments.createPrincipal(database, principal);
-        await this.members.createPending(database, {
-          member,
-          principal,
-          display: textField(prepared.body, 'displayName', 128),
-          mobileCiphertext: prepared.mobile.ciphertext,
-          mobileFingerprint: prepared.mobile.fingerprint,
-          mobileMasked: mask(prepared.subject),
+        await this.access.validateCampaign(database, {
+          issuer: invitation.state.issuer,
+          issuerAccessVersion: invitation.state.issuerAccessVersion,
+          grantDigest: invitation.state.grantDigest,
+          organization: invitation.state.organization,
+          policy: invitation.state.policy,
+          termsHash: invitation.state.termsHash,
+          expiresAt: invitation.state.expiresAt,
         });
-        activationDigest = (
-          await concealAccess(
-            this.access.createCampaign(database, {
-              issuer: invitation.state.issuer,
-              issuerAccessVersion: invitation.state.issuerAccessVersion,
-              grantDigest: invitation.state.grantDigest,
-              organization: invitation.state.organization,
-              membership,
-              member,
-              principal,
-              policy: invitation.state.policy,
-              termsHash: invitation.state.termsHash,
-              expiresAt: invitation.state.expiresAt,
-            })
-          )
-        ).activationDigest;
-      }
-      await this.enrollments.activatePrincipal(database, principal);
-      await this.enrollments.createPassword(database, principal, subjectHash, prepared.password);
-      await this.members.activate(database, {
+      } else await this.redeemer.validate(database, invitation, 'storefront');
+    } catch (cause) {
+      return this.failures.reject(database, request, invitation.state.id, invitation.state.organization, cause, 'INVITATION_INVALID');
+    }
+    try {
+      await this.challenges.consume(requireWriteTransaction(database), textField(prepared.body, 'challenge'), textField(prepared.body, 'code', 16), (id, code) => this.code(id, code), preauth.principal ?? undefined, {
+        purpose: 'enrollment',
+        destinationHash: claim.recipientHash.toString('hex'),
+      });
+    } catch (cause) {
+      await this.failures.record(database, request, invitation.state.id, invitation.state.organization, cause);
+      throw cause;
+    }
+    this.policy.complete({ termsAccepted: prepared.body.termsAccepted === true, termsHash: textField(prepared.body, 'termsHash', 64), expectedTermsHash: invitation.state.termsHash });
+    const subjectHash = this.subject(prepared.subject);
+    const existing = await this.enrollments.findPrincipal(database, subjectHash);
+    let principal = prepared.principal;
+    let member: string;
+    let membership: string;
+    let activationDigest = invitation.state.grantDigest;
+    if (invitation.state.kind === 'campaign') {
+      member = `member:${randomUUID()}`;
+      membership = `membership:${randomUUID()}`;
+    } else {
+      if (!invitation.state.membership || !preauth.principal) throw new DomainError('INVITATION_INVALID');
+      membership = invitation.state.membership;
+      const pending = await this.members.lockPending(requireWriteTransaction(database), await this.access.pending(database, membership));
+      if (pending.principal !== preauth.principal || prepared.principal !== preauth.principal) throw new DomainError('INVITATION_INVALID');
+      principal = pending.principal;
+      member = pending.member;
+    }
+    const mobileOwner = await this.members.mobileOwner(database, prepared.mobile.fingerprint, invitation.state.kind === 'campaign' ? undefined : member);
+    const candidate = existing ?? mobileOwner?.principal ?? null;
+    if (candidate) {
+      const conflict = await this.linkcases.enrollment(database, invitation.state.organization, preauth.reference, Buffer.from(subjectHash, 'hex'), candidate);
+      await this.events.publish(database, 'identity.link.required', 'linkcase', conflict.id, invitation.state.organization, preauth.trace, { linkCase: conflict.id, invitation: invitation.state.id, reason: 'subjectconflict' });
+      return { status: 409, body: { code: 'IDENTITY_LINK_REQUIRED', linkCase: conflict.id } };
+    }
+    if (invitation.state.kind === 'campaign') {
+      await this.enrollments.createPrincipal(database, principal);
+      await this.members.createPending(requireWriteTransaction(database), {
         member,
         principal,
         display: textField(prepared.body, 'displayName', 128),
@@ -172,43 +165,67 @@ export class EnrollmentService {
         mobileFingerprint: prepared.mobile.fingerprint,
         mobileMasked: mask(prepared.subject),
       });
-      await concealAccess(
-        this.access.activate(database, {
-          issuer: invitation.state.issuer,
-          issuerAccessVersion: invitation.state.issuerAccessVersion,
-          membership,
-          principal,
-          grantDigest: activationDigest,
-          organization: invitation.state.organization,
-          target: 'storefront',
-          invitation: invitation.state.id,
-          policy: invitation.state.policy,
-          termsHash: invitation.state.termsHash,
-          trace: preauth.trace,
-        })
-      );
-      await this.assurances.record(database, { principal, method: 'enrollment_otp', level: 2, evidenceHash: subjectHash, expiresIn: '365days' });
-      const session =
-        invitation.state.kind === 'campaign'
-          ? null
-          : await this.sessions.issue(database, {
-              principal,
-              membership,
-              assurance: 2,
-              target: 'storefront',
-              device: request.input.headers['x-device-id'] ?? 'browser',
-              peer: request.input.headers['x-peer-address'] ?? 'unknown',
-              agent: request.input.headers['user-agent'] ?? 'unknown',
-              trace: preauth.trace,
-            });
-      await this.redeemer.consume(database, invitation, { session: session?.session ?? null, assurance: 2, trace: preauth.trace, principal, membership, claim: { id: preauth.reference, version: claim.version } });
-      await this.events.publish(database, 'identity.enrollment.completed', 'membership', membership, invitation.state.organization, preauth.trace, { invitationId: invitation.state.id, membershipId: membership });
-      if (session === null) return { status: 201, body: { kind: 'enrolled', target: 'storefront' }, headers: { 'x-clear-cookie': this.cookies.preauth('', 0) } };
-      const ticket = await this.tickets.issue(database, session.session, 'storefront', AuthTransaction.start(prepared.body.authorization));
-      return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue('storefront').proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
-    } finally {
-      await applyApiScope(database, publicOperationScope(request, 'identity'));
+      activationDigest = (
+        await concealAccess(
+          this.access.createCampaign(requireWriteTransaction(database), {
+            issuer: invitation.state.issuer,
+            issuerAccessVersion: invitation.state.issuerAccessVersion,
+            grantDigest: invitation.state.grantDigest,
+            organization: invitation.state.organization,
+            membership,
+            member,
+            principal,
+            policy: invitation.state.policy,
+            termsHash: invitation.state.termsHash,
+            expiresAt: invitation.state.expiresAt,
+          })
+        )
+      ).activationDigest;
     }
+    await this.enrollments.activatePrincipal(database, principal);
+    await this.enrollments.createPassword(database, principal, subjectHash, prepared.password);
+    await this.members.activate(requireWriteTransaction(database), {
+      member,
+      principal,
+      display: textField(prepared.body, 'displayName', 128),
+      mobileCiphertext: prepared.mobile.ciphertext,
+      mobileFingerprint: prepared.mobile.fingerprint,
+      mobileMasked: mask(prepared.subject),
+    });
+    await concealAccess(
+      this.access.activate(requireWriteTransaction(database), {
+        issuer: invitation.state.issuer,
+        issuerAccessVersion: invitation.state.issuerAccessVersion,
+        membership,
+        principal,
+        grantDigest: activationDigest,
+        organization: invitation.state.organization,
+        target: 'storefront',
+        invitation: invitation.state.id,
+        policy: invitation.state.policy,
+        termsHash: invitation.state.termsHash,
+        trace: preauth.trace,
+      })
+    );
+    await this.assurances.record(requireWriteTransaction(database), { principal, method: 'enrollment_otp', level: 2, evidenceHash: subjectHash, expiresIn: '365days' });
+    const session =
+      invitation.state.kind === 'campaign'
+        ? null
+        : await this.sessions.issue(requireWriteTransaction(database), {
+            principal,
+            membership,
+            assurance: 2,
+            target: 'storefront',
+            device: request.input.headers['x-device-id'] ?? 'browser',
+            peer: request.input.headers['x-peer-address'] ?? 'unknown',
+            agent: request.input.headers['user-agent'] ?? 'unknown',
+            trace: preauth.trace,
+          });
+    await this.redeemer.consume(database, invitation, { session: session?.session ?? null, assurance: 2, trace: preauth.trace, principal, membership, claim: { id: preauth.reference, version: claim.version } });
+    await this.events.publish(database, 'identity.enrollment.completed', 'membership', membership, invitation.state.organization, preauth.trace, { invitationId: invitation.state.id, membershipId: membership });
+    if (session === null) return { status: 201, body: { kind: 'enrolled', target: 'storefront' }, headers: { 'x-clear-cookie': this.cookies.preauth('', 0) } };
+    const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, 'storefront', AuthTransaction.start(prepared.body.authorization));
+    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue('storefront').proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
   }
 
   private subject(value: string): string {

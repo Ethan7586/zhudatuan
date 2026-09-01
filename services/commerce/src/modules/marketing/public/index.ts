@@ -1,9 +1,10 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-export type { MarketingReservation } from '../MarketingPort';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+export type { MarketingReservation } from './MarketingReservation';
+
 export interface CheckoutMarketingPort {
-  campaigns(database: OperationDatabase, scope: string): Promise<readonly CheckoutCampaign[]>;
-  reserve(database: OperationDatabase, input: import('../MarketingPort').MarketingReservation): Promise<void>;
+  campaigns(context: ReadTransactionContext, scope: string): Promise<readonly CheckoutCampaign[]>;
+  reserve(context: WriteTransactionContext, input: import('./MarketingReservation').MarketingReservation): Promise<void>;
 }
 export interface CheckoutCampaign {
   readonly id: string;
@@ -12,11 +13,11 @@ export interface CheckoutCampaign {
   readonly remainingBudget: number;
 }
 export interface PaymentMarketingPort {
-  commit(database: OperationDatabase, order: string): Promise<void>;
-  release(database: OperationDatabase, order: string): Promise<void>;
+  commit(context: WriteTransactionContext, order: string): Promise<void>;
+  release(context: WriteTransactionContext, order: string): Promise<void>;
 }
 export interface ExperienceMarketingPort {
-  references(database: OperationDatabase, campaigns: readonly string[]): Promise<boolean>;
+  references(context: ReadTransactionContext, campaigns: readonly string[]): Promise<boolean>;
 }
 export const CHECKOUT_MARKETING_PORT = publicPort<CheckoutMarketingPort>('marketing', 'checkout');
 export const PAYMENT_MARKETING_PORT = publicPort<PaymentMarketingPort>('marketing', 'payment');

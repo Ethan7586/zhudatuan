@@ -1,14 +1,18 @@
-import { reject, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { CredentialRepository, CredentialSecurity, CredentialVersion, PasswordCredential } from '../../application/port/CredentialRepository';
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { reject } from '../../../../foundation/application/OperationRejection';
 
+import type { CredentialRepository, CredentialSecurity, CredentialVersion, PasswordCredential } from '../../application/port/CredentialRepository';
 interface CredentialRow {
   readonly id: string;
   readonly principal_id: string;
   readonly secret_hash: string | null;
 }
-
 export class PgCredentialRepository implements CredentialRepository {
-  async matchPassword(database: OperationDatabase, subjectHashes: readonly string[]): Promise<PasswordCredential | null> {
+  private readonly transactions = new PgTransactionAccess();
+  async matchPassword(context: WriteTransactionContext, subjectHashes: readonly string[]): Promise<PasswordCredential | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<CredentialRow>(
       `select credential.id,credential.principal_id,credential.secret_hash
       from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
@@ -18,19 +22,21 @@ export class PgCredentialRepository implements CredentialRepository {
     );
     return result.rows.length === 1 ? credentialOf(result.rows[0]!) : null;
   }
-
-  async password(database: OperationDatabase, principal: string, lock: boolean): Promise<PasswordCredential | null> {
+  async password(context: WriteTransactionContext, principal: string): Promise<PasswordCredential | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<CredentialRow>(
       `select id,principal_id,secret_hash from identity.credential
-      where principal_id=$1 and provider='password' and status='active' ${lock ? 'for update' : ''}`,
+      where principal_id=$1 and provider='password' and status='active' for update`,
       [principal]
     );
     const row = result.rows[0];
     return row ? credentialOf(row) : null;
   }
-
-  async principalForSubject(database: OperationDatabase, subjectHash: string): Promise<string | null> {
-    const result = await database.query<{ principal_id: string }>(
+  async principalForSubject(context: ReadTransactionContext, subjectHash: string): Promise<string | null> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      principal_id: string;
+    }>(
       `select credential.principal_id from identity.credential credential
       join identity.principal principal on principal.id=credential.principal_id and principal.status='active'
       where credential.provider in('password','otp') and credential.subject_hash=$1 and credential.status='active'
@@ -39,8 +45,8 @@ export class PgCredentialRepository implements CredentialRepository {
     );
     return result.rows.length === 1 ? result.rows[0]!.principal_id : null;
   }
-
-  async changePassword(database: OperationDatabase, principal: string, credential: string, secretHash: string, currentSession: string): Promise<CredentialVersion> {
+  async changePassword(context: WriteTransactionContext, principal: string, credential: string, secretHash: string, currentSession: string): Promise<CredentialVersion> {
+    const database = this.transactions.database(context);
     await database.query('update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where id=$1', [credential, secretHash]);
     const version = await bump(database, principal);
     await database.query(
@@ -50,8 +56,8 @@ export class PgCredentialRepository implements CredentialRepository {
     );
     return version;
   }
-
-  async resetPassword(database: OperationDatabase, principal: string, secretHash: string): Promise<CredentialVersion> {
+  async resetPassword(context: WriteTransactionContext, principal: string, secretHash: string): Promise<CredentialVersion> {
+    const database = this.transactions.database(context);
     await database.query(
       `update identity.credential set secret_hash=$2,rotated_at=clock_timestamp()
       where principal_id=$1 and provider='password' and status='active'`,
@@ -65,9 +71,9 @@ export class PgCredentialRepository implements CredentialRepository {
     );
     return version;
   }
-
-  async changeSubject(database: OperationDatabase, principal: string, subjectHash: string, currentSession: string): Promise<void> {
-    const credential = await this.password(database, principal, true);
+  async changeSubject(context: WriteTransactionContext, principal: string, subjectHash: string, currentSession: string): Promise<void> {
+    const database = this.transactions.database(context);
+    const credential = await this.password(context, principal);
     if (!credential) reject('CREDENTIAL_INVALID');
     await database.query('update identity.credential set subject_hash=$2,rotated_at=clock_timestamp() where id=$1', [credential.id, subjectHash]);
     await bump(database, principal);
@@ -77,9 +83,11 @@ export class PgCredentialRepository implements CredentialRepository {
       [principal, currentSession]
     );
   }
-
-  async security(database: OperationDatabase, principal: string): Promise<CredentialSecurity> {
-    const result = await database.query<{ rotated_at: Date | null }>(
+  async security(context: ReadTransactionContext, principal: string): Promise<CredentialSecurity> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      rotated_at: Date | null;
+    }>(
       `select rotated_at from identity.credential
       where principal_id=$1 and provider='password' and status='active' order by created_at desc limit 1`,
       [principal]
@@ -87,9 +95,11 @@ export class PgCredentialRepository implements CredentialRepository {
     return Object.freeze({ hasLocalCredential: result.rows.length > 0, passwordChangedAt: result.rows[0]?.rotated_at ?? null });
   }
 }
-
-async function bump(database: OperationDatabase, principal: string): Promise<CredentialVersion> {
-  const result = await database.query<{ credentialVersion: number; version: number }>(
+async function bump(database: SqlExecutor, principal: string): Promise<CredentialVersion> {
+  const result = await database.query<{
+    credentialVersion: number;
+    version: number;
+  }>(
     `update identity.principal set
     credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1
     returning credential_version "credentialVersion",version`,

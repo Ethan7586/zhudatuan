@@ -19,7 +19,7 @@ export class AccessPipeline {
     private readonly stepup = new StepupPolicy()
   ) {}
 
-  async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string | null, resource?: string): Promise<AccessContext> {
+  async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string | null, deadline: number, signal: AbortSignal, resource?: string): Promise<AccessContext> {
     const actor = await this.sessions.resolve(headers, operation);
     const trace = headers['x-trace-id'] ?? actor.session;
     let scope: AccessContext['scope'] | undefined;
@@ -49,9 +49,9 @@ export class AccessPipeline {
         const assuranceFailure = checkAssurance(permission, { now, ...(actor.assurance.verified === undefined ? {} : { stepupAt: actor.assurance.verified }) });
         if (assuranceFailure !== null || !this.stepup.accepts(permissionDefinition(permission).minimumAssurance === 3, actor.assurance, now)) throw new DomainError('STEPUP_REQUIRED');
       }
-      const risk = await this.risk.evaluate({ actor, operation, scope, trace, ...(resource === undefined ? {} : { resource }) });
+      const risk = await this.risk.evaluate({ actor, operation, scope, trace, deadline, signal, ...(resource === undefined ? {} : { resource }) });
       assertRiskAllowed(risk.outcome);
-      await this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, ...(resource === undefined ? {} : { resource }) });
+      await this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, deadline, signal, ...(resource === undefined ? {} : { resource }) });
       return { actor, membership, organization: snapshot.organization, scope, accessVersion: membership.accessVersion, capabilities, capabilityVersion: snapshot.capabilityVersion, assurance: actor.assurance, trace };
     } catch (cause) {
       const reason = failureReason(cause);
@@ -61,6 +61,8 @@ export class AccessPipeline {
         outcome: reason === 'STEPUP_REQUIRED' ? 'challenge' : reason === 'RISK_REVIEW_REQUIRED' ? 'review' : 'deny',
         reason,
         trace,
+        deadline,
+        signal,
         ...(scope === undefined ? {} : { scope }),
         ...(resource === undefined ? {} : { resource }),
       });

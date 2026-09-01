@@ -1,16 +1,17 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { HoldIntent, PostingIntent } from '../FinancePort';
-export type { HoldIntent, PostingIntent } from '../FinancePort';
+
+import type { HoldIntent, PostingIntent } from './Accounting';
+export type { HoldIntent, PostingIntent } from './Accounting';
 export interface CheckoutInvoicePort {
-  snapshot(database: OperationDatabase, profile: string | null, owner: string): Promise<unknown | null>;
-  current(database: OperationDatabase, owner: string): Promise<Readonly<{ enabled: boolean; profileId: string | null; title: string | null; taxpayerNumberMasked: string | null; version: number }>>;
+  snapshot(context: ReadTransactionContext, profile: string | null, owner: string): Promise<unknown | null>;
+  current(context: ReadTransactionContext, owner: string): Promise<Readonly<{ enabled: boolean; profileId: string | null; title: string | null; taxpayerNumberMasked: string | null; version: number }>>;
 }
 export const CHECKOUT_INVOICE_PORT = publicPort<CheckoutInvoicePort>('finance', 'checkout');
 export interface BenefitAccountingPort {
-  account(database: OperationDatabase, scope: string, code: string, currency: string, kind: 'asset' | 'liability' | 'income' | 'expense'): Promise<string>;
-  post(database: OperationDatabase, intent: PostingIntent): Promise<string>;
-  benefitLedger(database: OperationDatabase, accounts: readonly string[], after: Readonly<{ occurredAt: string | null; entry: string | null }>, limit: number): Promise<readonly BenefitLedgerEntry[]>;
+  account(context: WriteTransactionContext, scope: string, code: string, currency: string, kind: 'asset' | 'liability' | 'income' | 'expense'): Promise<string>;
+  post(context: WriteTransactionContext, intent: PostingIntent): Promise<string>;
+  benefitLedger(context: ReadTransactionContext, accounts: readonly string[], after: Readonly<{ occurredAt: string | null; entry: string | null }>, limit: number): Promise<readonly BenefitLedgerEntry[]>;
 }
 export interface BenefitLedgerEntry {
   readonly id: string;
@@ -22,11 +23,12 @@ export interface BenefitLedgerEntry {
   readonly occurredAt: Date | string;
 }
 export interface VoucherAccountingPort {
-  post(database: OperationDatabase, intent: PostingIntent): Promise<string>;
+  post(context: WriteTransactionContext, intent: PostingIntent): Promise<string>;
 }
 export interface ChannelReconciliationPort {
-  receiveReconciliation(database: OperationDatabase, input: Readonly<{ id: string; scope: string; provider: string; partner: string; period: string; statement: string; hash: string; run: string }>): Promise<void>;
+  receiveReconciliation(context: WriteTransactionContext, input: Readonly<{ id: string; scope: string; provider: string; partner: string; period: string; statement: string; hash: string; run: string }>): Promise<void>;
 }
+export const PROVIDER_FINANCE_PORT = publicPort<ChannelReconciliationPort>('finance', 'providersync');
 export const BENEFIT_ACCOUNTING_PORT = publicPort<BenefitAccountingPort>('finance', 'benefit');
 export const VOUCHER_ACCOUNTING_PORT = publicPort<VoucherAccountingPort>('finance', 'voucher');
-export { REFERRAL_FINANCE_PORT, PgReferralFinancePort, type ReferralFinancePort } from './ReferralFinancePort';
+export { REFERRAL_FINANCE_PORT, type ReferralFinancePort } from './ReferralFinancePort';

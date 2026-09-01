@@ -1,12 +1,13 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { GetOrderSummary } from '../application/GetOrderSummary';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-export type { CreateOrderIntent, OrderLineSnapshot } from '../OrderPort';
-export type { GetOrderSummary } from '../application/GetOrderSummary';
+import type { GetOrderSummary } from '../application/service/GetOrderSummary';
+
+export type { CreateOrderIntent, OrderLineSnapshot } from './OrderIntent';
+export type { GetOrderSummary } from '../application/service/GetOrderSummary';
 export interface CheckoutOrderPort {
-  purchases(database: OperationDatabase, member: string): Promise<readonly CheckoutPurchase[]>;
-  create(database: OperationDatabase, input: import('../OrderPort').CreateOrderIntent): Promise<Readonly<{ number: string; record: Record<string, unknown> }>>;
-  scheduleExpiry(database: OperationDatabase, order: string, scope: string): Promise<void>;
+  purchases(context: ReadTransactionContext, member: string): Promise<readonly CheckoutPurchase[]>;
+  create(context: WriteTransactionContext, input: import('./OrderIntent').CreateOrderIntent): Promise<Readonly<{ number: string; record: Record<string, unknown> }>>;
+  scheduleExpiry(context: WriteTransactionContext, order: string, scope: string): Promise<void>;
 }
 export interface CheckoutPurchase {
   readonly listing: string;
@@ -20,21 +21,23 @@ export interface CheckoutPurchase {
   readonly lifetimeMinor: number;
 }
 export interface PaymentOrderPort {
-  payment(database: OperationDatabase, order: string, member?: string, lock?: boolean): Promise<PaymentOrderSnapshot | null>;
-  aftersale(database: OperationDatabase, aftersale: string, lock?: boolean): Promise<PaymentAfterSaleSnapshot | null>;
-  numbers(database: OperationDatabase, orders: readonly string[]): Promise<Readonly<Record<string, string>>>;
-  paymentState(database: OperationDatabase, order: string): Promise<string>;
-  markPaid(database: OperationDatabase, order: string): Promise<void>;
-  markAuthorizing(database: OperationDatabase, order: string): Promise<void>;
-  resetPayment(database: OperationDatabase, order: string): Promise<void>;
-  markRefunded(database: OperationDatabase, input: Readonly<{ order: string; refundedMinor: number; capturedMinor: number; aftersale: string | null }>): Promise<void>;
-  fulfillment(database: OperationDatabase, order: string): Promise<readonly OrderFulfillmentPlan[]>;
+  payment(context: ReadTransactionContext, order: string, member?: string): Promise<PaymentOrderSnapshot | null>;
+  lockPayment(context: WriteTransactionContext, order: string, member?: string): Promise<PaymentOrderSnapshot | null>;
+  aftersale(context: ReadTransactionContext, aftersale: string): Promise<PaymentAfterSaleSnapshot | null>;
+  lockAfterSale(context: WriteTransactionContext, aftersale: string): Promise<PaymentAfterSaleSnapshot | null>;
+  numbers(context: ReadTransactionContext, orders: readonly string[]): Promise<Readonly<Record<string, string>>>;
+  paymentState(context: WriteTransactionContext, order: string): Promise<string>;
+  markPaid(context: WriteTransactionContext, order: string): Promise<void>;
+  markAuthorizing(context: WriteTransactionContext, order: string): Promise<void>;
+  resetPayment(context: WriteTransactionContext, order: string): Promise<void>;
+  markRefunded(context: WriteTransactionContext, input: Readonly<{ order: string; refundedMinor: number; capturedMinor: number; aftersale: string | null }>): Promise<void>;
+  fulfillment(context: ReadTransactionContext, order: string): Promise<readonly OrderFulfillmentPlan[]>;
 }
 export interface PaymentJobOrderPort {
-  markLatePaid(database: OperationDatabase, order: string): Promise<void>;
-  cancelUnpaid(database: OperationDatabase, order: string): Promise<void>;
-  resetPayment(database: OperationDatabase, order: string): Promise<void>;
-  startAftersaleRefund(database: OperationDatabase, aftersale: string): Promise<void>;
+  markLatePaid(context: WriteTransactionContext, order: string): Promise<void>;
+  cancelUnpaid(context: WriteTransactionContext, order: string): Promise<void>;
+  resetPayment(context: WriteTransactionContext, order: string): Promise<void>;
+  startAftersaleRefund(context: WriteTransactionContext, aftersale: string): Promise<void>;
 }
 export interface PaymentOrderSnapshot {
   readonly id: string;
@@ -59,14 +62,14 @@ export interface PaymentAfterSaleSnapshot {
   readonly state: string;
 }
 export interface FulfillmentOrderPort {
-  completeFulfillment(database: OperationDatabase, order: string, lines: readonly Readonly<{ line: string; quantity: number }>[]): Promise<void>;
-  snapshot(database: OperationDatabase, order: string): Promise<OrderFulfillmentSnapshot | null>;
-  lineSkus(database: OperationDatabase, order: string, lines: readonly string[]): Promise<readonly OrderFulfillmentLine[]>;
-  returnRequest(database: OperationDatabase, aftersale: string): Promise<FulfillmentAfterSaleSnapshot | null>;
-  markReturning(database: OperationDatabase, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
-  markReceived(database: OperationDatabase, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
-  markRefunding(database: OperationDatabase, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
-  recordInspection(database: OperationDatabase, aftersale: string, returned: string, accepted: boolean, actor: string): Promise<void>;
+  completeFulfillment(context: WriteTransactionContext, order: string, lines: readonly Readonly<{ line: string; quantity: number }>[]): Promise<void>;
+  snapshot(context: ReadTransactionContext, order: string): Promise<OrderFulfillmentSnapshot | null>;
+  lineSkus(context: ReadTransactionContext, order: string, lines: readonly string[]): Promise<readonly OrderFulfillmentLine[]>;
+  returnRequest(context: ReadTransactionContext, aftersale: string): Promise<FulfillmentAfterSaleSnapshot | null>;
+  markReturning(context: WriteTransactionContext, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
+  markReceived(context: WriteTransactionContext, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
+  markRefunding(context: WriteTransactionContext, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
+  recordInspection(context: WriteTransactionContext, aftersale: string, returned: string, accepted: boolean, actor: string): Promise<void>;
 }
 export interface OrderFulfillmentLine {
   readonly line: string;
@@ -104,8 +107,8 @@ export interface OrderFulfillmentPlan {
   readonly lines: readonly Readonly<{ line: string; quantity: number }>[];
 }
 export interface OrderExpiryPort {
-  cancelUnpaid(database: OperationDatabase, order: string): Promise<void>;
-  expirable(database: OperationDatabase, orders: readonly string[]): Promise<readonly OrderExpirySnapshot[]>;
+  cancelUnpaid(context: WriteTransactionContext, order: string): Promise<void>;
+  expirable(context: WriteTransactionContext, orders: readonly string[]): Promise<readonly OrderExpirySnapshot[]>;
 }
 export interface OrderExpirySnapshot {
   readonly id: string;
@@ -115,5 +118,8 @@ export const CHECKOUT_ORDER_PORT = publicPort<CheckoutOrderPort>('order', 'check
 export const PAYMENT_ORDER_PORT = publicPort<PaymentOrderPort>('order', 'payment');
 export const FULFILLMENT_ORDER_PORT = publicPort<FulfillmentOrderPort>('order', 'fulfillment');
 export const SUPPORT_ORDER_PORT = publicPort<Pick<GetOrderSummary, 'execute'>>('order', 'support');
-export { ORDER_RECEIPT_PORT, PgOrderReceiptPort, type OrderReceiptPort } from './OrderReceiptPort';
-export { ORDER_READ_PORT, PgOrderReadPort, type OrderReadPort, type OrderSummary } from './OrderReadPort';
+export const ORDER_EXPIRY_ORDER_PORT = publicPort<OrderExpiryPort>('order', 'orderexpiry');
+export const PAYMENT_JOB_ORDER_PORT = publicPort<PaymentJobOrderPort & PaymentOrderPort>('order', 'paymentjob');
+export { ORDER_RECEIPT_PORT, type OrderReceiptPort } from './OrderReceiptPort';
+export { ORDER_READ_PORT, type OrderReadPort, type OrderSummary } from './OrderReadPort';
+export { PAYMENT_WEBHOOK_ORDER_PORT, type PaymentWebhookOrderPort } from './PaymentWebhookOrderPort';

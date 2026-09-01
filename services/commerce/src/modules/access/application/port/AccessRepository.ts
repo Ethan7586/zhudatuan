@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 import type { Membership } from '../../domain/model/Membership';
 import type { Override } from '../../domain/model/Override';
 import type { PermissionEffect, Role } from '../../domain/model/Role';
@@ -93,48 +94,51 @@ export interface MemberRecord {
 }
 
 export interface AccessRepository {
-  center(database: OperationDatabase, input: Readonly<{ organization: string; after: string | null; limit: number }>): Promise<readonly AccessCenterRecord[]>;
-  lockRole(database: OperationDatabase, role: string, scope: string): Promise<Role | null>;
-  saveRole(database: OperationDatabase, input: Readonly<{ role: string; scope: string; name: string; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
-  scopePath(database: OperationDatabase, scope: string, kind: string): Promise<string | null>;
-  grantScope(database: OperationDatabase, input: Readonly<{ id: string; membership: string; kind: string; scope: string; path: string; effect: PermissionEffect; expiresAt: Date | null; expectedVersion: number }>): Promise<Scope | null>;
-  lockOverrideTarget(database: OperationDatabase, membership: string): Promise<OverrideTarget | null>;
-  setOverride(database: OperationDatabase, value: Override, issuer: string): Promise<OverrideChange | null>;
-  revokeOverride(database: OperationDatabase, input: Readonly<{ membership: string; permission: string; reason: string }>): Promise<OverrideChange | null>;
-  lockOwnership(database: OperationDatabase, scope: string): Promise<Ownership | null>;
-  lockMemberships(database: OperationDatabase, memberships: readonly string[]): Promise<readonly Membership[]>;
-  expireRole(database: OperationDatabase, membership: string, role: string): Promise<boolean>;
-  assignRole(database: OperationDatabase, input: Readonly<{ membership: string; role: string; issuer: string }>): Promise<void>;
-  transferOwnership(database: OperationDatabase, input: Readonly<{ scope: string; membership: string; expectedVersion: number }>): Promise<boolean>;
-  ownerTransferred(database: OperationDatabase, input: Readonly<{ scope: string; previous: string; membership: string; version: number; trace: string }>): Promise<void>;
-  incrementVersion(database: OperationDatabase, membership: string): Promise<VersionChange | null>;
-  incrementRoleVersions(database: OperationDatabase, role: string): Promise<readonly VersionChange[]>;
-  activate(database: OperationDatabase, membership: string): Promise<VersionChange | null>;
-  versionChanged(database: OperationDatabase, changes: readonly VersionChange[], reason: string, trace: string): Promise<void>;
-  membershipActivated(database: OperationDatabase, input: Readonly<{ change: VersionChange; invitation: string; target: 'storefront'; grantDigest: string; trace: string }>): Promise<void>;
+  center(context: ReadTransactionContext, input: Readonly<{ organization: string; after: string | null; limit: number }>): Promise<readonly AccessCenterRecord[]>;
+  lockRole(context: WriteTransactionContext, role: string, scope: string): Promise<Role | null>;
+  saveRole(context: WriteTransactionContext, input: Readonly<{ role: string; scope: string; name: string; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null>;
+  scopePath(context: ReadTransactionContext, scope: string, kind: string): Promise<string | null>;
+  grantScope(
+    context: WriteTransactionContext,
+    input: Readonly<{ id: string; membership: string; kind: string; scope: string; path: string; effect: PermissionEffect; expiresAt: Date | null; expectedVersion: number }>
+  ): Promise<Scope | null>;
+  lockOverrideTarget(context: WriteTransactionContext, membership: string): Promise<OverrideTarget | null>;
+  setOverride(context: WriteTransactionContext, value: Override, issuer: string): Promise<OverrideChange | null>;
+  revokeOverride(context: WriteTransactionContext, input: Readonly<{ membership: string; permission: string; reason: string }>): Promise<OverrideChange | null>;
+  lockOwnership(context: WriteTransactionContext, scope: string): Promise<Ownership | null>;
+  lockMemberships(context: WriteTransactionContext, memberships: readonly string[]): Promise<readonly Membership[]>;
+  expireRole(context: WriteTransactionContext, membership: string, role: string): Promise<boolean>;
+  assignRole(context: WriteTransactionContext, input: Readonly<{ membership: string; role: string; issuer: string }>): Promise<void>;
+  transferOwnership(context: WriteTransactionContext, input: Readonly<{ scope: string; membership: string; expectedVersion: number }>): Promise<boolean>;
+  ownerTransferred(context: WriteTransactionContext, input: Readonly<{ scope: string; previous: string; membership: string; version: number; trace: string }>): Promise<void>;
+  incrementVersion(context: WriteTransactionContext, membership: string): Promise<VersionChange | null>;
+  incrementRoleVersions(context: WriteTransactionContext, role: string): Promise<readonly VersionChange[]>;
+  activate(context: WriteTransactionContext, membership: string): Promise<VersionChange | null>;
+  versionChanged(context: WriteTransactionContext, changes: readonly VersionChange[], reason: string, trace: string): Promise<void>;
+  membershipActivated(context: WriteTransactionContext, input: Readonly<{ change: VersionChange; invitation: string; target: 'storefront'; grantDigest: string; trace: string }>): Promise<void>;
   createCampaignMembership(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     input: Readonly<{ membership: string; member: string; principal: string; organization: string; issuer: string; mallGrant: string; ownerGrant: string; selfGrant: string }>
   ): Promise<void>;
-  pendingMember(database: OperationDatabase, membership: string): Promise<string | null>;
-  lockDelegationIssuer(database: OperationDatabase, membership: string): Promise<DelegationIssuer | null>;
-  delegationTarget(database: OperationDatabase, membership: string): Promise<DelegationTarget | null>;
-  delegationPermissions(database: OperationDatabase, roles: readonly string[]): Promise<readonly DelegationPermission[]>;
-  delegationScopes(database: OperationDatabase, membership: string): Promise<readonly DelegationScope[]>;
-  campaignRoles(database: OperationDatabase): Promise<readonly DelegationRole[]>;
-  delegationRoles(database: OperationDatabase, membership: string): Promise<readonly DelegationRole[]>;
-  activeMemberships(database: OperationDatabase, member: string, target: 'console' | 'storefront'): Promise<readonly ActiveMembershipReference[]>;
-  lockSession(database: OperationDatabase, membership: string, target: 'console' | 'storefront'): Promise<number | null>;
-  directoryMemberships(database: OperationDatabase, memberships: readonly string[]): Promise<readonly DirectoryMembershipReference[]>;
-  ensureImported(database: OperationDatabase, input: Readonly<{ membership: string; member: string; principal: string; organization: string; client: 'operator' | 'storefront'; employee: string | null }>): Promise<void>;
-  activeMember(database: OperationDatabase, membership: string): Promise<string | null>;
-  activeMemberIn(database: OperationDatabase, member: string, organizations: readonly string[]): Promise<boolean>;
-  memberPage(database: OperationDatabase, organization: string, after: string | null, limit: number): Promise<readonly MemberRecord[]>;
-  memberProfile(database: OperationDatabase, membership: string): Promise<MemberRecord | null>;
-  setEmployeeNumber(database: OperationDatabase, membership: string, employee: string | null): Promise<boolean>;
-  managementMember(database: OperationDatabase, membership: string): Promise<Readonly<{ member: string; accessVersion: number }> | null>;
-  setMembershipStatus(database: OperationDatabase, membership: string, status: 'active' | 'suspended' | 'left'): Promise<boolean>;
-  replaceDepartment(database: OperationDatabase, input: Readonly<{ membership: string; department: string; path: string; grant: string }>): Promise<void>;
-  applyDirectoryState(database: OperationDatabase, input: Readonly<{ membership: string; status: 'active' | 'suspended' | 'left' }>): Promise<number | null>;
-  replaceDirectoryDepartment(database: OperationDatabase, input: Readonly<{ membership: string; department: string; grant: string; accessVersion: number }>): Promise<void>;
+  pendingMember(context: ReadTransactionContext, membership: string): Promise<string | null>;
+  delegationIssuer(context: ReadTransactionContext, membership: string): Promise<DelegationIssuer | null>;
+  delegationTarget(context: ReadTransactionContext, membership: string): Promise<DelegationTarget | null>;
+  delegationPermissions(context: ReadTransactionContext, roles: readonly string[]): Promise<readonly DelegationPermission[]>;
+  delegationScopes(context: ReadTransactionContext, membership: string): Promise<readonly DelegationScope[]>;
+  campaignRoles(context: ReadTransactionContext): Promise<readonly DelegationRole[]>;
+  delegationRoles(context: ReadTransactionContext, membership: string): Promise<readonly DelegationRole[]>;
+  activeMemberships(context: ReadTransactionContext, member: string, target: 'console' | 'storefront'): Promise<readonly ActiveMembershipReference[]>;
+  lockSession(context: WriteTransactionContext, membership: string, target: 'console' | 'storefront'): Promise<number | null>;
+  directoryMemberships(context: ReadTransactionContext, memberships: readonly string[]): Promise<readonly DirectoryMembershipReference[]>;
+  ensureImported(context: WriteTransactionContext, input: Readonly<{ membership: string; member: string; principal: string; organization: string; client: 'operator' | 'storefront'; employee: string | null }>): Promise<void>;
+  activeMember(context: ReadTransactionContext, membership: string): Promise<string | null>;
+  activeMemberIn(context: ReadTransactionContext, member: string, organizations: readonly string[]): Promise<boolean>;
+  memberPage(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly MemberRecord[]>;
+  memberProfile(context: ReadTransactionContext, membership: string): Promise<MemberRecord | null>;
+  setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<boolean>;
+  managementMember(context: WriteTransactionContext, membership: string): Promise<Readonly<{ member: string; accessVersion: number }> | null>;
+  setMembershipStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left'): Promise<boolean>;
+  replaceDepartment(context: WriteTransactionContext, input: Readonly<{ membership: string; department: string; path: string; grant: string }>): Promise<void>;
+  applyDirectoryState(context: WriteTransactionContext, input: Readonly<{ membership: string; status: 'active' | 'suspended' | 'left' }>): Promise<number | null>;
+  replaceDirectoryDepartment(context: WriteTransactionContext, input: Readonly<{ membership: string; department: string; grant: string; accessVersion: number }>): Promise<void>;
 }

@@ -1,9 +1,8 @@
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import type { Scope, ScopeGrant } from '@shop/authz';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { AuthorizationRole } from '../../../foundation/security/AuthorizationSnapshot';
-import type { AuthorizationRepository } from '../application/port/AuthorizationRepository';
 
+import type { AuthorizationRole } from '../../../foundation/security/AuthorizationSnapshot';
 export interface AuthorizationSnapshot {
   readonly membership: string;
   readonly active: boolean;
@@ -19,10 +18,9 @@ export interface AuthorizationSnapshot {
   readonly operations: readonly string[];
   readonly capabilityVersion: number;
 }
-
 export interface AuthorizationPort {
   read(
-    database: OperationDatabase,
+    context: ReadTransactionContext,
     input: Readonly<{
       membership: string;
       target: 'console' | 'storefront';
@@ -31,21 +29,4 @@ export interface AuthorizationPort {
     }>
   ): Promise<AuthorizationSnapshot | null>;
 }
-
 export const AUTHORIZATION_PORT = publicPort<AuthorizationPort>('access', 'authorization');
-
-export class PgAuthorizationPort implements AuthorizationPort {
-  constructor(private readonly repository: AuthorizationRepository) {}
-
-  read(
-    database: OperationDatabase,
-    input: Readonly<{
-      membership: string;
-      target: 'console' | 'storefront';
-      operation: string;
-      resource: string | null;
-    }>
-  ): Promise<AuthorizationSnapshot | null> {
-    return this.repository.snapshot(database, input);
-  }
-}

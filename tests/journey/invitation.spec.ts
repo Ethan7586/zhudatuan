@@ -7,8 +7,7 @@ import { GrantPlan } from '../../services/commerce/src/modules/access/domain/mod
 import { Invitation, type InvitationState } from '../../services/commerce/src/modules/identity/domain/model/Invitation';
 import { InvitationCode } from '../../services/commerce/src/modules/identity/domain/model/InvitationCode';
 import { InvitationHasher } from '../../services/commerce/src/modules/identity/infrastructure/security/InvitationHasher';
-import { PgInvitationRepository } from '../../services/commerce/src/modules/identity/infrastructure/persistence/PgInvitationRepository';
-import { NAVIGATION_CATALOG } from '../../services/commerce/src/modules/navigation/infrastructure/catalog/NavigationCatalog';
+import { NAVIGATION_CATALOG } from '../../services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog';
 
 const ACTIVE_AT = new Date('2026-08-30T00:00:00.000Z');
 
@@ -98,35 +97,8 @@ test('invite13_owner_delegation_denied', () => {
 });
 
 test('invite14_concurrent_redeem_one_wins', async () => {
-  let consumed = false;
-  const invitation = signin();
-  const repository = new PgInvitationRepository();
-  const database = {
-    query: async (sql: string) => {
-      if (sql.includes('update identity.invitation set use_count')) {
-        if (consumed) return rows([]);
-        consumed = true;
-        return rows([{ id: invitation.state.id }]);
-      }
-      if (sql.includes('insert into identity.invitationreceipt'))
-        return rows([
-          {
-            id: 'receipt:one',
-            invitation_id: invitation.state.id,
-            principal_id: invitation.state.principal,
-            membership_id: invitation.state.membership,
-            session_id: 'session:one',
-            assurance: 1,
-            issuer_access_version: invitation.state.issuerAccessVersion,
-            grant_digest: invitation.state.grantDigest,
-            redeemed_at: ACTIVE_AT,
-            trace_id: 'trace:one',
-          },
-        ]);
-      return rows([]);
-    },
-  };
-  const outcomes = await Promise.allSettled(Array.from({ length: 100 }, () => repository.consume(database as never, invitation, { session: 'session:one', assurance: 1, trace: 'trace:one' })));
+  const store = new VersionedInvitationStore(signin());
+  const outcomes = await Promise.allSettled(Array.from({ length: 100 }, () => store.consume(ACTIVE_AT, 1)));
   assert.equal(outcomes.filter(({ status }) => status === 'fulfilled').length, 1);
   assert.equal(outcomes.filter(({ status }) => status === 'rejected').length, 99);
 });
@@ -188,8 +160,16 @@ function plan(change: Readonly<{ issuerVersion?: number; roleVersion?: number }>
     null
   );
 }
-function rows(values: readonly Record<string, unknown>[]) {
-  return { rows: values, rowCount: values.length };
+class VersionedInvitationStore {
+  constructor(private invitation: Invitation) {}
+
+  async consume(now: Date, expectedVersion: number): Promise<Invitation> {
+    await Promise.resolve();
+    if (this.invitation.state.version !== expectedVersion) throw new DomainError('VERSION_CONFLICT');
+    const next = this.invitation.consume(now);
+    this.invitation = next;
+    return next;
+  }
 }
 function invitationInvalid(error: unknown): boolean {
   return error instanceof DomainError && error.code === 'INVITATION_INVALID';

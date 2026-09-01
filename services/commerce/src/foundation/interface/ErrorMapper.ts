@@ -1,6 +1,6 @@
 import { errorDefinition } from '@shop/contract';
 import { ApplicationError } from '../domain/ApplicationError';
-import { OperationRejection } from '../application/ModuleOperations';
+import { OperationRejection } from '../application/OperationRejection';
 import { json, type HttpResponse } from './HttpResponse';
 
 export class ErrorMapper {

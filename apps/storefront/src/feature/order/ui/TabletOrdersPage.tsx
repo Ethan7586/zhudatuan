@@ -1,6 +1,7 @@
 import { CheckCircle, Clock, FileText, Headphones, Package, Truck } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useOrderRuntime } from '../application/OrderRuntime';
+import { ProductMedia } from '../../../shared/ui/ProductMedia';
 
 export function TabletOrdersPage({ onAfterSale }: { readonly onAfterSale: (orderId: string) => void }) {
   const { presentationOrders, openFeature } = useOrderRuntime();
@@ -66,7 +67,12 @@ export function TabletOrdersPage({ onAfterSale }: { readonly onAfterSale: (order
                 <span className="font-bold text-blue-600">{order.statusText}</span>
               </div>
               <div className="mt-3 flex items-center gap-3">
-                <img src={order.items[0]?.product.image ?? ''} alt="" className="h-20 w-20 rounded-xl bg-slate-100 object-cover" />
+                <ProductMedia
+                  source={order.items[0]?.product.image}
+                  alt={order.items[0]?.product.title ?? '企业福利订单'}
+                  className="h-20 w-20 rounded-xl bg-slate-100 object-cover"
+                  emptyClassName="grid h-20 w-20 shrink-0 place-items-center rounded-xl bg-slate-100 text-[10px] text-slate-400"
+                />
                 <div className="min-w-0 flex-1">
                   <h2 className="line-clamp-2 text-sm font-bold">{order.items[0]?.product.title ?? '企业福利订单'}</h2>
                   <p className="mt-2 text-xs text-slate-500">

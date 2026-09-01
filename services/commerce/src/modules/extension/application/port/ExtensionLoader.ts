@@ -1,6 +1,7 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ProviderHealth, ProviderManifest, UnsignedProviderManifest } from '@shop/contract';
 import { token } from '../../../../bootstrap/Container';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+
 import type { HealthRecord } from '../../domain/model/HealthRecord';
 import type { Installation, InstallationState } from '../../domain/model/Installation';
 
@@ -33,6 +34,8 @@ export interface ExtensionLoadContext {
   readonly actor: string;
   readonly trace: string;
   readonly workload: 'query' | 'worker';
+  readonly deadline: number;
+  readonly signal: AbortSignal;
 }
 
 export const EXTENSION_LOADER = token<ExtensionLoader>('extension.loader');
@@ -72,22 +75,26 @@ export interface ExtensionSummary extends Readonly<Record<string, unknown>> {
   readonly checked_at: unknown;
 }
 export interface ExtensionStateSink {
-  degrade(database: OperationDatabase, id: string, scope: string): Promise<void>;
+  degrade(context: ReadTransactionContext, id: string, scope: string): Promise<void>;
 }
 
 export interface ExtensionRepository {
-  manifest(provider: string): Promise<RegisteredManifest | null>;
-  install(input: InstallInput): Promise<Installation>;
-  reconfigure(id: string, scope: string, input: Readonly<{ baseUrl: string | null; endpoints: Readonly<Record<string, string>>; secretRef: string | null; healthOperation: string; actor: string; trace: string }>): Promise<Installation>;
-  lock(id: string, scope: string): Promise<Installation | null>;
-  activation(id: string, scope: string, provider: string): Promise<Readonly<{ candidate: Installation; active: Installation | null }>>;
-  latestHealth(id: string, version: number): Promise<Readonly<{ state: 'healthy' | 'degraded' | 'unavailable'; checkedAt: string; latency: number }> | null>;
-  transition(installation: Installation, next: InstallationState, actor: string, evidence: unknown): Promise<Installation>;
-  health(record: HealthRecord): Promise<void>;
-  enqueueHealth(id: string, scope: string, delaySeconds?: number): Promise<void>;
-  enqueueScan(delaySeconds?: number): Promise<void>;
-  list(scopes: readonly string[], cursor: Readonly<{ sort: string | null; id: string | null }>, fetch: number): Promise<readonly ExtensionListRow[]>;
-  targets(limit: number): Promise<readonly Readonly<{ id: string; scope_id: string; extension_id: string; status: InstallationState }>[]>;
-  summaries(ids: readonly string[]): Promise<readonly ExtensionSummary[]>;
+  manifest(context: ReadTransactionContext, provider: string): Promise<RegisteredManifest | null>;
+  install(context: WriteTransactionContext, input: InstallInput): Promise<Installation>;
+  reconfigure(
+    context: WriteTransactionContext,
+    id: string,
+    scope: string,
+    input: Readonly<{ baseUrl: string | null; endpoints: Readonly<Record<string, string>>; secretRef: string | null; healthOperation: string; actor: string; trace: string }>
+  ): Promise<Installation>;
+  lock(context: WriteTransactionContext, id: string, scope: string): Promise<Installation | null>;
+  activation(context: WriteTransactionContext, id: string, scope: string, provider: string): Promise<Readonly<{ candidate: Installation; active: Installation | null }>>;
+  latestHealth(context: ReadTransactionContext, id: string, version: number): Promise<Readonly<{ state: 'healthy' | 'degraded' | 'unavailable'; checkedAt: string; latency: number }> | null>;
+  transition(context: WriteTransactionContext, installation: Installation, next: InstallationState, actor: string, evidence: unknown): Promise<Installation>;
+  health(context: WriteTransactionContext, record: HealthRecord): Promise<void>;
+  enqueueHealth(context: WriteTransactionContext, id: string, scope: string, delaySeconds?: number): Promise<void>;
+  enqueueScan(context: WriteTransactionContext, delaySeconds?: number): Promise<void>;
+  list(context: ReadTransactionContext, scopes: readonly string[], cursor: Readonly<{ sort: string | null; id: string | null }>, fetch: number): Promise<readonly ExtensionListRow[]>;
+  targets(context: ReadTransactionContext, limit: number): Promise<readonly Readonly<{ id: string; scope_id: string; extension_id: string; status: InstallationState }>[]>;
+  summaries(context: ReadTransactionContext, ids: readonly string[]): Promise<readonly ExtensionSummary[]>;
 }
-export type ExtensionRepositoryFactory = (database: OperationDatabase) => ExtensionRepository;

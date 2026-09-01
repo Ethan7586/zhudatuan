@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BootstrapQuery, canonicalHost } from '../../services/commerce/src/app/storefront/BootstrapQuery';
+import { BootstrapQuery, canonicalHost } from '../../services/commerce/src/modules/navigation/application/service/BootstrapQuery';
 import { trustedPeerAddress } from '../../services/commerce/src/foundation/interface/NodeServer';
 
 test('storefront host binding rejects forged Host and untrusted X-Forwarded-Host', async () => {
@@ -11,18 +11,24 @@ test('storefront host binding rejects forged Host and untrusted X-Forwarded-Host
   let resolved = '';
   const query = new BootstrapQuery({
     experience: {
-      resolveHost: async (host: string) => {
+      resolveHost: async (_transaction: unknown, host: string) => {
         resolved = host;
         throw new Error('STOREFRONT_HOST_NOT_BOUND');
       },
     },
   } as never);
   await assert.rejects(
-    query.execute({
-      type: 'storefront.bootstrap.read',
-      input: { headers: { host: 'evil.example' } },
-      security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:host' },
-    } as never),
+    query.execute(
+      {} as never,
+      {
+        operation: 'storefront.bootstrap.read',
+        headers: { host: 'evil.example' },
+        security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:host' },
+        transaction: {},
+        deadline: Date.now() + 1_000,
+        signal: AbortSignal.timeout(1_000),
+      } as never
+    ),
     /STOREFRONT_HOST_NOT_BOUND/
   );
   assert.equal(resolved, 'evil.example');

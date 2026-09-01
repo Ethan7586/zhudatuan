@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { NAVIGATION_CATALOG, NAVIGATION_CATALOG_HASH } from '../../services/commerce/src/modules/navigation/infrastructure/catalog/NavigationCatalog';
+import { NAVIGATION_CATALOG, NAVIGATION_CATALOG_HASH } from '../../services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog';
 import { OperationMock } from './OperationMock';
 
 export interface ConsoleSessionFixture {

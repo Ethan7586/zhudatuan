@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { CatalogMapper } from '../../services/commerce/src/app/storefront/CatalogMapper';
-import { CatalogQuery } from '../../services/commerce/src/app/storefront/CatalogQuery';
+import { CatalogMapper } from '../../services/commerce/src/modules/navigation/application/service/CatalogMapper';
+import { CatalogQuery } from '../../services/commerce/src/modules/navigation/application/service/CatalogQuery';
+import { result as databaseResult, withReadTransaction } from '../../services/commerce/src/test/TransactionFixture';
 
 const mapper = new CatalogMapper('catalog-integration-signing-key-with-32-bytes');
 
@@ -31,9 +32,12 @@ test('storefront catalog composes listing, price and inventory concurrently with
     { availability: async () => parallel([{ sku: 'sku:one', available: 8, state: 'available', version: 'stock:1' }]) },
     mapper
   );
-  const result = await query.execute(request());
-  const body = result.body as Record<string, any>;
-  assert.equal(result.status, 200);
+  const response = await withReadTransaction(
+    async () => databaseResult([]),
+    (transaction) => query.execute({ query: { limit: '24' } } as never, context(transaction))
+  );
+  const body = response.body as Record<string, any>;
+  assert.equal(response.status, 200);
   assert.equal(body.items[0].price.amountMinor, 100);
   assert.equal(body.items[0].availability.available, 8);
   assert.equal(maximum, 2);
@@ -45,10 +49,17 @@ test('storefront catalog cursor is signed and fails closed after tampering', () 
   assert.throws(() => mapper.decode(`${cursor}x`), /STOREFRONT_CURSOR_INVALID/);
 });
 
-function request() {
+function context(transaction: unknown) {
   return {
-    type: 'storefront.catalog.read',
-    input: { path: {}, query: { limit: '24' }, headers: { host: 'mall.example' }, body: undefined, rawBody: '', deadline: Date.now() + 1_000, signal: new AbortController().signal },
+    requestId: 'request:catalog',
+    traceId: 'trace:catalog',
+    operation: 'storefront.catalog.read',
+    transaction,
+    headers: { host: 'mall.example' },
+    rawBody: '',
+    deadline: Date.now() + 1_000,
+    signal: new AbortController().signal,
     security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:catalog' },
-  } as const;
+    publicActor: 'public:catalog',
+  } as never;
 }

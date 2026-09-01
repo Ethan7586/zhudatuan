@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type { PoolClient, QueryResult } from 'pg';
 import type { ClaimedJob } from '../../src/foundation/application/JobRunner';
 import type { DatabasePool } from '../../src/foundation/persistence/Pool';
-import { FulfillmentJobProcessor } from '../../src/modules/fulfillment/FulfillmentJobs';
+import { PgTransactionManager } from '../../src/adapter/database/PgTransactionManager';
+import { RunFulfillment } from '../../src/modules/fulfillment/application/process/RunFulfillment';
+import { PgFulfillmentJobProcess } from '../../src/modules/fulfillment/infrastructure/persistence/PgFulfillmentJobProcess';
+import { FulfillmentJob } from '../../src/modules/fulfillment/interface/job/FulfillmentJob';
 
 describe('aftersale return authorization job', () => {
   it('gets a provider instruction once, persists it, then advances Order to returning', async () => {
@@ -34,17 +37,27 @@ describe('aftersale return authorization job', () => {
     const fixture = database(calls);
     const operations = { record: vi.fn(async () => calls.push('operation')), replayReference: vi.fn() };
     const extensions = { has: vi.fn(() => true), require: vi.fn(() => ({ authorize })) };
-    const processor = new FulfillmentJobProcessor(fixture.pool, extensions as never, {} as never, 'fulfillment', {
-      operations: operations as never,
-      orders: orders as never,
-      organizations: { scope: vi.fn(async () => ({ tenant: 'tenant:one' })) } as never,
-    });
+    const processor = new FulfillmentJob(
+      'fulfillment',
+      new RunFulfillment(
+        new PgFulfillmentJobProcess(new PgTransactionManager(fixture.pool), extensions as never, {
+          operations: operations as never,
+          orders: orders as never,
+          organizations: { scope: vi.fn(async () => ({ tenant: 'tenant:one' })) } as never,
+        })
+      )
+    );
     await processor.process(job(), new AbortController().signal);
     await processor.process(job(), new AbortController().signal);
     expect(authorize).toHaveBeenCalledOnce();
     expect(operations.record).toHaveBeenCalledOnce();
     expect(orders.markReturning).toHaveBeenCalledOnce();
-    expect(calls.indexOf('provider')).toBeLessThan(calls.indexOf('begin'));
+    let transactions = 0;
+    for (const call of calls) {
+      if (call === 'begin') transactions += 1;
+      if (call === 'commit' || call === 'rollback') transactions -= 1;
+      if (call === 'provider') expect(transactions).toBe(0);
+    }
     expect(calls.indexOf('operation')).toBeLessThan(calls.indexOf('order'));
   });
 });
@@ -57,6 +70,8 @@ function database(calls: string[]) {
   const query = async (text: string) => {
     const normalized = text.trim().toLowerCase();
     if (normalized.startsWith('begin')) calls.push('begin');
+    if (normalized === 'commit') calls.push('commit');
+    if (normalized === 'rollback') calls.push('rollback');
     if (normalized.includes('from fulfillment.fulfillmentorder')) return result([{ fulfillment: 'fulfillment:one', provider: 'jdproduct', line: 'line:one', quantity: 1 }]);
     return result([]);
   };

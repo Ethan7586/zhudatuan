@@ -1,5 +1,5 @@
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface CheckoutRiskInput {
   readonly actor: string;
@@ -17,6 +17,6 @@ export interface CheckoutRiskAssessment {
   readonly decision: string | null;
 }
 export interface CheckoutRiskPort {
-  assess(database: OperationDatabase, input: CheckoutRiskInput): Promise<CheckoutRiskAssessment>;
+  assess(context: ReadTransactionContext, input: CheckoutRiskInput): Promise<CheckoutRiskAssessment>;
 }
 export const CHECKOUT_RISK_PORT = publicPort<CheckoutRiskPort>('risk', 'checkout');

@@ -1,3 +1,13 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
-
-export const GrantsDecideHandler = defineOperationHandler('benefit.grants.decide');
+import type { OperationInputFor } from '@shop/contract';
+import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { GrantRepository } from '../port/GrantRepository';
+export class GrantsDecideHandler implements OperationHandler<'benefit.grants.decide', 'write'> {
+  readonly operation = 'benefit.grants.decide' as const;
+  readonly mode = 'write' as const;
+  constructor(private readonly grants: GrantRepository) {}
+  async execute(input: OperationInputFor<'benefit.grants.decide'>, context: WriteHandlerContext<'benefit.grants.decide'>) {
+    const result = await this.grants.decideGrant(context.transaction, input, context);
+    return result;
+  }
+}

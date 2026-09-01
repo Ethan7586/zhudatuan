@@ -1,3 +1,14 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import type { AgentRepository } from '../port/SupportRepositories';
 
-export const AgentsReadHandler = defineOperationHandler('support.agents.read');
+export class AgentsReadHandler implements OperationHandler<'support.agents.read', 'read'> {
+  readonly operation = 'support.agents.read' as const;
+  readonly mode = 'read' as const;
+  constructor(private readonly agents: AgentRepository) {}
+  execute(input: OperationInputFor<'support.agents.read'>, context: HandlerContext<'support.agents.read'>): Promise<OperationReply<OperationOutputFor<'support.agents.read'>>> {
+    const transaction = context.transaction;
+    return this.agents.readAgents(transaction, input, context);
+  }
+}

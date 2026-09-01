@@ -2,14 +2,14 @@ import { relative } from '../source.mjs';
 import { asArray, idOf, readCatalog, target, unique, violation } from './catalog.mjs';
 
 const handlerTargets = Object.freeze({
-  experiencepublish: 'services/commerce/src/modules/experience/ExperienceJobs.ts',
+  experiencepublish: 'services/commerce/src/modules/experience/interface/job/ExperiencePublishJob.ts',
   notification: 'services/commerce/src/modules/notification/interface/job/NotificationJob.ts',
   projection: 'services/commerce/src/modules/reporting/interface/job/ProjectionJob.ts',
   referralevent: 'services/commerce/src/modules/referral/interface/job/ReferralEventJob.ts',
   reconciliation: 'services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts',
-  navigation: 'services/commerce/src/modules/navigation/interface/event/NavigationEventHandler.ts',
+  navigation: 'services/commerce/src/modules/navigation/interface/job/NavigationEventJob.ts',
 });
-const handlerRegistry = 'services/commerce/src/app/events.ts';
+const handlerRegistry = 'services/commerce/src/generated/EventSubscriptions.ts';
 
 export function auditEvents(sourceSet) {
   const catalog = readCatalog('packages/contract/definitions/events.yml', ['events']);

@@ -1,5 +1,5 @@
 import { bodyRecord, integerField } from '../../../../foundation/interface/Validation';
-import type { OperationRequest } from '../../../../foundation/application/OperationExecution';
+import type { OperationWireInput } from '../../../../foundation/interface/Validation';
 import { cartInvalid } from '../error/CartError';
 
 export interface CartChange {
@@ -9,15 +9,15 @@ export interface CartChange {
 }
 
 export class CartPolicy {
-  put(request: OperationRequest): CartChange {
-    const body = bodyRecord(request);
+  put(input: OperationWireInput & Readonly<{ path: Readonly<Record<string, string>> }>): CartChange {
+    const body = bodyRecord(input);
     const quantity = integerField(body, 'quantity', 0);
     if (quantity > 999) return cartInvalid('quantity');
-    return Object.freeze({ listing: request.input.path.listingid!, quantity, lineVersion: this.version(body.lineVersion, 'lineVersion') });
+    return Object.freeze({ listing: input.path.listingid!, quantity, lineVersion: this.version(body.lineVersion, 'lineVersion') });
   }
 
-  batch(request: OperationRequest): readonly CartChange[] {
-    const entries = bodyRecord(request).items;
+  batch(input: OperationWireInput): readonly CartChange[] {
+    const entries = bodyRecord(input).items;
     if (!Array.isArray(entries) || entries.length > 100) return cartInvalid('items');
     const changes = entries.map((entry) => {
       if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return cartInvalid('items');

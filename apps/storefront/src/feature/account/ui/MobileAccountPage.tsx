@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useAccountRuntime } from '../application/AccountRuntime';
 import type { MobileChannel } from '../../../shared/manifest/StorefrontChannel';
 import { formatMinor } from '../../../shared/format/Money';
+import { ProductMedia } from '../../../shared/ui/ProductMedia';
 import { AddressPanel } from './AddressPanel';
 import { FavoritePanel } from './FavoritePanel';
 
@@ -89,7 +90,12 @@ export function MobileAccountPage({ channel, onAfterSale }: { readonly channel: 
             <span className="font-semibold text-blue-600">{order.statusText}</span>
           </div>
           <div className="mt-3 flex gap-3">
-            <img src={order.items[0]?.product.image ?? ''} alt="" className="h-16 w-16 rounded-xl bg-slate-100 object-cover" />
+            <ProductMedia
+              source={order.items[0]?.product.image}
+              alt={order.items[0]?.product.title ?? '企业福利订单'}
+              className="h-16 w-16 rounded-xl bg-slate-100 object-cover"
+              emptyClassName="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-slate-100 text-[10px] text-slate-400"
+            />
             <div className="min-w-0 flex-1">
               <div className="line-clamp-2 text-xs font-bold">{order.items[0]?.product.title ?? '企业福利订单'}</div>
               <div className="mt-2 text-[10px] text-slate-500">共 {order.items.length} 件商品</div>

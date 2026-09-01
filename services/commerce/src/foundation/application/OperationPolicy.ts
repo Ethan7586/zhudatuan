@@ -14,6 +14,8 @@ export interface OperationPolicyInput {
   readonly operation: Operation;
   readonly input: Readonly<object>;
   readonly headers: Readonly<Record<string, string>>;
+  readonly deadline: number;
+  readonly signal: AbortSignal;
 }
 
 export interface OperationPolicy {
@@ -31,10 +33,10 @@ export class SecureOperationPolicy implements OperationPolicy {
     private readonly resources = new ResourceResolver()
   ) {}
 
-  async authorize({ operation, input, headers }: OperationPolicyInput): Promise<OperationSecurityContext> {
+  async authorize({ operation, input, headers, deadline, signal }: OperationPolicyInput): Promise<OperationSecurityContext> {
     if (operation.assuranceLevel === 'preauth') {
       const context = await this.preauth.resolve(headers, operation);
-      await this.authorizePublic(operation, headers, context.principal ?? `preauth:${context.id}`, context.target, context.trace);
+      await this.authorizePublic(operation, headers, context.principal ?? `preauth:${context.id}`, context.target, context.trace, deadline, signal);
       return context;
     }
     if (operation.assuranceLevel === 'anonymous' || operation.audience === 'system' || operation.audience === 'webhook') {
@@ -43,33 +45,41 @@ export class SecureOperationPolicy implements OperationPolicy {
       const target = requested === 'console' || requested === 'storefront' ? requested : null;
       assertTarget(operation, target);
       const trace = headers['x-trace-id'] ?? headers['x-request-id'] ?? `anonymous:${operation.id}`;
-      if (channel === 'public' && target !== null) await this.authorizePublic(operation, headers, `anonymous:${target}`, target, trace);
+      if (channel === 'public' && target !== null) await this.authorizePublic(operation, headers, `anonymous:${target}`, target, trace, deadline, signal);
       return Object.freeze({ kind: 'anonymous', channel, target, trace });
     }
     if (operation.assuranceLevel === 'optional') {
       const target = exactBrowserTarget(operation, headers);
       if (hasSessionCredential(headers, target)) {
         const resource = this.resources.resolve(operation, input);
-        const access = await this.access.authorize(headers, operation.id, operation.permission, resource);
+        const access = await this.access.authorize(headers, operation.id, operation.permission, deadline, signal, resource);
         return Object.freeze({ kind: 'session', access });
       }
       const trace = headers['x-trace-id'] ?? headers['x-request-id'] ?? `anonymous:${operation.id}`;
-      await this.authorizePublic(operation, headers, `anonymous:${target}`, target, trace);
+      await this.authorizePublic(operation, headers, `anonymous:${target}`, target, trace, deadline, signal);
       return Object.freeze({ kind: 'anonymous', channel: 'public', target, trace });
     }
     const resource = this.resources.resolve(operation, input);
-    const access = await this.access.authorize(headers, operation.id, operation.permission, resource);
+    const access = await this.access.authorize(headers, operation.id, operation.permission, deadline, signal, resource);
     return Object.freeze({ kind: 'session', access });
   }
 
-  private async authorizePublic(operation: Operation, headers: Readonly<Record<string, string>>, principal: string, target: 'console' | 'storefront', trace: string): Promise<void> {
+  private async authorizePublic(operation: Operation, headers: Readonly<Record<string, string>>, principal: string, target: 'console' | 'storefront', trace: string, deadline: number, signal: AbortSignal): Promise<void> {
     const actor: Actor = Object.freeze({ id: principal, session: trace, membership: 'public', credentialVersion: 0, accessVersion: 0, target, assurance: { level: 0 } });
     try {
-      const assessment = await this.risk.evaluate({ actor, operation: operation.id, scope: PUBLIC_SCOPE, trace, signals: { anonymous: principal.startsWith('anonymous:') ? 1 : 0, device: headers['x-device-id'] === undefined ? 1 : 0 } });
+      const assessment = await this.risk.evaluate({
+        actor,
+        operation: operation.id,
+        scope: PUBLIC_SCOPE,
+        trace,
+        deadline,
+        signal,
+        signals: { anonymous: principal.startsWith('anonymous:') ? 1 : 0, device: headers['x-device-id'] === undefined ? 1 : 0 },
+      });
       assertRiskAllowed(assessment.outcome);
-      await this.decisions.append({ actor, operation: operation.id, scope: PUBLIC_SCOPE, outcome: 'allow', reason: 'POLICY_ALLOWED', trace });
+      await this.decisions.append({ actor, operation: operation.id, scope: PUBLIC_SCOPE, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, deadline, signal });
     } catch (cause) {
-      await this.decisions.append({ actor, operation: operation.id, scope: PUBLIC_SCOPE, outcome: 'deny', reason: 'RISK_DENIED', trace });
+      await this.decisions.append({ actor, operation: operation.id, scope: PUBLIC_SCOPE, outcome: 'deny', reason: 'RISK_DENIED', trace, deadline, signal });
       throw cause;
     }
   }

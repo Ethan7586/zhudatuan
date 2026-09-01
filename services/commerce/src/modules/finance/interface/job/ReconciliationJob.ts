@@ -1,33 +1,16 @@
 import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { PostJournal } from '../../application/command/PostJournal';
-import { ReconcileStatement } from '../../application/command/ReconcileStatement';
-import type { FinanceChannelPort } from '../../../channel/public';
-import type { FinanceFulfillmentPort } from '../../../fulfillment/public';
-import type { FinancePaymentPort } from '../../../payment/public';
+import type { ReconcileFinance } from '../../application/process/ReconcileFinance';
 
-export interface ReconciliationDependencies {
-  readonly channel: FinanceChannelPort;
-  readonly fulfillments: FinanceFulfillmentPort;
-  readonly payments: FinancePaymentPort;
-}
+export class ReconciliationJob implements JobProcessor {
+  constructor(private readonly reconciliation: ReconcileFinance) {}
 
-export class ReconciliationJobProcessor implements JobProcessor {
-  private readonly posting: PostJournal;
-  private readonly reconciliation: ReconcileStatement;
-
-  constructor(pool: DatabasePool, objects: ObjectStore, dependencies: ReconciliationDependencies) {
-    this.posting = new PostJournal(pool, dependencies.payments);
-    this.reconciliation = new ReconcileStatement(pool, objects, dependencies.channel, dependencies.payments, dependencies.fulfillments);
-  }
-
-  async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
+  async process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'reconciliation') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
-    if (payload.eventId) return this.posting.execute(payload);
-    return this.reconciliation.execute(text(payload.reconciliation, 'RECONCILIATION_REQUIRED'));
+    if (payload.eventId) return this.reconciliation.post(payload, signal, deadline);
+    const scope = typeof job.scope_id === 'string' && job.scope_id ? job.scope_id : 'finance';
+    return this.reconciliation.execute(text(payload.reconciliation, 'RECONCILIATION_REQUIRED'), scope, signal, deadline);
   }
 }
 

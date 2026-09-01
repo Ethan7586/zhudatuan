@@ -1,3 +1,15 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import { MetricReader } from '../service/MetricReader';
 
-export const DashboardReadHandler = defineOperationHandler('reporting.dashboard.read');
+export class DashboardReadHandler implements OperationHandler<'reporting.dashboard.read', 'read'> {
+  readonly operation = 'reporting.dashboard.read' as const;
+  readonly mode = 'read' as const;
+  constructor(private readonly metrics: MetricReader) {}
+  execute(input: OperationInputFor<'reporting.dashboard.read'>, context: HandlerContext<'reporting.dashboard.read'>): Promise<OperationReply<OperationOutputFor<'reporting.dashboard.read'>>> {
+    const access = requireSession(context.security);
+    return this.metrics.read(this.operation, input, context, access.scope.id, null);
+  }
+}

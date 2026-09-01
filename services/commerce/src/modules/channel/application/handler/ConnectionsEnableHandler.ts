@@ -1,3 +1,23 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { ConnectionRepository } from '../port/ConnectionRepository';
 
-export const ConnectionsEnableHandler = defineOperationHandler('channel.connections.enable');
+export class ConnectionsEnableHandler implements OperationHandler<'channel.connections.enable', 'write'> {
+  readonly operation = 'channel.connections.enable' as const;
+  readonly mode = 'write' as const;
+  constructor(private readonly connections: ConnectionRepository) {}
+  async execute(input: OperationInputFor<'channel.connections.enable'>, context: WriteHandlerContext<'channel.connections.enable'>): Promise<OperationReply<OperationOutputFor<'channel.connections.enable'>>> {
+    const access = requireSession(context.security);
+    const result = await this.connections.transition(context.transaction, {
+      id: input.path.connectionid,
+      scope: access.scope.id,
+      actor: access.actor.id,
+      trace: access.trace,
+      state: 'enabled',
+      expectedVersion: context.expectedVersion ?? null,
+    });
+    return { status: 200, body: result as OperationOutputFor<'channel.connections.enable'> };
+  }
+}

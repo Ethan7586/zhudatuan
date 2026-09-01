@@ -18,13 +18,18 @@ for (const file of files) {
   if (/keysetResult\(/.test(source) && !/queryPage\(/.test(source)) violations.push(`${name}:KEYSET_PAGE_INPUT_MISSING`);
 }
 
-for (const [module, method] of [
-  ['pricing', 'prices'],
-  ['inventory', 'availability'],
+for (const [module, subject, method] of [
+  ['pricing', 'Pricing', 'prices'],
+  ['inventory', 'Inventory', 'availability'],
 ]) {
-  const source = readFileSync(join(moduleRoot, module, 'public', `${module === 'pricing' ? 'Pricing' : 'Inventory'}ReadPort.ts`), 'utf8');
-  if (!new RegExp(`${method}\\(scope: ReadScope, mall: string, skus: readonly string\\[\\]\\)`).test(source) || !/boundedIdentifiers\(skus, 50, 'STOREFRONT_[A-Z]+_SKUS_INVALID'\)/.test(source) || !/any\(\$2::text\[\]\)/i.test(source)) {
-    violations.push(`services/commerce/src/modules/${module}/public/${module === 'pricing' ? 'Pricing' : 'Inventory'}ReadPort.ts:BOUNDED_BATCH_PROOF_MISSING`);
+  const portPath = join(moduleRoot, module, 'public', `${subject}ReadPort.ts`);
+  const adapterPath = join(moduleRoot, module, 'infrastructure', 'persistence', `Pg${subject}ReadPort.ts`);
+  const port = readFileSync(portPath, 'utf8');
+  const adapter = readFileSync(adapterPath, 'utf8');
+  const signature = new RegExp(`${method}\\(context: ReadTransactionContext, mall: string, skus: readonly string\\[\\]\\)`);
+  const implementation = new RegExp(`class Pg${subject}ReadPort implements ${subject}ReadPort`);
+  if (!signature.test(port) || !implementation.test(adapter) || !/boundedIdentifiers\(skus, 50, 'STOREFRONT_[A-Z]+_SKUS_INVALID'\)/.test(adapter) || !/any\(\$2::text\[\]\)/i.test(adapter)) {
+    violations.push(`services/commerce/src/modules/${module}/infrastructure/persistence/Pg${subject}ReadPort.ts:BOUNDED_BATCH_PROOF_MISSING`);
   }
 }
 

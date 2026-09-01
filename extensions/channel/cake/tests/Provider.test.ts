@@ -7,13 +7,13 @@ import { checkCakeHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { CakeMapper } from '../Mapper';
 import { CakeWebhook } from '../Webhook';
-import { CakeOperations } from '../capability';
+import { CakeCapabilities } from '../capability';
 
 describe('cake provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('cake');
     expect(CakeProvider.definition.id).toBe('cake');
-    expect(() => assertProviderCapabilities(CakeProvider.definition, CakeOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(CakeProvider.definition, CakeCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('CAKE_MANIFEST_SIGNATURE_MISSING');
   });

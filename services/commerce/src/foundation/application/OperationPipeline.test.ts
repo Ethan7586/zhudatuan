@@ -20,7 +20,8 @@ describe('OperationPipeline redirect contract', () => {
             trace: 'trace:one',
           }),
       } as never,
-      { create: () => `public:${'a'.repeat(64)}` } as never
+      { create: () => `public:${'a'.repeat(64)}` } as never,
+      passthroughExecutor() as never
     );
 
     await expect(pipeline.execute('identity.federations.complete', request())).resolves.toEqual({ status: 303, body: undefined, headers: { location: 'https://zhudatuan.com/' } });
@@ -43,7 +44,8 @@ describe('OperationPipeline redirect contract', () => {
             trace: 'trace:one',
           }),
       } as never,
-      { create: () => `public:${'a'.repeat(64)}` } as never
+      { create: () => `public:${'a'.repeat(64)}` } as never,
+      passthroughExecutor() as never
     );
     await expect(pipeline.execute('identity.federations.complete', request())).rejects.toBeDefined();
   });
@@ -66,7 +68,8 @@ describe('OperationPipeline error contract', () => {
     const pipeline = new OperationPipeline(
       { get: () => ({ handle: () => Promise.reject(new DomainError('ACCESS_VERSION_STALE')) }) } as never,
       { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:anonymous' }) } as never,
-      { create: () => `public:${'c'.repeat(64)}` } as never
+      { create: () => `public:${'c'.repeat(64)}` } as never,
+      passthroughExecutor() as never
     );
     await expect(pipeline.execute('identity.sessions.create', sessionRequest())).rejects.toMatchObject({ code: 'INTERNAL_ERROR' });
   });
@@ -97,7 +100,8 @@ describe('OperationPipeline output boundary', () => {
     const pipeline = new OperationPipeline(
       { get: () => ({ handle: () => Promise.resolve({ status: 200, body }) }) } as never,
       { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:anonymous' }) } as never,
-      { create: () => `public:${'d'.repeat(64)}` } as never
+      { create: () => `public:${'d'.repeat(64)}` } as never,
+      passthroughExecutor() as never
     );
 
     const controller = new AbortController();
@@ -157,8 +161,15 @@ function errorPipeline(body: Readonly<Record<string, string>>) {
   return new OperationPipeline(
     { get: () => ({ handle: () => Promise.resolve({ status: 409, body }) }) } as never,
     { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:anonymous' }) } as never,
-    { create: () => `public:${'c'.repeat(64)}` } as never
+    { create: () => `public:${'c'.repeat(64)}` } as never,
+    passthroughExecutor() as never
   );
+}
+
+function passthroughExecutor() {
+  return {
+    execute: (handler: { handle(input: unknown, context: unknown): Promise<unknown> }, input: unknown, context: unknown) => handler.handle(input, context),
+  };
 }
 
 function sessionRequest() {

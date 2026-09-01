@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SwitchMembership } from '../../services/commerce/src/modules/identity/application/command/SwitchMembership';
+import { SwitchMembership } from '../../services/commerce/src/modules/identity/application/service/SwitchMembership';
+import { result, withWriteTransaction } from '../../services/commerce/src/test/TransactionFixture';
 
 test('membership switch rejects a membership owned by another member before session revocation', async () => {
   let revoked = false;
@@ -20,7 +21,13 @@ test('membership switch rejects a membership owned by another member before sess
     } as never,
     { publish: async () => undefined } as never
   ).action();
-  await assert.rejects(action(request('membership:other'), {} as never), /MEMBERSHIP_SELECTION_REQUIRED/);
+  await assert.rejects(
+    withWriteTransaction(
+      async () => result([]),
+      (context) => action(request('membership:other'), context)
+    ),
+    /MEMBERSHIP_SELECTION_REQUIRED/
+  );
   assert.equal(revoked, false);
 });
 
@@ -37,8 +44,11 @@ test('membership switch revokes, rotates and publishes both immutable events', a
       },
     } as never
   ).action();
-  const result = await action(request('membership:two'), {} as never);
-  assert.equal(result.body && (result.body as Record<string, unknown>).session, 'session:new');
+  const switched = await withWriteTransaction(
+    async () => result([]),
+    (context) => action(request('membership:two'), context)
+  );
+  assert.equal(switched.body && (switched.body as Record<string, unknown>).session, 'session:new');
   assert.deepEqual(events, ['identity.session.revoked', 'identity.membership.switched']);
 });
 

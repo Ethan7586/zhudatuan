@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 import type { FederationTransaction } from '../../domain/model/FederationTransaction';
 import type { AuthTicketBinding } from './AuthTicketPort';
@@ -34,14 +35,15 @@ export interface FederationCallbackRecord {
   readonly authorization: AuthTicketBinding;
 }
 export interface FederationRepository {
-  create(database: OperationDatabase, value: CreateFederation): Promise<FederationTransaction>;
-  redirected(database: OperationDatabase, transaction: FederationTransaction): Promise<FederationTransaction>;
-  callback(database: OperationDatabase, provider: string, statehash: Buffer): Promise<FederationCallbackRecord>;
-  advance(database: OperationDatabase, transaction: FederationTransaction, state: 'linkrequired' | 'rejected' | 'expired'): Promise<FederationTransaction>;
-  verified(database: OperationDatabase, transaction: FederationTransaction, subject: FederatedSubject, subjecthash: Buffer): Promise<FederationResolution>;
-  bindDirectory(database: OperationDatabase, input: Readonly<{ provider: string; principal: string; membership: string; subjecthash: Buffer; ciphertext: string; keyversion: string }>): Promise<void>;
+  create(context: WriteTransactionContext, value: CreateFederation): Promise<FederationTransaction>;
+  redirected(context: WriteTransactionContext, transaction: FederationTransaction): Promise<FederationTransaction>;
+  pending(context: ReadTransactionContext, provider: string, statehash: Buffer): Promise<FederationCallbackRecord>;
+  accept(context: WriteTransactionContext, transaction: FederationTransaction): Promise<FederationTransaction>;
+  advance(context: WriteTransactionContext, transaction: FederationTransaction, state: 'linkrequired' | 'rejected' | 'expired'): Promise<FederationTransaction>;
+  verified(context: WriteTransactionContext, transaction: FederationTransaction, subject: FederatedSubject, subjecthash: Buffer): Promise<FederationResolution>;
+  bindDirectory(context: WriteTransactionContext, input: Readonly<{ provider: string; principal: string; membership: string; subjecthash: Buffer; ciphertext: string; keyversion: string }>): Promise<void>;
   preauthorize(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     transaction: FederationTransaction,
     principal: string,
     memberships: FederationResolution['memberships'],
@@ -50,10 +52,10 @@ export interface FederationRepository {
     assurance: number,
     authorization: AuthTicketBinding
   ): Promise<Readonly<{ token: string }>>;
-  version(database: OperationDatabase, transaction: string): Promise<number>;
-  complete(database: OperationDatabase, transaction: string, expected: number): Promise<void>;
+  version(context: ReadTransactionContext, transaction: string): Promise<number>;
+  complete(context: WriteTransactionContext, transaction: string, expected: number): Promise<void>;
 }
 export interface FederationCompletionPort {
-  version(database: OperationDatabase, transaction: string): Promise<number>;
-  complete(database: OperationDatabase, transaction: string, expected: number): Promise<void>;
+  version(context: ReadTransactionContext, transaction: string): Promise<number>;
+  complete(context: WriteTransactionContext, transaction: string, expected: number): Promise<void>;
 }

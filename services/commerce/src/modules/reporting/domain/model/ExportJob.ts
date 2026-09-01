@@ -1,12 +1,15 @@
+import type { ContractJsonValue } from '@shop/contract';
+
 export const EXPORT_REPORTS = Object.freeze(['metrics', 'orders', 'finance.statement'] as const);
 export type ExportReport = (typeof EXPORT_REPORTS)[number];
 export type ExportState = 'queued' | 'running' | 'completed' | 'failed' | 'expired';
+export type ExportFilterValue = ContractJsonValue;
 
 export interface ExportJob {
   readonly id: string;
   readonly scope: string;
   readonly report: ExportReport;
-  readonly filter: Readonly<Record<string, unknown>>;
+  readonly filter: Readonly<Record<string, ExportFilterValue>>;
   readonly state: ExportState;
   readonly cursor: string | null;
   readonly recordCount: number;

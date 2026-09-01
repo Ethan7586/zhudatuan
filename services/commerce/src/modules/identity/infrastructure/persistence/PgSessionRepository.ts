@@ -1,11 +1,18 @@
-import { reject, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { reject } from '../../../../foundation/application/OperationRejection';
+
 import { randomUUID } from 'node:crypto';
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 import type { SessionListRecord, SessionRecord, SessionRepository, SessionRevocation } from '../../application/port/SessionRepository';
 import type { QueryPage } from '../../../../foundation/interface/Validation';
-
 export class PgSessionRepository implements SessionRepository {
-  async credentialVersion(database: OperationDatabase, principal: string): Promise<number> {
-    const result = await database.query<{ credential_version: number }>(
+  private readonly transactions = new PgTransactionAccess();
+  async credentialVersion(context: WriteTransactionContext, principal: string): Promise<number> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      credential_version: number;
+    }>(
       `select credential_version from identity.principal
       where id=$1 and status='active' for update`,
       [principal]
@@ -14,8 +21,8 @@ export class PgSessionRepository implements SessionRepository {
     if (version === undefined) reject('MEMBERSHIP_SELECTION_REQUIRED');
     return Number(version);
   }
-
-  async create(database: OperationDatabase, value: SessionRecord): Promise<void> {
+  async create(context: WriteTransactionContext, value: SessionRecord): Promise<void> {
+    const database = this.transactions.database(context);
     const session = value.session;
     await database.query(
       `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,
@@ -23,15 +30,22 @@ export class PgSessionRepository implements SessionRepository {
       values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,clock_timestamp(),clock_timestamp())`,
       [session.id, session.principal, session.membership, value.tokenHash, session.credentialVersion, session.accessVersion, session.target, value.ipHash, value.userAgent, value.deviceLabel, session.assurance, session.expiresAt]
     );
-    await database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) values($1,'identity.session.created',1,'session',$2,$3,$4::jsonb,$5,clock_timestamp(),clock_timestamp())`,
-      [`event:${randomUUID()}`, session.id, session.membership, JSON.stringify({ principalId: session.principal, membershipId: session.membership, assurance: session.assurance }), value.trace]
-    );
+    await new PgRuntimeWriter(database).append({
+      id: `event:${randomUUID()}`,
+      type: 'identity.session.created',
+      aggregateType: 'session',
+      aggregate: session.id,
+      scope: session.membership,
+      payload: { principalId: session.principal, membershipId: session.membership, assurance: session.assurance },
+      trace: value.trace,
+    });
   }
-
-  async revokeCurrent(database: OperationDatabase, principal: string, session: string): Promise<SessionRevocation | null> {
-    const result = await database.query<{ id: string; revoked_at: Date }>(
+  async revokeCurrent(context: WriteTransactionContext, principal: string, session: string): Promise<SessionRevocation | null> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      id: string;
+      revoked_at: Date;
+    }>(
       `update identity.session set revoked_at=clock_timestamp(),
       revoked_reason='logout' where id=$1 and principal_id=$2 and revoked_at is null returning id,revoked_at`,
       [session, principal]
@@ -39,29 +53,33 @@ export class PgSessionRepository implements SessionRepository {
     const row = result.rows[0];
     return row ? Object.freeze({ id: row.id, revokedAt: row.revoked_at }) : null;
   }
-
-  async revokeSelected(database: OperationDatabase, principal: string, current: string, target: string): Promise<readonly string[]> {
+  async revokeSelected(context: WriteTransactionContext, principal: string, current: string, target: string): Promise<readonly string[]> {
+    const database = this.transactions.database(context);
     const result =
       target === 'others'
-        ? await database.query<{ id: string }>(
+        ? await database.query<{
+            id: string;
+          }>(
             `update identity.session set revoked_at=clock_timestamp(),
       revoked_reason='security_center' where principal_id=$1 and id<>$2 and revoked_at is null returning id`,
             [principal, current]
           )
-        : await database.query<{ id: string }>(
+        : await database.query<{
+            id: string;
+          }>(
             `update identity.session set revoked_at=clock_timestamp(),revoked_reason='security_center'
       where principal_id=$1 and id=$2 and revoked_at is null returning id`,
             [principal, target]
           );
     return Object.freeze(result.rows.map(({ id }) => id));
   }
-
-  async owns(database: OperationDatabase, principal: string, session: string): Promise<boolean> {
+  async owns(context: ReadTransactionContext, principal: string, session: string): Promise<boolean> {
+    const database = this.transactions.database(context);
     const result = await database.query('select 1 from identity.session where principal_id=$1 and id=$2', [principal, session]);
     return Boolean(result.rows[0]);
   }
-
-  async elevate(database: OperationDatabase, principal: string, session: string, assurance: 1 | 2 | 3): Promise<boolean> {
+  async elevate(context: WriteTransactionContext, principal: string, session: string, assurance: 1 | 2 | 3): Promise<boolean> {
+    const database = this.transactions.database(context);
     const result = await database.query(
       `update identity.session set assurance_level=greatest(assurance_level,$3),
       last_seen_at=clock_timestamp() where id=$1 and principal_id=$2 and revoked_at is null returning id`,
@@ -69,8 +87,8 @@ export class PgSessionRepository implements SessionRepository {
     );
     return Boolean(result.rows[0]);
   }
-
-  async list(database: OperationDatabase, principal: string, current: string, page: QueryPage): Promise<readonly SessionListRecord[]> {
+  async list(context: ReadTransactionContext, principal: string, current: string, page: QueryPage): Promise<readonly SessionListRecord[]> {
+    const database = this.transactions.database(context);
     const result = await database.query<SessionListRecord>(
       `select id,membership_id as membership,
       case when client='storefront' then 'storefront' else 'console' end client,device_label as "deviceLabel",
@@ -82,9 +100,11 @@ export class PgSessionRepository implements SessionRepository {
     );
     return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
-
-  async advance(database: OperationDatabase, principal: string): Promise<number> {
-    const bumped = await database.query<{ credential_version: number }>(
+  async advance(context: WriteTransactionContext, principal: string): Promise<number> {
+    const database = this.transactions.database(context);
+    const bumped = await database.query<{
+      credential_version: number;
+    }>(
       `update identity.principal
       set credential_version=credential_version+1,version=version+1,updated_at=clock_timestamp()
       where id=$1 returning credential_version`,

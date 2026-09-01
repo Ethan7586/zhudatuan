@@ -83,7 +83,7 @@ const contractChecksum = hash(JSON.stringify({ openapi, events: eventArtifact, p
 
 await emit(resolve(root, 'packages/contract/openapi.json'), `${JSON.stringify(openapi, null, 2)}\n`);
 await emit(resolve(root, 'packages/contract/events.json'), `${JSON.stringify(eventArtifact, null, 2)}\n`);
-await emit(resolve(root, 'packages/contract/src/operations/CommerceOperations.ts'), operationSource(operations));
+await emit(resolve(root, 'packages/contract/src/operations/CommerceCatalog.ts'), operationSource(operations));
 await emit(resolve(root, 'packages/contract/src/operations/CommerceSchemas.ts'), schemaSource(operations));
 await emit(resolve(root, 'packages/contract/src/events/CommerceEvents.ts'), eventSource(events));
 await emit(resolve(root, 'packages/contract/src/EventSerializer.ts'), eventSerializerSource(events));
@@ -93,7 +93,6 @@ await emit(resolve(root, 'packages/authz/src/PermissionCatalog.ts'), permissionS
 await emit(resolve(root, 'packages/sdk/src/operations/CommerceClient.ts'), sdkSource(operations));
 for (const [domain, source] of sdkDomainSources(operations)) await emit(resolve(root, `packages/sdk/src/operations/${domain}.ts`), source);
 await emit(resolve(root, 'services/commerce/src/foundation/interface/OperationController.ts'), operationControllerSource(operations));
-await emit(resolve(root, 'services/commerce/src/generated/HandlerCatalog.ts'), handlerCatalogSource(operations));
 await emitRuntimeContract(contractChecksum);
 
 async function catalog<T>(name: string, key: string, version: number): Promise<readonly T[]> {
@@ -287,7 +286,7 @@ async function emit(path: string, content: string): Promise<void> {
 }
 
 async function emitRuntimeContract(contractChecksum: string): Promise<void> {
-  await emit(resolve(root, 'services/commerce/src/generated/EventHandlers.ts'), eventRegistrySource(events));
+  await emit(resolve(root, 'services/commerce/src/generated/EventSubscriptions.ts'), eventRegistrySource(events));
   await emit(resolve(root, 'services/commerce/src/app/events.ts'), eventAppSource(events));
   const template = await readFile(resolve(root, 'database/contracts/publish.template.sql'), 'utf8');
   const operationRows = operations.map((item) => sqlRow([item.id, item.owner, item.method, item.path, contractVersion])).join(',\n');
@@ -376,27 +375,21 @@ function contractIdentitySource(checksum: string, version: string): string {
 }
 
 function eventRegistrySource(values: readonly EventDefinition[]): string {
-  const handlers = values.map((item) => `  [${JSON.stringify(item.id)}, Object.freeze(${JSON.stringify(item.handlers)})],`).join('\n');
-  return `// Generated from packages/contract/definitions/events.yml. Do not edit.\nexport const EVENT_HANDLERS = new Map<string, readonly string[]>([\n${handlers}\n]);\nexport const PROJECTION_EVENTS: ReadonlySet<string> = new Set(\n  [...EVENT_HANDLERS].filter(([, subscribers]) => subscribers.includes('projection')).map(([event]) => event)\n);\n`;
+  const subscriptions = new Map<string, string[]>();
+  for (const event of values) {
+    for (const handler of event.handlers) subscriptions.set(handler, [...(subscriptions.get(handler) ?? []), event.id]);
+  }
+  const fields = [...subscriptions]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([handler, events]) => `  ${JSON.stringify(handler)}: Object.freeze(${JSON.stringify(events)}),`)
+    .join('\n');
+  return `// Generated from packages/contract/definitions/events.yml. Do not edit.\nexport const EVENT_SUBSCRIPTIONS = Object.freeze({\n${fields}\n});\nexport const PROJECTION_EVENTS: ReadonlySet<string> = new Set(EVENT_SUBSCRIPTIONS.projection);\n`;
 }
 
 function eventAppSource(values: readonly EventDefinition[]): string {
   const types = values.map((item) => `  ${JSON.stringify(item.id)},`).join('\n');
-  const handlers = values.map((item) => `  [${JSON.stringify(item.id)}, Object.freeze(${JSON.stringify(item.handlers)})],`).join('\n');
   const versions = values.map((item) => `  [${JSON.stringify(item.id)}, ${item.version}],`).join('\n');
-  return `// Generated from packages/contract/definitions/events.yml. Do not edit.\nexport const EVENT_SCHEMA_TYPES = Object.freeze([\n${types}\n] as const);\nexport const EVENT_HANDLERS = new Map<string, readonly string[]>([\n${handlers}\n]);\nconst versions: ReadonlyMap<string, number> = new Map([\n${versions}\n]);\nexport function eventVersion(type: string): number { const version=versions.get(type); if(version===undefined) throw new Error('EVENT_SCHEMA_UNKNOWN'); return version; }\n`;
-}
-
-function handlerCatalogSource(values: readonly OperationDefinition[]): string {
-  const imports = values
-    .map((item, index) => {
-      const target = item.handler.replace(/^services\/commerce\/src\//, '../').replace(/\.ts$/, '');
-      const name = item.handler.split('/').at(-1)!.replace(/\.ts$/, '');
-      return `import { ${name} as Handler${index} } from '${target}';`;
-    })
-    .join('\n');
-  const rows = values.map((item, index) => `  [${JSON.stringify(item.id)}, Handler${index}],`).join('\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport type { OperationHandlerType } from '../foundation/application/OperationHandler';\n${imports}\n\nexport const HANDLER_TYPES = new Map<OperationId, OperationHandlerType<OperationId>>([\n${rows}\n]);\n`;
+  return `// Generated from packages/contract/definitions/events.yml. Do not edit.\nexport const EVENT_SCHEMA_TYPES = Object.freeze([\n${types}\n] as const);\nconst versions: ReadonlyMap<string, number> = new Map([\n${versions}\n]);\nexport function eventVersion(type: string): number { const version=versions.get(type); if(version===undefined) throw new Error('EVENT_SCHEMA_UNKNOWN'); return version; }\n`;
 }
 
 function operationControllerSource(values: readonly OperationDefinition[]): string {

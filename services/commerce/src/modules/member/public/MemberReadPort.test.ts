@@ -1,17 +1,8 @@
-import type { PoolClient, QueryResult } from 'pg';
-import { describe, expect, it, vi } from 'vitest';
-import type { DatabasePool } from '../../../foundation/persistence/Pool';
-import type { ReadScope } from '../../../foundation/persistence/ReadSession';
-import { PgMemberReadPort } from './MemberReadPort';
+import { PgMemberReadPort } from '../infrastructure/persistence/PgMemberReadPort';
 
-const scope: ReadScope = Object.freeze({
-  tenant: 'tenant:one',
-  membership: 'membership:one',
-  scope: 'mall:one',
-  actor: 'principal:one',
-  trace: 'trace:one',
-  operation: 'storefront.bootstrap.read',
-});
+import type { QueryResult } from 'pg';
+import { describe, expect, it, vi } from 'vitest';
+import { withReadTransaction } from '../../../test/TransactionFixture';
 
 describe('PgMemberReadPort', () => {
   it('reads the canonical access membership and maps its active member', async () => {
@@ -21,10 +12,7 @@ describe('PgMemberReadPort', () => {
       }
       return { rows: [], rowCount: 0 } as unknown as QueryResult;
     });
-    const client = { query, release: vi.fn() } as unknown as PoolClient;
-    const pool = { connect: async () => client, workload: () => pool } as unknown as DatabasePool;
-
-    await expect(new PgMemberReadPort(pool).summary(scope, 'member:one')).resolves.toEqual({ id: 'member:one', displayName: '测试员工', status: 'active', version: 4 });
+    await expect(withReadTransaction(query, (context) => new PgMemberReadPort().summary(context, 'member:one'))).resolves.toEqual({ id: 'member:one', displayName: '测试员工', status: 'active', version: 4 });
     expect(query).toHaveBeenCalledWith(expect.stringContaining('from member.profile'), ['member:one']);
   });
 });

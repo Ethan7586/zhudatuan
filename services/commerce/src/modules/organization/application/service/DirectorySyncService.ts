@@ -1,5 +1,5 @@
 import { WECOM_PROVIDER_CONFIGURATION } from '@shop/config/server';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
+import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { DirectoryRepository } from '../port/DirectoryRepository';
 import type { DirectoryProviderRegistry } from './DirectoryProviderRegistry';
@@ -11,7 +11,7 @@ import { safeErrorCode } from '../../../../foundation/domain/SafeError';
 
 export class DirectorySyncService {
   constructor(
-    private readonly pool: DatabasePool,
+    private readonly transactions: TransactionManager,
     private readonly repository: DirectoryRepository,
     private readonly providers: DirectoryProviderRegistry,
     private readonly mapper: DirectoryMapper,
@@ -20,34 +20,26 @@ export class DirectorySyncService {
     private readonly lifecycle: MembershipLifecycle,
     private readonly kms: KmsClient
   ) {}
-  async execute(connectionid: string, runid: string, trace: string, signal: AbortSignal, fence: () => Promise<void>): Promise<void> {
+  async execute(connectionid: string, runid: string, trace: string, signal: AbortSignal, deadline: number, fence: () => Promise<void>): Promise<void> {
     await fence();
-    const connection = await this.repository.require(this.pool, connectionid);
+    const connection = await this.transactions.read(this.options('system', connectionid, trace, 'organization.directory.connection', signal, deadline), (context) => this.repository.require(context, connectionid));
     if (!connection.synchronizable()) throw new Error('DIRECTORY_PROVIDER_DISABLED');
-    let run = await this.repository.startRun(this.pool, runid);
+    let run = await this.transactions.write(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.start', signal, deadline), (context) => this.repository.startRun(context, runid));
     const provider = this.providers.require(connection.providertype);
     if (run.mode === 'event') {
-      const encrypted = await this.repository.event(this.pool, run.id);
+      const encrypted = await this.transactions.read(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.event', signal, deadline), (context) => this.repository.event(context, run.id));
       const payload = await this.kms.decrypt('providerconfig', 'organization/directory', encrypted.envelope, { connection: connection.id, event: encrypted.eventid });
       const page = provider.event(connection, payload);
       this.policy.validate(page, connection.successfulversion);
       const subjects = this.mapper.map(connection, page);
       await fence();
-      const client = await this.pool.connect();
-      try {
-        await client.query('begin');
-        const counts = await this.reconciler.reconcile(client, connection, subjects, trace);
-        await this.repository.advance(client, run.id, page, counts);
-        await this.repository.complete(client, run.id, connection.id, page.version, connection.cursor);
-        await client.query(`update organization.directoryinbox set state='processed',processed_at=clock_timestamp() where connection_id=$1 and provider_event_id=$2`, [connection.id, page.eventid]);
-        await client.query('commit');
-        return;
-      } catch (cause) {
-        await client.query('rollback');
-        throw cause;
-      } finally {
-        client.release();
-      }
+      await this.transactions.write(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.event.persist', signal, deadline), async (context) => {
+        const counts = await this.reconciler.reconcile(context, connection, subjects, trace);
+        await this.repository.advance(context, run.id, page, counts);
+        await this.repository.complete(context, run.id, connection.id, page.version, connection.cursor);
+        await this.repository.markEventProcessed(context, connection.id, page.eventid);
+      });
+      return;
     }
     let cursor = run.cursor === null ? null : await this.kms.decrypt('providerconfig', 'organization/directory', run.cursor, { connection: connection.id });
     let previous = connection.successfulversion;
@@ -60,32 +52,28 @@ export class DirectorySyncService {
       const subjects = this.mapper.map(connection, page);
       const protectedcursor = page.cursor === null ? null : (await this.kms.encrypt('providerconfig', 'organization/directory', page.cursor, { connection: connection.id })).ciphertext;
       await fence();
-      const client = await this.pool.connect();
-      try {
-        await client.query('begin');
-        const staged = await this.repository.stage(client, run, page, subjects);
-        const counts = staged ? await this.reconciler.reconcile(client, connection, subjects, trace) : { read: 0, applied: 0, conflicts: 0, ignored: 0 };
-        await this.repository.advance(client, run.id, { ...page, cursor: protectedcursor }, counts);
+      await this.transactions.write(this.options(connection.tenantid, connection.organizationid, trace, 'organization.directory.page.persist', signal, deadline), async (context) => {
+        const staged = await this.repository.stage(context, run, page, subjects);
+        const counts = staged ? await this.reconciler.reconcile(context, connection, subjects, trace) : { read: 0, applied: 0, conflicts: 0, ignored: 0 };
+        await this.repository.advance(context, run.id, { ...page, cursor: protectedcursor }, counts);
         if (page.complete) {
-          await this.repository.complete(client, run.id, connection.id, page.version, protectedcursor);
-          for (const departure of await this.repository.departures(client, connection.id)) {
-            await this.lifecycle.apply(client, { membership: departure.membership, organization: connection.organizationid, department: null, action: 'freeze', explicitdeparture: false, trace });
-            await this.repository.freeze(client, connection.id, departure.subject);
+          await this.repository.complete(context, run.id, connection.id, page.version, protectedcursor);
+          for (const departure of await this.repository.departures(context, connection.id)) {
+            await this.lifecycle.apply(context, { membership: departure.membership, organization: connection.organizationid, department: null, action: 'freeze', explicitdeparture: false, trace });
+            await this.repository.freeze(context, connection.id, departure.subject);
           }
         }
-        await client.query('commit');
-      } catch (cause) {
-        await client.query('rollback');
-        throw cause;
-      } finally {
-        client.release();
-      }
+      });
       cursor = page.cursor;
       if (page.complete) return;
     }
     throw new Error('DIRECTORY_PAGE_LIMIT_EXCEEDED');
   }
-  fail(run: string, cause: unknown): Promise<void> {
-    return this.repository.fail(this.pool, run, safeErrorCode(cause, 'DIRECTORY_SYNC_FAILED'));
+  fail(run: string, cause: unknown, trace: string, signal: AbortSignal, deadline: number): Promise<void> {
+    return this.transactions.write(this.options('system', 'system', trace, 'organization.directory.fail', signal, deadline), (context) => this.repository.fail(context, run, safeErrorCode(cause, 'DIRECTORY_SYNC_FAILED')));
+  }
+
+  private options(tenant: string, scope: string, trace: string, operation: string, signal: AbortSignal, deadline: number): TransactionOptions {
+    return { tenant, membership: 'system', scope, actor: 'system', trace, operation, deadline, signal, workload: 'jobs' };
   }
 }

@@ -3,9 +3,13 @@ import { useMemo, useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { allocatePool, archiveProduct, createProduct, publishPrice, setListingPublication, setPoolBinding, updateProduct } from './ProductCommand';
 import { poolKey, readPools } from './ProductQuery';
+import type { ProductStatus } from './ProductPublication';
 import type { Listing, Pool } from './ProductSchema';
 
-export type ProductAction = Readonly<{ kind: 'create' }> | Readonly<{ kind: 'edit' | 'archive' | 'price' | 'publish' | 'unpublish'; listing: Listing }>;
+export type ProductAction =
+  | Readonly<{ kind: 'create' }>
+  | Readonly<{ kind: 'edit'; listing: Listing; status: ProductStatus }>
+  | Readonly<{ kind: 'archive' | 'price' | 'publish' | 'unpublish'; listing: Listing }>;
 
 export function ProductActionDialog({ action, context, onClose, onDone }: Readonly<{ action: ProductAction | null; context: ConsoleContext; onClose: () => void; onDone: () => void }>) {
   if (action === null) return null;
@@ -17,7 +21,7 @@ function ProductActionForm({ action, context, onClose, onDone }: Readonly<{ acti
   const [title, setTitle] = useState(listing?.title ?? '主打团臻选员工福利礼盒');
   const [category, setCategory] = useState('企业福利专区');
   const [type, setType] = useState<'physical' | 'virtual' | 'service' | 'voucher'>('physical');
-  const [status, setStatus] = useState<'draft' | 'review' | 'active' | 'archived'>('active');
+  const [status, setStatus] = useState<ProductStatus>(action.kind === 'edit' ? action.status : 'active');
   const [amount, setAmount] = useState('99.00');
   const mutation = useMutation({
     mutationFn: async () => {

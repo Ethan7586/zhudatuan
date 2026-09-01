@@ -1,0 +1,68 @@
+import { describe, expect, it, vi } from 'vitest';
+import { AuthTransaction } from '../domain/model/AuthTransaction';
+import { MembershipSelector } from '../application/service/MembershipSelector';
+import { SessionCookieAdapter } from '../infrastructure/security/SessionCookie';
+import { result, withWriteTransaction } from '../../../test/TransactionFixture';
+
+describe('MembershipSelector', () => {
+  it('binds a password selection to browser, device and PKCE and consumes it once', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'selection-id', token: 'p'.repeat(64) });
+    const consume = vi.fn().mockResolvedValue({
+      id: 'selection-id',
+      principal: 'principal-one',
+      target: 'storefront',
+      memberships: [
+        { id: 'membership-one', target: 'storefront' },
+        { id: 'membership-two', target: 'storefront' },
+      ],
+      expiresAt: new Date('2099-01-01T00:00:00.000Z'),
+      transaction: null,
+      assurance: 1,
+      authorization: { stateHash: 'a'.repeat(64), nonceHash: 'b'.repeat(64), challenge: 'c'.repeat(43) },
+    });
+    const repository = { create, consume, read: vi.fn() };
+    const issue = vi.fn().mockResolvedValue({ session: 'session-one', headers: { 'set-cookie': 'session-cookie' } });
+    const selector = new MembershipSelector(
+      repository as never,
+      { issue } as never,
+      { browser: () => Buffer.alloc(32, 1), device: () => Buffer.alloc(32, 2) } as never,
+      { issue: () => ({ url: 'https://zhudatuan.com/' }) } as never,
+      { memberships: async () => [{ id: 'membership-two', target: 'storefront' }] } as never,
+      { memberForPrincipal: async () => 'member-one' } as never,
+      { complete: vi.fn() } as never,
+      new SessionCookieAdapter()
+    );
+    const authorization = AuthTransaction.start({ state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43) });
+
+    const started = await withWriteTransaction(
+      async () => result([]),
+      (transaction) =>
+        selector.begin(
+          transaction,
+          {
+            principal: 'principal-one',
+            target: 'storefront',
+            assurance: 1,
+            authorization,
+            memberships: [
+              { id: 'membership-one', target: 'storefront' },
+              { id: 'membership-two', target: 'storefront' },
+            ],
+          },
+          { peer: '127.0.0.1', agent: 'browser', device: 'device-one' }
+        )
+    );
+    expect(started).toEqual({ id: 'selection-id', headers: { 'set-cookie': expect.stringContaining('__Host-preauth=') } });
+    expect(create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ principal: 'principal-one', assurance: 1, authorization: { stateHash: expect.stringMatching(/^[0-9a-f]{64}$/), nonceHash: expect.stringMatching(/^[0-9a-f]{64}$/), challenge: 'c'.repeat(43) } })
+    );
+
+    const completed = await withWriteTransaction(
+      async () => result([]),
+      (transaction) => selector.select(transaction, 'selection-id', 'membership-two', { peer: '127.0.0.1', agent: 'browser', device: 'device-one', trace: 'trace-one' })
+    );
+    expect(completed.destination).toBe('https://zhudatuan.com/');
+    expect(issue).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ membership: 'membership-two', assurance: 1 }));
+  });
+});

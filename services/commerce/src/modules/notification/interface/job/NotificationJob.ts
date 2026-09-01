@@ -1,29 +1,30 @@
 import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
-import type { DispatchNotification } from '../../application/command/DispatchNotification';
+import type { NotificationDeliveryProcess } from '../../application/process/NotificationDeliveryProcess';
 
 export class NotificationJobProcessor implements JobProcessor {
-  constructor(private readonly dispatches: DispatchNotification) {}
+  constructor(private readonly dispatches: NotificationDeliveryProcess) {}
 
-  async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
+  async process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'notification') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
-    if (payload.challenge !== undefined) return this.dispatches.challenge(text(payload.challenge, 'IDENTITY_CHALLENGE_REQUIRED'));
-    if (payload.dispatch !== undefined) return this.dispatches.dispatch(text(payload.dispatch, 'NOTIFICATION_DISPATCH_REQUIRED'));
+    const execution = { scope: job.scope_id ?? 'notification', trace: job.id, signal, deadline };
+    if (payload.challenge !== undefined) return this.dispatches.challenge(text(payload.challenge, 'IDENTITY_CHALLENGE_REQUIRED'), execution);
+    if (payload.dispatch !== undefined) return this.dispatches.dispatch(text(payload.dispatch, 'NOTIFICATION_DISPATCH_REQUIRED'), execution);
     if (payload.event !== undefined)
-      return this.dispatches.event({ job: job.id, id: text(payload.eventId, 'NOTIFICATION_EVENT_ID_REQUIRED'), type: text(payload.event, 'NOTIFICATION_EVENT_REQUIRED'), payload: object(payload.payload ?? payload) });
+      return this.dispatches.event({ job: job.id, id: text(payload.eventId, 'NOTIFICATION_EVENT_ID_REQUIRED'), type: text(payload.event, 'NOTIFICATION_EVENT_REQUIRED'), payload: object(payload.payload ?? payload) }, execution);
     throw new Error('NOTIFICATION_JOB_SUBTYPE_INVALID');
   }
 }
 
 export interface IdentityChallengeDispatcher {
-  challenge(id: string): Promise<void>;
+  challenge(id: string, execution: Readonly<{ scope: string; trace: string; signal: AbortSignal; deadline: number }>): Promise<void>;
 }
 
 export class IdentityNotificationJobProcessor implements JobProcessor {
   constructor(private readonly dispatches: IdentityChallengeDispatcher) {}
 
-  async process(job: ClaimedJob, signal: AbortSignal): Promise<void> {
+  async process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
     if (job.kind !== 'identitynotification') throw new Error('JOB_KIND_MISMATCH');
     if (signal.aborted) throw signal.reason;
     const payload = object(job.payload);
@@ -32,7 +33,7 @@ export class IdentityNotificationJobProcessor implements JobProcessor {
     if (!/^challenge:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(challenge)) {
       throw new Error('IDENTITY_CHALLENGE_INVALID');
     }
-    await this.dispatches.challenge(challenge);
+    await this.dispatches.challenge(challenge, { scope: job.scope_id ?? 'identity', trace: job.id, signal, deadline });
   }
 }
 

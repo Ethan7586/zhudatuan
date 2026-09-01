@@ -1,11 +1,12 @@
-import { BatchImportProcessor } from '../../../../foundation/application/BatchImport';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { PgVoucherImport } from '../../infrastructure/persistence/PgVoucherImport';
+import { importId } from '../../../../foundation/application/BatchImport';
+import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { VoucherImportProcess } from '../../application/process/VoucherImportProcess';
 
-export class VoucherImportProcessor extends BatchImportProcessor {
-  constructor(pool: DatabasePool, objects: ObjectStore, kms: KmsClient) {
-    super('voucherimport', 'voucher', objects, new PgVoucherImport(pool, kms));
+export class VoucherImportJob implements JobProcessor {
+  constructor(private readonly imports: VoucherImportProcess) {}
+
+  process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
+    if (job.kind !== 'voucherimport') throw new Error('JOB_KIND_MISMATCH');
+    return this.imports.execute(importId(job.payload, 'VOUCHERIMPORT_REQUIRED'), job.scope_id ?? 'organization-platform-root', signal, deadline);
   }
 }

@@ -5,7 +5,7 @@ import { assertRuntimeReady } from '../bootstrap/RuntimeReadiness';
 import { OutboxRelay } from '../adapter/messaging/OutboxRelay';
 import { RuntimeEventPublisher } from '../adapter/messaging/RuntimeEventPublisher';
 import { RuntimeScheduler } from '../foundation/infrastructure/RuntimeScheduler';
-import { ORDINARY_JOB_CATALOG } from './jobs';
+import { ORDINARY_JOB_CATALOG } from '../foundation/application/JobCatalog';
 import { COMMERCE_MODULES } from './modules';
 import { mapParallel } from '../foundation/performance/Parallel';
 

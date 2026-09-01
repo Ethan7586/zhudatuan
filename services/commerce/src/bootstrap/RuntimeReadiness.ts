@@ -2,9 +2,11 @@ import { createHash } from 'node:crypto';
 import { COMMERCE_EVENTS, CONTRACT_CHECKSUM, OperationCatalog } from '@shop/contract';
 import { CONFIG_CHECKSUM } from '@shop/config/runtime';
 import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD } from '@shop/config/server';
-import { JOB_CATALOG } from '../app/jobs';
+import { JOB_CATALOG } from '../foundation/application/JobCatalog';
 import type { DatabasePool } from '../foundation/persistence/Pool';
 import type { ExtensionRegistry } from './ExtensionRegistry';
+import { PgTransactionManager } from '../adapter/database/PgTransactionManager';
+import { PgTransactionAccess } from '../adapter/database/PgTransactionAccess';
 
 interface DatabaseReadiness {
   readonly writable: boolean;
@@ -34,13 +36,15 @@ export async function runtimeReadiness(pool: DatabasePool, extensions: Extension
     throw new Error('INVITATION_KEY_VERSIONS_INVALID');
   }
   const expectedRole = workload === 'api' ? 'shopapp' : 'shopjob';
-  const client = await pool.connect();
-  let database: DatabaseReadiness;
-  try {
-    await client.query('begin read only');
-    await client.query("select set_config('app.workload',$1,true)", [workload]);
-    const result = await client.query<DatabaseReadiness>(
-      `select not pg_is_in_recovery() writable,
+  const signal = new AbortController().signal;
+  const deadline = Date.now() + 30_000;
+  const manager = new PgTransactionManager(pool);
+  const access = new PgTransactionAccess();
+  const database = await manager.read(
+    { tenant: 'runtime', membership: '', scope: 'runtime', actor: `bootstrap:${workload}`, trace: `readiness:${workload}`, operation: 'runtime.readiness', workload: workload === 'jobs' ? 'jobs' : 'api', signal, deadline },
+    async (context) => {
+      const result = await access.database(context).query<DatabaseReadiness>(
+        `select not pg_is_in_recovery() writable,
        exists(select 1 from runtime.schemaversion where version=$1) migration,
        exists(select 1 from runtime.schemaversion where version=$2 and checksum=$3) contract,
        current_user=$4 role,
@@ -48,16 +52,11 @@ export async function runtimeReadiness(pool: DatabasePool, extensions: Extension
        (select count(*)::integer from capability.operation) capabilities,
        (select count(*)::integer from runtime.event) events,
        (select missing_count=0 from identity.invitation_key_readiness($5::text[])) "invitationKeys"`,
-      [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM, expectedRole, invitationKeyVersions]
-    );
-    database = result.rows[0]!;
-    await client.query('commit');
-  } catch (cause) {
-    await client.query('rollback').catch(() => undefined);
-    throw cause;
-  } finally {
-    client.release();
-  }
+        [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, CONTRACT_CHECKSUM, expectedRole, invitationKeyVersions]
+      );
+      return result.rows[0]!;
+    }
+  );
   const health = await extensions.healthAll();
   const operationIds = OperationCatalog.all().map(({ id }) => id);
   const eventIds = COMMERCE_EVENTS.map(({ type }) => type);

@@ -7,13 +7,13 @@ import { checkBookHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { BookMapper } from '../Mapper';
 import { BookWebhook } from '../Webhook';
-import { BookOperations } from '../capability';
+import { BookCapabilities } from '../capability';
 
 describe('book provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('book');
     expect(BookProvider.definition.id).toBe('book');
-    expect(() => assertProviderCapabilities(BookProvider.definition, BookOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(BookProvider.definition, BookCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('BOOK_MANIFEST_SIGNATURE_MISSING');
   });

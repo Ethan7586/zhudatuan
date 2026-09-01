@@ -1,4 +1,4 @@
-import type { ExportJob, ExportReport } from '../../domain/model/ExportJob';
+import type { ExportFilterValue, ExportJob, ExportReport } from '../../domain/model/ExportJob';
 import type { CockpitSummary, Metric, MetricRow } from '../../domain/model/Metric';
 
 type DatabaseTime = string | Date;
@@ -21,7 +21,7 @@ export interface ExportRecord {
   readonly id: string;
   readonly scope: string;
   readonly report: ExportReport;
-  readonly filter: Record<string, unknown>;
+  readonly filter: Record<string, ExportFilterValue>;
   readonly state: ExportJob['state'];
   readonly cursor: string | null;
   readonly recordCount: number;

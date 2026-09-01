@@ -1,5 +1,5 @@
 import { ResourceState } from '@shop/design';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -11,7 +11,7 @@ import { ProductColumnSettings } from './ProductColumnSettings';
 import { ProductDrawer } from './ProductDrawer';
 import { ProductFilterForm } from './ProductFilter';
 import { ProductPagination } from './ProductPagination';
-import { productKey, readProducts, type ProductQuery } from './ProductQuery';
+import { productDetailKey, productKey, readProducts, type ProductQuery } from './ProductQuery';
 import type { Listing, ProductFilter } from './ProductSchema';
 import { ProductTable, type ProductColumnKey } from './ProductTable';
 import './Layout.css';
@@ -27,6 +27,7 @@ const unsupportedSearchKeys = ['supplier', 'mall'] as const;
 
 export function Component() {
   const context = useConsoleContext();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
   const limitValue = Number(search.get('limit') ?? 50);
   const limit = pageSizes.has(limitValue) ? limitValue : 50;
@@ -192,9 +193,11 @@ export function Component() {
         context={context}
         onClose={() => setAction(null)}
         onDone={() => {
+          const productId = action !== null && 'listing' in action ? action.listing.product_id : undefined;
           setAction(null);
           setActionMessage('商品操作已完成');
           void query.refetch();
+          if (productId !== undefined) void queryClient.invalidateQueries({ queryKey: productDetailKey(context, productId) });
         }}
       />
       <PoolDialog open={poolsOpen} context={context} onClose={() => setPoolsOpen(false)} onDone={() => setActionMessage('商品池操作已完成')} />

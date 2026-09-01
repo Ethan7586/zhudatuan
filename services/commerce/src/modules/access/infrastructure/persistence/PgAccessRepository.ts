@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type {
   AccessCenterRecord,
   AccessRepository,
@@ -18,10 +19,17 @@ import type { Override } from '../../domain/model/Override';
 import { Role, type PermissionEffect } from '../../domain/model/Role';
 import type { Scope } from '../../domain/model/Scope';
 import { PgAccessGovernanceRepository } from './PgAccessGovernanceRepository';
-import { membershipModel, overrideChange, roleModel, scopeModel, type CenterRow, type MembershipRow, type OverrideRow, type OverrideTargetRow, type RoleChangeRow, type RoleRow, type ScopeRow } from './AccessRecord';
-
+import { membershipModel, overrideChange, roleModel, scopeModel, type CenterRow, type MembershipRow, type OverrideRow, type OverrideTargetRow, type RoleRow, type ScopeRow } from './AccessRecord';
 export class PgAccessRepository extends PgAccessGovernanceRepository implements AccessRepository {
-  async center(database: OperationDatabase, input: Readonly<{ organization: string; after: string | null; limit: number }>): Promise<readonly AccessCenterRecord[]> {
+  async center(
+    context: ReadTransactionContext,
+    input: Readonly<{
+      organization: string;
+      after: string | null;
+      limit: number;
+    }>
+  ): Promise<readonly AccessCenterRecord[]> {
+    const database = this.transactions.database(context);
     const result = await database.query<CenterRow>(
       `select membership.id,
       case membership.client when 'storefront' then 'storefront' else 'console' end client,
@@ -72,8 +80,8 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
       )
     );
   }
-
-  async lockRole(database: OperationDatabase, role: string, scope: string): Promise<Role | null> {
+  async lockRole(context: WriteTransactionContext, role: string, scope: string): Promise<Role | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<RoleRow>(
       `select id,scope_id,name,status,version,kind from access.role
       where id=$1 and scope_id=$2 for update`,
@@ -81,44 +89,69 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
     );
     return result.rows[0] ? roleModel(result.rows[0]) : null;
   }
-
-  async saveRole(database: OperationDatabase, input: Readonly<{ role: string; scope: string; name: string; allows: readonly string[]; denies: readonly string[]; expectedVersion: number }>): Promise<RoleChange | null> {
-    const result = await database.query<RoleChangeRow>(
-      `with target as (
-        insert into access.role(id,scope_id,name,status,version,kind) values($1,$2,$3,'active',0,'custom')
-        on conflict(id) do update set name=excluded.name,status='active',version=access.role.version+1
-        where access.role.scope_id=$2 and access.role.kind='custom' and access.role.version=$6
-        returning id,scope_id,name,status,version,kind
-      ), removed as (delete from access.rolepermission mapping using target where mapping.role_id=target.id), requested as (
-        select code,'allow'::text effect from unnest($4::text[]) code
-        union all select code,'deny'::text effect from unnest($5::text[]) code
-      ), added as (
-        insert into access.rolepermission(role_id,permission_id,effect)
-        select target.id,permission.id,requested.effect from target cross join requested
-        join access.permission permission on permission.code=requested.code and permission.status='active'
-        returning role_id,effect
-      ) select target.id,target.scope_id,target.name,target.status,target.version,target.kind,
-        (select count(*) from added where effect='allow')::integer allow_count,
-        (select count(*) from added where effect='deny')::integer deny_count from target`,
-      [input.role, input.scope, input.name, input.allows, input.denies, input.expectedVersion]
+  async saveRole(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      role: string;
+      scope: string;
+      name: string;
+      allows: readonly string[];
+      denies: readonly string[];
+      expectedVersion: number;
+    }>
+  ): Promise<RoleChange | null> {
+    const database = this.transactions.database(context);
+    const changed = await database.query<RoleRow>(
+      `insert into access.role(id,scope_id,name,status,version,kind) values($1,$2,$3,'active',0,'custom')
+      on conflict(id) do update set name=excluded.name,status='active',version=access.role.version+1
+      where access.role.scope_id=$2 and access.role.kind='custom' and access.role.version=$4
+      returning id,scope_id,name,status,version,kind`,
+      [input.role, input.scope, input.name, input.expectedVersion]
     );
-    const row = result.rows[0];
-    return row ? Object.freeze({ role: roleModel(row), allowCount: Number(row.allow_count), denyCount: Number(row.deny_count) }) : null;
+    const row = changed.rows[0];
+    if (!row) return null;
+    await database.query('delete from access.rolepermission where role_id=$1', [input.role]);
+    const permissions = await database.query<Readonly<{ effect: PermissionEffect }>>(
+      `with requested as (
+        select code,'allow'::text effect from unnest($2::text[]) code
+        union all select code,'deny'::text effect from unnest($3::text[]) code
+      ) insert into access.rolepermission(role_id,permission_id,effect)
+      select $1,permission.id,requested.effect from requested
+      join access.permission permission on permission.code=requested.code and permission.status='active'
+      returning effect`,
+      [input.role, input.allows, input.denies]
+    );
+    return Object.freeze({
+      role: roleModel(row),
+      allowCount: permissions.rows.filter((permission) => permission.effect === 'allow').length,
+      denyCount: permissions.rows.filter((permission) => permission.effect === 'deny').length,
+    });
   }
-
-  async scopePath(database: OperationDatabase, scope: string, kind: string): Promise<string | null> {
-    const result = await database.query<{ path: string }>(
+  async scopePath(context: ReadTransactionContext, scope: string, kind: string): Promise<string | null> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      path: string;
+    }>(
       `select (access.scope_object($1)->'path')::text path
       where access.scope_allowed($1) and access.scope_object($1)->>'kind'=$2`,
       [scope, kind]
     );
     return result.rows[0]?.path ?? null;
   }
-
   async grantScope(
-    database: OperationDatabase,
-    input: Readonly<{ id: string; membership: string; kind: string; scope: string; path: string; effect: PermissionEffect; expiresAt: Date | null; expectedVersion: number }>
+    context: WriteTransactionContext,
+    input: Readonly<{
+      id: string;
+      membership: string;
+      kind: string;
+      scope: string;
+      path: string;
+      effect: PermissionEffect;
+      expiresAt: Date | null;
+      expectedVersion: number;
+    }>
   ): Promise<Scope | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<ScopeRow>(
       `insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,
       effect,effective_at,expires_at,access_version)
@@ -134,8 +167,8 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
     const row = result.rows[0];
     return row ? scopeModel(row) : null;
   }
-
-  async lockOverrideTarget(database: OperationDatabase, membership: string): Promise<OverrideTarget | null> {
+  async lockOverrideTarget(context: WriteTransactionContext, membership: string): Promise<OverrideTarget | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<OverrideTargetRow>(
       `select membership.id,membership.organization_id,membership.client,
       membership.status,membership.access_version,exists(select 1 from access.membershiprole assignment
@@ -149,8 +182,8 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
     const row = result.rows[0];
     return row ? Object.freeze({ membership: membershipModel(row), owner: row.owner }) : null;
   }
-
-  async setOverride(database: OperationDatabase, value: Override, issuer: string): Promise<OverrideChange | null> {
+  async setOverride(context: WriteTransactionContext, value: Override, issuer: string): Promise<OverrideChange | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<OverrideRow>(
       `insert into access.membershipoverride(membership_id,permission_id,effect,
         granted_by,reason,effective_at,expires_at,revoked_at)
@@ -163,8 +196,15 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
     );
     return overrideChange(result.rows[0]);
   }
-
-  async revokeOverride(database: OperationDatabase, input: Readonly<{ membership: string; permission: string; reason: string }>): Promise<OverrideChange | null> {
+  async revokeOverride(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      membership: string;
+      permission: string;
+      reason: string;
+    }>
+  ): Promise<OverrideChange | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<OverrideRow>(
       `update access.membershipoverride override set revoked_at=clock_timestamp(),
       reason=$3 where override.membership_id=$1 and override.permission_id=(select id from access.permission where code=$2)

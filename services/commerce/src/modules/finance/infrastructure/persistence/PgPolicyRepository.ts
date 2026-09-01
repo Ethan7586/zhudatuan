@@ -1,16 +1,17 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { PolicyRepository } from '../../domain/repository/PolicyRepository';
+import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
+import type { FinancePolicyView, PolicyRepository } from '../../application/port/PolicyRepository';
 
 export class PgPolicyRepository implements PolicyRepository {
-  constructor(private readonly database: OperationDatabase) {}
+  constructor(private readonly database: SqlExecutor) {}
 
-  read(scopeIds: readonly string[], status: string | null, cursor: string | null, limit: number) {
-    return this.database.query(
+  async read(scopeIds: readonly string[], status: string | null, cursor: string | null, limit: number): Promise<readonly FinancePolicyView[]> {
+    const result = await this.database.query<FinancePolicyView>(
       `select id,name,state status,trigger,entries,"effective_at" "effectiveAt","expires_at" "expiresAt",version
       from finance.policy where scope_id=any($1::text[]) and ($2::text is null or state=$2)
       and ($3::text is null or id>$3) order by id limit $4`,
       [scopeIds, status, cursor, limit]
     );
+    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
 
   async affected(scopeIds: readonly string[], from: string, to: string): Promise<number> {

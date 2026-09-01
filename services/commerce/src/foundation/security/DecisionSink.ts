@@ -10,6 +10,8 @@ export interface AccessDecision {
   readonly outcome: 'allow' | 'deny' | 'challenge' | 'review';
   readonly reason: string;
   readonly trace: string;
+  readonly deadline: number;
+  readonly signal: AbortSignal;
 }
 
 export interface DecisionSink {

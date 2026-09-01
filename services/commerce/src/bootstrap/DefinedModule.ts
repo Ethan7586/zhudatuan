@@ -1,61 +1,47 @@
-import { OperationCatalog, type OperationId, type OperationInputFor, type OperationOutputFor } from '@shop/contract';
-import type { OperationContext } from '../foundation/application/OperationContext';
-import type { OperationUsecase as OperationExecutor } from '../foundation/application/OperationExecution';
-import type { OperationReply, TypedOperationUsecase } from '../foundation/application/OperationHandler';
-import { HANDLER_TYPES } from '../generated/HandlerCatalog';
+import type { RegisteredOperationHandler } from '../foundation/application/OperationHandler';
+import type { ModuleJob } from '../foundation/application/ModuleJob';
+import type { ModuleEventSubscription } from '../foundation/application/ModuleEvent';
 import type { CommerceModule, ModuleContext, ModuleManifest, PublicPortBinding } from './ModuleRegistry';
 
-export type OperationFactory = (context: ModuleContext) => OperationExecutor;
 export type PortFactory = (context: ModuleContext) => readonly PublicPortBinding[];
+export interface ModuleAssembly {
+  readonly handlers?: (context: ModuleContext) => readonly RegisteredOperationHandler[];
+  readonly ports?: readonly PublicPortBinding[] | PortFactory;
+  readonly jobPorts?: readonly PublicPortBinding[] | PortFactory;
+  readonly providerPorts?: readonly PublicPortBinding[] | PortFactory;
+  readonly jobs?: (context: ModuleContext) => readonly ModuleJob[];
+  readonly providerJobs?: (context: ModuleContext) => readonly ModuleJob[];
+  readonly events?: readonly ModuleEventSubscription[];
+}
 
-export function defineModule(manifest: ModuleManifest, factory?: OperationFactory, ports: readonly PublicPortBinding[] | PortFactory = []): CommerceModule {
+export function defineModule(manifest: ModuleManifest, assembly: ModuleAssembly): CommerceModule {
   const { id, dependencies, services } = manifest;
   return Object.freeze({
     id,
     dependencies: Object.freeze([...dependencies]),
     services: Object.freeze([...services]),
+    dependenciesFor(workload: ModuleContext['workload']): readonly string[] {
+      return manifest.workloads[workload].dependencies;
+    },
+    servicesFor(workload: ModuleContext['workload']): readonly string[] {
+      return manifest.workloads[workload].services;
+    },
+    bindingsFor(workload: ModuleContext['workload']): readonly string[] {
+      return manifest.workloads[workload].bindings;
+    },
     bind(context: ModuleContext): readonly PublicPortBinding[] {
+      const ports = context.workload === 'api' ? assembly.ports : context.workload === 'jobs' ? assembly.jobPorts : assembly.providerPorts;
+      if (!ports) return Object.freeze([]);
       return Object.freeze([...(typeof ports === 'function' ? ports(context) : ports)]);
     },
     register(context: ModuleContext): void {
-      if (context.workload !== 'api') return;
-      const operations = OperationCatalog.all().filter((candidate) => candidate.module === id);
-      if (operations.length === 0) return;
-      if (!factory) throw new Error(`MODULE_OPERATION_FACTORY_MISSING:${id}`);
-      const executor = factory(context);
-      for (const operation of operations) registerHandler(id, operation.id, executor, context);
+      for (const subscription of assembly.events ?? []) context.events.add(subscription);
+      if (context.workload === 'api') {
+        for (const handler of assembly.handlers?.(context) ?? []) context.handlers.add(id, handler);
+        return;
+      }
+      const factory = context.workload === 'provider' ? assembly.providerJobs : assembly.jobs;
+      for (const job of factory?.(context) ?? []) context.jobs?.add(job);
     },
   });
-}
-
-function registerHandler<TKey extends OperationId>(owner: string, operation: TKey, executor: OperationExecutor, context: ModuleContext): void {
-  const Handler = HANDLER_TYPES.get(operation);
-  if (!Handler) throw new Error(`HANDLER_TYPE_MISSING:${operation}`);
-  const usecase: TypedOperationUsecase<TKey> = {
-    async execute(input: OperationInputFor<TKey>, operationContext: OperationContext): Promise<OperationReply<OperationOutputFor<TKey>>> {
-      const wire = input as Readonly<{ path?: Readonly<Record<string, string>>; query?: Readonly<Record<string, string | readonly string[]>>; body?: unknown }>;
-      const result = await executor.invoke({
-        type: operation,
-        input: {
-          path: wire.path ?? {},
-          query: wire.query ?? {},
-          headers: operationContext.headers,
-          body: wire.body,
-          rawBody: operationContext.rawBody,
-          deadline: operationContext.deadline,
-          signal: operationContext.signal,
-          ...(operationContext.publicActor === undefined ? {} : { publicActor: operationContext.publicActor }),
-          ...(operationContext.idempotencyKey === undefined ? {} : { idempotency: operationContext.idempotencyKey }),
-          ...(operationContext.expectedVersion === undefined ? {} : { expectedVersion: operationContext.expectedVersion }),
-        },
-        security: operationContext.security,
-      });
-      return {
-        status: result.status,
-        body: result.body as OperationOutputFor<TKey>,
-        ...(result.headers === undefined ? {} : { headers: result.headers }),
-      };
-    },
-  };
-  context.handlers.add(owner, operation, new Handler(usecase as TypedOperationUsecase<OperationId>));
 }

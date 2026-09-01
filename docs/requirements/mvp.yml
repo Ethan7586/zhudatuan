@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
 workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
 navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
-contractSha256: e43962c59027687e19e380eb26298c55f53c0a461bb3c52405b9f27c749abd1d
+contractSha256: b4e31745c41ffe493cfd1b1b8bf853009b7a27cb0d9efe5839ecfc404abd4e75
 generated: true
 count: 22
 requirements:
@@ -142,8 +142,8 @@ requirements:
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/PlatformJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -302,8 +302,8 @@ requirements:
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/DistributionJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -426,8 +426,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupDashboardJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -557,8 +557,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupApplicationJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -703,8 +703,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupProductJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -835,8 +835,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupOrderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -981,8 +981,8 @@ requirements:
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupVoucherJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -1152,8 +1152,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupFinanceJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -1284,8 +1284,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupReportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -1430,8 +1430,8 @@ requirements:
       - services/commerce/src/modules/support
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupSupportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -1633,8 +1633,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/GroupSettingJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -1768,8 +1768,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallDashboardJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -1900,8 +1900,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallDesignJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -2054,8 +2054,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallProductJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -2207,8 +2207,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallOrderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -2356,8 +2356,8 @@ requirements:
       - services/commerce/src/modules/verification
       - services/commerce/src/modules/voucher
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallVoucherJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -2519,8 +2519,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallFinanceJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -2652,8 +2652,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallReportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -2817,8 +2817,8 @@ requirements:
       - services/commerce/src/modules/support
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallSupportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -3026,8 +3026,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/MallSettingJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -3148,8 +3148,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/integration/registry.spec.ts
     journeyTest: tests/journey/IdentityJourney.spec.ts
     dashboard: docs/metrics/catalog.md
@@ -3302,8 +3302,8 @@ requirements:
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
-      - services/commerce/src/modules/ModuleCatalog.test.ts
-      - services/commerce/src/modules/DomainPolicy.test.ts
+      - services/commerce/src/test/architecture/ModuleCatalog.test.ts
+      - services/commerce/src/test/architecture/DomainPolicy.test.ts
     contractTest: tests/contract/providers.spec.ts
     journeyTest: tests/journey/ProviderJourney.spec.ts
     dashboard: docs/metrics/catalog.md

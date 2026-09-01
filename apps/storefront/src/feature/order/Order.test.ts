@@ -10,7 +10,7 @@ describe('order model mapping', () => {
         order_number: '202608310001',
         mall_id: 'mall:one',
         lifecycle_state: 'shipped',
-        payment_state: 'captured',
+        payment_state: 'paid',
         fulfillment_state: 'shipped',
         aftersale_state: 'none',
         currency: 'CNY',
@@ -51,6 +51,8 @@ describe('order model mapping', () => {
   it('presents every internal order state as clear Chinese copy', () => {
     expect(orderStatusText('pending_payment')).toBe('待付款');
     expect(paymentStateText('unpaid')).toBe('待付款');
+    expect(paymentStateText('paid')).toBe('已付款');
+    expect(paymentStateText('partially_refunded')).toBe('部分退款');
     expect(fulfillmentStateText('unallocated')).toBe('待分配履约方');
     expect(timelineStateText('intransit')).toBe('运输途中');
     expect(fulfillmentStateText('futurestate')).toBe('履约处理中');

@@ -2,13 +2,7 @@ import { createHash } from 'node:crypto';
 import { parseCsv } from './Csv';
 import type { ObjectStore, StoredObject } from './ObjectStore';
 import { ApplicationError } from '../domain/ApplicationError';
-
-export interface ImportFailure {
-  readonly row: number;
-  readonly reason: string;
-  readonly field: string | null;
-  readonly detail: string;
-}
+import type { ImportFailure } from '../application/BatchImport';
 
 export async function readImportFile(objects: ObjectStore, reference: string, sha256: string, maximumBytes = 32 * 1024 * 1024, maximumRows = 100_000): Promise<readonly Readonly<Record<string, string>>[]> {
   const metadata = await objects.inspect(reference);
@@ -52,12 +46,6 @@ export function importCode(cause: unknown, fallback: string): string {
 
 export function importDetail(cause: unknown): string {
   return cause instanceof ApplicationError || (cause instanceof Error && /^[A-Z][A-Z0-9_:.-]{0,99}$/.test(cause.message)) ? cause.message : 'row rejected';
-}
-
-export function importId(payload: unknown, code: string): string {
-  const value = payload !== null && typeof payload === 'object' ? Reflect.get(payload, 'import') : null;
-  if (typeof value !== 'string' || !/^[a-z]+import:[a-f0-9-]{36}$/.test(value)) throw new Error(code);
-  return value;
 }
 
 function reportBytes(failures: readonly ImportFailure[]): Uint8Array {

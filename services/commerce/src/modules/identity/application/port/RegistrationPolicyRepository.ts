@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface RegistrationPolicyRecord {
   readonly id: string;
@@ -10,6 +10,6 @@ export interface RegistrationPolicyRecord {
 }
 
 export interface RegistrationPolicyRepository {
-  current(database: OperationDatabase): Promise<RegistrationPolicyRecord | null>;
-  read(database: OperationDatabase, id: string, active: boolean): Promise<RegistrationPolicyRecord | null>;
+  current(context: ReadTransactionContext): Promise<RegistrationPolicyRecord | null>;
+  read(context: ReadTransactionContext, id: string, active: boolean): Promise<RegistrationPolicyRecord | null>;
 }

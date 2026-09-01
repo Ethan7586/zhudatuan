@@ -5,15 +5,17 @@ import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
-import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
+import { OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
 import { OrderPageHeader } from './OrderPageHeader';
 import { orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
-import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
+import type { OrderDetailTab, OrderListFilter, OrderView } from './OrderSchema';
 import { OrderStatusTabs } from './OrderStatusTabs';
 import { aftersaleKey, readAftersales } from './AfterSaleQuery';
-import { AfterSaleTable } from './AfterSaleTable';
+import { AfterSalePanel } from './AfterSalePanel';
+import { OrderPagination } from './OrderPagination';
+import { readDetailTab, readFilter, readSelected, readView } from './OrderSearch';
 import './Layout.css';
 import './Controls.css';
 import './Table.css';
@@ -233,111 +235,4 @@ export function Component() {
       )}
     </section>
   );
-}
-
-function AfterSalePanel({
-  query,
-  error,
-  selected,
-  onOpen,
-  onRetry,
-}: Readonly<{
-  query: ReturnType<typeof useQuery<Awaited<ReturnType<typeof readAftersales>>>>;
-  error: string | undefined;
-  selected: string | undefined;
-  onOpen: (order: string) => void;
-  onRetry: () => void;
-}>) {
-  if (query.isPending)
-    return (
-      <p className="orderliststate" role="status">
-        正在读取售后订单…
-      </p>
-    );
-  if (query.isError && query.data === undefined)
-    return (
-      <section className="orderliststate" role="alert">
-        <strong>售后订单读取失败</strong>
-        <p>{error}</p>
-        <button type="button" onClick={onRetry}>
-          重试
-        </button>
-      </section>
-    );
-  if (query.data?.items.length === 0)
-    return (
-      <section className="orderliststate" role="status">
-        <OrderIcon name="order" />
-        <strong>暂无符合条件的售后订单</strong>
-        <p>当前范围没有售后申请，或订单筛选条件未命中。</p>
-      </section>
-    );
-  return query.data === undefined ? null : (
-    <>
-      <AfterSaleTable rows={query.data.items} {...(selected === undefined ? {} : { activeOrder: selected })} onOpen={onOpen} />
-      {query.isError ? (
-        <p className="orderstalebanner" role="status">
-          刷新失败，当前保留最近一次已验证数据：{error}
-        </p>
-      ) : null}
-    </>
-  );
-}
-
-function OrderPagination({
-  count,
-  nextCursor,
-  onCursor,
-}: Readonly<{
-  count: number;
-  nextCursor: string | undefined;
-  onCursor: (cursor?: string) => void;
-}>) {
-  return (
-    <footer className="orderpagination">
-      <span>本页 {count} 条 · 全量总数不可用</span>
-      <label>
-        每页{' '}
-        <select aria-label="每页数量" value="50" disabled>
-          <option value="50">50</option>
-        </select>
-      </label>
-      <div>
-        <button type="button" disabled aria-label="上一页">
-          <OrderIcon name="arrowLeft" />
-        </button>
-        <button type="button" onClick={() => onCursor(nextCursor)} disabled={nextCursor === undefined} aria-label="下一页">
-          <OrderIcon name="arrowRight" />
-        </button>
-      </div>
-    </footer>
-  );
-}
-
-function readFilter(search: URLSearchParams): OrderListFilter {
-  const parsed = OrderListFilterSchema.safeParse({
-    order: search.get('order') ?? '',
-    placed: '',
-    lifecycle: '',
-    payment: '',
-    fulfillment: '',
-    mall: '',
-  });
-  return parsed.success ? parsed.data : emptyOrderFilter;
-}
-
-function readView(search: URLSearchParams): OrderView {
-  return search.get('view') === 'aftersale' ? 'aftersale' : 'all';
-}
-
-function readSelected(search: URLSearchParams): string | undefined {
-  const value = search.get('selected');
-  if (value === null) return undefined;
-  const parsed = OrderFilterSchema.safeParse({ order: value });
-  return parsed.success && parsed.data.order !== '' ? parsed.data.order : undefined;
-}
-
-function readDetailTab(search: URLSearchParams): OrderDetailTab {
-  const parsed = OrderDetailTabSchema.safeParse(search.get('tab') ?? 'overview');
-  return parsed.success ? parsed.data : 'overview';
 }

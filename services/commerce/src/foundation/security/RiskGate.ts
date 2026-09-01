@@ -10,7 +10,9 @@ export interface RiskAssessment {
 }
 
 export interface RiskGate {
-  evaluate(input: Readonly<{ actor: Actor; operation: string; resource?: string; scope: AccessContext['scope']; trace: string; amountMinor?: number; signals?: Readonly<Record<string, number>> }>): Promise<RiskAssessment>;
+  evaluate(
+    input: Readonly<{ actor: Actor; operation: string; resource?: string; scope: AccessContext['scope']; trace: string; deadline: number; signal: AbortSignal; amountMinor?: number; signals?: Readonly<Record<string, number>> }>
+  ): Promise<RiskAssessment>;
 }
 
 export const RISK_GATE = token<RiskGate>('risk.gate');

@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { DirectoryConnection } from '../../domain/model/DirectoryConnection';
 import { LifecyclePolicy } from '../../domain/policy/LifecyclePolicy';
 import type { DirectoryRepository, DirectoryCounts, StagedSubject } from '../port/DirectoryRepository';
@@ -10,9 +10,9 @@ export class DirectoryReconciler {
     private readonly lifecycle: MembershipLifecycle,
     private readonly policy = new LifecyclePolicy()
   ) {}
-  async reconcile(database: OperationDatabase, connection: DirectoryConnection, subjects: readonly StagedSubject[], trace: string): Promise<DirectoryCounts> {
+  async reconcile(context: WriteTransactionContext, connection: DirectoryConnection, subjects: readonly StagedSubject[], trace: string): Promise<DirectoryCounts> {
     const current = await this.repository.current(
-      database,
+      context,
       connection.id,
       subjects.map((item) => item.hash)
     );
@@ -28,7 +28,7 @@ export class DirectoryReconciler {
       }
       const subject = { ...source, membership: existing?.membership ?? source.membership };
       if (subject.type === 'user' && subject.membership !== null && ['freeze', 'restore', 'update'].includes(kind))
-        await this.lifecycle.apply(database, {
+        await this.lifecycle.apply(context, {
           membership: subject.membership,
           organization: connection.organizationid,
           department: kind === 'freeze' ? null : subject.organization,
@@ -36,7 +36,7 @@ export class DirectoryReconciler {
           explicitdeparture: subject.explicitdeparture,
           trace,
         });
-      await this.repository.apply(database, connection, subject, kind);
+      await this.repository.apply(context, connection, subject, kind);
       if (kind === 'conflict') conflicts += 1;
       else applied += 1;
     }

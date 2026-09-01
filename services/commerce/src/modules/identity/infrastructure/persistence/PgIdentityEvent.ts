@@ -1,10 +1,12 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { IdentityEventPort } from '../../application/port/IdentityEventPort';
-
-export class PgIdentityEvent implements IdentityEventPort {
+import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
+import type { IdentityEventRepository } from '../../application/port/IdentityEventRepository';
+export class PgIdentityEvent implements IdentityEventRepository {
+  private readonly transactions = new PgTransactionAccess();
   async publish(
-    database: OperationDatabase,
+    context: ReadTransactionContext,
     type: string,
     aggregateType: 'invitation' | 'session' | 'challenge' | 'membership' | 'linkcase' | 'principal',
     aggregate: string,
@@ -12,10 +14,7 @@ export class PgIdentityEvent implements IdentityEventPort {
     trace: string,
     payload: Readonly<Record<string, unknown>>
   ): Promise<void> {
-    await database.query(
-      `insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) values($1,$2,1,$3,$4,$5,$6::jsonb,$7,clock_timestamp(),clock_timestamp())`,
-      [`event:${randomUUID()}`, type, aggregateType, aggregate, scope, JSON.stringify(payload), trace]
-    );
+    const database = this.transactions.database(context);
+    await new PgRuntimeWriter(database).append({ id: `event:${randomUUID()}`, type, aggregateType, aggregate, scope, payload, trace });
   }
 }

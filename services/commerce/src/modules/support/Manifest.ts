@@ -1,2 +1,4 @@
 import { defineModuleManifest } from '../../bootstrap/ModuleRegistry';
-export const Manifest = defineModuleManifest('support', ['access', 'order', 'benefit', 'organization'], ['database.pool', 'audit.sink', 'kms.client', 'object.store']);
+export const Manifest = defineModuleManifest('support', ['access', 'order', 'benefit', 'organization'], ['kms.client', 'object.store'], {
+  jobs: { services: ['database.pool', 'object.store'] },
+});

@@ -6,7 +6,7 @@ import { KmsClient } from '../../../services/commerce/src/foundation/infrastruct
 import { localSecret } from './LocalSecrets';
 import { assertLocalOwnership, ensureLocalOwner, LOCAL_OWNER } from './LocalOwner';
 import { ensureLocalChecker } from './LocalChecker';
-import { ensureLocalBenefits } from './LocalBenefits';
+import { assertLocalBenefitLedger, ensureLocalBenefits } from './LocalBenefits';
 
 const environment = localSeedEnvironment();
 const [connectionString, password, identityKey] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.ethanPasswordRef), localSecret(environment.identityKeyRef)]);
@@ -374,7 +374,9 @@ async function assertBaseline(database: Client): Promise<void> {
     ethan: string;
     ethanbalance: string;
     ethanbenefits: string;
+    ethangrants: string;
     ethanlots: string;
+    ethanremaining: string;
     grants: string;
     inventory: string;
     listings: string;
@@ -416,14 +418,47 @@ async function assertBaseline(database: Client): Promise<void> {
       and kind in('welfare','meal') and status='active') ethanbenefits,
     (select count(*) from benefit.lot lot join benefit.account account on account.id=lot.account_id
       where account.member_id='member:zhudatuan:owner:ethan:v1' and account.scope_id='mall-zhudatuan'
-        and lot.state='active' and lot.remaining_minor>0) ethanlots,
+        and lot.id in('lot:local:welfare:ethan:2026','lot:local:meal:ethan:2026')) ethanlots,
+    (select coalesce(sum(movement.amount_minor),0) from benefit.lotmovement movement
+      where movement.kind='grant' and movement.reference_type='grantbatch'
+        and movement.reference_id in('batch:local:welfare:2026','batch:local:meal:2026')) ethangrants,
+    (select coalesce(sum(lot.remaining_minor),0) from benefit.lot lot join benefit.account account on account.id=lot.account_id
+      where account.member_id='member:zhudatuan:owner:ethan:v1' and account.scope_id='mall-zhudatuan'
+        and account.kind in('welfare','meal')) ethanremaining,
     (select coalesce(sum(balance.balance_minor),0) from benefit.account account join benefit.balance balance on balance.account_id=account.id
       where account.member_id='member:zhudatuan:owner:ethan:v1' and account.scope_id='mall-zhudatuan') ethanbalance`);
   const values = result.rows[0];
-  if (!values || Object.values(values).some((value) => Number(value) < 1)) throw new Error(`LOCAL_BASELINE_INCOMPLETE:${JSON.stringify(values)}`);
-  if (Number(values.ethanbenefits) !== 2 || Number(values.ethanlots) !== 2 || Number(values.ethanbalance) !== 600_000) {
-    throw new Error(`LOCAL_BENEFIT_BASELINE_INCONSISTENT:${JSON.stringify(values)}`);
-  }
+  if (!values) throw new Error('LOCAL_BASELINE_INCOMPLETE');
+  const positive = [
+    values.tenant,
+    values.enterprise,
+    values.mall,
+    values.store,
+    values.supplier,
+    values.catalog,
+    values.pool,
+    values.listings,
+    values.prices,
+    values.inventory,
+    values.accounts,
+    values.welfare,
+    values.meal,
+    values.roles,
+    values.grants,
+    values.supportaccount,
+    values.supportagent,
+    values.supportrule,
+    values.supportslas,
+    values.ethan,
+  ];
+  if (positive.some((value) => Number(value) < 1)) throw new Error(`LOCAL_BASELINE_INCOMPLETE:${JSON.stringify(values)}`);
+  assertLocalBenefitLedger({
+    accounts: Number(values.ethanbenefits),
+    lots: Number(values.ethanlots),
+    grants: Number(values.ethangrants),
+    remaining: Number(values.ethanremaining),
+    balance: Number(values.ethanbalance),
+  });
 }
 
 async function assertEmployeePermissions(database: Client, membership: string): Promise<void> {

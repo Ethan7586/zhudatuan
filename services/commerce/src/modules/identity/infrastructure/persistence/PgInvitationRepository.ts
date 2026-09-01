@@ -1,14 +1,20 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { InvitationCreatedRecord, InvitationFilter, InvitationListRecord, InvitationRepository, InvitationRevokedRecord, NewInvitation } from '../../application/port/InvitationRepository';
 import { Invitation, type InvitationState } from '../../domain/model/Invitation';
 import { InvitationClaim } from '../../domain/model/InvitationClaim';
 import type { InvitationDigest } from '../../application/port/InvitationSecurity';
 import { claimOf, createdOf, invitationOf, invitationState, listOf, revokedOf, type CreatedRow, type InvitationRow, type ListRow, type RevokedRow } from './InvitationRecord';
 import { PgInvitationRedemption } from './PgInvitationRedemption';
-
 export class PgInvitationRepository extends PgInvitationRedemption implements InvitationRepository {
-  async find(database: OperationDatabase, hashes: readonly InvitationDigest[], target: 'console' | 'storefront', lock: boolean): Promise<Invitation> {
+  find(context: ReadTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront'): Promise<Invitation> {
+    return this.findByToken(this.transactions.database(context), hashes, target, false);
+  }
+  lock(context: WriteTransactionContext, hashes: readonly InvitationDigest[], target: 'console' | 'storefront'): Promise<Invitation> {
+    return this.findByToken(this.transactions.database(context), hashes, target, true);
+  }
+  private async findByToken(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, hashes: readonly InvitationDigest[], target: 'console' | 'storefront', lock: boolean): Promise<Invitation> {
     const result = await database.query<InvitationRow>(
       `select id,kind,target,organization_id,membership_id,principal_id,recipient_hash,
       token_key_version,issuer_membership_id,issuer_access_version,grant_digest,minimum_assurance,max_uses,use_count,not_before,
@@ -23,8 +29,13 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
     if (!row || result.rows.length !== 1) throw new DomainError('INVITATION_INVALID');
     return invitationOf(row, target, this.clock.now());
   }
-
-  async claimed(database: OperationDatabase, claim: string, target: 'console' | 'storefront', lock: boolean): Promise<Invitation> {
+  claimed(context: ReadTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<Invitation> {
+    return this.findClaimed(this.transactions.database(context), claim, target, false);
+  }
+  lockClaimed(context: WriteTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<Invitation> {
+    return this.findClaimed(this.transactions.database(context), claim, target, true);
+  }
+  private async findClaimed(database: import('../../../../adapter/database/PgTransactionAccess').SqlExecutor, claim: string, target: 'console' | 'storefront', lock: boolean): Promise<Invitation> {
     const result = await database.query<InvitationRow>(
       `select invitation.id,invitation.kind,invitation.target,invitation.organization_id,
       invitation.membership_id,invitation.principal_id,invitation.recipient_hash,invitation.token_key_version,
@@ -40,8 +51,8 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
     if (!row) throw new DomainError('PREAUTH_EXPIRED');
     return invitationOf(row, target, this.clock.now());
   }
-
-  async claim(database: OperationDatabase, id: string): Promise<InvitationClaim> {
+  async claim(context: WriteTransactionContext, id: string): Promise<InvitationClaim> {
+    const database = this.transactions.database(context);
     const result = await database.query<{
       id: string;
       invitation_id: string;
@@ -62,8 +73,8 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
     if (!row) throw new DomainError('PREAUTH_EXPIRED');
     return claimOf(row);
   }
-
-  async bindRecipient(database: OperationDatabase, id: string, recipient: Buffer): Promise<InvitationClaim> {
+  async bindRecipient(context: WriteTransactionContext, id: string, recipient: Buffer): Promise<InvitationClaim> {
+    const database = this.transactions.database(context);
     const result = await database.query<{
       id: string;
       invitation_id: string;
@@ -88,8 +99,8 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
     if (!row) throw new DomainError('INVITATION_INVALID');
     return claimOf(row);
   }
-
-  async create(database: OperationDatabase, value: NewInvitation): Promise<InvitationCreatedRecord> {
+  async create(context: WriteTransactionContext, value: NewInvitation): Promise<InvitationCreatedRecord> {
+    const database = this.transactions.database(context);
     const notBefore = this.clock.now();
     const invitation = new Invitation(
       Object.freeze({
@@ -151,8 +162,8 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
     if (!result.rows[0]) throw new Error('INVITATION_CREATE_FAILED');
     return createdOf(result.rows[0]);
   }
-
-  async read(database: OperationDatabase, filter: InvitationFilter): Promise<readonly InvitationListRecord[]> {
+  async read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationListRecord[]> {
+    const database = this.transactions.database(context);
     const result = await database.query<ListRow>(
       `select id,kind,target,organization_id,membership_id,
       case when recipient_hash is null then null else '已绑定' end recipient,issuer_membership_id,issuer_access_version,
@@ -169,8 +180,8 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
     );
     return Object.freeze(result.rows.map(listOf));
   }
-
-  async revoke(database: OperationDatabase, id: string, actor: string, reason: string, version: number): Promise<InvitationRevokedRecord> {
+  async revoke(context: WriteTransactionContext, id: string, actor: string, reason: string, version: number): Promise<InvitationRevokedRecord> {
+    const database = this.transactions.database(context);
     const current = await database.query<InvitationRow>(
       `select id,kind,target,organization_id,membership_id,principal_id,
       recipient_hash,token_key_version,issuer_membership_id,issuer_access_version,grant_digest,minimum_assurance,max_uses,

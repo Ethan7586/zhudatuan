@@ -1,12 +1,12 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { CartView } from '../../domain/model/Cart';
 import type { CartLineMutation } from '../../domain/model/CartLine';
 
 export interface CartRepository {
-  currentView(database: OperationDatabase, member: string, mall: string, application: string): Promise<CartView | null>;
-  lockOrCreate(database: OperationDatabase, member: string, mall: string, application: string, expectedVersion: number): Promise<string>;
-  lockExisting(database: OperationDatabase, member: string, mall: string, application: string, expectedVersion: number): Promise<string>;
-  lineVersions(database: OperationDatabase, cart: string, listings: readonly string[]): Promise<ReadonlyMap<string, number>>;
-  mutate(database: OperationDatabase, cart: string, changes: readonly CartLineMutation[]): Promise<void>;
-  snapshot(database: OperationDatabase, cart: string): Promise<CartView>;
+  current(context: ReadTransactionContext, member: string, mall: string, application: string): Promise<CartView | null>;
+  lockOrCreate(context: WriteTransactionContext, member: string, mall: string, application: string, expectedVersion: number): Promise<string>;
+  lockExisting(context: WriteTransactionContext, member: string, mall: string, application: string, expectedVersion: number): Promise<string>;
+  lineVersions(context: WriteTransactionContext, cart: string, listings: readonly string[]): Promise<ReadonlyMap<string, number>>;
+  mutate(context: WriteTransactionContext, cart: string, changes: readonly CartLineMutation[]): Promise<void>;
+  snapshot(context: ReadTransactionContext, cart: string): Promise<CartView>;
 }

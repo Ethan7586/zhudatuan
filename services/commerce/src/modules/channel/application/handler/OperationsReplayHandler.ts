@@ -1,3 +1,16 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { OperationInputFor, OperationOutputFor } from '@shop/contract';
+import type { WriteHandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler, OperationReply } from '../../../../foundation/application/OperationHandler';
+import { requireSession } from '../../../../foundation/security/OperationSecurityContext';
+import type { ProviderOperationRepository } from '../port/ProviderOperationRepository';
 
-export const OperationsReplayHandler = defineOperationHandler('channel.operations.replay');
+export class OperationsReplayHandler implements OperationHandler<'channel.operations.replay', 'write'> {
+  readonly operation = 'channel.operations.replay' as const;
+  readonly mode = 'write' as const;
+  constructor(private readonly operations: ProviderOperationRepository) {}
+  async execute(input: OperationInputFor<'channel.operations.replay'>, context: WriteHandlerContext<'channel.operations.replay'>): Promise<OperationReply<OperationOutputFor<'channel.operations.replay'>>> {
+    const access = requireSession(context.security);
+    const result = await this.operations.replay(context.transaction, input.path.operationid, access.scope.id);
+    return { status: 202, body: result as OperationOutputFor<'channel.operations.replay'> };
+  }
+}

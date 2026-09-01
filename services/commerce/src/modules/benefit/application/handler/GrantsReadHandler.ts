@@ -1,3 +1,13 @@
-import { defineOperationHandler } from '../../../../foundation/application/OperationHandler';
-
-export const GrantsReadHandler = defineOperationHandler('benefit.grants.read');
+import type { OperationInputFor } from '@shop/contract';
+import type { HandlerContext } from '../../../../foundation/application/HandlerContext';
+import type { OperationHandler } from '../../../../foundation/application/OperationHandler';
+import type { GrantRepository } from '../port/GrantRepository';
+export class GrantsReadHandler implements OperationHandler<'benefit.grants.read', 'read'> {
+  readonly operation = 'benefit.grants.read' as const;
+  readonly mode = 'read' as const;
+  constructor(private readonly grants: GrantRepository) {}
+  async execute(input: OperationInputFor<'benefit.grants.read'>, context: HandlerContext<'benefit.grants.read'>) {
+    const result = await this.grants.readGrants(context.transaction, input, context);
+    return result;
+  }
+}

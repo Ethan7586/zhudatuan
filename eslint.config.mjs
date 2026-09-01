@@ -30,7 +30,7 @@ export default defineConfig([
     '**/*.generated.ts',
     'packages/contract/src/RequirementCatalog.ts',
     'packages/contract/src/events/CommerceEvents.ts',
-    'packages/contract/src/operations/CommerceOperations.ts',
+    'packages/contract/src/operations/CommerceCatalog.ts',
     'packages/contract/src/operations/CommerceSchemas.ts',
   ]),
   {

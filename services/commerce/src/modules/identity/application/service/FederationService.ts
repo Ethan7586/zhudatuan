@@ -1,23 +1,25 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomBytes } from 'node:crypto';
 import { IDENTITY_PROVIDER_CONFIGURATION } from '@shop/config/server';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+
+import type { CipherEnvelope, KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { SessionIssuer } from '../port/SessionIssuer';
-import type { FederationRepository } from '../port/FederationRepository';
+import type { CreateFederation, FederationCallbackRecord, FederationRepository } from '../port/FederationRepository';
 import type { LinkCaseRepository } from '../port/LinkCaseRepository';
 import type { ProviderResolver } from './ProviderResolver';
 import type { SubjectHasher } from '../../domain/service/SubjectHasher';
 import type { FederationProtector } from '../../domain/service/FederationProtector';
 import type { NonceService } from '../../domain/service/NonceService';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
-import type { OperationResult } from '../../../../foundation/application/OperationExecution';
+import type { OperationResult } from '../../../../foundation/application/OperationRequest';
 import type { IdentityOrganizationPort } from '../../../organization/public';
 import type { IdentityAccessPort } from '../../../access/public';
 import { FederationPolicy } from '../../domain/policy/FederationPolicy';
 import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { IdentityLinkRepository } from '../port/IdentityLinkRepository';
+import type { FederatedSubject } from '../../domain/model/FederatedSubject';
 
 export interface FederationRequestContext {
   readonly peer: string;
@@ -27,6 +29,46 @@ export interface FederationRequestContext {
   readonly signal?: AbortSignal;
   readonly deadline?: number;
 }
+
+export interface FederationStartInput {
+  readonly provider: string;
+  readonly returntarget: string;
+  readonly authorization: unknown;
+  readonly purpose: 'signin' | 'link';
+  readonly principal: string | null;
+  readonly membership: string | null;
+}
+
+type ResolvedFederationProvider = Awaited<ReturnType<ProviderResolver['require']>>;
+
+export interface LoadedFederationStart {
+  readonly provider: ResolvedFederationProvider;
+}
+
+export interface PreparedFederationStart {
+  readonly creation: CreateFederation;
+  readonly redirect: string;
+}
+
+export interface FederationCallbackInput {
+  readonly provider: string;
+  readonly state: string;
+  readonly code: string;
+}
+
+export interface LoadedFederationCallback {
+  readonly accepted: FederationCallbackRecord;
+  readonly provider: ResolvedFederationProvider;
+}
+
+export interface PreparedFederationCallback {
+  readonly loaded: LoadedFederationCallback;
+  readonly subject: FederatedSubject;
+  readonly subjecthash: Buffer;
+  readonly envelope: CipherEnvelope;
+  readonly request: FederationRequestContext;
+}
+
 export class FederationService {
   constructor(
     private readonly repository: FederationRepository,
@@ -45,27 +87,17 @@ export class FederationService {
     private readonly policy: FederationPolicy = new FederationPolicy()
   ) {}
 
-  async start(database: OperationDatabase, input: Readonly<{ provider: string; returntarget: string; authorization: unknown }>, context: FederationRequestContext): Promise<OperationResult> {
-    return this.begin(database, { ...input, purpose: 'signin', principal: null, membership: null }, context);
+  loadStart(database: ReadTransactionContext, provider: string): Promise<LoadedFederationStart> {
+    return this.providers.require(database, provider).then((resolved) => Object.freeze({ provider: resolved }));
   }
 
-  async startLink(
-    database: OperationDatabase,
-    input: Readonly<{ provider: string; returntarget: string; authorization: unknown; principal: string; membership: string; target: 'console' | 'storefront' }>,
-    context: FederationRequestContext
-  ): Promise<OperationResult> {
-    const target = this.returns.verify(input.returntarget);
-    if (target.target !== input.target) throw new DomainError('FEDERATION_TRANSACTION_INVALID');
-    return this.begin(database, { ...input, purpose: 'link' }, context);
+  returnTarget(value: string) {
+    return this.returns.verify(value);
   }
 
-  private async begin(
-    database: OperationDatabase,
-    input: Readonly<{ provider: string; returntarget: string; authorization: unknown; purpose: 'signin' | 'link'; principal: string | null; membership: string | null }>,
-    context: FederationRequestContext
-  ): Promise<OperationResult> {
+  async prepareStart(input: FederationStartInput, loaded: LoadedFederationStart, context: FederationRequestContext): Promise<PreparedFederationStart> {
     const target = this.returns.verify(input.returntarget);
-    const { instance, strategy } = await this.providers.require(database, input.provider);
+    const { instance, strategy } = loaded.provider;
     if (target.tenant !== undefined && target.tenant !== instance.tenantid) throw new DomainError('IDENTITY_PROVIDER_CONFIGURATION_INVALID');
     const state = this.nonces.issue();
     const nonce = this.nonces.issue();
@@ -75,7 +107,7 @@ export class FederationService {
     this.policy.assertTarget(target.target);
     const protectedVerifier = await this.kms.encrypt('evidence', 'identity/federation', verifier, { provider: instance.id, state: state.slice(0, 12) });
     const authorization = AuthTransaction.start(input.authorization);
-    const transaction = await this.repository.create(database, {
+    const creation: CreateFederation = Object.freeze({
       provider: instance.id,
       statehash: this.nonces.hash(state),
       noncehash: this.nonces.hash(nonce),
@@ -93,19 +125,47 @@ export class FederationService {
       membership: input.membership,
     });
     const redirect = await strategy.start({ instance, state, nonce, challenge });
-    await this.repository.redirected(database, transaction);
-    return Object.freeze({ status: 303, headers: Object.freeze({ location: redirect.location, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });
+    return Object.freeze({ creation, redirect: redirect.location });
   }
 
-  async callback(database: OperationDatabase, input: Readonly<{ provider: string; state: string; code: string }>, context: FederationRequestContext): Promise<OperationResult> {
-    const accepted = await this.repository.callback(database, input.provider, this.nonces.hash(input.state));
+  async commitStart(database: WriteTransactionContext, prepared: PreparedFederationStart): Promise<OperationResult> {
+    const transaction = await this.repository.create(database, prepared.creation);
+    await this.repository.redirected(database, transaction);
+    return Object.freeze({ status: 303, headers: Object.freeze({ location: prepared.redirect, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });
+  }
+
+  async loadCallback(database: ReadTransactionContext, input: FederationCallbackInput, context: FederationRequestContext): Promise<LoadedFederationCallback> {
+    const accepted = await this.repository.pending(database, input.provider, this.nonces.hash(input.state));
     if (!this.protector.equal(accepted.browserhash, this.protector.browser(context.peer, context.agent, context.device))) {
       throw new DomainError('FEDERATION_TRANSACTION_INVALID');
     }
-    const { instance, strategy } = await this.providers.require(database, input.provider);
+    const provider = await this.providers.require(database, input.provider);
+    return Object.freeze({ accepted, provider });
+  }
+
+  async prepareCallback(input: FederationCallbackInput, loaded: LoadedFederationCallback, context: FederationRequestContext): Promise<PreparedFederationCallback> {
+    const { instance, strategy } = loaded.provider;
+    const accepted = loaded.accepted;
     const verifier = await this.kms.decrypt('evidence', 'identity/federation', accepted.verifierciphertext, { provider: instance.id, state: input.state.slice(0, 12) });
     const subject = await strategy.callback({ instance, code: input.code, state: input.state, noncehash: accepted.noncehash, verifier, signal: context.signal, deadline: context.deadline });
     const subjecthash = this.subjects.hash({ provider: subject.provider, instance: subject.instance, tenant: subject.tenant, subject: subject.subject });
+    if (accepted.transaction.purpose === 'link' && (!accepted.transaction.principal || !accepted.transaction.membership)) {
+      throw new DomainError('FEDERATION_TRANSACTION_INVALID');
+    }
+    const envelope =
+      accepted.transaction.purpose === 'link'
+        ? await this.kms.encrypt('pii', 'identity/federatedsubject', subject.subject, {
+            principal: accepted.transaction.principal!,
+            provider: instance.id,
+          })
+        : await this.kms.encrypt('pii', 'identity/federation', subject.subject, { provider: instance.id });
+    return Object.freeze({ loaded, subject, subjecthash, envelope, request: context });
+  }
+
+  async commitCallback(database: WriteTransactionContext, prepared: PreparedFederationCallback): Promise<OperationResult> {
+    const accepted = Object.freeze({ ...prepared.loaded.accepted, transaction: await this.repository.accept(database, prepared.loaded.accepted.transaction) });
+    const { instance } = prepared.loaded.provider;
+    const { subject, subjecthash } = prepared;
     let resolution = await this.repository.verified(database, accepted.transaction, subject, subjecthash);
     const verified = accepted.transaction.transition('verified', new Date());
     if (accepted.transaction.purpose === 'link') {
@@ -114,17 +174,13 @@ export class FederationService {
         throw new DomainError('FEDERATION_LINK_CONFLICT');
       }
       if (resolution.principal === null) {
-        const envelope = await this.kms.encrypt('pii', 'identity/federatedsubject', subject.subject, {
-          principal: accepted.transaction.principal,
-          provider: instance.id,
-        });
         await this.links.create(database, {
           principal: accepted.transaction.principal,
           membership: accepted.transaction.membership,
           provider: instance.id,
           subjecthash,
-          ciphertext: envelope.ciphertext,
-          keyversion: envelope.keyVersion,
+          ciphertext: prepared.envelope.ciphertext,
+          keyversion: prepared.envelope.keyVersion,
         });
       }
       await this.repository.complete(database, accepted.transaction.id, verified.version);
@@ -146,8 +202,14 @@ export class FederationService {
         memberships: Object.freeze(authorized.memberships.map((membership) => Object.freeze({ ...membership, name: names.get(membership.id) ?? membership.id }))),
       });
       if (resolution.principal !== null && resolution.memberships[0]) {
-        const envelope = await this.kms.encrypt('pii', 'identity/federation', subject.subject, { provider: instance.id });
-        await this.repository.bindDirectory(database, { provider: instance.id, principal: resolution.principal, membership: resolution.memberships[0].id, subjecthash, ciphertext: envelope.ciphertext, keyversion: envelope.keyVersion });
+        await this.repository.bindDirectory(database, {
+          provider: instance.id,
+          principal: resolution.principal,
+          membership: resolution.memberships[0].id,
+          subjecthash,
+          ciphertext: prepared.envelope.ciphertext,
+          keyversion: prepared.envelope.keyVersion,
+        });
       }
     }
     if (resolution.conflict || resolution.principal === null || resolution.memberships.length === 0) {
@@ -158,7 +220,7 @@ export class FederationService {
     }
     const candidates = resolution.memberships.filter(({ target }) => target === accepted.transaction.target);
     if (candidates.length !== 1) {
-      const preauth = await this.repository.preauthorize(database, verified, resolution.principal, candidates, accepted.browserhash, this.protector.device(context.device), subject.assurance, accepted.authorization);
+      const preauth = await this.repository.preauthorize(database, verified, resolution.principal, candidates, accepted.browserhash, this.protector.device(prepared.request.device), subject.assurance, accepted.authorization);
       return this.authRedirect('/membership', accepted.transaction.target, { state: 'selectionrequired' }, this.cookies.preauth(preauth.token));
     }
     const issued = await this.sessions.issue(database, {
@@ -166,10 +228,10 @@ export class FederationService {
       membership: candidates[0]!.id,
       assurance: subject.assurance,
       target: accepted.transaction.target,
-      device: context.device,
-      peer: context.peer,
-      agent: context.agent,
-      trace: context.trace,
+      device: prepared.request.device,
+      peer: prepared.request.peer,
+      agent: prepared.request.agent,
+      trace: prepared.request.trace,
     });
     await this.repository.complete(database, accepted.transaction.id, verified.version);
     return Object.freeze({ status: 303, headers: Object.freeze({ ...issued.headers, location: this.returns.issue(accepted.transaction.target).url, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });

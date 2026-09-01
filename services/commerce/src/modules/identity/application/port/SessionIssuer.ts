@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+
 export interface SessionIssue {
   readonly principal: string;
   readonly membership: string;
@@ -17,5 +18,5 @@ export interface IssuedSession {
   readonly headers: Readonly<Record<string, string>>;
 }
 export interface SessionIssuer {
-  issue(database: OperationDatabase, value: SessionIssue): Promise<IssuedSession>;
+  issue(context: WriteTransactionContext, value: SessionIssue): Promise<IssuedSession>;
 }

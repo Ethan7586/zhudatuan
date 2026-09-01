@@ -11,11 +11,10 @@ const ORDER_STATUS_TEXT: Readonly<Record<OrderStatus, string>> = Object.freeze({
 const PAYMENT_STATE_TEXT: Readonly<Record<string, string>> = Object.freeze({
   unpaid: '待付款',
   authorizing: '支付确认中',
-  captured: '已付款',
-  partiallyrefunded: '部分退款',
+  paid: '已付款',
+  partially_refunded: '部分退款',
   refunded: '已退款',
   failed: '支付失败',
-  cancelled: '已取消',
 });
 
 const FULFILLMENT_STATE_TEXT: Readonly<Record<string, string>> = Object.freeze({

@@ -19,7 +19,7 @@ describe('action request exchange', () => {
       resource: 'referralsetting:one',
       expectedVersion: 7,
       makerMembership: 'membership:maker',
-      requestHash: 'f553c0462144f1d1721545ed98a9ea1a032db9daf484fd2adf4a4b1f639406d0',
+      requestHash: '5baba7585b00ab669bd73ff2c4a2f22ff5284ab8a3a8ed28e78f144c8607fa84',
     });
     expect(encoded).not.toContain('年度政策');
   });

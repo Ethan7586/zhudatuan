@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 
 export interface NewAssurance {
   readonly principal: string;
@@ -9,6 +9,6 @@ export interface NewAssurance {
 }
 
 export interface AssuranceRepository {
-  record(database: OperationDatabase, value: NewAssurance): Promise<void>;
-  expire(database: OperationDatabase, principal: string, method: string): Promise<void>;
+  record(context: WriteTransactionContext, value: NewAssurance): Promise<void>;
+  expire(context: WriteTransactionContext, principal: string, method: string): Promise<void>;
 }

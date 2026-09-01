@@ -1,5 +1,5 @@
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface AccessPartnerScope {
   readonly id: string;
@@ -7,6 +7,6 @@ export interface AccessPartnerScope {
   readonly organization: string;
 }
 export interface AccessPartnerPort {
-  invitationScope(database: OperationDatabase, partner: string): Promise<AccessPartnerScope | null>;
+  invitationScope(context: ReadTransactionContext, partner: string): Promise<AccessPartnerScope | null>;
 }
 export const ACCESS_PARTNER_PORT = publicPort<AccessPartnerPort>('partner', 'access');

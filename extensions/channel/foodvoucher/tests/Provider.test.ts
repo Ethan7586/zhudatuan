@@ -7,13 +7,13 @@ import { checkFoodvoucherHealth } from '../Health';
 import { manifest } from '../Manifest';
 import { FoodvoucherMapper } from '../Mapper';
 import { FoodvoucherWebhook } from '../Webhook';
-import { FoodvoucherOperations } from '../capability';
+import { FoodvoucherCapabilities } from '../capability';
 
 describe('foodvoucher provider contract', () => {
   it('is an explicit P1 provider with a release-injected signature', () => {
     expect(REQUIRED_PROVIDER_IDS).toContain('foodvoucher');
     expect(FoodvoucherProvider.definition.id).toBe('foodvoucher');
-    expect(() => assertProviderCapabilities(FoodvoucherProvider.definition, FoodvoucherOperations)).not.toThrow();
+    expect(() => assertProviderCapabilities(FoodvoucherProvider.definition, FoodvoucherCapabilities)).not.toThrow();
     expect(manifest('signed').signature).toBe('signed');
     expect(() => manifest('')).toThrow('FOODVOUCHER_MANIFEST_SIGNATURE_MISSING');
   });

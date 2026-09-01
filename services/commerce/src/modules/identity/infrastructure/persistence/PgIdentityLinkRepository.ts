@@ -1,21 +1,34 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { randomUUID } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { IdentityLinkRepository } from '../../application/port/IdentityLinkRepository';
 import { IdentityLink } from '../../domain/model/IdentityLink';
 import { LinkPolicy } from '../../domain/policy/LinkPolicy';
 export class PgIdentityLinkRepository implements IdentityLinkRepository {
+  private readonly transactions = new PgTransactionAccess();
   private readonly policy = new LinkPolicy();
-  async list(database: OperationDatabase, principal: string): Promise<readonly IdentityLink[]> {
-    const result = await database.query<{ id: string; provider_instance_id: string; principal_id: string; status: 'active' | 'revoked'; version: number }>(
-      `select id,provider_instance_id,principal_id,status,version from identity.federatedidentity where principal_id=$1 order by linked_at,id`,
-      [principal]
-    );
+  async list(context: ReadTransactionContext, principal: string): Promise<readonly IdentityLink[]> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{
+      id: string;
+      provider_instance_id: string;
+      principal_id: string;
+      status: 'active' | 'revoked';
+      version: number;
+    }>(`select id,provider_instance_id,principal_id,status,version from identity.federatedidentity where principal_id=$1 order by linked_at,id`, [principal]);
     return Object.freeze(result.rows.map((row) => new IdentityLink(row.id, row.provider_instance_id, row.principal_id, row.status, row.version)));
   }
-  async create(database: OperationDatabase, input: Parameters<IdentityLinkRepository['create']>[1]): Promise<IdentityLink> {
+  async create(context: WriteTransactionContext, input: Parameters<IdentityLinkRepository['create']>[1]): Promise<IdentityLink> {
+    const database = this.transactions.database(context);
     const id = `federated:${randomUUID()}`;
-    const result = await database.query<{ id: string; provider_instance_id: string; principal_id: string; status: 'active'; version: number }>(
+    const result = await database.query<{
+      id: string;
+      provider_instance_id: string;
+      principal_id: string;
+      status: 'active';
+      version: number;
+    }>(
       `insert into identity.federatedidentity(id,principal_id,membership_id,provider,subject_ciphertext,subject_key_version,status,bound_at,
         provider_instance_id,provider_tenant_hash,normalized_subject_hash,linked_at,verified_at,last_seen_at,source,version,created_at,updated_at)
       select $1,$2,$3,provider.type,$4,$5,'active',clock_timestamp(),provider.id,
@@ -29,14 +42,17 @@ export class PgIdentityLinkRepository implements IdentityLinkRepository {
     if (!row) throw new DomainError('FEDERATION_LINK_CONFLICT');
     return new IdentityLink(row.id, row.provider_instance_id, row.principal_id, row.status, row.version);
   }
-  async revoke(database: OperationDatabase, principal: string, link: string): Promise<void> {
+  async revoke(context: WriteTransactionContext, principal: string, link: string): Promise<void> {
+    const database = this.transactions.database(context);
     const target = await database.query(
       `select id from identity.federatedidentity
       where id=$1 and principal_id=$2 and status='active' and revoked_at is null for update`,
       [link, principal]
     );
     if (!target.rows[0]) throw new DomainError('FEDERATION_LINK_REQUIRED');
-    const count = await database.query<{ count: string }>(
+    const count = await database.query<{
+      count: string;
+    }>(
       `select count(*) count from(
         select id from identity.federatedidentity where principal_id=$1 and id<>$2 and status='active' and revoked_at is null
         union all

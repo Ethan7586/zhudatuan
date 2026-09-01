@@ -1,4 +1,5 @@
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface ImportedMembership {
@@ -11,7 +12,7 @@ export interface ImportedMembership {
 }
 
 export interface MemberImportAccessPort {
-  ensureImported(database: OperationDatabase, input: ImportedMembership): Promise<void>;
+  ensureImported(context: WriteTransactionContext, input: ImportedMembership): Promise<void>;
 }
 
 export const MEMBER_IMPORT_ACCESS_PORT = publicPort<MemberImportAccessPort>('access', 'memberimport');

@@ -1,5 +1,5 @@
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface CartItemSnapshot {
   readonly listing: string;
@@ -21,8 +21,8 @@ export interface CartSnapshot {
 }
 
 export interface CartReadPort {
-  current(database: OperationDatabase, member: string, mall: string): Promise<CartSnapshot>;
-  read(database: OperationDatabase, cart: string, member: string, mall: string): Promise<CartSnapshot>;
+  current(context: ReadTransactionContext, member: string, mall: string): Promise<CartSnapshot>;
+  read(context: ReadTransactionContext, cart: string, member: string, mall: string): Promise<CartSnapshot>;
 }
 
 export const CART_READ_PORT = publicPort<CartReadPort>('cart', 'read');

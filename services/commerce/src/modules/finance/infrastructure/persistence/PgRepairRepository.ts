@@ -1,8 +1,9 @@
+import { type SqlExecutor } from '../../../../adapter/database/PgTransactionAccess';
 import { createHash } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+
 import type { FinanceEntryTemplate } from '../../domain/model/FinancePolicy';
 import type { RepairDifference } from '../../domain/model/RepairCase';
-import type { RepairRepository } from '../../domain/repository/RepairRepository';
+import type { RepairRepository, RepairView } from '../../application/port/RepairRepository';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 
 const projection = `repair.id,repair.statement_id "statementId",repair.status,repair.source_hash "sourceHash",
@@ -15,15 +16,16 @@ interface RepairState {
 }
 
 export class PgRepairRepository implements RepairRepository {
-  constructor(private readonly database: OperationDatabase) {}
+  constructor(private readonly database: SqlExecutor) {}
 
-  read(scopeIds: readonly string[], status: string | null, statementId: string | null, cursor: string | null, limit: number) {
-    return this.database.query(
+  async read(scopeIds: readonly string[], status: string | null, statementId: string | null, cursor: string | null, limit: number): Promise<readonly RepairView[]> {
+    const result = await this.database.query<RepairView>(
       `select ${projection} from finance.repair repair where repair.scope_id=any($1::text[])
       and ($2::text is null or repair.status=$2) and ($3::text is null or repair.statement_id=$3)
       and ($4::text is null or repair.id>$4) order by repair.id limit $5`,
       [scopeIds, status, statementId, cursor, limit]
     );
+    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
   }
 
   async statement(scopeId: string, statementId: string): Promise<Readonly<{ id: string; hash: string; version: number; differences: readonly RepairDifference[] }> | null> {
@@ -70,8 +72,8 @@ export class PgRepairRepository implements RepairRepository {
     if (!result.rows[0]) throw new DomainError('FINANCE_REPAIR_CONFLICT');
   }
 
-  submit(input: Readonly<{ id: string; tokenHash: string; scopeId: string; makerId: string; previewHash: string; sourceVersion: number; reason: string }>) {
-    return this.database.query(
+  async submit(input: Readonly<{ id: string; tokenHash: string; scopeId: string; makerId: string; previewHash: string; sourceVersion: number; reason: string }>): Promise<RepairView | null> {
+    const result = await this.database.query<RepairView>(
       `with preview as (
         delete from finance.repairpreview preview using finance.statement statement
         where preview.token_hash=$1 and preview.scope_id=$2 and preview.maker_id=$3 and preview.preview_hash=$4
@@ -87,6 +89,7 @@ export class PgRepairRepository implements RepairRepository {
       ) select ${projection} from created repair`,
       [input.tokenHash, input.scopeId, input.makerId, input.previewHash, input.sourceVersion, input.id, input.reason]
     );
+    return result.rows[0] ? Object.freeze(result.rows[0]) : null;
   }
 
   async decide(input: Readonly<{ id: string; scopeId: string; checkerId: string; decision: 'approved' | 'rejected'; expectedVersion: number; reason: string }>) {
@@ -96,9 +99,10 @@ export class PgRepairRepository implements RepairRepository {
     if (current.version !== input.expectedVersion) throw new DomainError('VERSION_CONFLICT');
     if (input.decision === 'approved') {
       await this.database.query(`select finance.approve_repair($1,$2,$3,$4,$5)`, [input.id, input.scopeId, input.checkerId, input.expectedVersion, input.reason]);
-      return this.database.query(`select ${projection} from finance.repair repair where repair.id=$1 and repair.scope_id=$2`, [input.id, input.scopeId]);
+      const result = await this.database.query<RepairView>(`select ${projection} from finance.repair repair where repair.id=$1 and repair.scope_id=$2`, [input.id, input.scopeId]);
+      return result.rows[0] ? Object.freeze(result.rows[0]) : null;
     }
-    return this.database.query(
+    const result = await this.database.query<RepairView>(
       `with changed as (
         update finance.repair set status=$4,checker_id=$3,reason=$6,version=version+1,updated_at=clock_timestamp()
         where id=$1 and scope_id=$2 and status='submitted' and maker_id<>$3 and version=$5 returning *
@@ -110,6 +114,7 @@ export class PgRepairRepository implements RepairRepository {
       ) select ${projection} from changed repair join movement on movement.repair_id=repair.id`,
       [input.id, input.scopeId, input.checkerId, input.decision, input.expectedVersion, input.reason]
     );
+    return result.rows[0] ? Object.freeze(result.rows[0]) : null;
   }
 
   async reverse(input: Readonly<{ id: string; scopeId: string; checkerId: string; expectedVersion: number; reason: string }>) {
@@ -118,7 +123,8 @@ export class PgRepairRepository implements RepairRepository {
     if (current.maker_id === input.checkerId) throw new DomainError('MAKER_CHECKER_SEPARATION_REQUIRED');
     if (current.version !== input.expectedVersion) throw new DomainError('VERSION_CONFLICT');
     await this.database.query(`select finance.reverse_repair($1,$2,$3,$4,$5)`, [input.id, input.scopeId, input.checkerId, input.expectedVersion, input.reason]);
-    return this.database.query(`select ${projection} from finance.repair repair where repair.id=$1 and repair.scope_id=$2`, [input.id, input.scopeId]);
+    const result = await this.database.query<RepairView>(`select ${projection} from finance.repair repair where repair.id=$1 and repair.scope_id=$2`, [input.id, input.scopeId]);
+    return result.rows[0] ? Object.freeze(result.rows[0]) : null;
   }
 
   private async lock(id: string, scopeId: string): Promise<RepairState> {

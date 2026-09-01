@@ -17,8 +17,8 @@ const root = process.cwd();
 const migrationText = sourceTree('database/migrations', '.sql');
 const objectContract = source('database/contracts/objects.yml');
 const operationPipeline = source('services/commerce/src/foundation/application/OperationPipeline.ts');
-const moduleOperations = source('services/commerce/src/foundation/application/ModuleOperations.ts');
-const operationAudit = source('services/commerce/src/foundation/application/OperationAudit.ts');
+const operationExecutor = source('services/commerce/src/foundation/application/OperationExecutor.ts');
+const operationHash = source('services/commerce/src/foundation/application/OperationHash.ts');
 const eventDefinitions = source('packages/contract/definitions/events.yml');
 const permissionCodes = new Set(PERMISSION_CATALOG.map(({ code }) => code));
 const sdkOperations = new Set<OperationId>(SDK_OPERATION_IDS);
@@ -30,7 +30,7 @@ export function journey(requirement: MvpRequirementId, evidence: JourneyEvidence
       const operation = OperationCatalog.get(id);
       assert.ok(sdkOperations.has(id), `${id} has no generated named SDK method`);
       assert.ok(operation.requirements.includes(requirement), `${id} does not trace to ${requirement}`);
-      assert.match(source(`services/commerce/src/modules/${operation.module}/${title(operation.module)}Module.ts`), new RegExp(operation.module, 'i'));
+      assert.match(source(`services/commerce/src/modules/${operation.module}/Module.ts`), new RegExp(operation.module, 'i'));
     }
   });
 
@@ -57,7 +57,7 @@ export function journey(requirement: MvpRequirementId, evidence: JourneyEvidence
     const writes = evidence.operations.map((id) => OperationCatalog.get(id)).filter(({ method }) => method !== 'GET');
     if (writes.length) {
       assert.match(operationPipeline, /IDEMPOTENCY_KEY_REQUIRED/);
-      assert.match(moduleOperations, /runtime\.idempotency/);
+      assert.match(operationExecutor, /idempotency\.claim/);
     }
     assert.match(migrationText, /skip locked/i);
     assert.match(migrationText, /primary key\(consumer,event_id\)/i);
@@ -75,8 +75,8 @@ export function journey(requirement: MvpRequirementId, evidence: JourneyEvidence
   });
 
   test(`${requirement} audit and telemetry evidence is mandatory`, () => {
-    assert.match(moduleOperations, /appendOperationAudit/);
-    assert.match(operationAudit, /requestHash/);
+    assert.match(operationExecutor, /auditReply/);
+    assert.match(operationHash, /executionRequestHash/);
     assert.match(source('services/commerce/src/foundation/interface/HttpApp.ts'), /request-id|x-request-id/i);
     assert.match(migrationText, /create table audit\.record/i);
     if (evidence.event) assert.match(eventDefinitions, new RegExp(`id: ${escape(evidence.event)}`));
@@ -106,10 +106,6 @@ function sourceTree(relative: string, suffix: string): string {
   };
   walk(directory);
   return files.join('\n');
-}
-
-function title(value: string): string {
-  return `${value[0]!.toUpperCase()}${value.slice(1)}`;
 }
 
 function escape(value: string): string {

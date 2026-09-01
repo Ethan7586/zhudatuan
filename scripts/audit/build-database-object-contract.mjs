@@ -15,6 +15,10 @@ const removedDefaultPolicies = new Set();
 const removedJobPolicies = new Set();
 const revokedTableGrants = new Set();
 const legacyRoles = new Set(['zhudatuanidentityapi', 'zhudatuanidentityjob', 'zhudatuanbootstrap', 'zhudatuanwebapi', 'zhudatuanpurchaseapi', 'zhudatuansandboxbootstrap']);
+const schemaOwners = new Map([
+  ['invoice', 'finance'],
+  ['ordering', 'order'],
+]);
 
 function add(id, kind, source, extra = {}) {
   const key = `${kind}:${id}`;
@@ -51,8 +55,12 @@ function removeTable(id) {
 }
 
 function ownerOf(id, kind) {
-  if (kind === 'grant') return id.split(':')[2]?.split('.')[0] ?? 'database';
-  return id.split('.')[0];
+  const schema = kind === 'grant' ? id.split(':')[2]?.split('.')[0] : id.split('.')[0];
+  return schema === undefined ? 'database' : (schemaOwners.get(schema) ?? schema);
+}
+
+function operationalOwner(schema) {
+  return schemaOwners.get(schema) ?? schema;
 }
 
 function splitTopLevel(value) {
@@ -88,27 +96,28 @@ function grantedLater(sql, offset, target, role, privilege) {
 const callerMap = {
   'identity.resolve_session': ['services/commerce/src/foundation/security/PgSessionResolver.ts'],
   'identity.resolve_preauth': ['services/commerce/src/modules/identity/infrastructure/security/PgPreauthResolver.ts'],
-  'identity.navigation_identity': ['services/commerce/src/modules/identity/infrastructure/PgNavigationIdentity.ts'],
+  'identity.navigation_identity': ['services/commerce/src/modules/identity/infrastructure/persistence/PgNavigationIdentity.ts'],
   'access.authorization_snapshot': ['services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts'],
   'notification.visible_notifications': ['services/commerce/src/modules/notification/infrastructure/persistence/PgNotificationRepository.ts'],
-  'access.consume_action_proof': ['services/commerce/src/foundation/security/MakerCheckerPolicy.ts'],
+  'access.consume_action_proof': ['services/commerce/src/modules/access/infrastructure/persistence/PgMakerCheckerGuard.ts'],
   'access.navigation_access': ['services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts'],
-  'capability.navigation_capabilities': ['services/commerce/src/modules/capability/infrastructure/PgNavigationCapability.ts'],
-  'organization.navigation_scopes': ['services/commerce/src/modules/organization/infrastructure/PgNavigationOrganization.ts'],
+  'capability.navigation_capabilities': ['services/commerce/src/modules/capability/infrastructure/persistence/PgNavigationCapability.ts'],
+  'organization.navigation_scopes': ['services/commerce/src/modules/organization/infrastructure/persistence/PgNavigationOrganization.ts'],
   'runtime.accept_inbox': ['services/commerce/src/adapter/database/PgInbox.ts'],
-  'runtime.claim_job': ['services/commerce/src/foundation/application/JobRunner.ts'],
-  'channel.pull_supplier_catalog': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'channel.pull_supplier_stock': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'channel.submit_supplier_order': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'channel.cancel_supplier_order': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'channel.pull_supplier_tracking': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'channel.submit_supplier_refund': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'channel.build_supplier_statement': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'channel.supplier_enabled': ['services/commerce/src/modules/channel/infrastructure/adapter/PgSupplierProvider.ts'],
-  'experience.resolve_storefront_host': ['services/commerce/src/modules/experience/public/ExperienceReadPort.ts'],
+  'runtime.claim_job': ['services/commerce/src/adapter/database/PgJobRepository.ts'],
+  'channel.pull_supplier_catalog': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'channel.pull_supplier_stock': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'channel.submit_supplier_order': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'channel.cancel_supplier_order': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'channel.pull_supplier_tracking': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'channel.submit_supplier_refund': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'channel.build_supplier_statement': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'channel.supplier_enabled': ['services/commerce/src/modules/channel/infrastructure/persistence/SupplierProvider.ts'],
+  'experience.resolve_storefront_host': ['services/commerce/src/modules/experience/infrastructure/persistence/PgExperienceReadPort.ts'],
   'extension.enabled_installations': ['services/commerce/src/bootstrap/ProviderLoader.ts'],
   'extension.load_installation': ['services/commerce/src/bootstrap/ProviderLoader.ts'],
   'reporting.cockpit': ['services/commerce/src/modules/reporting/infrastructure/persistence/PgReportingRepository.ts'],
+  'ordering.payment_webhook_scope': ['services/commerce/src/modules/order/infrastructure/persistence/PgPaymentWebhookScopeReader.ts'],
 };
 
 for (const file of files) {
@@ -169,7 +178,7 @@ for (const file of files) {
       for (const grant of objects.filter((item) => item.kind === 'grant' && item.objectType === 'function' && typeof item.target === 'string' && item.target.startsWith(`${id}(`))) remove(grant.id, 'grant');
     } else {
       const callers = callerMap[id];
-      add(id, 'function', file, callers ? { callers } : { operationalOwner: statement.schema });
+      add(id, 'function', file, callers ? { callers } : { operationalOwner: operationalOwner(statement.schema) });
     }
   }
   for (const match of sql.matchAll(/alter function\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9_]*)\s*\(([^)]*)\)\s+rename to\s+([a-z][a-z0-9_]*)/gi)) {
@@ -178,7 +187,7 @@ for (const file of files) {
     const signature = match[3].replace(/\s+/g, '');
     remove(prior, 'function');
     const callers = callerMap[next];
-    add(next, 'function', file, callers ? { callers } : { operationalOwner: match[1] });
+    add(next, 'function', file, callers ? { callers } : { operationalOwner: operationalOwner(match[1]) });
     for (const grant of objects.filter((item) => item.kind === 'grant' && item.objectType === 'function' && item.target === `${prior}(${signature})`)) {
       remove(grant.id, 'grant');
       const target = `${next}(${signature})`;
@@ -187,8 +196,8 @@ for (const file of files) {
     }
   }
   for (const match of sql.matchAll(/create(?: constraint)? trigger\s+([a-z][a-z0-9_]*)[\s\S]*?\son\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)) {
-    add(`${match[2]}.${match[3]}.${match[1]}`, 'trigger', file, { operationalOwner: match[2] });
-    for (const child of partitions.get(`${match[2]}.${match[3]}`) ?? []) add(`${child}.${match[1]}`, 'trigger', file, { operationalOwner: child.split('.')[0] });
+    add(`${match[2]}.${match[3]}.${match[1]}`, 'trigger', file, { operationalOwner: operationalOwner(match[2]) });
+    for (const child of partitions.get(`${match[2]}.${match[3]}`) ?? []) add(`${child}.${match[1]}`, 'trigger', file, { operationalOwner: operationalOwner(child.split('.')[0]) });
   }
   for (const match of sql.matchAll(/drop trigger(?:\s+if exists)?\s+([a-z][a-z0-9_]*)\s+on\s+([a-z][a-z0-9]*)\.([a-z][a-z0-9]*)/gi)) {
     remove(`${match[2]}.${match[3]}.${match[1]}`, 'trigger');

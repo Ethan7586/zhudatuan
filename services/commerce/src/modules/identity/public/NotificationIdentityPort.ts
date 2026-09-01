@@ -1,11 +1,10 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import type { QueryResult, QueryResultRow } from 'pg';
 
 export interface IdentityChallenge {
   readonly purpose: string;
-  readonly code_ciphertext: string;
-  readonly destination_ciphertext: string;
+  readonly codeCiphertext: string;
+  readonly destinationCiphertext: string;
 }
 
 export interface IdentityChallengeAttempt {
@@ -15,12 +14,12 @@ export interface IdentityChallengeAttempt {
 }
 
 export interface NotificationIdentityPort {
-  recipient(database: OperationDatabase, membership: string): Promise<QueryResult<{ id: string; subject_ciphertext: string }>>;
-  challenge(database: OperationDatabase, id: string): Promise<QueryResult<IdentityChallenge>>;
-  beginAttempt(database: OperationDatabase, id: string, provider: string): Promise<QueryResult<IdentityChallengeAttempt>>;
-  completeAttempt(database: OperationDatabase, id: string, sequence: number, provider: string, external: string): Promise<QueryResult<QueryResultRow>>;
-  failAttempt(database: OperationDatabase, id: string, sequence: number, code: string): Promise<QueryResult<QueryResultRow>>;
-  ambiguousAttempt(database: OperationDatabase, id: string, sequence: number, code: string): Promise<QueryResult<QueryResultRow>>;
+  recipient(context: ReadTransactionContext, membership: string): Promise<Readonly<{ id: string; subjectCiphertext: string }> | null>;
+  challenge(context: ReadTransactionContext, id: string): Promise<IdentityChallenge | null>;
+  beginAttempt(context: WriteTransactionContext, id: string, provider: string): Promise<IdentityChallengeAttempt | null>;
+  completeAttempt(context: WriteTransactionContext, id: string, sequence: number, provider: string, external: string): Promise<boolean>;
+  failAttempt(context: WriteTransactionContext, id: string, sequence: number, code: string): Promise<void>;
+  ambiguousAttempt(context: WriteTransactionContext, id: string, sequence: number, code: string): Promise<void>;
 }
 
 export const NOTIFICATION_IDENTITY_PORT = publicPort<NotificationIdentityPort>('identity', 'notification');

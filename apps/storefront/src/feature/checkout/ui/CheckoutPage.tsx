@@ -1,6 +1,7 @@
 import { CheckSquare, Minus, Plus, ShoppingCart, Square, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useCheckoutRuntime } from '../application/CheckoutRuntime';
+import { ProductMedia } from '../../../shared/ui/ProductMedia';
 import type { LaptopPage } from '../../../shared/manifest/StorefrontRoute';
 import { useSession } from '../../../shared/runtime/SessionContext';
 import { checkoutQuery } from '../application/CheckoutState';
@@ -89,7 +90,13 @@ export function CheckoutPage({ onSelectTab, surface = 'standard' }: { readonly o
                         {item.selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
                       </button>
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-gray-200 bg-gray-50 p-1">
-                        <img src={item.product.images[0]} alt={item.product.title} className="max-h-full max-w-full object-contain" />
+                        <ProductMedia
+                          source={item.product.images[0]}
+                          alt={item.product.title}
+                          className="max-h-full max-w-full object-contain"
+                          emptyClassName="text-center text-[9px] text-gray-400"
+                          emptyText="暂无图片"
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
                         <h2 className="truncate font-bold text-gray-800">{item.product.title}</h2>

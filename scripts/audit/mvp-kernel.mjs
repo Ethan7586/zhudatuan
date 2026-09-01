@@ -1,58 +1,85 @@
 import { createHash } from 'node:crypto';
+import { OperationCatalog } from '@shop/contract';
 import { Container } from '../../services/commerce/src/bootstrap/Container.ts';
 import { AUDIT_SINK } from '../../services/commerce/src/foundation/application/AuditSink.ts';
 import { DATABASE_POOL } from '../../services/commerce/src/foundation/persistence/Pool.ts';
 import { SECURITY_KEYS } from '../../services/commerce/src/foundation/infrastructure/SecretStore.ts';
 import { KMS_CLIENT } from '../../services/commerce/src/foundation/infrastructure/KmsClient.ts';
 import { JobRunner } from '../../services/commerce/src/foundation/application/JobRunner.ts';
+import { HandlerRegistry } from '../../services/commerce/src/foundation/application/HandlerRegistry.ts';
+import { OperationExecutor } from '../../services/commerce/src/foundation/application/OperationExecutor.ts';
+import { AuditDecorator } from '../../services/commerce/src/foundation/application/AuditDecorator.ts';
 import { OutboxRelay } from '../../services/commerce/src/adapter/messaging/OutboxRelay.ts';
 import { RuntimeEventPublisher } from '../../services/commerce/src/adapter/messaging/RuntimeEventPublisher.ts';
 import { EventRegistry } from '../../services/commerce/src/bootstrap/EventRegistry.ts';
-import { EVENT_HANDLERS } from '../../services/commerce/src/app/events.ts';
-import { RecordAudit } from '../../services/commerce/src/modules/audit/application/command/RecordAudit.ts';
+import { EVENT_SCHEMA_TYPES } from '../../services/commerce/src/app/events.ts';
+import { EVENT_SUBSCRIPTIONS } from '../../services/commerce/src/generated/EventSubscriptions.ts';
+import { RecordAudit } from '../../services/commerce/src/modules/audit/application/service/RecordAudit.ts';
 import { PgAuditRepository } from '../../services/commerce/src/modules/audit/infrastructure/persistence/PgAuditRepository.ts';
-import { cartOperations } from '../../services/commerce/src/modules/cart/CartOperations.ts';
-import { checkoutOperations } from '../../services/commerce/src/modules/checkout/CheckoutOperations.ts';
-import { paymentOperations } from '../../services/commerce/src/modules/payment/PaymentOperations.ts';
-import { paymentComposition } from '../../services/commerce/src/modules/payment/PaymentComposition.ts';
-import { PaymentJobProcessor } from '../../services/commerce/src/modules/payment/PaymentJobs.ts';
+import { PgAuditAppender } from '../../services/commerce/src/modules/audit/infrastructure/persistence/PgAuditAppender.ts';
+import { PgMakerCheckerGuard } from '../../services/commerce/src/modules/access/infrastructure/persistence/PgMakerCheckerGuard.ts';
+import { PgIdempotencyRepository } from '../../services/commerce/src/adapter/database/PgIdempotencyRepository.ts';
+import { PgTransactionalOutbox } from '../../services/commerce/src/adapter/database/PgTransactionalOutbox.ts';
+import { PgTransactionAccess } from '../../services/commerce/src/adapter/database/PgTransactionAccess.ts';
+import { PgTransactionManager } from '../../services/commerce/src/adapter/database/PgTransactionManager.ts';
+import { PgJobRepository } from '../../services/commerce/src/adapter/database/PgJobRepository.ts';
+import { PgDeadletterStore } from '../../services/commerce/src/adapter/database/PgDeadletterStore.ts';
+import { CartModule } from '../../services/commerce/src/modules/cart/Module.ts';
+import { CheckoutModule } from '../../services/commerce/src/modules/checkout/Module.ts';
+import { PaymentModule } from '../../services/commerce/src/modules/payment/Module.ts';
+import { RecoverPayment } from '../../services/commerce/src/modules/payment/application/process/RecoverPayment.ts';
+import { PgPaymentRecoveryProcess } from '../../services/commerce/src/modules/payment/infrastructure/persistence/PgPaymentRecoveryProcess.ts';
+import { PaymentRecoveryJob } from '../../services/commerce/src/modules/payment/interface/job/PaymentRecoveryJob.ts';
 import { PAYMENT_GATEWAY } from '../../services/commerce/src/modules/payment/application/port/PaymentGateway.ts';
-import { ReconciliationJobProcessor } from '../../services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts';
-import { BenefitPort } from '../../services/commerce/src/modules/benefit/BenefitPort.ts';
-import { VoucherPort } from '../../services/commerce/src/modules/voucher/application/port/VoucherPort.ts';
-import { FinancePort } from '../../services/commerce/src/modules/finance/FinancePort.ts';
-import { InventoryPort } from '../../services/commerce/src/modules/inventory/InventoryPort.ts';
-import { MarketingPort } from '../../services/commerce/src/modules/marketing/MarketingPort.ts';
-import { FulfillmentPort } from '../../services/commerce/src/modules/fulfillment/FulfillmentPort.ts';
-import { OrderPort } from '../../services/commerce/src/modules/order/OrderPort.ts';
-import { ChannelOperationPort } from '../../services/commerce/src/modules/channel/ChannelOperationPort.ts';
-import { PgFinanceChannelPort } from '../../services/commerce/src/modules/channel/public/index.ts';
-import { PaymentHoldReleaser, PaymentSettlement } from '../../services/commerce/src/modules/payment/application/PaymentSettlement.ts';
-import { RefundSettlement } from '../../services/commerce/src/modules/payment/application/RefundSettlement.ts';
+import { ReconcileFinance } from '../../services/commerce/src/modules/finance/application/process/ReconcileFinance.ts';
+import { PgReconciliationProcess } from '../../services/commerce/src/modules/finance/infrastructure/persistence/PgReconciliationProcess.ts';
+import { ReconciliationJob } from '../../services/commerce/src/modules/finance/interface/job/ReconciliationJob.ts';
+import { BenefitPort } from '../../services/commerce/src/modules/benefit/infrastructure/persistence/BenefitPort.ts';
+import { VoucherPort } from '../../services/commerce/src/modules/voucher/infrastructure/persistence/VoucherPort.ts';
+import { FinancePort } from '../../services/commerce/src/modules/finance/infrastructure/persistence/FinancePort.ts';
+import { InventoryPort } from '../../services/commerce/src/modules/inventory/infrastructure/persistence/InventoryPort.ts';
+import { MarketingPort } from '../../services/commerce/src/modules/marketing/infrastructure/persistence/MarketingPort.ts';
+import { FulfillmentPort } from '../../services/commerce/src/modules/fulfillment/infrastructure/persistence/FulfillmentPort.ts';
+import { OrderPort } from '../../services/commerce/src/modules/order/infrastructure/persistence/OrderPort.ts';
+import { ChannelOperationPort } from '../../services/commerce/src/modules/channel/infrastructure/persistence/ChannelOperationPort.ts';
+import { PgFinanceChannelPort } from '../../services/commerce/src/modules/channel/infrastructure/persistence/PgFinanceChannelPort.ts';
+import { PaymentHoldReleaser, PaymentSettlement } from '../../services/commerce/src/modules/payment/infrastructure/persistence/PaymentSettlement.ts';
+import { RefundSettlement } from '../../services/commerce/src/modules/payment/infrastructure/persistence/RefundSettlement.ts';
 import { CART_PRICING_PORT, CHECKOUT_PRICING_PORT } from '../../services/commerce/src/modules/pricing/public/index.ts';
-import { PricingPort } from '../../services/commerce/src/modules/pricing/PricingPort.ts';
+import { PricingPort } from '../../services/commerce/src/modules/pricing/infrastructure/persistence/PricingPort.ts';
 import { CHECKOUT_BENEFIT_PORT, PAYMENT_BENEFIT_PORT } from '../../services/commerce/src/modules/benefit/public/index.ts';
 import { CHECKOUT_VOUCHER_PORT, PAYMENT_VOUCHER_PORT } from '../../services/commerce/src/modules/voucher/public/index.ts';
 import { CHECKOUT_INVENTORY_PORT, PAYMENT_INVENTORY_PORT } from '../../services/commerce/src/modules/inventory/public/index.ts';
 import { CHECKOUT_MARKETING_PORT, PAYMENT_MARKETING_PORT } from '../../services/commerce/src/modules/marketing/public/index.ts';
 import { CART_READ_PORT, CHECKOUT_CART_PORT } from '../../services/commerce/src/modules/cart/public/index.ts';
-import { PgCartRepository } from '../../services/commerce/src/modules/cart/infrastructure/persistence/PgCartRepository.ts';
-import { CART_CATALOG_PORT, CHECKOUT_CATALOG_PORT, PgCartCatalogPort, PgCheckoutCatalogPort } from '../../services/commerce/src/modules/catalog/public/index.ts';
-import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT, PgCartExperiencePort, PgCheckoutExperiencePort } from '../../services/commerce/src/modules/experience/public/index.ts';
+import { CART_CATALOG_PORT, CHECKOUT_CATALOG_PORT } from '../../services/commerce/src/modules/catalog/public/index.ts';
+import { PgCartCatalogPort } from '../../services/commerce/src/modules/catalog/infrastructure/persistence/PgCartCatalogPort.ts';
+import { PgCheckoutCatalogPort } from '../../services/commerce/src/modules/catalog/infrastructure/persistence/PgCheckoutCatalogPort.ts';
+import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT } from '../../services/commerce/src/modules/experience/public/index.ts';
+import { PgCartExperiencePort } from '../../services/commerce/src/modules/experience/infrastructure/persistence/PgCartExperiencePort.ts';
+import { PgCheckoutExperiencePort } from '../../services/commerce/src/modules/experience/infrastructure/persistence/PgCheckoutExperiencePort.ts';
 import { MEMBER_ACCESS_PORT } from '../../services/commerce/src/modules/access/public/index.ts';
-import { AccessPort } from '../../services/commerce/src/modules/access/AccessPort.ts';
+import { AccessPort } from '../../services/commerce/src/modules/access/application/service/AccessPort.ts';
 import { PgAccessRepository } from '../../services/commerce/src/modules/access/infrastructure/persistence/PgAccessRepository.ts';
 import { AccessVersionService } from '../../services/commerce/src/modules/access/application/service/AccessVersionService.ts';
-import { CHECKOUT_QUALIFICATION_PORT, PgCheckoutQualificationPort } from '../../services/commerce/src/modules/qualification/public/index.ts';
+import { CHECKOUT_QUALIFICATION_PORT } from '../../services/commerce/src/modules/qualification/public/index.ts';
+import { PgCheckoutQualificationPort } from '../../services/commerce/src/modules/qualification/infrastructure/persistence/PgCheckoutQualificationPort.ts';
 import { CHECKOUT_RISK_PORT } from '../../services/commerce/src/modules/risk/public/index.ts';
-import { CheckoutRisk } from '../../services/commerce/src/modules/risk/CheckoutRisk.ts';
-import { ORGANIZATION_READ_PORT, PgOrganizationReadPort } from '../../services/commerce/src/modules/organization/public/index.ts';
-import { CHECKOUT_ORDER_PORT, PAYMENT_ORDER_PORT } from '../../services/commerce/src/modules/order/public/index.ts';
+import { CheckoutRisk } from '../../services/commerce/src/modules/risk/infrastructure/persistence/CheckoutRisk.ts';
+import { ORGANIZATION_READ_PORT } from '../../services/commerce/src/modules/organization/public/index.ts';
+import { PgOrganizationReadPort } from '../../services/commerce/src/modules/organization/infrastructure/persistence/PgOrganizationReadPort.ts';
+import { CHECKOUT_ORDER_PORT, PAYMENT_ORDER_PORT, PAYMENT_WEBHOOK_ORDER_PORT } from '../../services/commerce/src/modules/order/public/index.ts';
+import { ResolvePaymentWebhookScope } from '../../services/commerce/src/modules/order/application/service/ResolvePaymentWebhookScope.ts';
+import { PgPaymentWebhookScopeReader } from '../../services/commerce/src/modules/order/infrastructure/persistence/PgPaymentWebhookScopeReader.ts';
 import { CHECKOUT_PAYMENT_PORT } from '../../services/commerce/src/modules/payment/public/index.ts';
-import { PaymentPort } from '../../services/commerce/src/modules/payment/PaymentPort.ts';
+import { PaymentPort } from '../../services/commerce/src/modules/payment/infrastructure/persistence/PaymentPort.ts';
 import { CHECKOUT_INVOICE_PORT } from '../../services/commerce/src/modules/finance/public/index.ts';
 import { PAYMENT_FULFILLMENT_PORT } from '../../services/commerce/src/modules/fulfillment/public/index.ts';
-import { InvoicePort } from '../../services/commerce/src/modules/finance/InvoicePort.ts';
+import { InvoicePort } from '../../services/commerce/src/modules/finance/application/service/InvoicePort.ts';
+import { PAYMENT_IDENTITY_PORT } from '../../services/commerce/src/modules/identity/public/index.ts';
+import { PgPaymentIdentityPort } from '../../services/commerce/src/modules/identity/infrastructure/persistence/PgPaymentIdentityPort.ts';
+import { MEMBER_ADDRESS_PORT } from '../../services/commerce/src/modules/member/public/index.ts';
+import { PgAddressRepository } from '../../services/commerce/src/modules/member/infrastructure/persistence/PgAddressRepository.ts';
 
 const fixture = Object.freeze({
   tenant: 'mvp:tenant',
@@ -103,7 +130,7 @@ export async function verifyMvpKernel(database) {
   const marketingPort = new MarketingPort();
   const fulfillmentPort = new FulfillmentPort();
   const orderPort = new OrderPort();
-  const cartRepository = new PgCartRepository();
+  const transactionAccess = new PgTransactionAccess();
   const accessRepository = new PgAccessRepository();
   const memberAccessPort = new AccessPort(accessRepository, new AccessVersionService(accessRepository));
   const invoicePort = new InvoicePort();
@@ -121,8 +148,6 @@ export async function verifyMvpKernel(database) {
     [CHECKOUT_VOUCHER_PORT.key, checkoutVoucherPort],
     [CHECKOUT_INVENTORY_PORT.key, inventoryPort],
     [CHECKOUT_MARKETING_PORT.key, marketingPort],
-    [CART_READ_PORT.key, cartRepository],
-    [CHECKOUT_CART_PORT.key, cartRepository],
     [CHECKOUT_ORDER_PORT.key, orderPort],
     [CHECKOUT_INVOICE_PORT.key, invoicePort],
     [CHECKOUT_QUALIFICATION_PORT.key, new PgCheckoutQualificationPort()],
@@ -134,7 +159,11 @@ export async function verifyMvpKernel(database) {
     [PAYMENT_MARKETING_PORT.key, marketingPort],
     [PAYMENT_FULFILLMENT_PORT.key, fulfillmentPort],
     [PAYMENT_ORDER_PORT.key, orderPort],
+    [PAYMENT_WEBHOOK_ORDER_PORT.key, new ResolvePaymentWebhookScope(new PgPaymentWebhookScopeReader(new PgTransactionManager(pool)))],
+    [PAYMENT_IDENTITY_PORT.key, new PgPaymentIdentityPort()],
+    [MEMBER_ADDRESS_PORT.key, new PgAddressRepository(transactionAccess)],
   ]);
+  const handlers = new HandlerRegistry();
   const context = Object.freeze({
     workload: 'api',
     service: (token) => container.get(token),
@@ -145,16 +174,32 @@ export async function verifyMvpKernel(database) {
         return value;
       },
     }),
-    handlers: null,
-    jobs: null,
-    extensions: null,
+    handlers,
+    events: Object.freeze({ add: () => undefined }),
   });
-  ports.set(CHECKOUT_PAYMENT_PORT.key, paymentComposition(context).checkout);
+  for (const module of [CartModule, PaymentModule]) {
+    for (const binding of module.bind(context)) ports.set(binding.token.key, binding.value);
+  }
+  for (const module of [CartModule, CheckoutModule, PaymentModule]) await module.register(context);
+  handlers.freeze(
+    OperationCatalog.all()
+      .filter(({ module }) => ['cart', 'checkout', 'payment'].includes(module))
+      .map(({ id }) => id)
+  );
+  const operations = new OperationExecutor(
+    new PgTransactionManager(pool),
+    new PgIdempotencyRepository(transactionAccess),
+    new PgMakerCheckerGuard(transactionAccess),
+    new AuditDecorator(new PgAuditAppender(transactionAccess)),
+    new PgTransactionalOutbox(transactionAccess)
+  );
   const access = accessContext();
 
-  const cart = await cartOperations(context).invoke(request('cart.items.put', access, { quantity: 2, lineVersion: null }, { listingid: fixture.listing }, 'mvp-cart-put', 0));
+  const cart = await invoke(handlers, operations, request('cart.items.put', access, { quantity: 2, lineVersion: null }, { listingid: fixture.listing }, 'mvp-cart-put', 0));
   assert(cart.status === 200, `MVP_CART_WRITE_FAILED:${cart.status}`);
-  const quote = await checkoutOperations(context).invoke(
+  const quote = await invoke(
+    handlers,
+    operations,
     request(
       'checkout.quote.create',
       access,
@@ -174,7 +219,7 @@ export async function verifyMvpKernel(database) {
   );
   const quoteid = quote.body?.quoteId;
   assert(quote.status === 201 && typeof quoteid === 'string', `MVP_QUOTE_FAILED:${quote.status}`);
-  const order = await checkoutOperations(context).invoke(request('order.orders.create', access, { quoteId: quoteid, paymentScene: 'jsapi' }, {}, 'mvp-order-create'));
+  const order = await invoke(handlers, operations, request('order.orders.create', access, { quoteId: quoteid, paymentScene: 'jsapi' }, {}, 'mvp-order-create'));
   const orderid = order.body?.order?.id;
   assert(order.status === 201 && typeof orderid === 'string', `MVP_ORDER_FAILED:${order.status}`);
   assert(order.body?.payment?.state === 'pending' && order.body.payment.action?.package === 'prepay_id=mvp-kernel', `MVP_PAYMENT_PREPARATION_FAILED:${String(order.body?.payment?.state)}`);
@@ -224,10 +269,10 @@ export async function verifyMvpKernel(database) {
   };
   for (const [field, value] of Object.entries(expected)) assert(row?.[field] === value, `MVP_KERNEL_EVIDENCE_INVALID:${field}:${String(row?.[field])}`);
   console.log(`smart-wing MVP kernel passed: cart=converted quote=confirmed order=awaitingpayment payment=authorizing totalMinor=${row.total_minor} outbox=${row.outbox_events} audits=${row.audits}`);
-  await verifyPayment(database, context, gateway, orderid);
+  await verifyPayment(database, handlers, operations, gateway, orderid);
 }
 
-async function verifyPayment(database, context, gateway, order) {
+async function verifyPayment(database, handlers, operations, gateway, order) {
   const prepared = (
     await database.query(
       `select tender.amount_minor::float8 amount_minor,intent.currency,intent.provider_reference,
@@ -247,16 +292,15 @@ async function verifyPayment(database, context, gateway, order) {
     application_hash: notification.application.applicationHash,
   }))
     assert(prepared?.[field] === value, `MVP_PAYMENT_BOUNDARY_INVALID:${field}:${String(prepared?.[field])}:${String(value)}`);
-  const webhook = await paymentOperations(context).invoke(webhookRequest());
+  const webhook = await invoke(handlers, operations, webhookRequest());
   assert(webhook.status === 204, `MVP_PAYMENT_WEBHOOK_FAILED:${webhook.status}`);
-  const replay = await paymentOperations(context).invoke(webhookRequest());
+  const replay = await invoke(handlers, operations, webhookRequest());
   assert(replay.status === 204, `MVP_PAYMENT_WEBHOOK_REPLAY_FAILED:${replay.status}`);
 
   const controller = new AbortController();
-  gateway.stop = () => controller.abort();
   const jobPool = pglitePool(database, 'shopjob');
   let processorFailure;
-  const paymentProcessor = new PaymentJobProcessor(jobPool, gateway, 'paymentquery', paymentJobDependencies());
+  const paymentProcessor = new PaymentRecoveryJob('paymentquery', new RecoverPayment(new PgPaymentRecoveryProcess(new PgTransactionManager(jobPool), gateway, paymentJobDependencies())));
   const guardedPaymentProcessor = Object.freeze({
     async process(job, signal) {
       try {
@@ -267,7 +311,19 @@ async function verifyPayment(database, context, gateway, order) {
       }
     },
   });
-  const runner = new JobRunner(jobPool, { worker: 'mvp:worker', workload: 'jobs', owner: 'payment', batch: 1, lease: 30, concurrency: 1, attempts: 3, poll: 1, deadline: 30_000, retryMinimum: 10, retryMaximum: 100 });
+  const runner = new JobRunner(new PgTransactionManager(jobPool), singleJobRepository(controller), new PgDeadletterStore(), {
+    worker: 'mvp:worker',
+    workload: 'jobs',
+    owner: 'payment',
+    batch: 1,
+    lease: 30,
+    concurrency: 1,
+    attempts: 3,
+    poll: 1,
+    deadline: 30_000,
+    retryMinimum: 10,
+    retryMaximum: 100,
+  });
   await runner.run('paymentquery', guardedPaymentProcessor, controller.signal);
   if (processorFailure) throw processorFailure;
   await relayAvailableEvents(jobPool);
@@ -324,7 +380,7 @@ async function verifyPayment(database, context, gateway, order) {
     entries: 2,
     balance: 0,
     finance_events: 1,
-    payment_audits: 1,
+    payment_audits: 2,
   };
   for (const [field, value] of Object.entries(expected)) assert(result?.[field] === value, `MVP_PAYMENT_EVIDENCE_INVALID:${field}:${String(result?.[field])}`);
   console.log(`smart-wing payment kernel passed: intent=captured order=paid inventory=committed fulfillment=${result.fulfillments} webhookInbox=${result.provider_inbox}`);
@@ -340,7 +396,7 @@ function paymentJobDependencies() {
   const marketing = new MarketingPort();
   return Object.freeze({
     settlement: new PaymentSettlement(benefit, voucher, inventory, marketing, new FulfillmentPort(), orders),
-    refundSettlement: new RefundSettlement(benefit, voucher, orders),
+    refundSettlement: new RefundSettlement(benefit, voucher, orders, new PgOrganizationReadPort()),
     orders,
     operations: new ChannelOperationPort(),
     holds: new PaymentHoldReleaser(benefit, voucher, inventory, marketing),
@@ -349,15 +405,19 @@ function paymentJobDependencies() {
 
 async function relayAvailableEvents(jobPool) {
   const relay = new OutboxRelay(jobPool, new RuntimeEventPublisher(jobPool, eventRegistry()), 'mvp:relay', 1);
+  const signal = new AbortController().signal;
   for (let index = 0; index < 2_048; index += 1) {
-    if ((await relay.relay(1)) === 0) return;
+    if ((await relay.relay(1, signal, Date.now() + 30_000)) === 0) return;
   }
   throw new Error('MVP_OUTBOX_RELAY_DID_NOT_DRAIN');
 }
 
 function eventRegistry() {
   const registry = new EventRegistry();
-  for (const [event, subscribers] of EVENT_HANDLERS) registry.register(event, subscribers);
+  for (const event of EVENT_SCHEMA_TYPES) registry.declare(event);
+  for (const [subscriber, events] of Object.entries(EVENT_SUBSCRIPTIONS)) {
+    for (const event of events) registry.subscribe(event, subscriber);
+  }
   registry.freeze();
   return registry;
 }
@@ -376,22 +436,63 @@ async function runReconciliation(database, jobPool) {
     throw new Error(`MVP_FINANCE_JOB_INVALID:${String(queued)}:${JSON.stringify({ events: events.rows, jobs: jobs.rows, intents: intents.rows })}`);
   }
   const controller = new AbortController();
-  const processor = new ReconciliationJobProcessor(jobPool, unavailableObjects(), {
-    channel: new PgFinanceChannelPort(),
-    payments: new PaymentPort(),
-    fulfillments: new FulfillmentPort(),
-  });
+  const processor = new ReconciliationJob(
+    new ReconcileFinance(
+      new PgReconciliationProcess(new PgTransactionManager(jobPool), unavailableObjects(), {
+        channel: new PgFinanceChannelPort(),
+        payments: new PaymentPort(),
+        fulfillments: new FulfillmentPort(),
+      })
+    )
+  );
+  let processorFailure;
   const guarded = Object.freeze({
     async process(job, signal) {
       try {
         await processor.process(job, signal);
+      } catch (cause) {
+        processorFailure = cause;
+        throw cause;
+      }
+    },
+  });
+  const runner = new JobRunner(new PgTransactionManager(jobPool), singleJobRepository(controller), new PgDeadletterStore(), {
+    worker: 'mvp:finance',
+    workload: 'jobs',
+    owner: 'finance',
+    batch: 1,
+    lease: 30,
+    concurrency: 1,
+    attempts: 3,
+    poll: 1,
+    deadline: 30_000,
+    retryMinimum: 10,
+    retryMaximum: 100,
+  });
+  await runner.run('reconciliation', guarded, controller.signal);
+  if (processorFailure) throw processorFailure;
+}
+
+function singleJobRepository(controller) {
+  const jobs = new PgJobRepository();
+  return Object.freeze({
+    claim: (context, kind, worker, batch, lease, workload) => jobs.claim(context, kind, worker, batch, lease, workload),
+    heartbeat: (context, job, worker, lease) => jobs.heartbeat(context, job, worker, lease),
+    async complete(context, job, worker) {
+      try {
+        await jobs.complete(context, job, worker);
+      } finally {
+        controller.abort();
+      }
+    },
+    async fail(context, job, worker, terminal, delay) {
+      try {
+        await jobs.fail(context, job, worker, terminal, delay);
       } finally {
         controller.abort();
       }
     },
   });
-  const runner = new JobRunner(jobPool, { worker: 'mvp:finance', workload: 'jobs', owner: 'finance', batch: 1, lease: 30, concurrency: 1, attempts: 3, poll: 1, deadline: 30_000, retryMinimum: 10, retryMaximum: 100 });
-  await runner.run('reconciliation', guarded, controller.signal);
 }
 
 function unavailableObjects() {
@@ -403,7 +504,6 @@ function unavailableObjects() {
 
 function paymentBoundary() {
   const boundary = {
-    stop: undefined,
     application(scene) {
       return Object.freeze({ scene, applicationHash: fixture.applicationHash });
     },
@@ -413,7 +513,6 @@ function paymentBoundary() {
     },
     async query(orderNumber, application) {
       assert(orderNumber === boundary.providerReference && application.applicationHash === fixture.applicationHash, 'MVP_PAYMENT_QUERY_CONTEXT_INVALID');
-      boundary.stop?.();
       return Object.freeze({ state: 'succeeded', transaction: 'mvp:wechat-transaction', amountMinor: 5180 });
     },
     async close() {},
@@ -496,6 +595,28 @@ function request(type, access, body, path, idempotency, expectedVersion) {
   });
 }
 
+function invoke(handlers, operations, request) {
+  const input = Object.freeze({
+    ...(Object.keys(request.input.path).length === 0 ? {} : { path: request.input.path }),
+    ...(Object.keys(request.input.query).length === 0 ? {} : { query: request.input.query }),
+    ...(request.input.body === undefined ? {} : { body: request.input.body }),
+  });
+  const trace = request.security.kind === 'session' ? request.security.access.trace : request.security.trace;
+  return operations.execute(handlers.get(request.type), input, {
+    requestId: request.input.headers['request-id'] ?? trace,
+    traceId: trace,
+    deadline: request.input.deadline,
+    signal: request.input.signal,
+    operation: request.type,
+    security: request.security,
+    headers: request.input.headers,
+    rawBody: request.input.rawBody,
+    ...(request.security.kind === 'anonymous' ? { publicActor: 'provider:wechat' } : {}),
+    ...(request.input.idempotency === undefined ? {} : { idempotencyKey: request.input.idempotency }),
+    ...(request.input.expectedVersion === undefined ? {} : { expectedVersion: request.input.expectedVersion }),
+  });
+}
+
 function pglitePool(database, role = 'shopapp') {
   let connected = false;
   const rawQuery = async (text, values) => result(await database.query(text, values));
@@ -575,8 +696,8 @@ async function seed(database) {
     insert into qualification.profile(member_id,scope_id,city_code,city_name,attributes,status,version,updated_at)
       values('${fixture.member}','${fixture.mall}','310000','上海市','{}','active',1,clock_timestamp());
     insert into catalog.category(id,code,name,status,sort_order) values('${fixture.category}','mvp-milk','乳品','active',1);
-    insert into catalog.product(id,category_id,title,product_type,attributes,status,version,created_at,updated_at)
-      values('${fixture.product}','${fixture.category}','纯牛奶','physical','{"subtitle":"MVP kernel product"}','active',1,clock_timestamp(),clock_timestamp());
+    insert into catalog.product(id,scope_id,category_id,title,product_type,attributes,status,version,created_at,updated_at)
+      values('${fixture.product}','${fixture.mall}','${fixture.category}','纯牛奶','physical','{"subtitle":"MVP kernel product"}','active',1,clock_timestamp(),clock_timestamp());
     insert into catalog.sku(id,product_id,code,specifications,status,version)
       values('${fixture.sku}','${fixture.product}','MVP-MILK-250','{"size":"250ml"}','active',1);
     insert into catalog.pool(id,scope_id,kind,name,status,version) values('${fixture.pool}','${fixture.mall}','private','MVP pool','active',1);
@@ -601,7 +722,7 @@ async function seed(database) {
     insert into experience.publication(id,release_id,application_id,version_id,content_hash,object_key,object_ref,object_hash,object_size,state,staged_at,published_at)
       values('${fixture.publication}','${fixture.release}','${fixture.application}','${fixture.version}','${hash}',
         'experience/${fixture.application}/${hash}.json','mvp:object','${hash}',1,'active',clock_timestamp(),clock_timestamp());
-    insert into checkout.address(id,member_id,recipient_ciphertext,mobile_ciphertext,address_ciphertext,region_token,address_token,status,version,
+    insert into member.address(id,member_id,recipient_ciphertext,mobile_ciphertext,address_ciphertext,region_token,address_token,status,version,
       recipient_masked,mobile_masked,address_masked,region_code)
       values('${fixture.address}','${fixture.member}','cipher:recipient','cipher:mobile','cipher:address',repeat('a',64),repeat('b',64),'active',1,
         'M**','138****0000','上海市***','310000');

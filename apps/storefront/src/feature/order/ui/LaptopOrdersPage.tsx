@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useOrderRuntime } from '../application/OrderRuntime';
+import { ProductMedia } from '../../../shared/ui/ProductMedia';
 import type { LaptopPage } from '../../../shared/manifest/StorefrontRoute';
 import { FileText, Truck } from 'lucide-react';
 import { STOREFRONT_WEB_SURFACE_COPY, type StorefrontWebSurface } from '../../../shared/ui/StorefrontPresentation';
@@ -95,7 +96,13 @@ export const LaptopOrdersPage: React.FC<LaptopOrdersPageProps> = ({ onSelectTab:
                     <div key={item.product.id} className="py-2 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-12 h-12 bg-gray-50 border border-gray-200 rounded p-1 flex-shrink-0 flex items-center justify-center">
-                          <img src={item.product.image} alt={item.product.title} className="max-h-full max-w-full object-contain" />
+                          <ProductMedia
+                            source={item.product.image}
+                            alt={item.product.title}
+                            className="max-h-full max-w-full object-contain"
+                            emptyClassName="text-center text-[9px] text-gray-400"
+                            emptyText="暂无图片"
+                          />
                         </div>
                         <div className="min-w-0">
                           <div className="font-bold text-gray-800 truncate text-xs">{item.product.title}</div>

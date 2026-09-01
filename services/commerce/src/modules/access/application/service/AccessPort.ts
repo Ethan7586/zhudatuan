@@ -1,0 +1,153 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
+import { DomainError } from '../../../../foundation/domain/DomainError';
+import type { IdentityAccessPort } from '../../public/IdentityAccessPort';
+import type { ImportedMembership, MemberImportAccessPort } from '../../public/MemberImportAccessPort';
+import type { AccessVersionService } from './AccessVersionService';
+import type { AccessMember, MemberAccessPort } from '../../public/MemberAccessPort';
+import type { AccessRepository } from '../port/AccessRepository';
+export class AccessPort implements IdentityAccessPort, MemberAccessPort, MemberImportAccessPort {
+  constructor(
+    private readonly repository: AccessRepository,
+    private readonly versions: AccessVersionService
+  ) {}
+  async memberships(
+    context: ReadTransactionContext,
+    member: string,
+    target: 'console' | 'storefront'
+  ): Promise<
+    readonly Readonly<{
+      id: string;
+      target: 'console' | 'storefront';
+      organization: string;
+      accessVersion: number;
+    }>[]
+  > {
+    const result = await this.repository.activeMemberships(context, member, target);
+    return Object.freeze(result.map(({ id, client, organization, accessVersion }) => Object.freeze({ id, target: client, organization, accessVersion })));
+  }
+  async session(
+    context: WriteTransactionContext,
+    membership: string,
+    target: 'console' | 'storefront'
+  ): Promise<
+    Readonly<{
+      accessVersion: number;
+      client: 'console' | 'storefront';
+    }>
+  > {
+    const accessVersion = await this.repository.lockSession(context, membership, target);
+    if (accessVersion === null) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
+    return Object.freeze({ accessVersion, client: target });
+  }
+  async directoryMemberships(
+    context: ReadTransactionContext,
+    memberships: readonly string[]
+  ): Promise<
+    Readonly<{
+      principal: string | null;
+      memberships: readonly Readonly<{
+        id: string;
+        target: 'console' | 'storefront';
+      }>[];
+      conflict: boolean;
+    }>
+  > {
+    if (memberships.length === 0) return Object.freeze({ principal: null, memberships: Object.freeze([]), conflict: false });
+    const unique = Object.freeze([...new Set(memberships)].sort());
+    const result = await this.repository.directoryMemberships(context, unique);
+    const principals = [...new Set(result.map((row) => row.principal))];
+    if (principals.length !== 1) return Object.freeze({ principal: null, memberships: Object.freeze([]), conflict: principals.length > 1 });
+    return Object.freeze({ principal: principals[0]!, memberships: Object.freeze(result.map((row) => Object.freeze({ id: row.id, target: row.client }))), conflict: false });
+  }
+  async ensureImported(context: WriteTransactionContext, input: ImportedMembership): Promise<void> {
+    await this.repository.ensureImported(context, {
+      membership: input.membership,
+      member: input.member,
+      principal: input.principal,
+      organization: input.organization,
+      client: input.client === 'storefront' ? 'storefront' : 'operator',
+      employee: input.employee,
+    });
+  }
+  async member(context: ReadTransactionContext, membership: string): Promise<string> {
+    const member = await this.repository.activeMember(context, membership);
+    if (member === null) throw new Error('MEMBERSHIP_NOT_FOUND');
+    return member;
+  }
+  activeIn(context: ReadTransactionContext, member: string, organizations: readonly string[]): Promise<boolean> {
+    return this.repository.activeMemberIn(context, member, organizations);
+  }
+  async members(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly AccessMember[]> {
+    return Object.freeze((await this.repository.memberPage(context, organization, after, limit)).map(mapAccessMember));
+  }
+  async profile(context: ReadTransactionContext, membership: string): Promise<AccessMember> {
+    const row = await this.repository.memberProfile(context, membership);
+    if (!row) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
+    return mapAccessMember(row);
+  }
+  async setEmployeeNumber(context: WriteTransactionContext, membership: string, employee: string | null): Promise<void> {
+    if (!(await this.repository.setEmployeeNumber(context, membership, employee))) throw new Error('MEMBERSHIP_NOT_FOUND');
+  }
+  async memberForManagement(
+    context: WriteTransactionContext,
+    membership: string
+  ): Promise<
+    Readonly<{
+      member: string;
+      accessVersion: number;
+    }>
+  > {
+    const target = await this.repository.managementMember(context, membership);
+    if (target === null) throw new Error('MEMBERSHIP_NOT_FOUND');
+    return target;
+  }
+  async changeStatus(context: WriteTransactionContext, membership: string, status: 'active' | 'suspended' | 'left') {
+    if (!(await this.repository.setMembershipStatus(context, membership, status))) throw new Error('MEMBERSHIP_NOT_FOUND');
+    const version = await this.versions.bump(context, membership, `membership${status}`, 'access:memberstatus');
+    return Object.freeze({ accessVersion: version });
+  }
+  async replaceDepartment(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      membership: string;
+      department: string;
+      path: string;
+      grant: string;
+    }>
+  ): Promise<void> {
+    await this.repository.replaceDepartment(context, input);
+    await this.versions.bump(context, input.membership, 'departmentscopechanged', 'access:department');
+  }
+  async applyDirectoryLifecycle(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      membership: string;
+      status: 'active' | 'suspended' | 'left';
+      department: string | null;
+      grant: string;
+      scope: string;
+      trace: string;
+      reason: 'directoryfreeze' | 'directoryrestore' | 'directoryupdate';
+    }>
+  ): Promise<number> {
+    const current = await this.repository.applyDirectoryState(context, { membership: input.membership, status: input.status });
+    if (current === null) throw new Error('MEMBERSHIP_NOT_FOUND');
+    if (input.department !== null) {
+      await this.repository.replaceDirectoryDepartment(context, { membership: input.membership, department: input.department, grant: input.grant, accessVersion: current });
+    }
+    return this.versions.bump(context, input.membership, input.reason, input.trace);
+  }
+}
+function mapAccessMember(
+  row: Readonly<{
+    id: string;
+    member: string;
+    organization: string;
+    employee: string | null;
+    status: string;
+    accessVersion: number;
+    joinedAt: Date | null;
+  }>
+): AccessMember {
+  return Object.freeze({ id: row.id, member: row.member, organization: row.organization, employee: row.employee, status: row.status, accessversion: row.accessVersion, joinedat: row.joinedAt });
+}

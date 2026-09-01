@@ -1,10 +1,12 @@
-import { BatchImportProcessor } from '../../../../foundation/application/BatchImport';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
-import type { DatabasePool } from '../../../../foundation/persistence/Pool';
-import { PgCatalogImport } from '../../infrastructure/persistence/PgCatalogImport';
+import { importId } from '../../../../foundation/application/BatchImport';
+import type { ClaimedJob, JobProcessor } from '../../../../foundation/application/JobRunner';
+import type { CatalogImportProcess } from '../../application/process/CatalogImportProcess';
 
-export class CatalogImportProcessor extends BatchImportProcessor {
-  constructor(pool: DatabasePool, objects: ObjectStore) {
-    super('catalogimport', 'catalog', objects, new PgCatalogImport(pool));
+export class CatalogImportJob implements JobProcessor {
+  constructor(private readonly imports: CatalogImportProcess) {}
+
+  process(job: ClaimedJob, signal: AbortSignal, deadline = Date.now() + 30_000): Promise<void> {
+    if (job.kind !== 'catalogimport') throw new Error('JOB_KIND_MISMATCH');
+    return this.imports.execute(importId(job.payload, 'CATALOGIMPORT_REQUIRED'), job.scope_id ?? 'organization-platform-root', signal, deadline);
   }
 }

@@ -1,9 +1,5 @@
 import { token } from '../../bootstrap/Container';
-import type { QueryResult, QueryResultRow } from 'pg';
-
-export interface AuditDatabase {
-  query<R extends QueryResultRow = QueryResultRow>(text: string, values?: readonly unknown[]): Promise<QueryResult<R>>;
-}
+import type { WriteTransactionContext } from '../persistence/TransactionContext';
 
 export interface AuditWriteInput {
   readonly scope: string;
@@ -30,8 +26,8 @@ export interface AuditAccessInput {
 }
 
 export interface AuditSink {
-  record(database: AuditDatabase, input: AuditWriteInput): Promise<void>;
-  access(database: AuditDatabase, input: AuditAccessInput): Promise<void>;
+  record(context: WriteTransactionContext, input: AuditWriteInput): Promise<void>;
+  access(context: WriteTransactionContext, input: AuditAccessInput): Promise<void>;
 }
 
 export const AUDIT_SINK = token<AuditSink>('audit.sink');

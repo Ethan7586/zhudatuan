@@ -1,7 +1,7 @@
 import type { OutboxMessage } from './Outbox';
-import type { Transaction } from '../persistence/UnitOfWork';
+import type { WriteTransactionContext } from '../persistence/TransactionContext';
 
 export interface Inbox {
-  accept(transaction: Transaction, provider: string, operation: string, event: OutboxMessage): Promise<boolean>;
-  complete(transaction: Transaction, provider: string, operation: string, event: string): Promise<void>;
+  accept(context: WriteTransactionContext, provider: string, operation: string, event: OutboxMessage): Promise<boolean>;
+  complete(context: WriteTransactionContext, provider: string, operation: string, event: string): Promise<void>;
 }

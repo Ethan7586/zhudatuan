@@ -250,9 +250,10 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const navigationPayload = await navigation.text();
   if (navigation.status !== 200) throw new Error(`LOCAL_NAVIGATION_INVALID:${navigation.status}:${navigationPayload}`);
   const errors = await localFetch('http://127.0.0.1:3001/api/v1/telemetry/clienterrors?limit=20', {
-    headers: sessionHeaders(consoleSession),
+    headers: { ...sessionHeaders(consoleSession), 'x-scope-hint': 'organization-platform-root' },
   });
-  if (errors.status !== 200 || !(await errors.text()).includes(faultCode)) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
+  const errorsPayload = await errors.text();
+  if (errors.status !== 200 || !errorsPayload.includes(faultCode)) throw new Error(`LOCAL_CLIENT_ERROR_READ_INVALID:${errors.status}:${faultCode}:${errorsPayload}`);
   const activeInvitations = await localFetch('http://127.0.0.1:3001/api/v1/identity/invitations?status=active&target=storefront&limit=100', {
     headers: sessionHeaders(consoleSession),
   });
@@ -348,7 +349,8 @@ async function verifyEmployeeSession(password: string): Promise<void> {
       },
       body: JSON.stringify({ code: invitationCode, target: 'storefront' }),
     });
-  if ((await resolveInvitation()).status !== 200) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
+  const activeResolution = await resolveInvitation();
+  if (activeResolution.status !== 200) throw new Error(`LOCAL_INVITATION_RESOLVE_INVALID:${activeResolution.status}:${await activeResolution.text()}`);
   const revoke = await localFetch(`http://127.0.0.1:3001/api/v1/identity/invitations/${encodeURIComponent(invitationId)}`, {
     method: 'DELETE',
     headers: {

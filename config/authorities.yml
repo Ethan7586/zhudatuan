@@ -25,7 +25,7 @@ navigation:
   repositoryRelativePath: config/navigation.yml
   generator: tools/navigationgen
   outputs:
-    - services/commerce/src/modules/navigation/infrastructure/catalog/NavigationCatalog.ts
+    - services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts
     - apps/console/src/generated/NavigationBinding.ts
     - apps/storefront/src/generated/NavigationBinding.ts
     - evidence/navigation/catalog.json

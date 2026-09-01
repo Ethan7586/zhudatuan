@@ -2,14 +2,20 @@ export class EventRegistry {
   private readonly subscribers = new Map<string, Set<string>>();
   private frozen = false;
 
-  register(event: string, subscribers: readonly string[]): void {
+  declare(event: string): void {
     if (this.frozen) throw new Error('EVENT_REGISTRY_FROZEN');
-    if (!/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){1,}$/.test(event) || subscribers.some((subscriber) => !/^[a-z][a-z0-9]*$/.test(subscriber))) {
-      throw new Error(`EVENT_SUBSCRIBER_INVALID:${event}`);
-    }
+    if (!/^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9]*){1,}$/.test(event)) throw new Error(`EVENT_TYPE_INVALID:${event}`);
     if (this.subscribers.has(event)) throw new Error(`EVENT_SUBSCRIBER_DUPLICATE:${event}`);
-    if (new Set(subscribers).size !== subscribers.length) throw new Error(`EVENT_SUBSCRIBER_DUPLICATE:${event}`);
-    this.subscribers.set(event, new Set(subscribers));
+    this.subscribers.set(event, new Set());
+  }
+
+  subscribe(event: string, subscriber: string): void {
+    if (this.frozen) throw new Error('EVENT_REGISTRY_FROZEN');
+    if (!/^[a-z][a-z0-9]*$/.test(subscriber)) throw new Error(`EVENT_SUBSCRIBER_INVALID:${event}`);
+    const subscribers = this.subscribers.get(event);
+    if (!subscribers) throw new Error(`EVENT_TYPE_UNDECLARED:${event}`);
+    if (subscribers.has(subscriber)) throw new Error(`EVENT_SUBSCRIBER_DUPLICATE:${event}:${subscriber}`);
+    subscribers.add(subscriber);
   }
 
   freeze(): void {

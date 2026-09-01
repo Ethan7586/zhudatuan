@@ -1,8 +1,8 @@
+import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { OperationId } from '@shop/contract';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { ActionProofBinding, AuthorizedActionProof } from '../../../access/public';
 import type { StepupRequestRepository } from '../../application/port/StepupRequestRepository';
-
 interface StepupRequestRow {
   readonly operation_id: OperationId;
   readonly resource_id: string;
@@ -10,9 +10,10 @@ interface StepupRequestRow {
   readonly expected_version: number | null;
   readonly maker_membership_id: string;
 }
-
 export class PgStepupRequestRepository implements StepupRequestRepository {
-  async save(database: OperationDatabase, challenge: string, approval: AuthorizedActionProof): Promise<void> {
+  private readonly transactions = new PgTransactionAccess();
+  async save(context: WriteTransactionContext, challenge: string, approval: AuthorizedActionProof): Promise<void> {
+    const database = this.transactions.database(context);
     const { binding, checker } = approval;
     const result = await database.query(
       `insert into identity.stepuprequest(challenge_id,operation_id,resource_id,request_hash,expected_version,
@@ -22,8 +23,8 @@ export class PgStepupRequestRepository implements StepupRequestRepository {
     );
     if (!result.rows[0]) throw new Error('STEPUP_ACTION_BINDING_CONFLICT');
   }
-
-  async consume(database: OperationDatabase, challenge: string, checkerMembership: string): Promise<ActionProofBinding | null> {
+  async consume(context: WriteTransactionContext, challenge: string, checkerMembership: string): Promise<ActionProofBinding | null> {
+    const database = this.transactions.database(context);
     const result = await database.query<StepupRequestRow>(
       `update identity.stepuprequest set consumed_at=clock_timestamp()
       where challenge_id=$1 and checker_membership_id=$2 and consumed_at is null

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, extname, resolve } from 'node:path';
+import { format, resolveConfig } from 'prettier';
 import { parse } from 'yaml';
 import { parseNavigation, type NavigationNode } from './NavigationSchema';
 import { validateNavigation, type OperationReference } from './NavigationValidator';
@@ -14,7 +15,7 @@ export async function generateNavigation(root: string, check: boolean): Promise<
   const canonical = JSON.stringify({ version: document.version, nodes });
   const hash = createHash('sha256').update(canonical).digest('hex');
   const outputs = new Map<string, string>([
-    [resolve(root, 'services/commerce/src/modules/navigation/infrastructure/catalog/NavigationCatalog.ts'), serverSource(nodes, hash)],
+    [resolve(root, 'services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts'), serverSource(nodes, hash)],
     [
       resolve(root, 'apps/console/src/generated/NavigationBinding.ts'),
       bindingSource(
@@ -31,7 +32,10 @@ export async function generateNavigation(root: string, check: boolean): Promise<
     ],
     [resolve(root, 'evidence/navigation/catalog.json'), `${JSON.stringify({ version: 1, hash, nodes }, null, 2)}\n`],
   ]);
-  for (const [path, content] of outputs) await emit(path, content, check);
+  for (const [path, content] of outputs) {
+    const generated = extname(path) === '.ts' ? await format(content, { ...(await resolveConfig(path)), parser: 'typescript' }) : content;
+    await emit(path, generated, check);
+  }
   return Object.freeze({ hash, nodes: nodes.length });
 }
 

@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { IdentityAccessPort } from '../../../access/public';
 
 export class MembershipLifecycle {
   constructor(private readonly access: IdentityAccessPort) {}
-  async apply(database: OperationDatabase, input: Readonly<{ membership: string; organization: string; department: string | null; action: 'freeze' | 'restore' | 'update'; explicitdeparture: boolean; trace: string }>): Promise<number> {
+  async apply(context: WriteTransactionContext, input: Readonly<{ membership: string; organization: string; department: string | null; action: 'freeze' | 'restore' | 'update'; explicitdeparture: boolean; trace: string }>): Promise<number> {
     const status = input.action === 'freeze' ? (input.explicitdeparture ? 'left' : 'suspended') : 'active';
-    return this.access.applyDirectoryLifecycle(database, {
+    return this.access.applyDirectoryLifecycle(context, {
       membership: input.membership,
       status,
       department: input.department,

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "sourceTree": "f6461bcf40f6d1f9b335b7590eebd685350c9a90",
+  "workbookSha256": "f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f",
+  "operationsSha256": "a5e9d5f3123d75d5e3564e9b06f245a34bce5b12c467b9b3928b239c51893005",
+  "migrationHead": "20260831045000_publish_owner_voucher_delegation.sql",
+  "mvp": {
+    "total": 22,
+    "required": 18,
+    "nonblocking": 4,
+    "openTerms": 4
+  },
+  "providers": {
+    "priorityOne": 11
+  },
+  "architecture": {
+    "moduleOwners": 32,
+    "moduleDirectories": 30,
+    "moduleRootProductionFiles": 125,
+    "moduleRootForbiddenProductionFiles": 95,
+    "misplacedTests": 21,
+    "operations": 269,
+    "handlerFiles": 269,
+    "handlerStubs": 268,
+    "operationsAggregators": 31,
+    "publicDatabaseLeaks": 61
+  },
+  "baselineChecks": {
+    "boundaries": "passed-with-incomplete-rules",
+    "transactions": "passed-with-incomplete-scan",
+    "operations": "passed-with-stub-blindness",
+    "calls": "passed",
+    "duplicates": "passed"
+  }
+}

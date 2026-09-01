@@ -1,18 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationRequest } from '../../../../foundation/application/OperationExecution';
-import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { InvitationFailure } from './InvitationFailure';
+import { result, withWriteTransaction } from '../../../../test/TransactionFixture';
 
 describe('InvitationFailure', () => {
   it('publishes a bounded failure event without request secrets and returns the public error', async () => {
     const publish = vi.fn();
     const failure = new InvitationFailure({ publish } as never);
-    const database = { query: vi.fn() } as unknown as OperationDatabase;
+    let context: unknown;
+    await expect(
+      withWriteTransaction(
+        async () => result([]),
+        async (transaction) => {
+          context = transaction;
+          return failure.reject(transaction, request(), 'invitation:one', 'mall:one', new DomainError('INVITATION_STALE'), 'INVITATION_INVALID');
+        }
+      )
+    ).rejects.toMatchObject({ code: 'INVITATION_INVALID' });
 
-    await expect(failure.reject(database, request(), 'invitation:one', 'mall:one', new DomainError('INVITATION_STALE'), 'INVITATION_INVALID')).rejects.toMatchObject({ code: 'INVITATION_INVALID' });
-
-    expect(publish).toHaveBeenCalledWith(database, 'identity.invitation.failed', 'invitation', 'invitation:one', 'mall:one', 'trace:one', {
+    expect(publish).toHaveBeenCalledWith(context, 'identity.invitation.failed', 'invitation', 'invitation:one', 'mall:one', 'trace:one', {
       invitationId: 'invitation:one',
       operation: 'identity.sessions.create',
       reason: 'INVITATION_STALE',

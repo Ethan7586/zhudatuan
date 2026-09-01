@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router';
 import { MobileBottomNavigation } from './Navigation';
 import { MobileHeader } from './Header';
 import { ToastContainer } from '../shared/ui/ToastContainer';
-import { QuickViewModal } from '../feature/product/ui/QuickViewModal';
 import { useSession } from '../shared/runtime/SessionContext';
 import { routeForPage, useRoutePage } from '../route/Routes';
 import type { MobileChannel } from '../shared/manifest/StorefrontChannel';
+import { QuickView } from './QuickView';
 
 export function MobileShell({ children }: { readonly children: ReactNode }) {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export function MobileShell({ children }: { readonly children: ReactNode }) {
       <MobileHeader {...navigation} />
       <main>{children}</main>
       <MobileBottomNavigation {...navigation} />
-      <QuickViewModal />
+      <QuickView />
       <ToastContainer toasts={session.toasts} removeToast={session.removeToast} />
     </div>
   );

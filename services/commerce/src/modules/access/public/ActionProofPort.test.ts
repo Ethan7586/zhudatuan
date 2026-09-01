@@ -1,7 +1,9 @@
+import { PgActionProofPort } from '../infrastructure/persistence/PgActionProofPort';
+
 import { describe, expect, it, vi } from 'vitest';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import { PgActionProofPort, type ActionProofBinding, type ActionProofChecker } from './ActionProofPort';
+import { type ActionProofBinding, type ActionProofChecker } from './ActionProofPort';
 import type { AuthorizationPort, AuthorizationSnapshot } from './AuthorizationPort';
+import { withReadTransaction, withWriteTransaction } from '../../../test/TransactionFixture';
 
 const binding: ActionProofBinding = Object.freeze({
   operation: 'referral.settings.manage',
@@ -17,7 +19,7 @@ describe('PgActionProofPort', () => {
     const query = vi.fn().mockResolvedValueOnce({ rows: [{ expires_at: '2026-08-30T10:05:00.000Z' }] });
     const authorizations = port(snapshot(checker.membership, checker.accessVersion), snapshot(binding.makerMembership, 4));
 
-    const issued = await new PgActionProofPort(authorizations).issue({ query } as OperationDatabase, binding, checker);
+    const issued = await withWriteTransaction(query, (context) => new PgActionProofPort(authorizations).issue(context, binding, checker));
 
     expect(issued).toEqual({ proof: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/), expiresAt: '2026-08-30T10:05:00.000Z' });
     expect(query).toHaveBeenLastCalledWith(expect.stringContaining('access.issue_action_proof'), expect.arrayContaining([binding.operation, binding.resource, binding.requestHash, binding.expectedVersion]));
@@ -25,14 +27,14 @@ describe('PgActionProofPort', () => {
 
   it('rejects self-approval before any database access', async () => {
     const query = vi.fn();
-    await expect(new PgActionProofPort(port()).validate({ query } as OperationDatabase, binding, { ...checker, membership: binding.makerMembership })).rejects.toMatchObject({ code: 'MAKER_CHECKER_SEPARATION_REQUIRED' });
+    await expect(withReadTransaction(query, (context) => new PgActionProofPort(port()).validate(context, binding, { ...checker, membership: binding.makerMembership }))).rejects.toMatchObject({ code: 'MAKER_CHECKER_SEPARATION_REQUIRED' });
     expect(query).not.toHaveBeenCalled();
   });
 
   it('rejects mismatched maker and checker resource scopes', async () => {
     const query = vi.fn();
     const authorizations = port(snapshot(checker.membership, checker.accessVersion), { ...snapshot(binding.makerMembership, 4), resource: { kind: 'mall', id: 'mall:other', path: [] } });
-    await expect(new PgActionProofPort(authorizations).validate({ query } as OperationDatabase, binding, checker)).rejects.toMatchObject({ code: 'ACTION_PROOF_INVALID' });
+    await expect(withReadTransaction(query, (context) => new PgActionProofPort(authorizations).validate(context, binding, checker))).rejects.toMatchObject({ code: 'ACTION_PROOF_INVALID' });
   });
 });
 

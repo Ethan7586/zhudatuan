@@ -1,0 +1,28 @@
+version: 1
+cases:
+  - { code: MODULE_ROOT_FILE_FORBIDDEN, positive: modules/cart/CartPort.ts, negative: modules/cart/Module.ts }
+  - { code: MODULE_ROOT_TEST_FORBIDDEN, positive: modules/cart/Cart.test.ts, negative: modules/cart/test/Cart.test.ts }
+  - { code: MODULE_ASSEMBLY_MISSING, positive: missing Module.ts, negative: Module.ts and Manifest.ts }
+  - { code: MODULE_LAYER_UNKNOWN, positive: application/query, negative: application/handler }
+  - { code: MODULE_COMPOSITION_LOGIC_FORBIDDEN, positive: Module.ts contains if, negative: Module.ts constructs handlers }
+  - { code: MANIFEST_SIDE_EFFECT_FORBIDDEN, positive: Manifest.ts invokes start, negative: Manifest.ts calls defineModuleManifest }
+  - { code: OPERATIONS_AGGREGATOR_FORBIDDEN, positive: CartOperations.ts, negative: CurrentReadHandler.ts }
+  - { code: HANDLER_PATH_INVALID, positive: interface/handler/ReadHandler.ts, negative: application/handler/ReadHandler.ts }
+  - { code: HANDLER_CARDINALITY_INVALID, positive: two exported Handler classes, negative: one exported Handler class }
+  - { code: HANDLER_OPERATION_MISMATCH, positive: wrong operation literal, negative: matching operation literal }
+  - { code: HANDLER_STUB_FORBIDDEN, positive: defineOperationHandler, negative: explicit execute orchestration }
+  - { code: HANDLER_SQL_FORBIDDEN, positive: handler calls query, negative: handler calls repository }
+  - { code: PUBLIC_DATABASE_TYPE_FORBIDDEN, positive: public imports pg, negative: public imports TransactionContext }
+  - { code: PUBLIC_IMPLEMENTATION_FORBIDDEN, positive: public exports class, negative: public exports interface }
+  - { code: PUBLIC_RESULT_ROW_FORBIDDEN, positive: public returns QueryResult, negative: public returns DTO }
+  - { code: REPOSITORY_PATH_INVALID, positive: domain/repository, negative: application/port }
+  - { code: REPOSITORY_OWNER_INVALID, positive: cart imports order Repository, negative: cart imports order public index }
+  - { code: CROSS_SCHEMA_SQL_FORBIDDEN, positive: cart updates ordering, negative: cart updates cart }
+  - { code: CROSS_MODULE_INTERNAL_IMPORT, positive: cart imports catalog/domain, negative: cart imports catalog/public/index }
+  - { code: MODULE_DEPENDENCY_UNDECLARED, positive: cart imports catalog public port without declaring catalog, negative: cart imports declared catalog public port }
+  - { code: TRANSACTION_CONTEXT_ESCAPE, positive: stores context on field, negative: passes context synchronously }
+  - { code: RAW_TRANSACTION_IMPORT_FORBIDDEN, positive: handler imports PgTransactionAccess, negative: PgRepository imports PgTransactionAccess }
+  - { code: EXTERNAL_CALL_IN_TRANSACTION, positive: commit calls gateway, negative: finalize calls gateway }
+  - { code: UNRESOLVED_IMPORT, positive: missing relative import, negative: resolvable relative import }
+  - { code: MODULE_SYMLINK_ESCAPE, positive: symlink leaves module root, negative: real file stays in module root }
+  - { code: PRODUCTION_NAME_INVALID, positive: payment_helper.ts, negative: PaymentPolicy.ts }

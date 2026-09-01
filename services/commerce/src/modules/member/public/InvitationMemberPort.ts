@@ -1,5 +1,5 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface PendingInvitationMember {
   readonly member: string;
@@ -11,10 +11,11 @@ export interface InvitationMobileOwner {
   readonly principal: string;
 }
 export interface InvitationMemberPort {
-  pending(database: OperationDatabase, member: string): Promise<PendingInvitationMember>;
-  mobileOwner(database: OperationDatabase, fingerprint: string, exceptMember?: string): Promise<InvitationMobileOwner | null>;
-  assertMobileAvailable(database: OperationDatabase, fingerprint: string, exceptMember?: string): Promise<void>;
-  createPending(database: OperationDatabase, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void>;
-  activate(database: OperationDatabase, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void>;
+  pending(context: ReadTransactionContext, member: string): Promise<PendingInvitationMember>;
+  lockPending(context: WriteTransactionContext, member: string): Promise<PendingInvitationMember>;
+  mobileOwner(context: ReadTransactionContext, fingerprint: string, exceptMember?: string): Promise<InvitationMobileOwner | null>;
+  assertMobileAvailable(context: ReadTransactionContext, fingerprint: string, exceptMember?: string): Promise<void>;
+  createPending(context: WriteTransactionContext, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void>;
+  activate(context: WriteTransactionContext, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void>;
 }
 export const INVITATION_MEMBER_PORT = publicPort<InvitationMemberPort>('member', 'identityinvitation');

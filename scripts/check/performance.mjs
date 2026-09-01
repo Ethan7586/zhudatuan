@@ -39,9 +39,10 @@ for (const file of sources(join(root, 'services/commerce/src'))) {
   }
 }
 
-const checkout = readFileSync(join(root, 'services/commerce/src/modules/checkout/application/QuoteReader.ts'), 'utf8');
+const checkoutPath = 'services/commerce/src/modules/checkout/application/service/QuoteReader.ts';
+const checkout = readFileSync(join(root, checkoutPath), 'utf8');
 for (const proof of ['allParallel(', 'concurrency: 4', 'expiresAt:', 'signal:']) {
-  if (!checkout.includes(proof)) violation('services/commerce/src/modules/checkout/application/QuoteReader.ts', 'CHECKOUT_BOUNDED_READ_PROOF_MISSING', proof);
+  if (!checkout.includes(proof)) violation(checkoutPath, 'CHECKOUT_BOUNDED_READ_PROOF_MISSING', proof);
 }
 const versioned = readFileSync(join(root, 'services/commerce/src/foundation/cache/VersionedKey.ts'), 'utf8');
 if (!versioned.includes('CACHE_CATALOG[name].key')) {

@@ -1,5 +1,5 @@
 import type { RiskGate } from '../../../../foundation/security/RiskGate';
-import type { OperationRequest } from '../../../../foundation/application/OperationExecution';
+import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
 import { DomainError } from '../../../../foundation/domain/DomainError';
 
 export async function assertPublicRisk(
@@ -15,6 +15,8 @@ export async function assertPublicRisk(
     operation: request.type,
     scope: { kind: 'self', id: 'identity', path: [] },
     trace: request.input.headers['x-trace-id'] ?? request.input.idempotency ?? `public:${client.slice(0, 24)}`,
+    deadline: request.input.deadline,
+    signal: request.input.signal,
     signals,
   });
   if (outcome !== 'allow') throw new DomainError(outcome === 'review' ? 'RISK_REVIEW_REQUIRED' : 'RISK_DENIED');

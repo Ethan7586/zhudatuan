@@ -5,7 +5,6 @@ import { JobRegistry } from './JobRegistry';
 import type { CommerceModule } from './ModuleRegistry';
 import { ModuleRegistry } from './ModuleRegistry';
 import type { DatabasePool } from '../foundation/persistence/Pool';
-import { registerJobs } from '../app/jobs';
 import type { EventRegistry } from './EventRegistry';
 
 export interface JobsBootstrapOptions {
@@ -23,8 +22,7 @@ export async function bootstrapJobs(options: JobsBootstrapOptions): Promise<Read
   const jobs = new JobRegistry();
   const modules = new ModuleRegistry();
   for (const module of options.modules) modules.add(module);
-  await modules.load({ workload: 'jobs', container, handlers });
-  registerJobs(jobs, container, options.extensions, options.worker, modules);
+  await modules.load({ workload: 'jobs', container, handlers, jobs, worker: options.worker });
   jobs.freeze();
   options.extensions.freeze();
   container.freeze();

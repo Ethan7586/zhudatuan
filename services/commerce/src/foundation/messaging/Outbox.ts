@@ -1,5 +1,5 @@
 import type { DomainEvent } from '../domain/DomainEvent';
-import type { Transaction } from '../persistence/UnitOfWork';
+import type { WriteTransactionContext } from '../persistence/TransactionContext';
 
 export interface OutboxMessage {
   readonly id: string;
@@ -19,9 +19,9 @@ export interface OutboxMessage {
 }
 
 export interface OutboxWriter {
-  append(transaction: Transaction, event: DomainEvent): Promise<void>;
+  append(context: WriteTransactionContext, event: DomainEvent): Promise<void>;
 }
 
 export interface EventPublisher {
-  publish(event: OutboxMessage): Promise<void>;
+  publish(event: OutboxMessage, signal: AbortSignal, deadline: number): Promise<void>;
 }

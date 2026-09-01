@@ -1,5 +1,5 @@
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface InvitationGrantPlan {
   readonly organization: string;
@@ -28,7 +28,7 @@ export interface InvitationCampaignActivation extends InvitationCampaignValidati
 
 export interface InvitationAccessPort {
   plan(
-    database: OperationDatabase,
+    context: ReadTransactionContext,
     input: Readonly<{
       issuer: string;
       membership: string | null;
@@ -41,11 +41,11 @@ export interface InvitationAccessPort {
       expiresAt?: Date;
     }>
   ): Promise<InvitationGrantPlan>;
-  validate(database: OperationDatabase, invitation: Readonly<{ issuer: string; issuerAccessVersion: number; membership: string; grantDigest: string; organization: string; target: 'console' | 'storefront' }>): Promise<void>;
-  validateCampaign(database: OperationDatabase, input: InvitationCampaignValidation): Promise<void>;
-  createCampaign(database: OperationDatabase, input: InvitationCampaignActivation): Promise<Readonly<{ activationDigest: string }>>;
+  validate(context: ReadTransactionContext, invitation: Readonly<{ issuer: string; issuerAccessVersion: number; membership: string; grantDigest: string; organization: string; target: 'console' | 'storefront' }>): Promise<void>;
+  validateCampaign(context: ReadTransactionContext, input: InvitationCampaignValidation): Promise<void>;
+  createCampaign(context: WriteTransactionContext, input: InvitationCampaignActivation): Promise<Readonly<{ activationDigest: string }>>;
   activate(
-    database: OperationDatabase,
+    context: WriteTransactionContext,
     input: Readonly<{
       issuer: string;
       issuerAccessVersion: number;
@@ -60,7 +60,7 @@ export interface InvitationAccessPort {
       trace: string;
     }>
   ): Promise<number>;
-  pending(database: OperationDatabase, membership: string): Promise<string>;
+  pending(context: ReadTransactionContext, membership: string): Promise<string>;
 }
 
 export const INVITATION_ACCESS_PORT = publicPort<InvitationAccessPort>('access', 'identityinvitation');

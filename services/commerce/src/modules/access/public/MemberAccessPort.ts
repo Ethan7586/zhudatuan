@@ -1,11 +1,11 @@
+import type { ReadTransactionContext } from '../../../foundation/persistence/TransactionContext';
 import { publicPort } from '../../../bootstrap/ModuleRegistry';
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface MemberAccessPort {
-  member(database: OperationDatabase, membership: string): Promise<string>;
-  activeIn(database: OperationDatabase, member: string, organizations: readonly string[]): Promise<boolean>;
-  members(database: OperationDatabase, organization: string, after: string | null, limit: number): Promise<readonly AccessMember[]>;
-  profile(database: OperationDatabase, membership: string): Promise<AccessMember>;
+  member(context: ReadTransactionContext, membership: string): Promise<string>;
+  activeIn(context: ReadTransactionContext, member: string, organizations: readonly string[]): Promise<boolean>;
+  members(context: ReadTransactionContext, organization: string, after: string | null, limit: number): Promise<readonly AccessMember[]>;
+  profile(context: ReadTransactionContext, membership: string): Promise<AccessMember>;
 }
 
 export interface AccessMember {

@@ -40,7 +40,7 @@ function fixture() {
 describe('SecureOperationPolicy security states', () => {
   it('returns an explicit anonymous context and evaluates public risk', async () => {
     const value = fixture();
-    await expect(value.policy.authorize({ operation: OperationCatalog.get('identity.sessions.create'), input: {}, headers: { 'x-client-target': 'storefront', 'x-trace-id': 'trace:anonymous' } })).resolves.toMatchObject({
+    await expect(value.policy.authorize({ operation: OperationCatalog.get('identity.sessions.create'), input: {}, headers: { 'x-client-target': 'storefront', 'x-trace-id': 'trace:anonymous' }, ...execution() })).resolves.toMatchObject({
       kind: 'anonymous',
       target: 'storefront',
     });
@@ -50,7 +50,7 @@ describe('SecureOperationPolicy security states', () => {
 
   it('resolves and preserves the purpose-bound preauth context', async () => {
     const value = fixture();
-    await expect(value.policy.authorize({ operation: OperationCatalog.get('identity.federations.selection.read'), input: {}, headers: { 'x-client-target': 'storefront' } })).resolves.toMatchObject({
+    await expect(value.policy.authorize({ operation: OperationCatalog.get('identity.federations.selection.read'), input: {}, headers: { 'x-client-target': 'storefront' }, ...execution() })).resolves.toMatchObject({
       kind: 'preauth',
       purpose: 'federationselection',
     });
@@ -60,8 +60,12 @@ describe('SecureOperationPolicy security states', () => {
 
   it('wraps authenticated access in the session context', async () => {
     const value = fixture();
-    await expect(value.policy.authorize({ operation: OperationCatalog.get('member.profile.read'), input: {}, headers: {} })).resolves.toEqual({ kind: 'session', access: accessContext });
+    await expect(value.policy.authorize({ operation: OperationCatalog.get('member.profile.read'), input: {}, headers: {}, ...execution() })).resolves.toEqual({ kind: 'session', access: accessContext });
     expect(value.access.authorize).toHaveBeenCalledOnce();
     expect(value.preauth.resolve).not.toHaveBeenCalled();
   });
 });
+
+function execution() {
+  return { deadline: Date.now() + 10_000, signal: new AbortController().signal };
+}

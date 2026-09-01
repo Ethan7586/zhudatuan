@@ -1,13 +1,12 @@
-import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
+import type { WriteTransactionContext } from '../../../foundation/persistence/TransactionContext';
+import { publicPort } from '../../../bootstrap/ModuleRegistry';
 
 export interface OrderExpiryCheckoutPort {
-  expire(database: OperationDatabase, checkout: string | null): Promise<Readonly<{ rows: readonly Readonly<{ id: string }>[] }>>;
+  expire(context: WriteTransactionContext, checkout: string | null): Promise<readonly Readonly<{ id: string }>[]>;
 }
 
 export interface CheckoutRetentionPort {
-  purge(database: OperationDatabase): Promise<readonly string[]>;
+  purge(context: WriteTransactionContext): Promise<readonly string[]>;
 }
 
-export interface CheckoutAddressSnapshotPort {
-  snapshot(database: OperationDatabase, id: string | null, member: string): Promise<unknown | null>;
-}
+export const RUNTIME_CHECKOUT_PORT = publicPort<CheckoutRetentionPort>('checkout', 'runtime');

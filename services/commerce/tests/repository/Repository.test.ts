@@ -1,10 +1,37 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 import { DatabaseHarness } from '@shop/testing';
 import { Client } from 'pg';
+import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
 const connection = process.env.SHOP_TEST_DATABASE_URL;
 const endpointAvailable = connection !== undefined || process.env.PGHOST !== undefined;
+const root = resolve(import.meta.dirname, '../../../..');
+const moduleRoot = join(root, 'services/commerce/src/modules');
+const objectAuthority = parse(readFileSync(join(root, 'database/contracts/objects.yml'), 'utf8')) as {
+  objects: readonly Readonly<{ id: string; owner?: string; operationalOwner?: string }>[];
+};
+const repositorySources = repositories(moduleRoot);
+const schemasByOwner = schemaOwnership(objectAuthority.objects);
+
+describe.each(repositorySources)('Repository source contract: $name', ({ module, name, source, schemas, queryCount }) => {
+  it('uses only its authoritative schemas and parameterized bounded SQL', () => {
+    const owned = schemasByOwner.get(module) ?? new Set<string>();
+    expect([...schemas].filter((schema) => !owned.has(schema))).toEqual([]);
+    expect(source).not.toMatch(/\bselect\s+(?:[a-z][a-z0-9_]*\.)?\*/i);
+    expect(source).not.toMatch(/\boffset\s+(?:\$\d+|\d+)/i);
+    expect(source).not.toMatch(/['"`]\s*(?:begin|commit|rollback)\b/i);
+    expect(queryCount).toBeGreaterThanOrEqual(0);
+  });
+
+  it('exposes one module-owned Repository implementation without leaking a raw client', () => {
+    expect(source).toMatch(/export class [A-Z][A-Za-z0-9]*Repository\b/);
+    expect(source).not.toMatch(/constructor\([^)]*(?:PoolClient|DatabasePool|TransactionManager)/s);
+    expect(source).not.toMatch(/public\/.*Repository/);
+  });
+});
 
 describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
   it('enforces inbox replay, job lease exclusion and scope RLS on the real target schema', async () => {
@@ -59,3 +86,38 @@ describe.skipIf(endpointAvailable)('PostgreSQL repository contract', () => {
     throw new Error('POSTGRES_REPOSITORY_ENDPOINT_REQUIRED');
   });
 });
+
+function repositories(directory: string): readonly Readonly<{ module: string; name: string; source: string; schemas: ReadonlySet<string>; queryCount: number }>[] {
+  const result: Readonly<{ module: string; name: string; source: string; schemas: ReadonlySet<string>; queryCount: number }>[] = [];
+  for (const file of files(directory)) {
+    const name = relative(moduleRoot, file).split('\\').join('/');
+    if (!/^[^/]+\/infrastructure\/persistence\/(?:Pg|Telemetry|Extension)[A-Za-z0-9]*Repository\.ts$/.test(name)) continue;
+    const source = readFileSync(file, 'utf8');
+    if (!/export class [A-Z][A-Za-z0-9]*Repository\b/.test(source)) continue;
+    const schemas = new Set([...source.matchAll(/\b(?:from|join|insert\s+into|update|delete\s+from)\s+([a-z][a-z0-9]*)\./gi)].map((match) => match[1]!));
+    result.push(Object.freeze({ module: name.split('/')[0]!, name, source, schemas, queryCount: [...source.matchAll(/\.query(?:<[^>]+>)?\s*\(/g)].length }));
+  }
+  return Object.freeze(result.sort((left, right) => left.name.localeCompare(right.name)));
+}
+
+function schemaOwnership(objects: readonly Readonly<{ id: string; owner?: string; operationalOwner?: string }>[]): ReadonlyMap<string, ReadonlySet<string>> {
+  const result = new Map<string, Set<string>>();
+  for (const object of objects) {
+    const schema = object.id.split('.')[0];
+    const owner = object.operationalOwner ?? object.owner;
+    if (!schema || !owner) continue;
+    const values = result.get(owner) ?? new Set<string>();
+    values.add(schema);
+    result.set(owner, values);
+  }
+  return result;
+}
+
+function files(directory: string, result: string[] = []): readonly string[] {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const target = join(directory, entry.name);
+    if (entry.isDirectory()) files(target, result);
+    else if (entry.isFile() && entry.name.endsWith('.ts') && !entry.name.endsWith('.test.ts')) result.push(target);
+  }
+  return result;
+}
