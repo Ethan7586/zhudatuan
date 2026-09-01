@@ -24,6 +24,11 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const access = requireAccess(request);
       const body = bodyRecord(request);
       const role = request.input.path.roleid!;
+      if (body.action === 'assign' || body.action === 'revoke') {
+        return manageRoleAssignment(request, database, access, role, body.action);
+      }
+      if (body.action === 'delete') return deleteCustomRole(request, database, access, role);
+      if (body.action !== undefined) throw new Error('VALIDATION_FAILED:action');
       const permissions = body.permissions;
       if (!Array.isArray(permissions) || permissions.some((item) => typeof item !== 'string')) throw new Error('VALIDATION_FAILED:permissions');
       const result = await database.query(`with target as (

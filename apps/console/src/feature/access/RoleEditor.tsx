@@ -7,7 +7,8 @@ import { scopeDisplayName, scopeKindLabel } from '../../entity/session/ScopePres
 import { safeQueryError } from '../../shared/api/QueryState';
 import { PERMISSION_GROUPS, riskLabel } from './AccessRoleCatalog';
 import { roleCommandAvailable, saveAccessRole, verifyAccessRoleSave } from './AccessRoleCommand';
-import type { AccessRole } from './AccessSchema';
+import type { AccessMembership, AccessRole } from './AccessSchema';
+import { RoleScopeMembers } from './RoleScopeMembers';
 
 export interface RoleEditorRecord {
   readonly id: string;
@@ -18,15 +19,20 @@ export interface RoleEditorRecord {
   readonly member_count: number;
   readonly governance: boolean;
   readonly editable: boolean;
+  readonly members: AccessRole['members'];
+  readonly scopes: AccessRole['scopes'];
   readonly persisted: boolean;
 }
 
-export function RoleEditor({ context, role, onEdit, onRefresh, onSaved }: Readonly<{
+export function RoleEditor({ context, role, members, onEdit, onRefresh, onSaved, onNotice, onDeleted }: Readonly<{
   context: ConsoleContext;
   role: RoleEditorRecord;
+  members: readonly AccessMembership[];
   onEdit: () => void;
-  onRefresh: () => Promise<readonly AccessRole[]>;
+  onRefresh: () => Promise<Readonly<{ roles: readonly AccessRole[]; items: readonly AccessMembership[] }>>;
   onSaved: (role: AccessRole) => void;
+  onNotice: (notice: string) => void;
+  onDeleted: () => void;
 }>) {
   const [name, setName] = useState(role.name);
   const [permissions, setPermissions] = useState<readonly string[]>(role.permissions);
@@ -46,7 +52,7 @@ export function RoleEditor({ context, role, onEdit, onRefresh, onSaved }: Readon
       const draft = { id: role.id, name: normalizedName, permissions, ...(role.version === undefined ? {} : { version: role.version }) };
       const receipt = await saveAccessRole(context, draft);
       const reread = await onRefresh();
-      return verifyAccessRoleSave(draft, receipt, reread);
+      return verifyAccessRoleSave(draft, receipt, reread.roles);
     },
     onSuccess: onSaved,
   });
@@ -105,8 +111,12 @@ export function RoleEditor({ context, role, onEdit, onRefresh, onSaved }: Readon
     </main>
 
     <aside className="roleeditorrail" aria-label="范围、成员与保存状态">
-      <Surface depth="flat" padding="default" radius="large"><p>管理范围</p><strong>{scopeKindLabel(context.scope.kind)} · {scopeDisplayName(context.scope)}</strong><span>本批只显示当前真实工作范围，不修改范围绑定。</span><Badge tone="neutral">IAM-003</Badge></Surface>
-      <Surface depth="flat" padding="default" radius="large"><p>已分配成员</p><strong>{role.persisted ? `${role.member_count} 位` : '保存后可分配'}</strong><span>成员分配未进入本批；这里不创建临时关系。</span><Badge tone="neutral">IAM-003</Badge></Surface>
+      {role.persisted && role.version !== undefined ? <RoleScopeMembers context={context} role={{ ...role, version: role.version,
+        permissions: [...role.permissions] }} members={members}
+        onRefresh={onRefresh} onNotice={onNotice} onDeleted={onDeleted} /> : <>
+        <Surface depth="flat" padding="default" radius="large"><p>管理范围</p><strong>{scopeKindLabel(context.scope.kind)} · {scopeDisplayName(context.scope)}</strong><span>先保存身份，再直接指定或继承明确范围。</span><Badge tone="warning">待保存</Badge></Surface>
+        <Surface depth="flat" padding="default" radius="large"><p>已分配成员</p><strong>保存后可分配</strong><span>草稿不会创建临时成员关系。</span><Badge tone="neutral">0 位</Badge></Surface>
+      </>}
       {error === undefined ? null : <div className="roleeditorerror" data-kind={error.kind} role="alert"><strong>{error.title}</strong><p>{error.detail}</p>{error.kind === 'conflict' ? <Button onPress={() => void onRefresh()}>重新读取最新版本</Button> : null}</div>}
       <div className="roleeditorsave">
         <Button type="submit" tone="primary" size="large" isPending={mutation.isPending} isDisabled={!canWrite || !dirty || normalizedName.length === 0}>

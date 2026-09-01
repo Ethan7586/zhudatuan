@@ -10,12 +10,15 @@ import type { AccessContext } from '../../foundation/security/AccessContext';
 import { accessOperations } from './AccessOperations';
 
 describe('access scope management boundary', () => {
-  it('uses a non-reserved scope-grant alias in the access center query', async () => {
+  it('reads scoped identity assignments and authoritative effective permissions without a reserved alias', async () => {
     const harness = operationHarness();
 
     await expect(accessOperations(context(harness.pool)).invoke(centerRequest())).resolves.toMatchObject({ status: 200 });
     const query = harness.queries.find((text) => text.includes('from access.membership membership'));
-    expect(query).toContain('left join access.scopegrant scopegrant');
+    expect(query).toContain('from access.scopegrant scopegrant');
+    expect(query).toContain('assignment.assigned_scope_id');
+    expect(query).toContain("coalesce(assignment.scope_source,'inherited')");
+    expect(query).toContain('access.resolve_membership(membership.id)');
     expect(query).toContain('from organization.unitclosure boundary');
     expect(query).toContain('boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id');
     expect(query).not.toContain('membership.organization_id=$1');
@@ -43,6 +46,68 @@ describe('access scope management boundary', () => {
     const query = harness.queries.find((text) => text.includes('insert into access.role(id,scope_id,name,status,version)'));
     expect(query).toContain("mapping.effect='allow'");
     expect(query).not.toContain("mapping.effect='deny'");
+  });
+
+  it('assigns a custom identity with a directly specified scope and raises Access Version once', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA });
+
+    const response = await accessOperations(context(harness.pool)).invoke(assignmentRequest('assign', 'direct', mallA));
+
+    expect(response).toMatchObject({ status: 200, body: { action: 'assign', changed: true,
+      role: 'role:finance', membership: 'membership:target', scope_source: 'direct', access_version: 3 } });
+    const assignment = harness.calls.find(({ text }) => text.includes('insert into access.membershiprole'));
+    expect(assignment?.values.slice(0, 7)).toEqual([
+      'membership:target', 'role:finance', 'membership:manager', 'mall', mallA.id,
+      'organization-platform-root/tenant-a/mall-a', 'direct',
+    ]);
+    expect(harness.queries.filter((query) => query.startsWith('update access.membership set access_version')).length).toBe(1);
+  });
+
+  it('inherits an existing scope without creating a duplicate grant', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA });
+
+    await expect(accessOperations(context(harness.pool)).invoke(assignmentRequest('assign', 'inherited', mallA)))
+      .resolves.toMatchObject({ body: { scope_source: 'inherited', access_version: 3 } });
+
+    expect(harness.queries.some((query) => query.includes('select id from access.scopegrant'))).toBe(true);
+    expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
+  });
+
+  it('does not assign the same identity outside the target member hierarchy', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantB });
+
+    await expect(accessOperations(context(harness.pool)).invoke(assignmentRequest('assign', 'direct', mallA)))
+      .rejects.toThrow('CANNOT_GRANT_UNOWNED_SCOPE');
+
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
+  });
+
+  it('revokes only the selected identity relation and leaves the member account and other identities untouched', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA });
+
+    await expect(accessOperations(context(harness.pool)).invoke(assignmentRequest('revoke', 'direct', mallA)))
+      .resolves.toMatchObject({ body: { action: 'revoke', changed: true, access_version: 3 } });
+
+    const revoke = harness.queries.find((query) => query.startsWith('update access.membershiprole assignment'));
+    expect(revoke).toContain('assignment.role_id=$2');
+    expect(revoke).toContain('assignment.assigned_scope_id=$3');
+    expect(harness.queries.some((query) => /delete from (access\.)?membership\b/.test(query))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('delete from access.membershiprole'))).toBe(false);
+  });
+
+  it('deletes a custom identity only after detaching its relations and preserves member rows', async () => {
+    const harness = operationHarness();
+
+    const response = await accessOperations(context(harness.pool)).invoke(deleteRoleRequest());
+
+    expect(response).toMatchObject({ body: { action: 'delete', deleted: true, role: 'role:finance',
+      affected_memberships: [{ membership: 'membership:target', access_version: 3 }] } });
+    const relationDelete = harness.queries.findIndex((query) => query.startsWith('delete from access.membershiprole'));
+    const roleDelete = harness.queries.findIndex((query) => query.startsWith('delete from access.role where'));
+    expect(relationDelete).toBeGreaterThan(-1);
+    expect(roleDelete).toBeGreaterThan(relationDelete);
+    expect(harness.queries.some((query) => /^delete from access\.membership where/.test(query))).toBe(false);
   });
 
   it('fails closed when a runtime request attempts to create an unsupported deny scope', async () => {
@@ -163,6 +228,29 @@ function roleRequest(): OperationRequest {
   };
 }
 
+function assignmentRequest(action: 'assign' | 'revoke', scopeSource: 'direct' | 'inherited', scope: AccessContext['scope']): OperationRequest {
+  return {
+    type: 'access.roles.manage', access: ownerAccess(scope),
+    input: {
+      path: { roleid: 'role:finance' }, query: {}, headers: {},
+      body: { action, membership: 'membership:target', kind: scope.kind, scope: scope.id, scopeSource }, rawBody: '',
+      deadline: Date.now() + 5_000, signal: new AbortController().signal,
+      idempotency: `role-assignment:${action}:${scopeSource}`, expectedVersion: 2,
+    },
+  };
+}
+
+function deleteRoleRequest(): OperationRequest {
+  return {
+    type: 'access.roles.manage', access: managerAccess(),
+    input: {
+      path: { roleid: 'role:finance' }, query: {}, headers: {}, body: { action: 'delete' }, rawBody: '',
+      deadline: Date.now() + 5_000, signal: new AbortController().signal,
+      idempotency: 'role-delete:finance', expectedVersion: 3,
+    },
+  };
+}
+
 function ownerAccess(scope: AccessContext['scope']): AccessContext {
   return accessContext(scope, platform);
 }
@@ -204,13 +292,25 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }
       if (text.startsWith('select access.scope_object($1) scope')) {
+        if (text.includes('target.access_version target_access_version')) return result([{ scope: options.scope ?? mallA,
+          target_membership_scope: options.targetMembershipScope ?? tenantA, target_access_version: 2, role_id: 'role:finance' }]);
         return result([{ scope: options.scope ?? null, target_membership_scope: options.targetMembershipScope ?? null }]);
       }
       if (text.includes('from access.role role where role.scope_id=$1')) return result(options.roleRows ?? []);
       if (text.includes('insert into access.role(id,scope_id,name,status,version)')) {
         return result([{ id: 'role:finance', name: '财务主管', status: 'active', version: 4 }]);
       }
+      if (text.includes('select id from access.scopegrant')) return result([{ id: 'scope:inherited' }]);
       if (text.includes('insert into access.scopegrant')) return result([{ id: 'scope:new', access_version: 3 }]);
+      if (text.includes('insert into access.membershiprole')) return result([{ role_id: 'role:finance' }]);
+      if (text.startsWith('update access.membershiprole assignment')) return result([{ scope_source: 'direct' }]);
+      if (text.startsWith('update access.membership set access_version=access_version+1')) {
+        if (text.includes('id=any')) return result([{ id: 'membership:target', access_version: 3 }]);
+        return result([{ access_version: 3 }]);
+      }
+      if (text.startsWith('select id,name,version from access.role')) return result([{ id: 'role:finance', name: '财务', version: 3 }]);
+      if (text.startsWith('delete from access.membershiprole')) return result([{ membership_id: 'membership:target' }]);
+      if (text.startsWith('delete from access.role where')) return result([{ id: 'role:finance', name: '财务' }]);
       return result([]);
     },
     release: () => undefined,

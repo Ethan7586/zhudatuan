@@ -540,6 +540,207 @@
   justify-self: start;
 }
 
+.rolescopemembers {
+  display: contents;
+}
+
+.rolescopesummary,
+.roleassignedmembers {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: var(--sw-space-1);
+  border-color: var(--sw-border);
+  background: var(--sw-surface);
+}
+
+.rolescopesummary > header,
+.roleassignedmembers > header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+}
+
+.rolescopesummary p,
+.rolescopesummary strong,
+.rolescopesummary span,
+.roleassignedmembers p,
+.roleassignedmembers strong,
+.roleassignedmembers span,
+.roleassignedmembers small {
+  margin: 0;
+}
+
+.rolescopesummary p,
+.roleassignedmembers p {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.rolescopesummary header strong,
+.roleassignedmembers header strong {
+  display: block;
+  margin-top: var(--sw-space-0-5);
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body);
+}
+
+.rolescopesummary > span,
+.roleassignedmembers > span {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.rolescopesummary ul,
+.roleassignedmembers ul {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rolescopesummary li {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-1);
+}
+
+.rolescopesummary li span {
+  overflow-wrap: anywhere;
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.rolescopesummary li small,
+.roleassignedmembers li small {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.roleassignedmembers li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sw-space-1);
+  border-top: var(--sw-border-width) solid var(--sw-divider-subtle);
+  padding-top: var(--sw-space-1);
+}
+
+.roleassignedmembers li > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.roleassignedmembers li > div:nth-child(2) {
+  justify-items: start;
+}
+
+.roleassignedmembers li strong,
+.roleassignedmembers li small {
+  overflow-wrap: anywhere;
+}
+
+.roleassignmentform {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-1-5);
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-brand) 28%, var(--sw-border));
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-brand-faint);
+  padding: var(--sw-space-2);
+}
+
+.roleassignmentform > strong {
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-label);
+}
+
+.roleassignmentform label {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-1);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.roleassignmentform select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--sw-control-touch-target);
+  border: var(--sw-border-width) solid var(--sw-border-strong);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: 0 var(--sw-control-padding-compact);
+  font: inherit;
+}
+
+.roleassignmentform select:focus-visible {
+  outline: 0;
+  border-color: var(--sw-focus-color);
+  box-shadow: var(--sw-shadow-focus);
+}
+
+.roleassignmentform p,
+.rolescopepermission,
+.roleassignmenterror p,
+.roledelete small {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.roleassignmenterror,
+.rolescopepermission {
+  border: var(--sw-border-width) solid color-mix(in srgb, var(--sw-warning) 28%, var(--sw-border));
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+  padding: var(--sw-space-1-5);
+}
+
+.roleassignmenterror {
+  display: grid;
+  gap: var(--sw-space-1);
+  border-color: color-mix(in srgb, var(--sw-danger) 28%, var(--sw-border));
+  background: var(--sw-danger-surface);
+  color: var(--sw-danger-strong);
+}
+
+.roleassignmenterror[data-kind='conflict'] {
+  border-color: color-mix(in srgb, var(--sw-warning) 28%, var(--sw-border));
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+
+.roledelete {
+  display: grid;
+  gap: var(--sw-space-1);
+  border-top: var(--sw-border-width) solid var(--sw-divider);
+  padding-top: var(--sw-space-1-5);
+}
+
+.roledelete .shopbutton,
+.roleassignmentform .shopbutton {
+  width: 100%;
+  min-height: var(--sw-control-touch-target);
+}
+
 .roleeditorerror {
   display: grid;
   gap: var(--sw-space-1);
@@ -655,7 +856,11 @@
   }
 
   .roleeditorerror,
-  .roleeditorsave {
+  .roleeditorsave,
+  .roleassignmentform,
+  .roleassignmenterror,
+  .rolescopepermission,
+  .roledelete {
     grid-column: 1 / -1;
   }
 }
@@ -687,8 +892,20 @@
   }
 
   .roleeditorerror,
-  .roleeditorsave {
+  .roleeditorsave,
+  .roleassignmentform,
+  .roleassignmenterror,
+  .rolescopepermission,
+  .roledelete {
     grid-column: auto;
+  }
+
+  .roleassignedmembers li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .roleassignedmembers li > div:nth-child(2) {
+    grid-column: 1 / -1;
   }
 
   .rolepermissionoverview > header {

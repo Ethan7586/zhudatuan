@@ -19992,3 +19992,231 @@ objects:
     kind: view
     owner: benefit
     source: database/supabase/migrations/20260821042000_benefit_lifecycle.sql
+  - id: finance.account.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.entry.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.journal.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.statement.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.statementaccount.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.reconciliation.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.reconciliationitem.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.settlement.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.settlementline.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.split.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.settlementadjustment.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: finance.withdrawal.identityread
+    kind: policy
+    owner: finance
+    source: database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql
+  - id: referral.setting.identityapiread
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: referral.product.identityapiread
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: catalog.listing.identityapiread
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: catalog.sku.identityapiread
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: catalog.product.identityapiread
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: referral.member.identityapiread
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: referral.binding.identityapiread
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: referral.commission.identityapiread
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: referral.withdrawalclaim.identityapiread
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: referral.recoverymovement.identityapiread
+    kind: policy
+    owner: referral
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: channel.connection.identityapiread
+    kind: policy
+    owner: channel
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: channel.syncrun.identityapiread
+    kind: policy
+    owner: channel
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: channel.provideroperation.identityapiread
+    kind: policy
+    owner: channel
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: extension.installation.identityapiread
+    kind: policy
+    owner: extension
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: extension.health.identityapiread
+    kind: policy
+    owner: extension
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.cardpool.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.importjob.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.allocation.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.importerror.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.program.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.programversion.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.reserverequest.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.approval.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: voucher.issuebatch.identityapiread
+    kind: policy
+    owner: voucher
+    source: database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql
+  - id: reporting.fact.identityapiread
+    kind: policy
+    owner: reporting
+    source: database/supabase/migrations/20260831120000_identity_reporting_read_boundary.sql
+  - id: reporting.metric.identityapiread
+    kind: policy
+    owner: reporting
+    source: database/supabase/migrations/20260831120000_identity_reporting_read_boundary.sql
+  - id: catalog.importjob.identityapiread
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: catalog.importerror.identityapiread
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: experience.application.identityapiread
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: experience.version.identityapiread
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: experience.release.identityapiread
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: experience.binding.identityapiread
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: invoice.request.identityapiread
+    kind: policy
+    owner: invoice
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: invoice.requestprofile.identityapiread
+    kind: policy
+    owner: invoice
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: invoice.document.identityapiread
+    kind: policy
+    owner: invoice
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: invoice.requestline.identityapiread
+    kind: policy
+    owner: invoice
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: member.importjob.identityapiread
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: member.importerror.identityapiread
+    kind: policy
+    owner: member
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: notification.announcement.identityapiread
+    kind: policy
+    owner: notification
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: notification.template.identityapiread
+    kind: policy
+    owner: notification
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: qualification.policy.identityapiread
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: qualification.policyversion.identityapiread
+    kind: policy
+    owner: qualification
+    source: database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql
+  - id: experience.application.identityapiapplicationinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260831150000_identity_experience_application_commands.sql
+  - id: experience.application.identityapiapplicationupdate
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260831150000_identity_experience_application_commands.sql
+  - id: experience.version.identityapiversioninsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260831150000_identity_experience_application_commands.sql

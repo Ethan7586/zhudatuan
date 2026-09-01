@@ -12,13 +12,20 @@ const server = setupServer(
   http.get('*/api/v1/access/center', () => HttpResponse.json({
     items: [{
       id: 'membership:owner', status: 'active', access_version: '7',
+      member_id: 'member:owner', display_name: 'Ethan', employee_no: 'ETHAN-001',
       roles: [
-        { role: 'role-platform-owner-v2', name: '平台业主' },
-        { role: 'role-finance', name: '财务' },
+        { role: 'role-platform-owner-v2', name: '平台业主', scope: {
+          kind: 'tenant', id: 'tenant:zhudatuan', tenant: 'tenant:zhudatuan', name: '主打团商户',
+        }, scope_source: 'direct', effective_at: '2026-08-29T00:00:00.000Z', expires: null },
+        { role: 'role-finance', name: '财务', scope: {
+          kind: 'tenant', id: 'tenant:zhudatuan', tenant: 'tenant:zhudatuan', name: '主打团商户',
+        }, scope_source: 'direct', effective_at: '2026-08-29T00:00:00.000Z', expires: null },
       ],
       scopes: [{
         id: 'scope:merchant', kind: 'tenant', scope: 'tenant-zhudatuan', effect: 'allow', expires: null,
       }],
+      denies: [],
+      effective_permissions: ['access.center.read', 'order.read'],
     }],
     roles: [],
     count: 1,
