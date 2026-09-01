@@ -53,6 +53,7 @@ export function Component() {
   const [headerAction, setHeaderAction] = useState<FinanceHeaderAction>();
   const [importOpen, setImportOpen] = useState(false);
   const searchRef = useRef(new URLSearchParams(search));
+  const pendingSearchKey = useRef<string>();
   const searchKey = search.toString();
   const scopeKey = `${context.scope.kind}:${context.scope.id}`;
   const previousScope = useRef(scopeKey);
@@ -88,7 +89,9 @@ export function Component() {
     : overviewCondition === accessCondition ? safeQueryError(overviewQuery.error) : undefined;
 
   useEffect(() => {
+    if (pendingSearchKey.current !== undefined && pendingSearchKey.current !== searchKey) return;
     searchRef.current = new URLSearchParams(searchKey);
+    pendingSearchKey.current = undefined;
   }, [searchKey]);
 
   const updateSearch = useCallback(
@@ -96,9 +99,10 @@ export function Component() {
       const next = new URLSearchParams(searchRef.current);
       mutate(next);
       searchRef.current = next;
+      pendingSearchKey.current = next.toString() === searchKey ? undefined : next.toString();
       setSearch(next, { replace });
     },
-    [setSearch]
+    [searchKey, setSearch]
   );
 
   useEffect(() => {
