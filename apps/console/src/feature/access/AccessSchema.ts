@@ -8,5 +8,17 @@ export const AccessMembershipSchema = z.object({
   scopes: z.array(z.object({ id: z.string().min(1), kind: z.string().min(1), scope: z.string().min(1),
     effect: z.enum(['allow', 'deny']), expires: z.string().nullable() })),
 }).passthrough();
-export const AccessPageSchema = pageEnvelope(AccessMembershipSchema);
+export const AccessRoleSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  status: z.enum(['active', 'disabled']),
+  version: DatabaseIntegerSchema,
+  permissions: z.array(z.string().min(1)),
+  member_count: DatabaseIntegerSchema,
+  governance: z.boolean(),
+  editable: z.boolean(),
+}).passthrough();
+export const AccessPageSchema = pageEnvelope(AccessMembershipSchema).extend({ roles: z.array(AccessRoleSchema) });
+export const AccessRoleWriteReceiptSchema = AccessRoleSchema.pick({ id: true, name: true, status: true, version: true }).passthrough();
 export type AccessMembership = z.infer<typeof AccessMembershipSchema>;
+export type AccessRole = z.infer<typeof AccessRoleSchema>;

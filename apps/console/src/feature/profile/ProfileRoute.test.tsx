@@ -20,6 +20,7 @@ const server = setupServer(
         id: 'scope:merchant', kind: 'tenant', scope: 'tenant-zhudatuan', effect: 'allow', expires: null,
       }],
     }],
+    roles: [],
     count: 1,
   })),
 );

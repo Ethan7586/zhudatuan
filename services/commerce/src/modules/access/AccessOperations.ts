@@ -27,7 +27,7 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
           on conflict(id) do update set name=excluded.name,status='active',version=access.role.version+1
           where access.role.scope_id=$2 and ($5::bigint is null or access.role.version=$5) returning *
         ), removed as (delete from access.rolepermission mapping using target
-          where mapping.role_id=target.id returning mapping.role_id), ready as (
+          where mapping.role_id=target.id and mapping.effect='allow' returning mapping.role_id), ready as (
           select distinct target.id from target left join removed on removed.role_id=target.id
         ), added as (
           insert into access.rolepermission(role_id,permission_id,effect)
