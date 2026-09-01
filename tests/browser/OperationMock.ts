@@ -1,8 +1,12 @@
 import type { Page, Request, Route } from '@playwright/test';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { API_ORIGIN } from './Origins';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { API_ORIGIN } from './Origins';
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 
 export interface OperationCall {
   readonly method: string;
@@ -43,10 +47,14 @@ export class OperationMock {
 
   async install(): Promise<void> {
 <<<<<<< HEAD
+<<<<<<< HEAD
     await this.page.route(`${API_ORIGIN}/api/v1/**`, (route) => this.dispatch(route));
 =======
     await this.page.route('http://127.0.0.1:4311/api/v1/**', (route) => this.dispatch(route));
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    await this.page.route(`${API_ORIGIN}/api/v1/**`, (route) => this.dispatch(route));
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
   }
 
   private register(method: string, path: string, body: unknown, status: number): this {

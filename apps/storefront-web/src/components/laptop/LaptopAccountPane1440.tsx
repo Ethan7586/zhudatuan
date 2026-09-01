@@ -41,10 +41,14 @@ export const LaptopAccountPane1440: React.FC<{
                   <span>餐卡可用余额</span>
                 </span>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 <span className="text-[9px] bg-emerald-700 text-white font-bold px-1 rounded">生鲜/园区</span>
 =======
                 <span className="text-[9px] bg-emerald-600 text-white font-bold px-1 rounded">生鲜/园区</span>
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+                <span className="text-[9px] bg-emerald-700 text-white font-bold px-1 rounded">生鲜/园区</span>
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
               </div>
               <div className="text-lg font-black text-emerald-700 mt-1">¥{user.mealBalance.toFixed(2)}</div>
             </div>
@@ -80,6 +84,7 @@ export const LaptopAccountPane1440: React.FC<{
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-bold text-gray-700">NO.20260722881</span>
 <<<<<<< HEAD
+<<<<<<< HEAD
               <span className="text-emerald-700 font-bold text-[10px]">运输中</span>
             </div>
             <div className="text-[10px] text-gray-500 truncate">戴尔27寸4K专业显示器 x1 ...</div>
@@ -90,6 +95,12 @@ export const LaptopAccountPane1440: React.FC<{
             <div className="text-[10px] text-gray-500 truncate">戴尔27寸4K专业显示器 x1 ...</div>
             <div className="text-[9px] text-gray-400">京东快递 · 预估明日14:00送达</div>
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+              <span className="text-emerald-700 font-bold text-[10px]">运输中</span>
+            </div>
+            <div className="text-[10px] text-gray-500 truncate">戴尔27寸4K专业显示器 x1 ...</div>
+            <div className="text-[9px] text-gray-600">京东快递 · 预估明日14:00送达</div>
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
           </div>
         </div>
       </div>

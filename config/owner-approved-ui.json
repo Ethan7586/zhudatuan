@@ -1,10 +1,14 @@
 {
   "schema": "zhudatuan.owner-approved-ui.v1",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "approvedAt": "2026-09-01T09:18:00+08:00",
 =======
   "approvedAt": "2026-08-28T15:59:46+08:00",
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+  "approvedAt": "2026-09-01T09:18:00+08:00",
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
   "owner": "Ethan",
   "policy": {
     "sourceRoot": ".",
@@ -89,12 +93,16 @@
       ],
       "disabledUntilBackendExists": ["otp-login", "work-weixin-qr", "wechat-qr", "enterprise-sso", "step-up"],
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
       "visualSlices": {
         "apps/auth-web/src/screens/LoginPage.tsx": {
           "startMarker": "  const renderMembershipsList = () => {",
           "sha256": "3cabb639d569fa46d4f8c7e4a9bd08d35dbeef1b959de35b96c5f1a9dd9c552c"
         }
       },
+<<<<<<< HEAD
       "lockedFiles": {
         "apps/auth-web/src/App.tsx": "cfe8488ad44c59f517e2238d2e674cdc766eb0b8d96d9da1ae06237f54014459",
         "apps/auth-web/src/screens/LoginPage.tsx": "a6b77b3dcdabae48f9d4d54398689a1781919c69c03235734a508ecfdb1a44fc",
@@ -111,6 +119,15 @@
         "apps/auth-web/src/services/canonicalIdentity.ts": "e0d8031ae54d7f05f98479dc46e2729d17ba0f3efbde0fa8e54ed04e3a39cfed",
         "apps/auth-web/src/services/canonicalRegistration.ts": "dd67a2e5a8adb4e87a9da0bd88ba38ee528760ac58b26710c0bf6698f98c5a50",
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+      "lockedFiles": {
+        "apps/auth-web/src/App.tsx": "cfe8488ad44c59f517e2238d2e674cdc766eb0b8d96d9da1ae06237f54014459",
+        "apps/auth-web/src/screens/LoginPage.tsx": "a6b77b3dcdabae48f9d4d54398689a1781919c69c03235734a508ecfdb1a44fc",
+        "apps/auth-web/src/context/MallContext.tsx": "1c4b4c81be39d142171ef7f6c02008bdcf05b13e2e11971c7f45bb74a34b5cc0",
+        "apps/auth-web/src/services/auth.ts": "6c776b1e2c34c294a898a9d2fffb746f28c0a2d91a7bfacf7726ebc569ef30c9",
+        "apps/auth-web/src/services/canonicalIdentity.ts": "e7b8cfb122361f165c06b6204d218694b63db51be45aba48bf14b40c2713fefa",
+        "apps/auth-web/src/services/canonicalRegistration.ts": "16c635e7d15f083a0f0d1c3c47b6160c3fc87e6e044a8d28a617b26a929e98ba",
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
         "apps/auth-web/vite.config.ts": "20a25f1ea0d990d5d06a2f7ccbbf92ed43d538bb4182253eb522485cbc57ab0c",
         "apps/auth-web/index.html": "fe9a3d2749aa9c4466150f3ca7c54817f4e72dfade70f7c7b67bdd6539d3c00a",
         "apps/auth-web/public/brand/site.webmanifest": "15fc099b2ef342870838fb9bf72ead08ced3ead8bfb23ce4c76288cf9edaf6df",
@@ -140,11 +157,15 @@
       "lockedFiles": {
         "apps/console/src/main.tsx": "9e59f3b4abf5f8b359b42cd3c6e9c09dcda7decdaf36b1e0f19c5b427d27eac9",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
         "apps/console/index.html": "d78fa2c4e09200e71ff2d9eb2d475cc1eabd18900877f239fb5620e2cf686113",
         "apps/console/vite.config.ts": "e1a3454ddc2b2f22d922d4ec8df33bcc088f25b179ca4b934bf37bbe13bf8608",
         "apps/console/src/route/ConsoleRouter.tsx": "8eecf04aef28198112349f1bf8e18bb22a724da97f0e31d72d0db69462b1da0a",
         "apps/console/src/shell/ScopeShell.tsx": "a1e166dfaa2648fb9277d9c6424b12e3bcb8f19b7426e3a756003b6aca62948d",
         "apps/console/src/entity/session/ConsoleSession.ts": "67df170c715ff7e5540910a1d486bb3f16c06ec1f92e430d30eae3dcf317e3bf",
+<<<<<<< HEAD
         "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
         "apps/console/src/components/Sidebar.tsx": "fe4abd8b893c9b104d120a6a7070902c55164820dc1afa6de6c060746170c84b",
         "apps/console/src/feature/cockpit/CockpitRoute.tsx": "df0eaf2b84257a8df1ed4b21a00cf87b1777a6db4b51e0c7ea2ce34234d5d3b4",
@@ -158,6 +179,11 @@
         "apps/console/src/components/Sidebar.tsx": "5052da5087da512e5c4ecf14869f94bedb87c1e7cc100d523402c1ccb1d2fe96",
         "apps/console/src/feature/cockpit/CockpitRoute.tsx": "9a0699f178f45ebd21c6130bb3d9dffd872a907cde2f01c75cea13770b6147e6",
 >>>>>>> 018b2a71 (chore(release): capture current production source)
+=======
+        "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
+        "apps/console/src/components/Sidebar.tsx": "fe4abd8b893c9b104d120a6a7070902c55164820dc1afa6de6c060746170c84b",
+        "apps/console/src/feature/cockpit/CockpitRoute.tsx": "df0eaf2b84257a8df1ed4b21a00cf87b1777a6db4b51e0c7ea2ce34234d5d3b4",
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
         "apps/console/src/feature/application/CommerceSolutionCenter.tsx": "eafc31af52cc747470d448c4e2f7b45566d5396ba4ee2d2336d9dcfb05791f78",
         "apps/console/src/smart-wing-vi.css": "6783c64d857bf07b7667825aebb8acb142c97fd28a98ea1678463c81c7916749",
         "apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084",

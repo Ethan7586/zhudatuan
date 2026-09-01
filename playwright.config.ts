@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './tests/browser/Origins';
 
 const clientVersion = '1.0.0-e2e';
@@ -11,16 +12,24 @@ function webServer(workspace: string, origin: string, environment: Readonly<Reco
     command: `${variables} npm run dev --workspace ${shell(workspace)} -- --host 127.0.0.1 --port ${port} --strictPort`,
     url: origin,
 =======
+=======
+import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './tests/browser/Origins';
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 
-const apiOrigin = 'http://127.0.0.1:4311';
-const authOrigin = 'http://127.0.0.1:4176';
-const environment = `VITE_API_BASE_URL=${apiOrigin} VITE_AUTH_BASE_URL=${authOrigin} VITE_CLIENT_VERSION=1.0.0-e2e DISABLE_HMR=true`;
+const clientVersion = '1.0.0-e2e';
 
-function webServer(workspace: string, port: number) {
+function webServer(workspace: string, origin: string, environment: Readonly<Record<string, string>>) {
+  const port = new URL(origin).port;
+  const variables = Object.entries(environment).map(([name, value]) => `${name}=${shell(value)}`).join(' ');
   return {
+<<<<<<< HEAD
     command: `${environment} npm run dev --workspace ${workspace} -- --host 127.0.0.1 --port ${port} --strictPort`,
     url: `http://127.0.0.1:${port}`,
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    command: `${variables} npm run dev --workspace ${shell(workspace)} -- --host 127.0.0.1 --port ${port} --strictPort`,
+    url: origin,
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
     reuseExistingServer: false,
     timeout: 120_000,
     stdout: 'pipe' as const,
@@ -29,6 +38,9 @@ function webServer(workspace: string, port: number) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 const viteEnvironment = Object.freeze({
   VITE_API_BASE_URL: API_ORIGIN,
   VITE_AUTH_BASE_URL: AUTH_ORIGIN,
@@ -40,8 +52,11 @@ function shell(value: string): string {
   return `'${value.replaceAll("'", "'\\''")}'`;
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 export default defineConfig({
   testDir: './tests/browser',
   testMatch: '**/*.spec.ts',
@@ -66,6 +81,9 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
   webServer: [
     webServer('@smart-wing/auth-web', AUTH_ORIGIN, viteEnvironment),
     webServer('@shop/console', CONSOLE_ORIGIN, viteEnvironment),
@@ -77,8 +95,11 @@ export default defineConfig({
       DISABLE_HMR: 'true',
     }),
   ],
+<<<<<<< HEAD
 =======
   webServer: [webServer('@shop/auth', 4176), webServer('@shop/console', 4173), webServer('@shop/store', 4174), webServer('@shop/supplier', 4175), webServer('@shop/storefront', 4177)],
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

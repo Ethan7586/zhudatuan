@@ -2,6 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { consoleSession } from './Fixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 import { CONSOLE_ORIGIN } from './Origins';
 
 const productSession = Object.freeze({
@@ -9,8 +12,11 @@ const productSession = Object.freeze({
   permissions: Object.freeze([...consoleSession.permissions, 'catalog.listing.read']),
   capabilities: Object.freeze([...consoleSession.capabilities, 'catalog.listings.read']),
 });
+<<<<<<< HEAD
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 
 const catalog = Object.freeze(
   Array.from({ length: 5_000 }, (_, index) =>
@@ -30,10 +36,14 @@ test('Console 5000 商品只按服务端游标分页且 DOM 保持单页', async
   const api = consoleProductApi(page, productPage);
   await api.install();
 <<<<<<< HEAD
+<<<<<<< HEAD
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/products`);
 =======
   await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/products');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/products`);
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 
   await expect(page.getByRole('heading', { level: 1, name: '商品管理' })).toBeFocused();
   await expect(page.getByText('服务端商品 0001', { exact: true })).toBeVisible();
@@ -65,10 +75,14 @@ test('Console 迟到筛选响应不得覆盖较新的 URL 查询结果', async (
   });
   await api.install();
 <<<<<<< HEAD
+<<<<<<< HEAD
   await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/products?q=old`);
 =======
   await page.goto('http://127.0.0.1:4173/scopes/platform/platform%3Ae2e/products?q=old');
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  await page.goto(`${CONSOLE_ORIGIN}/scopes/platform/platform%3Ae2e/products?q=old`);
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
   await expect.poll(() => productCalls(api).some((call) => new URLSearchParams(call.query).get('q') === 'old')).toBe(true);
 
   const search = page.getByLabel('商品搜索');
@@ -85,10 +99,14 @@ test('Console 迟到筛选响应不得覆盖较新的 URL 查询结果', async (
 
 function consoleProductApi(page: Page, products: (call: OperationCall) => unknown): OperationMock {
 <<<<<<< HEAD
+<<<<<<< HEAD
   return new OperationMock(page).get('/api/v1/identity/session', productSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' }).get('/api/v1/catalog/listings', products);
 =======
   return new OperationMock(page).get('/api/v1/identity/session', consoleSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' }).get('/api/v1/catalog/listings', products);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  return new OperationMock(page).get('/api/v1/identity/session', productSession).get('/api/v1/members/me', { display_name: '验收管理员', employee_no: 'E2E001' }).get('/api/v1/catalog/listings', products);
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 }
 
 function productPage(call: OperationCall) {

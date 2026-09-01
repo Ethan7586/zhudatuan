@@ -63,10 +63,14 @@ export const LaptopHomePage1440: React.FC<LaptopHomePage1440Props> = ({ onSelect
                   <div className="min-w-0 pr-1">
                     <div className="font-bold text-gray-800 group-hover:text-[var(--sw-brand)] truncate text-xs leading-tight">{cat.name}</div>
 <<<<<<< HEAD
+<<<<<<< HEAD
                     <div className="text-[10px] text-gray-600 truncate mt-0.5">{cat.sub}</div>
 =======
                     <div className="text-[10px] text-gray-400 truncate mt-0.5">{cat.sub}</div>
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+                    <div className="text-[10px] text-gray-600 truncate mt-0.5">{cat.sub}</div>
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
                   </div>
                   <span className="text-[9px] bg-blue-50 text-[var(--sw-brand)] border border-blue-200 font-medium px-1 rounded flex-shrink-0">{cat.badge}</span>
                 </div>
@@ -80,10 +84,14 @@ export const LaptopHomePage1440: React.FC<LaptopHomePage1440Props> = ({ onSelect
                   <span>企业专享补贴通道</span>
                 </div>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 <div className="text-[10px] text-white mt-0.5">支持增值税专票自动生成</div>
 =======
                 <div className="text-[10px] text-blue-100 mt-0.5">支持增值税专票自动生成</div>
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+                <div className="text-[10px] text-white mt-0.5">支持增值税专票自动生成</div>
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
               </div>
             </div>
           </div>

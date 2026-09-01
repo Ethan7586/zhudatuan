@@ -37,12 +37,14 @@ import {
 } from './FinancePreviewFixtures';
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 import { OperationMock, type OperationCall } from './OperationMock';
+import { CONSOLE_ORIGIN } from './Origins';
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
 const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: Object.freeze([previewScope]),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliation.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
@@ -55,13 +57,20 @@ const financeUrl = '/scopes/platform/platform%3Apreview/finance';
   capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read']),
 =======
   permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
+=======
+  permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliation.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
   capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policies.read', 'finance.audit.read']),
 >>>>>>> 018b2a71 (chore(release): capture current production source)
   assurance: Object.freeze({ level: 3, verified: 'step-up' }),
 });
+<<<<<<< HEAD
 const financeConsoleOrigin = process.env.FINANCE_CONSOLE_ORIGIN ?? 'http://127.0.0.1:4183';
 const financeUrl = `${financeConsoleOrigin}/scopes/platform/platform%3Apreview/finance`;
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+const financeUrl = `${process.env.FINANCE_CONSOLE_ORIGIN ?? CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/finance`;
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 const differenceReconciliation = financePreviewReconciliations[0]!;
 
 test('Console 财务工作台呈现参考页头、状态、页签与服务端对账表', async ({ page }) => {

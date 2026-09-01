@@ -131,12 +131,15 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
                 <span className="text-[9px] bg-red-100 text-[#E5484D] font-bold px-1 py-0.2 rounded">{surfaceCopy.headerBadge}</span>
               </div>
               <div className="text-[9px] text-gray-600 font-medium tracking-tight mt-0.5">ZHUDATUAN ENTERPRISE BENEFITS</div>
+<<<<<<< HEAD
 =======
                 <span>智慧翼企业福利商城</span>
                 <span className="text-[9px] bg-red-100 text-[#E5484D] font-bold px-1 py-0.2 rounded">{surfaceCopy.headerBadge}</span>
               </div>
               <div className="text-[9px] text-gray-400 font-medium tracking-tight mt-0.5">SMART WING ENTERPRISE BENEFITS</div>
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
             </div>
           </div>
 

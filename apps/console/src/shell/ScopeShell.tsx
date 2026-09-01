@@ -103,6 +103,7 @@ export function ScopeShell() {
     document.title = `${routeTitle} · 智慧翼`;
     setMobileOpen(false);
 <<<<<<< HEAD
+<<<<<<< HEAD
     let observer: MutationObserver | undefined;
     const focusRouteHeading = () => {
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
@@ -126,12 +127,34 @@ export function ScopeShell() {
     };
 =======
     const frame = requestAnimationFrame(() => {
+=======
+    let observer: MutationObserver | undefined;
+    const focusRouteHeading = () => {
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
-      heading?.setAttribute('tabindex', '-1');
-      heading?.focus();
+      if (heading === null) return false;
+      heading.setAttribute('tabindex', '-1');
+      heading.focus();
+      return true;
+    };
+    const frame = requestAnimationFrame(() => {
+      if (focusRouteHeading()) return;
+      const workspace = document.querySelector<HTMLElement>('.workspacebody');
+      if (workspace === null) return;
+      observer = new MutationObserver(() => {
+        if (focusRouteHeading()) observer?.disconnect();
+      });
+      observer.observe(workspace, { childList: true, subtree: true });
     });
+<<<<<<< HEAD
     return () => cancelAnimationFrame(frame);
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+    return () => {
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+    };
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
   }, [location.pathname, routeTitle]);
 
   const navigateAfterCancel = (target: string) => {

@@ -3,15 +3,20 @@ import { consoleSession } from './Fixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
 import { orderPreviewPage } from './OrderPreviewFixtures';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { CONSOLE_ORIGIN } from './Origins';
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+import { CONSOLE_ORIGIN } from './Origins';
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
 const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: Object.freeze([previewScope]),
+<<<<<<< HEAD
 <<<<<<< HEAD
   permissions: Object.freeze([...consoleSession.permissions, 'order.read']),
   capabilities: Object.freeze([...consoleSession.capabilities, 'order.orders.read']),
@@ -21,6 +26,12 @@ const ordersUrl = `${CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/orders`;
 });
 const ordersUrl = 'http://127.0.0.1:4173/scopes/platform/platform%3Apreview/orders';
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  permissions: Object.freeze([...consoleSession.permissions, 'order.read']),
+  capabilities: Object.freeze([...consoleSession.capabilities, 'order.orders.read']),
+});
+const ordersUrl = `${CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/orders`;
+>>>>>>> 05ea98a5 (fix(release): restore selected app verification)
 
 test('Console 订单管理呈现参考结构并只用服务端筛选结果', async ({ page }) => {
   const api = consoleOrderApi(page, (call) => orderPreviewPage(new URLSearchParams(call.query)));
