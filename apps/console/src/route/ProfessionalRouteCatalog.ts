@@ -15,7 +15,7 @@ export interface ProfessionalRoute {
 }
 
 export const professionalRoutes: readonly ProfessionalRoute[] = Object.freeze([
-  route('applications', 'applications', /^applications$/, '商城与应用', '按当前范围管理商城、应用、装修与发布', '业务运营', 'application',
+  route('applications', 'applications', /^applications$/, '商城管理', '创建、查找和管理独立商城，并进入店铺装修', '业务运营', 'application',
     'experience.applications.read'),
   route('vouchers', 'vouchers', /^vouchers$/, '卡券治理台', '按当前网站范围管理卡券方案、卡号库、备券申请与发行批次', '业务运营', 'voucher',
     'voucher.programs.read', ['voucher.cardlibraries.read', 'voucher.programs.read', 'voucher.reserves.read', 'voucher.batches.read']),

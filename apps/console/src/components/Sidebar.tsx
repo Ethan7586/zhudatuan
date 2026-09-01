@@ -29,7 +29,7 @@ interface NavigationTarget {
 const navigationTargets: readonly NavigationTarget[] = Object.freeze([
   { key: 'cockpit', activeKey: 'cockpit', label: '经营驾驶舱', icon: 'trend', source: 'workstation' },
   { key: 'control', activeKey: 'control', label: '智慧翼中控台', icon: 'control', source: 'workstation' },
-  { key: 'applications', activeKey: 'applications', label: '築店 · 商城与应用', icon: 'building', source: 'professional' },
+  { key: 'applications', activeKey: 'applications', label: '商城管理', icon: 'building', source: 'professional' },
   { key: 'products', activeKey: 'products', label: '商品治理台', icon: 'products', source: 'workstation' },
   { key: 'orders', activeKey: 'orders', label: '订单管理系统', icon: 'orders', source: 'workstation' },
   { key: 'channels', activeKey: 'channels', label: '渠道与分销系统', icon: 'channel', source: 'professional' },

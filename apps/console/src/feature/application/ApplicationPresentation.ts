@@ -24,10 +24,10 @@ const modeFlows: Readonly<Record<CommerceWorkspaceMode, readonly CommerceFlowSte
     { label: '发布监测', detail: '异常治理' },
   ]),
   management: Object.freeze([
-    { label: '创建商城', detail: '禁用态起步' },
+    { label: '创建商城', detail: '填写建店信息' },
     { label: '组织关系', detail: '集团归属' },
     { label: '初始商品池', detail: '经营边界' },
-    { label: '开店草稿', detail: '六步向导' },
+    { label: '开店草稿', detail: '初始化应用' },
     { label: '切换商城', detail: '继续装修' },
   ]),
   design: Object.freeze([

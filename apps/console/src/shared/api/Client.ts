@@ -32,13 +32,14 @@ export function consoleCommand(
   options: Readonly<{
     signal?: AbortSignal;
     accessVersion?: number;
+    idempotencyKey?: string;
     expectedVersion?: number;
     proof?: string;
   }> = {},
 ) {
   return createRequestContext(appConfig.clientVersion, {
     ...(scope === undefined ? {} : { scope }),
-    idempotencyKey: createIdempotencyKey(),
+    idempotencyKey: options.idempotencyKey ?? createIdempotencyKey(),
     ...(options.signal === undefined ? {} : { signal: options.signal }),
     ...(options.accessVersion === undefined ? {} : { accessVersion: options.accessVersion }),
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
