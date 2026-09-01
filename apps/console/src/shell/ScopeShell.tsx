@@ -50,12 +50,27 @@ export function ScopeShell() {
   useEffect(() => {
     document.title = `${routeTitle} · 主打团`;
     setMobileOpen(false);
-    const frame = requestAnimationFrame(() => {
+    let observer: MutationObserver | undefined;
+    const focusRouteHeading = () => {
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
-      heading?.setAttribute('tabindex', '-1');
-      heading?.focus();
+      if (heading === null) return false;
+      heading.setAttribute('tabindex', '-1');
+      heading.focus();
+      return true;
+    };
+    const frame = requestAnimationFrame(() => {
+      if (focusRouteHeading()) return;
+      const workspace = document.querySelector<HTMLElement>('.workspacebody');
+      if (workspace === null) return;
+      observer = new MutationObserver(() => {
+        if (focusRouteHeading()) observer?.disconnect();
+      });
+      observer.observe(workspace, { childList: true, subtree: true });
     });
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+    };
   }, [location.pathname, routeTitle]);
 
   const navigateAfterCancel = (target: string) => {

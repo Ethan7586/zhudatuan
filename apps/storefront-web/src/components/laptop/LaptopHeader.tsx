@@ -112,7 +112,7 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
                 <span>主打团企业福利商城</span>
                 <span className="text-[9px] bg-red-100 text-[#E5484D] font-bold px-1 py-0.2 rounded">{surfaceCopy.headerBadge}</span>
               </div>
-              <div className="text-[9px] text-gray-400 font-medium tracking-tight mt-0.5">ZHUDATUAN ENTERPRISE BENEFITS</div>
+              <div className="text-[9px] text-gray-600 font-medium tracking-tight mt-0.5">ZHUDATUAN ENTERPRISE BENEFITS</div>
             </div>
           </div>
 
