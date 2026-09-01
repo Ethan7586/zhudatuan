@@ -1,9 +1,9 @@
 # zdt-next 目标系统架构图
 
-> 版本：架构草图 v0.1
+> 版本：架构草图 v0.2
 > 日期：2026-09-02
 > 状态：供 Ethan 审核，尚未成为最终实现授权
-> 依据：`00-zhudatuan-架构审计.md` 与当前 `ZHU-VI-1.3` 资产
+> 依据：`00-zhudatuan-架构审计.md`、`03-阿里云运行真值与生产反推架构.md` 与当前 `ZHU-VI-1.3` 资产
 
 ## 一、结论
 
@@ -264,7 +264,36 @@ flowchart LR
 
 禁止把旧 `main` 或任何旧大分支使用 `--allow-unrelated-histories` 整体合入 `zdt-next`。旧分支的“收回”表示清点、提炼、验证和关闭，不表示把旧目录树原样倒入新主轴。
 
-## 九、尚待 Ethan 定稿的决策
+## 九、生产反推后的交付架构
+
+阿里云取证证明，业务组件可以独立发布，但“一个会移动的全局 `current`”无法准确描述实际运行版本。`zdt-next` 必须增加一个机器可读的 Production State Manifest：
+
+```mermaid
+flowchart LR
+    Source[Source Commit]
+    Build[Build + Test]
+    Artifact[Immutable Artifact SHA-256]
+    Manifest[Production State Manifest]
+    Unit["Pinned systemd Unit<br/>不可变 release 路径"]
+    Route[Caddy Route]
+    Verify[External Verification]
+
+    Source --> Build --> Artifact --> Manifest --> Unit --> Route --> Verify
+```
+
+Manifest 至少逐组件记录：
+
+- Source Commit。
+- Artifact SHA-256。
+- Contract Version。
+- Migration Head。
+- 实际不可变 release 路径。
+- Caddy 路由哈希。
+- 启用时间与验证结果。
+
+允许 Storefront、API、Jobs 等组件独立发版，但每个活跃版本都必须被同一个 Manifest 明确描述；不得再通过目录名、全局 symlink 或进程启动时间推断生产真值。完整生产拓扑和迁移保护规则见 `03-阿里云运行真值与生产反推架构.md`。
+
+## 十、尚待 Ethan 定稿的决策
 
 以下内容在本图中只保留逻辑边界，不擅自确定实现：
 

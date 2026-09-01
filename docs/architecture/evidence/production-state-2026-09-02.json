@@ -1,0 +1,216 @@
+{
+  "schema": "zdt.production-evidence.v1",
+  "capturedAt": "2026-09-02T00:17:35+08:00",
+  "captureMode": "read-only",
+  "host": {
+    "instanceId": "i-2zeewhay0farxq8lucrd",
+    "address": "123.57.232.253"
+  },
+  "ingress": {
+    "type": "caddy",
+    "adaptedConfigSha256": "b834223a185df84b26519828089b824941c17cd6fef6fa4e86b959a979394e8d"
+  },
+  "releaseStore": {
+    "currentTarget": "/opt/zhudatuan/releases/807ca31f1999-iam-reliability-95-20260901-213046",
+    "releaseDirectoryCount": 39,
+    "currentIsGitWorktree": false,
+    "currentMarkers": {
+      "directorySourcePrefix": "807ca31f1999",
+      "releaseCommitUnderscore": "331460b1761fa0fd1760e5b074bb48b7bf75330b",
+      "releaseCommitHyphen": "817132c1638c5049d9789b53ebe8165724a70598",
+      "releaseBase": "31b27b78ec88d6f5d24d80c7f3836e54bc8c76e9"
+    }
+  },
+  "routes": [
+    {
+      "host": "zhudatuan.com",
+      "match": "all",
+      "target": "127.0.0.1:4310",
+      "component": "storefront"
+    },
+    {
+      "host": "accounts.zhudatuan.com",
+      "match": "static",
+      "target": "/opt/zhudatuan/current/apps/auth-web/dist",
+      "component": "auth-static"
+    },
+    {
+      "host": "console.zhudatuan.com",
+      "match": "static-and-preview",
+      "target": "/opt/zhudatuan/current/apps/console/dist + 127.0.0.1:4312",
+      "component": "console-static-and-referral-preview"
+    },
+    {
+      "host": "labs.zhudatuan.com",
+      "match": "static-and-preview",
+      "target": "/srv/zhudatuan-display/* + 127.0.0.1:4313",
+      "component": "labs-and-finance-preview"
+    },
+    {
+      "host": "api.zhudatuan.com",
+      "match": "health-and-fallback-api-v1",
+      "target": "127.0.0.1:4321",
+      "component": "identity-registration-api"
+    },
+    {
+      "host": "api.zhudatuan.com",
+      "match": "web-business-read-paths",
+      "target": "127.0.0.1:4322",
+      "component": "web-business-api"
+    },
+    {
+      "host": "api.zhudatuan.com",
+      "match": "checkout-order-payment-command-paths",
+      "target": "127.0.0.1:4323",
+      "component": "purchase-api"
+    },
+    {
+      "host": "api.zhudatuan.com",
+      "match": "support-case-paths",
+      "target": "127.0.0.1:4324",
+      "component": "console-support-api"
+    }
+  ],
+  "components": [
+    {
+      "name": "identity-registration-api",
+      "systemdUnit": "zhudatuan-api.service",
+      "sourceCommit": "ca9844f944c01b397bafac7563e79629acd06346",
+      "actualCwd": "/opt/zhudatuan/releases/ca9844f944c01b397bafac7563e79629acd06346-iam-access-profile-20260901-203628",
+      "remoteAnchors": [
+        "ethan/iam-reliability-95",
+        "ethan/iam-production-integration-20260901",
+        "codex/product-000a-baseline-isolation"
+      ],
+      "cwdDeleted": false
+    },
+    {
+      "name": "web-business-api",
+      "systemdUnit": "zhudatuan-web-api.service",
+      "sourceCommit": "443cdb06d4724ae799e29ee61e97a336d322ec5d",
+      "actualCwd": "/opt/zhudatuan/releases/443cdb0-member-invite-20260831-015250",
+      "remoteAnchors": [],
+      "localAnchors": [
+        "codex/access-center-read-20260830",
+        "codex/owner-invitation-20260831",
+        "codex/final-console-integration-20260831",
+        "codex/auth-password-recovery-20260831"
+      ],
+      "cwdDeleted": true,
+      "protectionRequired": true
+    },
+    {
+      "name": "purchase-api",
+      "systemdUnit": "zhudatuan-purchase-api.service",
+      "sourceCommit": "6d7adcc301ab0fcddb2c922b7df663102c376949",
+      "actualCwd": "/opt/zhudatuan/releases/6d7adcc-brand-unification-20260901-064000",
+      "remoteAnchors": [
+        "ethan/iam-reliability-95",
+        "codex/zhudatuan-brand-unification-20260901"
+      ],
+      "cwdDeleted": false
+    },
+    {
+      "name": "console-support-api",
+      "systemdUnit": "zhudatuan-console-support.service",
+      "sourceCommit": "810acfd17c88304b2664104668851354808fc945",
+      "actualCwd": "/opt/zhudatuan/releases/810acfd-invitation-receipt-20260901-044936",
+      "remoteAnchors": [
+        "ethan/iam-reliability-95",
+        "codex/identity-notification-production-hotfix-20260901"
+      ],
+      "cwdDeleted": false
+    },
+    {
+      "name": "identity-notification-jobs",
+      "systemdUnit": "zhudatuan-identity-notification-jobs.service",
+      "sourceCommit": "c1c8ab0a88cc689648143f5e8533860246e85bcc",
+      "actualCwd": "/opt/zhudatuan/releases/c1c8ab0-identity-sms-recovery-20260901-101100",
+      "remoteAnchors": [
+        "ethan/iam-reliability-95",
+        "ethan/identity-recovery-alerting-20260901"
+      ],
+      "cwdDeleted": false
+    },
+    {
+      "name": "internal-runtime",
+      "systemdUnit": "zhudatuan-internal-runtime.service",
+      "sourceCommit": "384ea23c65208a7e5c2fcbd2f5e9495facd6e723",
+      "actualCwd": "/opt/zhudatuan/releases/384ea23-full-production-20260830",
+      "remoteAnchors": [
+        "codex/full-production-20260830"
+      ],
+      "cwdDeleted": true
+    },
+    {
+      "name": "storefront",
+      "systemdUnit": "zhudatuan-storefront.service",
+      "sourceCommit": "817132c1638c5049d9789b53ebe8165724a70598",
+      "actualCwd": "/opt/zhudatuan/releases/817132c-order-release-20260901-105508/apps/storefront-web",
+      "remoteAnchors": [
+        "ethan/iam-reliability-95",
+        "ethan/order-release-31b27b7-20260901"
+      ],
+      "cwdDeleted": false
+    },
+    {
+      "name": "referral-console-preview",
+      "systemdUnit": "zhudatuan-console-preview.service",
+      "sourceCommit": "23027da8771dc02fb6c5a693070d27f948f3b917",
+      "actualCwd": "/srv/zhudatuan-display/referral-releases/23027da8771dc02fb6c5a693070d27f948f3b917-graceful-access-20260830-v3",
+      "remoteAnchors": [
+        "codex/full-production-20260830",
+        "main"
+      ],
+      "cwdDeleted": false
+    },
+    {
+      "name": "finance-preview",
+      "systemdUnit": "zhudatuan-finance-preview.service",
+      "sourceCommit": "01f1ed49dd5df67d28956a116de066f5fa1d5668",
+      "artifactSha256": "2ac8e932a21c0f92a7ddbe376c37e3e9aa1e1c6689a7f0f2c5e6a622d5c28666",
+      "actualCwd": "/srv/zhudatuan-display/finance-preview-releases/finance-preview-20260830T011043Z-2ac8e932a21c",
+      "remoteAnchors": [
+        "codex/full-production-20260830",
+        "ethan/iam-reliability-95",
+        "main"
+      ],
+      "apiMode": "fixture-read-only",
+      "cwdDeleted": false
+    },
+    {
+      "name": "registration-postgres",
+      "systemdUnit": "zhudatuan-registration-database.service",
+      "containerName": "zhudatuan-registration-postgres",
+      "listener": "127.0.0.1:55432",
+      "containerStatus": "healthy"
+    }
+  ],
+  "minimumProtectedRemoteBranches": [
+    {
+      "name": "ethan/iam-reliability-95",
+      "tip": "807ca31f19995c7732592ae91bb028d297bd1615"
+    },
+    {
+      "name": "codex/full-production-20260830",
+      "tip": "a509e3aedcd0"
+    },
+    {
+      "name": "zdt-next",
+      "tipAtCapture": "677513d4baae42b3bbe71027029ac35749c922f1"
+    }
+  ],
+  "unprotectedProductionCommits": [
+    {
+      "commit": "443cdb06d4724ae799e29ee61e97a336d322ec5d",
+      "component": "web-business-api",
+      "requiredAction": "create an immutable remote production-evidence tag before local branch or worktree cleanup"
+    }
+  ],
+  "safety": {
+    "credentialsCaptured": false,
+    "serverMutated": false,
+    "servicesRestarted": false,
+    "routesChanged": false
+  }
+}
