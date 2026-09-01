@@ -39,7 +39,7 @@ export function Component() {
   const query = useQuery({ queryKey: reportKey(context, view, period, cursor), queryFn: ({ signal }) => readReport(context, view, period, cursor, signal) });
   const data = query.data;
   const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
   const setFilter = (key: 'view' | 'period', value: string) => {
     const next = new URLSearchParams(search);
     next.set(key, value);

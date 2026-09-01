@@ -32,7 +32,7 @@ export function Component() {
   const query = useQuery({ queryKey: memberKey(context, cursor), queryFn: ({ signal }) => readMembers(context, cursor, signal) });
   const data = query.data;
   const error = safeQueryError(query.error);
-  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
   const canManage = context.session.permissions.includes('member.manage') && context.session.capabilities.includes('identity.members.manage') && context.session.csrf !== undefined;
   const mutation = useMutation({
     mutationFn: (change: MemberChange) => executeMemberChange(context, change),

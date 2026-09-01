@@ -7,7 +7,6 @@ export interface QueryStateInput {
   readonly error: Error | null;
   readonly hasData: boolean;
   readonly empty: boolean;
-  readonly stale: boolean;
 }
 
 export function queryCondition(input: QueryStateInput): ResourceCondition {
@@ -20,7 +19,6 @@ export function queryCondition(input: QueryStateInput): ResourceCondition {
   }
   if (!input.hasData || input.empty) return 'empty';
   if (input.fetching) return 'refreshing';
-  if (input.stale) return 'stale';
   return 'ready';
 }
 

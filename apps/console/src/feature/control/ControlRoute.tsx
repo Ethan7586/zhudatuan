@@ -45,7 +45,7 @@ export function Component() {
   const query = useQuery({ queryKey: controlKey(context, cursor), queryFn: ({ signal }) => readControl(context, cursor, signal) });
   const data = query.data;
   const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.kind === 'runtime' ? false : data?.page.items.length === 0, stale: query.isStale });
+  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.kind === 'runtime' ? false : data?.page.items.length === 0 });
   const runtimeScope = context.scope.kind !== 'platform' && context.scope.kind !== 'distributor';
   if (runtimeScope) {
     const rows = data?.kind === 'runtime' ? runtimeRows(data.health) : [];

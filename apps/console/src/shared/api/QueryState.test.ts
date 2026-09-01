@@ -31,6 +31,11 @@ describe('console query state', () => {
   it('keeps access-state classification independent from presentation copy', () => {
     const error = new ApiError('STEPUP_REQUIRED', 403, 'request:stepup');
 
-    expect(queryCondition({ pending: false, fetching: false, error, hasData: false, empty: true, stale: false })).toBe('denied');
+    expect(queryCondition({ pending: false, fetching: false, error, hasData: false, empty: true })).toBe('denied');
+  });
+
+  it('keeps successful cached data ready until a refresh actually fails', () => {
+    expect(queryCondition({ pending: false, fetching: false, error: null, hasData: true, empty: false })).toBe('ready');
+    expect(queryCondition({ pending: false, fetching: false, error: new Error('NETWORK_FAILURE'), hasData: true, empty: false })).toBe('stale');
   });
 });

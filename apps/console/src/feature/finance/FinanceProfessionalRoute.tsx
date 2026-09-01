@@ -35,7 +35,7 @@ export function FinanceProfessionalRoute({ section }: Readonly<{ section: Financ
   const cursor = search.get('cursor') ?? undefined;
   const query = useQuery({ queryKey: financeProfessionalKey(context, section, cursor), queryFn: ({ signal }) => readFinanceProfessional(context, section, cursor, signal) });
   const data = query.data;
-  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
   return (
     <section className="financeprofessionalworkspace">
       <FinanceTabs context={context} active={activeTab(section)} />

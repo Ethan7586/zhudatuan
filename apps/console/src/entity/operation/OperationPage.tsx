@@ -28,7 +28,7 @@ export function OperationPage({
     return <AssurancePrompt title={routeTitle} />;
   }
   const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data === undefined, stale: query.isStale });
+  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data === undefined });
   return (
     <ResourcePanel
       eyebrow={operation}

@@ -27,7 +27,7 @@ export function Component() {
       ),
   });
   const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0, stale: query.isStale });
+  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0 });
   return (
     <ResourcePanel
       eyebrow="IDENTITY PROVIDER"

@@ -189,5 +189,5 @@ function viewSearch(search: URLSearchParams, view: string): URLSearchParams {
 }
 
 function condition(query: Readonly<{ isPending: boolean; isFetching: boolean; error: Error | null; isStale: boolean; data?: unknown }>, length?: number) {
-  return queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: length === 0, stale: query.isStale });
+  return queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: length === 0 });
 }

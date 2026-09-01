@@ -64,7 +64,7 @@ describe('Console feature-owned response schemas', () => {
   });
 
   it('preserves prior data only for transient failures, never for access denial', () => {
-    const state = { pending: false, fetching: false, hasData: true, empty: false, stale: false };
+    const state = { pending: false, fetching: false, hasData: true, empty: false };
     expect(queryCondition({ ...state, error: new Error('NETWORK_FAILURE') })).toBe('stale');
     expect(queryCondition({ ...state, error: new ApiError('PERMISSION_DENIED', 403, 'request:1') })).toBe('denied');
     expect(queryCondition({ ...state, fetching: true, error: new Error('NETWORK_FAILURE') })).toBe('retry');

@@ -27,7 +27,7 @@ export function Component() {
   const query = useQuery({ queryKey: orderDetailKey(context, orderId), queryFn: ({ signal }) => readOrderDetail(context, orderId, signal), enabled: orderId !== '' });
   const data = query.data;
   const error = safeQueryError(query.error);
-  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data === undefined && !query.isPending && query.error === null, stale: query.isStale });
+  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data === undefined && !query.isPending && query.error === null });
   return (
     <ResourcePanel
       title={routeTitle}

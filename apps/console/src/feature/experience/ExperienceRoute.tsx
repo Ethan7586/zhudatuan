@@ -49,7 +49,6 @@ export function Component() {
     error: query.error,
     hasData: data !== undefined,
     empty: false,
-    stale: query.isStale,
   });
   const error = safeQueryError(query.error);
   const view = readView(search.get('view'));

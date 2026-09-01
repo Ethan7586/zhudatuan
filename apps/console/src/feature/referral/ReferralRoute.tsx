@@ -51,7 +51,7 @@ export function Component() {
   });
   const data = query.data;
   const resourceError = allowed ? safeQueryError(query.error) : decision.reason;
-  const condition = allowed ? queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale }) : 'denied';
+  const condition = allowed ? queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 }) : 'denied';
   const viewMeta = meta[view];
   const title = useRouteTitle('分销返佣');
   const canManageSetting = decideReferralAccess(context, 'referral.setting.manage', 'referral.settings.manage').allowed;

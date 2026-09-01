@@ -41,7 +41,7 @@ export function Component() {
   };
   const query = useQuery({ queryKey: productKey(context, filter), queryFn: ({ signal }) => readProducts(context, filter, signal), staleTime: 5 * 60_000 });
   const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0, stale: query.isStale });
+  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0 });
   const selectedId = search.get('selected') ?? undefined;
   const selectedListing = query.data?.items.find((item) => item.id === selectedId);
   const status = search.get('status') ?? '';

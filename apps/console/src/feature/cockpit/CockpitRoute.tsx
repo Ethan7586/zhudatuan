@@ -29,7 +29,6 @@ export function Component() {
     error: query.error,
     hasData: query.data !== undefined,
     empty: false,
-    stale: query.isStale,
   });
   const openInsight = (insight: BusinessInsight) => {
     if (insight.target !== undefined) void navigate(scopePath(context.scope, insight.target));

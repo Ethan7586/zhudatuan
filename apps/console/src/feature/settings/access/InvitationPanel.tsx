@@ -80,7 +80,7 @@ export function InvitationPanel({ tabs }: Readonly<{ tabs: ReactNode }>) {
   };
   const data = query.data;
   const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
   return (
     <>
       <PagedResource

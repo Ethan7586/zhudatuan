@@ -28,7 +28,7 @@ export function Component() {
   const query = useQuery({ queryKey: channelKey(context, view, cursor), queryFn: ({ signal }) => readChannels(context, view, cursor, signal) });
   const data = query.data;
   const error = safeQueryError(query.error);
-  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
   const select = (next: ChannelView) => {
     const params = new URLSearchParams();
     params.set('view', next);

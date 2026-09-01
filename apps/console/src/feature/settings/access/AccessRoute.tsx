@@ -37,7 +37,7 @@ export function Component() {
   );
   const data = query.data;
   const error = safeQueryError(query.error);
-  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
   const canRole = allowed(context, 'access.role.manage', 'access.roles.manage');
   const canOverride = allowed(context, 'access.override.manage', 'access.overrides.manage');
   const canScope = allowed(context, 'access.scope.manage', 'access.scopes.manage');

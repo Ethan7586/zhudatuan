@@ -35,7 +35,7 @@ function ImportJobRoute({ kind, jobId }: Readonly<{ kind: ImportKind; jobId: str
   });
   const data = query.data;
   const error = safeQueryError(query.error);
-  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: false, stale: query.isStale });
+  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: false });
   return (
     <ResourcePanel
       title={routeTitle}

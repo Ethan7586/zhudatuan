@@ -47,7 +47,6 @@ export function Component() {
     error: query.error,
     hasData: data !== undefined,
     empty: false,
-    stale: query.isStale,
   });
   const q = (search.get('q') ?? '').trim().toLowerCase();
   const status = search.get('status') ?? 'all';

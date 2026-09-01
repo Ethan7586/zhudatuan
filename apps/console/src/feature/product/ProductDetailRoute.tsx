@@ -67,7 +67,6 @@ export function Component() {
     error: query.error,
     hasData: query.data !== undefined,
     empty: false,
-    stale: query.isStale,
   });
   const data = query.data;
   return (

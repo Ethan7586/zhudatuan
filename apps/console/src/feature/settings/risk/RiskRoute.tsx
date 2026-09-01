@@ -30,7 +30,7 @@ export function Component() {
     return <AssurancePrompt title={title} description="系统治理台包含风险策略、命中证据与人员标识。请完成短信二次验证后查看，成功后会自动回到当前数据范围。" />;
   }
   const data: OperationOutputFor<'risk.center.read'> | undefined = query.data;
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: false, stale: query.isStale });
+  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: false });
   const error = safeQueryError(query.error);
   const notification = nodes.find((node) => node.component === 'notification' || node.title === '通知管理');
   return (

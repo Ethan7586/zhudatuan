@@ -25,7 +25,7 @@ export function Component() {
   const query = useQuery({ queryKey: qualificationKey(context, cursor), queryFn: ({ signal }) => readQualifications(context, cursor, signal) });
   const data = query.data;
   const error = safeQueryError(query.error);
-  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
   return (
     <PagedResource
       title="资格管理"
