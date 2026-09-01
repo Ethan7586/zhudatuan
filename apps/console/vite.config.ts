@@ -8,13 +8,14 @@ const consoleRoot = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig(({ command, mode }) => {
   const plugins: PluginOption[] = [react(), tailwindcss()];
+  const source = { ...loadEnv(mode, consoleRoot, ''), ...process.env };
+  const build = buildIdentity(source);
   if (command === 'build') {
-    const source = { ...loadEnv(mode, consoleRoot, ''), ...process.env };
     const environment = clientBuildEnvironment(source);
     plugins.push(
       consoleArtifactPlugin({
         schema: 'shop.console-artifact.v1',
-        ...buildIdentity(source),
+        ...build,
         ...environment,
       })
     );
@@ -22,6 +23,12 @@ export default defineConfig(({ command, mode }) => {
   return {
     envDir: consoleRoot,
     plugins,
+    define: {
+      __SHOP_BUILD_COMMIT__: JSON.stringify(build.commit),
+      __SHOP_BUILD_BRANCH__: JSON.stringify(build.branch),
+      __SHOP_BUILD_ID__: JSON.stringify(build.id),
+      __SHOP_BUILD_DIRTY__: JSON.stringify(build.sourceTree === 'dirty'),
+    },
     build: { manifest: true },
     server: {
       port: 4173,
@@ -71,7 +78,9 @@ function buildIdentity(source: Readonly<Record<string, string | undefined>>) {
   if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error('CONSOLE_BUILD_COMMIT_INVALID');
   const sourceTree = source.SHOP_SOURCE_TREE?.trim() || (git(['status', '--porcelain', '--untracked-files=all'], 'CONSOLE_BUILD_SOURCE_TREE_UNKNOWN') === '' ? 'clean' : 'dirty');
   if (!['clean', 'dirty'].includes(sourceTree)) throw new Error('CONSOLE_BUILD_SOURCE_TREE_INVALID');
-  return { commit, sourceTree } as const;
+  const branch = source.SHOP_BUILD_BRANCH?.trim() || source.GITHUB_REF_NAME?.trim() || git(['branch', '--show-current'], 'CONSOLE_BUILD_BRANCH_MISSING') || 'detached';
+  const id = source.SHOP_BUILD_ID?.trim() || `${commit.slice(0, 12)}${sourceTree === 'dirty' ? '-dirty' : ''}`;
+  return { commit, sourceTree, branch, id } as const;
 }
 
 function git(args: readonly string[], error: string): string {
