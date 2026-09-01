@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { API_ORIGIN, AUTH_ORIGIN } from './Origins';
 
 const consoleOrigin = 'http://127.0.0.1:4184';
-const environment = 'VITE_API_BASE_URL=http://127.0.0.1:4311 VITE_AUTH_BASE_URL=http://127.0.0.1:4176 VITE_CLIENT_VERSION=1.0.0-invitation.e2e DISABLE_HMR=true';
+const environment = `VITE_API_BASE_URL=${API_ORIGIN} VITE_AUTH_BASE_URL=${AUTH_ORIGIN} VITE_CLIENT_VERSION=1.0.0-invitation.e2e DISABLE_HMR=true`;
 
 export default defineConfig({
   testDir: '.',
