@@ -2,6 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { DatabaseHarness } from '@shop/testing';
 import { Client } from 'pg';
 import { describe, expect, it } from 'vitest';
+import type { Actor } from '../../src/foundation/security/AccessContext';
+import { AccessPipeline } from '../../src/foundation/security/AccessPipeline';
+import {
+  PgAccessVersionResolver,
+  PgCapabilityResolver,
+  PgMembershipResolver,
+  PgScopeResolver,
+} from '../../src/foundation/security/PgAccessResolvers';
+import type { DatabasePool } from '../../src/foundation/persistence/Pool';
 
 const connection = process.env.SHOP_TEST_DATABASE_URL;
 const endpointAvailable = connection !== undefined || process.env.PGHOST !== undefined;
@@ -46,6 +55,54 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
       expect(policies.rows.every(({ scope_id }) => scope_id === 'rls-scope-a')).toBe(true);
       await client.query('rollback');
     });
+  });
+
+  it('authorizes the platform Owner personal profile through the production PostgreSQL resolvers', async () => {
+    const client = new Client({ ...(connection === undefined ? {} : { connectionString: connection }), connectionTimeoutMillis: 5_000, statement_timeout: 15_000 });
+    await client.connect();
+    try {
+      const owner = await client.query<{ membership_id: string; member_id: string; access_version: number }>(`
+        select platformowner.membership_id,membership.member_id,membership.access_version
+        from access.platformowner platformowner
+        join access.membership membership on membership.id=platformowner.membership_id and membership.status='active'
+        where platformowner.singleton=true and platformowner.state='active'`);
+      expect(owner.rows).toHaveLength(1);
+      const row = owner.rows[0]!;
+      const database = { query: client.query.bind(client) } as unknown as DatabasePool;
+      const actor: Actor = Object.freeze({
+        id: 'actor:platform-owner:repository-contract',
+        session: 'session:platform-owner:repository-contract',
+        membership: row.membership_id,
+        credentialVersion: 1,
+        accessVersion: row.access_version,
+        target: 'console',
+        assurance: { level: 2 },
+      });
+      const decisions: unknown[] = [];
+      const pipeline = new AccessPipeline(
+        { resolve: async () => actor },
+        new PgMembershipResolver(database),
+        new PgAccessVersionResolver(database),
+        new PgScopeResolver(database),
+        new PgCapabilityResolver(database),
+        { now: () => new Date() },
+        { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) },
+        { append: async (decision) => { decisions.push(decision); } },
+      );
+
+      const access = await pipeline.authorize({}, 'member.profile.read', 'member.profile.read');
+
+      expect(access.membership.id).toBe(row.membership_id);
+      expect(access.scope).toMatchObject({ kind: 'owner', id: row.member_id });
+      expect(access.capabilities).toContain('member.profile.read');
+      expect(decisions).toContainEqual(expect.objectContaining({
+        operation: 'member.profile.read',
+        outcome: 'allow',
+        reason: 'POLICY_ALLOWED',
+      }));
+    } finally {
+      await client.end();
+    }
   });
 });
 

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import type { Result } from 'axe-core';
 import { consoleSession } from './Fixtures';
 import {
   financeAuditPreviewPage,
@@ -397,14 +398,9 @@ async function expectFinanceWcagAA(page: Page): Promise<void> {
   expect(result.violations, describeViolations(result.violations)).toEqual([]);
 }
 
-function describeViolations(
-  violations: readonly {
-    id: string;
-    impact?: string | null;
-    nodes: readonly { target: readonly string[] }[];
-  }[]
-): string {
-  return violations.map((violation) => `${violation.impact ?? 'unknown'} ${violation.id}: ${violation.nodes.map((node) => node.target.join(' ')).join(', ')}`).join('\n');
+function describeViolations(violations: readonly Result[]): string {
+  return violations.map((violation) => `${violation.impact ?? 'unknown'} ${violation.id}: ${violation.nodes.map((node) =>
+    node.target.map((selector) => Array.isArray(selector) ? selector.join(' >>> ') : selector).join(' ')).join(', ')}`).join('\n');
 }
 
 const financePaginationRows: readonly FinanceReconciliationRecord[] = Object.freeze(
