@@ -5,16 +5,20 @@ import { QueueJob } from '../foundation/infrastructure/QueueJob';
 import { KmsClient } from '../foundation/infrastructure/KmsClient';
 import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { createPool, type DatabasePool } from '../foundation/persistence/Pool';
+import { JobMetrics } from '../foundation/telemetry/JobMetrics';
+import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { DeliveryRegistry } from '../modules/notification/application/DeliveryRegistry';
 import { DispatchNotification } from '../modules/notification/application/command/DispatchNotification';
 import { AliyunSmsChannel } from '../modules/notification/infrastructure/adapter/AliyunSmsChannel';
 import { parseIdentityNotificationConfiguration } from '../modules/notification/infrastructure/adapter/IdentityNotificationConfiguration';
 import { PgNotificationRepository } from '../modules/notification/infrastructure/persistence/PgNotificationRepository';
+import { IdentityNotificationBacklogMonitor } from '../modules/notification/interface/job/IdentityNotificationBacklogMonitor';
 import { IdentityNotificationJobProcessor, type IdentityChallengeDispatcher } from '../modules/notification/interface/job/NotificationJob';
 import { assertLiveDatabaseBoundary } from './LiveDatabaseBoundary';
 
 export interface IdentityNotificationJobsRuntime {
   readonly job: Job<void>;
+  readonly backlog: IdentityNotificationBacklogMonitor;
   close(): Promise<void>;
 }
 
@@ -38,8 +42,11 @@ export async function createIdentityNotificationJobsRuntime(environment: JobsEnv
     );
     const deliveries = new DeliveryRegistry([new AliyunSmsChannel(configuration.sms)]);
     const dispatches = new DispatchNotification(new PgNotificationRepository(pool), kms, deliveries);
+    const telemetry = commerceTelemetry();
     return Object.freeze({
-      job: createIdentityNotificationJob(pool, dispatches, requiredValue(environment.JOB_WORKER_ID, 'JOB_WORKER_ID_MISSING')),
+      job: createIdentityNotificationJob(pool, dispatches, requiredValue(environment.JOB_WORKER_ID, 'JOB_WORKER_ID_MISSING'),
+        new JobMetrics(telemetry)),
+      backlog: new IdentityNotificationBacklogMonitor(pool, telemetry),
       close: () => pool.end(),
     });
   } catch (cause) {
@@ -48,7 +55,8 @@ export async function createIdentityNotificationJobsRuntime(environment: JobsEnv
   }
 }
 
-export function createIdentityNotificationJob(pool: DatabasePool, dispatches: IdentityChallengeDispatcher, worker: string): Job<void> {
+export function createIdentityNotificationJob(pool: DatabasePool, dispatches: IdentityChallengeDispatcher, worker: string,
+  metrics?: JobMetrics): Job<void> {
   return new QueueJob('identitynotification', pool, {
     worker,
     owner: 'identity',
@@ -61,7 +69,7 @@ export function createIdentityNotificationJob(pool: DatabasePool, dispatches: Id
     deadline: 15_000,
     retryMinimum: 250,
     retryMaximum: 60_000,
-  }, new IdentityNotificationJobProcessor(dispatches));
+  }, new IdentityNotificationJobProcessor(dispatches), undefined, metrics);
 }
 
 export async function assertIdentityNotificationRuntimeCompatibility(pool: DatabasePool): Promise<void> {
