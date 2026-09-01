@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parse } from 'yaml';
 
 const root = resolve(import.meta.dirname, '../..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 
-const [deliverySource, buildSource, packageSource, serviceSource, environmentSource, bootstrapSource, predecessorMigrationSource, migrationSource, runnerSource, postgresInitSource, reconciliationSource, databaseAuditSource,postgresInitFixtureSource] = await Promise.all([
+const [deliverySource, buildSource, packageSource, serviceSource, environmentSource, bootstrapSource, predecessorMigrationSource, runnerSource, postgresInitSource, reconciliationSource, databaseAuditSource,postgresInitFixtureSource] = await Promise.all([
   read('infrastructure/zhudatuan/aliyun/delivery.yml'),
   read('scripts/build-commerce.mjs'),
   read('package.json'),
@@ -14,7 +14,6 @@ const [deliverySource, buildSource, packageSource, serviceSource, environmentSou
   read('infrastructure/zhudatuan/aliyun/registration-bootstrap.env.example'),
   read('tools/seed/src/BootstrapRegistration.ts'),
   read('database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql'),
-  read('database/supabase/migrations/20260829054500_zhudatuan_identity_login_acl_repair.sql'),
   read('services/commerce/src/foundation/infrastructure/RegistrationMigrationRunner.ts'),
   read('infrastructure/zhudatuan/aliyun/postgres-init-registration.sh'),
   read('infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql'),
@@ -219,17 +218,27 @@ const normalizedPredecessorDigest = createHash('sha256')
   .digest('hex');
 if (normalizedPredecessorDigest !== predecessorMarker) throw new Error('REGISTRATION_BOOTSTRAP_NORMALIZED_DIGEST_DRIFT');
 
-const migrationMarker = migrationSource.match(/values\('20260829054500','([a-f0-9]{64})'\)/)?.[1];
+const migrationFiles = (await readdir(resolve(root, 'database/supabase/migrations')))
+  .filter((name) => name.endsWith('.sql'))
+  .sort();
+const targetFile = migrationFiles.at(-1);
+const targetVersion = targetFile?.slice(0, 14);
+const migrationSource = targetFile ? await read(`database/supabase/migrations/${targetFile}`) : '';
+const migrationMarker = targetVersion
+  ? migrationSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1]
+  : undefined;
+const runnerVersion = runnerSource.match(/REGISTRATION_TARGET_VERSION = '([0-9]{14})'/)?.[1];
 const runnerMarker = runnerSource.match(/REGISTRATION_TARGET_CHECKSUM = '([a-f0-9]{64})'/)?.[1];
-if (!migrationMarker || migrationMarker === '0'.repeat(64) || migrationMarker !== runnerMarker) {
-  throw new Error('IDENTITY_LOGIN_ACL_SCHEMA_MARKER_DRIFT');
+if (!targetFile || !targetVersion || runnerVersion !== targetVersion
+  || !migrationMarker || migrationMarker === '0'.repeat(64) || migrationMarker !== runnerMarker) {
+  throw new Error('REGISTRATION_TARGET_SCHEMA_MARKER_DRIFT');
 }
 const normalizedDigest = createHash('sha256')
   .update(migrationSource.replaceAll(migrationMarker, '0'.repeat(64)))
   .digest('hex');
-if (normalizedDigest !== migrationMarker) throw new Error('IDENTITY_LOGIN_ACL_NORMALIZED_DIGEST_DRIFT');
-if (!runnerSource.includes("REGISTRATION_TARGET_VERSION = '20260829054500'") || !runnerSource.includes("name='20260829054500_zhudatuan_identity_login_acl_repair.sql'")) {
-  throw new Error('IDENTITY_LOGIN_ACL_RUNNER_TARGET_INVALID');
+if (normalizedDigest !== migrationMarker) throw new Error('REGISTRATION_TARGET_NORMALIZED_DIGEST_DRIFT');
+if (!runnerSource.includes(`name='${targetFile}'`)) {
+  throw new Error('REGISTRATION_RUNNER_TARGET_INVALID');
 }
 
 process.stdout.write('registration deployment checks passed\n');

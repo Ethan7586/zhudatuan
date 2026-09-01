@@ -12,6 +12,17 @@ const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
+const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
+const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
+const REGISTRATION_ASSERTION_OMISSIONS = new Map([
+  [INVITATION_SCOPE, /\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
+  ['20260821069000_add_store_management.sql', /\n  select id into membership from access\.membership[\s\S]*?STORE_CREATE_SCOPE_UNRESOLVED'; end if;\n/],
+  ['20260821074000_grant_platform_owner_operations.sql', /\ndo \$assert\$[\s\S]*?\n\$assert\$;\n/],
+  ['20260821075000_grant_platform_cardlibrary_read.sql', /\ndo \$assert\$[\s\S]*?\nend \$assert\$;\n/],
+  ['20260821076000_grant_platform_cockpit_reads.sql', /\ndo \$assert\$[\s\S]*?\n\$assert\$;\n/],
+  ['20260821078000_complete_experience_application.sql', /\n  if exists\(\n    select 1 from unnest\(required_operations\)[\s\S]*?PLATFORM_OWNER_EXPERIENCE_OPERATION_MISSING';\n  end if;\n/],
+  ['20260828092000_finance_security_boundaries.sql', /\n  if not exists\(select 1 from capability\.membership_operations\('membership-platform-owner-ethan-v1'\)[\s\S]*?FINANCE_CONSOLE_READ_PERMISSION_MISSING'; end if;\n/],
+]);
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
 const REPAIR_FILES = [
@@ -76,11 +87,25 @@ if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventor
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
+if (mode === '--registration-boundary-postgres' && process.argv[4] !== 'local-disposable-fixture') {
+  throw new Error('REGISTRATION_BOUNDARY_POSTGRES_FIXTURE_CONFIRMATION_REQUIRED');
+}
 
 const migrationFiles = (await readdir(MIGRATIONS)).filter((name) => name.endsWith('.sql')).sort();
 await verifyInventory(migrationFiles);
 if (mode === '--check-inventory') {
   console.log(`migration inventory ok: historical=94 repair=${REPAIR_FILES.length} total=${migrationFiles.length}`);
+  process.exit(0);
+}
+
+if (mode === '--registration-boundary-postgres') {
+  const database = await openDatabase();
+  try {
+    await verifyRegistrationBoundaryOnPostgres(database);
+  } finally {
+    await database.close();
+  }
+  console.log('registration boundary PostgreSQL replay passed: rds-like-deny=1 rds-like-allow=2 legacy-upgrade=1');
   process.exit(0);
 }
 
@@ -96,6 +121,14 @@ try {
   `, 'database bootstrap');
   let applied = 0;
   for (const name of migrationFiles) {
+    if (mode === '--registration-fresh' && (name === BOOTSTRAP || name === OWNER_RECONCILIATION)) {
+      await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [
+        name.slice(0, 14),
+        `environment-omitted:${name}`,
+      ]);
+      applied += 1;
+      continue;
+    }
     if (name === BOOTSTRAP) await seedBootstrapPrecondition(database);
     if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
       await seedUnsafeInventoryCutover(database);
@@ -110,7 +143,8 @@ try {
     applied += 1;
   }
   if (mode !== '--inventory-cutover-unsafe') {
-  await verifyTarget(database);
+    if (mode === '--registration-fresh') await reconcileRegistrationReplayBoundary(database);
+    await verifyTarget(database);
     if (mode === '--mvp-kernel') {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
       await verifyMvpKernel(database);
@@ -122,9 +156,19 @@ try {
 }
 
 async function openDatabase() {
-  if (mode !== '--postgres-fresh') return new PGlite({ extensions: { pgcrypto } });
+  if (mode === '--registration-fresh') {
+    const cluster = new PGlite();
+    await cluster.exec('create database zhudatuan_registration');
+    const data = await cluster.dumpDataDir('none');
+    await cluster.close();
+    return new PGlite({ database: 'zhudatuan_registration', loadDataDir: data, extensions: { pgcrypto } });
+  }
+  if (mode !== '--postgres-fresh' && mode !== '--registration-boundary-postgres') return new PGlite({ extensions: { pgcrypto } });
   const connectionString = process.argv[3];
   if (connectionString !== undefined && !/^postgres(?:ql)?:\/\//.test(connectionString)) throw new Error('POSTGRES_FRESH_URL_INVALID');
+  if (mode === '--registration-boundary-postgres' && connectionString === undefined) {
+    throw new Error('REGISTRATION_BOUNDARY_POSTGRES_URL_REQUIRED');
+  }
   const client = new Client({ ...(connectionString === undefined ? {} : { connectionString }), connectionTimeoutMillis: 5_000, statement_timeout: 120_000 });
   await client.connect();
   return Object.freeze({
@@ -330,6 +374,14 @@ async function verifyObjectContract(database) {
     ['policy', new Set(entries.filter((entry) => entry.kind === 'policy').map((entry) => entry.id))],
     ['grant', new Set(entries.filter((entry) => entry.kind === 'grant').map((entry) => entry.id))],
   ]);
+  if (mode === '--registration-fresh') {
+    for (const id of [
+      'access.membership.zhudatuanregistrationboundary_runtime_guard',
+      'access.membershiprole.zhudatuanregistrationboundary_runtime_guard',
+      'access.role.zhudatuanregistrationboundary_runtime_guard',
+      'runtime.schemaversion.zhudatuanregistrationboundary_runtime_guard',
+    ]) expected.get('policy').add(id);
+  }
   const schemaRows = await database.query('select schema_name id from information_schema.schemata where schema_name=any($1::text[])', [schemas]);
   const tableRows = await database.query(`select namespace.nspname||'.'||relation.relname id,relation.relrowsecurity rls
     from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
