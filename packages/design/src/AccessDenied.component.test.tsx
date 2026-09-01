@@ -20,6 +20,14 @@ describe('AccessDenied', () => {
     expect(screen.queryByText(/CONTRACT_RESPONSE_INVALID|请求 [0-9a-f-]{20,}/)).toBeNull();
   });
 
+  it('renders a contextual explanation when the caller provides one', () => {
+    render(<AccessDenied resourceLabel="经营驾驶舱" description="账号已登录，等待管理员授权。" />);
+
+    expect(screen.getByRole('region', { name: '没有权限' })).toBeTruthy();
+    expect(screen.getByText('账号已登录，等待管理员授权。')).toBeTruthy();
+    expect(screen.queryByText('「经营驾驶舱」不可访问')).toBeNull();
+  });
+
   it('keeps the login recovery action for an expired session', async () => {
     const user = userEvent.setup();
     const onRelogin = vi.fn();

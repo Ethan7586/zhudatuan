@@ -42,6 +42,20 @@ describe('resource state contract', () => {
     expect(result.props.detail).toBeUndefined();
   });
 
+  it('forwards an explicit denied description without exposing transport errors', () => {
+    const result = ResourceState({
+      condition: 'denied',
+      resourceLabel: '经营驾驶舱',
+      deniedDescription: '账号已登录，等待管理员授权。',
+      error: 'PERMISSION_DENIED · 请求 request:one',
+      children: 'ready',
+    });
+    expect(isValidElement(result)).toBe(true);
+    if (!isValidElement<{ description?: string }>(result)) throw new Error('ACCESS_DENIED_ELEMENT_REQUIRED');
+    expect(result.type).toBe(ContextualAccessDenied);
+    expect(result.props.description).toBe('账号已登录，等待管理员授权。');
+  });
+
   it('announces loading, renders empty and preserves ready children', () => {
     const loading = ResourceState({ condition: 'loading', children: 'ready' });
     expect(isValidElement(loading)).toBe(true);

@@ -12,6 +12,7 @@ export interface AccessDeniedActions {
 export interface AccessDeniedProps {
   readonly kind?: AccessDeniedKind;
   readonly resourceLabel?: string;
+  readonly description?: string;
   readonly actions?: AccessDeniedActions;
 }
 
@@ -32,7 +33,7 @@ export function ContextualAccessDenied(props: AccessDeniedProps) {
   return <AccessDenied {...props} {...(props.actions === undefined && actions !== undefined ? { actions } : {})} />;
 }
 
-export function AccessDenied({ kind = 'forbidden', resourceLabel, actions }: AccessDeniedProps) {
+export function AccessDenied({ kind = 'forbidden', resourceLabel, description, actions }: AccessDeniedProps) {
   const containerRef = useRef<HTMLElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -55,7 +56,7 @@ export function AccessDenied({ kind = 'forbidden', resourceLabel, actions }: Acc
       >
         <div className="swaccessdenieddimcontent">
           <h2 id={titleId}>没有权限</h2>
-          <p id={descriptionId}>{resourceLabel === undefined ? '当前界面不可访问' : `「${resourceLabel}」不可访问`}</p>
+          <p id={descriptionId}>{description ?? (resourceLabel === undefined ? '当前界面不可访问' : `「${resourceLabel}」不可访问`)}</p>
         </div>
       </section>
     );

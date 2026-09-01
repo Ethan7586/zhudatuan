@@ -12,6 +12,7 @@ export interface ResourceStateProps {
   readonly error?: string;
   readonly retry?: () => void;
   readonly resourceLabel?: string;
+  readonly deniedDescription?: string;
   readonly children: ReactNode;
 }
 
@@ -21,7 +22,7 @@ export function resourceCondition(data: unknown, rowCount: number, error?: strin
   return rowCount === 0 ? 'empty' : 'ready';
 }
 
-export function ResourceState({ condition, error, retry, resourceLabel, children }: ResourceStateProps) {
+export function ResourceState({ condition, error, retry, resourceLabel, deniedDescription, children }: ResourceStateProps) {
   if (condition === 'ready') return children;
   if (condition === 'loading')
     return (
@@ -41,7 +42,10 @@ export function ResourceState({ condition, error, retry, resourceLabel, children
   }
   const message = error ?? 'UNKNOWN_RESOURCE_ERROR';
   if (condition === 'unauthenticated') return <ContextualAccessDenied kind="unauthenticated" {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
-  if (condition === 'denied') return <ContextualAccessDenied {...(resourceLabel === undefined ? {} : { resourceLabel })} />;
+  if (condition === 'denied') return <ContextualAccessDenied
+    {...(resourceLabel === undefined ? {} : { resourceLabel })}
+    {...(deniedDescription === undefined ? {} : { description: deniedDescription })}
+  />;
   if (condition === 'notfound') return <ErrorView title="资源不存在" message={message} />;
   if (condition === 'conflict') return <ErrorView title="数据已被其他操作更新" message={message} {...(retry === undefined ? {} : { retry })} />;
   if (condition === 'ratelimited') return <ErrorView title="请求过于频繁" message={message} {...(retry === undefined ? {} : { retry })} />;

@@ -12,6 +12,8 @@ import type { BusinessInsight, CockpitSales } from './CockpitSchema';
 import { CockpitTrend } from './CockpitTrend';
 import './cockpit.css';
 
+const PENDING_AUTHORIZATION_DESCRIPTION = '账号已登录，但当前数据范围尚未获得经营后台权限。新注册管理员请等待 Owner 或高级管理员授权；授权后重新登录即可。';
+
 export function Component() {
   const context = useConsoleContext();
   const navigate = useNavigate();
@@ -36,7 +38,8 @@ export function Component() {
   };
   return (
     <section className="cockpitpage" aria-label="经营驾驶舱">
-      <ResourceState condition={condition} resourceLabel="经营驾驶舱" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+      <ResourceState condition={condition} resourceLabel="经营驾驶舱" deniedDescription={PENDING_AUTHORIZATION_DESCRIPTION}
+        {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
         {query.data === undefined ? <span /> : <CockpitContent sales={query.data.summary.sales} onOpenInsight={openInsight} />}
       </ResourceState>
     </section>

@@ -89,4 +89,16 @@ describe('Cockpit route', () => {
     expect(screen.getByText('需要关注 0 项')).toBeTruthy();
     expect(screen.queryByText('暂无数据')).toBeNull();
   });
+
+  it('explains the pending authorization state after a new administrator logs in', async () => {
+    server.use(http.get('*/api/v1/reports/dashboard', () => HttpResponse.json({
+      code: 'PERMISSION_DENIED', requestId: 'request:pending-authorization',
+    }, { status: 403 })));
+
+    renderCockpit();
+
+    expect(await screen.findByText(/账号已登录，但当前数据范围尚未获得经营后台权限/)).toBeTruthy();
+    expect(screen.getByText(/等待 Owner 或高级管理员授权/)).toBeTruthy();
+    expect(screen.getByText(/授权后重新登录即可/)).toBeTruthy();
+  });
 });
