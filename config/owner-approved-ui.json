@@ -1,6 +1,6 @@
 {
   "schema": "zhudatuan.owner-approved-ui.v1",
-  "approvedAt": "2026-08-28T15:59:46+08:00",
+  "approvedAt": "2026-09-01T08:52:11+08:00",
   "owner": "Ethan",
   "policy": {
     "sourceRoot": ".",
@@ -55,7 +55,7 @@
         "apps/storefront-web/app/page.tsx": "653e8b2c6ee802a52b84d5140fcbbc08f5f4d074540a12a0eaf1ddc3c46b34ac",
         "apps/storefront-web/src/StorefrontRoot.tsx": "695f28a3bb2dca06f8a9e3fc4429f172e09440f4684d46ce08f79a4539f6f876",
         "apps/storefront-web/src/components/laptop/LaptopFrame.tsx": "9d94047019ff1a30ab5d132f217b92242ab8218b150bedc0b6cc800458b78a93",
-        "apps/storefront-web/src/components/laptop/LaptopHeader.tsx": "b55dba66fe695bad84741984cb7be7acf5207408288c36113946308e232c54a3",
+        "apps/storefront-web/src/components/laptop/LaptopHeader.tsx": "1e56c1b2399083011e2fb6986aee5450bed753137a7289567b74417049a1876a",
         "apps/storefront-web/src/components/laptop/LaptopTopSwitcher.tsx": "9a77a5b1a71c33de70a2ee5f3f97b270f15e895845c9e4b686347f3ea35dccc0",
         "apps/storefront-web/src/components/laptop/StorefrontWebStandard.ts": "a2e5b058b431a505d486f292250457f82a91041f7e23be52386ae00e906b3699",
         "apps/storefront-web/src/config/storefrontAuth.ts": "24e56a5439a6ac280d16db197ed1e33a5e8250174daba198a79133eab15dd450",
@@ -87,12 +87,12 @@
       "visualSlices": {
         "apps/auth-web/src/screens/LoginPage.tsx": {
           "startMarker": "  const renderMembershipsList = () => {",
-          "sha256": "424c10b84b1df4b36c5c5103307c633038aacbf93fedeef48c049700aa20ead4"
+          "sha256": "b53fad710206749276c8d0e73a2baba3f7591fa07a2b2912f24c5e1eb7e96d34"
         }
       },
       "lockedFiles": {
         "apps/auth-web/src/App.tsx": "5f158b34867a6eea9f06906413c590c024cff2949900946c5bf0cc59a00fe58a",
-        "apps/auth-web/src/screens/LoginPage.tsx": "a636dbfb0a53326e4bac187cb0020587629ea04c78f3c94cc82164abb7a8233d",
+        "apps/auth-web/src/screens/LoginPage.tsx": "fd617947c5e2f4ffee7e8a11aed5af62c190b0407371244051edd5ba037765c7",
         "apps/auth-web/src/context/MallContext.tsx": "f7413e2e5e39a9a888ba1aab4ac742c6adbc52b6d37749cc130c1f256e639559",
         "apps/auth-web/src/services/auth.ts": "613239172484080f4043772799b3b2cba4d75fc8b5c690151e9c02164e2485aa",
         "apps/auth-web/src/services/canonicalIdentity.ts": "3d83f11c8b37112aa2228e5fab0be1c7b8841f375f38185e10a0b34cbde68e4d",
@@ -128,13 +128,13 @@
         "apps/console/index.html": "354111187c3d27e8d775d1f2263fedb8ac8709ad98a9a9e4ca5957e614139686",
         "apps/console/vite.config.ts": "d890d9ad2ed61972a1070a6194ac3976697ec01cf761d6faaf416c2a11ad7440",
         "apps/console/src/route/ConsoleRouter.tsx": "9305c63627884a1ba74230fcdac8e18384a1f05d1c59a26444c8867482b48800",
-        "apps/console/src/shell/ScopeShell.tsx": "35a090b2813af5143c4f268e0fb34fd33e2f3b2996a8fa58fcd29847b5907d49",
+        "apps/console/src/shell/ScopeShell.tsx": "bdb07b9f8024b408a2e1ec25e8a87d6404d754bf2c89416dda5c2f268bc8e04c",
         "apps/console/src/entity/session/ConsoleSession.ts": "3c01753c53f62aad962045c0f58136366123e41c1194c7f91c8eeb16ef34870f",
         "apps/console/src/shared/api/Client.ts": "b46a9f8040cacbec6ab176b66460e84ebb0af004cc3b598ca3c03e049a056690",
         "apps/console/src/components/Sidebar.tsx": "3ff23c777de66834a6a12675cac90fb49d9a2c375532d9e33c3aa8eb77da9b39",
         "apps/console/src/feature/cockpit/CockpitRoute.tsx": "3d74cc3ea73de36428573d6bec50dec4bee0fb764794385e1354f08624f2b792",
         "apps/console/src/feature/application/CommerceSolutionCenter.tsx": "eafc31af52cc747470d448c4e2f7b45566d5396ba4ee2d2336d9dcfb05791f78",
-        "apps/console/src/smart-wing-vi.css": "972453a79575f560019f11e10a35a6fe3e393a4319fd11cd24e8719f928f9a66",
+        "apps/console/src/smart-wing-vi.css": "a3981617e4b085e9dafa812e46862d0da148d8effc60389df712ffad58e06f70",
         "apps/console/src/legacy-admin-theme.css": "f0bfb703f25ecc6d5411a6fc8617da597fa2ab2e717cbc0e1ecb76ef368d3084",
         "apps/console/public/demo/index.html": "b89bb6134f363f4e1cbb34d2a82f5622a0fdb4c8fbf8e90743b536814623de60",
         "apps/console/public/demo/variants.css": "c3b1889c002bdf81b9b5562803c4d21be32ee4a5c8658f3743c3e7324ba85c04",

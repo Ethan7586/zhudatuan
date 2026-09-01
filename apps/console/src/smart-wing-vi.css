@@ -20,7 +20,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   --vi-brand-soft: #eaf1ff;
   --vi-ink: #07182f;
   --vi-text: #172033;
-  --vi-muted: #64748b;
+  --vi-muted: #475569;
   --vi-line: #e2e8f0;
   --vi-line-strong: #cbd5e1;
   --vi-canvas: #f5f7fa;
@@ -193,7 +193,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .consoleheadersummary {
-  color: #7789a0;
+  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger {
@@ -207,6 +207,10 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   border-color: #bfcde0;
   background: #fff;
   box-shadow: var(--vi-shadow-focus);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .commandtrigger kbd {
+  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .taskbutton {
@@ -240,6 +244,10 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   line-height: 14px;
 }
 
+.consolelayout[data-visual-theme='admin-web-v1'] .operatorcopy small {
+  color: var(--vi-muted);
+}
+
 .consolelayout[data-visual-theme='admin-web-v1'] .scopebar {
   border-bottom-color: #e5ebf3;
   background: rgb(255 255 255 / 88%);
@@ -266,7 +274,12 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooter {
   border-top-color: #e3eaf2;
   background: rgb(255 255 255 / 92%);
+  color: var(--vi-muted);
   backdrop-filter: blur(12px);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus {
+  color: var(--vi-muted);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .consolefooterstatus i {
@@ -583,7 +596,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   z-index: 1;
   height: 39px;
   background: #f5f8fb;
-  color: #64768e;
+  color: var(--vi-muted);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .015em;
@@ -769,6 +782,14 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 
 .consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband strong {
   letter-spacing: -.025em;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband span {
+  color: var(--vi-muted);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .cockpitmetricband .ispositive {
+  color: #047857 !important;
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] :where(.cockpitcard, .controlcard) {
@@ -1030,7 +1051,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   .financetable th
 ) {
   background: #f4f7fb;
-  color: #65778f;
+  color: var(--vi-muted);
   font-weight: 700;
   letter-spacing: .012em;
 }
@@ -1231,6 +1252,10 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
 ) {
   border-radius: 9px;
   box-shadow: inset 3px 0 0 rgb(232 134 9 / 70%);
+}
+
+body:has(.consolelayout[data-visual-theme='admin-web-v1']) .financeimmutablealert p {
+  color: #7c2d12;
 }
 
 body:has(.consolelayout[data-visual-theme='admin-web-v1']) .dialogpanel {
