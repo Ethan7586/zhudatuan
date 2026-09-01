@@ -602,7 +602,7 @@ export const LoginPage: React.FC = () => {
             <Store className="w-4 h-4 text-[var(--sw-brand)]" />
             <h4 className="text-xs font-bold text-slate-700 tracking-wider uppercase">我的福利商城</h4>
           </div>
-          <span className="text-[11px] text-slate-400">共 {storefrontItems.length} 个专区</span>
+          <span className="text-[11px] text-slate-600">共 {storefrontItems.length} 个专区</span>
         </div>
         <div className="grid grid-cols-1 gap-2.5">
           {storefrontItems.map((mem) => {
@@ -679,7 +679,7 @@ export const LoginPage: React.FC = () => {
             <ShieldCheck className="w-4 h-4 text-[var(--sw-brand-dark)]" />
             <h4 className="text-xs font-bold text-slate-700 tracking-wider uppercase">我管理的运营主体</h4>
           </div>
-          <span className="text-[11px] text-slate-400">共 {adminItems.length} 项管理权限</span>
+          <span className="text-[11px] text-slate-600">共 {adminItems.length} 项管理权限</span>
         </div>
         <div className="grid grid-cols-1 gap-2.5">
           {adminItems.map((mem) => {
@@ -1547,7 +1547,7 @@ export const LoginPage: React.FC = () => {
 
       {/* 底部页脚 */}
       {!isStorefrontEmbed && (
-        <footer className="py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
+        <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-100 bg-white">
           <p>© 2026 主打团. All Rights Reserved. 技术服务方：雍彻科技</p>
         </footer>
       )}

@@ -13,18 +13,18 @@ import {
   type FinanceReconciliationRecord,
 } from './FinancePreviewFixtures';
 import { OperationMock, type OperationCall } from './OperationMock';
+import { CONSOLE_ORIGIN } from './Origins';
 
 const previewScope = Object.freeze({ kind: 'platform', id: 'platform:preview', name: '本地预览平台' });
 const previewSession = Object.freeze({
   ...consoleSession,
   scope: previewScope,
   scopes: Object.freeze([previewScope]),
-  permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
+  permissions: Object.freeze([...consoleSession.permissions, 'finance.overview.read', 'finance.reconciliation.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policy.read', 'audit.read']),
   capabilities: Object.freeze([...consoleSession.capabilities, 'finance.overview.read', 'finance.reconciliations.read', 'finance.entries.read', 'finance.settlements.read', 'finance.policies.read', 'finance.audit.read']),
   assurance: Object.freeze({ level: 3, verified: 'step-up' }),
 });
-const financeConsoleOrigin = process.env.FINANCE_CONSOLE_ORIGIN ?? 'http://127.0.0.1:4183';
-const financeUrl = `${financeConsoleOrigin}/scopes/platform/platform%3Apreview/finance`;
+const financeUrl = `${process.env.FINANCE_CONSOLE_ORIGIN ?? CONSOLE_ORIGIN}/scopes/platform/platform%3Apreview/finance`;
 const differenceReconciliation = financePreviewReconciliations[0]!;
 
 test('Console 财务工作台呈现参考页头、状态、页签与服务端对账表', async ({ page }) => {
