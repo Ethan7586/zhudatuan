@@ -7,6 +7,8 @@
 
 > **并发变化提示（2026-09-02 02:08 +08:00）**：远程新增 `codex/hongtai-fullchain-release-20260902@483ee84`，`ethan/iam-reliability-95` 从 `807ca31` 前进到 `0d9bcb1`，当前远程分支数为 `29`。下文 28 条与 20 条零独有结论是固定时间快照；执行下一条关闭前必须全部重算。
 
+> **执行更新（2026-09-02 02:22 +08:00）**：Ethan 明确授权一次收窄 10 条。10 条固定 SHA 均已由 `main` 或 `ethan/iam-reliability-95` 完整承接，并进入经 `git bundle verify`、SHA-256 与临时仓库恢复验证的本地 Bundle。远程数量已从 `29` 降为 `19`。下文谱系继续保留历史快照，当前执行结果以 `branch-closures/005-014-inherited-branches-batch-20260902.md` 为准。
+
 ## 状态更新：关闭 001–004
 
 2026-09-02 已关闭 `codex/canonical-registration-release@71280439c5`：
