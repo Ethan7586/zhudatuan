@@ -1,0 +1,151 @@
+.orderexceptionstate {
+  display: grid;
+  min-height: 24rem;
+  place-content: center;
+  justify-items: center;
+  gap: var(--sw-space-1);
+  color: var(--sw-text-secondary);
+  text-align: center;
+}
+
+.orderexceptionstate > svg {
+  width: 2rem;
+  height: 2rem;
+  color: var(--sw-brand);
+}
+
+.orderexceptionstate p {
+  margin: 0;
+  color: var(--sw-muted);
+}
+
+.orderexceptionnote {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: color-mix(in srgb, var(--sw-surface) 82%, transparent);
+  color: var(--sw-text-secondary);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+  font-size: var(--sw-font-size-caption);
+}
+
+.orderexceptionnote strong {
+  color: var(--sw-text);
+}
+
+.orderexceptionnote > span:last-child {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-brand-dark);
+  font-weight: 700;
+}
+
+.orderexceptionnote > span:last-child::before {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--sw-brand);
+  content: '';
+}
+
+@media (max-width: 80rem) {
+  .orderexceptionheading {
+    align-items: start;
+  }
+
+  .orderexceptionheadingactions {
+    align-items: end;
+    flex-direction: column-reverse;
+  }
+
+  .orderexceptiondesk {
+    grid-template-columns: minmax(13.5rem, 0.75fr) minmax(21rem, 1.35fr) minmax(16rem, 0.85fr);
+  }
+
+  .orderexceptionpurpose span {
+    padding-inline: var(--sw-space-0-5);
+  }
+}
+
+@media (max-width: 64rem) {
+  .orderexceptionheading {
+    display: grid;
+  }
+
+  .orderexceptionheadingactions {
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+  }
+
+  .orderexceptionstats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .orderexceptiondesk {
+    height: auto;
+    grid-template-columns: minmax(14rem, 0.8fr) minmax(22rem, 1.4fr);
+  }
+
+  .orderexceptionlistpanel,
+  .orderexceptiontimelinepanel {
+    min-height: 36rem;
+  }
+
+  .orderexceptionactionpanel {
+    min-height: 28rem;
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 48rem) {
+  .orderexceptionheadingactions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .orderexceptionpurpose {
+    justify-content: space-between;
+  }
+
+  .orderexceptionpurpose span {
+    white-space: normal;
+  }
+
+  .orderexceptiondesk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .orderexceptionlistpanel,
+  .orderexceptiontimelinepanel,
+  .orderexceptionactionpanel {
+    min-height: 30rem;
+    grid-column: auto;
+  }
+
+  .orderexceptionnote {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 30rem) {
+  .orderexceptionstats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .orderexceptionpurpose i {
+    display: none;
+  }
+
+  .orderexceptionpurpose {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
