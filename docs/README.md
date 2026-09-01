@@ -24,5 +24,6 @@
 - 阿里云运行真值与生产反推架构：`architecture/03-阿里云运行真值与生产反推架构.md`
 - 阿里云生产状态机器快照：`architecture/evidence/production-state-2026-09-02.json`
 - GitHub 分支关闭账本：`architecture/branch-closures/README.md`
+- WCHS 朋友架构参考源：`architecture/reference-sources/wchs-backend-reconstruction.md`
 - 标准与专项提示词：`prompts/`
 - 新系统总说明：`zdt.md`（待 Ethan 定稿后建立）
