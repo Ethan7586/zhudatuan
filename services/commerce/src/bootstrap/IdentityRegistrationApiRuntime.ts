@@ -10,6 +10,7 @@ import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interfac
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
+import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { PgDecisionSink } from '../modules/access/infrastructure/persistence/PgDecisionSink';
@@ -72,6 +73,9 @@ export async function createIdentityRegistrationApiRuntime(
     new SystemClock(),
     risk,
     new PgDecisionSink(pool),
+    undefined,
+    undefined,
+    new PgGovernanceResolver(pool),
   );
   const handlers = new Map<OperationId, OperationHandler>();
   const extensions = new ExtensionRegistry({ verify: async () => false });

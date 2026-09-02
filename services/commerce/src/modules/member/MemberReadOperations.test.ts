@@ -20,7 +20,7 @@ describe('member directory scope boundary', () => {
     expect(sql).not.toContain('where membership.organization_id=$1');
     expect(sql).toContain('(anchor.directory_sort,anchor.id)<($2::text,$3::text)');
     expect(sql).toContain('order by anchor.directory_sort desc,anchor.id desc');
-    expect(values).toEqual(['organization-platform-root', null, null, 51, 'principal:owner']);
+    expect(values).toEqual(['organization-platform-root', null, null, 51, 'principal:owner', 'membership:owner']);
   });
 });
 
@@ -30,6 +30,7 @@ function request(): OperationRequest {
     access: {
       scope: { id: 'organization-platform-root' },
       actor: { id: 'principal:owner' },
+      governance: { ownerMembershipId: 'membership:owner' },
     },
     input: {
       path: {}, query: {}, headers: {}, body: null, rawBody: '',

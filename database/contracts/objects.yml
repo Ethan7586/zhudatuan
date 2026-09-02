@@ -10,6 +10,11 @@ objects:
     owner: identity
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: identity
+  - id: access.canonical_governance_scope
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902132000_canonical_governance_context.sql
+    operationalOwner: access
   - id: access.business_membership_ancestor_scopes
     kind: function
     owner: access
@@ -204,6 +209,11 @@ objects:
     kind: function
     owner: access
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    operationalOwner: access
+  - id: access.resolve_governance
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902132000_canonical_governance_context.sql
     operationalOwner: access
   - id: access.resolve_membership
     kind: function
@@ -998,6 +1008,14 @@ objects:
     role: shopapp
     objectType: function
     target: access.membership_version(text)
+    privilege: execute
+  - id: shopapp:function:access.resolve_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260902132000_canonical_governance_context.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_governance(text,text,text,text)
     privilege: execute
   - id: shopapp:function:access.resolve_membership(text):execute
     kind: grant

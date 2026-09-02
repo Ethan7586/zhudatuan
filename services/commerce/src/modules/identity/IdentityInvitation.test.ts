@@ -58,7 +58,7 @@ describe('operator invitation security boundary', () => {
 
   it('rejects a non-owner even when a stale grant still advertises the permission and capability', async () => {
     const harness = invitationHarness({ exactOwner: false });
-    const access = managerAccess({ actor: 'principal:legacy-manager', membership: 'membership:legacy-manager' });
+    const access = managerAccess({ actor: 'principal:legacy-manager', membership: 'membership:legacy-manager', isExactOwner: false });
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(createRequest(access));
 
@@ -68,7 +68,7 @@ describe('operator invitation security boundary', () => {
 
   it('keeps full-runtime operator invitation creation exact-owner-only', async () => {
     const harness = invitationHarness({ exactOwner: false });
-    const access = managerAccess({ actor: 'principal:tenant-manager', membership: 'membership:tenant-manager' });
+    const access = managerAccess({ actor: 'principal:tenant-manager', membership: 'membership:tenant-manager', isExactOwner: false });
 
     const response = await identityOperations(context(harness.pool)).invoke(createRequest(access, 'operator'));
 
@@ -162,7 +162,7 @@ describe('operator invitation security boundary', () => {
     const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({
       actor: 'principal:tenant-manager', membership: 'membership:tenant-manager',
-      capabilities: ['identity.invitations.revoke'],
+      capabilities: ['identity.invitations.revoke'], isExactOwner: false,
     });
 
     await expect(identityOperations(context(harness.pool)).invoke(revokeRequest(access)))
@@ -179,7 +179,7 @@ describe('operator invitation security boundary', () => {
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(createRequest(access));
 
     expect(response).toMatchObject({ status: 201, body: { target: 'console' } });
-    expect(harness.queries.some(({ text }) => text.includes('access.zhudatuan_invitation_owner'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('access.zhudatuan_invitation_owner'))).toBe(false);
   });
 });
 
@@ -214,6 +214,7 @@ function managerAccess(overrides: Readonly<{
   capabilities?: readonly string[];
   actor?: string;
   membership?: string;
+  isExactOwner?: boolean;
   scope?: AccessContext['scope'];
 }> = {}): AccessContext {
   const scope = overrides.scope ?? { kind: 'tenant' as const, id: 'tenant-zhudatuan', tenant: 'tenant-zhudatuan', path: [] };
@@ -224,6 +225,16 @@ function managerAccess(overrides: Readonly<{
     membership: { id: membership, active: true, accessVersion: 1, denies: [], grants: [{
       scope, permissions: ['identity.invitation.manage'], effective: '2026-08-29T00:00:00.000Z', expires: null,
     }] },
+    governance: {
+      governanceLevel: overrides.isExactOwner === false ? 'administrator' : 'owner',
+      isExactOwner: overrides.isExactOwner !== false,
+      actorMembershipId: membership,
+      actorPrincipalId: overrides.actor ?? 'principal:zhudatuan:owner:ethan:v1',
+      organizationId: scope.tenant ?? scope.id,
+      ownerMembershipId: overrides.isExactOwner === false ? 'membership:current-owner' : membership,
+      scope: { kind: scope.kind, semanticId: scope.id, storageId: scope.kind === 'self' ? `self:${scope.id}` : scope.id },
+      resolvedAt: new Date('2026-09-02T00:00:00.000Z'),
+    },
     scope, accessVersion: 1,
     capabilities: overrides.capabilities ?? ['identity.invitations.create'],
     assurance: { level: 2 }, trace: 'trace:owner-invitation',
