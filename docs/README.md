@@ -24,6 +24,7 @@
 - 阿里云运行真值与生产反推架构：`architecture/03-阿里云运行真值与生产反推架构.md`
 - 20 条零独有分支逐条审计：`architecture/04-20条零独有分支逐条审计.md`
 - Mall 产品边界、OMS 父级与三源取证裁定：`architecture/05-Mall产品边界取证与裁定.md`
+- H5 微信一键绑定与购物入口架构：`architecture/06-H5微信一键绑定与购物入口架构.md`
 - 阿里云生产状态机器快照：`architecture/evidence/production-state-2026-09-02.json`
 - GitHub 分支关闭账本：`architecture/branch-closures/README.md`
 - WCHS 朋友架构参考源：`architecture/reference-sources/wchs-backend-reconstruction.md`
