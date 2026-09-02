@@ -23,9 +23,10 @@ describe('live database boundary', () => {
     await expect(assertLiveDatabaseBoundary(pool(healthy), 'zhudatuanidentityapi')).resolves.toEqual(healthy);
   });
 
-  it('keeps identity delivery independent from the temporary migration login state', async () => {
-    await expect(assertIdentityRuntimeDatabaseBoundary(pool({ ...healthy, retired_roles_valid: false }), 'zhudatuanidentityapi'))
-      .resolves.toMatchObject({ retired_roles_valid: false });
+  it('keeps identity delivery independent from migration login state and unrelated business role digests', async () => {
+    await expect(assertIdentityRuntimeDatabaseBoundary(pool({
+      ...healthy, retired_roles_valid: false, business_roles_valid: false,
+    }), 'zhudatuanidentityapi')).resolves.toMatchObject({ retired_roles_valid: false, business_roles_valid: false });
     await expect(assertIdentityRuntimeDatabaseBoundary(pool({ ...healthy, runtime_roles_valid: false }), 'zhudatuanidentityapi'))
       .rejects.toThrow('LIVE_DATABASE_BOUNDARY_ASSERTION_FAILED');
   });

@@ -36,7 +36,11 @@ describe('identity notification Jobs runtime', () => {
     };
     const pool = (state: typeof healthy) => ({ query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')
       ? result([databaseBoundary('zhudatuanidentityjob')], 1) : result([state], 1) }) as unknown as DatabasePool;
+    const decoupled = { query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')
+      ? result([{ ...databaseBoundary('zhudatuanidentityjob'), business_roles_valid: false }], 1)
+      : result([healthy], 1) } as unknown as DatabasePool;
     await expect(assertIdentityNotificationRuntimeCompatibility(pool(healthy))).resolves.toBeUndefined();
+    await expect(assertIdentityNotificationRuntimeCompatibility(decoupled)).resolves.toBeUndefined();
     await expect(assertIdentityNotificationRuntimeCompatibility(pool({ ...healthy, current_user: 'shopapp' })))
       .rejects.toThrow('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityNotificationRuntimeCompatibility(pool({ ...healthy, contract: false })))

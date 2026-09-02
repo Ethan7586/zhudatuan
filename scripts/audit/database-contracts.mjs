@@ -154,6 +154,7 @@ const REPAIR_FILES = [
   '20260902010000_restore_public_mall_role_contracts.sql',
   '20260902011000_enable_public_mall_external_payment.sql',
   '20260902012000_zhudatuan_mall_provisioning_access.sql',
+  '20260902133000_repair_console_support_scope_contract.sql',
 ];
 
 const mode = process.argv[2];
@@ -674,6 +675,8 @@ async function reconcileRegistrationReplayBoundary(database) {
   await execute(database, `
     alter role zhudatuanbootstrap noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     alter role shopmigration noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    alter role zhudatuanwebapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    alter role zhudatuanpurchaseapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     grant usage on schema deployment to zhudatuanbootstrap,shopmigration;
     revoke execute on function deployment.registration_bootstrap_boundary(text) from shopmigration;
     grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap;
@@ -696,12 +699,14 @@ async function reconcileRegistrationReplayBoundary(database) {
       where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
     (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
       where function.oid='deployment.is_independent_registration_database()'::regprocedure) migration_owner,
+    deployment.business_runtime_roles_valid() business_roles_valid,
     (select count(*)::integer from pg_auth_members membership join pg_roles owner
       on owner.oid in(membership.roleid,membership.member)
       where owner.rolname='zhudatuanregistrationboundary') owner_memberships`);
   if (JSON.stringify(after.rows[0])!==JSON.stringify({
     bootstrap_allowed:true,definer_allowed:true,migration_boundary_allowed:true,
-    bootstrap_owner:'zhudatuanregistrationboundary',migration_owner:'zhudatuanregistrationboundary',owner_memberships:0,
+    bootstrap_owner:'zhudatuanregistrationboundary',migration_owner:'zhudatuanregistrationboundary',
+    business_roles_valid:true,owner_memberships:0,
   })) {
     throw new Error(`REGISTRATION_REPLAY_RECONCILED_BOUNDARY_INVALID:${JSON.stringify(after.rows[0])}`);
   }

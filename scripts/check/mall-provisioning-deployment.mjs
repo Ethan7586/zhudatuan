@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
@@ -109,10 +109,23 @@ const runtimeMarker = runtime.match(/MALL_PROVISIONING_SCHEMA_CHECKSUM = '([a-f0
 if (!marker || marker === '0'.repeat(64) || marker !== runtimeMarker) throw new Error('MALL_PROVISIONING_SCHEMA_MARKER_DRIFT');
 const normalized = createHash('sha256').update(migration.replaceAll(marker, '0'.repeat(64))).digest('hex');
 if (normalized !== marker) throw new Error('MALL_PROVISIONING_SCHEMA_NORMALIZED_DIGEST_DRIFT');
-for (const token of ["REGISTRATION_TARGET_VERSION = '20260902012000'", `REGISTRATION_TARGET_CHECKSUM = '${marker}'`,
-  "name='20260902012000_zhudatuan_mall_provisioning_access.sql'"]) {
-  if (!runner.includes(token)) throw new Error(`MALL_PROVISIONING_MIGRATION_RUNNER_DRIFT:${token}`);
+const migrationFiles = (await readdir(resolve(root, 'database/supabase/migrations')))
+  .filter((name) => name.endsWith('.sql')).sort();
+const targetFile = migrationFiles.at(-1);
+const targetVersion = targetFile?.slice(0, 14);
+const targetSource = targetFile ? await read(`database/supabase/migrations/${targetFile}`) : '';
+const targetMarker = targetVersion
+  ? targetSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1]
+  : undefined;
+if (!targetFile || !targetVersion || !targetMarker || targetMarker === '0'.repeat(64)
+  || !runner.includes(`REGISTRATION_TARGET_VERSION = '${targetVersion}'`)
+  || !runner.includes(`REGISTRATION_TARGET_CHECKSUM = '${targetMarker}'`)
+  || !runner.includes(`name='${targetFile}'`)) {
+  throw new Error('MALL_PROVISIONING_MIGRATION_RUNNER_DRIFT');
 }
+const normalizedTarget = createHash('sha256')
+  .update(targetSource.replaceAll(targetMarker, '0'.repeat(64))).digest('hex');
+if (normalizedTarget !== targetMarker) throw new Error('MALL_PROVISIONING_TARGET_DIGEST_DRIFT');
 for (const token of ['zhudatuanprovisioningapi', 'identity.resolve_session(text)', 'organization.organization',
   'catalog.pool', 'experience.application', "has_schema_privilege('zhudatuanprovisioningapi','finance','USAGE')"]) {
   if (!migration.includes(token)) throw new Error(`MALL_PROVISIONING_MIGRATION_BOUNDARY_MISSING:${token}`);

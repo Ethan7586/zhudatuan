@@ -18,26 +18,31 @@ export interface LiveDatabaseBoundaryState {
   readonly database_owner: string | null;
 }
 
+interface BoundaryRequirements {
+  readonly businessRoles: boolean;
+  readonly retiredRoles: boolean;
+}
+
 const BOUNDARY_OWNER = 'zhudatuanregistrationboundary';
 
 export async function assertLiveDatabaseBoundary(
   pool: DatabasePool,
   expectedRole: RuntimeDatabaseRole,
 ): Promise<Readonly<LiveDatabaseBoundaryState>> {
-  return assertBoundary(pool, expectedRole, true);
+  return assertBoundary(pool, expectedRole, { businessRoles: true, retiredRoles: true });
 }
 
 export async function assertIdentityRuntimeDatabaseBoundary(
   pool: DatabasePool,
   expectedRole: Extract<RuntimeDatabaseRole, 'zhudatuanidentityapi' | 'zhudatuanidentityjob'>,
 ): Promise<Readonly<LiveDatabaseBoundaryState>> {
-  // Identity delivery remains independent from shopmigration's temporary
-  // LOGIN state during a serialized release. All data and ownership
+  // Identity runtimes own neither the Web/Purchase role digest nor the
+  // serialized migration role lifecycle. Identity, ownership and database
   // invariants below remain mandatory.
-  return assertBoundary(pool, expectedRole, false);
+  return assertBoundary(pool, expectedRole, { businessRoles: false, retiredRoles: false });
 }
 
-async function assertBoundary(pool: DatabasePool, expectedRole: RuntimeDatabaseRole, requireRetiredRoles: boolean) {
+async function assertBoundary(pool: DatabasePool, expectedRole: RuntimeDatabaseRole, requirements: BoundaryRequirements) {
   const result = await pool.query<LiveDatabaseBoundaryState>(`select current_user,current_database(),boundary.*
     from deployment.runtime_database_boundary() boundary`);
   const state = result.rows[0];
@@ -46,8 +51,8 @@ async function assertBoundary(pool: DatabasePool, expectedRole: RuntimeDatabaseR
     || state.current_database !== 'zhudatuan_registration'
     || state.active_platform_owner_count !== 1
     || !state.migration_head_valid
-    || (requireRetiredRoles && !state.retired_roles_valid)
-    || !state.business_roles_valid
+    || (requirements.retiredRoles && !state.retired_roles_valid)
+    || (requirements.businessRoles && !state.business_roles_valid)
     || !state.runtime_roles_valid
     || !state.boundary_roles_valid
     || state.retired_membership_count !== 0
