@@ -19,13 +19,16 @@ export interface MemberProfile {
 }
 
 export class MemberPort {
-  async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ mobileCiphertext: string | null }>> {
-    const result = await database.query<{ mobile_ciphertext: string | null }>(
-      `select mobile_ciphertext from member.profile
+  async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ displayName: string | null; mobileCiphertext: string | null }>> {
+    const result = await database.query<{ display_name: string; mobile_ciphertext: string | null }>(
+      `select display_name,mobile_ciphertext from member.profile
       where principal_id=$1 and status='active'`,
       [principal]
     );
-    return { mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null };
+    return {
+      displayName: result.rows[0]?.display_name ?? null,
+      mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null,
+    };
   }
 
   invite(database: OperationDatabase, token: string) {

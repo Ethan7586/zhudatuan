@@ -27,6 +27,10 @@ export const SessionSchema = z.object({
     phoneMasked: z.string().min(1).nullable(),
     passwordChangedAt: z.string().min(1).nullable(),
   }).optional(),
+  profile: z.object({
+    display_name: z.string().min(1),
+    employee_no: z.string().nullable(),
+  }).optional(),
   csrf: z.string().min(16).optional(),
   target: z.string().min(1),
   syncedAt: z.string().min(1),

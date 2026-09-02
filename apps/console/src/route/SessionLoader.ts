@@ -1,7 +1,9 @@
-import type { LoaderFunctionArgs } from 'react-router';
+import type { LoaderFunctionArgs, ShouldRevalidateFunctionArgs } from 'react-router';
 import { redirect, redirectDocument } from 'react-router';
+import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
 import type { ConsoleContext, ConsoleProfile, ConsoleScope, ConsoleSession } from '../entity/session/ConsoleSession';
 import { scopePath } from '../shared/url/ScopePath';
+import { consoleModules } from './ConsoleModuleRegistry';
 
 declare global {
   interface Window {
@@ -37,11 +39,23 @@ const DOCUMENT_PREFETCH_HANDOFF_MS = 180;
 const DOCUMENT_PREFETCH_TIMEOUT = Symbol('DOCUMENT_PREFETCH_TIMEOUT');
 let landingSessionHandoff: Readonly<{ path: string; session: ConsoleSession; expiresAt: number }> | undefined;
 
+export function scopeShouldRevalidate({
+  currentUrl,
+  nextUrl,
+  formMethod,
+  defaultShouldRevalidate,
+}: Pick<ShouldRevalidateFunctionArgs, 'currentUrl' | 'nextUrl' | 'formMethod' | 'defaultShouldRevalidate'>): boolean {
+  if (formMethod === undefined && currentUrl.pathname === nextUrl.pathname && currentUrl.search !== nextUrl.search) return false;
+  return defaultShouldRevalidate;
+}
+
 export async function landingLoader({ request }: LoaderFunctionArgs) {
   const session = await readSession(request.signal);
   const first = session.scopes.find(isConsoleScope) ?? session.scope;
   if (!isConsoleScope(first)) throw new Response('CONSOLE_SCOPE_MISSING', { status: 403 });
-  const target = scopePath(first, 'cockpit');
+  const entry = selectConsoleNavigationItems(consoleModules, first.kind, session.capabilities)
+    .find(({ placement, status }) => placement === 'main' && status === 'enabled');
+  const target = scopePath(first, entry?.suffix ?? 'settings/profile');
   landingSessionHandoff = Object.freeze({ path: target, session, expiresAt: Date.now() + LANDING_SESSION_HANDOFF_MS });
   return redirect(target);
 }
@@ -75,6 +89,7 @@ async function readProfile(
   signal: AbortSignal,
 ): Promise<Readonly<{ profile: ConsoleProfile; state: 'ready' | 'unavailable' }>> {
   try {
+    if (session.profile !== undefined) return Object.freeze({ profile: session.profile, state: 'ready' });
     const parsed = parseProfile(prefetched);
     if (parsed !== undefined) return Object.freeze({ profile: parsed, state: 'ready' });
     const { memberProfileRead, consoleRequest } = await consoleClient();
@@ -223,8 +238,10 @@ function parseSession(value: unknown): ConsoleSession | undefined {
   const accessVersion = parseDatabaseInteger(value.accessVersion);
   const permissions = parseStringArray(value.permissions);
   const capabilities = parseStringArray(value.capabilities);
+  const profile = value.profile === undefined ? undefined : parseProfile(value.profile);
   if (!nonEmpty(value.actor) || !nonEmpty(value.membership) || scope === undefined || scopes === undefined
     || accessVersion === undefined || permissions === undefined || capabilities === undefined
+    || (value.profile !== undefined && profile === undefined)
     || !isRecord(value.assurance) || !nonNegativeInteger(value.assurance.level)
     || !optionalNonEmpty(value.assurance.verified) || !nonEmpty(value.target) || !nonEmpty(value.syncedAt)
     || !optionalMinimumString(value.csrf, 16)) return undefined;
@@ -238,6 +255,7 @@ function parseSession(value: unknown): ConsoleSession | undefined {
     accessVersion,
     permissions,
     capabilities,
+    ...(profile === undefined ? {} : { profile }),
     assurance: {
       level: value.assurance.level,
       ...(value.assurance.verified === undefined ? {} : { verified: value.assurance.verified }),

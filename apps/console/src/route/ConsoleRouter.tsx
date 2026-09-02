@@ -1,7 +1,7 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { lazy, Suspense } from 'react';
 import { ScopeShell } from '../shell/ScopeShell';
-import { landingLoader, scopeLoader } from './SessionLoader';
+import { landingLoader, scopeLoader, scopeShouldRevalidate } from './SessionLoader';
 import { consoleModules } from './ConsoleModuleRegistry';
 import { materializeConsoleIndexRoute, materializeConsoleModules } from './ConsoleModuleRoutes';
 
@@ -38,6 +38,7 @@ export const consoleRouter = createBrowserRouter([
     id: 'scope',
     path: '/scopes/:scopeKind/:scopeId',
     loader: scopeLoader,
+    shouldRevalidate: scopeShouldRevalidate,
     Component: ScopeShell,
     HydrateFallback: ConsoleRouteFallback,
     errorElement: <ConsoleRouteError />,

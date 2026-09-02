@@ -54,6 +54,12 @@ describe('Console navigation selector', () => {
       status: 'enabled', suffix: 'reports', placement: 'main', order: 15,
     });
   });
+
+  it('shows only modules whose entry operation is available to the current session', () => {
+    const items = selectConsoleNavigationItems(consoleModules, 'enterprise', ['catalog.listings.read', 'support.cases.read']);
+
+    expect(items.map(({ moduleId }) => moduleId)).toEqual(['products', 'support']);
+  });
 });
 
 function withStatus(

@@ -47,7 +47,7 @@ export function ScopeShell() {
   const routeTitle = profileRoute ? '个人信息' : presentation?.title ?? '页面不存在';
   const routeSummary = profileRoute ? '查看当前账户、身份、权限与管理范围' : presentation?.summary ?? '该地址不属于 Console 路由清单';
   const activeRoute = profileRoute ? 'profile' : activeModule?.id;
-  const navigationItems = selectConsoleNavigationItems(consoleModules, context.scope.kind);
+  const navigationItems = selectConsoleNavigationItems(consoleModules, context.scope.kind, context.session.capabilities);
   const mainNavigationItems = navigationItems.filter(({ placement }) => placement === 'main');
   const bottomNavigationItems = navigationItems.filter(({ placement }) => placement === 'bottom');
   const logout = async () => {

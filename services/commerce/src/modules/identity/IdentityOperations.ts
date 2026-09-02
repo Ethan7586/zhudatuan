@@ -230,6 +230,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             capabilities: access.capabilities,
             assurance: access.assurance,
             target: access.actor.target,
+            ...(member.displayName === null ? {} : {
+              profile: { display_name: member.displayName, employee_no: null },
+            }),
             security: { hasLocalCredential: credential.rows.length > 0, phoneMasked: mobile === null ? null : maskMobile(mobile), passwordChangedAt: credential.rows[0]?.rotated_at?.toISOString() ?? null },
             syncedAt: new Date().toISOString(),
             ...(csrf === undefined ? {} : { csrf }),

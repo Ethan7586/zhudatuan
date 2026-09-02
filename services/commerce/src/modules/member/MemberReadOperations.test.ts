@@ -7,7 +7,7 @@ import { memberOperatorReadActions } from './MemberReadOperations';
 describe('member directory scope boundary', () => {
   it('reads members from the complete organization subtree while preserving keyset pagination', async () => {
     const query = vi.fn(async (_sql: string, _values: readonly unknown[] = []) =>
-      result([{ id: 'member:one', membership_id: 'membership:one' }]));
+      result([{ id: 'member:one', membership_id: 'membership:one', directory_sort: '2026-09-02T03:28:35.000000Z' }]));
     const action = memberOperatorReadActions()['member.members.read'];
     if (typeof action !== 'function') throw new Error('MEMBER_READ_ACTION_MISSING');
 
@@ -18,7 +18,9 @@ describe('member directory scope boundary', () => {
     expect(sql).toContain('from organization.unitclosure boundary');
     expect(sql).toContain('boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id');
     expect(sql).not.toContain('where membership.organization_id=$1');
-    expect(values).toEqual(['organization-platform-root', null, 51, 'principal:owner']);
+    expect(sql).toContain('(anchor.directory_sort,anchor.id)<($2::text,$3::text)');
+    expect(sql).toContain('order by anchor.directory_sort desc,anchor.id desc');
+    expect(values).toEqual(['organization-platform-root', null, null, 51, 'principal:owner']);
   });
 });
 

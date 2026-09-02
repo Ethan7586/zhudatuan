@@ -4,6 +4,20 @@ import type { OperationDatabase } from '../../foundation/application/ModuleOpera
 import { MemberPort } from './MemberPort';
 
 describe('MemberPort invitation constraints', () => {
+  it('projects the active profile name through the existing session security read', async () => {
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) =>
+      result([{ display_name: '张三', mobile_ciphertext: 'ciphertext:mobile' }]));
+    const port = new MemberPort();
+
+    await expect(port.securityProfile({ query } as unknown as OperationDatabase, 'principal:one')).resolves.toEqual({
+      displayName: '张三', mobileCiphertext: 'ciphertext:mobile',
+    });
+
+    const [sql, values = []] = query.mock.calls[0]!;
+    expect(sql).toContain('select display_name,mobile_ciphertext from member.profile');
+    expect(values).toEqual(['principal:one']);
+  });
+
   it('resolves only invitations that are effective, active, unexpired and not exhausted', async () => {
     const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{ target_client: 'operator', terms_hash: 'f'.repeat(64) }]));
     const port = new MemberPort();

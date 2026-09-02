@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -42,11 +42,13 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
     queryKey: accessKey(context, accessCursor),
     queryFn: ({ signal }) => readAccess(context, accessCursor, signal),
     enabled: canReadAccess,
+    placeholderData: keepPreviousData,
   });
   const memberQuery = useQuery({
     queryKey: memberKey(context, memberCursor),
     queryFn: ({ signal }) => readMembers(context, memberCursor, signal),
     enabled: canReadMembers,
+    placeholderData: keepPreviousData,
   });
   const accessItems = accessQuery.data?.items ?? [];
   const memberItems = memberQuery.data?.items ?? [];
@@ -57,6 +59,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   const selected = rows.find((row) => row.id === activeSelectedId);
   const primaryData = primary === 'access' ? accessQuery.data : memberQuery.data;
   const primaryPending = primary === 'access' ? accessQuery.isPending : memberQuery.isPending;
+  const primaryFetching = primary === 'access' ? accessQuery.isFetching : memberQuery.isFetching;
   const primaryError = safeQueryError(primary === 'access' ? accessQuery.error : memberQuery.error);
   const secondaryError = safeQueryError(primary === 'access' ? memberQuery.error : accessQuery.error);
   const invitationAvailable = context.session.permissions.includes('identity.invitation.manage') && context.session.capabilities.includes('identity.invitations.create') && context.session.csrf !== undefined;
@@ -121,7 +124,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
             )}
 
             <div className="memberaccesslayout">
-              <section className="memberaccessroster" role="table" aria-label="成员管理">
+              <section className="memberaccessroster" role="table" aria-label="成员管理" aria-busy={primaryFetching}>
                 <div className="memberaccesssearch">
                   <label htmlFor="memberaccessfilter">搜索成员、员工号或角色</label>
                   <input id="memberaccessfilter" value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="搜索姓名、账号或角色" />
@@ -158,12 +161,12 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
                   <span>本页 {primaryData.count} 条</span>
                   <Button
                     size="compact"
-                    isDisabled={nextCursor === undefined}
+                    isDisabled={nextCursor === undefined || primaryFetching}
                     onPress={() => {
-                      if (nextCursor !== undefined) setSearch(pageCursor(search, nextCursor));
+                      if (nextCursor !== undefined) setSearch(pageCursor(search, nextCursor), { preventScrollReset: true });
                     }}
                   >
-                    下一页
+                    {primaryFetching ? '加载中…' : '下一页'}
                   </Button>
                 </footer>
               </section>
