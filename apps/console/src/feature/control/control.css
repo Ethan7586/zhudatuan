@@ -37,10 +37,10 @@
 .merchantcapabilityidentity,
 .merchantcapabilityactions { display: flex; align-items: center; }
 .merchantcapabilityidentity { gap: 11px; }
-.merchantcapabilityidentity > span { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 11px; background: #f5f7fa; }
-.merchantcapabilityidentity img { width: 42px; height: 42px; }
+.merchantcapabilityidentity > span { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgb(255 255 255 / 20%); border-radius: 11px; background: #1f5eff; }
+.merchantcapabilityidentity img { width: 42px; height: 42px; filter: brightness(0) invert(1); }
 .merchantcapabilityidentity div { display: grid; gap: 3px; }
-.merchantcapabilityidentity small { color: #8fb4ee; font-size: 8px; font-weight: 800; letter-spacing: .16em; }
+.merchantcapabilityidentity small { color: #fff; font-size: 8px; font-weight: 800; letter-spacing: .16em; }
 .merchantcapabilityidentity strong { font-size: 14px; letter-spacing: -.01em; }
 .merchantcapabilityactions { gap: 10px; }
 .merchantcapabilityactions > span { border: 1px solid rgb(143 180 238 / 24%); border-radius: 999px; background: rgb(31 94 255 / 12%); padding: 5px 9px; color: #bcd2f2; font-size: 9px; font-weight: 700; }
