@@ -16,6 +16,7 @@ import {
 import { ScopeShell } from './ScopeShell';
 
 const materializedRoutes = materializeConsoleModules(consoleModules);
+const entryOperations = consoleModules.flatMap((module) => module.routes.find(({ kind }) => kind === 'entry')?.operations ?? []);
 const enterpriseScope: ConsoleScope = { kind: 'enterprise', id: 'enterprise:1', name: '鸿泰集团' };
 const mallScope: ConsoleScope = { kind: 'mall', id: 'mall:1', name: '鸿泰商城' };
 const context: ConsoleContext = {
@@ -24,7 +25,7 @@ const context: ConsoleContext = {
     membership: 'membership:1',
     accessVersion: 7,
     permissions: [],
-    capabilities: [],
+    capabilities: entryOperations,
     target: 'console',
     scope: enterpriseScope,
     scopes: [enterpriseScope, mallScope],
@@ -124,6 +125,18 @@ describe('ScopeShell route handles', () => {
       .toBe('/scopes/mall/mall%3A1/referral/settings'));
   });
 
+  it('omits business modules that the current session cannot enter', async () => {
+    renderShell('/scopes/enterprise/enterprise%3A1/applications', {
+      ...context,
+      session: { ...context.session, capabilities: ['catalog.listings.read'] },
+    });
+
+    expect(await screen.findByRole('button', { name: '商品治理台' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '财务与对账台' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '经营驾驶舱' })).toBeNull();
+    expect(screen.getByRole('button', { name: '个人中心：测试运营' })).toBeTruthy();
+  });
+
   it('keeps unknown/profile-like matches outside the business module owner model', async () => {
     expect(deepestConsoleRouteHandle([{ handle: undefined }, { handle: { kind: 'profile' } }])).toBeUndefined();
     const { container } = renderShell('/scopes/enterprise/enterprise%3A1/unknown');
@@ -151,10 +164,10 @@ function handleForPath(path: string) {
   return handle;
 }
 
-function renderShell(initialEntry: string) {
+function renderShell(initialEntry: string, loadedContext: ConsoleContext = context) {
   const router = createMemoryRouter([{
     path: '/scopes/:scopeKind/:scopeId',
-    loader: () => context,
+    loader: () => loadedContext,
     Component: ScopeShell,
     children: [
       { path: 'applications', Component: FixturePage, handle: handleForPath('applications') },

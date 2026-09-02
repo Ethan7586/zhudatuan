@@ -15,6 +15,7 @@ export const consoleRouter = createBrowserRouter([
     id: 'scope',
     path: '/scopes/:scopeKind/:scopeId',
     loader: scopeLoader,
+    shouldRevalidate: scopeShouldRevalidate,
     Component: ScopeShell,
     HydrateFallback: RouteFallback,
     errorElement: <RouteError />,

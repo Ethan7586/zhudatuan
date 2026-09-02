@@ -85,6 +85,18 @@ describe('personal profile workspace', () => {
     expect(screen.getByRole('heading', { level: 1, name: '个人信息' })).toBeTruthy();
   });
 
+  it('explains the pending authorization state without exposing unavailable business modules', () => {
+    renderProfile({
+      ...context,
+      session: { ...context.session, permissions: [], capabilities: [] },
+      profile: { display_name: '张三', employee_no: null },
+    });
+
+    expect(screen.getByText('待授权管理员')).toBeTruthy();
+    expect(screen.getByText(/正在等待 Owner 或高级管理员分配业务身份/)).toBeTruthy();
+    expect(screen.getAllByText('张三').length).toBeGreaterThan(0);
+  });
+
   it('locks the desktop, narrow-tablet, mobile, and minimum-width responsive modes', () => {
     const css = ['profile.css', 'profile-access.css', 'profile-responsive.css']
       .map((file) => readFileSync(`src/feature/profile/${file}`, 'utf8')).join('\n');

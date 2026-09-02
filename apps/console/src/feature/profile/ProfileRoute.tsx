@@ -1,6 +1,7 @@
 import { Badge, Button, MasterDetail, Surface, WorkspaceHero } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import { selectConsoleNavigationItems } from '../../entity/navigation/ConsoleNavigation';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import {
   normalizeConsoleCopy,
@@ -8,6 +9,7 @@ import {
   scopeIdentifierLabel,
   scopeKindLabel,
 } from '../../entity/session/ScopePresentation';
+import { consoleModules } from '../../route/ConsoleModuleRegistry';
 import { accessKey, readAccess } from '../access/AccessQuery';
 import {
   formatDateTime,
@@ -22,6 +24,8 @@ import './profile-responsive.css';
 
 export function Component() {
   const context = useConsoleContext();
+  const businessWorkspaceAvailable = selectConsoleNavigationItems(consoleModules, context.scope.kind, context.session.capabilities)
+    .some(({ placement, status }) => placement === 'main' && status === 'enabled');
   const canReadAssignments = context.session.permissions.includes('access.center.read');
   const accessQuery = useQuery({
     queryKey: accessKey(context),
@@ -44,6 +48,12 @@ export function Component() {
     : '';
 
   const profileMaster = <div className="profilestack">
+    {businessWorkspaceAvailable ? null : (
+      <Surface className="profiledegradednotice" depth="low" padding="compact" role="status">
+        <strong>待授权管理员</strong>
+        <span>账号已开通，正在等待 Owner 或高级管理员分配业务身份；授权后菜单、待办与业务数据会按实际权限出现。</span>
+      </Surface>
+    )}
     {context.profileState === 'unavailable' ? (
       <Surface className="profiledegradednotice" depth="low" padding="compact" role="status">
         <strong>个人资料暂不可用</strong>

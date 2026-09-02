@@ -14,6 +14,44 @@ import { WECHAT_IDENTITY } from './application/port/WechatIdentity';
 import { identityOperations } from './IdentityOperations';
 import { RETURN_TARGETS } from './infrastructure/ReturnTargetCatalog';
 
+describe('identity session projection', () => {
+  it('returns the active member name without requiring a separate profile permission', async () => {
+    const client = {
+      query: async (text: string) => {
+        if (text.includes('select rotated_at from identity.credential')) return result([{ rotated_at: null }]);
+        if (text.includes('select display_name,mobile_ciphertext from member.profile')) {
+          return result([{ display_name: '张三', mobile_ciphertext: 'ciphertext:mobile' }]);
+        }
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = {
+      connect: async () => client,
+      query: async () => result([]),
+      workload: () => pool,
+      end: async () => undefined,
+    };
+
+    const response = await identityOperations(context(pool)).invoke({
+      type: 'identity.session.read',
+      access: { ...access(), capabilities: ['identity.session.read'] },
+      input: {
+        path: {}, query: {}, headers: {}, body: null, rawBody: '',
+        deadline: Date.now() + 1_000, signal: new AbortController().signal,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        profile: { display_name: '张三', employee_no: null },
+        security: { phoneMasked: '+86****8000' },
+      },
+    });
+  });
+});
+
 describe('identity financial action proof issuance', () => {
   it('binds the proof to the assurance created for this exact session and the canonical request hash', async () => {
     let storedHash = '';

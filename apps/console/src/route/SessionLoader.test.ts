@@ -1,6 +1,6 @@
 import { ApiError } from '@shop/sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { landingLoader, scopeLoader } from './SessionLoader';
+import { landingLoader, scopeLoader, scopeShouldRevalidate } from './SessionLoader';
 
 const api = vi.hoisted(() => ({
   identitySessionRead: vi.fn(),
@@ -23,7 +23,7 @@ const session = {
   scopes: [platformScope],
   accessVersion: 7,
   permissions: [],
-  capabilities: [],
+  capabilities: ['reporting.dashboard.read'],
   assurance: { level: 2 },
   target: 'console',
   syncedAt: '2026-09-01T20:46:00.000Z',
@@ -36,6 +36,22 @@ beforeEach(() => {
   delete window.__consoleAbortDocumentPrefetch;
   api.identitySessionRead.mockResolvedValue(session);
   api.memberProfileRead.mockResolvedValue({ display_name: 'Ethan', employee_no: null });
+});
+
+describe('scope loader revalidation', () => {
+  it('does not reload the parent session for cursor-only navigation', () => {
+    const currentUrl = new URL('https://console.zhudatuan.com/scopes/platform/organization-platform-root/settings/members');
+    const nextUrl = new URL(`${currentUrl.href}?cursor=page%3A2`);
+
+    expect(scopeShouldRevalidate({
+      currentUrl, nextUrl, defaultShouldRevalidate: true,
+    })).toBe(false);
+    expect(scopeShouldRevalidate({
+      currentUrl,
+      nextUrl: new URL('https://console.zhudatuan.com/scopes/platform/organization-platform-root/settings/profile'),
+      defaultShouldRevalidate: true,
+    })).toBe(true);
+  });
 });
 
 describe('console scope loader profile isolation', () => {
@@ -118,6 +134,17 @@ describe('console scope loader profile isolation', () => {
     expect(api.identitySessionRead).toHaveBeenCalledTimes(1);
   });
 
+  it('lands a pending administrator without business operations in personal center', async () => {
+    api.identitySessionRead.mockResolvedValue({ ...session, capabilities: [] });
+
+    const response = await landingLoader({
+      params: {},
+      request: new Request('https://console.zhudatuan.com/'),
+    } as never);
+
+    expect(response.headers.get('location')).toBe('/scopes/platform/organization-platform-root/settings/profile');
+  });
+
   it('does not hand a landing session to a different route', async () => {
     await landingLoader({
       params: {},
@@ -137,6 +164,19 @@ describe('console scope loader profile isolation', () => {
 
     expect(context.profile).toMatchObject({ display_name: 'Ethan', employee_no: null });
     expect(context.profileState).toBe('ready');
+  });
+
+  it('uses the profile carried by the validated session without a second permission-gated request', async () => {
+    api.identitySessionRead.mockResolvedValue({
+      ...session,
+      profile: { display_name: '张三', employee_no: null },
+    });
+
+    const context = await loadPlatformScope();
+
+    expect(context.profile).toEqual({ display_name: '张三', employee_no: null });
+    expect(context.profileState).toBe('ready');
+    expect(api.memberProfileRead).not.toHaveBeenCalled();
   });
 
   it('uses an exact access-version and scope context prefetch without loading the SDK profile', async () => {

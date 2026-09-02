@@ -22,13 +22,17 @@ export interface NavigationItem {
 export function selectConsoleNavigationItems(
   modules: readonly ConsoleModuleManifest[],
   scopeKind: ConsoleScope['kind'],
+  availableOperations?: readonly string[],
 ): readonly NavigationItem[] {
   const items: NavigationItem[] = [];
+  const available = availableOperations === undefined ? undefined : new Set(availableOperations);
   for (const module of modules) {
     const navigation = module.navigation;
     if (module.status === 'hidden' || navigation.placement === 'none') continue;
     const entry = module.routes.find(({ kind }) => kind === 'entry');
     if (entry === undefined) continue;
+    if (available !== undefined && entry.operations.length > 0
+      && !entry.operations.some((operation) => available.has(operation))) continue;
     items.push({
       moduleId: module.id,
       suffix: navigationSuffix(entry.path),
