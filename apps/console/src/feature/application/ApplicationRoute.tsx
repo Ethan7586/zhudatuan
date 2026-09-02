@@ -122,17 +122,24 @@ export function Component() {
     setMallStepupCompleted(false);
   };
 
-  const openPrimaryAction = () => {
+  const openMallCreate = () => {
     closeRecord();
     setSolutionOpen(false);
-    if (presentation.mode !== 'management') {
-      setFlowOpen(true);
-      return;
-    }
     setFlowOpen(false);
     setMallCreateError(undefined);
     setMallCreatePhase('form');
     setMallCreateOpen(true);
+  };
+
+  const openPrimaryAction = () => {
+    if (presentation.mode === 'management') {
+      openMallCreate();
+      return;
+    }
+    closeRecord();
+    setCommand(undefined);
+    setSolutionOpen(false);
+    setFlowOpen(true);
   };
 
   const requestMallStepup = async (attempt: MallCreateAttempt) => {
