@@ -23,8 +23,27 @@ interface WireRole {
   scopes: WireRoleScope[];
 }
 
+interface WireInvitationRecord {
+  id: string;
+  scope: string;
+  scope_name: string;
+  label: string;
+  governance_level: 'administrator' | 'senior_administrator';
+  created_by: string;
+  created_by_name: string | null;
+  max_uses: number;
+  use_count: number;
+  starts_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+  status: 'active' | 'used' | 'expired' | 'revoked';
+  created_at: string;
+  version: string;
+}
+
 let roles: WireRole[] = [];
 let members: WireMembership[] = [];
+let invitationRecords: WireInvitationRecord[] = [];
 let writes: Readonly<{ body: Readonly<{ name: string; permissions: string[] }>; expectedVersion: string | null; roleId: string }>[] = [];
 let assignmentWrites: Readonly<{ body: RoleAssignmentBody; expectedVersion: string | null; roleId: string }>[] = [];
 let conflict = false;
@@ -35,6 +54,10 @@ const server = setupServer(
     reads += 1;
     return HttpResponse.json({ items: members, count: members.length, roles });
   }),
+  http.get('*/api/v1/member/invitations', () => HttpResponse.json({
+    items: invitationRecords,
+    count: invitationRecords.length,
+  })),
   http.put('*/api/v1/access/roles/:roleId', async ({ request, params }) => {
     const body = await request.json() as RoleWriteBody | RoleAssignmentBody | Readonly<{ action: 'delete' }>;
     if (conflict) return HttpResponse.json({ code: 'VERSION_CONFLICT', message: 'stale role version', requestId: 'request:conflict' }, { status: 409 });
@@ -67,6 +90,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 beforeEach(() => {
   roles = initialRoles();
   members = [];
+  invitationRecords = [];
   writes = [];
   assignmentWrites = [];
   conflict = false;
@@ -171,16 +195,37 @@ describe('custom identity and permission directory', () => {
     expect(screen.queryByText(/已保存，并已通过正式接口/)).toBeNull();
   });
 
-  it('shows explicit no-permission and truthful invitation-record states', async () => {
+  it('shows explicit no-permission and real invitation-record states', async () => {
     const denied = { ...context, session: { ...context.session, permissions: [], capabilities: [] } };
     const view = renderWorkspace(denied);
     expect(screen.getByText('无权读取身份目录')).toBeTruthy();
     view.unmount();
 
+    invitationRecords = [{
+      id: 'invite:one', scope: 'tenant:one', scope_name: '主打团商户', label: '高级管理员邀请',
+      governance_level: 'senior_administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
+      max_uses: 1, use_count: 0, starts_at: '2026-09-02T12:00:00.000Z', expires_at: '2026-09-09T12:00:00.000Z',
+      accepted_at: null, status: 'active', created_at: '2026-09-02T12:00:00.000Z', version: '0',
+    }, {
+      id: 'invite:used', scope: 'tenant:one', scope_name: '主打团商户', label: '已使用的高级管理员邀请',
+      governance_level: 'senior_administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
+      max_uses: 1, use_count: 1, starts_at: '2026-09-01T12:00:00.000Z', expires_at: '2026-09-08T12:00:00.000Z',
+      accepted_at: '2026-09-02T10:00:00.000Z', status: 'used', created_at: '2026-09-01T12:00:00.000Z', version: '1',
+    }, {
+      id: 'invite:revoked', scope: 'tenant:one', scope_name: '主打团商户', label: '已作废普通管理员邀请',
+      governance_level: 'administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
+      max_uses: 1, use_count: 0, starts_at: '2026-08-31T12:00:00.000Z', expires_at: '2026-09-07T12:00:00.000Z',
+      accepted_at: null, status: 'revoked', created_at: '2026-08-31T12:00:00.000Z', version: '1',
+    }];
     renderWorkspace(context, '/scopes/tenant/tenant%3Aone/settings/access?section=invitations');
     expect(screen.getByRole('heading', { name: '邀请记录' })).toBeTruthy();
-    expect(screen.getByText(/尚未提供邀请记录列表读取/)).toBeTruthy();
-    expect(screen.getByText(/不会用模拟记录伪造闭环/)).toBeTruthy();
+    expect(await screen.findByText('高级管理员邀请')).toBeTruthy();
+    expect(screen.getAllByText('邀请对象')).toHaveLength(3);
+    expect(screen.getAllByText('高级管理员')).toHaveLength(2);
+    expect(screen.getByText('生效中')).toBeTruthy();
+    expect(screen.getAllByText('已使用').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('已作废').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('创建时间')).toHaveLength(3);
   });
 
   it('assigns two custom identities to one member and rereads their overlaid permissions and Access Version', async () => {
@@ -273,7 +318,7 @@ const context: ConsoleContext = {
   session: {
     actor: 'actor:owner', membership: 'membership:owner', accessVersion: 7,
     permissions: ['access.center.read', 'access.role.manage', 'access.scope.manage', 'identity.invitation.manage'],
-    capabilities: ['access.center.read', 'access.roles.manage', 'access.scopes.manage', 'identity.invitations.create'],
+    capabilities: ['access.center.read', 'access.roles.manage', 'access.scopes.manage', 'identity.invitations.create', 'member.invitations.read'],
     governance: { level: 'owner', exactOwner: true, organization: 'tenant:one' },
     assurance: { level: 2 }, target: 'console', scope: tenantScope, scopes: [tenantScope, mallScope], csrf: 'csrf:test',
     syncedAt: '2026-09-01T00:00:00.000Z',

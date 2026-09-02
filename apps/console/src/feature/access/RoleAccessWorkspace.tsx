@@ -1,5 +1,5 @@
 import { Badge, Button, MasterDetail, MasterItem, Surface, WorkspaceHero } from '@shop/design';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -10,6 +10,8 @@ import { accessKey, readAccess } from './AccessQuery';
 import type { AccessRole } from './AccessSchema';
 import { roleCommandAvailable } from './AccessRoleCommand';
 import { AccessWorkspaceTabs } from './AccessWorkspaceTabs';
+import { invitationRecordsAvailable, invitationRecordsKey, readInvitationRecords } from './InvitationRecordsQuery';
+import type { InvitationRecord } from './InvitationRecordsSchema';
 import { RoleEditor, type RoleEditorRecord } from './RoleEditor';
 import './role-access-workspace.css';
 
@@ -21,15 +23,26 @@ export function RoleAccessWorkspace() {
   const [filter, setFilter] = useState('');
   const [notice, setNotice] = useState<string>();
   const [invitationOpen, setInvitationOpen] = useState(false);
+  const section = search.get('section') === 'invitations' ? 'invitations' : 'roles';
   const canRead = context.session.permissions.includes('access.center.read');
   const canWrite = roleCommandAvailable(context);
   const invitationEnabled = memberInvitationAvailable(context);
+  const invitationRecordsEnabled = invitationRecordsAvailable(context);
   const query = useQuery({
     queryKey: accessKey(context),
     queryFn: ({ signal }) => readAccess(context, undefined, signal),
     enabled: canRead,
   });
-  const section = search.get('section') === 'invitations' ? 'invitations' : 'roles';
+  const invitationRecordsQuery = useInfiniteQuery({
+    queryKey: invitationRecordsKey(context),
+    queryFn: ({ signal, pageParam }) => readInvitationRecords(context, pageParam, signal),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor,
+    enabled: section === 'invitations' && invitationRecordsEnabled,
+    staleTime: 15_000,
+  });
+  const invitationPages = invitationRecordsQuery.data?.pages;
+  const invitationRecords = useMemo(() => invitationPages?.flatMap((page) => page.items) ?? [], [invitationPages]);
   const roles = query.data?.roles ?? [];
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRoles = useMemo(() => roles.filter((role) => normalizedFilter === ''
@@ -63,7 +76,18 @@ export function RoleAccessWorkspace() {
       <AccessWorkspaceTabs current={section} />
 
       {section === 'invitations' ? (
-        <InvitationRecordsPanel available={invitationEnabled} onInvite={() => setInvitationOpen(true)} />
+        <InvitationRecordsPanel
+          available={invitationEnabled}
+          readable={invitationRecordsEnabled}
+          records={invitationRecords}
+          pending={invitationRecordsQuery.isPending}
+          fetchingMore={invitationRecordsQuery.isFetchingNextPage}
+          hasMore={invitationRecordsQuery.hasNextPage}
+          error={invitationRecordsQuery.error}
+          onInvite={() => setInvitationOpen(true)}
+          onRetry={() => void invitationRecordsQuery.refetch()}
+          onMore={() => void invitationRecordsQuery.fetchNextPage()}
+        />
       ) : !canRead ? (
         <WorkspaceState tone="denied" title="无权读取身份目录" detail="当前会话没有 access.center.read 权限。" />
       ) : query.isPending && query.data === undefined ? (
@@ -115,7 +139,10 @@ export function RoleAccessWorkspace() {
           />
         </>
       )}
-      <MemberInvitationDialog context={context} open={invitationOpen} onClose={() => setInvitationOpen(false)} />
+      <MemberInvitationDialog context={context} open={invitationOpen} onClose={() => {
+        setInvitationOpen(false);
+        if (section === 'invitations' && invitationRecordsEnabled) void invitationRecordsQuery.refetch();
+      }} />
     </section>
   );
 }
@@ -166,13 +193,82 @@ function RoleItem({ role, selected, onSelect }: Readonly<{ role: AccessRole; sel
   />;
 }
 
-function InvitationRecordsPanel({ available, onInvite }: Readonly<{ available: boolean; onInvite: () => void }>) {
+function InvitationRecordsPanel({ available, readable, records, pending, fetchingMore, hasMore, error, onInvite, onRetry, onMore }: Readonly<{
+  available: boolean;
+  readable: boolean;
+  records: readonly InvitationRecord[];
+  pending: boolean;
+  fetchingMore: boolean;
+  hasMore: boolean;
+  error: Error | null;
+  onInvite: () => void;
+  onRetry: () => void;
+  onMore: () => void;
+}>) {
   return <Surface className="invitationrecordspanel" depth="low" padding="spacious" role="region" aria-labelledby="invitationrecordstitle">
-    <p>INVITATION RECORDS</p><h2 id="invitationrecordstitle">邀请记录</h2>
-    <strong>当前正式契约只提供邀请码创建能力，尚未提供邀请记录列表读取。</strong>
-    <span>这里不会用模拟记录伪造闭环；现有真实邀请能力继续保留。</span>
-    {available ? <Button tone="primary" onPress={onInvite}>生成管理员邀请码</Button> : <p role="status">当前会话没有生成邀请码的权限。</p>}
+    <header className="invitationrecordsheader">
+      <div><p>INVITATION RECORDS</p><h2 id="invitationrecordstitle">邀请记录</h2><span>查看当前管理范围内真实生成的管理员邀请。</span></div>
+      {available ? <Button tone="primary" onPress={onInvite}>生成管理员邀请码</Button> : null}
+    </header>
+    {!readable ? (
+      <InvitationRecordsState title="无权读取邀请记录" detail="当前身份没有邀请管理权限。" />
+    ) : pending ? (
+      <InvitationRecordsState title="正在加载邀请记录…" detail="正在读取正式 member.invitations.read 契约。" />
+    ) : error !== null ? (
+      <InvitationRecordsState title="邀请记录读取失败" detail={safeQueryError(error) ?? 'REQUEST_FAILED'} action="重试" onAction={onRetry} />
+    ) : records.length === 0 ? (
+      <InvitationRecordsState title="还没有邀请记录" detail="生成第一条管理员邀请后，记录会自动出现在这里。" />
+    ) : (
+      <>
+        <div className="invitationrecordslist" aria-label={`已显示 ${records.length} 条邀请记录`}>
+          {records.map((record) => <InvitationRecordCard key={record.id} record={record} />)}
+        </div>
+        {hasMore ? <Button onPress={onMore} isPending={fetchingMore}>加载更多</Button> : <p className="invitationrecordsend">已显示全部记录</p>}
+      </>
+    )}
   </Surface>;
+}
+
+function InvitationRecordCard({ record }: Readonly<{ record: InvitationRecord }>) {
+  return <article className="invitationrecordcard">
+    <header><div><span>邀请对象</span><strong>{record.label}</strong></div><Badge tone={invitationStatusTone(record.status)}>{invitationStatusLabel(record.status)}</Badge></header>
+    <dl>
+      <div><dt>管理员级别</dt><dd>{record.governance_level === 'senior_administrator' ? '高级管理员' : '普通管理员'}</dd></div>
+      <div><dt>是否已使用</dt><dd>{invitationWasUsed(record) ? '已使用' : '未使用'}</dd></div>
+      <div><dt>是否已作废</dt><dd>{record.status === 'revoked' ? '已作废' : '未作废'}</dd></div>
+      <div><dt>创建时间</dt><dd>{formatInvitationDate(record.created_at)}</dd></div>
+    </dl>
+  </article>;
+}
+
+function InvitationRecordsState({ title, detail, action, onAction }: Readonly<{
+  title: string;
+  detail: string;
+  action?: string;
+  onAction?: () => void;
+}>) {
+  return <div className="invitationrecordsstate" role="status"><strong>{title}</strong><span>{detail}</span>
+    {action === undefined || onAction === undefined ? null : <Button onPress={onAction}>{action}</Button>}
+  </div>;
+}
+
+function invitationStatusLabel(status: InvitationRecord['status']): string {
+  return { active: '生效中', used: '已使用', expired: '已过期', revoked: '已作废' }[status];
+}
+
+function invitationStatusTone(status: InvitationRecord['status']): 'success' | 'info' | 'warning' | 'danger' {
+  return { active: 'success', used: 'info', expired: 'warning', revoked: 'danger' }[status] as 'success' | 'info' | 'warning' | 'danger';
+}
+
+function invitationWasUsed(record: InvitationRecord): boolean {
+  return record.use_count > 0 || record.accepted_at !== null;
+}
+
+function formatInvitationDate(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(date);
 }
 
 function WorkspaceState({ title, detail, tone = 'default', onRetry }: Readonly<{

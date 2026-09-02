@@ -57,7 +57,7 @@ describe('member administrator invitation', () => {
     await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
 
     const receipt = await screen.findByRole('dialog', { name: '邀请码已生成' });
-    expect(within(receipt).getByText('A'.repeat(32))).toBeTruthy();
+    expect(within(receipt).getByText('A'.repeat(10))).toBeTruthy();
     expect(writes[0]?.body).toMatchObject({ label: '集团运营邀请', destination: '13800138000', targetClient: 'operator', governanceLevel: 'administrator', maxUses: 1 });
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
     expect(writes[0]?.headers.get('x-access-version')).toBe('7');
@@ -72,7 +72,7 @@ describe('member administrator invitation', () => {
     await user.click(within(receipt).getByRole('button', { name: '我已保存，关闭' }));
     await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
     expect(await screen.findByRole('dialog', { name: '生成管理员邀请码' })).toBeTruthy();
-    expect(screen.queryByText('A'.repeat(32))).toBeNull();
+    expect(screen.queryByText('A'.repeat(10))).toBeNull();
   });
 
   it('lets an Owner select a senior administrator and shows the real level in the receipt', async () => {
@@ -331,7 +331,7 @@ function invitationReceipt(governanceLevel: 'administrator' | 'senior_administra
   const now = new Date().toISOString();
   return {
     id: 'invite:one',
-    code: 'A'.repeat(32),
+    code: 'A'.repeat(10),
     label: '集团运营邀请',
     target: 'console',
     governanceLevel,

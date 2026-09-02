@@ -82,6 +82,7 @@ describe('identity registration API entrypoint', () => {
       'identity.wechat.bind',
 >>>>>>> 7f841eb7 (feat(identity): enable wechat H5 binding in registration API)
       'member.members.read',
+      'member.invitations.read',
       'member.imports.read',
       'access.center.read',
       'finance.entries.read',

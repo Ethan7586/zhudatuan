@@ -40,6 +40,7 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'organization.stores.read',
   'organization.stores.manage',
   'member.members.read',
+  'member.invitations.read',
   'member.profile.read',
   'member.addresses.read',
   'member.addresses.manage',

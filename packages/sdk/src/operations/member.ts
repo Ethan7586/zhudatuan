@@ -6,6 +6,7 @@ import { bindOperation, defineStructuralOperation, type OperationExecutor, type 
 
 export const MEMBER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "member.members.read",
+  "member.invitations.read",
   "member.profile.read",
   "member.addresses.read",
   "member.addresses.manage",
@@ -15,6 +16,7 @@ export const MEMBER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
 
 export interface MemberOperations {
   readonly membersRead: OperationMethod<"member.members.read">;
+  readonly invitationsRead: OperationMethod<"member.invitations.read">;
   readonly profileRead: OperationMethod<"member.profile.read">;
   readonly addressesRead: OperationMethod<"member.addresses.read">;
   readonly addressesManage: OperationMethod<"member.addresses.manage">;
@@ -29,6 +31,7 @@ export function createFetchMember(baseUrl: string): MemberOperations {
 export function createMemberOperations(client: OperationExecutor): MemberOperations {
   return Object.freeze({
     membersRead: bindMembersRead(client),
+    invitationsRead: bindInvitationsRead(client),
     profileRead: bindProfileRead(client),
     addressesRead: bindAddressesRead(client),
     addressesManage: bindAddressesManage(client),
@@ -43,6 +46,14 @@ export function createFetchMemberMembersRead(baseUrl: string): OperationMethod<"
 
 function bindMembersRead(client: OperationExecutor): OperationMethod<"member.members.read"> {
   return bindOperation(client, defineStructuralOperation({"id":"member.members.read","method":"GET","path":"/api/v1/members","audience":"operator","idempotent":true,"pathKeys":[]}));
+}
+
+export function createFetchMemberInvitationsRead(baseUrl: string): OperationMethod<"member.invitations.read"> {
+  return bindInvitationsRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindInvitationsRead(client: OperationExecutor): OperationMethod<"member.invitations.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"member.invitations.read","method":"GET","path":"/api/v1/member/invitations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchMemberProfileRead(baseUrl: string): OperationMethod<"member.profile.read"> {

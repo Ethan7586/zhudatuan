@@ -183,7 +183,7 @@ function receipt() {
   const now = new Date().toISOString();
   return {
     id: 'invite:one',
-    code: 'A'.repeat(32),
+    code: 'A'.repeat(10),
     label: '普通管理员邀请',
     target: 'console',
     governanceLevel: 'administrator',

@@ -22,7 +22,7 @@ export const MemberInvitationCommandSchema = z.strictObject({
 
 export const MemberInvitationReceiptSchema = z.strictObject({
   id: z.string().min(1),
-  code: z.string().regex(/^[A-Za-z0-9_-]{32}$/),
+  code: z.string().regex(/^[0-9A-F]{10}$/),
   label: z.string().min(2).max(80),
   target: z.literal('console'),
   governanceLevel: z.enum(['administrator', 'senior_administrator']).optional(),
