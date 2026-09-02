@@ -162,6 +162,7 @@ const REPAIR_FILES = [
   '20260902137000_separate_login_account_from_mobile.sql',
   '20260902138000_fix_administrator_registration_role_boundary.sql',
   '20260902139000_add_member_invitation_records_read.sql',
+  '20260902140000_align_senior_administrator_business_permissions.sql',
 ];
 
 const mode = process.argv[2];
