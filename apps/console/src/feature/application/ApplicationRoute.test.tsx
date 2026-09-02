@@ -149,6 +149,8 @@ describe('Commerce application workspace', () => {
     );
     renderRoute('/applications', scope('distributor', 'distributor:preview', '分销商'));
     await screen.findByRole('table', { name: '应用治理列表' });
+    expect(screen.getByRole('button', { name: '创建商城' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '刷新数据' })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: '新建应用' }));
     const dialog = await screen.findByRole('dialog', { name: '新建应用' });

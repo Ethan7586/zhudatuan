@@ -167,18 +167,25 @@ export function Component() {
     setMallStepupCompleted(false);
   };
 
-  const openPrimaryAction = () => {
+  const openMallCreate = () => {
     closeRecord();
     setCommand(undefined);
     setSolutionOpen(false);
-    if (presentation.mode !== 'management') {
-      setFlowOpen(true);
-      return;
-    }
     setFlowOpen(false);
     setMallCreateError(undefined);
     setMallCreatePhase('form');
     setMallCreateOpen(true);
+  };
+
+  const openPrimaryAction = () => {
+    if (presentation.mode === 'management') {
+      openMallCreate();
+      return;
+    }
+    closeRecord();
+    setCommand(undefined);
+    setSolutionOpen(false);
+    setFlowOpen(true);
   };
 
   const requestMallStepup = async (attempt: MallCreateAttempt) => {
@@ -297,12 +304,8 @@ export function Component() {
             >
               建店方案（3 套）
             </Button>
-            <Button
-              onPress={() => {
-                void query.refetch();
-              }}
-            >
-              刷新数据
+            <Button tone="primary" onPress={openMallCreate}>
+              创建商城
             </Button>
             {presentation.mode === 'management' ? null : (
               <Button tone="primary" isDisabled={!canCreate} onPress={() => openCommand({ kind: 'create' })}>
@@ -310,7 +313,7 @@ export function Component() {
               </Button>
             )}
             {presentation.mode === 'management'
-              ? <Button tone="primary" onPress={openPrimaryAction}>{presentation.primaryAction}</Button>
+              ? null
               : <Button onPress={openPrimaryAction}>{presentation.primaryAction}</Button>}
           </>
         }
