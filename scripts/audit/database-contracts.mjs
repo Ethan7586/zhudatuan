@@ -164,6 +164,7 @@ const REPAIR_FILES = [
   '20260902021000_complete_support_account.sql',
   '20260902022000_allow_storefront_signin_invitation.sql',
   '20260902023000_allow_invitation_resolve_receipt.sql',
+  '20260902024000_allow_self_role_api.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v4_catalog_contract.sql',
