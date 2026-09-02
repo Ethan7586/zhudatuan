@@ -227,6 +227,7 @@ function MemberDetail({ row, context, resetAvailable, onReset }: { readonly row:
           <Fact label="档案状态" value={row.member?.status ?? '未加载'} />
           <Fact label="成员状态" value={row.member?.membership_status ?? row.access?.status ?? '未知'} />
           <Fact label="授权关系" value={row.access?.status ?? '未加载'} />
+          <Fact label="治理邀请人" value={row.member?.governance_parent_name ?? (isOwner(row) ? '治理根节点' : '未记录')} />
           <Fact label="加入时间" value={formatDate(row.member?.joined_at ?? null)} />
         </section>
 

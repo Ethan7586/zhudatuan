@@ -18,18 +18,44 @@ export function memberOperatorReadActions(): OperationActions {
       const access = requireAccess(request);
       const governance = requireGovernanceContext(access);
       const page = queryPage(request);
-      const result = await database.query(`with anchor as(
+      const result = await database.query(`with recursive governance_memberships(membership_id) as(
+        select membership.id
+        from access.membership membership
+        where membership.client='operator'
+          and exists(select 1 from access.membershiprole assignment
+            join access.role role on role.id=assignment.role_id and role.status='active'
+            where assignment.membership_id=membership.id
+              and assignment.effective_at<=clock_timestamp()
+              and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+              and (assignment.role_id='role-platform-owner-v2'
+                or assignment.role_id='role-zhudatuan-pending-operator'
+                or assignment.role_id='role-senior-administrator-v1:'||membership.organization_id))
+      ), governance_subtree(membership_id) as(
+        select $8::text
+        union
+        select child.id
+        from access.membership child
+        join governance_subtree parent on child.governance_parent_membership_id=parent.membership_id
+        join governance_memberships governance_member on governance_member.membership_id=child.id
+      ), anchor as(
         select distinct on(profile.id) profile.id,profile.principal_id,profile.display_name,profile.status,
           principal.version principal_version,principal.status principal_status,
           membership.id membership_id,membership.client,membership.employee_no,membership.status membership_status,
-          membership.access_version,membership.joined_at,
+          membership.access_version,membership.joined_at,membership.governance_parent_membership_id,
+          governance_parent_profile.display_name governance_parent_name,
           to_char(coalesce(membership.joined_at,to_timestamp(0)) at time zone 'UTC',
             'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') directory_sort
         from access.membership membership
         join member.profile profile on profile.id=membership.member_id
         join identity.principal principal on principal.id=profile.principal_id
-        where exists(select 1 from organization.unitclosure boundary
+        left join access.membership governance_parent
+          on governance_parent.id=membership.governance_parent_membership_id
+        left join member.profile governance_parent_profile on governance_parent_profile.id=governance_parent.member_id
+        where exists(select 1 from governance_memberships governance_member
+            where governance_member.membership_id=membership.id)
+          and exists(select 1 from organization.unitclosure boundary
           where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
+          and ($7::boolean or exists(select 1 from governance_subtree visible where visible.membership_id=membership.id))
         order by profile.id,case membership.client when 'operator' then 0 when 'storefront' then 1 else 2 end,membership.id
       ), selected as(
         select * from anchor where $2::text is null
@@ -54,7 +80,8 @@ export function memberOperatorReadActions(): OperationActions {
             and credential.provider='password' and credential.status='active') then 'LOGIN_IDENTITY_MISSING'
           else null end reset_block_reason
       from selected anchor order by anchor.directory_sort desc,anchor.id desc limit $4`,
-      [access.scope.id, page.sort, page.id, page.fetch, access.actor.id, governance.ownerMembershipId ?? null]);
+      [access.scope.id, page.sort, page.id, page.fetch, access.actor.id, governance.ownerMembershipId ?? null,
+        governance.isExactOwner, governance.actorMembershipId]);
       return keysetResult(result, page, 'directory_sort', 'id');
     },
     'member.invitations.read': async (request, database) => {
@@ -70,6 +97,7 @@ export function memberOperatorReadActions(): OperationActions {
         case when invitation.role_id='role-senior-administrator-v1:'||invitation.organization_id
           then 'senior_administrator' else 'administrator' end governance_level,
         invitation.created_by,creator.display_name created_by_name,
+        invitation.accepted_membership_id,accepted_profile.display_name invitee_name,invitation.destination_masked,
         invitation.max_uses,invitation.use_count,invitation.effective_at starts_at,
         invitation.expires_at,invitation.accepted_at,
         case when invitation.status='disabled' then 'revoked'

@@ -8,6 +8,8 @@ export const MemberSchema = z.object({
   joined_at: z.string().nullable(), principal_id: z.string().min(1), principal_version: DatabaseIntegerSchema,
   client: z.enum(['storefront', 'operator', 'store', 'supplier']), login_identity_bound: z.boolean(), reset_allowed: z.boolean(),
   reset_block_reason: z.string().min(1).nullable(),
+  governance_parent_membership_id: z.string().min(1).nullable().optional(),
+  governance_parent_name: z.string().min(1).nullable().optional(),
 }).passthrough();
 export const MemberPageSchema = pageEnvelope(MemberSchema);
 export type Member = z.infer<typeof MemberSchema>;

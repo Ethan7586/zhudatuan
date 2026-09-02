@@ -56,6 +56,8 @@ describe('member directory pagination', () => {
     renderWorkspace();
 
     expect((await screen.findAllByText('第一页成员')).length).toBeGreaterThan(0);
+    expect(screen.getByText('治理邀请人')).toBeTruthy();
+    expect(screen.getByText('Ethan')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: '下一页' }));
 
     expect(screen.getAllByText('第一页成员').length).toBeGreaterThan(0);
@@ -96,5 +98,7 @@ function member(id: string, displayName: string) {
     login_identity_bound: true,
     reset_allowed: false,
     reset_block_reason: null,
+    governance_parent_membership_id: 'membership:owner',
+    governance_parent_name: 'Ethan',
   };
 }

@@ -169,6 +169,7 @@ const REPAIR_FILES = [
   '20260903103000_provision_l1_mall_owner.sql',
   '20260903104000_enable_provisioned_mall_registration.sql',
   '20260903105000_initialize_storefront_qualification.sql',
+  '20260903106000_governance_invitation_tree_visibility.sql',
 ];
 
 const mode = process.argv[2];

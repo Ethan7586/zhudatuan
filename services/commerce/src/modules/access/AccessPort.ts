@@ -21,6 +21,7 @@ export interface ImportedMembership {
 
 export interface OperatorRegistrationMembership {
   readonly operatorMembership: string;
+  readonly governanceParentMembership: string;
   readonly storefrontMembership: string;
   readonly member: string;
   readonly principal: string;
@@ -82,9 +83,10 @@ export class AccessPort {
       scopeKind: 'mall',
       scopes: input.storefrontScopes,
     });
-    const membership = await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
-      values($1,$2,$3,'operator','active',1,clock_timestamp()) returning *`,
-    [input.operatorMembership, input.member, input.operatorOrganization]);
+    const membership = await database.query(`insert into access.membership(
+      id,member_id,organization_id,client,status,access_version,joined_at,governance_parent_membership_id)
+      values($1,$2,$3,'operator','active',1,clock_timestamp(),$4) returning *`,
+    [input.operatorMembership, input.member, input.operatorOrganization, input.governanceParentMembership]);
     await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
       ($1,$2,clock_timestamp()),($1,'role:self',clock_timestamp())`, [input.operatorMembership, input.operatorRole]);
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values

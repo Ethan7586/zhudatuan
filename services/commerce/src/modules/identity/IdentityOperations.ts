@@ -531,6 +531,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               ? await accessPort.createOperatorRegistration(database, {
                   storefrontMembership: membership,
                   operatorMembership,
+                  governanceParentMembership: invitation.created_by,
                   member,
                   principal,
                   operatorOrganization: organization,

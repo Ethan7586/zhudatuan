@@ -41,6 +41,7 @@ describe('MemberPort invitation constraints', () => {
         {
           id: 'invite:one',
           organization_id: 'organization:one',
+          created_by: 'membership:owner',
           role_id: 'role:console-pending',
           storefront_organization_id: 'mall:one',
           target_client: 'operator',
@@ -55,6 +56,7 @@ describe('MemberPort invitation constraints', () => {
       'membership:accepted')).resolves.toMatchObject({
       id: 'invite:one',
       organization_id: 'organization:one',
+      created_by: 'membership:owner',
       role_id: 'role:console-pending',
       storefront_organization_id: 'mall:one',
       target_client: 'operator',
@@ -67,6 +69,7 @@ describe('MemberPort invitation constraints', () => {
     expect(sql).toContain("invite.role_id='role-senior-administrator-v1:'||invite.organization_id");
     expect(sql).toContain('target_client,storefront_organization_id');
     expect(sql).toContain("accepted_membership_id=case when candidate.target_client='operator' then $3");
+    expect(sql).toContain('candidate.created_by');
     expect(values).toEqual(['invite-hash', 'destination-hash', 'membership:accepted']);
   });
 
