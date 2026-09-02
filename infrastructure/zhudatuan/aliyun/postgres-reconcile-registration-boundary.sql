@@ -121,6 +121,37 @@ begin
       or exists(select 1 from pg_auth_members where roleid=boundary_owner and member<>authority) then
       raise exception 'ZHUDATUAN_REGISTRATION_BOUNDARY_OWNER_MEMBERSHIP_FORBIDDEN';
     end if;
+    -- Existing volumes may already have the hardened owner while one or both
+    -- caller grants are missing. Reconcile those ACLs as the function owner
+    -- before the idempotent path returns.
+    execute format('set local role %I',boundary_owner_name);
+    execute 'revoke all on function deployment.registration_bootstrap_boundary(text) from public';
+    for grantee_name in
+      select distinct grantee.rolname
+      from pg_proc function
+      cross join lateral aclexplode(coalesce(function.proacl,acldefault('f',function.proowner))) privilege
+      join pg_roles grantee on grantee.oid=privilege.grantee
+      where function.oid=bootstrap_boundary
+        and grantee.oid<>function.proowner
+        and grantee.rolname not in('zhudatuanbootstrap','shopmigration')
+    loop
+      execute format('revoke all on function deployment.registration_bootstrap_boundary(text) from %I',grantee_name);
+    end loop;
+    execute 'revoke all on function deployment.is_independent_registration_database() from public';
+    for grantee_name in
+      select distinct grantee.rolname
+      from pg_proc function
+      cross join lateral aclexplode(coalesce(function.proacl,acldefault('f',function.proowner))) privilege
+      join pg_roles grantee on grantee.oid=privilege.grantee
+      where function.oid=migration_boundary
+        and grantee.oid<>function.proowner
+        and grantee.rolname<>'shopmigration'
+    loop
+      execute format('revoke all on function deployment.is_independent_registration_database() from %I',grantee_name);
+    end loop;
+    execute 'grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration';
+    execute 'grant execute on function deployment.is_independent_registration_database() to shopmigration';
+    reset role;
     return;
   end if;
 
