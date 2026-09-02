@@ -785,7 +785,14 @@
   display: grid;
   min-width: 0;
   justify-items: start;
+}
+
+.roleaccessstate {
   gap: var(--sw-space-1);
+}
+
+.invitationrecordspanel {
+  gap: var(--sw-space-3);
 }
 
 .roleaccessstate[data-tone='danger'] {
@@ -803,18 +810,37 @@
 .invitationrecordspanel p,
 .invitationrecordspanel h2,
 .invitationrecordspanel strong,
-.invitationrecordspanel span {
+.invitationrecordspanel span,
+.invitationrecordspanel dl,
+.invitationrecordspanel dd {
   margin: 0;
 }
 
 .roleaccessstate p,
-.invitationrecordspanel span {
+.invitationrecordsheader span,
+.invitationrecordsstate span,
+.invitationrecordcard header span {
   color: var(--sw-text-secondary);
   font-size: var(--sw-font-size-label);
   line-height: var(--sw-line-height-label);
 }
 
-.invitationrecordspanel > p:first-child {
+.invitationrecordsheader {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-3);
+}
+
+.invitationrecordsheader > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-1);
+}
+
+.invitationrecordsheader > div > p:first-child {
   color: var(--sw-brand-dark);
   font-size: var(--sw-font-size-overline);
   font-weight: var(--sw-font-weight-bold);
@@ -824,6 +850,90 @@
 .invitationrecordspanel h2 {
   color: var(--sw-brand-ink);
   font-size: var(--sw-font-size-h2);
+}
+
+.invitationrecordslist {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: var(--sw-space-2);
+}
+
+.invitationrecordcard {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-2);
+  padding: var(--sw-space-3);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface);
+}
+
+.invitationrecordcard > header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.invitationrecordcard > header > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.invitationrecordcard > header strong {
+  overflow-wrap: anywhere;
+  color: var(--sw-brand-ink);
+  font-size: var(--sw-font-size-body);
+}
+
+.invitationrecordcard dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sw-space-1);
+}
+
+.invitationrecordcard dl > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+  padding: var(--sw-space-2);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-subtle);
+}
+
+.invitationrecordcard dt {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+}
+
+.invitationrecordcard dd {
+  overflow-wrap: anywhere;
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-label);
+  font-weight: var(--sw-font-weight-semibold);
+  line-height: var(--sw-line-height-label);
+}
+
+.invitationrecordsstate {
+  display: grid;
+  width: 100%;
+  justify-items: start;
+  gap: var(--sw-space-1);
+  padding: var(--sw-space-3);
+  border: var(--sw-border-width) dashed var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface-subtle);
+}
+
+.invitationrecordsend {
+  width: 100%;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  text-align: center;
 }
 
 @media (max-width: 82.125rem) {
@@ -837,6 +947,10 @@
   }
 
   .roledirectorygroup {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .invitationrecordcard dl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -914,6 +1028,20 @@
 
   .rolepermissionoverview > header label {
     width: 100%;
+  }
+
+  .invitationrecordsheader {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .invitationrecordsheader .shopbutton,
+  .invitationrecordspanel > .shopbutton {
+    width: 100%;
+  }
+
+  .invitationrecordcard dl {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

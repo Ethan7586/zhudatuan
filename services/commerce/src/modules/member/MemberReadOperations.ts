@@ -8,6 +8,7 @@ import { requireGovernanceContext } from '../../foundation/security/AccessContex
 
 export const MEMBER_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'member.members.read',
+  'member.invitations.read',
   'member.imports.read',
 ] as const satisfies readonly OperationId[]);
 
@@ -55,6 +56,33 @@ export function memberOperatorReadActions(): OperationActions {
       from selected anchor order by anchor.directory_sort desc,anchor.id desc limit $4`,
       [access.scope.id, page.sort, page.id, page.fetch, access.actor.id, governance.ownerMembershipId ?? null]);
       return keysetResult(result, page, 'directory_sort', 'id');
+    },
+    'member.invitations.read': async (request, database) => {
+      const access = requireAccess(request);
+      const page = queryPage(request);
+      const result = await database.query(`select invitation.id,invitation.organization_id scope,
+        organization.name scope_name,invitation.label,
+        case when invitation.role_id='role-senior-administrator-v1:'||invitation.organization_id
+          then 'senior_administrator' else 'administrator' end governance_level,
+        invitation.created_by,creator.display_name created_by_name,
+        invitation.max_uses,invitation.use_count,invitation.effective_at starts_at,
+        invitation.expires_at,invitation.accepted_at,
+        case when invitation.status='disabled' then 'revoked'
+          when invitation.accepted_at is not null or invitation.use_count>=invitation.max_uses then 'used'
+          when invitation.status='expired' or invitation.expires_at<=clock_timestamp() then 'expired'
+          else 'active' end status,
+        invitation.created_at,invitation.version
+        from member.invite invitation
+        join organization.organization organization on organization.id=invitation.organization_id
+        left join access.membership creator_membership on creator_membership.id=invitation.created_by
+        left join member.profile creator on creator.id=creator_membership.member_id
+        where invitation.target_client='operator'
+          and exists(select 1 from organization.unitclosure boundary
+            where boundary.ancestor_id=$1 and boundary.descendant_id=invitation.organization_id)
+          and ($2::timestamptz is null or (invitation.created_at,invitation.id)<($2::timestamptz,$3::text))
+        order by invitation.created_at desc,invitation.id desc limit $4`,
+      [access.scope.id, page.sort, page.id, page.fetch]);
+      return keysetResult(result, page, 'created_at', 'id');
     },
     'member.imports.read': async (request, database) => {
       const access = requireAccess(request);

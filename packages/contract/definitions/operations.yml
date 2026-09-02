@@ -807,6 +807,17 @@ operations:
     requirements:
       - MVP13
       - MVP22
+  - id: member.invitations.read
+    owner: member
+    method: GET
+    path: /api/v1/member/invitations
+    audience: operator
+    permission: identity.invitation.manage
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP13
+      - MVP22
   - id: member.profile.read
     owner: member
     method: GET
