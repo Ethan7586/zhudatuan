@@ -95,6 +95,11 @@ export function mallCreationRequiresStepup(context: ConsoleContext): boolean {
   return context.session.assurance.level < 3 || context.session.assurance.verified === undefined;
 }
 
+export function mallMobileEnrollmentRequired(context: ConsoleContext): boolean {
+  if (context.session.security !== undefined) return context.session.security.phoneMasked === null;
+  return context.profile.mobile_bound === false;
+}
+
 export function newMallCreateAttempt(draft: MallCreateDraft): MallCreateAttempt {
   return Object.freeze({
     enterpriseId: draft.enterpriseId.trim(),

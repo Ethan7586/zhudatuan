@@ -207,8 +207,16 @@ function LocationProbe() {
   return null;
 }
 
-function renderRoute(entry: string, activeScope: ConsoleScope) {
-  const context = contextFor(activeScope);
+function renderRoute(entry: string, activeScope: ConsoleScope, options: Readonly<{ phoneMasked?: string | null }> = {}) {
+  const base = contextFor(activeScope);
+  const context = options.phoneMasked === undefined ? base : {
+    ...base,
+    session: {
+      ...base.session,
+      security: { hasLocalCredential: true, phoneMasked: options.phoneMasked, passwordChangedAt: null },
+    },
+    profile: { ...base.profile, mobile_bound: options.phoneMasked !== null },
+  };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<MemoryRouter initialEntries={[entry]}><QueryClientProvider client={client}>
     <ConsoleContextProvider value={context}><LocationProbe /><Component /></ConsoleContextProvider>

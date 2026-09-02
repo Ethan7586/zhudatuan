@@ -20,6 +20,7 @@ import {
   isMallStepupRequired,
   mallCreationError,
   mallCreationRequiresStepup,
+  mallMobileEnrollmentRequired,
   mallEnterpriseScopes,
   mallProvisioningScope,
   newMallCreateAttempt,
@@ -132,7 +133,7 @@ export function Component() {
     setFlowOpen(false);
     setMallCreateError(undefined);
     setMallCreatePhase('form');
-    setMallMobileEnrollment(false);
+    setMallMobileEnrollment(mallMobileEnrollmentRequired(context));
     setMallCreateOpen(true);
   };
 
@@ -205,6 +206,11 @@ export function Component() {
     setMallCreateError(undefined);
     const attempt = sameMallDraft(mallCreateAttempt, draft) ? mallCreateAttempt : newMallCreateAttempt(draft);
     setMallCreateAttempt(attempt);
+    if (mallMobileEnrollmentRequired(context)) {
+      setMallCreatePhase('form');
+      setMallMobileEnrollment(true);
+      return;
+    }
     if (mallCreationRequiresStepup(context) && !mallStepupCompleted) {
       await requestMallStepup(attempt);
       return;
