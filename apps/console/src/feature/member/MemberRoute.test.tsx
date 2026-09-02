@@ -200,6 +200,7 @@ const missingEvidenceCases: ReadonlyArray<readonly [string, Partial<ConsoleConte
   ['permission', { permissions: [] }],
   ['capability', { capabilities: [] }],
   ['csrf', { csrf: undefined }],
+  ['governance', { governance: { level: 'administrator', exactOwner: false, organization: 'tenant:one' } }],
 ];
 const resetMissingEvidenceCases: ReadonlyArray<readonly [string, Partial<ConsoleContext['session']>]> = [
   ['permission', { permissions: ['member.read', 'identity.invitation.manage'] }],
@@ -213,6 +214,7 @@ const ownerContext: ConsoleContext = {
     accessVersion: 7,
     permissions: ['member.read', 'identity.assurance.manage', 'identity.invitation.manage', 'identity.registration.reset'],
     capabilities: ['member.members.read', 'identity.password.verify', 'identity.invitations.create', 'identity.members.reset'],
+    governance: { level: 'owner', exactOwner: true, organization: 'tenant:one' },
     assurance: { level: 2 },
     csrf: 'csrf-token-for-invitation',
     target: 'console',

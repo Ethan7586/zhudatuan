@@ -21,7 +21,7 @@ describe('ModuleOperations lifecycle', () => {
     let fact: Readonly<{ before?: unknown; after?: unknown }> | undefined;
     const audit: AuditSink = { record: async (_database, input) => { fact = input; }, access: async () => undefined };
     const request = { type:'identity.invitations.create', access:null, input:{ path:{}, query:{}, headers:{},
-      body:{ address:'敏感地址', password:'secret' }, rawBody:'', deadline:Date.now()+1_000,
+      body:{ address:'敏感地址', password:'secret', governanceLevel:'senior_administrator' }, rawBody:'', deadline:Date.now()+1_000,
       signal:new AbortController().signal, idempotency:'invitation' } } satisfies OperationRequest;
     await appendOperationAudit(audit, { query:async () => ({ rows:[], rowCount:0 } as unknown as QueryResult) }, request,
       'identity', { status:201, body:{ id:'invitation:1', code:'one-time-code' } }, 'actor', 'scope', 'hash');

@@ -239,9 +239,11 @@ function parseSession(value: unknown): ConsoleSession | undefined {
   const permissions = parseStringArray(value.permissions);
   const capabilities = parseStringArray(value.capabilities);
   const profile = value.profile === undefined ? undefined : parseProfile(value.profile);
+  const governance = parseGovernance(value.governance);
   if (!nonEmpty(value.actor) || !nonEmpty(value.membership) || scope === undefined || scopes === undefined
     || accessVersion === undefined || permissions === undefined || capabilities === undefined
     || (value.profile !== undefined && profile === undefined)
+    || (value.governance !== undefined && governance === undefined)
     || !isRecord(value.assurance) || !nonNegativeInteger(value.assurance.level)
     || !optionalNonEmpty(value.assurance.verified) || !nonEmpty(value.target) || !nonEmpty(value.syncedAt)
     || !optionalMinimumString(value.csrf, 16)) return undefined;
@@ -255,6 +257,7 @@ function parseSession(value: unknown): ConsoleSession | undefined {
     accessVersion,
     permissions,
     capabilities,
+    ...(governance === undefined ? {} : { governance }),
     ...(profile === undefined ? {} : { profile }),
     assurance: {
       level: value.assurance.level,
@@ -264,6 +267,19 @@ function parseSession(value: unknown): ConsoleSession | undefined {
     ...(value.csrf === undefined ? {} : { csrf: value.csrf }),
     target: value.target,
     syncedAt: value.syncedAt,
+  };
+}
+
+function parseGovernance(value: unknown): ConsoleSession['governance'] | undefined {
+  if (value === undefined) return undefined;
+  if (!isRecord(value)
+    || !['owner', 'senior_administrator', 'administrator', 'member'].includes(String(value.level))
+    || typeof value.exactOwner !== 'boolean'
+    || !nonEmpty(value.organization)) return undefined;
+  return {
+    level: value.level as NonNullable<ConsoleSession['governance']>['level'],
+    exactOwner: value.exactOwner,
+    organization: value.organization,
   };
 }
 

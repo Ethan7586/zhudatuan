@@ -23,6 +23,7 @@ export const MemberInvitationReceiptSchema = z.strictObject({
   code: z.string().regex(/^[A-Za-z0-9_-]{32}$/),
   label: z.string().min(2).max(80),
   target: z.literal('console'),
+  governanceLevel: z.enum(['administrator', 'senior_administrator']).optional(),
   max_uses: z.number().int().min(1).max(500),
   use_count: z.number().int().nonnegative(),
   starts_at: z.iso.datetime(),

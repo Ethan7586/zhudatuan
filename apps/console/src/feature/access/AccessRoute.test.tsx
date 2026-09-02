@@ -274,6 +274,7 @@ const context: ConsoleContext = {
     actor: 'actor:owner', membership: 'membership:owner', accessVersion: 7,
     permissions: ['access.center.read', 'access.role.manage', 'access.scope.manage', 'identity.invitation.manage'],
     capabilities: ['access.center.read', 'access.roles.manage', 'access.scopes.manage', 'identity.invitations.create'],
+    governance: { level: 'owner', exactOwner: true, organization: 'tenant:one' },
     assurance: { level: 2 }, target: 'console', scope: tenantScope, scopes: [tenantScope, mallScope], csrf: 'csrf:test',
     syncedAt: '2026-09-01T00:00:00.000Z',
   },
