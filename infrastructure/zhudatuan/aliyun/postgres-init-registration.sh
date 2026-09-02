@@ -23,6 +23,7 @@ exec /usr/bin/psql -X --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<'SQL
 \getenv bootstrap_password ZHUDATUAN_BOOTSTRAP_PASSWORD
 \getenv web_api_password ZHUDATUAN_WEB_API_PASSWORD
 \getenv purchase_api_password ZHUDATUAN_PURCHASE_API_PASSWORD
+\getenv provisioning_api_password ZHUDATUAN_PROVISIONING_API_PASSWORD
 \getenv sandbox_bootstrap_password ZHUDATUAN_SANDBOX_BOOTSTRAP_PASSWORD
 begin;
 set local search_path=pg_catalog,pg_temp;
@@ -41,7 +42,8 @@ select
   and length(:'shopmigration_password')>=32 and length(:'shopread_password')>=32
   and length(:'identity_api_password')>=32 and length(:'identity_job_password')>=32
   and length(:'bootstrap_password')>=32 and length(:'web_api_password')>=32
-  and length(:'purchase_api_password')>=32 and length(:'sandbox_bootstrap_password')>=32 secrets_valid
+  and length(:'purchase_api_password')>=32 and length(:'provisioning_api_password')>=32
+  and length(:'sandbox_bootstrap_password')>=32 secrets_valid
 \gset guard_
 \if :guard_secrets_valid
 \else
@@ -61,6 +63,9 @@ declare
   boundary_role constant oid := to_regrole('zhudatuanregistrationboundary');
   boundary_table constant oid := to_regclass('deployment.boundary');
   application_roles constant text[] := array['anon','authenticated','service_role','shopapp','shopjob',
+    'shopmigration','shopread','zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap',
+    'zhudatuanwebapi','zhudatuanpurchaseapi','zhudatuanprovisioningapi','zhudatuansandboxbootstrap'];
+  existing_application_roles constant text[] := array['anon','authenticated','service_role','shopapp','shopjob',
     'shopmigration','shopread','zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap',
     'zhudatuanwebapi','zhudatuanpurchaseapi','zhudatuansandboxbootstrap'];
   database_owner text := (select pg_get_userbyid(datdba) from pg_database where datname=current_database());
@@ -113,11 +118,11 @@ begin
     end if;
   else
     if to_regnamespace('deployment') is null or database_owner<>'shopmigration'
-      or (select count(*) from pg_roles where rolname=any(application_roles))<>cardinality(application_roles)
+      or (select count(*) from pg_roles where rolname=any(existing_application_roles))<>cardinality(existing_application_roles)
       or exists(select 1 from pg_roles where rolname=any(application_roles)
         and (rolsuper or rolcreatedb or rolcreaterole or rolinherit or rolreplication or rolbypassrls))
       or exists(select 1 from pg_roles where rolname=any(array['anon','authenticated','service_role']) and rolcanlogin)
-      or exists(select 1 from pg_roles where rolname=any(application_roles[4:13]) and not rolcanlogin)
+      or exists(select 1 from pg_roles where rolname=any(application_roles[4:14]) and not rolcanlogin)
       or not exists(select 1 from pg_class where oid=boundary_table and relkind='r')
       or (select pg_get_userbyid(nspowner) from pg_namespace where oid=to_regnamespace('deployment'))<>'shopmigration'
       or (select pg_get_userbyid(relowner) from pg_class where oid=boundary_table)<>'shopmigration'
@@ -167,6 +172,7 @@ select format('create role zhudatuanidentityjob login password %L noinherit',:'i
 select format('create role zhudatuanbootstrap login password %L noinherit',:'bootstrap_password') where to_regrole('zhudatuanbootstrap') is null \gexec
 select format('create role zhudatuanwebapi login password %L noinherit',:'web_api_password') where to_regrole('zhudatuanwebapi') is null \gexec
 select format('create role zhudatuanpurchaseapi login password %L noinherit',:'purchase_api_password') where to_regrole('zhudatuanpurchaseapi') is null \gexec
+select format('create role zhudatuanprovisioningapi login password %L noinherit',:'provisioning_api_password') where to_regrole('zhudatuanprovisioningapi') is null \gexec
 select format('create role zhudatuansandboxbootstrap login password %L noinherit',:'sandbox_bootstrap_password') where to_regrole('zhudatuansandboxbootstrap') is null \gexec
 
 -- PG16 non-superusers cannot spell NOSUPERUSER in ALTER ROLE. Reject unsafe
@@ -176,7 +182,7 @@ begin
   if exists(select 1 from pg_roles where rolname=any(array[
       'anon','authenticated','service_role','shopapp','shopjob','shopmigration','shopread',
       'zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
-      'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+      'zhudatuanpurchaseapi','zhudatuanprovisioningapi','zhudatuansandboxbootstrap'
     ]) and (rolsuper or rolcreatedb or rolcreaterole or rolreplication or rolbypassrls)) then
     raise exception 'ZHUDATUAN_RDS_INIT_ROLE_ATTRIBUTE_INVALID';
   end if;
@@ -195,6 +201,7 @@ select format('alter role zhudatuanidentityjob login password %L noinherit',:'id
 select format('alter role zhudatuanbootstrap login password %L noinherit',:'bootstrap_password') \gexec
 select format('alter role zhudatuanwebapi login password %L noinherit',:'web_api_password') \gexec
 select format('alter role zhudatuanpurchaseapi login password %L noinherit',:'purchase_api_password') \gexec
+select format('alter role zhudatuanprovisioningapi login password %L noinherit',:'provisioning_api_password') \gexec
 select format('alter role zhudatuansandboxbootstrap login password %L noinherit',:'sandbox_bootstrap_password') \gexec
 
 grant shopapp,shopjob to shopmigration with inherit false,set true;
@@ -211,7 +218,7 @@ create table if not exists deployment.boundary(
 );
 revoke all on deployment.boundary from public,shopapp,shopjob,shopread,
   zhudatuanidentityapi,zhudatuanidentityjob,zhudatuanbootstrap,zhudatuanwebapi,
-  zhudatuanpurchaseapi,zhudatuansandboxbootstrap;
+  zhudatuanpurchaseapi,zhudatuanprovisioningapi,zhudatuansandboxbootstrap;
 insert into deployment.boundary(id,database_name,sentinel_hash)
 values('zhudatuan-registration-v1',current_database(),
   encode(pg_catalog.sha256(pg_catalog.convert_to(:'database_sentinel','UTF8')),'hex'))
@@ -250,7 +257,7 @@ where membership.member=(select oid from pg_roles where rolname=current_user)
   and granted.rolname=any(array[
     'anon','authenticated','service_role','shopapp','shopjob','shopmigration','shopread',
     'zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
-    'zhudatuanpurchaseapi','zhudatuansandboxbootstrap','zhudatuanregistrationboundary'
+    'zhudatuanpurchaseapi','zhudatuanprovisioningapi','zhudatuansandboxbootstrap','zhudatuanregistrationboundary'
   ])
 \gexec
 
@@ -259,7 +266,7 @@ declare
   project_roles constant text[] := array[
     'anon','authenticated','service_role','shopapp','shopjob','shopmigration','shopread',
     'zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
-    'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+    'zhudatuanpurchaseapi','zhudatuanprovisioningapi','zhudatuansandboxbootstrap'
   ];
 begin
   if (select pg_get_userbyid(datdba) from pg_database where datname=current_database())<>'shopmigration'
@@ -275,7 +282,8 @@ begin
   if exists(select 1 from pg_roles where rolname=any(project_roles)
       and (rolsuper or rolcreatedb or rolcreaterole or rolinherit or rolreplication or rolbypassrls))
     or exists(select 1 from pg_roles where rolname=any(array['anon','authenticated','service_role']) and rolcanlogin)
-    or exists(select 1 from pg_roles where rolname=any(project_roles[4:13]) and not rolcanlogin) then
+    or exists(select 1 from pg_roles where rolname=any(project_roles[4:14]) and not rolcanlogin)
+    or (select count(*) from pg_roles where rolname=any(project_roles))<>cardinality(project_roles) then
     raise exception 'ZHUDATUAN_RDS_INIT_FINAL_ROLE_INVALID';
   end if;
   if exists(select 1 from pg_auth_members membership

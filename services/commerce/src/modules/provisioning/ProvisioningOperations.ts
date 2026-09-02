@@ -1,9 +1,14 @@
+import type { OperationId } from '@shop/contract';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import { ModuleOperations, reject, requireAccess } from '../../foundation/application/ModuleOperations';
 import { bodyRecord, textField } from '../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { CreateMall } from './application/CreateMall';
+
+export const MALL_PROVISIONING_OPERATION_IDS = Object.freeze([
+  'provisioning.malls.create',
+] as const satisfies readonly OperationId[]);
 
 export function provisioningOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
@@ -28,5 +33,5 @@ export function provisioningOperations(context: ModuleContext): ModuleOperations
       if (conflict !== null) reject(conflict === 'MALL_PARENT_INVALID' ? 422 : 409, conflict);
       return { status: 201, body: await createMall.execute(database, plan) };
     },
-  });
+  }, MALL_PROVISIONING_OPERATION_IDS);
 }

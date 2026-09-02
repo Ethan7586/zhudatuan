@@ -93,6 +93,12 @@ assertCaddyMatcher(apiHost, 'purchasePreflight', ['OPTIONS'], [
   '/api/v1/orders',
   '/api/v1/payments/intents',
 ]);
+assertCaddyMatcher(apiHost, 'mallProvisioningPreflight', ['OPTIONS'], [
+  '/api/v1/provisioning/malls',
+]);
+assertCaddyMatcher(apiHost, 'mallProvisioningApi', ['POST'], [
+  '/api/v1/provisioning/malls',
+]);
 const registrationOperations = [
   ['runtime.health.live', 'GET', '/health/live'],
   ['runtime.health.ready', 'GET', '/health/ready'],
@@ -117,18 +123,22 @@ if (apiHost.includes('/api/v1/*')) throw new Error('GENERIC_CANONICAL_API_WILDCA
 assertExactSet(
   [...apiHost.matchAll(/^\s*@(\w+)(?:\s+path\b|\s*\{)/gm)].map((match) => match[1]),
   ['registrationHealth', 'registrationPreflight', 'registrationPost', 'registrationSessionRead', 'registrationSessionDelete',
-    'registrationInvitationDelete', 'registrationOperatorRead', 'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi',
+    'registrationInvitationDelete', 'registrationOperatorRead', 'mallProvisioningPreflight', 'mallProvisioningApi',
+    'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi',
     'consoleSupportPreflight', 'consoleSupportRead', 'consoleSupportSend', 'webBusinessApi'],
   'CANONICAL_API_PATH_MATCHERS'
 );
 assertExactList(
   [...apiHost.matchAll(/reverse_proxy\s+127\.0\.0\.1:(\d+)/g)].map((match) => match[1]),
-  ['4321', '4321', '4321', '4321', '4321', '4321', '4321', '4323', '4323', '4324', '4324', '4324', '4322'],
+  ['4321', '4321', '4321', '4321', '4321', '4321', '4321', '4325', '4325',
+    '4323', '4323', '4324', '4324', '4324', '4322'],
   'CANONICAL_API_PROXY_TARGETS'
 );
 if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@registrationSessionRead',
   '@registrationSessionDelete', '@registrationInvitationDelete', '@registrationOperatorRead']
   .some((matcher) => apiHost.indexOf(matcher) > apiHost.indexOf('@purchaseApi'))
+  || apiHost.indexOf('handle @mallProvisioningPreflight') > apiHost.indexOf('handle @mallProvisioningApi')
+  || apiHost.indexOf('handle @mallProvisioningApi') > apiHost.indexOf('handle @purchasePublicBlocked')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchasePreflight')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchaseApi')
   || apiHost.indexOf('handle @purchasePreflight') > apiHost.indexOf('handle @purchaseApi')

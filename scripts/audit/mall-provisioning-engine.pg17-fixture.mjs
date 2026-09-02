@@ -23,23 +23,26 @@ try {
   if (!port || !/^\d+$/.test(port)) throw new Error(`MALL_ENGINE_POSTGRES_PORT_INVALID:${portOutput.trim()}`);
 
   const adminUrl = `postgresql://postgres:${password}@127.0.0.1:${port}/${database}`;
-  const runtimeUrl = `postgresql://shopapp:${password}@127.0.0.1:${port}/${database}`;
+  const runtimeUrl = `postgresql://zhudatuanprovisioningapi:${password}@127.0.0.1:${port}/${database}`;
   await run('node', ['scripts/audit/database-contracts.mjs', '--postgres-fresh', adminUrl]);
   await run('docker', ['exec', container, 'psql', '-X', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', database,
-    '-c', `alter role shopapp login password '${password}';`], { quiet: true });
+    '-c', `alter role zhudatuanprovisioningapi login password '${password}';`], { quiet: true });
   await run('npm', ['--workspace', '@shop/commerce', 'run', 'test:integration', '--', 'MallProvisioningEngine.test.ts'], {
     environment: { SHOP_TEST_ADMIN_DATABASE_URL: adminUrl, SHOP_TEST_DATABASE_URL: runtimeUrl },
   });
-  console.log('mall provisioning PostgreSQL 17 acceptance passed: replay=full role=shopapp tests=4');
+  console.log('mall provisioning PostgreSQL 17 acceptance passed: replay=full role=zhudatuanprovisioningapi tests=4');
 } finally {
   await run('docker', ['rm', '-f', container], { allowFailure: true, quiet: true });
 }
 
 async function waitForPostgres() {
   for (let attempt = 1; attempt <= 60; attempt += 1) {
-    const ready = await run('docker', ['exec', container, 'pg_isready', '-U', 'postgres', '-d', database],
-      { allowFailure: true, quiet: true });
-    if (ready === 0) return;
+    const logs = await capture('docker', ['logs', container]).catch(() => '');
+    if (logs.includes('PostgreSQL init process complete; ready for start up.')) {
+      const ready = await run('docker', ['exec', container, 'pg_isready', '-U', 'postgres', '-d', database],
+        { allowFailure: true, quiet: true });
+      if (ready === 0) return;
+    }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error('MALL_ENGINE_POSTGRES_NOT_READY');

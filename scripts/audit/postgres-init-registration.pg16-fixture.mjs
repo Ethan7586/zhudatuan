@@ -1,6 +1,6 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -17,16 +17,17 @@ const server = `zdt-pg16-init-server-${suffix}`;
 const client = `zdt-pg16-init-client-${suffix}`;
 const temporary = await mkdtemp(join(tmpdir(), 'zdt-pg16-init-'));
 const environmentFile = join(temporary, 'fixture.env');
-const containerScript = '/workspace/infrastructure/zhudatuan/aliyun/postgres-init-registration.sh';
+const initScript = join(repositoryRoot, 'infrastructure/zhudatuan/aliyun/postgres-init-registration.sh');
 const projectRoles = [
   'anon','authenticated','service_role','shopapp','shopjob','shopmigration','shopread',
   'zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
-  'zhudatuanpurchaseapi','zhudatuansandboxbootstrap','zhudatuanregistrationboundary',
+  'zhudatuanpurchaseapi','zhudatuanprovisioningapi','zhudatuansandboxbootstrap','zhudatuanregistrationboundary',
 ];
 const passwordNames = [
   'SHOPAPP_PASSWORD','SHOPJOB_PASSWORD','SHOPMIGRATION_PASSWORD','SHOPREAD_PASSWORD',
   'ZHUDATUAN_IDENTITY_API_PASSWORD','ZHUDATUAN_IDENTITY_JOB_PASSWORD','ZHUDATUAN_BOOTSTRAP_PASSWORD',
-  'ZHUDATUAN_WEB_API_PASSWORD','ZHUDATUAN_PURCHASE_API_PASSWORD','ZHUDATUAN_SANDBOX_BOOTSTRAP_PASSWORD',
+  'ZHUDATUAN_WEB_API_PASSWORD','ZHUDATUAN_PURCHASE_API_PASSWORD','ZHUDATUAN_PROVISIONING_API_PASSWORD',
+  'ZHUDATUAN_SANDBOX_BOOTSTRAP_PASSWORD',
 ];
 const sentinel = randomBytes(36).toString('base64url');
 
@@ -71,7 +72,7 @@ try {
       or member='zhudatuanregistrationboundary'::regrole),
     (select count(*) from deployment.boundary),
     (select count(*) from pg_roles where rolname=any(array[${projectRoles.map((role)=>`'${role}'`).join(',')}]))`)).stdout.trim();
-  if (proof!=='t|shopmigration|0|1|14') throw new Error(`POSTGRES_INIT_FIXTURE_FINAL_STATE_INVALID:${proof}`);
+  if (proof!=='t|shopmigration|0|1|15') throw new Error(`POSTGRES_INIT_FIXTURE_FINAL_STATE_INVALID:${proof}`);
   process.stdout.write('postgres init PG16 fixture passed: positive=2 wrong-address=1 nonempty=1 wrong-sentinel=1 zero-mutation=3 boundary-memberships=0\n');
 } finally {
   await docker(['rm','-f',client],true);
@@ -91,10 +92,10 @@ async function runInit(overrides={},serverAddress) {
   Object.assign(values,overrides);
   await writeFile(environmentFile,Object.entries(values).map(([key,value])=>`${key}=${value}`).join('\n')+'\n',{ mode:0o600 });
   await chmod(environmentFile,0o600);
-  const result = await docker([
-    'run','--rm','--name',client,'--network',network,'--env-file',environmentFile,
-    '-v',`${repositoryRoot}:/workspace:ro`,'postgres:16','/bin/sh',containerScript,
-  ],true);
+  const result = await dockerWithInput([
+    'run','--rm','-i','--name',client,'--network',network,'--env-file',environmentFile,
+    'postgres:16','/bin/sh','-s',
+  ],await readFile(initScript,'utf8'),true);
   const transcript=`${result.stdout}${result.stderr}`;
   for (const name of ['PGPASSWORD','ZHUDATUAN_DATABASE_SENTINEL',...passwordNames]) {
     if (transcript.includes(values[name])) throw new Error(`POSTGRES_INIT_FIXTURE_SECRET_OUTPUT:${name}`);
@@ -177,4 +178,21 @@ async function docker(args,allowFailure=false) {
     if (allowFailure) return { stdout:error.stdout??'',stderr:error.stderr??'',exitCode:error.code??1 };
     throw error;
   }
+}
+
+function dockerWithInput(args,input,allowFailure=false) {
+  return new Promise((resolve,reject) => {
+    const child=spawn('docker',args,{ cwd:repositoryRoot,env:process.env,stdio:['pipe','pipe','pipe'] });
+    let stdout=''; let stderr='';
+    child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
+    child.stdout.on('data',(chunk)=>{ stdout+=chunk; });
+    child.stderr.on('data',(chunk)=>{ stderr+=chunk; });
+    child.once('error',reject);
+    child.once('exit',(code,signal)=>{
+      const result={ stdout,stderr,exitCode:code??1 };
+      if (code===0 || allowFailure) resolve(result);
+      else reject(new Error(`DOCKER_INPUT_COMMAND_FAILED:${code??signal??'unknown'}`));
+    });
+    child.stdin.end(input);
+  });
 }

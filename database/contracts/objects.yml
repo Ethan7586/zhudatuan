@@ -20244,3 +20244,127 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260831150000_identity_experience_application_commands.sql
+  - id: access.decisionaudit.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: access.decisionaudit.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.accessrecord.zhudatuanprovisioningapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.archiveref.zhudatuanprovisioningapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.record.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.record.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: catalog.pool.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: catalog.poolbinding.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.application.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.application.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.application.zhudatuanprovisioningapiupdate
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.binding.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.version.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.organization.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.organization.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.sourcebinding.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.sourcebinding.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.unitclosure.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.unitclosure.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.case.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.decision.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.decision.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.listentry.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.policy.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.policyversion.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.signal.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.idempotency.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.idempotency.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.idempotency.zhudatuanprovisioningapiupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.outbox.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.schemaversion.zhudatuanprovisioningapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
