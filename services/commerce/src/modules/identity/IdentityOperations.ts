@@ -420,7 +420,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         where effective_at<=clock_timestamp() and (retired_at is null or retired_at>clock_timestamp()) order by version desc limit 1`);
         if (!policy.rows[0]) throw new Error('INVITE_INVALID');
         const id = `invite:${randomUUID()}`;
-        const code = randomBytes(5).toString('hex').toUpperCase();
+        const code = `${'ABCDEF'.charAt(randomInt(6))}${'ABCDEF'.charAt(randomInt(6))}${randomBytes(4).toString('hex').toUpperCase()}`;
         const result = await database.query(
           `insert into member.invite(id,organization_id,label,destination_hash,token_hash,expires_at,created_by,
         role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash,version,
