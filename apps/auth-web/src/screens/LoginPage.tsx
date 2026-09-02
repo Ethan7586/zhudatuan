@@ -51,6 +51,10 @@ export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
   const isCanonicalConsoleRequest = true;
+  const [registrationDeepLink] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
+  });
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
@@ -65,11 +69,11 @@ export const LoginPage: React.FC = () => {
   const [loginOtp, setLoginOtp] = useState({ code: '', challengeId: '', challengeMobile: '' });
   const { seconds: loginOtpSeconds, start: startLoginOtpCooldown, reset: resetLoginOtpCooldown } = useSmsResendCountdown();
   const [loginOtpSending, setLoginOtpSending] = useState(false);
-  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(registrationDeepLink.length > 0);
   const [registration, setRegistration] = useState({
     mobile: '',
     displayName: '',
-    inviteCode: '',
+    inviteCode: registrationDeepLink,
     code: '',
     challengeId: '',
     challengeMobile: '',
@@ -102,6 +106,30 @@ export const LoginPage: React.FC = () => {
   const [showForcePasswordModal, setShowForcePasswordModal] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
   const registrationCopy = registrationPresentation(registrationInvite?.target, registrationInvite?.governanceLevel);
+
+  useEffect(() => {
+    if (!registrationDeepLink) return;
+    let active = true;
+    setRegistrationBusy('invite');
+    setFormError('');
+    void resolveCanonicalInvite(registrationDeepLink)
+      .then((invitation) => {
+        if (!active) return;
+        setRegistrationInvite(invitation);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
+        setRegistrationNotice(`已进入【${invitation.organizationName}】手机注册通道`);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRegistrationInvite(null);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
+        setFormError(error instanceof Error ? error.message : '邀请码验证失败');
+      })
+      .finally(() => {
+        if (active) setRegistrationBusy(null);
+      });
+    return () => { active = false; };
+  }, [registrationDeepLink]);
 
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
@@ -1238,6 +1266,11 @@ export const LoginPage: React.FC = () => {
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">Member Registration</p>
                 <h3 className="mt-1 text-2xl font-bold text-slate-950">{registrationCopy.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-500">{registrationCopy.description}</p>
+                {registrationInvite?.organizationName && (
+                  <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-[var(--sw-brand)]">
+                    <Store className="h-3.5 w-3.5" />{registrationInvite.organizationName}
+                  </p>
+                )}
               </div>
               <button type="button" onClick={closeRegistration} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="关闭注册">
                 <X className="h-5 w-5" />

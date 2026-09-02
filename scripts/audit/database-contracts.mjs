@@ -167,6 +167,7 @@ const REPAIR_FILES = [
   '20260903101000_allow_platform_owner_invitation_history.sql',
   '20260903102000_invitation_record_target_and_creator_scope.sql',
   '20260903103000_provision_l1_mall_owner.sql',
+  '20260903104000_enable_provisioned_mall_registration.sql',
 ];
 
 const mode = process.argv[2];

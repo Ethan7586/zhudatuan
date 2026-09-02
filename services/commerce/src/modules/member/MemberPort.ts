@@ -36,6 +36,7 @@ export class MemberPort {
   invite(database: OperationDatabase, token: string) {
     return database.query(
       `select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,
+        invite.organization_id,organization.name organization_name,
         invite.target_client,invite.effective_at,invite.expires_at,
         case when invite.target_client='operator' and invite.role_id='role-senior-administrator-v1:'||invite.organization_id
           then 'senior_administrator' when invite.target_client='operator' then 'administrator' end governance_level
@@ -123,7 +124,8 @@ export const memberPort = new MemberPort();
 
 function registrationInviteBoundary(): string {
   return `(role.status='active' and organization.status='active' and (
-    (invite.target_client='storefront' and invite.role_id='role-zhudatuan-storefront-member'
+    (invite.target_client='storefront' and invite.role_id=case when invite.organization_id='mall-zhudatuan'
+        then 'role-zhudatuan-storefront-member' else 'role-zhudatuan-storefront-member:'||invite.organization_id end
       and invite.storefront_organization_id is null and organization.kind='mall')
     or (invite.target_client='operator'
       and invite.storefront_organization_id is not null and organization.kind='tenant'

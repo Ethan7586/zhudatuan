@@ -92,6 +92,8 @@ describe.runIf(endpointAvailable)('L0 owner creates an L1 Mall Core through form
       application_bindings: number;
       memberships: number;
       owner_records: number;
+      storefront_roles: number;
+      storefront_permissions: number;
       idempotency_records: number;
     }>(`select owner.organization_id,owner.scope_id,owner.mall_id,mall.parent_id,
         owner.membership_id owner_membership_id,membership.member_id owner_member_id,
@@ -106,6 +108,10 @@ describe.runIf(endpointAvailable)('L0 owner creates an L1 Mall Core through form
         (select count(*)::integer from access.membership where id=owner.membership_id
           and member_id=profile.id and organization_id=owner.organization_id and client='operator') memberships,
         (select count(*)::integer from access.mallowner where mall_id=owner.mall_id) owner_records,
+        (select count(*)::integer from access.role where id='role-zhudatuan-storefront-member:'||owner.organization_id
+          and scope_id=owner.organization_id and status='active') storefront_roles,
+        (select count(*)::integer from access.rolepermission mapping
+          where mapping.role_id='role-zhudatuan-storefront-member:'||owner.organization_id) storefront_permissions,
         (select count(*)::integer from runtime.idempotency where scope=$5 and actor_id=$6 and key=$7
           and state='completed') idempotency_records
       from access.mallowner owner
@@ -139,6 +145,8 @@ describe.runIf(endpointAvailable)('L0 owner creates an L1 Mall Core through form
       application_bindings: 1,
       memberships: 1,
       owner_records: 1,
+      storefront_roles: 1,
+      storefront_permissions: 14,
       idempotency_records: 1,
     });
     process.stdout.write(`PROV001_RECEIPT ${JSON.stringify({
