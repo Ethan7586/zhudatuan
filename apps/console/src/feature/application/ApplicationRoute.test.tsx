@@ -180,6 +180,23 @@ describe('Commerce application workspace', () => {
     expect(enrollmentCalls).toEqual(['password.verify', 'mobile.challenge', 'mobile.manage']);
   });
 
+  it('opens mobile enrollment without calling step-up when the session reports no bound phone', async () => {
+    const user = userEvent.setup();
+    let stepupCalls = 0;
+    server.use(http.post('*/api/v1/identity/stepup/challenges', () => {
+      stepupCalls += 1;
+      return HttpResponse.json({ code: 'UNEXPECTED_STEPUP' }, { status: 500 });
+    }));
+
+    renderRoute('/applications', scope('enterprise', 'enterprise:hongtai', '鸿泰集团'), { phoneMasked: null });
+    await screen.findByRole('table', { name: '商城列表' });
+    await user.click(screen.getByRole('button', { name: '创建商城' }));
+
+    const dialog = await screen.findByRole('dialog', { name: '创建商城' });
+    expect(await within(dialog).findByRole('heading', { name: '先绑定安全手机号' })).toBeTruthy();
+    expect(stepupCalls).toBe(0);
+  });
+
   it('creates an application through the generated command and rereads the authoritative list', async () => {
     const user = userEvent.setup();
     let created = false;
@@ -492,8 +509,16 @@ function LocationProbe() {
   return null;
 }
 
-function renderRoute(entry: string, activeScope: ConsoleScope) {
-  const context = contextFor(activeScope);
+function renderRoute(entry: string, activeScope: ConsoleScope, options: Readonly<{ phoneMasked?: string | null }> = {}) {
+  const base = contextFor(activeScope);
+  const context = options.phoneMasked === undefined ? base : {
+    ...base,
+    session: {
+      ...base.session,
+      security: { hasLocalCredential: true, phoneMasked: options.phoneMasked, passwordChangedAt: null },
+    },
+    profile: { ...base.profile, mobile_bound: options.phoneMasked !== null },
+  };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const rendered = render(
     <MemoryRouter initialEntries={[entry]}>
