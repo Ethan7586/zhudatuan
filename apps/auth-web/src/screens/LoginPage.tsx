@@ -209,7 +209,7 @@ export const LoginPage: React.FC = () => {
       const invitation = await resolveCanonicalInvite(registration.inviteCode);
       setRegistrationInvite(invitation);
       setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
-      setRegistrationNotice(registrationPresentation(invitation.target).resolvedNotice);
+      setRegistrationNotice(registrationPresentation(invitation.target, invitation.governanceLevel).resolvedNotice);
     } catch (error) {
       setRegistrationInvite(null);
       setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
