@@ -261,7 +261,8 @@ with role_oid as(
     'pricing:USAGE','public:USAGE','reporting:USAGE','risk:USAGE','runtime:USAGE'
   ]::text[],array[
     'access.business_membership_ancestor_scopes(text):EXECUTE','access.membership_version(text):EXECUTE',
-    'access.resolve_membership(text):EXECUTE','access.resolve_scope(text,text,text):EXECUTE','access.resolve_scope(text,text,text,text):EXECUTE',
+    'access.resolve_governance(text,text,text,text):EXECUTE','access.resolve_membership(text):EXECUTE',
+    'access.resolve_scope(text,text,text):EXECUTE','access.resolve_scope(text,text,text,text):EXECUTE',
     'access.web_audit_scope_allowed(text):EXECUTE','access.web_member_context(text,text):EXECUTE',
     'access.web_member_scope(text,text):EXECUTE','access.web_order_allowed(text,text):EXECUTE',
     'access.web_risk_scope_allowed(text):EXECUTE','access.web_scope_allowed(text):EXECUTE',
@@ -317,7 +318,8 @@ with role_oid as(
     'access.purchase_order_allowed(text):EXECUTE','access.purchase_order_quote(text,text,text):EXECUTE',
     'access.purchase_payment_intent_context(text,text,text,text,text):EXECUTE',
     'access.purchase_quote_allowed(text):EXECUTE',
-    'access.purchase_risk_scope_allowed(text):EXECUTE','access.resolve_membership(text):EXECUTE',
+    'access.purchase_risk_scope_allowed(text):EXECUTE','access.resolve_governance(text,text,text,text):EXECUTE',
+    'access.resolve_membership(text):EXECUTE',
     'access.resolve_scope(text,text,text):EXECUTE','access.resolve_scope(text,text,text,text):EXECUTE',
     'benefit.purchase_available(text,text,text[]):EXECUTE','benefit.purchase_consume(text,text,text,text,text,bigint):EXECUTE',
     'benefit.purchase_reserve(text,text,text,text,text[],bigint[]):EXECUTE','capability.membership_operations(text):EXECUTE',
