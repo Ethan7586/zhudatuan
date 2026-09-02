@@ -3,6 +3,7 @@ import type { Telemetry } from '@shop/telemetry';
 import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, type ApiEnvironment } from '@shop/config/server';
 import type { OperationId } from '@shop/contract';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
@@ -63,7 +64,8 @@ export async function createConsoleSupportRuntime(environment: ApiEnvironment): 
   const risk = new RiskCheckAdapter(pool);
   const audit = new RecordAudit(new PgAuditRepository());
   const access = new AccessPipeline(new PgSessionResolver(pool), new PgMembershipResolver(pool), new PgAccessVersionResolver(pool),
-    new PgScopeResolver(pool), new PgCapabilityResolver(pool), new SystemClock(), risk, new PgDecisionSink(pool));
+    new PgScopeResolver(pool), new PgCapabilityResolver(pool), new SystemClock(), risk, new PgDecisionSink(pool),
+    undefined, undefined, new PgGovernanceResolver(pool));
   const handlers = new Map<OperationId, OperationHandler>();
   const kms = new KmsClient(
     required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
@@ -103,6 +105,7 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
     array_position(array[
       to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text,text)'),
+      to_regprocedure('access.resolve_governance(text,text,text,text)'),
       to_regprocedure('access.resource_scope(text,text,text)'),to_regprocedure('access.scope_object(text)'),
       to_regprocedure('access.scope_allowed(text)'),to_regprocedure('capability.membership_operations(text)'),
       to_regprocedure('audit.scope_allowed(text)'),to_regprocedure('risk.scope_allowed(text)')
@@ -111,6 +114,7 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
       and has_function_privilege(current_user,'access.resolve_membership(text)','EXECUTE')
       and has_function_privilege(current_user,'access.membership_version(text)','EXECUTE')
       and has_function_privilege(current_user,'access.resolve_scope(text,text,text,text)','EXECUTE')
+      and has_function_privilege(current_user,'access.resolve_governance(text,text,text,text)','EXECUTE')
       and has_function_privilege(current_user,'access.resource_scope(text,text,text)','EXECUTE')
       and has_function_privilege(current_user,'access.scope_object(text)','EXECUTE')
       and has_function_privilege(current_user,'access.scope_allowed(text)','EXECUTE')

@@ -20,6 +20,8 @@ describe('console support runtime', () => {
         query: async (sql: string, values: readonly unknown[]) => {
           expect(sql).toContain("to_regprocedure('access.resolve_scope(text,text,text,text)')");
           expect(sql).toContain("has_function_privilege(current_user,'access.resolve_scope(text,text,text,text)','EXECUTE')");
+          expect(sql).toContain("to_regprocedure('access.resolve_governance(text,text,text,text)')");
+          expect(sql).toContain("has_function_privilege(current_user,'access.resolve_governance(text,text,text,text)','EXECUTE')");
           expect(sql).toContain("has_table_privilege(current_user,'support.ticket','SELECT,UPDATE')");
           expect(values).toContain(CONSOLE_SUPPORT_SCHEMA_VERSION);
           expect(values).toContain(CONSOLE_SUPPORT_SCHEMA_CHECKSUM);
