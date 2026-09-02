@@ -15,7 +15,7 @@ describe('ClientErrorBuffer', () => {
     const second = buffer.record(input);
     expect(second.faultCode).toBe(first.faultCode);
     expect(second.occurrences).toBe(2);
-    expect(second.message).toBe('mobile [MOBILE] mail [EMAIL]');
+    expect(second.message).toBe('[REDACTED]');
     expect(second.stack).toBe('Bearer [REDACTED]');
     expect(written).toHaveLength(2);
   });

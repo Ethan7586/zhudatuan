@@ -14,7 +14,7 @@ Promote the approved replica, rotate connection secret references, restart readi
 
 ## Validation and escalation
 
-Prove schema head, RPO at most five minutes, order/payment/refund/inventory/voucher/benefit and debit-credit invariants, then meet RTO within thirty minutes. Escalate immediately for corruption, cross-region loss or RPO breach.
+Prove schema head, zero committed-transaction loss from the synchronous standby LSN (RPO 0), order/payment/refund/inventory/voucher/benefit and debit-credit invariants, then restore service within fifteen minutes (RTO 15). Escalate immediately for corruption, cross-region loss or either objective breach.
 
 ## Audit and postmortem
 

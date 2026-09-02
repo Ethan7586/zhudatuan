@@ -14,7 +14,7 @@ export function PasswordResetDialog({ client, onClose, onComplete }: Readonly<{ 
     setBusy(true);
     setError('');
     try {
-      const value = await client.challenge(form.mobile, 'password_reset');
+      const value = await client.challenge({ destination: form.mobile, purpose: 'password_reset' });
       setForm((current) => ({ ...current, challenge: value.id, code: '' }));
       cooldown.start();
       setNotice(challengeNotice(true));
@@ -92,7 +92,7 @@ export function PasswordResetDialog({ client, onClose, onComplete }: Readonly<{ 
             {error}
           </p>
         )}
-        <button disabled={busy || !form.challenge} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white disabled:bg-slate-300">
+        <button disabled={busy || !form.challenge} className="authprimary flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold disabled:bg-slate-300">
           {busy && <RefreshCw className="h-4 w-4 animate-spin" />}重置密码并下线全部设备
         </button>
       </form>

@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { AuthenticationOutcome, AuthMethod, EnrollmentState, MembershipChoice, ProviderChoice } from '../entity/authentication/AuthenticationState';
-import { EnrollmentPage } from '../feature/invitation/EnrollmentPage';
-import { InvitationError } from '../feature/invitation/InvitationError';
-import { InvitationProof } from '../feature/invitation/InvitationProof';
+import type { EnrollmentCompletion } from '../entity/authentication/AuthClient';
+import { CompleteEnrollment } from '../feature/invitation/application/CompleteEnrollment';
+import { CreateChallenge } from '../feature/invitation/application/CreateChallenge';
+import { ReadEnrollment } from '../feature/invitation/application/ReadEnrollment';
+import { ResolveInvitation } from '../feature/invitation/application/ResolveInvitation';
+import { InvitationGateway } from '../feature/invitation/infrastructure/InvitationGateway';
+import { EnrollmentPage } from '../feature/invitation/ui/EnrollmentPage';
+import { InvitationError } from '../feature/invitation/ui/InvitationError';
+import { InvitationProof } from '../feature/invitation/ui/InvitationProof';
 import { LoginPage } from '../feature/login/LoginPage';
 import { PasswordResetDialog } from '../feature/login/PasswordResetDialog';
 import { MembershipSelection } from '../feature/selection/MembershipSelection';
@@ -11,6 +17,12 @@ import { challengeNotice, OTP_POLICY } from '../shared/challenge/ChallengePolicy
 import { authentication } from './Authentication';
 import { useAuth } from './AuthProvider';
 import type { AuthRequest } from '../shared/returntarget/ReturnTarget';
+
+const invitationGateway = new InvitationGateway(authentication);
+const resolveInvitation = new ResolveInvitation(invitationGateway);
+const readEnrollment = new ReadEnrollment(invitationGateway);
+const createEnrollmentChallenge = new CreateChallenge(invitationGateway);
+const completeEmployeeEnrollment = new CompleteEnrollment(invitationGateway);
 
 export function AuthFlow() {
   const { request, selectTarget } = useAuth();
@@ -83,7 +95,7 @@ export function AuthFlow() {
       return;
     }
     if (result.kind === 'enrollment') {
-      const value = await client.enrollment(result.id);
+      const value = await readEnrollment.execute(result.id);
       setEnrollment(value);
       setOutcome(result);
       return;
@@ -120,7 +132,7 @@ export function AuthFlow() {
     setBusy(true);
     setError('');
     try {
-      const value = await client.challenge(subject, 'login', request.target, returns);
+      const value = await client.challenge({ destination: subject, purpose: 'login' }, request.target, returns);
       setNotice(challengeNotice(true));
       return Object.freeze({ id: value.id, resendSeconds: OTP_POLICY.resendSeconds });
     } catch (cause) {
@@ -146,9 +158,9 @@ export function AuthFlow() {
       setBusy(false);
     }
   };
-  const completeEnrollment = async (input: Readonly<{ subject: string; challenge: string; code: string; password: string; displayName: string }>) => {
+  const completeEnrollment = async (input: EnrollmentCompletion) => {
     if (!enrollment) return;
-    await route(await client.completeEnrollment({ ...input, id: enrollment.id, termsHash: enrollment.policy.termsHash }));
+    await route(await completeEmployeeEnrollment.execute(input));
   };
   const selectMembership = (membership: MembershipChoice) => {
     if (outcome?.kind !== 'selection') return;
@@ -167,7 +179,7 @@ export function AuthFlow() {
     ) : outcome?.kind === 'proofRequired' ? (
       <InvitationProof busy={busy} method={outcome.method} onSubmit={invitationProof} />
     ) : null;
-  const alert = method === 'invitation' && error ? <InvitationError message={error} /> : undefined;
+  const alert = method === 'invite' && error ? <InvitationError message={error} /> : undefined;
 
   return (
     <>
@@ -189,7 +201,7 @@ export function AuthFlow() {
         onPassword={password}
         onOtp={otp}
         onChallenge={challenge}
-        onInvitation={(code) => run(() => client.invitation(code, request.target, returns), true)}
+        onInvitation={(code) => run(() => resolveInvitation.execute({ code, target: request.target, returns }), true)}
         onProvider={(provider) => {
           void run(() => client.provider(provider.id, request.target, returns));
         }}
@@ -202,8 +214,8 @@ export function AuthFlow() {
       />
       {enrollment && (
         <EnrollmentPage
-          client={client}
           enrollment={enrollment}
+          createChallenge={(challenge) => createEnrollmentChallenge.execute(challenge)}
           onComplete={completeEnrollment}
           onClose={() => {
             setEnrollment(null);

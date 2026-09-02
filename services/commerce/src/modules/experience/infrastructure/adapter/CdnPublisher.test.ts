@@ -43,6 +43,9 @@ class MemoryObjects implements ObjectStore {
   async authorize(reference: string) {
     return { url: `https://objects.test/${reference}`, expiresAt: new Date(Date.now() + 60_000).toISOString() };
   }
+  async authorizeUpload(): Promise<never> {
+    throw new Error('NOT_SUPPORTED');
+  }
 }
 
 describe('content addressed experience publisher', () => {

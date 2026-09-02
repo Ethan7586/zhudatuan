@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/presentation/QueryState';
 import type { DataColumn } from '../../shared/ui/DataTable';
 import { formatDate, formatMinor } from '../../shared/ui/Format';
 import { PagedResource } from '../../shared/ui/PagedResource';

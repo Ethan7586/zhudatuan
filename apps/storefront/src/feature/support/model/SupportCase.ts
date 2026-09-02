@@ -13,6 +13,8 @@ export interface SupportCase {
   readonly resolutionDueAt: string;
   readonly updatedAt: string;
   readonly version: number;
+  readonly unreadCount: number;
+  readonly slaRisk: 'normal' | 'risk' | 'overdue';
 }
 
 export interface SupportPage {

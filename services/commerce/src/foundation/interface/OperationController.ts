@@ -202,6 +202,8 @@ export const CONTROLLER_OPERATIONS = Object.freeze([
   "support.slas.read",
   "support.slas.manage",
   "support.history.read",
+  "support.events.read",
+  "support.readstates.manage",
   "notification.notifications.read",
   "notification.notifications.ack",
   "notification.preferences.read",

@@ -8,6 +8,7 @@ import type { HandlerRegistry } from './HandlerRegistry';
 import type { OperationPolicy } from './OperationPolicy';
 import type { PublicActorFingerprint } from '../security/PublicActorFingerprint';
 import type { OperationExecutor } from './OperationExecutor';
+import { isHttpStream } from '../interface/HttpStream';
 
 export class OperationPipeline {
   private readonly bulkhead = new Bulkhead(RUNTIME_LIMITS.http.maximumConcurrency, RUNTIME_LIMITS.http.maximumQueue);
@@ -66,6 +67,10 @@ export class OperationPipeline {
       throw cause;
     });
     if (!operationSuccess(operation.responseMode, reply.status)) throw operationError(operation.errorUnion, reply.status, reply.body);
+    if (operation.responseMode === 'stream') {
+      if (reply.status !== 200 || !isHttpStream(reply.body)) throw new ApplicationError('INTERNAL_ERROR');
+      return { status: reply.status, body: reply.body, ...(reply.headers === undefined ? {} : { headers: reply.headers }) };
+    }
     const output = schema.output.parse(normalizeContractOutput(operation.responseMode === 'redirect' ? { location: reply.headers?.location } : reply.body));
     return { status: reply.status, body: operation.responseMode === 'redirect' ? undefined : output, ...(reply.headers === undefined ? {} : { headers: reply.headers }) };
   }

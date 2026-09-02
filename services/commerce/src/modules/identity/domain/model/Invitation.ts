@@ -101,7 +101,7 @@ export class Invitation {
       throw new Error('INVITATION_STATE_INVALID');
     if (state.status === 'exhausted' && state.useCount !== state.maxUses) throw new Error('INVITATION_STATE_INVALID');
     if (state.kind === 'signin' && (!state.membership || !state.principal || state.maxUses !== 1)) throw new Error('INVITATION_STATE_INVALID');
-    if (state.kind === 'enrollment' && (!state.membership || state.principal || !state.recipientHash || state.maxUses !== 1)) throw new Error('INVITATION_STATE_INVALID');
+    if (state.kind === 'enrollment' && (!state.membership || state.principal || !state.recipientHash || state.maxUses !== 1 || state.target !== 'storefront')) throw new Error('INVITATION_STATE_INVALID');
     if (state.kind === 'campaign' && (state.membership || state.principal || state.target !== 'storefront')) throw new Error('INVITATION_STATE_INVALID');
     if (state.target === 'console' && (!state.recipientHash || state.kind !== 'signin' || state.assurance < 2)) throw new Error('INVITATION_STATE_INVALID');
   }

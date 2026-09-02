@@ -14,7 +14,7 @@ Shift edge and scheduler traffic to healthy zones, allow topology-spread Deploym
 
 ## Validation and escalation
 
-Validate API, Jobs and Provider readiness, queue quorum, PostgreSQL LSN and RPO at most five minutes, recovery within thirty minutes, zero scope leaks, zero duplicate effects, zero negative inventory and balanced finance. Escalate immediately for a second-zone loss or any RPO breach.
+Validate API, Jobs and Provider readiness, queue quorum, PostgreSQL synchronous-standby LSN with zero committed-transaction loss (RPO 0), recovery within fifteen minutes (RTO 15), zero scope leaks, zero duplicate effects, zero negative inventory and balanced finance. Escalate immediately for a second-zone loss or either objective breach.
 
 ## Audit and postmortem
 

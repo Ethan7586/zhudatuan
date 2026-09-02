@@ -37,7 +37,7 @@ test('invite03_enrollment_success', () => {
     operationSchema('identity.enrollments.complete').input.safeParse({
       path: { id: 'claim:one' },
       body: {
-        subject: '+85291234567',
+        mode: 'bound',
         challenge: 'challenge',
         code: '123456',
         termsAccepted: true,
@@ -48,6 +48,13 @@ test('invite03_enrollment_success', () => {
       },
     }).success,
     true
+  );
+  assert.equal(
+    operationSchema('identity.enrollments.complete').input.safeParse({
+      path: { id: 'claim:one' },
+      body: { mode: 'bound', subject: '+85291234567', challenge: 'challenge', code: '123456', termsAccepted: true, termsHash: 'b'.repeat(64), password: 'LongPassword1!', authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' } },
+    }).success,
+    false
   );
 });
 

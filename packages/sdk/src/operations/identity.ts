@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const IDENTITY_OPERATION_IDS = Object.freeze([
   "identity.sessions.create",
@@ -186,7 +186,7 @@ function bindEnrollmentsRead(client: OperationExecutor): OperationMethod<"identi
 
 export function createFetchIdentityEnrollmentsComplete(baseUrl: string): OperationMethod<"identity.enrollments.complete"> { return bindEnrollmentsComplete(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindEnrollmentsComplete(client: OperationExecutor): OperationMethod<"identity.enrollments.complete"> { return bindOperation(client, defineOperation({"id":"identity.enrollments.complete","method":"POST","path":"/api/v1/identity/enrollments/{id}/complete","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":false,"timeout":800})); }
+function bindEnrollmentsComplete(client: OperationExecutor): OperationMethod<"identity.enrollments.complete"> { return bindOperation(client, defineOperation({"id":"identity.enrollments.complete","method":"POST","path":"/api/v1/identity/enrollments/{id}/complete","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":true,"timeout":800})); }
 
 export function createFetchIdentityMembersManage(baseUrl: string): OperationMethod<"identity.members.manage"> { return bindMembersManage(new ApiClient(baseUrl, new FetchTransport())); }
 

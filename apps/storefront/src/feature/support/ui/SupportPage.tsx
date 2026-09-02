@@ -7,6 +7,7 @@ import { supportQuery } from '../application/SupportQuery';
 import { CreateCase } from '../application/CreateCase';
 import { readCases } from '../application/ReadCases';
 import type { SupportPriority } from '../model/SupportCase';
+import './Support.css';
 
 export function SupportPage() {
   const session = useSession();

@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
-workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
-navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
-contractSha256: 68b08dc777e74eff47b20af89f2d46664497d1f46bffcad2ed89c2b40609ac71
+workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
+navigationCatalogSha256: b8343568dfbc696dca3f28be27cc8ca98e941ceee88799fc3975e2dbceb9b40d
+contractSha256: 1089869b1158bb9ae3958c13792b604abaac31cd0ec6e40d2fe270869aba1b08
 generated: true
 count: 22
 requirements:
@@ -1389,9 +1389,11 @@ requirements:
       - support.cases.read
       - support.cases.reopen
       - support.cases.update
+      - support.events.read
       - support.history.read
       - support.messages.read
       - support.messages.send
+      - support.readstates.manage
       - support.rules.manage
       - support.rules.read
       - support.slas.manage
@@ -1480,6 +1482,7 @@ requirements:
       - groupsettings
       - groupadmin
       - groupmemberdata
+      - groupinvitation
       - grouppartner
       - groupmessage
       - grouprisk
@@ -1489,6 +1492,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/invitations
       - /scopes/:scopeKind/:scopeId/settings/partners
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/risk
@@ -2564,7 +2568,7 @@ requirements:
       - ""
       - |-
         1.商品销售数据、商城销售数据、分类销售数据
-        2.供应链渠道数据、粉类销售数据
+        2.供应链渠道数据、分类销售数据
         3.卡券消费数据
       - ""
       - OK
@@ -2787,9 +2791,11 @@ requirements:
       - support.cases.read
       - support.cases.reopen
       - support.cases.update
+      - support.events.read
       - support.history.read
       - support.messages.read
       - support.messages.send
+      - support.readstates.manage
       - support.rules.manage
       - support.rules.read
       - support.slas.manage
@@ -2877,6 +2883,7 @@ requirements:
       - mallsettings
       - malladmin
       - mallmemberdata
+      - mallinvitation
       - mallpartner
       - mallmessage
       - mallrisk
@@ -2887,6 +2894,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/invitations
       - /scopes/:scopeKind/:scopeId/settings/partners
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/risk

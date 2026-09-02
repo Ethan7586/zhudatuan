@@ -8,7 +8,7 @@ import { repositoryRoot as root } from '../lib/RepositoryRoot.mjs';
 const capacity = parse(readFileSync(join(root, 'config/capacity.yml'), 'utf8'));
 const telemetry = parse(readFileSync(join(root, 'config/telemetry.yml'), 'utf8'));
 const violations = [];
-const requiredSlo = { catalogP95Ms: 150, queryP95Ms: 300, detailP95Ms: 500, commandP95Ms: 800, orderP95Ms: 1500, webhookDurableAcceptP99Ms: 500, outboxP99Seconds: 30, availabilityPercent: 99.95, rpoMinutes: 5, rtoMinutes: 30 };
+const requiredSlo = { catalogP95Ms: 150, queryP95Ms: 300, detailP95Ms: 500, commandP95Ms: 800, orderP95Ms: 1500, webhookDurableAcceptP99Ms: 500, outboxP99Seconds: 30, employeeInvitationCreateP95Ms: 300, invitationResolveP95Ms: 300, enrollmentCompleteP95Ms: 800, supportMessageSendP95Ms: 300, supportConversationP95Ms: 500, supportQueueP95Ms: 500, supportEventDeliveryP95Ms: 1000, availabilityPercent: 99.95, rpoMinutes: 0, rtoMinutes: 15 };
 for (const [name, value] of Object.entries(requiredSlo)) {
   if (telemetry?.slo?.[name] !== value) violation('config/telemetry.yml', 'SLO_TARGET_MISMATCH', `${name}=${telemetry?.slo?.[name]}`);
 }

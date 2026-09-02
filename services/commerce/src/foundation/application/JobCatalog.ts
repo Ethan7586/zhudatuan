@@ -116,6 +116,8 @@ export const JOB_CATALOG = Object.freeze([
   registerJob({ id: 'voucherimport', owner: 'voucher', queue: 'import', concurrency: 4, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/voucherimport.md', worker }),
   registerJob({ id: 'supportsla', owner: 'support', queue: 'support', concurrency: 8, timeout: 15_000, retry, lease: 30, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/supportsla.md', worker }),
   registerJob({ id: 'supportscan', owner: 'support', queue: 'support', concurrency: 8, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/supportscan.md', worker }),
+  registerJob({ id: 'supportrelay', owner: 'support', queue: 'support', concurrency: 16, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/supportrelay.md', worker }),
+  registerJob({ id: 'supportreassign', owner: 'support', queue: 'support', concurrency: 4, timeout: 30_000, retry, lease: 60, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/supportreassign.md', worker }),
   registerJob({ id: 'auditarchive', owner: 'audit', queue: 'maintenance', concurrency: 2, timeout: 120_000, retry, lease: 180, idempotency: 'jobid', deadLetter: 'runtime.deadletter', runbook: 'docs/operations/auditarchive.md', worker }),
   registerJob({
     id: 'extensionhealth',

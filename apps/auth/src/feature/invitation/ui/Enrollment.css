@@ -1,0 +1,28 @@
+.enrollmentform { display: grid; gap: var(--sw-space-1-5); }
+.enrollmentform > label, .enrollmentproof label, .enrollmentpassword label { display: grid; gap: var(--sw-space-0-5); color: var(--sw-text-secondary); font-size: var(--sw-font-size-body-sm); font-weight: 700; }
+.enrollmentform :where(input, select, textarea), .invitationproofform input { min-height: 2.75rem; border: .0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface); color: var(--sw-text); padding: var(--sw-space-1); }
+.enrollmentform :where(input, select, textarea):focus, .invitationproofform input:focus { border-color: var(--sw-brand); outline: none; box-shadow: var(--sw-shadow-card); }
+.enrollmentform input[readonly] { background: var(--sw-surface-subtle); color: var(--sw-text-secondary); }
+.enrollmentintro { display: grid; gap: var(--sw-space-1); border-radius: var(--sw-radius-md); background: var(--sw-brand-light); padding: var(--sw-space-2); }
+.enrollmentintro > div, .enrollmentproof > div:first-child, .enrollmentpassword > div:first-child { display: flex; align-items: center; gap: var(--sw-space-1); }
+.enrollmentintro span, .enrollmentproof > div > span, .enrollmentpassword > div > span { border-radius: var(--sw-radius-full); background: var(--sw-brand); color: var(--sw-surface); padding: var(--sw-space-0-5) var(--sw-space-1); font-size: var(--sw-font-size-caption); font-weight: 800; }
+.enrollmentintro h3, .enrollmentproof h4, .enrollmentpassword h4 { margin: 0; color: var(--sw-brand-ink); }
+.enrollmentintro p { margin: 0; color: var(--sw-text-secondary); }
+.enrollmentintro dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sw-space-1); margin: 0; }
+.enrollmentintro dt { color: var(--sw-muted); font-size: var(--sw-font-size-caption); }
+.enrollmentintro dd { margin: var(--sw-space-0-5) 0 0; font-weight: 700; }
+.enrollmentproof, .enrollmentpassword { display: grid; gap: var(--sw-space-1); border-top: .0625rem solid var(--sw-border); padding-top: var(--sw-space-2); }
+.enrollmentreadonly { display: grid; gap: var(--sw-space-0-5); border: .0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface-subtle); padding: var(--sw-space-1); }
+.enrollmentreadonly span, .enrollmentreadonly small, .enrollmenthint { color: var(--sw-muted); }
+.enrollmentcode { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sw-space-1); }
+.enrollmentcode .shopbutton { min-height: 2.75rem; }
+.enrollmentfields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-1); }
+.enrollmentagreement { display: grid !important; grid-template-columns: auto 1fr; align-items: start; }
+.enrollmentagreement input { width: 1.25rem; min-height: 1.25rem; }
+.enrollmentagreement button { border: 0; background: transparent; color: var(--sw-brand); padding: 0; }
+.enrollmenterror, .enrollmentnotice { margin: 0; border-radius: var(--sw-radius-sm); padding: var(--sw-space-1); }
+.enrollmenterror { background: var(--sw-danger-surface); color: var(--sw-danger-strong); }
+.enrollmentnotice { background: var(--sw-brand-light); color: var(--sw-brand-dark); }
+.enrollmentpolicy { display: grid; max-height: 60vh; gap: var(--sw-space-2); overflow: auto; white-space: pre-wrap; color: var(--sw-text-secondary); line-height: 1.8; }
+.invitationproofform { display: grid; gap: var(--sw-space-1); }
+@media (max-width: 40rem) { .enrollmentintro dl, .enrollmentfields { grid-template-columns: 1fr; } .enrollmentcode { grid-template-columns: 1fr; } }

@@ -240,6 +240,8 @@ describe('OperationExecutor', () => {
         version: 1,
         expires: new Date(Date.now() + 60_000),
         trace: 'trace:proof',
+        authorization: null,
+        returnTarget: null,
       },
       publicActor: 'public:proof',
       idempotencyKey: 'proof:one',

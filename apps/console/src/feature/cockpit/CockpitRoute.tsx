@@ -2,7 +2,7 @@ import { ResourceState } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/presentation/QueryState';
 import { scopePath } from '../../shared/url/ScopePath';
 import { BusinessEvents, BusinessInsights, MallComparison } from './CockpitDetails';
 import { CockpitHero } from './CockpitHero';

@@ -1,9 +1,16 @@
 import type { StorefrontSession } from '../../../shared/api/Session';
-import { SupportGateway } from '../infrastructure/SupportGateway';
+import { createIdempotencyKey } from '@shop/sdk';
+import { supportGateway, type SupportGateway } from '../infrastructure/SupportGateway';
+import type { MessageDraft } from '../model/Message';
 
 export class SendMessage {
-  execute(session: StorefrontSession, caseId: string, message: string): Promise<void> {
-    if (!message.trim()) throw new Error('请输入消息内容');
-    return SupportGateway.send(session, caseId, message.trim(), crypto.randomUUID());
+  constructor(private readonly gateway: SupportGateway = supportGateway) {}
+  create(caseId: string, version: number, message: string, attachmentIds: readonly string[] = []): MessageDraft {
+    const body = message.trim();
+    if (body.length < 1 || body.length > 4000) throw new Error('消息内容须为 1–4000 个字符');
+    return Object.freeze({ caseId, version, message: body, attachmentIds: Object.freeze([...attachmentIds]), clientMessageId: crypto.randomUUID(), idempotencyKey: createIdempotencyKey() });
+  }
+  execute(session: StorefrontSession, draft: MessageDraft) {
+    return this.gateway.send(session, draft);
   }
 }

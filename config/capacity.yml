@@ -48,6 +48,16 @@ runtime:
     headersTimeoutMilliseconds: 10000
     keepAliveTimeoutMilliseconds: 5000
     maximumRequestsPerSocket: 1000
+  stream:
+    retentionEvents: 10000
+    blockMilliseconds: 5000
+    heartbeatMilliseconds: 15000
+    maximumConnections: 2000
+    maximumConnectionsPerScope: 100
+    maximumEventBytes: 65536
+    readBatch: 100
+    reconnectMinimumMilliseconds: 500
+    reconnectMaximumMilliseconds: 30000
   pool:
     query:
       maximumConnections: 24

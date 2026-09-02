@@ -14,6 +14,7 @@ export interface RequestOptions {
   readonly idempotencyKey?: string;
   readonly expectedVersion?: number;
   readonly includeScope?: boolean;
+  readonly lastEventId?: string;
 }
 
 export function requestContext(clientVersion: string, handle: StorefrontHandle, session: StorefrontSession | null, options: RequestOptions = {}): RequestContext {
@@ -28,5 +29,6 @@ export function requestContext(clientVersion: string, handle: StorefrontHandle, 
     ...(options.write ? { csrfToken: session!.csrfToken! } : {}),
     ...(options.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : {}),
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
+    ...(options.lastEventId === undefined ? {} : { lastEventId: options.lastEventId }),
   });
 }

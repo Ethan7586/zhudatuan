@@ -1,4 +1,9 @@
 export { ApiError } from './error';
+export { EventStreamResyncError } from './EventStream';
+export type { EventStream } from './EventStream';
+export type { EventOperationMethod } from './OperationDescriptor';
+export { uploadObject } from './ObjectUpload';
+export type { ObjectUpload } from './ObjectUpload';
 export { createCommerce, createFetchCommerce, createWechatCommerce } from './ClientFactory';
 export { createFetchIdentity } from './operations/identity';
 export { createIdempotencyKey, createRequestContext } from './RequestContextFactory';
@@ -6,7 +11,7 @@ export type { RequestContextOptions } from './RequestContextFactory';
 export { FetchTransport } from './FetchTransport';
 export { HttpTransport } from './HttpTransport';
 export type { RequestContext, RequestScope } from './RequestContext';
-export type { Transport, TransportRequest, TransportResponse } from './Transport';
+export type { StreamTransportResponse, Transport, TransportRequest, TransportResponse } from './Transport';
 export { WechatTransport } from './WechatTransport';
 export type { WechatRequest, WechatRequester, WechatRequestTask } from './WechatTransport';
 export { SDK_OPERATION_IDS } from './operations/CommerceClient';

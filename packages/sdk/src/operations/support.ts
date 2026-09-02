@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const SUPPORT_OPERATION_IDS = Object.freeze([
   "support.cases.create",
@@ -23,6 +23,8 @@ export const SUPPORT_OPERATION_IDS = Object.freeze([
   "support.slas.read",
   "support.slas.manage",
   "support.history.read",
+  "support.events.read",
+  "support.readstates.manage",
 ] as const satisfies readonly OperationId[]);
 
 export interface SupportOperations {
@@ -44,6 +46,8 @@ export interface SupportOperations {
   readonly slasRead: OperationMethod<"support.slas.read">;
   readonly slasManage: OperationMethod<"support.slas.manage">;
   readonly historyRead: OperationMethod<"support.history.read">;
+  readonly eventsRead: EventOperationMethod<"support.events.read">;
+  readonly readstatesManage: OperationMethod<"support.readstates.manage">;
 }
 
 export function createFetchSupport(baseUrl: string): SupportOperations { return createSupportOperations(new ApiClient(baseUrl, new FetchTransport())); }
@@ -67,6 +71,8 @@ export function createSupportOperations(client: OperationExecutor): SupportOpera
     slasRead: bindSlasRead(client),
     slasManage: bindSlasManage(client),
     historyRead: bindHistoryRead(client),
+    eventsRead: bindEventsRead(client),
+    readstatesManage: bindReadstatesManage(client),
   }); }
 
 export function createFetchSupportCasesCreate(baseUrl: string): OperationMethod<"support.cases.create"> { return bindCasesCreate(new ApiClient(baseUrl, new FetchTransport())); }
@@ -91,7 +97,7 @@ function bindCasesReopen(client: OperationExecutor): OperationMethod<"support.ca
 
 export function createFetchSupportMessagesSend(baseUrl: string): OperationMethod<"support.messages.send"> { return bindMessagesSend(new ApiClient(baseUrl, new FetchTransport())); }
 
-function bindMessagesSend(client: OperationExecutor): OperationMethod<"support.messages.send"> { return bindOperation(client, defineOperation({"id":"support.messages.send","method":"POST","path":"/api/v1/support/cases/{caseid}/messages","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":false,"timeout":800})); }
+function bindMessagesSend(client: OperationExecutor): OperationMethod<"support.messages.send"> { return bindOperation(client, defineOperation({"id":"support.messages.send","method":"POST","path":"/api/v1/support/cases/{caseid}/messages","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":true,"timeout":800})); }
 
 export function createFetchSupportMessagesRead(baseUrl: string): OperationMethod<"support.messages.read"> { return bindMessagesRead(new ApiClient(baseUrl, new FetchTransport())); }
 
@@ -140,3 +146,11 @@ function bindSlasManage(client: OperationExecutor): OperationMethod<"support.sla
 export function createFetchSupportHistoryRead(baseUrl: string): OperationMethod<"support.history.read"> { return bindHistoryRead(new ApiClient(baseUrl, new FetchTransport())); }
 
 function bindHistoryRead(client: OperationExecutor): OperationMethod<"support.history.read"> { return bindOperation(client, defineOperation({"id":"support.history.read","method":"GET","path":"/api/v1/support/cases/{caseid}/history","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500})); }
+
+export function createFetchSupportEventsRead(baseUrl: string): EventOperationMethod<"support.events.read"> { return bindEventsRead(new ApiClient(baseUrl, new FetchTransport())); }
+
+function bindEventsRead(client: OperationExecutor): EventOperationMethod<"support.events.read"> { return bindEventOperation(client, defineOperation({"id":"support.events.read","method":"GET","path":"/api/v1/support/events","audience":"public","targets":["console","storefront"],"responseMode":"stream","idempotent":true,"timeout":15000})); }
+
+export function createFetchSupportReadstatesManage(baseUrl: string): OperationMethod<"support.readstates.manage"> { return bindReadstatesManage(new ApiClient(baseUrl, new FetchTransport())); }
+
+function bindReadstatesManage(client: OperationExecutor): OperationMethod<"support.readstates.manage"> { return bindOperation(client, defineOperation({"id":"support.readstates.manage","method":"PUT","path":"/api/v1/support/conversations/{conversationid}/readstate","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":true,"timeout":800})); }

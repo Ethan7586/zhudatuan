@@ -13,7 +13,7 @@ describe('requirement authority', () => {
 
     expect(result.authority.logicalSource).toBe('RepositoryAuthority docs/福利商城功能清单.xlsx');
     expect(result.authority.repositoryRelativePath).toBe('docs/福利商城功能清单.xlsx');
-    expect(result.authority.sha256).toBe('f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f');
+    expect(result.authority.sha256).toBe('48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436');
     expect(result.authority.range).toBe('A1:F24');
     expect(result.authority.sheets).toEqual({ requirements: 296, mvp: 22, providers: 20 });
     expect(result.bytes.length).toBeGreaterThan(0);

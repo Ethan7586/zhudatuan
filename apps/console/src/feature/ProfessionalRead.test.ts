@@ -13,10 +13,11 @@ import { readNotificationRecords } from './settings/notification/NotificationQue
 import { readOrderDetail } from './order/OrderDetailQuery';
 import { readQualifications } from './settings/qualification/QualificationQuery';
 import { readReport } from './reporting/ReportingQuery';
-import { readCases, readMessages } from './support/SupportQuery';
+import { SupportGateway } from './support/infrastructure/SupportGateway';
 import { readVouchers } from './voucher/VoucherQuery';
 
 const requests: string[] = [];
+const support = new SupportGateway();
 const empty = { items: [], count: 0 };
 const importJob = {
   id: 'job:1',
@@ -39,7 +40,16 @@ const server = setupServer(
     requests.push(pathname);
     if (pathname.startsWith('/api/v1/vouchers/imports/')) return HttpResponse.json({ ...importJob, cardpool_id: 'cardpool:1' });
     if (pathname.includes('/imports/')) return HttpResponse.json(importJob);
-    if (pathname.endsWith('/messages')) return HttpResponse.json({ ...empty, attachments: [] });
+    if (pathname.endsWith('/messages')) {
+      return HttpResponse.json({
+        ...empty,
+        attachments: [],
+        context: { member: { id: 'member:1', displayName: '测试员工', employeeNo: null, mobileMasked: null }, organization: { id: 'enterprise:1' }, orders: [], benefits: [] },
+        conversationVersion: 1,
+        latestSequence: 0,
+        lastReadSequence: 0,
+      });
+    }
     return HttpResponse.json(empty);
   })
 );
@@ -58,8 +68,8 @@ describe('Console professional named reads', () => {
       readExperiences(context, undefined, signal),
       ...(['libraries', 'programs', 'reserves', 'batches'] as const).map((view) => readVouchers(context, view, undefined, signal)),
       ...(['sales', 'products', 'malls', 'categories', 'channels', 'powderclass', 'voucher'] as const).map((view) => readReport(context, view, '30days', undefined, signal)),
-      readCases(context, undefined, signal),
-      readMessages(context, 'case:1', undefined, signal),
+      support.queue(context, { limit: 50 }, signal),
+      support.conversation(context, 'case:1', undefined, signal),
       readAccess(context, undefined, signal),
       readMembers(context, undefined, signal),
       readQualifications(context, undefined, signal),

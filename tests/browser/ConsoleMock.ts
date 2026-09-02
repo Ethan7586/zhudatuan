@@ -26,24 +26,25 @@ export function createConsoleMock(page: Page, session: ConsoleSessionFixture): O
 }
 
 function navigationProjection(session: ConsoleSessionFixture) {
-  const candidates = NAVIGATION_CATALOG.filter(
+  const eligible = NAVIGATION_CATALOG.filter(
     (node) =>
       node.surface === 'console' && node.scope === session.scope.kind && node.permissions.every((permission) => session.permissions.includes(permission)) && node.capabilities.every((capability) => session.capabilities.includes(capability))
-  ).filter((node) => node.parent === null);
-  const preferred = candidates.sort((left, right) => Number(right.scope === session.scope.kind) - Number(left.scope === session.scope.kind) || left.order - right.order);
+  );
+  const project = (node: (typeof NAVIGATION_CATALOG)[number]): Readonly<Record<string, unknown>> => ({
+    id: node.id,
+    title: node.title,
+    icon: node.icon,
+    route: node.route,
+    component: node.component,
+    order: node.order,
+    entry: node.entry,
+    disabled: false,
+    children: eligible.filter((candidate) => candidate.parent === node.id).sort((left, right) => left.order - right.order).map(project),
+  });
+  const preferred = eligible.filter((node) => node.parent === null).sort((left, right) => Number(right.scope === session.scope.kind) - Number(left.scope === session.scope.kind) || left.order - right.order);
   const nodes = [...new Map(preferred.map((node) => [node.component, node] as const)).values()]
     .sort((left, right) => left.order - right.order)
-    .map((node) => ({
-      id: node.id,
-      title: node.title,
-      icon: node.icon,
-      route: node.route,
-      component: node.component,
-      order: node.order,
-      entry: node.entry,
-      disabled: false,
-      children: [],
-    }));
+    .map(project);
   return Object.freeze({
     scope: Object.freeze({ id: session.scope.id, kind: session.scope.kind }),
     target: 'console',

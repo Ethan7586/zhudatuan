@@ -27,13 +27,18 @@ describe('contract truth', () => {
     expect(() => schema.parse({ path: { productid: 'product:1', wrong: 'value' }, body: {} })).toThrow();
   });
 
-  it('keeps invitation entry code-only and moves campaign recipients to the strict challenge step', () => {
-    const schema = OPERATION_SCHEMAS['identity.sessions.create'].input;
+  it('keeps invitation resolution separate from sign-in and binds personal enrollment challenges server-side', () => {
+    const sessionSchema = OPERATION_SCHEMAS['identity.sessions.create'].input;
     const authorization = { state: 'state', nonce: 'nonce', challenge: 'a'.repeat(43) };
-    expect(schema.parse({ body: { method: 'invitation', code: 'invite', target: 'console', returnTarget: 'signed-target', authorization } })).toMatchObject({ body: { method: 'invitation', target: 'console' } });
-    expect(() => schema.parse({ body: { method: 'invitation', code: 'invite', subject: '13800138000', target: 'storefront', authorization } })).toThrow();
-    expect(() => schema.parse({ body: { method: 'invitation', code: 'invite', target: 'storefront', authorization, role: 'owner' } })).toThrow();
-    expect(OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'enrollment', destination: '13800138000' } })).toEqual({ body: { purpose: 'enrollment', destination: '13800138000' } });
+    expect(() => sessionSchema.parse({ body: { method: 'invitation', code: 'invite', target: 'console', returnTarget: 'signed-target', authorization } })).toThrow();
+    expect(OPERATION_SCHEMAS['identity.invitations.resolve'].input.parse({ body: { code: 'invite', target: 'storefront', returnTarget: 'signed-target', authorization } })).toEqual({
+      body: { code: 'invite', target: 'storefront', returnTarget: 'signed-target', authorization },
+    });
+    expect(OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'enrollment', enrollmentId: 'enrollment:one' } })).toEqual({ body: { purpose: 'enrollment', enrollmentId: 'enrollment:one' } });
+    expect(() => OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'enrollment', enrollmentId: 'enrollment:one', destination: '13800138000' } })).toThrow();
+    expect(OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'enrollment_campaign', enrollmentId: 'enrollment:two', destination: '13800138000' } })).toEqual({
+      body: { purpose: 'enrollment_campaign', enrollmentId: 'enrollment:two', destination: '13800138000' },
+    });
     expect(() => OPERATION_SCHEMAS['identity.challenges.create'].input.parse({ body: { purpose: 'phone_change', destination: '13800138000' } })).toThrow();
     expect(OPERATION_SCHEMAS['identity.mobile.challenges.create'].input.parse({ body: { destination: '13800138000' } })).toEqual({ body: { destination: '13800138000' } });
   });
@@ -54,7 +59,7 @@ describe('contract truth', () => {
   it('publishes one strict runtime payload schema for every event', () => {
     const eventTypes = COMMERCE_EVENTS.map(({ type }) => type).sort();
     expect(Object.keys(EVENT_PAYLOAD_SCHEMAS).sort()).toEqual(eventTypes);
-    expect(eventTypes).toHaveLength(97);
+    expect(eventTypes).toHaveLength(103);
     expect(parseEventPayload('order.received', { orderId: 'order:one', receivedAt: '2026-08-30T00:00:00.000Z', fulfillmentState: 'received' })).toBeDefined();
     expect(() => parseEventPayload('order.received', { orderId: 'order:one', receivedAt: '2026-08-30', fulfillmentState: 'received' })).toThrow();
     expect(() => parseEventPayload('order.received', { orderId: 'order:one', receivedAt: '2026-08-30T00:00:00.000Z', fulfillmentState: 'received', secret: 'forbidden' })).toThrow();

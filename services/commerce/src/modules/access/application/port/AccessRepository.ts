@@ -92,6 +92,12 @@ export interface MemberRecord {
   readonly accessVersion: number;
   readonly joinedAt: Date | null;
 }
+export interface PendingEmployeeRecord {
+  readonly member: string;
+  readonly organization: string;
+  readonly employeeNo: string | null;
+  readonly department: string | null;
+}
 
 export interface AccessRepository {
   center(context: ReadTransactionContext, input: Readonly<{ organization: string; after: string | null; limit: number }>): Promise<readonly AccessCenterRecord[]>;
@@ -116,11 +122,21 @@ export interface AccessRepository {
   activate(context: WriteTransactionContext, membership: string): Promise<VersionChange | null>;
   versionChanged(context: WriteTransactionContext, changes: readonly VersionChange[], reason: string, trace: string): Promise<void>;
   membershipActivated(context: WriteTransactionContext, input: Readonly<{ change: VersionChange; invitation: string; target: 'storefront'; grantDigest: string; trace: string }>): Promise<void>;
-  createCampaignMembership(
+  createStorefrontMembership(
     context: WriteTransactionContext,
-    input: Readonly<{ membership: string; member: string; principal: string; organization: string; issuer: string; mallGrant: string; ownerGrant: string; selfGrant: string }>
+    input: Readonly<{
+      membership: string;
+      member: string;
+      principal: string;
+      organization: string;
+      issuer: string;
+      issuerAccessVersion: number;
+      employeeNo: string | null;
+      department: string | null;
+    }>
   ): Promise<void>;
   pendingMember(context: ReadTransactionContext, membership: string): Promise<string | null>;
+  pendingEmployee(context: ReadTransactionContext, membership: string): Promise<PendingEmployeeRecord | null>;
   delegationIssuer(context: ReadTransactionContext, membership: string): Promise<DelegationIssuer | null>;
   delegationTarget(context: ReadTransactionContext, membership: string): Promise<DelegationTarget | null>;
   delegationPermissions(context: ReadTransactionContext, roles: readonly string[]): Promise<readonly DelegationPermission[]>;

@@ -49,9 +49,12 @@ test('all mandatory incident recovery runbooks contain business validation and e
 
 test('recovery configuration declares the required RPO, RTO and immutable evidence checks', () => {
   const telemetry = readFileSync(join(root, 'config/telemetry.yml'), 'utf8');
-  assert.match(telemetry, /rpoMinutes: 5/);
-  assert.match(telemetry, /rtoMinutes: 30/);
-  assert.match(readFileSync(join(root, 'runbooks/databasefailover.md'), 'utf8'), /LSN|RPO/);
+  assert.match(telemetry, /rpoMinutes: 0/);
+  assert.match(telemetry, /rtoMinutes: 15/);
+  const database = readFileSync(join(root, 'runbooks/databasefailover.md'), 'utf8');
+  assert.match(database, /LSN/);
+  assert.match(database, /RPO 0/);
+  assert.match(database, /RTO 15/);
   assert.match(readFileSync(join(root, 'runbooks/migrationrollback.md'), 'utf8'), /94 historical hashes/);
   const topology = readFileSync(join(root, 'infrastructure/cloud/Topology.yml'), 'utf8');
   const backup = readFileSync(join(root, 'infrastructure/backup/Policy.yml'), 'utf8');
@@ -59,4 +62,6 @@ test('recovery configuration declares the required RPO, RTO and immutable eviden
   assert.match(topology, /separateRegion: true/);
   assert.match(backup, /continuousWalArchive: true/);
   assert.match(backup, /pointInTimeRecovery: true/);
+  assert.match(backup, /rpoMinutes: 0/);
+  assert.match(backup, /rtoMinutes: 15/);
 });

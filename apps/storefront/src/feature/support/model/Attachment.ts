@@ -2,15 +2,18 @@ export type SupportAttachmentType = 'image/jpeg' | 'image/png' | 'application/pd
 
 export interface SupportAttachment {
   readonly id: string;
-  readonly reference: string;
-  readonly sha256: string;
+  readonly messageId: string | null;
+  readonly name: string;
   readonly contentType: string;
   readonly size: number;
+  readonly state: 'pending' | 'clean' | 'rejected';
+  readonly download: Readonly<{ url: string; expiresAt: string }> | null;
   readonly createdAt: string;
 }
 
-export interface SupportUpload {
+export interface PendingAttachment {
+  readonly id: string;
   readonly name: string;
-  readonly data: string;
-  readonly contentType: SupportAttachmentType;
+  readonly state: 'uploading' | 'pending' | 'clean' | 'rejected' | 'failed';
+  readonly error?: string;
 }

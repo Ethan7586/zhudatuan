@@ -64,15 +64,15 @@ describe('high-risk domain invariants', () => {
     expect(decision({ reviewOperations: ['refund'], challengeOperations: ['refund'] }, 'other', 'refund')).toBe('review');
     const selected = new AssignmentPolicy().decide({
       agents: [
-        { id: 'b', online: true, load: 1, skills: ['order'], scopes: ['mall'] },
-        { id: 'a', online: true, load: 1, skills: ['order'], scopes: ['mall'] },
+        { id: 'b', online: true, state: 'available', load: 1, capacity: 10, skills: ['order'], scopes: ['mall'], lastAssignedAt: null },
+        { id: 'a', online: true, state: 'available', load: 1, capacity: 10, skills: ['order'], scopes: ['mall'], lastAssignedAt: null },
       ],
       scope: 'mall',
       skill: 'order',
     });
     expect(selected?.id).toBe('a');
     const rules = [new AssignmentRule('rule', 'mall', 'order', ['urgent'], 100, true)];
-    expect(new AssignmentPolicy().decide({ agents: [{ id: 'a', online: true, load: 0, skills: ['order'], scopes: ['mall'] }], rules, scope: 'mall', skill: 'order', priority: 'normal' })).toBeNull();
+    expect(new AssignmentPolicy().decide({ agents: [{ id: 'a', online: true, state: 'available', load: 0, capacity: 10, skills: ['order'], scopes: ['mall'], lastAssignedAt: null }], rules, scope: 'mall', skill: 'order', priority: 'normal' })).toBeNull();
     const ticket = new Ticket('ticket', 'conversation', 'mall', 'urgent', 'resolved', 1);
     ticket.requireTransition('closed');
     expect(() => ticket.requireTransition('assigned')).toThrow('SUPPORT_TICKET_TRANSITION_INVALID');

@@ -16,6 +16,10 @@ interface PreauthRow {
   readonly reference_id: string;
   readonly version: number;
   readonly expires_at: Date;
+  readonly auth_state_hash: string | null;
+  readonly auth_nonce_hash: string | null;
+  readonly auth_pkce_challenge: string | null;
+  readonly return_target: string | null;
 }
 
 export class PgPreauthResolver implements PreauthResolver {
@@ -35,7 +39,8 @@ export class PgPreauthResolver implements PreauthResolver {
     const agent = headers['user-agent'] ?? 'unknown';
     const device = headers['x-device-id'] ?? 'browser';
     const result = await this.pool.query<PreauthRow>(
-      `select id,purpose,target,principal_id,reference_id,version,expires_at
+      `select id,purpose,target,principal_id,reference_id,version,expires_at,
+      auth_state_hash,auth_nonce_hash,auth_pkce_challenge,return_target
       from identity.resolve_preauth($1,$2,$3,$4,$5)`,
       [createHash('sha256').update(token).digest(), this.protector.browser(peer, agent, device), this.protector.device(device), purpose, target]
     );
@@ -53,6 +58,11 @@ export class PgPreauthResolver implements PreauthResolver {
       version: preauth.version,
       expires: preauth.expiresAt,
       trace: headers['x-trace-id'] ?? `preauth:${preauth.id}`,
+      authorization:
+        row.auth_state_hash && row.auth_nonce_hash && row.auth_pkce_challenge
+          ? Object.freeze({ stateHash: row.auth_state_hash, nonceHash: row.auth_nonce_hash, challenge: row.auth_pkce_challenge })
+          : null,
+      returnTarget: row.return_target,
     });
   }
 }

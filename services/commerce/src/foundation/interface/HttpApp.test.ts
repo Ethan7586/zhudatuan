@@ -4,6 +4,7 @@ import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { CsrfProtector } from '../security/CsrfProtector';
 import { HttpApp } from './HttpApp';
 import type { OperationMetrics } from '../telemetry/OperationMetrics';
+import { HttpStream } from './HttpStream';
 
 const csrf = new CsrfProtector('http-app-test-key-that-is-at-least-thirty-two-bytes', {
   console: 'https://shop.example',
@@ -273,6 +274,32 @@ describe('HttpApp contract handshake', () => {
     );
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({ code: 'INTERNAL_ERROR' });
+  });
+
+  it('returns a secure incremental SSE response without applying the JSON boundary', async () => {
+    const streamRoutes = {
+      match: () => ({
+        operation: 'support.events.read',
+        parameters: {},
+        handler: async () => ({
+          status: 200,
+          body: new HttpStream(async function* () {
+            yield { id: 'event:1', event: 'support.message.sent', data: { ticketId: 'ticket:one' } };
+          }),
+        }),
+      }),
+    } as unknown as RouteRegistry;
+    const response = await new HttpApp(streamRoutes, ['https://shop.example'], csrf).handle(
+      new Request('https://api.example/api/v1/support/events', {
+        headers: { origin: 'https://shop.example', 'x-contract-version': CONTRACT_VERSION, 'x-client-target': 'console' },
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/event-stream; charset=utf-8');
+    expect(response.headers.get('cache-control')).toBe('no-cache, no-transform');
+    expect(response.headers.get('x-accel-buffering')).toBe('no');
+    expect(await response.text()).toContain('id: event:1\nevent: support.message.sent\ndata: {"ticketId":"ticket:one"}\n\n');
   });
 
   it('does not infer a public protocol error from a legacy raw error message', async () => {

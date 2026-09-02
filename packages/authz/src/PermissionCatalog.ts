@@ -1562,7 +1562,7 @@ export const PERMISSION_CATALOG = Object.freeze([
     "module": "identity",
     "category": "identity",
     "risk": "critical",
-    "minimumAssurance": 3,
+    "minimumAssurance": 2,
     "delegatable": true,
     "allowedScopeKinds": [
       "platform",
@@ -1604,7 +1604,7 @@ export const PERMISSION_CATALOG = Object.freeze([
     "module": "identity",
     "category": "identity",
     "risk": "high",
-    "minimumAssurance": 2,
+    "minimumAssurance": 3,
     "delegatable": true,
     "allowedScopeKinds": [
       "platform",
@@ -3369,6 +3369,29 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "support.case.read"
   },
   {
+    "code": "support.event.read",
+    "module": "support",
+    "category": "support",
+    "risk": "elevated",
+    "minimumAssurance": 2,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "supplier",
+      "brand",
+      "store",
+      "owner",
+      "self"
+    ],
+    "makerChecker": false,
+    "description": "support.event.read"
+  },
+  {
     "code": "support.history.read",
     "module": "support",
     "category": "support",
@@ -3431,6 +3454,29 @@ export const PERMISSION_CATALOG = Object.freeze([
     ],
     "makerChecker": false,
     "description": "support.message.send"
+  },
+  {
+    "code": "support.readstate.manage",
+    "module": "support",
+    "category": "support",
+    "risk": "low",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "supplier",
+      "brand",
+      "store",
+      "owner",
+      "self"
+    ],
+    "makerChecker": false,
+    "description": "support.readstate.manage"
   },
   {
     "code": "support.rule.manage",

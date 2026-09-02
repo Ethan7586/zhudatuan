@@ -1,8 +1,7 @@
-import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { DelegationIssuer, DelegationPermission, DelegationRole, DelegationScope, DelegationTarget, Ownership, VersionChange } from '../../application/port/AccessRepository';
 import type { Membership } from '../../domain/model/Membership';
-import { PgAccessMembershipRepository } from './PgAccessMembershipRepository';
+import { PgEmployeeAccessRepository } from './PgEmployeeAccessRepository';
 import {
   delegationRole,
   delegationScope,
@@ -19,7 +18,7 @@ import {
 } from './AccessRecord';
 import { randomUUID } from 'node:crypto';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
-export class PgAccessGovernanceRepository extends PgAccessMembershipRepository {
+export class PgAccessGovernanceRepository extends PgEmployeeAccessRepository {
   async lockOwnership(context: WriteTransactionContext, scope: string): Promise<Ownership | null> {
     const database = this.transactions.database(context);
     const result = await database.query<OwnershipRow>(
@@ -168,49 +167,6 @@ export class PgAccessGovernanceRepository extends PgAccessMembershipRepository {
       payload: { membershipId: input.change.membership, accessVersion: input.change.version, invitationId: input.invitation, target: input.target, grantDigest: input.grantDigest },
       trace: input.trace,
     });
-  }
-  async createCampaignMembership(
-    context: WriteTransactionContext,
-    input: Readonly<{
-      membership: string;
-      member: string;
-      principal: string;
-      organization: string;
-      issuer: string;
-      mallGrant: string;
-      ownerGrant: string;
-      selfGrant: string;
-    }>
-  ): Promise<void> {
-    const database = this.transactions.database(context);
-    const created = await database.query(
-      `insert into access.membership(id,member_id,principal_id,organization_id,client,status,
-      access_version) values($1,$2,$3,$4,'storefront','invited',1) returning id`,
-      [input.membership, input.member, input.principal, input.organization]
-    );
-    if (!created.rows[0]) throw new Error('MEMBERSHIP_CREATE_FAILED');
-    await database.query(
-      `insert into access.membershiprole(membership_id,role_id,effective_at,delegated_by) values
-      ($1,'role-zhudatuan-storefront-member',clock_timestamp(),$2),($1,'role:self',clock_timestamp(),$2)`,
-      [input.membership, input.issuer]
-    );
-    await database.query(
-      `insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,
-      access_version) values($1,$2,'mall',$3,$3,'allow',clock_timestamp(),1),
-      ($4,$2,'owner',$5,$5,'allow',clock_timestamp(),1),($6,$2,'self',$7,$7,'allow',clock_timestamp(),1)`,
-      [input.mallGrant, input.membership, input.organization, input.ownerGrant, input.member, input.selfGrant, `self:${input.principal}`]
-    );
-  }
-  async pendingMember(context: ReadTransactionContext, membership: string): Promise<string | null> {
-    const database = this.transactions.database(context);
-    const result = await database.query<{
-      member_id: string;
-    }>(
-      `select member_id from access.membership
-      where id=$1 and status='invited'`,
-      [membership]
-    );
-    return result.rows[0]?.member_id ?? null;
   }
   async delegationIssuer(context: ReadTransactionContext, membership: string): Promise<DelegationIssuer | null> {
     const database = this.transactions.database(context);

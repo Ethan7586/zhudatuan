@@ -55,6 +55,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.authprimary {
+  color: var(--sw-surface);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

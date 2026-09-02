@@ -1,0 +1,214 @@
+{
+  "voice": "Tingting",
+  "rate": 135,
+  "chapters": [
+    {
+      "name": "Authentication",
+      "title": "统一登录与退出",
+      "segments": [
+        {
+          "image": "frames/auth/001-password.png",
+          "text": "现在开始验收生产环境统一登录。密码登录入口完整展示目标系统选择、账号、密码和协议确认。"
+        },
+        {
+          "image": "frames/auth/002-otp.png",
+          "text": "切换到验证码登录，页面提供已绑定账号或手机号、六位验证码和获取验证码动作。当前验收账号没有绑定手机号，因此按验收要求跳过短信发送。"
+        },
+        {
+          "image": "frames/auth/003-invitation.png",
+          "text": "切换到邀请码登录，页面明确说明邀请码只用于本次验证，不进入网址、浏览器存储或分析数据。当前没有可消费的邀请码，因此不提交登录。"
+        },
+        {
+          "image": "frames/auth/004-console-target.png",
+          "text": "登录目标可以在员工商城和运营控制台之间切换。这里选择运营控制台，密码方式的统一认证入口保持一致。"
+        },
+        {
+          "image": "frames/console-login-success.png",
+          "text": "密码登录成功后进入生产控制台，账号、授权商城和工作区均正确加载。"
+        },
+        {
+          "image": "frames/storefront/001-home.png",
+          "text": "选择员工商城后，密码登录成功进入主打团福利商城，会员身份、商品和账户摘要均正常。"
+        },
+        {
+          "image": "frames/storefront/019-logout-login.png",
+          "text": "完成全部商城操作后退出登录，会话失效并返回统一身份入口。整个过程没有在视频中展示任何真实密码或密钥。"
+        }
+      ]
+    },
+    {
+      "name": "MallQr",
+      "title": "生产商城二维码",
+      "segments": [
+        {
+          "image": "frames/qr/002-production-dialog.png",
+          "text": "现在验收生产商城二维码。控制台弹窗显示付付点王的生产商城地址，并生成同一地址对应的二维码。"
+        },
+        {
+          "image": "frames/qr/003-production-copy.png",
+          "text": "点击复制链接，页面给出复制成功反馈，链接不包含会话令牌或一次性凭据。"
+        },
+        {
+          "image": "frames/qr/004-production-download.png",
+          "text": "点击下载二维码，浏览器正常生成并下载生产商城二维码图片。"
+        },
+        {
+          "image": "frames/storefront/001-home.png",
+          "text": "通过生产商城入口完成身份认证后，正确进入主打团福利商城首页，商城范围没有发生偏移。"
+        }
+      ]
+    },
+    {
+      "name": "Console",
+      "title": "运营控制台生产验收",
+      "segments": [
+        {
+          "image": "frames/console-login-success.png",
+          "text": "现在验收生产运营控制台。统一认证成功后进入已授权的生产工作区。"
+        },
+        {
+          "image": "frames/console/003-group-cockpit-30days.png",
+          "text": "集团经营驾驶舱正常加载近三十天指标、趋势和订单结构，统计周期切换也已逐项验证。"
+        },
+        {
+          "image": "frames/console/009-group-applications-all.png",
+          "text": "集团应用列表、状态筛选和关键字搜索正常，应用集合与当前企业范围一致。"
+        },
+        {
+          "image": "frames/console/015-group-applications-detail.png",
+          "text": "应用详情完整展示基础信息、版本、商城入口和发布状态。"
+        },
+        {
+          "image": "frames/console/016-group-applications-manage.png",
+          "text": "进入应用管理后，装修、商城入口和后续治理动作保持同一应用上下文。"
+        },
+        {
+          "image": "frames/console/024-group-reports.png",
+          "text": "集团数据报表正常加载，销售、商品、商城、类目、渠道、会员和卡券等维度均已切换检查。"
+        },
+        {
+          "image": "frames/console/025-group-support.png",
+          "text": "集团客服系统正常加载工单、分配规则、坐席、客服账号和服务等级入口。"
+        },
+        {
+          "image": "frames/console/030-mall-cockpit.png",
+          "text": "切换到商城范围后，经营驾驶舱按当前商城重新加载权威数据。"
+        },
+        {
+          "image": "frames/console/034-mall-decoration.png",
+          "text": "商城装修列表展示当前应用版本、发布状态和装修入口。"
+        },
+        {
+          "image": "frames/console/035-mall-decoration-editor.png",
+          "text": "装修编辑器正常打开，页面结构、组件配置和版本信息完整；本次验收不发布新版本。"
+        },
+        {
+          "image": "frames/console/040-mall-products.png",
+          "text": "商品治理台正常展示商品列表、状态筛选、搜索和新建入口。"
+        },
+        {
+          "image": "frames/console/041-mall-product-pools.png",
+          "text": "商品池视图正常展示商品池及其商品关联关系。"
+        },
+        {
+          "image": "frames/console/044-mall-product-detail-history.png",
+          "text": "商品详情的概览、规格库存、价格、来源和历史页签均已查看，版本变化可以追溯。"
+        },
+        {
+          "image": "frames/console/050-mall-reports.png",
+          "text": "商城报表按当前商城读取，各报表维度和实时、昨天、近七天、近三十天周期均可切换。"
+        },
+        {
+          "image": "frames/console/051-twofactor-menu.png",
+          "text": "账户菜单新增二次验证开关入口。当前安全等级为一级时，页面提供开启二次验证动作。"
+        },
+        {
+          "image": "frames/console/052-twofactor-open.png",
+          "text": "开启二次验证窗口可以正常打开和关闭。当前账号未绑定手机号，发送按钮按安全规则禁用，因此本次不发送验证码。"
+        }
+      ]
+    },
+    {
+      "name": "Storefront",
+      "title": "员工商城生产验收",
+      "segments": [
+        {
+          "image": "frames/storefront/001-home.png",
+          "text": "现在验收生产员工商城。登录后首页正确加载商城、已发布商品、会员身份和账户摘要。"
+        },
+        {
+          "image": "frames/storefront/002-search.png",
+          "text": "搜索智慧翼商品，列表按照关键字返回唯一匹配结果。"
+        },
+        {
+          "image": "frames/storefront/003-product.png",
+          "text": "商品详情正常展示名称、价格、规格、履约说明和售后信息；收藏状态已执行取消和恢复。"
+        },
+        {
+          "image": "frames/storefront/004-cart.png",
+          "text": "商品加入购物车后，数量、选择状态和金额同步更新；验收完成后恢复原购物车数量。"
+        },
+        {
+          "image": "frames/storefront/005-checkout-preview.png",
+          "text": "结算预览由服务端重新校验商品、库存、价格和账户资格。按照要求停在提交真实订单之前，不创建订单、不发起支付。"
+        },
+        {
+          "image": "frames/storefront/006-support-case.png",
+          "text": "客服工单创建成功，详情页展示工单编号、问题描述和创建时间。"
+        },
+        {
+          "image": "frames/storefront/007-support-reply.png",
+          "text": "在工单会话中发送验收回复，消息成功写入并显示在会话时间线上。"
+        },
+        {
+          "image": "frames/storefront/008-support-list.png",
+          "text": "返回客服中心后，工单列表正确展示待处理状态、优先级、更新时间、响应期限和解决期限。"
+        },
+        {
+          "image": "frames/storefront/009-benefits.png",
+          "text": "福利账户和账户台账正常加载。当前账号没有福利账户和流水，因此展示真实空状态。"
+        },
+        {
+          "image": "frames/storefront/010-twofactor-open.png",
+          "text": "进入敏感卡券页面时，系统正常开启二次验证提示，并说明验证码只用于本次身份确认。"
+        },
+        {
+          "image": "frames/storefront/011-twofactor-closed.png",
+          "text": "关闭二次验证提示后回到卡券中心，页面保持当前业务上下文。当前账号未绑定手机号，因此不发送验证码。"
+        },
+        {
+          "image": "frames/storefront/012-profile.png",
+          "text": "个人中心正常展示会员姓名、所属商城、余额摘要、订单分类和各项个人服务入口。"
+        },
+        {
+          "image": "frames/storefront/013-favorites.png",
+          "text": "收藏中心从服务端读取当前成员收藏记录；恢复原状态后显示暂无收藏商品。"
+        },
+        {
+          "image": "frames/storefront/014-addresses.png",
+          "text": "收货地址管理正常加载，新增地址表单也已打开检查；本次不写入虚构联系人和手机号。"
+        },
+        {
+          "image": "frames/storefront/015-notifications.png",
+          "text": "通知中心可以正常刷新。当前没有投递记录和可配置模板，因此显示真实空状态。"
+        },
+        {
+          "image": "frames/storefront/016-security.png",
+          "text": "安全中心正常展示密码修改、手机号绑定和登录设备管理。当前账号未绑定手机号，短信发送按要求跳过。"
+        },
+        {
+          "image": "frames/storefront/017-invoices.png",
+          "text": "电子发票中心只读取当前成员的真实开票记录。当前没有发票，因此展示零张和空状态。"
+        },
+        {
+          "image": "frames/storefront/018-after-sale.png",
+          "text": "售后入口按订单状态筛选。当前账号没有订单，因此没有可发起的售后申请。"
+        },
+        {
+          "image": "frames/storefront/019-logout-login.png",
+          "text": "最后退出员工商城，会话结束并回到统一登录页面。本次商城正常流程验收完成。"
+        }
+      ]
+    }
+  ]
+}

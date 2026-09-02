@@ -11,7 +11,6 @@ import type { CipherEnvelope } from '../../../../foundation/infrastructure/KmsCl
 import type { InvitationAccessPort } from '../../../access/public';
 import type { InvitationMemberPort } from '../../../member/public';
 import type { InvitationRepository } from '../port/InvitationRepository';
-import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { SessionIssuer } from '../port/SessionIssuer';
 import type { ChallengePort } from '../port/ChallengePort';
 import type { InvitationHashPort } from '../port/InvitationSecurity';
@@ -31,16 +30,24 @@ import type { IdentityEnrollmentsCompleteBody } from '@shop/contract';
 export interface EnrollmentDraft {
   readonly invitation: string;
   readonly scope: string;
+  readonly mode: 'bound' | 'campaign';
   readonly body: IdentityEnrollmentsCompleteBody;
   readonly subject: string;
   readonly password: string;
   readonly mobile: CipherEnvelope;
   readonly principal: string;
+  readonly display: string;
+  readonly authorization: AuthTransaction;
+  readonly returnTarget: string;
 }
 
 export interface EnrollmentInvitationScope {
   readonly invitation: string;
   readonly scope: string;
+  readonly mode: 'bound' | 'campaign';
+  readonly principal: string | null;
+  readonly mobileCiphertext: string | null;
+  readonly displayName: string | null;
 }
 
 export class EnrollmentService {
@@ -49,7 +56,6 @@ export class EnrollmentService {
     private readonly access: InvitationAccessPort,
     private readonly members: InvitationMemberPort,
     private readonly sessions: SessionIssuer,
-    private readonly returns: ReturnTargetPort,
     private readonly hasher: InvitationHashPort,
     private readonly identityKey: string,
     private readonly sessionKey: string,
@@ -68,7 +74,19 @@ export class EnrollmentService {
 
   async load(context: ReadTransactionContext, claim: string, target: 'console' | 'storefront'): Promise<EnrollmentInvitationScope> {
     const invitation = await this.repository.claimed(context, claim, target);
-    return Object.freeze({ invitation: invitation.state.id, scope: invitation.state.organization });
+    if (invitation.state.kind === 'campaign') {
+      return Object.freeze({ invitation: invitation.state.id, scope: invitation.state.organization, mode: 'campaign', principal: null, mobileCiphertext: null, displayName: null });
+    }
+    if (invitation.state.kind !== 'enrollment' || !invitation.state.membership) throw new DomainError('INVITATION_INVALID');
+    const pending = await this.members.pending(context, await this.access.pending(context, invitation.state.membership));
+    return Object.freeze({
+      invitation: invitation.state.id,
+      scope: invitation.state.organization,
+      mode: 'bound',
+      principal: pending.principal,
+      mobileCiphertext: pending.mobileCiphertext,
+      displayName: pending.displayName,
+    });
   }
 
   async complete(request: OperationRequest, database: WriteTransactionContext, prepared: EnrollmentDraft): Promise<OperationResult> {
@@ -99,8 +117,10 @@ export class EnrollmentService {
       claim.invitation !== invitation.state.id ||
       claim.kind !== invitation.state.kind ||
       claim.target !== preauth.target ||
+      claim.state !== 'proofpending' ||
       !claim.recipientHash ||
-      !invitation.state.termsHash
+      !invitation.state.termsHash ||
+      (invitation.state.kind === 'campaign') !== (prepared.mode === 'campaign')
     )
       throw new DomainError('INVITATION_INVALID');
     if (!this.hasher.matchesRecipient(prepared.subject, claim.recipientHash) || (invitation.state.recipientHash && !this.hasher.matchesRecipient(prepared.subject, invitation.state.recipientHash))) {
@@ -123,7 +143,7 @@ export class EnrollmentService {
     }
     try {
       await this.challenges.consume(requireWriteTransaction(database), textField(prepared.body, 'challenge'), textField(prepared.body, 'code', 16), (id, code) => this.code(id, code), preauth.principal ?? undefined, {
-        purpose: 'enrollment',
+        purpose: prepared.mode === 'campaign' ? 'enrollment_campaign' : 'enrollment',
         destinationHash: claim.recipientHash.toString('hex'),
       });
     } catch (cause) {
@@ -132,6 +152,7 @@ export class EnrollmentService {
     }
     this.policy.complete({ termsAccepted: prepared.body.termsAccepted === true, termsHash: textField(prepared.body, 'termsHash', 64), expectedTermsHash: invitation.state.termsHash });
     const subjectHash = this.subject(prepared.subject);
+    await this.members.lockMobile(requireWriteTransaction(database), prepared.mobile.fingerprint);
     const existing = await this.enrollments.findPrincipal(database, subjectHash);
     let principal = prepared.principal;
     let member: string;
@@ -156,11 +177,11 @@ export class EnrollmentService {
       return { status: 409, body: { code: 'IDENTITY_LINK_REQUIRED', linkCase: conflict.id } };
     }
     if (invitation.state.kind === 'campaign') {
-      await this.enrollments.createPrincipal(database, principal);
+      await this.enrollments.createPendingPrincipal(database, { principal, createdAt: new Date() });
       await this.members.createPending(requireWriteTransaction(database), {
         member,
         principal,
-        display: textField(prepared.body, 'displayName', 128),
+        display: prepared.display,
         mobileCiphertext: prepared.mobile.ciphertext,
         mobileFingerprint: prepared.mobile.fingerprint,
         mobileMasked: mask(prepared.subject),
@@ -187,7 +208,7 @@ export class EnrollmentService {
     await this.members.activate(requireWriteTransaction(database), {
       member,
       principal,
-      display: textField(prepared.body, 'displayName', 128),
+      display: prepared.display,
       mobileCiphertext: prepared.mobile.ciphertext,
       mobileFingerprint: prepared.mobile.fingerprint,
       mobileMasked: mask(prepared.subject),
@@ -224,8 +245,8 @@ export class EnrollmentService {
     await this.redeemer.consume(database, invitation, { session: session?.session ?? null, assurance: 2, trace: preauth.trace, principal, membership, claim: { id: preauth.reference, version: claim.version } });
     await this.events.publish(database, 'identity.enrollment.completed', 'membership', membership, invitation.state.organization, preauth.trace, { invitationId: invitation.state.id, membershipId: membership });
     if (session === null) return { status: 201, body: { kind: 'enrolled', target: 'storefront' }, headers: { 'x-clear-cookie': this.cookies.preauth('', 0) } };
-    const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, 'storefront', AuthTransaction.start(prepared.body.authorization));
-    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: this.returns.issue('storefront').proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
+    const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, 'storefront', prepared.authorization);
+    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: prepared.returnTarget }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
   }
 
   private subject(value: string): string {

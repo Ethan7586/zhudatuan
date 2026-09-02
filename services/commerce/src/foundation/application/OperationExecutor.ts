@@ -95,7 +95,7 @@ export class OperationExecutor {
           const write = transaction as WriteTransactionContext;
           await this.auditReply(write, execution, input, result.response, routedScope);
           await appendEvents(this.outbox, write, result.events ?? result.response.events);
-          if (claim) await this.idempotency.checkpoint(write, claim, result.response as OperationReply<unknown>);
+          if (claim) await this.idempotency.checkpoint(write, claim, idempotencyResponse(handler, result.response) as OperationReply<unknown>);
         } else if ((result.events?.length ?? result.response.events?.length ?? 0) > 0) {
           throw new Error('READ_HANDLER_EVENT_FORBIDDEN');
         }
@@ -117,7 +117,7 @@ export class OperationExecutor {
         await this.transactions.write(transactionOptions(execution, routedScope), async (transaction) => {
           await appendEvents(this.outbox, transaction, completionEvents);
           await appendEvents(this.outbox, transaction, reply.events);
-          await this.idempotency.complete(transaction, claim, reply as OperationReply<unknown>);
+          await this.idempotency.complete(transaction, claim, idempotencyResponse(handler, reply) as OperationReply<unknown>);
         });
       } else if (completionEvents.length > 0 || (reply.events?.length ?? 0) > 0) {
         throw new Error('READ_HANDLER_EVENT_FORBIDDEN');
@@ -143,6 +143,10 @@ export class OperationExecutor {
       trace: execution.traceId,
     });
   }
+}
+
+function idempotencyResponse<TKey extends OperationId>(handler: DurableOperationHandler<TKey, unknown, unknown, 'read' | 'write', unknown>, response: OperationReply<OperationOutputFor<TKey>>): OperationReply<OperationOutputFor<TKey>> {
+  return handler.idempotencyResponse?.(response) ?? response;
 }
 
 function transactionOptions(execution: ExecutionContext, scope?: string): TransactionOptions {

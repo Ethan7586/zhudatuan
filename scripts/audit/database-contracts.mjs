@@ -17,6 +17,12 @@ const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
 const REGISTRATION_BOOTSTRAP_REPAIR = '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql';
+const ELEVATED_REPLAY_FILES = new Set([
+  '20260828183000_zhudatuan_runtime_readiness_repair.sql',
+  '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
+  '20260829054500_zhudatuan_identity_login_acl_repair.sql',
+  '20260829109000_runtime_role_hardcut.sql',
+]);
 const REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION =
   /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000' and version<>'20260829040000'\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
@@ -151,9 +157,15 @@ const REPAIR_FILES = [
   '20260902014000_enable_owner_governance_reads.sql',
   '20260902015000_seed_platform_support_sla.sql',
   '20260902016000_resolve_inherited_support_sla.sql',
+  '20260902017000_prepare_employee_invitation.sql',
+  '20260902018000_complete_support_message.sql',
+  '20260902019000_complete_support_realtime.sql',
+  '20260902020000_publish_support_contract.sql',
+  '20260902021000_complete_support_account.sql',
+  '20260902022000_allow_storefront_signin_invitation.sql',
 ];
 const HARD_CUT_CONTRACTS = [
-  'contract_v3_catalog_contract.sql',
+  'contract_v4_catalog_contract.sql',
   'access_override_authorization_contract.sql',
   'invitation_security_contract.sql',
   'operation_idempotency_contract.sql',
@@ -235,12 +247,12 @@ try {
     const source = await readFile(join(MIGRATIONS, name), 'utf8');
     const omission = REGISTRATION_ASSERTION_OMISSIONS.get(name);
     const sql = mode === '--registration-fresh' && omission ? omitExactEnvironmentAssertion(source, omission, name) : source;
-    const elevatedRoleHardcut = replayRole !== undefined && name === '20260829109000_runtime_role_hardcut.sql';
-    if (elevatedRoleHardcut) await execute(database, 'reset role', 'role hardcut elevation');
+    const elevatedReplay = replayRole !== undefined && ELEVATED_REPLAY_FILES.has(name);
+    if (elevatedReplay) await execute(database, 'reset role', 'migration boundary elevation');
     try {
       await execute(database, sql, `migration ${name}`);
     } finally {
-      if (elevatedRoleHardcut) await execute(database, `set role "${replayRole}"`, 'database migration role restore');
+      if (elevatedReplay) await execute(database, `set role "${replayRole}"`, 'database migration role restore');
     }
     await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0, 14), name]);
     applied += 1;

@@ -11,12 +11,19 @@ slo:
   qrEncodeP95Ms: 30
   qrBundleGzipKb: 100
   commandP95Ms: 800
+  employeeInvitationCreateP95Ms: 300
+  invitationResolveP95Ms: 300
+  enrollmentCompleteP95Ms: 800
+  supportMessageSendP95Ms: 300
+  supportConversationP95Ms: 500
+  supportQueueP95Ms: 500
+  supportEventDeliveryP95Ms: 1000
   orderP95Ms: 1500
   webhookDurableAcceptP99Ms: 500
   outboxP99Seconds: 30
   availabilityPercent: 99.95
-  rpoMinutes: 5
-  rtoMinutes: 30
+  rpoMinutes: 0
+  rtoMinutes: 15
 alerts:
   entryFailure:
     windowSeconds: 300
@@ -30,14 +37,35 @@ alerts:
 redaction:
   deny:
     - authorization
-    - cookie
-    - password
-    - otp
-    - secret
+    - address
+    - apikey
+    - attachment
+    - body
+    - callback
+    - cardcode
     - cardsecret
-    - invite
-    - code
+    - challenge
+    - ciphertext
     - claim
+    - code
+    - cookie
+    - credential
+    - csrf
+    - destination
+    - email
+    - evidence
+    - filename
+    - invite
+    - message
+    - mobile
+    - nonce
+    - objectref
+    - otp
+    - password
+    - phone
     - preauth
+    - privatekey
     - recipient
+    - secret
+    - token
     - tokenhash

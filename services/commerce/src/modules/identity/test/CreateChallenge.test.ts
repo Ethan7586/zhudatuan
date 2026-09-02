@@ -60,7 +60,9 @@ function createCommand(input: Readonly<{ principal: string | null; mobileCiphert
     {} as never,
     { publish: vi.fn() } as never,
     { principalForSubject: vi.fn(async () => input.principal) } as never,
-    { securityProfile: vi.fn(async () => ({ mobileCiphertext: input.mobileCiphertext, mobileFingerprint: null })) } as never
+    { securityProfile: vi.fn(async () => ({ mobileCiphertext: input.mobileCiphertext, mobileFingerprint: null })) } as never,
+    {} as never,
+    {} as never
   );
 }
 

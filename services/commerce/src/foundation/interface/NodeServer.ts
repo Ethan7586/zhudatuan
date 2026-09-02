@@ -13,7 +13,7 @@ export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0'
       if (!response.writableEnded) controller.abort(new Error('REQUEST_ABORTED'));
     });
     try {
-      await write(await app.handle(await convert(request, controller.signal)), response);
+      await writeResponse(await app.handle(await convert(request, controller.signal)), response);
     } catch (cause) {
       const supplied = request.headers['x-request-id'];
       const requestId = typeof supplied === 'string' && supplied.length <= 128 ? supplied : 'request:missing';
@@ -64,12 +64,41 @@ async function read(request: IncomingMessage): Promise<Buffer | undefined> {
   return chunks.length === 0 ? undefined : Buffer.concat(chunks);
 }
 
-async function write(input: Response, output: ServerResponse): Promise<void> {
+export async function writeResponse(input: Response, output: ServerResponse): Promise<void> {
   output.statusCode = input.status;
   input.headers.forEach((value, name) => {
     if (name !== 'set-cookie') output.setHeader(name, value);
   });
   const cookies = input.headers.getSetCookie();
   if (cookies.length > 0) output.setHeader('set-cookie', cookies);
-  output.end(Buffer.from(await input.arrayBuffer()));
+  if (!input.body) {
+    output.end();
+    return;
+  }
+  const reader = input.body.getReader();
+  let completed = false;
+  try {
+    while (true) {
+      const item = await reader.read();
+      if (item.done) break;
+      if (!output.write(Buffer.from(item.value))) await drain(output);
+    }
+    completed = true;
+    output.end();
+  } finally {
+    if (!completed) await reader.cancel(new Error('REQUEST_ABORTED')).catch(() => undefined);
+    reader.releaseLock();
+  }
+}
+
+function drain(output: ServerResponse): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const done = () => { cleanup(); resolve(); };
+    const failed = (cause: Error) => { cleanup(); reject(cause); };
+    const closed = () => failed(new Error('REQUEST_ABORTED'));
+    const cleanup = () => { output.off('drain', done); output.off('error', failed); output.off('close', closed); };
+    output.once('drain', done);
+    output.once('error', failed);
+    output.once('close', closed);
+  });
 }

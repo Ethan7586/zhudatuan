@@ -31,6 +31,7 @@ export interface DurableOperationHandler<TKey extends OperationId = OperationId,
   transactionScope?(input: OperationInputFor<TKey>, prepared: TPrepared, context: PrepareContext<TKey>): string | undefined;
   commit(input: OperationInputFor<TKey>, prepared: TPrepared, context: TMode extends 'write' ? CommitContext<TKey> : HandlerContext<TKey>): Promise<DurableCommit<TCheckpoint, OperationOutputFor<TKey>>>;
   finalize(input: OperationInputFor<TKey>, checkpoint: TCheckpoint, context: FinalizeContext<TKey>): Promise<OperationReply<OperationOutputFor<TKey>>>;
+  idempotencyResponse?(response: OperationReply<OperationOutputFor<TKey>>): OperationReply<OperationOutputFor<TKey>>;
   discard?(prepared: TPrepared, cause: unknown): Promise<void>;
 }
 

@@ -17,12 +17,12 @@ export class PgEnrollmentRepository implements EnrollmentRepository {
     );
     return result.rows[0]?.principal_id ?? null;
   }
-  async createPrincipal(context: WriteTransactionContext, principal: string): Promise<void> {
+  async createPendingPrincipal(context: WriteTransactionContext, input: Readonly<{ principal: string; createdAt: Date }>): Promise<void> {
     const database = this.transactions.database(context);
     await database.query(
       `insert into identity.principal(id,status,created_at,updated_at,version)
-      values($1,'pending',clock_timestamp(),clock_timestamp(),1)`,
-      [principal]
+      values($1,'pending',$2,$2,1)`,
+      [input.principal, input.createdAt]
     );
   }
   async activatePrincipal(context: WriteTransactionContext, principal: string): Promise<void> {

@@ -37,6 +37,8 @@ import { PAYOUT_GATEWAY } from '../modules/finance/application/port/PayoutGatewa
 import { PayoutGateway, type PayoutConfiguration } from '../modules/finance/infrastructure/adapter/PayoutGateway';
 import { CACHE } from '../foundation/cache/Cache';
 import { RedisCache } from '../foundation/cache/RedisCache';
+import { EVENT_STREAM } from '../foundation/stream/EventStream';
+import { RedisEventStream } from '../foundation/stream/RedisEventStream';
 import { RETURN_TARGETS } from '../modules/identity/infrastructure/security/ReturnTargetCatalog';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { RecordAudit } from '../modules/audit/application/service/RecordAudit';
@@ -84,7 +86,8 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
   const queryMetrics = new QueryMetrics();
   const pool = createPool(connection, workload === 'api' ? 'api' : 'jobs', queryMetrics);
   const cache = new RedisCache(() => secretText(secrets, required(environment.REDIS_CONNECTION_REF, 'REDIS_CONNECTION_REF_MISSING'), 'cache'));
-  await cache.start();
+  const streams = new RedisEventStream(() => secretText(secrets, required(environment.REDIS_CONNECTION_REF, 'REDIS_CONNECTION_REF_MISSING'), 'cache'));
+  await Promise.all([cache.start(), streams.start().catch(() => undefined)]);
   const role = await pool.query<{ current_user: string }>('select current_user');
   const expectedRole = workload === 'api' ? 'shopapp' : 'shopjob';
   if (role.rows[0]?.current_user !== expectedRole) {
@@ -153,6 +156,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
       container.bind(QUERY_METRICS, queryMetrics);
       container.bind(TELEMETRY, telemetry);
       container.bind(CACHE, cache);
+      container.bind(EVENT_STREAM, streams);
       container.bind(RISK_GATE, risk);
       container.bind(AUDIT_SINK, audit);
       container.bind(AUDIT_PORT, auditRepository);
@@ -181,6 +185,7 @@ export async function createRuntime(environment: ApiEnvironment | JobsEnvironmen
     async close() {
       await extensions.stop();
       await cache.close();
+      await streams.close();
       await pool.end();
     },
   };

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { test } from 'node:test';
 import { OperationCatalog } from '@shop/contract';
@@ -9,6 +10,9 @@ import { RedisCache } from '../../services/commerce/src/foundation/cache/RedisCa
 import { CircuitBreaker } from '../../services/commerce/src/foundation/performance/CircuitBreaker';
 import { retryDelay } from '../../services/commerce/src/foundation/performance/Retry';
 import { Singleflight } from '../../services/commerce/src/foundation/performance/Singleflight';
+import { HttpStream } from '../../services/commerce/src/foundation/interface/HttpStream';
+import { AssignmentPolicy } from '../../services/commerce/src/modules/support/domain/policy/AssignmentPolicy';
+import { MessagePolicy } from '../../services/commerce/src/modules/support/domain/policy/MessagePolicy';
 
 test('route registry lookup remains below the ordinary query budget', () => {
   const registry = new RouteRegistry();
@@ -110,9 +114,53 @@ test('provider timeout opens the circuit and retry backoff remains jittered and 
   assert.ok(retryDelay(8, 250, 60_000, () => 0.999) <= 32_000);
 });
 
+test('support message, queue and realtime SLOs are declared at their release thresholds', () => {
+  const telemetry = readFileSync('config/telemetry.yml', 'utf8');
+  assert.match(telemetry, /supportMessageSendP95Ms: 300/);
+  assert.match(telemetry, /supportConversationP95Ms: 500/);
+  assert.match(telemetry, /supportQueueP95Ms: 500/);
+  assert.match(telemetry, /supportEventDeliveryP95Ms: 1000/);
+  assert.equal(RUNTIME_LIMITS.stream.maximumConnections, 2000);
+  assert.equal(RUNTIME_LIMITS.stream.maximumConnectionsPerScope, 100);
+});
+
+test('local support hot paths retain ample headroom below their production p95 budgets', async () => {
+  const messages = new MessagePolicy();
+  const assignments = new AssignmentPolicy();
+  const agents = Array.from({ length: 100 }, (_, index) => ({ id: `agent:${index}`, online: true, state: 'available' as const, load: index % 5, capacity: 10, skills: ['general'], scopes: ['mall:one'], lastAssignedAt: null }));
+  const messageSamples: number[] = [];
+  const queueSamples: number[] = [];
+  const eventSamples: number[] = [];
+  for (let index = 0; index < 500; index += 1) {
+    sample(messageSamples, () => messages.prepare({ body: '客服已收到你的问题', clientMessageId: `client:${String(index).padStart(8, '0')}`, attachmentIds: [] }));
+    sample(queueSamples, () => assignments.decide({ agents, scope: 'mall:one', skill: 'general', priority: 'normal' }));
+    const started = performance.now();
+    const stream = new HttpStream((async function* () { yield { id: `${index}-0`, event: 'support.message.sent', data: { ticketId: 'ticket:one', conversationId: 'conversation:one', sequence: index + 1 } }; })());
+    const reader = stream.readable(new AbortController().signal).getReader();
+    const frame = await reader.read();
+    assert.equal(frame.done, false);
+    eventSamples.push(performance.now() - started);
+    await reader.cancel();
+  }
+  assert.ok(percentile(messageSamples, 0.95) < 300);
+  assert.ok(percentile(queueSamples, 0.95) < 500);
+  assert.ok(percentile(eventSamples, 0.95) < 1000);
+});
+
 function measure(count: number, operation: () => unknown): void {
   const started = performance.now();
   for (let index = 0; index < count; index += 1) assert.ok(operation());
   const seconds = Math.max((performance.now() - started) / 1000, 0.001);
   assert.ok(count / seconds >= count, `admission throughput ${Math.floor(count / seconds)} is below ${count}`);
+}
+
+function sample(values: number[], operation: () => unknown): void {
+  const started = performance.now();
+  assert.ok(operation());
+  values.push(performance.now() - started);
+}
+
+function percentile(values: number[], ratio: number): number {
+  const ordered = [...values].sort((left, right) => left - right);
+  return ordered[Math.min(ordered.length - 1, Math.floor(ordered.length * ratio))]!;
 }

@@ -2,7 +2,7 @@ version: 3
 requirements:
   logicalSource: RepositoryAuthority docs/福利商城功能清单.xlsx
   repositoryRelativePath: docs/福利商城功能清单.xlsx
-  sha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
+  sha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
   sheet: MVP上线功能清单
   range: A1:F24
   parserVersion: 3
@@ -33,7 +33,7 @@ contract:
   logicalSource: RepositoryAuthority packages/contract/definitions
   repositoryRelativePath: packages/contract/definitions
   generator: tools/contractgen
-  version: 3.0.0
+  version: 4.0.0
   outputs:
     - packages/contract/src/generated
     - packages/sdk/src/generated

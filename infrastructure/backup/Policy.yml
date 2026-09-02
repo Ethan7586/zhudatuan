@@ -8,8 +8,8 @@ database:
   crossRegionReplica: true
   encryption: customer-managed-kms
   immutableRetentionDays: 35
-  rpoMinutes: 5
-  rtoMinutes: 30
+  rpoMinutes: 0
+  rtoMinutes: 15
 objectStorage:
   versioning: true
   retentionMode: compliance

@@ -66,6 +66,17 @@ export class OrganizationPort implements IdentityOrganizationPort, AccessOrganiz
     );
     return result.rows[0]?.allowed === true;
   }
+  async employeeDepartment(context: ReadTransactionContext, department: string, organization: string): Promise<Readonly<{ id: string; name: string }> | null> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{ id: string; name: string }>(
+      `select department.id,department.name from organization.organization department
+      join organization.unitclosure closure on closure.descendant_id=department.id
+      where department.id=$1 and department.kind='department' and department.status='active'
+      and closure.ancestor_id=$2 limit 1`,
+      [department, organization]
+    );
+    return result.rows[0] ? Object.freeze(result.rows[0]) : null;
+  }
   async kind(context: ReadTransactionContext, organization: string): Promise<string> {
     const database = this.transactions.database(context);
     const result = await database.query<{

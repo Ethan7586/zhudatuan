@@ -19,6 +19,13 @@ export interface ObjectUpload {
   complete(): Promise<StoredObject>;
   abort(): Promise<void>;
 }
+export interface UploadAuthorization {
+  readonly reference: string;
+  readonly url: string;
+  readonly method: 'PUT';
+  readonly headers: Readonly<Record<string, string>>;
+  readonly expiresAt: string;
+}
 
 export interface ObjectStore {
   create(path: string, contentType: string): Promise<ObjectUpload>;
@@ -26,6 +33,7 @@ export interface ObjectStore {
   read(reference: string, maximum: number): Promise<Uint8Array>;
   inspect(reference: string): Promise<ObjectMetadata>;
   authorize(reference: string, seconds: number): Promise<Readonly<{ url: string; expiresAt: string }>>;
+  authorizeUpload(input: Readonly<{ path: string; contentType: string; size: number; sha256: string; expiresIn: number }>): Promise<UploadAuthorization>;
 }
 
 export const OBJECT_STORE = token<ObjectStore>('object.store');
@@ -117,6 +125,44 @@ export class HttpObjectStore implements ObjectStore {
     if (typeof value.url !== 'string' || !value.url.startsWith('https://') || typeof value.expiresAt !== 'string' || Number.isNaN(Date.parse(value.expiresAt)) || Date.parse(value.expiresAt) <= Date.now())
       throw new Error('OBJECT_AUTHORIZATION_RESPONSE_INVALID');
     return Object.freeze({ url: value.url, expiresAt: value.expiresAt });
+  }
+
+  async authorizeUpload(input: Readonly<{ path: string; contentType: string; size: number; sha256: string; expiresIn: number }>): Promise<UploadAuthorization> {
+    if (
+      !/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(input.path) ||
+      !/^[a-z]+\/[a-z0-9.+-]+$/.test(input.contentType) ||
+      !Number.isSafeInteger(input.size) ||
+      input.size < 1 ||
+      input.size > 10 * 1024 * 1024 ||
+      !/^[a-f0-9]{64}$/.test(input.sha256) ||
+      !Number.isSafeInteger(input.expiresIn) ||
+      input.expiresIn < 60 ||
+      input.expiresIn > 900
+    ) {
+      throw new Error('OBJECT_UPLOAD_AUTHORIZATION_INVALID');
+    }
+    const response = await this.call('/v1/uploads/authorizations', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+    const value = (await response.json()) as Record<string, unknown>;
+    if (
+      typeof value.reference !== 'string' ||
+      !/^[a-z0-9][a-z0-9/.:_-]{2,2047}$/i.test(value.reference) ||
+      typeof value.url !== 'string' ||
+      !value.url.startsWith('https://') ||
+      value.method !== 'PUT' ||
+      typeof value.expiresAt !== 'string' ||
+      Date.parse(value.expiresAt) <= Date.now() ||
+      value.headers === null ||
+      typeof value.headers !== 'object' ||
+      Array.isArray(value.headers) ||
+      !Object.values(value.headers).every((header) => typeof header === 'string')
+    ) {
+      throw new Error('OBJECT_UPLOAD_AUTHORIZATION_RESPONSE_INVALID');
+    }
+    return Object.freeze({ reference: value.reference, url: value.url, method: 'PUT', headers: Object.freeze(value.headers as Record<string, string>), expiresAt: value.expiresAt });
   }
 
   request(path: string, init: RequestInit): Promise<Response> {

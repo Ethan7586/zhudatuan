@@ -559,16 +559,41 @@ objects:
     owner: support
     source: database/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+  - id: support.can_access_conversation
+    kind: function
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    operationalOwner: support
+  - id: support.can_manage_scope
+    kind: function
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    operationalOwner: support
+  - id: support.current_client
+    kind: function
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    operationalOwner: support
+  - id: support.current_member
+    kind: function
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    operationalOwner: support
+  - id: support.enforce_evidence_transition
+    kind: function
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
+    operationalOwner: support
   - id: support.resolve_sla
     kind: function
     owner: support
     source: database/migrations/20260902016000_resolve_inherited_support_sla.sql
     callers:
-      - services/commerce/src/modules/support/infrastructure/persistence/PgSupportRepository.ts
+      - services/commerce/src/modules/support/infrastructure/persistence/PgSupportConfigRepository.ts
   - id: support.resource_scope
     kind: function
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
     operationalOwner: support
   - id: shopapp:function:access.authorization_snapshot(text,text,text,text):execute
     kind: grant
@@ -961,6 +986,38 @@ objects:
     role: shopapp
     objectType: function
     target: support.resolve_sla(text,text)
+    privilege: execute
+  - id: shopapp:function:support.can_access_conversation(text):execute
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopapp
+    objectType: function
+    target: support.can_access_conversation(text)
+    privilege: execute
+  - id: shopapp:function:support.can_manage_scope(text):execute
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopapp
+    objectType: function
+    target: support.can_manage_scope(text)
+    privilege: execute
+  - id: shopapp:function:support.current_client():execute
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopapp
+    objectType: function
+    target: support.current_client()
+    privilege: execute
+  - id: shopapp:function:support.current_member():execute
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopapp
+    objectType: function
+    target: support.current_member()
     privilege: execute
   - id: shopapp:schema:access:usage
     kind: grant
@@ -8842,6 +8899,46 @@ objects:
     objectType: table
     target: support.message
     privilege: update
+  - id: shopapp:table:support.messageevidence:insert
+    kind: grant
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
+    role: shopapp
+    objectType: table
+    target: support.messageevidence
+    privilege: insert
+  - id: shopapp:table:support.messageevidence:select
+    kind: grant
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
+    role: shopapp
+    objectType: table
+    target: support.messageevidence
+    privilege: select
+  - id: shopapp:table:support.readstate:insert
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopapp
+    objectType: table
+    target: support.readstate
+    privilege: insert
+  - id: shopapp:table:support.readstate:select
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopapp
+    objectType: table
+    target: support.readstate
+    privilege: select
+  - id: shopapp:table:support.readstate:update
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopapp
+    objectType: table
+    target: support.readstate
+    privilege: update
   - id: shopapp:table:support.sla:delete
     kind: grant
     owner: support
@@ -13378,14 +13475,6 @@ objects:
     objectType: table
     target: identity.federationtransaction
     privilege: update
-  - id: shopjob:table:identity.invitation:delete
-    kind: grant
-    owner: identity
-    source: database/migrations/20260830104000_create_invitation_domain.sql
-    role: shopjob
-    objectType: table
-    target: identity.invitation
-    privilege: delete
   - id: shopjob:table:identity.invitation:select
     kind: grant
     owner: identity
@@ -13402,14 +13491,6 @@ objects:
     objectType: table
     target: identity.invitation
     privilege: update
-  - id: shopjob:table:identity.invitationclaim:delete
-    kind: grant
-    owner: identity
-    source: database/migrations/20260830104000_create_invitation_domain.sql
-    role: shopjob
-    objectType: table
-    target: identity.invitationclaim
-    privilege: delete
   - id: shopjob:table:identity.invitationclaim:select
     kind: grant
     owner: identity
@@ -17954,6 +18035,46 @@ objects:
     objectType: table
     target: support.message
     privilege: update
+  - id: shopjob:table:support.messageevidence:insert
+    kind: grant
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
+    role: shopjob
+    objectType: table
+    target: support.messageevidence
+    privilege: insert
+  - id: shopjob:table:support.messageevidence:select
+    kind: grant
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
+    role: shopjob
+    objectType: table
+    target: support.messageevidence
+    privilege: select
+  - id: shopjob:table:support.readstate:insert
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopjob
+    objectType: table
+    target: support.readstate
+    privilege: insert
+  - id: shopjob:table:support.readstate:select
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopjob
+    objectType: table
+    target: support.readstate
+    privilege: select
+  - id: shopjob:table:support.readstate:update
+    kind: grant
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    role: shopjob
+    objectType: table
+    target: support.readstate
+    privilege: update
   - id: shopjob:table:support.sla:delete
     kind: grant
     owner: support
@@ -19949,19 +20070,27 @@ objects:
   - id: identity.invitation.invitationapi
     kind: policy
     owner: identity
-    source: database/migrations/20260831038000_allow_enrollment_challenge_claim.sql
-  - id: identity.invitation.invitationjob
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
+  - id: identity.invitation.invitationcleanupjob
     kind: policy
     owner: identity
-    source: database/migrations/20260830104000_create_invitation_domain.sql
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
+  - id: identity.invitation.invitationcleanupjobupdate
+    kind: policy
+    owner: identity
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
   - id: identity.invitationclaim.invitationclaimapi
     kind: policy
     owner: identity
-    source: database/migrations/20260831038000_allow_enrollment_challenge_claim.sql
-  - id: identity.invitationclaim.invitationclaimjob
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
+  - id: identity.invitationclaim.invitationclaimcleanupjob
     kind: policy
     owner: identity
-    source: database/migrations/20260830104000_create_invitation_domain.sql
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
+  - id: identity.invitationclaim.invitationclaimcleanupjobupdate
+    kind: policy
+    owner: identity
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
   - id: identity.invitationreceipt.invitationreceiptapiread
     kind: policy
     owner: identity
@@ -19969,15 +20098,11 @@ objects:
   - id: identity.invitationreceipt.invitationreceiptapiwrite
     kind: policy
     owner: identity
-    source: database/migrations/20260830108000_enforce_invitation_rls.sql
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
   - id: identity.invitationreceipt.invitationreceiptapiwriteview
     kind: policy
     owner: identity
-    source: database/migrations/20260831042000_allow_invitation_receipt_returning.sql
-  - id: identity.invitationreceipt.invitationreceiptjobread
-    kind: policy
-    owner: identity
-    source: database/migrations/20260830104000_create_invitation_domain.sql
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
   - id: identity.linkcase.linkcaseapp
     kind: policy
     owner: identity
@@ -21386,90 +21511,106 @@ objects:
     kind: policy
     owner: runtime
     source: database/migrations/20260831016000_isolate_provider_workload.sql
-  - id: support.account.appscope
+  - id: support.account.supportaccountapi
     kind: policy
     owner: support
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.account.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.agent.appscope
+  - id: support.agent.supportagentapi
     kind: policy
     owner: support
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.agent.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.assignment.appscope
+  - id: support.assignment.supportassignmentapi
     kind: policy
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.assignment.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.assignmentrule.appscope
+  - id: support.assignmentrule.supportruleapi
     kind: policy
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.assignmentrule.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821046000_support_lifecycle.sql
-  - id: support.conversation.appscope
+  - id: support.conversation.supportconversationapi
     kind: policy
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.conversation.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821046000_support_lifecycle.sql
-  - id: support.escalation.appscope
+  - id: support.escalation.supportescalationapi
     kind: policy
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.escalation.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.evidence.appscope
+  - id: support.evidence.supportevidenceapi
     kind: policy
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.evidence.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.history.appscope
+  - id: support.history.supporthistoryapi
     kind: policy
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.history.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.message.appscope
+  - id: support.message.supportmessageapi
     kind: policy
     owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.message.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.sla.appscope
+  - id: support.sla.supportslaapi
     kind: policy
     owner: support
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.sla.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.ticket.appscope
+  - id: support.ticket.supportticketapi
     kind: policy
     owner: support
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+  - id: support.messageevidence.jobscope
+    kind: policy
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
+  - id: support.messageevidence.supportmessageevidenceapi
+    kind: policy
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+  - id: support.readstate.readstateapi
+    kind: policy
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+  - id: support.readstate.readstatejob
+    kind: policy
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.ticket.jobscope
     kind: policy
     owner: support
@@ -23101,6 +23242,16 @@ objects:
     owner: support
     source: database/migrations/20260821023000_create_support_notification.sql
     rls: true
+  - id: support.messageevidence
+    kind: table
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
+    rls: true
+  - id: support.readstate
+    kind: table
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
+    rls: true
   - id: support.sla
     kind: table
     owner: support
@@ -23455,6 +23606,11 @@ objects:
     kind: trigger
     owner: support
     source: database/migrations/20260821046000_support_lifecycle.sql
+    operationalOwner: support
+  - id: support.evidence.support_evidence_transition
+    kind: trigger
+    owner: support
+    source: database/migrations/20260902018000_complete_support_message.sql
     operationalOwner: support
   - id: support.message.support_message_immutable
     kind: trigger

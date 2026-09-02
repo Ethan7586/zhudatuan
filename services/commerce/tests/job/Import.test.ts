@@ -94,6 +94,9 @@ function objectStore(source: Uint8Array) {
       return upload;
     },
     authorize: async () => ({ url: 'https://objects.invalid/report', expiresAt: '2099-01-01T00:00:00.000Z' }),
+    authorizeUpload: async () => {
+      throw new Error('NOT_SUPPORTED');
+    },
   };
   return { store, report: () => report };
 }

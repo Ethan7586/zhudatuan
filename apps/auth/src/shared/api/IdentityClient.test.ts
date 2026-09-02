@@ -46,8 +46,13 @@ describe('IdentityClient', () => {
       json({ kind: 'enrollment', enrollment: { id: 'claim:one', expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' } }, 202),
       json({
         id: 'claim:one',
+        kind: 'enrollment',
         target: 'storefront',
         expiresAt: '2099-01-01T00:00:00.000Z',
+        subjectMode: 'bound',
+        organization: { id: 'enterprise:one', name: '示例企业' },
+        recipientMasked: '138****8000',
+        employee: { displayName: '张三', employeeNo: 'E001' },
         policy: {
           terms_title: '服务协议',
           terms_body: '正文',
@@ -62,10 +67,22 @@ describe('IdentityClient', () => {
 
     await expect(client.invitation('invitation-secret', 'storefront')).resolves.toMatchObject({ kind: 'enrollment', id: 'claim:one' });
     expect(requests[1]?.url).not.toContain('invitation-secret');
-    expect(parsedBody(requests[1])).toMatchObject({ method: 'invitation', code: 'invitation-secret', target: 'storefront' });
+    expect(requests[1]?.url).toContain('/api/v1/identity/invitations/resolve');
+    expect(parsedBody(requests[1])).toMatchObject({ code: 'invitation-secret', target: 'storefront', authorization: { state: STRING_MATCHER, nonce: STRING_MATCHER, challenge: STRING_MATCHER } });
+    expect(parsedBody(requests[1])).not.toHaveProperty('method');
     await expect(client.enrollment('claim:one')).resolves.toMatchObject({ id: 'claim:one', policy: { termsHash: 'a'.repeat(64) } });
     expect(requests[2]?.url).toContain('/api/v1/identity/enrollments/claim%3Aone');
     expect(requests[2]?.url).not.toContain('invitation-secret');
+  });
+
+  it('creates a bound enrollment challenge without accepting a destination', async () => {
+    const { fetcher, requests } = fetchSequence(
+      json({ items: [], csrf: 'c'.repeat(43), target: 'storefront', returnTarget: TARGET_PROOF }),
+      json({ id: 'challenge:one', purpose: 'enrollment', expires_at: '2099-01-01T00:00:00.000Z' }, 201)
+    );
+    vi.stubGlobal('fetch', fetcher);
+    await expect(new IdentityClient().challenge({ purpose: 'enrollment', enrollmentId: 'claim:one' })).resolves.toMatchObject({ id: 'challenge:one' });
+    expect(parsedBody(requests[1])).toEqual({ purpose: 'enrollment', enrollmentId: 'claim:one' });
   });
 
   it('consumes the HttpOnly preauth selection through the generated 303 contract', async () => {

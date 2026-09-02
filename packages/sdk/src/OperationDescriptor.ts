@@ -1,6 +1,7 @@
 import type { HttpMethod, OperationAudience, OperationTarget, OperationId, OperationInputFor, OperationOutputFor, OperationResponseMode, Schema } from '@shop/contract';
 import { operationSchema } from '@shop/contract';
 import type { RequestContext } from './RequestContext';
+import type { EventStream } from './EventStream';
 
 export interface OperationDescriptor<TKey extends OperationId> {
   readonly id: TKey;
@@ -17,9 +18,11 @@ export interface OperationDescriptor<TKey extends OperationId> {
 
 export interface OperationExecutor {
   execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>>;
+  stream<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): EventStream<OperationOutputFor<TKey>>;
 }
 
 export type OperationMethod<TKey extends OperationId> = (input: OperationInputFor<TKey>, context: RequestContext) => Promise<OperationOutputFor<TKey>>;
+export type EventOperationMethod<TKey extends OperationId> = (input: OperationInputFor<TKey>, context: RequestContext) => EventStream<OperationOutputFor<TKey>>;
 
 export function defineOperation<TKey extends OperationId>(
   definition: Readonly<{
@@ -49,4 +52,9 @@ export function defineOperation<TKey extends OperationId>(
 
 export function bindOperation<TKey extends OperationId>(client: OperationExecutor, operation: OperationDescriptor<TKey>): OperationMethod<TKey> {
   return (input, context) => client.execute(operation, input, context);
+}
+
+export function bindEventOperation<TKey extends OperationId>(client: OperationExecutor, operation: OperationDescriptor<TKey>): EventOperationMethod<TKey> {
+  if (operation.responseMode !== 'stream') throw new Error('SDK_OPERATION_NOT_STREAM');
+  return (input, context) => client.stream(operation, input, context);
 }

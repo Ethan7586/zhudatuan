@@ -1,7 +1,7 @@
 import { Button, Dialog } from '@shop/design';
 import { useEffect, useState } from 'react';
 import { consoleCommand, identityStepupComplete, identityStepupStart } from '../shared/api/Client';
-import { safeQueryError } from '../shared/api/QueryState';
+import { safeQueryError } from '../shared/presentation/QueryState';
 import { readActionRequest } from '../shared/security/ActionRequest';
 import './StepupDialog.css';
 

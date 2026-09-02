@@ -540,7 +540,7 @@ events:
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
     handlers: [projection, notification]
-    payload: { ticket: id, conversation: id, message: id, authorType: string, member: id }
+    payload: { scope: id, ticket: id, conversation: id, message: id, authorType: string, member: id, sequence: positiveinteger, version: positiveinteger }
   - id: support.ticket.assigned
     owner: support
     version: 1
@@ -548,7 +548,7 @@ events:
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
     handlers: [projection, notification]
-    payload: { ticket: id, conversation: id, agent: id, member: id }
+    payload: { scope: id, ticket: id, conversation: id, agent: id, member: id, version: positiveinteger }
   - id: support.sla.escalated
     owner: support
     version: 1
@@ -556,7 +556,55 @@ events:
     serializer: packages/contract/src/EventSerializer.ts
     schemaRegistry: services/commerce/src/app/events.ts
     handlers: [notification]
-    payload: { ticket: id, member: id, reason: string, escalation: id }
+    payload: { scope: id, ticket: id, conversation: id, member: id, reason: string, escalation: id, version: positiveinteger }
+  - id: support.ticket.updated
+    owner: support
+    version: 1
+    schema: contract://events/support.ticket.updated/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: [projection]
+    payload: { scope: id, ticket: id, conversation: id, state: string, version: positiveinteger }
+  - id: support.ticket.closed
+    owner: support
+    version: 1
+    schema: contract://events/support.ticket.closed/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: [projection, notification]
+    payload: { scope: id, ticket: id, conversation: id, version: positiveinteger }
+  - id: support.ticket.reopened
+    owner: support
+    version: 1
+    schema: contract://events/support.ticket.reopened/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: [projection, notification]
+    payload: { scope: id, ticket: id, conversation: id, version: positiveinteger }
+  - id: support.readstate.updated
+    owner: support
+    version: 1
+    schema: contract://events/support.readstate.updated/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: []
+    payload: { scope: id, conversation: id, member: id, sequence: positiveinteger, version: positiveinteger }
+  - id: support.attachment.ready
+    owner: support
+    version: 1
+    schema: contract://events/support.attachment.ready/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: []
+    payload: { scope: id, ticket: id, conversation: id, evidence: id, version: positiveinteger }
+  - id: support.attachment.rejected
+    owner: support
+    version: 1
+    schema: contract://events/support.attachment.rejected/v1
+    serializer: packages/contract/src/EventSerializer.ts
+    schemaRegistry: services/commerce/src/app/events.ts
+    handlers: []
+    payload: { scope: id, ticket: id, conversation: id, evidence: id, version: positiveinteger }
   - id: channel.sync.completed
     owner: channel
     version: 1

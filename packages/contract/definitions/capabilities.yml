@@ -1098,6 +1098,16 @@ capabilities:
     owner: support
     permission: support.history.read
     audience: console
+  - code: support.events.read
+    kind: operation
+    owner: support
+    permission: support.event.read
+    audience: public
+  - code: support.readstates.manage
+    kind: operation
+    owner: support
+    permission: support.readstate.manage
+    audience: public
   - code: notification.notifications.read
     kind: operation
     owner: notification

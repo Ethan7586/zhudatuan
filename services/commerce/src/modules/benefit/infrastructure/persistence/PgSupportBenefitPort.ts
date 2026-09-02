@@ -13,4 +13,14 @@ export class PgSupportBenefitPort implements SupportBenefitPort {
     );
     return result.rows[0] ? Object.freeze(result.rows[0]) : null;
   }
+  async recent(context: ReadTransactionContext, member: string, scopes: readonly string[], limit: number): Promise<readonly Readonly<Record<string, unknown>>[]> {
+    const result = await this.transactions.database(context).query(
+      `select lot.id,lot.remaining_minor,lot.state,lot.expires_at,account.kind,account.currency
+      from benefit.lot lot join benefit.account account on account.id=lot.account_id
+      where lot.member_id=$1 and account.scope_id=any($2::text[])
+      order by lot.created_at desc,lot.id desc limit $3`,
+      [member, scopes, Math.min(Math.max(limit, 1), 10)]
+    );
+    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+  }
 }

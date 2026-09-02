@@ -29,6 +29,8 @@ function fixture() {
         version: 0,
         expires: new Date('2026-08-30T01:00:00Z'),
         trace: 'trace:preauth',
+        authorization: null,
+        returnTarget: null,
       })
     ),
   };

@@ -14,9 +14,12 @@ import { ReadinessService } from './application/service/ReadinessService';
 import { PgRuntimeRepository } from './infrastructure/persistence/PgRuntimeRepository';
 import { Manifest } from './Manifest';
 import { createJobs } from './interface/job/JobFactory';
+import { OUTBOX_RELAY_PORT } from './public';
+import { PgOutboxRelay } from './infrastructure/persistence/PgOutboxRelay';
 
 export const RuntimeModule = defineModule(Manifest, {
   jobs: createJobs,
+  jobPorts: [{ token: OUTBOX_RELAY_PORT, value: new PgOutboxRelay() }],
   handlers: (context) => {
     const runtime = new PgRuntimeRepository(new PgTransactionAccess());
     const readiness = new ReadinessService(runtime, context.ports.get(CAPABILITY_READINESS_PORT), context.ports.get(IDENTITY_READINESS_PORT), context.service(EXTENSION_REGISTRY), context.service(INVITATION_KEY_VERSIONS));

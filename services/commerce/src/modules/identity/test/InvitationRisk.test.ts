@@ -8,7 +8,7 @@ import { PgTransactionManager } from '../../../adapter/database/PgTransactionMan
 import { InvitationGuard } from '../application/service/InvitationGuard';
 import type { OperationRequest } from '../../../foundation/application/OperationRequest';
 
-const code = InvitationCode.issue(Buffer.alloc(20, 7));
+const code = InvitationCode.issue(Buffer.alloc(24, 7));
 
 describe('invitation public risk boundary', () => {
   it('evaluates risk and consumes independent code, device and network windows before lookup', async () => {
@@ -22,13 +22,13 @@ describe('invitation public risk boundary', () => {
     const risk = { evaluate: vi.fn(async () => ({ outcome: 'allow' as const, safeReason: 'policy' as const, decision: null })) };
     const guard = new InvitationGuard(rates, risk, new FederationProtector('session-test-secret-value-at-least-thirty-two-bytes'));
     const request = {
-      type: 'identity.sessions.create',
+      type: 'identity.invitations.resolve',
       security: { kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:risk' },
       input: {
         path: {},
         query: {},
         headers: { 'x-client-target': 'console', 'x-device-id': 'device:one', 'x-peer-address': '203.0.113.10', 'user-agent': 'browser' },
-        body: { method: 'invitation', code: code.display(), target: 'console' },
+        body: { code: code.display(), target: 'console', returnTarget: 'signed-return', authorization: { state: 'a'.repeat(32), nonce: 'b'.repeat(32), challenge: 'c'.repeat(43) } },
         rawBody: '',
         deadline: Date.now() + 1000,
         signal: new AbortController().signal,
@@ -47,7 +47,7 @@ describe('invitation public risk boundary', () => {
 
     const transaction = {} as never;
     await guard.assertRecipientWithin(transaction, request, 'console', Buffer.alloc(32, 9));
-    expect(rates.consumeWithin).toHaveBeenCalledWith(transaction, expect.objectContaining({ operation: 'identity.sessions.create', rules: [expect.objectContaining({ maximum: expect.any(Number) })] }));
+    expect(rates.consumeWithin).toHaveBeenCalledWith(transaction, expect.objectContaining({ operation: 'identity.invitations.resolve', rules: [expect.objectContaining({ maximum: expect.any(Number) })] }));
   });
 
   it('commits allowed counters and rolls back a rejected atomic window update', async () => {

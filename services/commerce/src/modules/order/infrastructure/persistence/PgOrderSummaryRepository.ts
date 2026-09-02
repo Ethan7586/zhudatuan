@@ -16,4 +16,14 @@ export class PgOrderSummaryRepository implements OrderSummaryRepository {
     const found = result.rows[0];
     return found ? { id: found.id, scope: found.scope_id, member: found.member_id, number: found.order_number, state: found.lifecycle_state, totalMinor: found.total_minor } : null;
   }
+
+  async recent(context: ReadTransactionContext, scopes: readonly string[], member: string, memberOnly: boolean, limit: number): Promise<readonly OrderSummary[]> {
+    const result = await this.transactions.database(context).query<{ id: string; scope_id: string; member_id: string; order_number: string; lifecycle_state: string; total_minor: number }>(
+      `select target.id,target.scope_id,target.member_id,target.order_number,target.lifecycle_state,target.total_minor::float8 total_minor
+      from ordering.orderrecord target where (($3=false and target.scope_id=any($1::text[])) or target.member_id=$2)
+      and target.member_id=$2 order by target.created_at desc,target.id desc limit $4`,
+      [scopes, member, memberOnly, Math.min(Math.max(limit, 1), 10)]
+    );
+    return Object.freeze(result.rows.map((found) => Object.freeze({ id: found.id, scope: found.scope_id, member: found.member_id, number: found.order_number, state: found.lifecycle_state, totalMinor: found.total_minor })));
+  }
 }

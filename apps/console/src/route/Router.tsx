@@ -1,8 +1,10 @@
 import { RouteFallback } from '@shop/design';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import type { RouteRegistryContract } from '../shared/manifest/ComponentManifest';
-import { ScopeShell } from '../shell/ScopeShell';
 import { RouteError } from './RouteError';
+
+const ScopeShell = lazy(() => import('../shell/ScopeShell').then((module) => ({ default: module.ScopeShell })));
 
 export function createConsoleRouter(registry: RouteRegistryContract) {
   const sessionLoaders = loadSessionLoaders(registry);
@@ -12,7 +14,11 @@ export function createConsoleRouter(registry: RouteRegistryContract) {
       id: 'scope',
       path: '/scopes/:scopeKind/:scopeId',
       loader: async (args) => (await sessionLoaders).scopeLoader(args),
-      element: <ScopeShell registry={registry} />,
+      element: (
+        <Suspense fallback={<RouteFallback />}>
+          <ScopeShell registry={registry} />
+        </Suspense>
+      ),
       HydrateFallback: RouteFallback,
       errorElement: <RouteError />,
       children: [{ index: true, element: <Navigate to="cockpit" replace /> }, ...registry.routes().map(({ route, load }) => ({ path: route.route, lazy: load })), { path: '*', lazy: () => import('./NotFoundRoute') }],

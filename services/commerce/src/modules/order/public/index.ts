@@ -117,7 +117,7 @@ export interface OrderExpirySnapshot {
 export const CHECKOUT_ORDER_PORT = publicPort<CheckoutOrderPort>('order', 'checkout');
 export const PAYMENT_ORDER_PORT = publicPort<PaymentOrderPort>('order', 'payment');
 export const FULFILLMENT_ORDER_PORT = publicPort<FulfillmentOrderPort>('order', 'fulfillment');
-export const SUPPORT_ORDER_PORT = publicPort<Pick<GetOrderSummary, 'execute'>>('order', 'support');
+export const SUPPORT_ORDER_PORT = publicPort<Pick<GetOrderSummary, 'execute' | 'recent'>>('order', 'support');
 export const ORDER_EXPIRY_ORDER_PORT = publicPort<OrderExpiryPort>('order', 'orderexpiry');
 export const PAYMENT_JOB_ORDER_PORT = publicPort<PaymentJobOrderPort & PaymentOrderPort>('order', 'paymentjob');
 export { ORDER_RECEIPT_PORT, type OrderReceiptPort } from './OrderReceiptPort';

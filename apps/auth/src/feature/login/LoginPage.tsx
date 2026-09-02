@@ -51,7 +51,7 @@ export function LoginPage(props: Readonly<LoginPageProps>) {
                 [
                   ['password', '密码登录'],
                   ['otp', '验证码登录'],
-                  ['invitation', '邀请码登录'],
+                  ['invite', '邀请码登录'],
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -68,9 +68,9 @@ export function LoginPage(props: Readonly<LoginPageProps>) {
               ))}
             </div>
             <div id="login-method-panel" role="tabpanel" aria-live="polite">
-              {props.method === 'password' && <PasswordForm busy={props.busy} accepted={props.accepted} error={props.fields} onSubmit={props.onPassword} onReset={props.onReset} onInvitation={() => props.onMethod('invitation')} />}
+              {props.method === 'password' && <PasswordForm busy={props.busy} accepted={props.accepted} error={props.fields} onSubmit={props.onPassword} onReset={props.onReset} onInvitation={() => props.onMethod('invite')} />}
               {props.method === 'otp' && <OtpForm busy={props.busy} accepted={props.accepted} error={props.fields} onChallenge={props.onChallenge} onSubmit={props.onOtp} />}
-              {props.method === 'invitation' && <InvitationForm busy={props.busy} accepted={props.accepted} onSubmit={props.onInvitation} />}
+              {props.method === 'invite' && <InvitationForm busy={props.busy} accepted={props.accepted} onSubmit={props.onInvitation} />}
             </div>
             <ProviderList providers={props.providers} busy={props.busy} onSelect={props.onProvider} />
             <div className="mt-auto border-t border-slate-100 pt-3">

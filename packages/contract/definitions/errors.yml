@@ -95,6 +95,11 @@ errors:
     retryable: true
     audit: true
     client: message
+  - code: EMPLOYEE_NUMBER_CONFLICT
+    status: 409
+    retryable: false
+    audit: true
+    client: message
   - code: EXPECTED_VERSION_INVALID
     status: 400
     retryable: false
@@ -215,6 +220,11 @@ errors:
     retryable: false
     audit: true
     client: message
+  - code: IDENTITY_ALREADY_EXISTS
+    status: 409
+    retryable: false
+    audit: true
+    client: message
   - code: IDENTITY_LINK_REQUIRED
     status: 409
     retryable: false
@@ -270,6 +280,11 @@ errors:
     retryable: false
     audit: true
     client: hidden
+  - code: INVITATION_KIND_DENIED
+    status: 403
+    retryable: false
+    audit: true
+    client: message
   - code: INVITATION_NOT_FOUND
     status: 404
     retryable: false
@@ -510,6 +525,41 @@ errors:
     retryable: true
     audit: true
     client: retry
+  - code: SUPPORT_AGENT_INVALID
+    status: 409
+    retryable: false
+    audit: true
+    client: message
+  - code: SUPPORT_ATTACHMENT_NOT_READY
+    status: 409
+    retryable: false
+    audit: false
+    client: message
+  - code: SUPPORT_ATTACHMENT_REJECTED
+    status: 422
+    retryable: false
+    audit: true
+    client: message
+  - code: SUPPORT_CLIENT_MESSAGE_CONFLICT
+    status: 409
+    retryable: false
+    audit: true
+    client: message
+  - code: SUPPORT_EVENT_CURSOR_EXPIRED
+    status: 410
+    retryable: false
+    audit: false
+    client: message
+  - code: SUPPORT_STREAM_UNAVAILABLE
+    status: 503
+    retryable: true
+    audit: false
+    client: retry
+  - code: SUPPORT_TICKET_NOT_WRITABLE
+    status: 409
+    retryable: false
+    audit: false
+    client: message
   - code: TERMS_ACCEPTANCE_REQUIRED
     status: 409
     retryable: false

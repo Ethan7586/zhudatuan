@@ -18,6 +18,7 @@ export interface RequestContextOptions {
   readonly target?: 'console' | 'storefront';
   readonly catalogVersion?: string;
   readonly ifNoneMatch?: string;
+  readonly lastEventId?: string;
   readonly cachedResponse?: unknown;
 }
 
@@ -48,6 +49,7 @@ export function createRequestContext(clientVersion: string, options: RequestCont
     ...(options.target === undefined ? {} : { target: options.target }),
     ...(options.catalogVersion === undefined ? {} : { catalogVersion: required(options.catalogVersion, 'SDK_CATALOG_VERSION_INVALID') }),
     ...(options.ifNoneMatch === undefined ? {} : { ifNoneMatch: required(options.ifNoneMatch, 'SDK_ETAG_INVALID') }),
+    ...(options.lastEventId === undefined ? {} : { lastEventId: required(options.lastEventId, 'SDK_EVENT_CURSOR_INVALID') }),
     ...(options.cachedResponse === undefined ? {} : { cachedResponse: options.cachedResponse }),
   });
 }

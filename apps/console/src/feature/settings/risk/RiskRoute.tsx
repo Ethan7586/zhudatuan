@@ -7,7 +7,7 @@ import { AssurancePrompt } from '../../../entity/session/AssurancePrompt';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
 import type { ConsoleNavigationNode, ConsoleScope } from '../../../entity/session/ConsoleSession';
 import { consoleRequest } from '../../../shared/api/Client';
-import { queryCondition, queryErrorCode, safeQueryError } from '../../../shared/api/QueryState';
+import { queryCondition, queryErrorCode, safeQueryError } from '../../../shared/presentation/QueryState';
 import { appConfig } from '../../../shared/config/AppConfig';
 import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 import { navigationPath } from '../../../shared/url/NavigationPath';

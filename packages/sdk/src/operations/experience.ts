@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const EXPERIENCE_OPERATION_IDS = Object.freeze([
   "experience.applications.create",

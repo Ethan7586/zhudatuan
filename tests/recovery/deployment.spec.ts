@@ -104,3 +104,23 @@ test('ordinary and provider queue backlogs trigger bounded horizontal scaling', 
   assert.match(provider, /shop_provider_queue_depth/);
   assert.match(provider, /maxReplicas: 30/);
 });
+
+test('support realtime remains recoverable across Redis loss and message data remains fail-closed across KMS loss', () => {
+  const relay = readFileSync(resolve(root, 'services/commerce/src/modules/support/application/process/RelaySupportEvents.ts'), 'utf8');
+  const messages = readFileSync(resolve(root, 'services/commerce/src/modules/support/application/service/SendSupportMessage.ts'), 'utf8');
+  const eventRepository = readFileSync(resolve(root, 'services/commerce/src/modules/support/infrastructure/persistence/PgSupportEventRepository.ts'), 'utf8');
+  assert.ok(relay.indexOf('this.realtime.publish') < relay.indexOf('this.outbox.complete'));
+  assert.match(relay, /this\.outbox\.fail/);
+  assert.match(eventRepository, /supportrelay/);
+  assert.ok(messages.indexOf('kms.encrypt') < messages.indexOf('sendMessage'));
+  assert.doesNotMatch(relay, /message\.body|body_ciphertext/);
+});
+
+test('deployment evidence locks customer support recovery to RPO 0 and RTO 15 minutes', () => {
+  const telemetry = readFileSync(resolve(root, 'config/telemetry.yml'), 'utf8');
+  const backup = readFileSync(resolve(root, 'infrastructure/backup/Policy.yml'), 'utf8');
+  assert.match(`${telemetry}\n${backup}`, /rpoMinutes: 0/);
+  assert.match(`${telemetry}\n${backup}`, /rtoMinutes: 15/);
+  assert.doesNotMatch(backup, /rpoMinutes: [1-9]/);
+  assert.doesNotMatch(backup, /rtoMinutes: (?:[2-9]\d|1[6-9])/);
+});

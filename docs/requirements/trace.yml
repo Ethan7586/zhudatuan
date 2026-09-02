@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
-workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
-navigationCatalogSha256: 342e9bd457b8abd49ab0bc7c816a649742e46bd27ba8dd8fd8f1f5525b091d48
-contractSha256: 68b08dc777e74eff47b20af89f2d46664497d1f46bffcad2ed89c2b40609ac71
+workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
+navigationCatalogSha256: b8343568dfbc696dca3f28be27cc8ca98e941ceee88799fc3975e2dbceb9b40d
+contractSha256: 1089869b1158bb9ae3958c13792b604abaac31cd0ec6e40d2fe270869aba1b08
 generated: true
 chain:
   - WorkbookCell
@@ -1668,9 +1668,11 @@ requirements:
       - support.cases.read
       - support.cases.reopen
       - support.cases.update
+      - support.events.read
       - support.history.read
       - support.messages.read
       - support.messages.send
+      - support.readstates.manage
       - support.rules.manage
       - support.rules.read
       - support.slas.manage
@@ -1740,9 +1742,11 @@ requirements:
       - packages/contract/definitions/operations.yml#support.cases.read
       - packages/contract/definitions/operations.yml#support.cases.reopen
       - packages/contract/definitions/operations.yml#support.cases.update
+      - packages/contract/definitions/operations.yml#support.events.read
       - packages/contract/definitions/operations.yml#support.history.read
       - packages/contract/definitions/operations.yml#support.messages.read
       - packages/contract/definitions/operations.yml#support.messages.send
+      - packages/contract/definitions/operations.yml#support.readstates.manage
       - packages/contract/definitions/operations.yml#support.rules.manage
       - packages/contract/definitions/operations.yml#support.rules.read
       - packages/contract/definitions/operations.yml#support.slas.manage
@@ -1789,6 +1793,7 @@ requirements:
       - groupsettings
       - groupadmin
       - groupmemberdata
+      - groupinvitation
       - grouppartner
       - groupmessage
       - grouprisk
@@ -1798,6 +1803,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/invitations
       - /scopes/:scopeKind/:scopeId/settings/partners
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/risk
@@ -3346,9 +3352,11 @@ requirements:
       - support.cases.read
       - support.cases.reopen
       - support.cases.update
+      - support.events.read
       - support.history.read
       - support.messages.read
       - support.messages.send
+      - support.readstates.manage
       - support.rules.manage
       - support.rules.read
       - support.slas.manage
@@ -3421,9 +3429,11 @@ requirements:
       - packages/contract/definitions/operations.yml#support.cases.read
       - packages/contract/definitions/operations.yml#support.cases.reopen
       - packages/contract/definitions/operations.yml#support.cases.update
+      - packages/contract/definitions/operations.yml#support.events.read
       - packages/contract/definitions/operations.yml#support.history.read
       - packages/contract/definitions/operations.yml#support.messages.read
       - packages/contract/definitions/operations.yml#support.messages.send
+      - packages/contract/definitions/operations.yml#support.readstates.manage
       - packages/contract/definitions/operations.yml#support.rules.manage
       - packages/contract/definitions/operations.yml#support.rules.read
       - packages/contract/definitions/operations.yml#support.slas.manage
@@ -3470,6 +3480,7 @@ requirements:
       - mallsettings
       - malladmin
       - mallmemberdata
+      - mallinvitation
       - mallpartner
       - mallmessage
       - mallrisk
@@ -3480,6 +3491,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/members
+      - /scopes/:scopeKind/:scopeId/settings/invitations
       - /scopes/:scopeKind/:scopeId/settings/partners
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/risk

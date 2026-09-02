@@ -25,21 +25,37 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
       Readonly<{
         member: string;
         principal: string;
+        display_name: string;
         mobile_ciphertext: string | null;
+        mobile_masked: string | null;
       }>
     >(
       `select profile.id member,
-      profile.principal_id principal,profile.mobile_ciphertext from member.profile profile
+      profile.principal_id principal,profile.display_name,profile.mobile_ciphertext,profile.mobile_masked from member.profile profile
       where profile.id=$1 and profile.status='pending' ${lock ? 'for update' : ''}`,
       [member]
     );
     const row = result.rows[0];
     if (!row) throw new DomainError('MEMBERSHIP_NOT_INVITED');
-    return Object.freeze({ member: row.member, principal: row.principal, mobileCiphertext: row.mobile_ciphertext });
+    return Object.freeze({ member: row.member, principal: row.principal, displayName: row.display_name, mobileCiphertext: row.mobile_ciphertext, mobileMasked: row.mobile_masked });
   }
-  async assertMobileAvailable(context: ReadTransactionContext, fingerprint: string, exceptMember?: string): Promise<void> {
+  async assertMobileAvailable(context: WriteTransactionContext, fingerprint: string, exceptMember?: string): Promise<void> {
     const database = this.transactions.database(context);
-    if (await this.mobileOwner(context, fingerprint, exceptMember)) throw new DomainError('REGISTRATION_REJECTED');
+    await this.lockMobile(context, fingerprint);
+    if (await this.mobileOwner(context, fingerprint, exceptMember)) throw new DomainError('IDENTITY_ALREADY_EXISTS');
+  }
+  async lockMobile(context: WriteTransactionContext, fingerprint: string): Promise<void> {
+    await this.transactions.database(context).query('select pg_advisory_xact_lock(hashtext($1))', [fingerprint]);
+  }
+  async mobile(context: ReadTransactionContext, principal: string): Promise<Readonly<{ ciphertext: string }> | null> {
+    const database = this.transactions.database(context);
+    const result = await database.query<{ mobile_ciphertext: string | null }>(
+      `select mobile_ciphertext from member.profile where principal_id=$1
+      and status in('pending','active')`,
+      [principal]
+    );
+    const ciphertext = result.rows[0]?.mobile_ciphertext;
+    return ciphertext ? Object.freeze({ ciphertext }) : null;
   }
   async mobileOwner(context: ReadTransactionContext, fingerprint: string, exceptMember?: string): Promise<InvitationMobileOwner | null> {
     const database = this.transactions.database(context);
@@ -66,12 +82,17 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
     }>
   ): Promise<void> {
     const database = this.transactions.database(context);
-    const created = await database.query(
-      `insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,
-      mobile_masked,created_at,updated_at,version) values($1,$2,$3,'pending',$4,$5,$6,clock_timestamp(),clock_timestamp(),1)
-      returning id`,
-      [input.member, input.principal, input.display, input.mobileCiphertext, input.mobileFingerprint, input.mobileMasked]
-    );
+    const created = await database
+      .query(
+        `insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,
+        mobile_masked,created_at,updated_at,version) values($1,$2,$3,'pending',$4,$5,$6,clock_timestamp(),clock_timestamp(),1)
+        returning id`,
+        [input.member, input.principal, input.display, input.mobileCiphertext, input.mobileFingerprint, input.mobileMasked]
+      )
+      .catch((cause: unknown) => {
+        if (databaseConstraint(cause) === 'member_profile_mobile_identity') throw new DomainError('IDENTITY_ALREADY_EXISTS');
+        throw cause;
+      });
     if (!created.rows[0]) throw new Error('MEMBER_PROFILE_CREATE_FAILED');
   }
   async memberForPrincipal(context: ReadTransactionContext, principal: string): Promise<string> {
@@ -155,4 +176,8 @@ export class MemberPort implements IdentityMemberPort, InvitationMemberPort {
     if (!row) throw new Error('MEMBER_PROFILE_NOT_FOUND');
     return row;
   }
+}
+
+function databaseConstraint(value: unknown): string | undefined {
+  return value !== null && typeof value === 'object' && Reflect.get(value, 'code') === '23505' ? String(Reflect.get(value, 'constraint') ?? '') : undefined;
 }

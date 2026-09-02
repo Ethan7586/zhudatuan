@@ -21,6 +21,9 @@ export class PgInvitationRedemption {
       recipient: Buffer | null;
       principal: string | null;
       proof: 'otp' | 'sso' | 'terms';
+      state: 'reserved' | 'proofpending';
+      authorization: Readonly<{ stateHash: string; nonceHash: string; challenge: string }>;
+      returnTarget: string;
     }>
   ): Promise<InvitationClaim> {
     const database = this.transactions.database(context);
@@ -36,7 +39,7 @@ export class PgInvitationRedemption {
       kind: InvitationState['kind'];
       target: 'console' | 'storefront';
       recipient_hash: Buffer | null;
-      state: 'proofpending';
+      state: 'reserved' | 'proofpending';
       proof_method: 'otp' | 'sso' | 'terms';
       expires_at: Date;
       proved_at: Date | null;
@@ -44,22 +47,36 @@ export class PgInvitationRedemption {
     }>(
       `insert into identity.invitationclaim(id,invitation_id,kind,browser_hash,device_hash,target,recipient_hash,state,proof_method,
       expires_at,created_at,updated_at,version)
-      select $1,invitation.id,invitation.kind,$3,$4,$5,$6,'proofpending',$7,clock_timestamp()+interval '5 minutes',
+      select $1,invitation.id,invitation.kind,$3,$4,$5,$6,$7,$8,clock_timestamp()+interval '5 minutes',
         clock_timestamp(),clock_timestamp(),1 from identity.invitation invitation where invitation.id=$2 and invitation.status='active'
         and invitation.use_count+(select count(*) from identity.invitationclaim open where open.invitation_id=invitation.id
           and open.state in('reserved','proofpending','proved') and open.expires_at>clock_timestamp())<invitation.max_uses
       returning id::text,invitation_id,kind,target,recipient_hash,state,proof_method,expires_at,proved_at,version`,
-      [input.claim, invitation.state.id, input.browser, input.device, invitation.state.target, input.recipient, input.proof]
+      [input.claim, invitation.state.id, input.browser, input.device, invitation.state.target, input.recipient, input.state, input.proof]
     );
     const row = claim.rows[0];
     if (!row) throw new DomainError('INVITATION_INVALID');
     await database.query(
       `insert into identity.preauth(id,transaction_id,principal_id,token_hash,candidate_hash,candidate_memberships,browser_hash,
-      expires_at,created_at,purpose,target,reference_id,device_hash,state,version)
+      expires_at,created_at,purpose,target,reference_id,device_hash,state,version,
+      auth_state_hash,auth_nonce_hash,auth_pkce_challenge,return_target)
       values($1,null,$2,$3,null,'[]'::jsonb,$4,
       clock_timestamp()+interval '5 minutes',clock_timestamp(),
-      $5,$6,$7,$8,'active',0)`,
-      [randomUUID(), input.principal, input.preauth, input.browser, invitation.state.kind === 'signin' ? 'invitationproof' : 'enrollment', invitation.state.target, input.claim, input.device]
+      $5,$6,$7,$8,'active',0,$9,$10,$11,$12)`,
+      [
+        randomUUID(),
+        input.principal,
+        input.preauth,
+        input.browser,
+        invitation.state.kind === 'signin' ? 'invitationproof' : 'enrollment',
+        invitation.state.target,
+        input.claim,
+        input.device,
+        input.authorization.stateHash,
+        input.authorization.nonceHash,
+        input.authorization.challenge,
+        input.returnTarget,
+      ]
     );
     await new PgRuntimeWriter(database).append({
       id: `event:${randomUUID()}`,

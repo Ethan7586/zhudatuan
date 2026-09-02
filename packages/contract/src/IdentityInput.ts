@@ -15,7 +15,6 @@ type AuthenticationShared = Readonly<{
 export type IdentitySessionsCreateBody =
   | Readonly<AuthenticationShared & { method: 'password'; subject: string; password: string }>
   | Readonly<AuthenticationShared & { method: 'otp'; subject: string; challenge: string; code: string }>
-  | Readonly<AuthenticationShared & { method: 'invitation'; code: string }>
   | Readonly<AuthenticationShared & { method: 'federation'; provider: string }>;
 
 export type IdentitySessionsCompleteBody = Readonly<{
@@ -25,31 +24,44 @@ export type IdentitySessionsCompleteBody = Readonly<{
   authorization: AuthorizationRequest;
 }>;
 
-export type IdentityInvitationsResolveBody = Readonly<{ code: string; target: IdentityTarget }>;
+export type IdentityInvitationsResolveBody = Readonly<AuthenticationShared & { code: string }>;
 
-export type IdentityInvitationsCreateBody = Readonly<{
-  kind: 'signin' | 'enrollment' | 'campaign';
-  target: IdentityTarget;
-  membershipId?: string;
-  organizationId?: string;
-  recipient?: string;
-  expiresAt: string;
-  maxUses?: number;
-  reason: string;
-}>;
+export type IdentityInvitationsCreateBody =
+  | Readonly<{
+      kind: 'enrollment';
+      target: 'storefront';
+      organizationId: string;
+      employee: Readonly<{ displayName: string; mobile: string; employeeNo?: string; departmentId?: string }>;
+      expiresAt: string;
+      reason: string;
+    }>
+  | Readonly<{ kind: 'campaign'; target: 'storefront'; organizationId: string; maxUses: number; expiresAt: string; reason: string }>
+  | Readonly<{ kind: 'signin'; target: IdentityTarget; membershipId: string; expiresAt: string; reason: string }>;
 
 export type IdentityInvitationsRevokeBody = Readonly<{ reason: string }>;
 
-export type IdentityEnrollmentsCompleteBody = Readonly<{
-  subject: string;
-  challenge: string;
-  code: string;
-  termsAccepted: boolean;
-  termsHash: string;
-  password: string;
-  displayName: string;
-  authorization: AuthorizationRequest;
-}>;
+export type IdentityEnrollmentsCompleteBody =
+  | Readonly<{
+      mode: 'bound';
+      challenge: string;
+      code: string;
+      password: string;
+      displayName?: string;
+      termsAccepted: true;
+      termsHash: string;
+      authorization: AuthorizationRequest;
+    }>
+  | Readonly<{
+      mode: 'campaign';
+      subject: string;
+      challenge: string;
+      code: string;
+      password: string;
+      displayName: string;
+      termsAccepted: true;
+      termsHash: string;
+      authorization: AuthorizationRequest;
+    }>;
 
 type InvitationReadQuery = Readonly<{
   limit?: string | number;

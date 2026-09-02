@@ -9,7 +9,6 @@ import { MemberPageSchema } from './settings/member/MemberSchema';
 import { AnnouncementPageSchema, NotificationTemplatePageSchema } from './settings/notification/NotificationSchema';
 import { QualificationPageSchema } from './settings/qualification/QualificationSchema';
 import { ReportPageSchema } from './reporting/ReportingSchema';
-import { SupportCasePageSchema, SupportMessagePageSchema } from './support/SupportSchema';
 import { CardLibraryPageSchema, IssueBatchPageSchema, ReservePageSchema, VoucherProgramPageSchema } from './voucher/VoucherSchema';
 
 const pageSchemas = [
@@ -29,8 +28,6 @@ const pageSchemas = [
   NotificationTemplatePageSchema,
   QualificationPageSchema,
   ReportPageSchema,
-  SupportCasePageSchema,
-  SupportMessagePageSchema,
   CardLibraryPageSchema,
   IssueBatchPageSchema,
   ReservePageSchema,

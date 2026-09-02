@@ -27,3 +27,25 @@ test('storefront mall scope cannot be supplied by the browser', () => {
   assert.equal(OperationCatalog.get('storefront.catalog.read').resourceResolver, 'none');
   assert.equal(OperationCatalog.get('storefront.catalog.read').resourceParameter, null);
 });
+
+test('every support identifier operation resolves through the support owner boundary', () => {
+  const resolver = new ResourceResolver();
+  const protectedIds = [
+    'support.attachments.create',
+    'support.cases.close',
+    'support.cases.reopen',
+    'support.cases.update',
+    'support.messages.read',
+    'support.messages.send',
+    'support.readstates.manage',
+  ] as const;
+  for (const id of protectedIds) {
+    const operation = OperationCatalog.get(id);
+    assert.equal(operation.resourceResolver, 'support.resource');
+    assert.notEqual(operation.resourceParameter, null);
+    assert.equal(resolver.resolve(operation, { path: { [operation.resourceParameter!]: 'support:foreign' } }), 'support:foreign');
+  }
+  const events = OperationCatalog.get('support.events.read');
+  assert.equal(events.resourceResolver, 'support.resource');
+  assert.equal(events.resourceParameter, null);
+});

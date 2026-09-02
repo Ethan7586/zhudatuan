@@ -72,7 +72,8 @@ function compose(context: ModuleContext): AccessComposition {
   const authorization = new PgAuthorizationRepository();
   const versions = new AccessVersionService(repository);
   const access = new AccessPort(repository, versions);
-  const grants = new CreateInvitationGrant(context.ports.get(ACCESS_ORGANIZATION_PORT), context.ports.get(ACCESS_PARTNER_PORT), repository, authorization);
-  const invitation = new PgInvitationAccess(repository, new DelegationPolicy(), new ActivateMembership(versions), grants);
+  const organizations = context.ports.get(ACCESS_ORGANIZATION_PORT);
+  const grants = new CreateInvitationGrant(organizations, context.ports.get(ACCESS_PARTNER_PORT), repository, authorization);
+  const invitation = new PgInvitationAccess(repository, new DelegationPolicy(), new ActivateMembership(versions), grants, organizations);
   return Object.freeze({ access, authorization, invitation, repository, versions });
 }

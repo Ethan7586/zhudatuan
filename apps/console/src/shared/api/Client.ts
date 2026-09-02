@@ -32,6 +32,17 @@ export function consoleRequest(scope: ConsoleRequestScope | undefined, signal?: 
   });
 }
 
+export function consoleStream(scope: ConsoleRequestScope, accessVersion: number, signal?: AbortSignal, lastEventId?: string) {
+  return createRequestContext(appConfig.clientVersion, {
+    target: 'console',
+    catalogVersion: NAVIGATION_CATALOG_HASH,
+    scope,
+    accessVersion,
+    ...(signal === undefined ? {} : { signal }),
+    ...(lastEventId === undefined ? {} : { lastEventId }),
+  });
+}
+
 export function consoleCommand(
   scope: ConsoleRequestScope | undefined,
   options: Readonly<{
@@ -40,13 +51,14 @@ export function consoleCommand(
     expectedVersion?: number;
     proof?: string;
     csrfToken?: string;
+    idempotencyKey?: string;
   }> = {}
 ) {
   return createRequestContext(appConfig.clientVersion, {
     target: 'console',
     catalogVersion: NAVIGATION_CATALOG_HASH,
     ...(scope === undefined ? {} : { scope }),
-    idempotencyKey: createIdempotencyKey(),
+    idempotencyKey: options.idempotencyKey ?? createIdempotencyKey(),
     ...(options.signal === undefined ? {} : { signal: options.signal }),
     ...(options.accessVersion === undefined ? {} : { accessVersion: options.accessVersion }),
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),

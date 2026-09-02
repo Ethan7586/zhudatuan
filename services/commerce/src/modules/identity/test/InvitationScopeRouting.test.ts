@@ -1,22 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { EnrollmentsCompleteHandler } from '../application/handler/EnrollmentsCompleteHandler';
 import { SessionsCompleteHandler } from '../application/handler/SessionsCompleteHandler';
-import { SessionsCreateHandler } from '../application/handler/SessionsCreateHandler';
+import { InvitationsResolveHandler } from '../application/handler/InvitationsResolveHandler';
 
 describe('invitation transaction scope routing', () => {
-  it('routes only invitation session creation to the verified invitation organization', () => {
-    const handler = new SessionsCreateHandler({} as never, {} as never, {} as never);
+  it('routes invitation resolution to the organization loaded from the invitation', () => {
+    const handler = new InvitationsResolveHandler({} as never);
     expect(
       handler.transactionScope(
         {} as never,
         {
-          kind: 'invitation',
           request: {} as never,
-          preparation: { loaded: { invitation: { state: { organization: 'mall-zhudatuan' } } } },
+          resolution: { loaded: { invitation: { state: { organization: 'mall-zhudatuan' } } } },
         } as never
       )
     ).toBe('mall-zhudatuan');
-    expect(handler.transactionScope({} as never, { kind: 'authentication', request: {} } as never)).toBeUndefined();
   });
 
   it('routes invitation proof completion from its loaded claim instead of request input', () => {

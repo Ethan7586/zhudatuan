@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { OperationPipeline } from './OperationPipeline';
 import { DomainError } from '../domain/DomainError';
+import { HttpStream } from '../interface/HttpStream';
 
 describe('OperationPipeline redirect contract', () => {
   it('validates Location as the generated output and keeps the HTTP body empty', async () => {
@@ -140,6 +141,20 @@ describe('OperationPipeline output boundary', () => {
     });
     expect(body.items[0]?.updatedAt).toBe(updatedAt);
   });
+
+  it('passes a declared stream through without JSON serialization or output parsing', async () => {
+    const body = new HttpStream(async function* () {
+      yield { id: 'event:one', event: 'support.ticket.updated', data: { version: 2 } };
+    });
+    const pipeline = new OperationPipeline(
+      { get: () => ({ handle: () => Promise.resolve({ status: 200, body }) }) } as never,
+      { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:anonymous' }) } as never,
+      { create: () => `public:${'e'.repeat(64)}` } as never,
+      passthroughExecutor() as never
+    );
+
+    await expect(pipeline.execute('support.events.read', streamRequest())).resolves.toEqual({ status: 200, body });
+  });
 });
 
 function request() {
@@ -182,6 +197,21 @@ function sessionRequest() {
     query: new URLSearchParams(),
     body: { method: 'password', subject: 'ethan', password: 'secret', target: 'storefront', returnTarget: 'signed-target', authorization: { state: 'state', nonce: 'nonce', challenge: 'challenge' } },
     rawBody: '{}',
+    deadline: Date.now() + 1_000,
+    signal: controller.signal,
+  };
+}
+
+function streamRequest() {
+  const controller = new AbortController();
+  return {
+    method: 'GET',
+    path: '/api/v1/support/events',
+    headers: { 'x-client-target': 'console', 'x-scope-hint': 'mall:one' },
+    parameters: {},
+    query: new URLSearchParams(),
+    body: undefined,
+    rawBody: '',
     deadline: Date.now() + 1_000,
     signal: controller.signal,
   };

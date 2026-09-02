@@ -87,10 +87,9 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
       proved_at: Date | null;
       version: number;
     }>(
-      `update identity.invitationclaim set recipient_hash=coalesce(recipient_hash,$2),
-      updated_at=case when recipient_hash is null then clock_timestamp() else updated_at end,
-      version=case when recipient_hash is null then version+1 else version end where id=$1
-      and state in('reserved','proofpending','proved') and expires_at>clock_timestamp()
+      `update identity.invitationclaim set recipient_hash=coalesce(recipient_hash,$2),state='proofpending',proof_method='otp',
+      updated_at=clock_timestamp(),version=version+1 where id=$1
+      and state='reserved' and expires_at>clock_timestamp()
       and (recipient_hash is null or recipient_hash=$2) returning id::text,invitation_id,kind,target,recipient_hash,state,proof_method,
       expires_at,proved_at,version`,
       [id, recipient]

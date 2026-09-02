@@ -8,6 +8,7 @@ export interface ResourcePanelProps {
   readonly children: ReactNode;
   readonly eyebrow?: string;
   readonly actions?: ReactNode;
+  readonly notice?: ReactNode;
   readonly error?: string;
   readonly retry?: () => void;
 }
@@ -27,7 +28,7 @@ const sourceLabels: Record<ResourceCondition, string> = {
   retry: '正在重试',
 };
 
-export function ResourcePanel({ title, description, condition, children, eyebrow, actions, error, retry }: ResourcePanelProps) {
+export function ResourcePanel({ title, description, condition, children, eyebrow, actions, notice, error, retry }: ResourcePanelProps) {
   const titleId = useId();
   return (
     <section className="resourcepanel" aria-labelledby={titleId}>
@@ -47,6 +48,7 @@ export function ResourcePanel({ title, description, condition, children, eyebrow
           {actions}
         </div>
       )}
+      {notice}
       <ResourceState condition={condition} {...(error === undefined ? {} : { error })} {...(retry === undefined ? {} : { retry })}>
         {children}
       </ResourceState>

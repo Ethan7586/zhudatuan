@@ -29,7 +29,7 @@ export function LoginTarget({ target, busy, onTarget }: Readonly<{ target: AuthT
               </span>
               <span className="min-w-0">
                 <strong className={`block text-xs ${selected ? 'text-[var(--sw-brand)]' : 'text-slate-800'}`}>{item.title}</strong>
-                <small className="mt-0.5 block text-[10px] leading-tight text-slate-500">{item.description}</small>
+                <small className="mt-0.5 block text-[10px] leading-tight text-slate-600">{item.description}</small>
               </span>
             </button>
           );

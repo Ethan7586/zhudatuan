@@ -22,8 +22,10 @@ begin
 end
 $precondition$;
 
+alter table runtime.errorcontract disable row level security;
 insert into runtime.errorcontract(code,status,retryable,audit,client,contract_version)
 values('STEPUP_DESTINATION_MISSING',409,false,false,'message','3.0.0');
+alter table runtime.errorcontract enable row level security;
 
 update runtime.contractcatalog
 set checksum='73f5a4cee3d961c6ab72aa92bfbc3c1ba688c3427a5d01b2017347f24ca6ad95',

@@ -16,8 +16,8 @@
     "config/visuals.yml",
     "config/navigation.yml"
   ],
-  "count": 872,
-  "treeSha256": "b640c721236a3223ff3117f9d48860bb51210e043ab6c0c4fcbcc668bd16c89d",
+  "count": 942,
+  "treeSha256": "7208c55bafe9a7902b1e657b9264a8012e03f40b6ac22bae5432fabe52ad12c6",
   "entries": [
     {
       "path": "apps/auth/.env.example",
@@ -135,8 +135,8 @@
     },
     {
       "path": "apps/auth/src/app/AuthFlow.tsx",
-      "sha256": "9893263cf81206a61390558524c328a96a12f579285fdbd9ef59454d95222a57",
-      "size": 9000,
+      "sha256": "60c349f5fe134b0759566161fba75e6e00efb134591df2899aa09d25391c9180",
+      "size": 9849,
       "mode": "0644"
     },
     {
@@ -165,14 +165,14 @@
     },
     {
       "path": "apps/auth/src/entity/authentication/AuthClient.ts",
-      "sha256": "5512405bd16c05cba6231b960de0eaaf7cdbd5a9e9dd1648075362338d078705",
-      "size": 2019,
+      "sha256": "e9f0acf086486b4f19c81bf28b3d048c08258d6a3f0100ff444123962d0f2810",
+      "size": 2356,
       "mode": "0644"
     },
     {
       "path": "apps/auth/src/entity/authentication/AuthenticationState.ts",
-      "sha256": "17fb7280d06fa49cf1aece13052e5ef8cb94f834cd805be3179b1a95c86db09a",
-      "size": 1288,
+      "sha256": "a619f4efc2ce40768cb20c8c2ec02629877191278029ae1fe7e4d80e0380d66a",
+      "size": 1126,
       "mode": "0644"
     },
     {
@@ -182,21 +182,99 @@
       "mode": "0644"
     },
     {
-      "path": "apps/auth/src/feature/invitation/EnrollmentPage.tsx",
-      "sha256": "1d745ce50b1e9f5d7ab3b741fc83a65c17ade024eb009004ab732ca40672b38e",
-      "size": 11298,
+      "path": "apps/auth/src/feature/invitation/application/CompleteEnrollment.ts",
+      "sha256": "0538c67c3ce89c40ea5056d2e274dafcfafd47c8b62978cff66083ad6e852897",
+      "size": 374,
       "mode": "0644"
     },
     {
-      "path": "apps/auth/src/feature/invitation/InvitationError.tsx",
-      "sha256": "397c73e5eaed8043fb2dfac3d242527fea27860d0022c7ba824afa3d65e6022f",
-      "size": 438,
+      "path": "apps/auth/src/feature/invitation/application/CreateChallenge.ts",
+      "sha256": "1adf2323180fbb4c3e8706daf8e6874d966ace362700f962e5e68feb64795e97",
+      "size": 368,
       "mode": "0644"
     },
     {
-      "path": "apps/auth/src/feature/invitation/InvitationProof.tsx",
-      "sha256": "b1f2b8ede101d82ef2bc65c299e936e93e596089443b4fa16be6302e17358e61",
-      "size": 2265,
+      "path": "apps/auth/src/feature/invitation/application/ReadEnrollment.ts",
+      "sha256": "9113a4fc009800450320426f5a6a5443bb0d9c1ce9671c8abbdb269593c09c4b",
+      "size": 259,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/application/ResolveInvitation.ts",
+      "sha256": "913f3db600207759ea6d8fcc0f21a20d5391dbf28c3e1e2504e9a6cfadd31bde",
+      "size": 320,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/infrastructure/InvitationGateway.ts",
+      "sha256": "e7ff9e5d3246bb551a02a9bdbcd264a2f1ebd720ff886dc920b7151629e73603",
+      "size": 780,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/infrastructure/InvitationMapper.ts",
+      "sha256": "4b6c459a60013d139bad3824e8bacde755052e472120cf16799f8e290b9acb5a",
+      "size": 904,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/model/Enrollment.ts",
+      "sha256": "f168adf0adaf6013007ead153874989b8aea3b5525668f21af5743c40621e8ee",
+      "size": 519,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/model/Invitation.ts",
+      "sha256": "c36107c46a704bd818e726918d29fff2e09242c1a4f6cc73942388e7ca878aad",
+      "size": 421,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/model/RegistrationPolicy.ts",
+      "sha256": "3020f9d43a10474268935b15be39e2d985434342b086446df91f32933952189a",
+      "size": 311,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/ui/Enrollment.css",
+      "sha256": "72067c0eff4d915901d8e269d2271dc44e33e160b8c0df8be65bf25482bb954c",
+      "size": 3565,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/ui/EnrollmentPage.test.tsx",
+      "sha256": "a043ea512808a9b5408031d6f2f56bd29e1a55d20e86c5d2e7b6397d17975881",
+      "size": 3533,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/ui/EnrollmentPage.tsx",
+      "sha256": "56c5fdf71a1eab2421198f5cdcacc212a4f25a4cc25e044c088b14873a14525d",
+      "size": 8501,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/ui/InvitationError.tsx",
+      "sha256": "0e3035b9c85bca328af79a63b134dbcb2ef9f1bc8d4588693825149b885c92ee",
+      "size": 170,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/ui/InvitationProof.tsx",
+      "sha256": "77e1bf36a06a331be274d63ac5bec0509614066125c5ff5f13762f551916cb10",
+      "size": 1543,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/ui/MobileProof.tsx",
+      "sha256": "008ea370854d93b689293ad5544e4a9bd3272dc4d5eb78e424f6a79b29ec0e23",
+      "size": 1648,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/auth/src/feature/invitation/ui/PasswordForm.tsx",
+      "sha256": "8cfd4cc4c24c2a8e3379d344adb5bfe6d0c3236941f32adafc3d97198ed22b89",
+      "size": 1036,
       "mode": "0644"
     },
     {
@@ -207,38 +285,38 @@
     },
     {
       "path": "apps/auth/src/feature/login/InvitationForm.tsx",
-      "sha256": "73fdab8731f2a209d05462d01a0174b9a681b422be0d3c710938197a715610bd",
-      "size": 2385,
+      "sha256": "314ac0c0b92204f88f394a3348ac40cf38957009f29712440f720729886cf19d",
+      "size": 2386,
       "mode": "0644"
     },
     {
       "path": "apps/auth/src/feature/login/LoginPage.tsx",
-      "sha256": "7936629b139162d22041a2b686064ab3677bb9efdedb537023ca72d2171ac329",
-      "size": 6111,
+      "sha256": "5b0d598d0159d8279908b9f9e95ae1551e928fa18523e90d5cc365766191a769",
+      "size": 6099,
       "mode": "0644"
     },
     {
       "path": "apps/auth/src/feature/login/LoginTarget.tsx",
-      "sha256": "5d60c829f0c201698dbb332aa79eb5df7dede561ca71c5a68a347a7706c732e7",
+      "sha256": "294466ef8e1a2e648b1d96ab68f1f0c3183c7d1635f3994af5a04673fb516951",
       "size": 2251,
       "mode": "0644"
     },
     {
       "path": "apps/auth/src/feature/login/OtpForm.tsx",
-      "sha256": "47e6a0a4ef4799e22c3c602c6c8d88583401d1218795e5e86bb4ab085022b4b5",
-      "size": 4170,
+      "sha256": "1e7a3dbffa868f810d7d527b9effc343bb9d11f5dd26ab40f9eca8e495d44102",
+      "size": 4171,
       "mode": "0644"
     },
     {
       "path": "apps/auth/src/feature/login/PasswordForm.tsx",
-      "sha256": "91203b1da750202b64b33dc979425b65e3cccfe4c2361af540a8ea75c2c22377",
-      "size": 4056,
+      "sha256": "e6a78cc8f4701213f275ffcfb92533fbd823295a69734a7bf07d25a883e947c5",
+      "size": 4057,
       "mode": "0644"
     },
     {
       "path": "apps/auth/src/feature/login/PasswordResetDialog.tsx",
-      "sha256": "5bdd00bae957cfcdf3a268e67e37188796d848b69ab591bca7e710b5c4898625",
-      "size": 5019,
+      "sha256": "3afc155fb732736f08a9428f53f30f4f723bff6ba7f762ff116416ee4d669854",
+      "size": 5046,
       "mode": "0644"
     },
     {
@@ -267,8 +345,8 @@
     },
     {
       "path": "apps/auth/src/index.css",
-      "sha256": "113b971aea0a4765a8983ae5848af920c8ad65a33cff166edcb5fe20e640fda5",
-      "size": 1500,
+      "sha256": "b6a53b878eefd673cf353cc460a29435e6b17ff539cc22bd25f7215885cde666",
+      "size": 1546,
       "mode": "0644"
     },
     {
@@ -279,14 +357,14 @@
     },
     {
       "path": "apps/auth/src/shared/api/IdentityClient.test.ts",
-      "sha256": "c17165a5bce7fdd3ecbb4c8a500434b98f143f7c784307c9b9cc9e7cfb94ddc8",
-      "size": 9888,
+      "sha256": "ce0d2269e331e6097ba4b26c9742094d2cc23fba269075c430350913af08e267",
+      "size": 10982,
       "mode": "0644"
     },
     {
       "path": "apps/auth/src/shared/api/IdentityClient.ts",
-      "sha256": "32268a4a8324c2c3cdb05d312e135cb7415a44382999e0f4dc1f80f9b82cde15",
-      "size": 13097,
+      "sha256": "9d44f41c01fab231c56cf28d1e64fd9ff52dbbf7ff7ac3842c597cb8379e8ab4",
+      "size": 14059,
       "mode": "0644"
     },
     {
@@ -477,14 +555,14 @@
     },
     {
       "path": "apps/console/src/app/RouteRegistry.ts",
-      "sha256": "ccd73ced27c19d736d8b3522d0797e461a83eb5b96206e812ffd094448918253",
-      "size": 3754,
+      "sha256": "fef7d80e7c45575e31f2cf3559972fe93dd721c66a9d115ed2e8d8b9045b9a5b",
+      "size": 3845,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/entity/operation/OperationPage.tsx",
-      "sha256": "efbff4efc4236e2c87e8311575db64430050e8c96a9a3ca169a61dfa885cedbf",
-      "size": 2376,
+      "sha256": "beeb86f778a9cedb21106a632725af6c6a5a0f4f9694433669fb029ed163f139",
+      "size": 2363,
       "mode": "0644"
     },
     {
@@ -507,8 +585,8 @@
     },
     {
       "path": "apps/console/src/entity/session/ConsoleSession.ts",
-      "sha256": "fbcece900210539ef2eae79aa8f0b8c2cabaadbbea785c0d184eea256561c4c2",
-      "size": 2407,
+      "sha256": "3ccb4097dc53ca3d73ee62adbd7249b72dfe6c751d716383ed9938b849c1e893",
+      "size": 2573,
       "mode": "0644"
     },
     {
@@ -531,8 +609,8 @@
     },
     {
       "path": "apps/console/src/feature/channel/ChannelRoute.tsx",
-      "sha256": "1cb52811e45b097d72e9c3c4e967860245e56309e5a89336c192bfb753e827e4",
-      "size": 3313,
+      "sha256": "25da8b136acbe748f312dfcd7373a050a0af79ac3dbd347973e99757846c5f0b",
+      "size": 3300,
       "mode": "0644"
     },
     {
@@ -591,14 +669,14 @@
     },
     {
       "path": "apps/console/src/feature/cockpit/CockpitRoute.test.tsx",
-      "sha256": "a5aa66633e66c9ff392f1ecb66b3c9105127aa3828d23aefd72fffaa91f121e2",
-      "size": 5098,
+      "sha256": "c2824b6ee2d40f8b1417192730d7c58b49ea7edbc60f18d4031f9be699118a12",
+      "size": 5186,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/cockpit/CockpitRoute.tsx",
-      "sha256": "08439357d8275c4e1b70f0cdff44e1bbc10a3b733f4a7f3d5bf0e76a3975a7c0",
-      "size": 2706,
+      "sha256": "000c4dc7839ededda68d5565b141d33b2caf064dd83b98417ef07e3d8bd1da9e",
+      "size": 2689,
       "mode": "0644"
     },
     {
@@ -627,14 +705,14 @@
     },
     {
       "path": "apps/console/src/feature/control/ControlRoute.test.tsx",
-      "sha256": "ba60209e77d4fd1f3f9d53956d1ebc178de42a001f73f74ae4c7532b8497e002",
-      "size": 4652,
+      "sha256": "f7c7009ab2543812bfb5daf19ef46d7786ec92b7d553cd837c8760074409c5de",
+      "size": 4807,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/control/ControlRoute.tsx",
-      "sha256": "371370675873a3b4320c2403e28f88a7fb84d5b5b2cfe08ae9c365a2af8cf749",
-      "size": 6282,
+      "sha256": "43a8fd4a6486710495220d1a24e3ba77329cd995a21fca57367438b7e27b5be1",
+      "size": 6269,
       "mode": "0644"
     },
     {
@@ -717,14 +795,14 @@
     },
     {
       "path": "apps/console/src/feature/experience/ExperienceRoute.test.tsx",
-      "sha256": "5843db910dfde8976a885b051eb1cf1c6897f0789cb16df14dfd3cf69584a826",
-      "size": 6406,
+      "sha256": "1febfc5e72e825d41d94a35c8c0dde44b08c5291df442a37c788b082dc0f02e1",
+      "size": 6496,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/experience/ExperienceRoute.tsx",
-      "sha256": "a08cdce2e86dd0919620ba06eba5ece9f507aee26b2b442f4c497c4a61ba1e5f",
-      "size": 12378,
+      "sha256": "497bc81a1188eb4f10f79fbecc37afdb4a26b022dc381d9839a79048001b118c",
+      "size": 12361,
       "mode": "0644"
     },
     {
@@ -783,14 +861,14 @@
     },
     {
       "path": "apps/console/src/feature/FeatureRead.test.ts",
-      "sha256": "ba1928ac20fc25906c3438e5c04a74379e376c7bdb00b799efda393a76d3e0e4",
-      "size": 4526,
+      "sha256": "dd05516c8250e385fee3b30264ce327e156a812e670ea7d3c0478a41de5a2256",
+      "size": 4614,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/FeatureSchema.test.ts",
-      "sha256": "5d96bb4334b5e8d42d64e067b70f78be147b1caf0e0d6b8b2ca07be1fc250d31",
-      "size": 3596,
+      "sha256": "fe0d83637b2ac1059bb1928e3a1f272e0e6f9b1a3f7e172f24feeb4d7746094f",
+      "size": 3746,
       "mode": "0644"
     },
     {
@@ -843,8 +921,8 @@
     },
     {
       "path": "apps/console/src/feature/finance/FinanceProfessionalRoute.tsx",
-      "sha256": "389795df9a439f03a3dd335e9b75dc746abb4890d1cf3b851466ce46d632faa7",
-      "size": 4055,
+      "sha256": "148d5c5571e3459590ebb88cd6c192cd17561bdecbc560d387f9966f6186320e",
+      "size": 4042,
       "mode": "0644"
     },
     {
@@ -873,14 +951,14 @@
     },
     {
       "path": "apps/console/src/feature/finance/FinanceRoute.test.tsx",
-      "sha256": "cd83cd56286f1e0ebf520354a661e621f6484283ed38e4e3229921360f5ba62b",
-      "size": 7036,
+      "sha256": "72e456d5b1accde8db588d47871cc0dd6c1672801e15e51b67df1b9f8d2f0ca4",
+      "size": 7133,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/finance/FinanceRoute.tsx",
-      "sha256": "af134ef28ea2d1738cf0a6d7ad5b2aa1f1c979e4cc71cc9525f6d9b2f80fed8b",
-      "size": 8727,
+      "sha256": "f15a21745de2f2ee44ee778cd7481fc12b811828754ae740f2f4820c49bf7541",
+      "size": 8736,
       "mode": "0644"
     },
     {
@@ -909,8 +987,8 @@
     },
     {
       "path": "apps/console/src/feature/finance/FinanceWorkspaceQuery.test.ts",
-      "sha256": "c81133d338c6d1f16a213afb2b32ce3765f64407c9f1e5307c0feddd5bf880ec",
-      "size": 4300,
+      "sha256": "0a38822750d3c64b40e7ccdc79b1e83fd52b1b0d0d60f6d3ddfa8807707f093a",
+      "size": 4464,
       "mode": "0644"
     },
     {
@@ -971,6 +1049,120 @@
       "path": "apps/console/src/feature/finance/WithdrawalRoute.tsx",
       "sha256": "105bcfb00adb4dfe0ecf1eebeb455074ad8308f8c4fee5d6ab861d7eb3edbeba",
       "size": 164,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/application/CreateInvitation.ts",
+      "sha256": "52f86b658102b76e9aba49b63013d8e2d1859457cd5568e24add38d1f2d2b1df",
+      "size": 543,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/application/ReadInvitations.ts",
+      "sha256": "af2b025dbe4a2f07b8146e537e4e9589685a72ffe874f3b336eac127fe36d8b4",
+      "size": 686,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/application/RevokeInvitation.ts",
+      "sha256": "ee34186553e9cc8e9db594ef3ae4b567dfcae6b15dc356dd35e5e288728e2f5c",
+      "size": 585,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/infrastructure/InvitationGateway.ts",
+      "sha256": "ce19b2238e199034cf28eeaa09d450b7a0d7b7ce6e9dc800e681690d801454df",
+      "size": 2842,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/infrastructure/InvitationMapper.ts",
+      "sha256": "0c2ae7860e5b3f06468f874ec235d3bc5724567e86861b405be1b0116c987910",
+      "size": 745,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/Manifest.ts",
+      "sha256": "b22427ca66629ee9f65d0a1a38d2d9f33d2780a1134d6c9c1dba20a45a3c737c",
+      "size": 308,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/model/Invitation.ts",
+      "sha256": "39c32d8a6653323db717c358c7a6c9ba1671ec93b519d2507b40996ce686ee1f",
+      "size": 557,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/model/InvitationDraft.ts",
+      "sha256": "833c438fe04016fe02aa02a991636731172b135a32e3d4f178726561ba0bb00c",
+      "size": 889,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/CampaignInvitationDialog.tsx",
+      "sha256": "11a9c5c2b54e91b65c0bf9350dff8fd99974410d0f8c8110572db595275cfe35",
+      "size": 2464,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/EmployeeInvitationDialog.test.tsx",
+      "sha256": "8d1125081b89154ca75ac335be43717c8f877868ee01d02c519547d36d595134",
+      "size": 754,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/EmployeeInvitationDialog.tsx",
+      "sha256": "39c91043760ca7d1b9c36c1d2da864c220b171a3b990daff0eb4ecbc2589933b",
+      "size": 5708,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/Invitation.css",
+      "sha256": "3ee5dc6158d977be656e6f94d0223040fa51d782932a7ef9d1b19702a3a0d8a3",
+      "size": 3555,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/InvitationReceiptDialog.test.tsx",
+      "sha256": "a93f31fe35d44fa6b15ce5f83a8d7af0bf08458508fe890f386eb5c186f5a426",
+      "size": 2572,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/InvitationReceiptDialog.tsx",
+      "sha256": "3c1e18b3e5fcd58dabf9e4fcec3dc885235ceaa07ec4762747bb5b52cb42f40c",
+      "size": 3094,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/InvitationRevokeDialog.tsx",
+      "sha256": "a87be0d81b23e1229fddd614df12fab20f1c981c173c2f256d1f3ae8f60cffa6",
+      "size": 1746,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/InvitationRoute.test.tsx",
+      "sha256": "3bcdb35506d739209c53b9ac79cd8290a55dc262cda854868c89e1a78c81df44",
+      "size": 3403,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/InvitationRoute.tsx",
+      "sha256": "0bcc4d1a1cedc8501337cf777aa7229899f5c1e60debe5431b5b5464b5e49b80",
+      "size": 9765,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/InvitationTable.tsx",
+      "sha256": "6797d683e5587845bc60fb60c902cfb5643cffbf690ee19e207df17d922966cb",
+      "size": 1518,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/invitation/ui/SigninInvitationDialog.tsx",
+      "sha256": "d9df2892fd869fee596dd34775b60242f202eef3acd7866df035d65f26ac6333",
+      "size": 3140,
       "mode": "0644"
     },
     {
@@ -1041,8 +1233,8 @@
     },
     {
       "path": "apps/console/src/feature/order/OrderDetailRoute.tsx",
-      "sha256": "81adf3fdaeeb4a93fc00f2bcae3454b13a6f4cefa58e8da7d5fb751a148daaa9",
-      "size": 3580,
+      "sha256": "64da2e853c946871b8a2a0e05e187d155afed0a13746be204c0f13aa5eaf8876",
+      "size": 3567,
       "mode": "0644"
     },
     {
@@ -1089,8 +1281,8 @@
     },
     {
       "path": "apps/console/src/feature/order/OrderQuery.test.ts",
-      "sha256": "791f14bdb1d1a1cb9d1c2170554127091b616b3ad594a63aaf0ae81673e94e41",
-      "size": 4527,
+      "sha256": "f125ecb90c73f4d81a53e7aaf1b28a705cd8282ab034ce764fad802b000f4d09",
+      "size": 4682,
       "mode": "0644"
     },
     {
@@ -1101,14 +1293,14 @@
     },
     {
       "path": "apps/console/src/feature/order/OrderRoute.test.tsx",
-      "sha256": "d38c4adf54960d15342ef69043d4ab2e49ba0b41d558ab599200d58eec6e2617",
-      "size": 21413,
+      "sha256": "02c3fb50f63ca373f4bd3f626651735cc655651d1b510a9a69eb0098cc765c78",
+      "size": 21510,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/order/OrderRoute.tsx",
-      "sha256": "e3cd708e80b7563db697ac781a457fa8cfca6e6acb99c9c0ca61935c0fcaed50",
-      "size": 11331,
+      "sha256": "8f149d2b867d04904d59040cbfbd1842b495838643b3e5d5fc4961e5ef21a40c",
+      "size": 11340,
       "mode": "0644"
     },
     {
@@ -1167,8 +1359,8 @@
     },
     {
       "path": "apps/console/src/feature/product/importing/ImportRoute.tsx",
-      "sha256": "2f906799e36b1369b2c1f3f84a25dd9dc8c4e46d3d7a8123cc27dd5fe3a6bc62",
-      "size": 3746,
+      "sha256": "057d983c15eccb3f07b127461be837e88617382fa4b8577517493c509d207656",
+      "size": 3733,
       "mode": "0644"
     },
     {
@@ -1215,8 +1407,8 @@
     },
     {
       "path": "apps/console/src/feature/product/ProductDetailRoute.tsx",
-      "sha256": "0db4055eb1aea6519803b3d8cb0580d19d71fb7f125b91cd90d7384bf30fd2b4",
-      "size": 7374,
+      "sha256": "e5c3144f9776fd6f19ee598042d94f2b165716bdd113a508a5b8f7f466c3eafc",
+      "size": 7357,
       "mode": "0644"
     },
     {
@@ -1269,8 +1461,8 @@
     },
     {
       "path": "apps/console/src/feature/product/ProductRoute.tsx",
-      "sha256": "80dd3e537b9d71fbe50896dad33821ee2bca29a381dd7b066a8b145422e1f68b",
-      "size": 10205,
+      "sha256": "3f6bde46f9d47909d286f30b6d869afb1ca7f5ad2d16454394c6743dd7f5d7c2",
+      "size": 10192,
       "mode": "0644"
     },
     {
@@ -1299,14 +1491,14 @@
     },
     {
       "path": "apps/console/src/feature/ProfessionalRead.test.ts",
-      "sha256": "728c2d83650a7ec9b8066c3353938ade6f1a9d8dd09e5c5a45e897391fed45b3",
-      "size": 5870,
+      "sha256": "397bf9ec15b673fadc1d786eba3434bd087160816a37b67c2dd49a0b803ce561",
+      "size": 6325,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/ProfessionalSchema.test.ts",
-      "sha256": "7dc83535c2d7857d797809abec0bcb1b11b493c9d5349eafe17cb14b91288b5c",
-      "size": 2931,
+      "sha256": "9344fea84d2fb8b8472ccb2ae4af311efead9af241dcdb1213f20f0c09886412",
+      "size": 2787,
       "mode": "0644"
     },
     {
@@ -1371,8 +1563,8 @@
     },
     {
       "path": "apps/console/src/feature/referral/ReferralRoute.tsx",
-      "sha256": "5b2723a403c025b433aaa5ad10e950b706e252650efc35e2da252921e1168568",
-      "size": 13339,
+      "sha256": "c87ba0b482195a489f5718755aaacf59e7f356022592c5ec0c975477023731fa",
+      "size": 13326,
       "mode": "0644"
     },
     {
@@ -1419,8 +1611,8 @@
     },
     {
       "path": "apps/console/src/feature/reporting/ReportingRoute.tsx",
-      "sha256": "aea389ca22b79c92864bace7d6651c39d249083faf991728b4e5d2e754c7544d",
-      "size": 4541,
+      "sha256": "48c4593a7469ceb01c879afb2025b6374d99a351b3953264df3639608a6168f8",
+      "size": 4528,
       "mode": "0644"
     },
     {
@@ -1431,8 +1623,8 @@
     },
     {
       "path": "apps/console/src/feature/settings/access/Access.css",
-      "sha256": "4b27de324e0f1302179486625ba467c3f18f9947677c09c1b950c2df182d0d94",
-      "size": 4265,
+      "sha256": "e5fc886dea344a6d982a8e339c7297c1bf93076e512af24b7449c30fe4c63aff",
+      "size": 2781,
       "mode": "0644"
     },
     {
@@ -1449,56 +1641,20 @@
     },
     {
       "path": "apps/console/src/feature/settings/access/AccessQuery.ts",
-      "sha256": "3c2446b194de37c50116f7c684d13617a172775521aaf181e7f09bf8c03e382c",
-      "size": 4102,
+      "sha256": "c6d9a815134e5773947da3ffd8e9ab5f62eb36a1a5ccb5b5cd7ae36ab8af37cd",
+      "size": 926,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/AccessRoute.tsx",
-      "sha256": "5f1e99ef2409ea1028c4c924e76c6d660fbae94fdd3807ec2e057320dac52851",
-      "size": 7117,
+      "sha256": "b11ea3e82553bc97d77200b2e4d46896e0c3891f75495823c3832522caa32ba3",
+      "size": 5885,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/AccessSchema.ts",
-      "sha256": "1d56e97642ef0ff58fae02cb0789dad4a67d5ae6aaf656acd718b9af49c6a739",
-      "size": 2901,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/feature/settings/access/InvitationCodeDialog.tsx",
-      "sha256": "07e6f464234c256aacbef8eee2f92ab789fcef68df22922cce15c6b87b5c9e77",
-      "size": 1032,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/feature/settings/access/InvitationCreateDialog.test.tsx",
-      "sha256": "979830b8e4773cadb72f1e96454197b0839ecb18055439cb32af6cb4cfa31263",
-      "size": 862,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/feature/settings/access/InvitationCreateDialog.tsx",
-      "sha256": "6acb6ce4f2fb31c96d313c3c3bb775022137e2989f7c42dd394bfdc9479c3ea1",
-      "size": 5788,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/feature/settings/access/InvitationPanel.tsx",
-      "sha256": "f3021af1027666f666376c30d59a12ef034e6f8bd1ff69a3345f7290eaf5d055",
-      "size": 8348,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/feature/settings/access/InvitationRevokeDialog.tsx",
-      "sha256": "6963b939a077852afb47bd2bc8575d271a8974edc78b2f5c335d271a8731855f",
-      "size": 1689,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/feature/settings/access/InvitationTable.tsx",
-      "sha256": "38f2bfcdf3b156beb9c4142a1fa110b2f1438df2aa1a55237068b58834a25baf",
-      "size": 2000,
+      "sha256": "be8786b0c74d3c8e315173c7e186980631ef8e0ffa558bbfbfd1eaa8d0621c8e",
+      "size": 1048,
       "mode": "0644"
     },
     {
@@ -1515,8 +1671,8 @@
     },
     {
       "path": "apps/console/src/feature/settings/directory/DirectoryRoute.tsx",
-      "sha256": "06bed3c757efda42a21358a338bde3f2479b0c8dd71917fca31bf90e61ca3953",
-      "size": 5364,
+      "sha256": "e09de62f1fa9fd5a06b372efc94293807ac65cddc00bab308d0f2cafce50f61e",
+      "size": 5351,
       "mode": "0644"
     },
     {
@@ -1563,8 +1719,8 @@
     },
     {
       "path": "apps/console/src/feature/settings/member/MemberRoute.tsx",
-      "sha256": "b53821ed9f40d938fa4c73cdd2d498e16f449a02bf57c0fcc6acb6fb667d2d9b",
-      "size": 4446,
+      "sha256": "f32ffab73b2f99f872a05bbf6a70643b74347940ec9130f914016c81eb8d4afa",
+      "size": 4433,
       "mode": "0644"
     },
     {
@@ -1587,8 +1743,8 @@
     },
     {
       "path": "apps/console/src/feature/settings/notification/NotificationRoute.tsx",
-      "sha256": "2e9c9e7a9cd6ca3d5bc2deaa15882be3904ceee751d1bf0f248eaf5780f0ce3d",
-      "size": 3206,
+      "sha256": "0c6e68b9db6b08c45df4bfce6678b0238ee55ea92fdd32292bfdf3a038edd14d",
+      "size": 3193,
       "mode": "0644"
     },
     {
@@ -1617,8 +1773,8 @@
     },
     {
       "path": "apps/console/src/feature/settings/provider/ProviderRoute.tsx",
-      "sha256": "a2386468403e36b1f327d192cdd59d391718741513d52f862e47919e132fba3a",
-      "size": 2899,
+      "sha256": "4e4e9bda8938177cc528adb8a14e54aa56995055f3c3f4348b24b1b58c1dbda3",
+      "size": 2886,
       "mode": "0644"
     },
     {
@@ -1629,8 +1785,8 @@
     },
     {
       "path": "apps/console/src/feature/settings/qualification/QualificationRoute.tsx",
-      "sha256": "8ad17b5cd8db01b7fd69f627413908157050e8b65ae4d5707728c92056ddfdb4",
-      "size": 2608,
+      "sha256": "540be91cd7b17eba11b3c6d00b40b2318c669bc6d4677d70ade252bfed1ae870",
+      "size": 2595,
       "mode": "0644"
     },
     {
@@ -1659,14 +1815,14 @@
     },
     {
       "path": "apps/console/src/feature/settings/risk/RiskRoute.test.tsx",
-      "sha256": "c521be8c396991de081a8cbfef68e1bf81a7d997d875e98618da7a68805ca3ce",
-      "size": 5360,
+      "sha256": "e62be63b77427b3508d621e1944af8871ca7c8172a1ed32311523e1aa6a1f04d",
+      "size": 5448,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/risk/RiskRoute.tsx",
-      "sha256": "4a168eb3a7cee366ac52410083a4830463f39105971bff06cf4b4cd17d22eb2c",
-      "size": 3175,
+      "sha256": "d6d2fe6fbd1cc747a50a7a05d2327e64fe09d4ac27925be936c8b30b19e1cc8b",
+      "size": 3162,
       "mode": "0644"
     },
     {
@@ -1688,27 +1844,207 @@
       "mode": "0644"
     },
     {
+      "path": "apps/console/src/feature/support/application/AssignTicket.ts",
+      "sha256": "81eb15e1c250aeec75d388a3751f31a01996becd9cc839458980e80b50a4ef62",
+      "size": 699,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/CloseTicket.ts",
+      "sha256": "9ac78a7cce04a3a26ad829472419a428c7f73a2dd80454d91e4150b21f6d4bca",
+      "size": 540,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/ManageSupportConfig.ts",
+      "sha256": "183c8f08692951b6911a58bc0fb171320d5bae71c7dfd973b63e16f31417b335",
+      "size": 1750,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/ReadConversation.ts",
+      "sha256": "3591cab1f87e575194b26cdefed1a9de21d6f378f74ee7b7a791d0535b04bfa3",
+      "size": 619,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/ReadQueue.ts",
+      "sha256": "6f9fb41efe1634e791a80ec2427644b9b2889de65a7c567072fd436b2070c2a3",
+      "size": 671,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/ReopenTicket.ts",
+      "sha256": "c8d2a90714b2fc6f1c0633a041dc1355ecc99221ce2796b8f6b74efa00722fe6",
+      "size": 542,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/SendMessage.ts",
+      "sha256": "6607fdc91619d4b65df81824d126996ad5c845fc3304d6fa49ff82dc05a4fe49",
+      "size": 1748,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/UpdateReadState.ts",
+      "sha256": "e026847eb437f1019f985bab7e2bf89a1b2cb6e5727d955c03c8fe81902d33b8",
+      "size": 381,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/application/UploadAttachment.ts",
+      "sha256": "c477da011253d0da72f7269b67db945a56bf0c1398919f0bdba3390795e121ef",
+      "size": 1477,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/infrastructure/SupportEventSource.ts",
+      "sha256": "3bfaf752ce47dc2e56e3e06e9fa02b6329bcb7487a51717429cd9dc985eda927",
+      "size": 598,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/infrastructure/SupportGateway.ts",
+      "sha256": "85fe9223a457b660a5a4d3ed304473ed5de65f3390489c446c58422841f775e8",
+      "size": 5581,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/infrastructure/SupportMapper.ts",
+      "sha256": "43b7832eb281bc69b9560e94fb67cda374d2baed6904afca41c723ec75c70424",
+      "size": 1806,
+      "mode": "0644"
+    },
+    {
       "path": "apps/console/src/feature/support/Manifest.ts",
-      "sha256": "7ea022583766d5285b05ba402596f492971a40e604d3266dc99f175d2601ed80",
-      "size": 307,
+      "sha256": "96150f502d78337508cb821306e0c2677a24fbacd57fbda82f384954434f1bbc",
+      "size": 310,
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/feature/support/SupportQuery.ts",
-      "sha256": "32233a24407851eee4c6084ca10a614939fd991e5e6c536f45af500975724892",
-      "size": 5605,
+      "path": "apps/console/src/feature/support/model/Agent.ts",
+      "sha256": "87c64e256417eefdc65c6b1467b1fcbaa5a76e0a538bf0b0c80832f7e7e24947",
+      "size": 174,
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/feature/support/SupportRoute.tsx",
-      "sha256": "9025ff8cdc5f0ec910e0ef7704410f38acc8189676960872ea08a6c122ae850c",
-      "size": 9754,
+      "path": "apps/console/src/feature/support/model/Message.ts",
+      "sha256": "72afda2c6fee726c1cc26d5febd10a53373c1e53e2643d6f683e45e3b065976a",
+      "size": 446,
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/feature/support/SupportSchema.ts",
-      "sha256": "7894d49ac8da270735ece127cc3289c81922be31c9681625b8c3f9e8ada51db1",
-      "size": 2449,
+      "path": "apps/console/src/feature/support/model/SupportConfig.ts",
+      "sha256": "cc36f6fbd34a53e9a81380f45b1423cffcb9432b8a4a70785b74b98c6c9e71ee",
+      "size": 969,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/model/SupportContext.ts",
+      "sha256": "52e5c963ba063dcae9717ec3287bd854496687e59337e92037f1375d46c89981",
+      "size": 144,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/model/Ticket.ts",
+      "sha256": "7136da9387063cdf9b3528f2e431e77b448f4eb25675ed80ad0e4fb45847fece",
+      "size": 268,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/model/TicketFilter.ts",
+      "sha256": "29cf73b1b65030cebb1abd744cabab1e584b6536f482d16aaebaf0d52a209315",
+      "size": 317,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/AccountSettings.tsx",
+      "sha256": "f37e227fcaf2b0f97b4200cbf9e9090f2b2025e5311227c6e7fb6108bf6d7a9c",
+      "size": 4154,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/AgentSettings.tsx",
+      "sha256": "6de7ac67383edf52dcd3b820b27abb7b03a1ffacf3cb24991c0634473205fddf",
+      "size": 2899,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/HistoryPanel.tsx",
+      "sha256": "4a4b9bb415980340749382cf5a3a1a9beff4c2a3344587713c8fe202c82c2ff2",
+      "size": 1538,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/RuleSettings.tsx",
+      "sha256": "516db9623681b4ced918783b82f56aa1aebad589ec223c5d79a2bca4b55af578",
+      "size": 3100,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SlaSettings.tsx",
+      "sha256": "b942673f7825feed946ccc8b3b43c8a7b8c37cbb807bcafa945806eb1f39c75e",
+      "size": 2227,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportComposer.tsx",
+      "sha256": "ad102d21190ae4eaa60f712d0b4d2e3433ba9710b82f1c9b7c25bc216cf45703",
+      "size": 2531,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportContextPanel.tsx",
+      "sha256": "ff3ea96d62f88641b393b320ae3fceb4adf740654dbabca05a1595ebb7f8530e",
+      "size": 4905,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportConversation.css",
+      "sha256": "17a08dcc2eb08b0a296544ae94734b1cfc89cddbd660b788e393dea931b3c202",
+      "size": 5641,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportConversation.tsx",
+      "sha256": "d8aaebe30ea8ee5f325d3e67bfaa2dedaa2d0329cf675ff3526018e0906e7f4c",
+      "size": 6867,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportHeader.tsx",
+      "sha256": "f4d62b29bf255662813cf5316c4271478d8d7e44a4876030dd65ba6b2cdcec60",
+      "size": 773,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportLayout.css",
+      "sha256": "70aafb2adba8b023dabacc2da0eef7584447bfc6e8c3d92fb165fbc35dec22ed",
+      "size": 12694,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportQueue.tsx",
+      "sha256": "7d233c936a3bcd48807f95072076570869f4489097241de57592686ca3597a84",
+      "size": 5351,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportRoute.tsx",
+      "sha256": "1905a1a1ea09c48ac49b516ab1f2168c35acaa611702d1eeee95c289e3ccb74d",
+      "size": 183,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportSettings.tsx",
+      "sha256": "a50d5288552b0db8d770f98fd4db3ccf56347d638682011f47090cc77669a48c",
+      "size": 5394,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/support/ui/SupportWorkbench.tsx",
+      "sha256": "48b6eaede5b7b07aede828c27554fdcdb58e7e9bf48a17852db297efa837800b",
+      "size": 17256,
       "mode": "0644"
     },
     {
@@ -1755,14 +2091,14 @@
     },
     {
       "path": "apps/console/src/feature/voucher/VoucherRoute.test.tsx",
-      "sha256": "c70ffd5f1cc6d5eedc76f5d7f58ac97c5f12d8b2254e27db3937ed0f0bc5b8cc",
-      "size": 6960,
+      "sha256": "c9098bb2ee9988b6dc5845c4c68f1dcfd64bb18654eac534bf79bf6a784d6ee1",
+      "size": 7048,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/voucher/VoucherRoute.tsx",
-      "sha256": "c06b01b4087eb46eb7449073d66c9943bb2d45d721bb1d37e6a6bc06808ed7cb",
-      "size": 11277,
+      "sha256": "6ea77d868f0f20c7f3d628c6a4b4fed98146f15d49d0baf26cc99ae129bd3b4a",
+      "size": 11260,
       "mode": "0644"
     },
     {
@@ -1785,8 +2121,8 @@
     },
     {
       "path": "apps/console/src/generated/NavigationBinding.ts",
-      "sha256": "28dfb7e21286c81baf37c25d10ce76fc3b7e8a0a028d92964573f30e1df10fd6",
-      "size": 3498,
+      "sha256": "f55f5c31c755196b6fcaecf7801f94f9b1e031e4226ecd4ab9d50ca2be434458",
+      "size": 3675,
       "mode": "0644"
     },
     {
@@ -1827,14 +2163,26 @@
     },
     {
       "path": "apps/console/src/route/Router.tsx",
-      "sha256": "4023b8f9a3ddfde30b4b539c95ac787cdde95c594a431959f78170b939ebf17f",
-      "size": 1343,
+      "sha256": "8becf12bd9682dfca5fcf1e0ef8c00787887c54e83611637ed1696ebf4e7b7c8",
+      "size": 1535,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/route/Routes.test.ts",
-      "sha256": "1a09e49e3f00731ae0ba993e03b5a5eb19daa0e4b6c15090725beffa9cdccda7",
-      "size": 2635,
+      "sha256": "dd415d701adfac8aa5c0d69eaee6be67e821f12b526057e6be7f9cc604a21477",
+      "size": 2725,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/route/RouteTransition.test.ts",
+      "sha256": "9a4625c1951ae72d0b354fbce251e07ed4b76dcd136571eb1870de772ab403c4",
+      "size": 1060,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/route/RouteTransition.ts",
+      "sha256": "986eb1b939ddb164382ce0d166d28278b332e673d889b3c4a8a53aa63ff98a6a",
+      "size": 335,
       "mode": "0644"
     },
     {
@@ -1851,8 +2199,8 @@
     },
     {
       "path": "apps/console/src/shared/api/Client.ts",
-      "sha256": "9592e14fc59524dcc2115efd68dd008e8ce8bdf7b4e10b07f2960518be72b78a",
-      "size": 2915,
+      "sha256": "491239d34721567b165437385a1a8c09d1557da75ac6f76366ca71d363dcfd46",
+      "size": 3369,
       "mode": "0755"
     },
     {
@@ -1865,18 +2213,6 @@
       "path": "apps/console/src/shared/api/Pager.ts",
       "sha256": "a7141e6c7f4cfe8075488ab45d9805456650677f36bd0ad788eacf7e465f3a04",
       "size": 837,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/shared/api/QueryState.test.ts",
-      "sha256": "87827a09692cdcdc9844df03b23b8949bfe9d442de62581e022e501f959b0ae1",
-      "size": 1865,
-      "mode": "0644"
-    },
-    {
-      "path": "apps/console/src/shared/api/QueryState.ts",
-      "sha256": "02c8b30379241838f128539003a83ea3a8a0c90854a77ca5fb295844b7710d3d",
-      "size": 4579,
       "mode": "0644"
     },
     {
@@ -1899,14 +2235,26 @@
     },
     {
       "path": "apps/console/src/shared/navigation/NavigationQuery.test.ts",
-      "sha256": "33d4adf5407910cca6ea61fb55c75c3610f3ad46909269eb01070691cefd425f",
-      "size": 2460,
+      "sha256": "1fd8880784ba1a3f24eea4c20e1f458813c358381b5f6a85e1294d4d7d0a120c",
+      "size": 2546,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/shared/navigation/NavigationQuery.ts",
       "sha256": "b95198ab4cdfb1ddcf8493264de606efc0ef3a62e61d46921989b2c2695df887",
       "size": 1645,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/shared/presentation/QueryState.test.ts",
+      "sha256": "840e1bb9786b617522d012c55bccadfa00bd8e14f45660a723b62ba8efcbe5f8",
+      "size": 2213,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/shared/presentation/QueryState.ts",
+      "sha256": "3b85ff08a83e7215806df0f512725db1917e612fb1015496fac49018768b6dff",
+      "size": 4654,
       "mode": "0644"
     },
     {
@@ -1953,8 +2301,8 @@
     },
     {
       "path": "apps/console/src/shared/ui/PagedResource.tsx",
-      "sha256": "b891ea92f6d51026895380f8d0a3b7f80ea28ff05dce9ddebd35add91ade2574",
-      "size": 2325,
+      "sha256": "939f410a2fddd334fec8f082f8fe4c070cc3115b927bbbac48ca6e5da495d669",
+      "size": 2320,
       "mode": "0644"
     },
     {
@@ -2037,8 +2385,8 @@
     },
     {
       "path": "apps/console/src/shell/ScopeShell.tsx",
-      "sha256": "33ab8cc93c5374ba9c492907b047495cf486f5d37e38cb9aa3dc7ce27aaa903a",
-      "size": 10805,
+      "sha256": "9648d5a210a6977d3e08f91de8912d747899937179b7497d46e6cf5458c6fffe",
+      "size": 10915,
       "mode": "0644"
     },
     {
@@ -2054,9 +2402,15 @@
       "mode": "0644"
     },
     {
+      "path": "apps/console/src/shell/StepupDialog.test.tsx",
+      "sha256": "7d1931963acc3622a4ca72df722f5ca82094367e251b23230cd7becba0ad853c",
+      "size": 1179,
+      "mode": "0644"
+    },
+    {
       "path": "apps/console/src/shell/StepupDialog.tsx",
-      "sha256": "dca17730f567599d058776c9009240fea57e10642e76b3e40e85879b2154195f",
-      "size": 7674,
+      "sha256": "d234c73b91738909e0dce9eda0107034b84d3e7e24090f514ec1346b33a1430a",
+      "size": 8148,
       "mode": "0644"
     },
     {
@@ -2229,8 +2583,8 @@
     },
     {
       "path": "apps/storefront/src/app/App.tsx",
-      "sha256": "a2197646204003600c0b1ca35e62bbc71f1bc8b5a74fe1aac4517347450e8374",
-      "size": 918,
+      "sha256": "d11bb716925dec0c822d6fa2eab7083bf4a4d5097244aadd723627527e954472",
+      "size": 718,
       "mode": "0644"
     },
     {
@@ -3231,8 +3585,8 @@
     },
     {
       "path": "apps/storefront/src/feature/security/infrastructure/StepupGateway.ts",
-      "sha256": "7dc6a2c9da9de17e7319e7be5e509fe68d54ab65f49b3a131f5ebb7de4f33469",
-      "size": 691,
+      "sha256": "3f0cf6ca053b0ffe22da7afefa0c2bc0b0a9335e16b2843e74a7765f7230d0df",
+      "size": 951,
       "mode": "0644"
     },
     {
@@ -3266,33 +3620,45 @@
       "mode": "0644"
     },
     {
+      "path": "apps/storefront/src/feature/security/ui/StorefrontStepup.test.tsx",
+      "sha256": "0ff707f8872d4f0690a110da77cf6d98f327d166f09a1e4d5177994b55c1859f",
+      "size": 1478,
+      "mode": "0644"
+    },
+    {
       "path": "apps/storefront/src/feature/security/ui/StorefrontStepup.tsx",
-      "sha256": "ad55e811a00e6cd9522f1e24e018eb1e7f4fd4bded391f17e26be3401e259c95",
-      "size": 5863,
+      "sha256": "de3e9ad9cea14e01d8f5e7d5e3b7c5839113aeb4cc89d588cf5477844c96d23d",
+      "size": 6629,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/storefront/src/feature/support/application/ConversationDraft.ts",
+      "sha256": "3d1d883b8d1f8e19a00afcccc3d183c52cc0a487431f872b6630096414dd1140",
+      "size": 1006,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/application/CreateCase.ts",
-      "sha256": "9bb70a9cac0572d53fd76ce2409742f4d5a23c3ea0b26c80fb5a02269dbd0c29",
-      "size": 579,
+      "sha256": "dbce2b03fa1a4097982d072344b2e013d2e572d0164308610917f327cddd04f1",
+      "size": 674,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/application/ReadCases.ts",
-      "sha256": "2b15ef346fb4f04727fecd0176e6c2590ca81a5ff845ff2b9ca29575fee420c3",
-      "size": 356,
+      "sha256": "ca4daed56a12aad0d0bff5c18d5a28d0f45ca4f38ece2bf233bfefe967d88ec2",
+      "size": 513,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/application/ReadConversation.ts",
-      "sha256": "7c3df233dc0db62b6ec19fb85e2e5ef2cd3aa45560e28404cb83ccb5929123e8",
-      "size": 381,
+      "sha256": "a78d79ac389aec0e0a3f9ab5c8012d37a76260fb7e00232e7c1da8a743610113",
+      "size": 516,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/application/SendMessage.ts",
-      "sha256": "dfaed4a3d551a53d445864755c709ab62347d9b53d04965d8c847fad58448e56",
-      "size": 412,
+      "sha256": "4e1e5b5cb4e3f4c79cf4d7ed2b7912d587a53058cc47c609616370be73ce69de",
+      "size": 925,
       "mode": "0644"
     },
     {
@@ -3302,57 +3668,81 @@
       "mode": "0644"
     },
     {
+      "path": "apps/storefront/src/feature/support/application/UpdateReadState.ts",
+      "sha256": "f8d1f4ad6d45a565dfcaa23dfd73fa206a4c55e7992952a664af008451e350f6",
+      "size": 494,
+      "mode": "0644"
+    },
+    {
       "path": "apps/storefront/src/feature/support/application/UploadAttachment.ts",
-      "sha256": "17efffd665892a93b8e211e53a2705ec527912a8c951d1692401a50d59fd446e",
-      "size": 998,
+      "sha256": "bedac94d8bd7ed46ca301572f0f0c1df2fba0125c9997e63009da5cc34faba1e",
+      "size": 1480,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/storefront/src/feature/support/infrastructure/SupportEventSource.ts",
+      "sha256": "191e639dec1d48fe9765b944ca2a21ada6cc8c5a54ebb40bf0ee2217cf4e0b43",
+      "size": 586,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/infrastructure/SupportGateway.ts",
-      "sha256": "35f1a68416e83345196f6995854d4ef38e1c7f993d9171f151ebe1f8c5f5e2c8",
-      "size": 2135,
+      "sha256": "d8d675c7f16124fb4e605a028b70ea6a7adc1febf8137a4df3999a246def8024",
+      "size": 3352,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/infrastructure/SupportMapper.ts",
-      "sha256": "86bd7eabf03e51d19c0c26081a7281b699573f93a7d0dfbe87f79f6ab07aa8b6",
-      "size": 2112,
+      "sha256": "42a93c3a4e963691ca208a3975b1f0a2d9dd9cc234a1f0d1f5c0784ee9580d60",
+      "size": 3413,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/model/Attachment.ts",
-      "sha256": "0d66496e80c80c3be045a62921df81e647a6323f33f2e4035dfe174772419531",
-      "size": 439,
+      "sha256": "133edd2c8d19717e6b4f0873322f5cd5e4f49a6ea78252aac73665b9a9d263b4",
+      "size": 629,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/model/Message.ts",
-      "sha256": "19d4add660069ed1cca0d908c950481cd7906d8a7ed1a007fc6dc3a80261336d",
-      "size": 424,
+      "sha256": "6c80439a4fabd6b170d331a6071ea42b8dfe1a60499eb486cb650c67728d21fc",
+      "size": 847,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/model/SupportCase.ts",
-      "sha256": "5a9a7f0e97f70a2ce0a71ef966e0932fadba11a0008bdffb56255d88e7bb3182",
-      "size": 656,
+      "sha256": "6cf3bdc662eb31db54c16d5e01ca334e36fe11507a81956573f5fb8f87f6d8d8",
+      "size": 739,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/Support.test.ts",
-      "sha256": "f7a27999634c9ee1940bd734bfe3acf59eec1b65cf6e929c0e48026cdffaa4ad",
-      "size": 1025,
+      "sha256": "e969cedda3257f360276918302cef0ca0277318f3fb439d77b7bf4eb246cd54c",
+      "size": 1667,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/ui/ConversationPage.tsx",
-      "sha256": "b99fde3a22b03a6222b6354c6282c947bf37d7a210507fad8f5f7f1be197b7ba",
-      "size": 5743,
+      "sha256": "b11a9d9ddaf522e81b8353991aeb04fe54457f5cfc3825ffb7042ddb84725557",
+      "size": 13464,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/storefront/src/feature/support/ui/Support.css",
+      "sha256": "8722cc4c9e56d25d32defb462be710b8164ea8177631870ca6b43ce76803eeb8",
+      "size": 7451,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/storefront/src/feature/support/ui/SupportComposer.tsx",
+      "sha256": "63accf162f4cff165806c65df4caecc78a927f5461a2d84b9e526689e212263a",
+      "size": 2386,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/feature/support/ui/SupportPage.tsx",
-      "sha256": "4d35a150675c5e534dee7154a0c2499b0293ca20ffef0bb2aab156784d17eb56",
-      "size": 7794,
+      "sha256": "7b1f3c4ef33310c6c7ae8b3d2ff6d94b522ca2b1596611227ae30393c7bb9a7d",
+      "size": 7818,
       "mode": "0644"
     },
     {
@@ -3411,7 +3801,7 @@
     },
     {
       "path": "apps/storefront/src/generated/NavigationBinding.ts",
-      "sha256": "87ba7e7867499a78201c1384c9063e5d57526dc8df49bbabb30d0ec6130ac0ad",
+      "sha256": "9f6fc985ab5336e6b242ef17cf5a625a7d3be5de8c134e9c45b70e7695e3c4c2",
       "size": 1785,
       "mode": "0644"
     },
@@ -3423,8 +3813,8 @@
     },
     {
       "path": "apps/storefront/src/main.tsx",
-      "sha256": "cfdf2bdac41f50b28996e7726fbd710921dab92cfd063cf90096484c4a5f7dcb",
-      "size": 507,
+      "sha256": "0de0410d70f80de360c2a4071742a5727fae43b58faefa7eeba63e8c102d4fdd",
+      "size": 707,
       "mode": "0644"
     },
     {
@@ -3507,14 +3897,14 @@
     },
     {
       "path": "apps/storefront/src/shared/api/Session.ts",
-      "sha256": "f1bd874806ac5996b6213ad1327d6956f1fdfad558534d0e1852e7697e21cd1e",
-      "size": 1484,
+      "sha256": "c9c3b33cc3922f687014fe4952e397052191c72411f661d5d7535a5f0dba2c55",
+      "size": 1605,
       "mode": "0644"
     },
     {
       "path": "apps/storefront/src/shared/failure/Failure.ts",
-      "sha256": "8524e5682846f81c3d55e743c9e402c754b3dfdc86436e9b76d51038c19f0ec7",
-      "size": 2195,
+      "sha256": "5887cf8ebd7d9f1511b358006d7278db4df8e0c851cc122005e25176ee634118",
+      "size": 2295,
       "mode": "0644"
     },
     {
@@ -3711,8 +4101,8 @@
     },
     {
       "path": "config/navigation.yml",
-      "sha256": "5c3b2728559cf73d07ae2cfa0215180601dcc54e6d876e78bcd42a035206f1e3",
-      "size": 25225,
+      "sha256": "65a375905e0046ad5acc8088d37930e043a21056f1244bdd9464a94b6c1101dc",
+      "size": 26150,
       "mode": "0644"
     },
     {
@@ -3747,8 +4137,8 @@
     },
     {
       "path": "packages/authz/src/PermissionCatalog.ts",
-      "sha256": "eed40b9102defaf5c5110591806c11acc4e0ee6f6134eeab635d32cba33d2d4e",
-      "size": 81430,
+      "sha256": "ee8a8539ea6bb7489aa75476f23581fea6fea85f0e1a30b40db967aafc7ee233",
+      "size": 82351,
       "mode": "0755"
     },
     {
@@ -3879,14 +4269,14 @@
     },
     {
       "path": "packages/config/src/Release.ts",
-      "sha256": "047bb7b9b3ccca6f25148589d6cc46e2751d243c9107c3099b45b939d695d0be",
+      "sha256": "cfbed627324945b1953fd96ce2730bb3fe8bd1e2bcc940a3feb8cfcd2b0eec5d",
       "size": 201,
       "mode": "0755"
     },
     {
       "path": "packages/config/src/RuntimeCatalog.ts",
-      "sha256": "4b88d9e414d627779093bb5a7e7c673d8488a2b1426ee12f7d1fd0ab1fc5a181",
-      "size": 3657,
+      "sha256": "4826b9064ceae9d69a129d04829bdccff99398c8b4135bea92f3658a56084214",
+      "size": 3981,
       "mode": "0644"
     },
     {
@@ -3921,44 +4311,44 @@
     },
     {
       "path": "packages/contract/definitions/capabilities.yml",
-      "sha256": "1637bc2dbadebd3083d89cb9cf36d8eb7a3cc31334098fdeea63b4a8953c150d",
-      "size": 36331,
+      "sha256": "21dfd0062826f04cf35e9bd85b6f1d288860ecfb4e7e9265725b961d644c722e",
+      "size": 36593,
       "mode": "0755"
     },
     {
       "path": "packages/contract/definitions/errors.yml",
-      "sha256": "16253dfb060dfd7b44c6efa51b8464ad462198fa51327f8308e76698a887a482",
-      "size": 12520,
+      "sha256": "1175ef46431980e3dee838b51ccfb02aca1122b383fea5fe4f605692e3b7150f",
+      "size": 13729,
       "mode": "0644"
     },
     {
       "path": "packages/contract/definitions/events.yml",
-      "sha256": "db8e715f71a24032ac177c05c20cbb956006ba6f270e480c51aa182a4be4397d",
-      "size": 34756,
+      "sha256": "201dc4b477790f8cd42ddc93c32c76eba83db9b5e9fcc3b4a385eafeb75e972d",
+      "size": 37064,
       "mode": "0755"
     },
     {
       "path": "packages/contract/definitions/operations.yml",
-      "sha256": "3f3b866b6a8bf34d20bddf5c36095fa79b6bc5dba3e9fcf0f7dad308ffabd0aa",
-      "size": 350517,
+      "sha256": "8bec19ab276ccfcfeb8f03410665eec5b8c522c57f7e27001349175593ee3c7e",
+      "size": 353569,
       "mode": "0755"
     },
     {
       "path": "packages/contract/definitions/permissions.yml",
-      "sha256": "fc06f1af62bd441cb5b54dd422b1f9a14a3eaaf528b23120c515298633d5a9aa",
-      "size": 68734,
+      "sha256": "422d88c3d2ea600f70bfea2a0b271ec3d3ecc109bcef8eda3c48d35665cc0be8",
+      "size": 69529,
       "mode": "0644"
     },
     {
       "path": "packages/contract/events.json",
-      "sha256": "819f7ad5ccfe918c88ff166a47b5646ae0bc47eb4e6ca8eb3b16168b3df9dc35",
-      "size": 30366,
+      "sha256": "43a9a879e2492812231533fd18d4e7f35dcbbccdf5f4e864a4038a528e76c543",
+      "size": 32580,
       "mode": "0755"
     },
     {
       "path": "packages/contract/openapi.json",
-      "sha256": "acc7251c66eebbfa941401f4f96a978976652233d0f4708c456c423979ee864e",
-      "size": 2352085,
+      "sha256": "99bd307f76840ecf3731d6911d0d83a06e2ad25ab74c179b6835ecdcc01bb970",
+      "size": 2394430,
       "mode": "0755"
     },
     {
@@ -3987,8 +4377,8 @@
     },
     {
       "path": "packages/contract/src/Contract.test.ts",
-      "sha256": "58cbf151db28592af610cb4375fa22e085068bcd870c295b891c2558f9cc475a",
-      "size": 14342,
+      "sha256": "8071b5f90858e410525c6ca5183cc978e41a4ecd532c19f8743c60e890f33729",
+      "size": 14802,
       "mode": "0755"
     },
     {
@@ -3999,7 +4389,7 @@
     },
     {
       "path": "packages/contract/src/ContractIdentity.ts",
-      "sha256": "3dac7e79e43cab0d6f5f8f403a05749b6d8a9f57cad2c28d3c0c1a8865cd88b2",
+      "sha256": "fa07c5358b09fee7920f79abeb1837cfa81b672887bb535407f1b0ed46aafb11",
       "size": 214,
       "mode": "0644"
     },
@@ -4017,8 +4407,8 @@
     },
     {
       "path": "packages/contract/src/ErrorContract.ts",
-      "sha256": "fbe3cda711816df6a31a99a811de5a6d4c310f04f9a079d9748227a2fae6a661",
-      "size": 12512,
+      "sha256": "8580dafeee00c8b1cba8ff6ece3a959ebbff456f97914edf8740a70980971c11",
+      "size": 13655,
       "mode": "0644"
     },
     {
@@ -4035,14 +4425,14 @@
     },
     {
       "path": "packages/contract/src/events/CommerceEvents.ts",
-      "sha256": "fa2548c243b37dac3acfd74c865aef85cbde39f56515b81d7994ee3d7cae86b5",
-      "size": 8311,
+      "sha256": "005ec6b9627b2c1669a65753dc06ac2003b05b9863eb124f312714f5e19cff3b",
+      "size": 8819,
       "mode": "0755"
     },
     {
       "path": "packages/contract/src/EventSerializer.ts",
-      "sha256": "933cab3d574ea8e709ce067cae7c9dbfa442cc6319a4bc2eca2df0d92b80de8c",
-      "size": 23750,
+      "sha256": "ab10c67a041a41fbea528573c8cc777042f41147a8850225925c9762cab60921",
+      "size": 25236,
       "mode": "0755"
     },
     {
@@ -4053,14 +4443,14 @@
     },
     {
       "path": "packages/contract/src/HttpContract.ts",
-      "sha256": "669fc803478482d612fe2f4f22aca41c6b11aa5904d983d3b3ee23ab9d3be3f5",
-      "size": 1378,
+      "sha256": "523cb6c5dbb37dd5729c9187266440bdf941490234d2ad32e1ac29043a83177d",
+      "size": 1436,
       "mode": "0644"
     },
     {
       "path": "packages/contract/src/IdentityInput.ts",
-      "sha256": "c023769d0cc3ad87d0e135a796b185dd7d326d12ca91bafabd179dd4638fc0ff",
-      "size": 3976,
+      "sha256": "250cd4e676c0d742fa61c34426ec2e970156be2083a0731af90ac258b318b365",
+      "size": 4487,
       "mode": "0644"
     },
     {
@@ -4077,8 +4467,8 @@
     },
     {
       "path": "packages/contract/src/Operation.ts",
-      "sha256": "db9a51510a9051ebd9bacc563aa08c3e14fdd7111f5eced9bd1ea6dddda8cad4",
-      "size": 5464,
+      "sha256": "dbb134458eb285c6ae91fc73aeab4cb97c20c0d76fc9cdeef65a365c9c7f1233",
+      "size": 5474,
       "mode": "0644"
     },
     {
@@ -4101,14 +4491,14 @@
     },
     {
       "path": "packages/contract/src/operations/CommerceCatalog.ts",
-      "sha256": "caded319390dbf08361affcc9ad3d82285d6dc35a1d004aa69ed2e5daf0643ea",
-      "size": 405404,
+      "sha256": "5a1b11ece4cc9b932d4f1cf7d070a79b9caf984acf6294b30411485cd3b0aa51",
+      "size": 408769,
       "mode": "0644"
     },
     {
       "path": "packages/contract/src/operations/CommerceSchemas.ts",
-      "sha256": "a9e9df61edd30df0652489c312e76aecd70686e6f5c073c2285523fb91aab778",
-      "size": 53540,
+      "sha256": "b472f3693cdc26e44bdb596a93b55b273e61e632d71e1d8e87400ef584cb9f46",
+      "size": 53923,
       "mode": "0644"
     },
     {
@@ -4143,7 +4533,7 @@
     },
     {
       "path": "packages/contract/src/RequirementCatalog.ts",
-      "sha256": "511d2411b60365ad1f11a42121ec003a54df7e62174477b2c3e5e386be6dfc34",
+      "sha256": "739479210780bc2d29816568df10387059e87822c514e7ea18442a54ae787389",
       "size": 6465,
       "mode": "0644"
     },
@@ -4227,8 +4617,8 @@
     },
     {
       "path": "packages/contract/src/schema/IdentitySchema.ts",
-      "sha256": "e604f88c16c2c8aaf8ae8be5318cc7718b43a92d3fae5d5a34fe63615bebd0da",
-      "size": 4749,
+      "sha256": "6c9c9a26146b21bd4eec0dfb9e4df9ff1234c4756e5a4330b9591e471e2b8308",
+      "size": 5206,
       "mode": "0644"
     },
     {
@@ -4239,8 +4629,8 @@
     },
     {
       "path": "packages/contract/src/schema/index.ts",
-      "sha256": "e740564dd5e007afa87d372ec749dd25027ccaea50bd4fc826c5e4c8ad79b34a",
-      "size": 11189,
+      "sha256": "4ca85a9422ed07cdfccd3c346f9b5047bc894b4ec46472e2e1ebe8bc1774a20d",
+      "size": 12094,
       "mode": "0644"
     },
     {
@@ -4365,8 +4755,8 @@
     },
     {
       "path": "packages/contract/src/schema/SupportSchema.ts",
-      "sha256": "de884a5557ed73e8e2873729c967f661fcb9336e7056ca30518c888a6442f744",
-      "size": 6444,
+      "sha256": "774dcb692a8b85b67bda95cdd960fd852cac94c9a7027142e156bc6a94499f0f",
+      "size": 8952,
       "mode": "0644"
     },
     {
@@ -4509,8 +4899,8 @@
     },
     {
       "path": "packages/design/src/Dialog.tsx",
-      "sha256": "317c98921daebe5a28e171277d695d04e6c72fa28cb8ff9186da3b9f0159641d",
-      "size": 1370,
+      "sha256": "70b395cea12f8435acebcc2ee15c1a1c0dbd3f569c899031be71fe428ff0c9e8",
+      "size": 1396,
       "mode": "0755"
     },
     {
@@ -4581,8 +4971,8 @@
     },
     {
       "path": "packages/design/src/ResourcePanel.tsx",
-      "sha256": "06fd4692946ba556afc02811f02e4a0cde49bbec1bed1243c475cd37a685f9fd",
-      "size": 1836,
+      "sha256": "55b4c263d679fa73b51e1bad8cb93c96e47377b45e8356e81b147b1dcac80ae8",
+      "size": 1890,
       "mode": "0644"
     },
     {
@@ -4689,14 +5079,14 @@
     },
     {
       "path": "packages/sdk/src/ApiClient.test.ts",
-      "sha256": "f44c2c8de51b907855e4ea1e8a997ae9c2a327e713e04efa6f089d6053a1097a",
-      "size": 7507,
+      "sha256": "db6c8a0c57cbfaf6b8d41d3a68ae6552d122721793272746b61236a37a322e46",
+      "size": 9271,
       "mode": "0755"
     },
     {
       "path": "packages/sdk/src/ApiClient.ts",
-      "sha256": "b9bcf64f6f9427c6bafa8be891a0710b4e0c861ce82c1ff5c2ea9f54c69f3905",
-      "size": 7264,
+      "sha256": "88d65fe378ae441a9d44b4e0033d6396255c9060d30a19c09a9d9b727859787b",
+      "size": 9275,
       "mode": "0755"
     },
     {
@@ -4730,15 +5120,27 @@
       "mode": "0644"
     },
     {
+      "path": "packages/sdk/src/EventStream.test.ts",
+      "sha256": "f69f4214bab927766ef5482dfcabc464fe9cb2f56a9205d0510f345cd8091fc6",
+      "size": 4650,
+      "mode": "0644"
+    },
+    {
+      "path": "packages/sdk/src/EventStream.ts",
+      "sha256": "e93a74024ffd2ce5d88f0c757ea90cbb85e497660e7d02346800526801c46489",
+      "size": 7973,
+      "mode": "0644"
+    },
+    {
       "path": "packages/sdk/src/FetchTransport.test.ts",
-      "sha256": "fde3368ffb4f22f5706b8efc77dac13b49821dd1ec4016403b785cf71b7f9ee6",
-      "size": 1482,
+      "sha256": "35704a69f7b17572002edc1c2234a4bdd47aac4dd5d78047f01b083309f882df",
+      "size": 3196,
       "mode": "0755"
     },
     {
       "path": "packages/sdk/src/FetchTransport.ts",
-      "sha256": "6261136491b116d68665c17231edba54f6120265bfdd4bd5b21938f0d5bae4f9",
-      "size": 1452,
+      "sha256": "b90ec27e81b24cacdc01dfc9bd99dcd3ca155c615d88045e09db7ba9ae895d08",
+      "size": 2791,
       "mode": "0755"
     },
     {
@@ -4755,236 +5157,248 @@
     },
     {
       "path": "packages/sdk/src/index.ts",
-      "sha256": "11a1718847e3ba7bd6fa62b0fefa10680c2f4bc37b8f11a583fc976b2be6270e",
-      "size": 913,
+      "sha256": "580b10a4206fc9570907a81e70d6affd620fc901cdeeec1f6c9d925115cae97f",
+      "size": 1210,
       "mode": "0755"
     },
     {
+      "path": "packages/sdk/src/ObjectUpload.test.ts",
+      "sha256": "e47f5e3bb495861ec27b6deac2d9377554e9f54df3ca96dcf4f8bf9df457cc8d",
+      "size": 1086,
+      "mode": "0644"
+    },
+    {
+      "path": "packages/sdk/src/ObjectUpload.ts",
+      "sha256": "e463c2a459a09fea13bb3ddea03fc8921002d8c7c02c8c0af1daaeb79fff1e39",
+      "size": 884,
+      "mode": "0644"
+    },
+    {
       "path": "packages/sdk/src/OperationDescriptor.ts",
-      "sha256": "fcde63fe6078e6439fa44b52cee95a7229248ea14707934c77587cc6ee63c371",
-      "size": 2208,
+      "sha256": "e477e3581e545e3ac602a38d6d5b73a142fece35c8c29c16fcfb98d813a9cb27",
+      "size": 2907,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/access.ts",
-      "sha256": "9421e541d564890cd742d392971155f9e0f03979081e1634ade91a474e8c46e4",
-      "size": 3952,
+      "sha256": "d103aa348de7dd815cb2a8cf5d5cbc0dc8591285b4be4ffd43ec829419ba747f",
+      "size": 3999,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/audit.ts",
-      "sha256": "9b3ec747ecbc139e8ab9c453a21bb409a967423029084ec54d1995ed87bb692e",
-      "size": 1335,
+      "sha256": "25e7e3fc75b5202ae6421959fcbc129b1f0bbf744dabc9c0219fd9a4e5610728",
+      "size": 1382,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/benefit.ts",
-      "sha256": "439ad377228922d2ddca0800284e477c95b18f94a5a823cb9dbe1a739ef2ac21",
-      "size": 8448,
+      "sha256": "a68001ab6617c1933e7a03bf8b1d5bfbddd03d3dc5835ec7cd76d3c358e1e3e4",
+      "size": 8495,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/capability.ts",
-      "sha256": "7b35ba89893519b2f6d5c8ab1373ec9cc493b80eb452861f7aa4593155cde390",
-      "size": 2203,
+      "sha256": "59d8ceec18663e6a5b27719f9e214c4ee8d6258c32c0c0d20f0239a8e3db1c22",
+      "size": 2250,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/cart.ts",
-      "sha256": "0140d35ab6ddd75b6d6333750d7f50298e884da73f3866d61425f0a7089e0a8f",
-      "size": 2563,
+      "sha256": "0aee3f4c376b987a9e0bbb8f49e86adaa432f85ff97b8b9792b5d4bec3b6eb54",
+      "size": 2610,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/catalog.ts",
-      "sha256": "b0c4aa50e1d184bae88a40e59b8d54e0def7c346969334a5650d08449f477a34",
-      "size": 10145,
+      "sha256": "78b2651b5160fd9cb97b76b95474705e16d246ed901e885db7a6e33e22b00b69",
+      "size": 10192,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/channel.ts",
-      "sha256": "299bc44fa96ff2e11760312038a41788f8631f48c776ccff9d9013a1577e04e0",
-      "size": 13309,
+      "sha256": "65a9f0cd39291ad1807fe6c36479a11f621c5576ecf0989871bcb20ed22bf5a5",
+      "size": 13356,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/checkout.ts",
-      "sha256": "679c20d4db323878e4be86469d8da81574659f07a7860fa35ef1d24aaad1152d",
-      "size": 2118,
+      "sha256": "cc52198ca64774501585533c0da83303126bec3d55583104dd93541be633d561",
+      "size": 2165,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/CommerceClient.ts",
-      "sha256": "d067808ba545da326428733b60326e99dd64ad019faf6b78b60403f55476e5ee",
-      "size": 16272,
+      "sha256": "7b3b1da5087838e061843d4ce2e6a93a47cb7fe999de8c92ce6e4dca593bed51",
+      "size": 16350,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/experience.ts",
-      "sha256": "5f710130540c9f54ba5bed012d2c178e360c5ad50fb9b2483644df5b2bed8587",
-      "size": 7395,
+      "sha256": "6aba086177fc47e71ab01fded2fc58707906f46009dcaadc3a378072761863a4",
+      "size": 7442,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/extension.ts",
-      "sha256": "b55c301fbd40602bcb362cba865b8e2f532f27362cf9d7eaca6681c324990722",
-      "size": 1471,
+      "sha256": "f9d026d750a35acb3932507eb5be8ec656ddd14f1a669f9f36ec4df34e96077c",
+      "size": 1518,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/finance.ts",
-      "sha256": "05d9e72897cc9759ce705b853174c3422dd92ea804df57ee25fd1f5e2a079978",
-      "size": 20697,
+      "sha256": "202d4e821390cfc7b2296fadae58943a9a26712bebb8e0bc10e3efe7b3fbd843",
+      "size": 20744,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/fulfillment.ts",
-      "sha256": "dbc98f69b1073f1833ba2632e3853fdb50a4cc965a96fed035c844021602d212",
-      "size": 3602,
+      "sha256": "e88c3938e0573e6b9701fe0182366683a2f15ff15c6f47aadc9949241ce564d4",
+      "size": 3649,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/identity.ts",
-      "sha256": "db746588bdb42708db4401899391daa631dc9720df499ec5eb7221050bbe932d",
-      "size": 25317,
+      "sha256": "4c96eba7d584e1c34a4e3ab6b8962cf2de5a1c8f0111f1f05c72fac5fc278e4c",
+      "size": 25363,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/inventory.ts",
-      "sha256": "1c5bcccab1ae9a815973f77b68de53797c6ed7239fcb3b907adf2b0f4d0fa535",
-      "size": 2069,
+      "sha256": "0c920040161bedbe01b1f4368fcd00be5d9b4dfe6f6783b060028dfc4812450d",
+      "size": 2116,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/invoice.ts",
-      "sha256": "1671d7ea35411735f82b862d5080ec2ccac7b1ad893263f3b7ab1b9f2d0ff762",
-      "size": 5416,
+      "sha256": "993bf4ce06295eabef6edbc91abdb644f03cd2f0ac7e2f51f98b69b844471f18",
+      "size": 5463,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/marketing.ts",
-      "sha256": "4c38769f7751aba3cf07092334f7fc2a2825cead49e1ed03b23fce59835a7607",
-      "size": 1422,
+      "sha256": "5beb66c5bfb7adb022209e7a0d77058c834b6b45b08f0b9ac9c68f29f001f938",
+      "size": 1469,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/member.ts",
-      "sha256": "fc869c015ee96011ed6a57ee12733894be88dabb42c26becebc607c4761a7f8a",
-      "size": 5947,
+      "sha256": "3523f0e5278572b73c6220da654c641791508327613d4c794d6d7261cb8c9e05",
+      "size": 5994,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/navigation.ts",
-      "sha256": "ce671c18bfc815de4d7a29ccd51c0c38df7a77d9c82be0a143d1e3905c28785b",
-      "size": 2657,
+      "sha256": "68d153a2b84f00bd84ba881374a8fc0e594d305213d194fe5acf5f0b5b559f23",
+      "size": 2704,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/notification.ts",
-      "sha256": "b9e2de21a93cf665fd69e49e9e052b952e403e13f55d59b18916e2b3e5ef69e7",
-      "size": 7411,
+      "sha256": "8eaae05c4e8f5e95db98b1c4f0f3f77e9a79ae4ea9bb732779a89523a90e3727",
+      "size": 7458,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/observability.ts",
-      "sha256": "5cb8027b819312c294565506a1df5ccb612090f1bd47849a263b55f4b2bfa4f0",
-      "size": 2271,
+      "sha256": "1a60ee1becf5e7d22320e9cda026cc06439b9ede5f05ac7cd2a664f0c8f0ee50",
+      "size": 2318,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/order.ts",
-      "sha256": "c315604fce47ff0d76ea4101cb6501cfd558242dc687fbdaeaa3f78be0114379",
-      "size": 6718,
+      "sha256": "7600a03147c6e9eb8f01a85701f6f7bbb354a945fd64e73efb82bd6f05ca67b5",
+      "size": 6765,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/organization.ts",
-      "sha256": "4ef0348914e8b246b8d0b5283bd7e08e5d20d095dfee6a08dc348c66980bfef3",
-      "size": 6623,
+      "sha256": "6f74e63b1e9631413e81f0ea5b19ac82a4b765a315a9571619ae2b8c2501bfaa",
+      "size": 6670,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/partner.ts",
-      "sha256": "b9b6be29fcb26d51bb33802e99e255122b3090c6b800ee887495d51879b7d49b",
-      "size": 2045,
+      "sha256": "0c55589ab431a0ec9f9a464e85734cf825014c8cfe5b08de44de51b37e47b0b6",
+      "size": 2092,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/payment.ts",
-      "sha256": "e187ef17f211524e2955c458c4498dd632dd01453678d402f95784d61b1a7c9d",
-      "size": 4118,
+      "sha256": "29955705aa593450347b9d785dbfac4b4ccb3964202f1dcf3ae84cd110177dbf",
+      "size": 4165,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/pricing.ts",
-      "sha256": "30d2d9ae0b715d9021f808dc625d85928293a78878af71f4d4ec191d3af0310c",
-      "size": 2033,
+      "sha256": "a7ad85f4d1a5f49af51d882feb20c8692886f8d48742e49a4b647fed181b0494",
+      "size": 2080,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/qualification.ts",
-      "sha256": "5cd6e3d383743e9e447bae574846c54c5462274148b89756ffdc82ba0286534f",
-      "size": 2900,
+      "sha256": "27f948f8cc082d8e4bf479564c6847259e999875e4ae8f08c510aea45c562076",
+      "size": 2947,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/referral.ts",
-      "sha256": "5f0b16077ec3068bee906c9adb914a4577367ef030ae901edb8ef502f76a5163",
-      "size": 10929,
+      "sha256": "3d2af3da826f9f7b14a9d931ee22b7cc5e5582b51eb56eff0aacdca224fdeeee",
+      "size": 10976,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/reporting.ts",
-      "sha256": "05447cbbd292cbdde0cb64eca325ae41c75c6174c4561396fb720ba4fc8b121f",
-      "size": 7452,
+      "sha256": "a2382222424e62906a0fac6f82feefbfdc5e187fa4649f539adddf0616d4383a",
+      "size": 7499,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/risk.ts",
-      "sha256": "782fb947a12450fcf4fc3dbeb1c505cc619e2d61ce7cf9b7fc3e81e83e8c43d0",
-      "size": 2588,
+      "sha256": "aa945e3337077c181963e33d46287b120bdd1bccc5c41407d669b62ba77e735b",
+      "size": 2635,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/runtime.ts",
-      "sha256": "ea77f41f430d45a10bb7c1273a28431cfa6dff3b92ad9020033b225c418cfce6",
-      "size": 3271,
+      "sha256": "2c3b265f231333bce72f255bf5698889d8ee2ed45fe80208aab50778a33d0e2c",
+      "size": 3318,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/storefront.ts",
-      "sha256": "8f8600d1f70e0d133191c96fe57ea9db769c280ded9332542c0683f32783a401",
-      "size": 2102,
+      "sha256": "57071a85e57070ddcd4396b3246372f6384b8956c7490805e38acb734ef56f7f",
+      "size": 2149,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/support.ts",
-      "sha256": "45fffe5dba1ce118dc5ba8be778ddbc23073a0bf8cf1e3041be3da092acab085",
-      "size": 12443,
+      "sha256": "1d3e793929a42aabd8fbaaa5ade404ba1fdfc9a073604f51a729613e3c3db7c8",
+      "size": 13879,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/verification.ts",
-      "sha256": "3fd6c9eb9142a537f45dd12db878444c6fd6ad8862be08b017206330e0c3d016",
-      "size": 4973,
+      "sha256": "ef7a14e969c81966daf1b9e88e63666872fad5f7e4a04713c898803f98603ea2",
+      "size": 5020,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/operations/voucher.ts",
-      "sha256": "aca984e1de9e5da955a2f53b14b4bd0290f1e52679cc65dcc9293b743d2d852f",
-      "size": 13622,
+      "sha256": "70daf6bcc2ff2b2181c1141eb155c7399e7b8a8dcb5eaeeafd16e48044b56f71",
+      "size": 13669,
       "mode": "0644"
     },
     {
       "path": "packages/sdk/src/RequestContext.ts",
-      "sha256": "9f445038d95f3cdea2fdefe4b885c12e043e87f2c292215283b5188ad2a1d006",
-      "size": 785,
+      "sha256": "d2f84463b6cae7374b7cd71fafef1f150b133852110cb74c333525e1193526e6",
+      "size": 818,
       "mode": "0755"
     },
     {
       "path": "packages/sdk/src/RequestContextFactory.ts",
-      "sha256": "0a47aa96d3001298e56b89a977fa67b25e3d4e8cfe0fa34613f7de4252316199",
-      "size": 3438,
+      "sha256": "69a0656060d4736d6151323d4efad61ae8847857a30ea4825c81b3e06949069b",
+      "size": 3597,
       "mode": "0644"
     },
     {
@@ -4995,8 +5409,8 @@
     },
     {
       "path": "packages/sdk/src/Transport.ts",
-      "sha256": "c1c3c1a9d8547306bcd4329b81c391b88155cfe38eefd6abdf7ddcfe98121949",
-      "size": 443,
+      "sha256": "0aae23a8c85ce11214c96e418921a8d0b4349b6ccb1a2ab4e58d497afa1b7781",
+      "size": 714,
       "mode": "0755"
     },
     {
@@ -5049,8 +5463,8 @@
     },
     {
       "path": "packages/telemetry/src/ClientErrors.test.ts",
-      "sha256": "67f35f8fbabcefd380ed12f1c308df296e94222175129274537bf22a2d74913b",
-      "size": 2276,
+      "sha256": "d21168ff1e32d503f6fb83f6c8218eb6a15f7b4f29e2e4c575e351b22ae29c48",
+      "size": 2258,
       "mode": "0644"
     },
     {
@@ -5096,15 +5510,21 @@
       "mode": "0755"
     },
     {
+      "path": "packages/telemetry/src/RedactionCatalog.ts",
+      "sha256": "f296d7952523934ff2c0c510f63ae47fb570969ded97d2120b17770b963943a0",
+      "size": 640,
+      "mode": "0644"
+    },
+    {
       "path": "packages/telemetry/src/Redactor.test.ts",
-      "sha256": "62ba256ffc9ba02c5bcf32f9e086ebeca741e8e64253a59be81de550c38f0ad3",
-      "size": 884,
+      "sha256": "0bbeaa63081c4c26c62f76329baed21e8a395f15785deac4a96e596b56e11283",
+      "size": 1519,
       "mode": "0755"
     },
     {
       "path": "packages/telemetry/src/Redactor.ts",
-      "sha256": "290141cd4b7fb4716a09dd1aa08afaebe0c6cd8fedce9d9b29e399774e62238e",
-      "size": 1148,
+      "sha256": "bd501772e3210cbd09e958c54326551fff3bb9b5bce21386b4d7be726cfb1c54",
+      "size": 1005,
       "mode": "0755"
     },
     {

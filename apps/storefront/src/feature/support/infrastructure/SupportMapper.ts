@@ -2,25 +2,41 @@ import type { SupportAttachment } from '../model/Attachment';
 import type { Conversation, SupportMessage } from '../model/Message';
 import type { SupportCase, SupportPage } from '../model/SupportCase';
 import { nullableText } from '../../../shared/format/Text';
+import type { OperationOutputFor } from '@shop/contract';
 
-type RecordValue = Readonly<Record<string, unknown>>;
+type CasesOutput = OperationOutputFor<'support.cases.read'>;
+type ConversationOutput = OperationOutputFor<'support.messages.read'>;
 
-export function mapCases(value: Readonly<{ items: readonly RecordValue[]; nextCursor?: string }>): SupportPage {
+export function mapCases(value: CasesOutput): SupportPage {
   return Object.freeze({
     items: Object.freeze(value.items.map(mapCase)),
     ...(value.nextCursor ? { nextCursor: value.nextCursor } : {}),
   });
 }
 
-export function mapConversation(value: Readonly<{ items: readonly RecordValue[]; attachments: readonly RecordValue[]; nextCursor?: string }>): Conversation {
+export function mapConversation(value: ConversationOutput): Conversation {
   return Object.freeze({
-    items: Object.freeze(value.items.map(mapMessage)),
+    items: Object.freeze([...value.items].map(mapMessage).sort((left, right) => left.sequence - right.sequence || left.id.localeCompare(right.id))),
     attachments: Object.freeze(value.attachments.map(mapAttachment)),
+    conversationVersion: value.conversationVersion,
+    latestSequence: value.latestSequence,
+    lastReadSequence: value.lastReadSequence,
     ...(value.nextCursor ? { nextCursor: value.nextCursor } : {}),
   });
 }
 
-function mapCase(value: RecordValue): SupportCase {
+export function mergeConversations(pages: readonly Conversation[]): Conversation {
+  const messages = new Map<number, SupportMessage>();
+  const attachments = new Map<string, SupportAttachment>();
+  for (const page of [...pages].reverse()) {
+    for (const message of page.items) messages.set(message.sequence, message);
+    for (const attachment of page.attachments) attachments.set(attachment.id, attachment);
+  }
+  const latest = pages[0];
+  return Object.freeze({ items: Object.freeze([...messages.values()].sort((left, right) => left.sequence - right.sequence || left.id.localeCompare(right.id))), attachments: Object.freeze([...attachments.values()]), conversationVersion: latest?.conversationVersion ?? 0, latestSequence: latest?.latestSequence ?? 0, lastReadSequence: latest?.lastReadSequence ?? 0, ...(pages.at(-1)?.nextCursor ? { nextCursor: pages.at(-1)!.nextCursor } : {}) });
+}
+
+function mapCase(value: CasesOutput['items'][number]): SupportCase {
   return Object.freeze({
     id: String(value.id),
     conversationId: String(value.conversation_id),
@@ -33,13 +49,15 @@ function mapCase(value: RecordValue): SupportCase {
     resolutionDueAt: String(value.resolution_due_at),
     updatedAt: String(value.updated_at),
     version: Number(value.version),
+    unreadCount: Number(value.unread_count),
+    slaRisk: value.sla_risk,
   });
 }
 
-function mapMessage(value: RecordValue): SupportMessage {
-  return Object.freeze({ id: String(value.id), authorType: value.authorType as SupportMessage['authorType'], author: nullableText(value.author), body: String(value.body), createdAt: String(value.createdAt) });
+function mapMessage(value: ConversationOutput['items'][number]): SupportMessage {
+  return Object.freeze({ id: value.id, clientMessageId: value.clientMessageId, authorType: value.authorType, authorId: value.authorId, body: value.body, sequence: value.sequence, version: value.version, createdAt: value.createdAt });
 }
 
-function mapAttachment(value: RecordValue): SupportAttachment {
-  return Object.freeze({ id: String(value.id), reference: String(value.object_ref), sha256: String(value.sha256), contentType: String(value.kind), size: Number(value.size_bytes), createdAt: String(value.created_at) });
+function mapAttachment(value: ConversationOutput['attachments'][number]): SupportAttachment {
+  return Object.freeze({ id: value.id, messageId: value.messageId, name: value.name, contentType: value.contentType, size: value.sizeBytes, state: value.state, download: value.download ?? null, createdAt: value.createdAt });
 }

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/presentation/QueryState';
 import { useRouteTitle } from '../../shared/ui/RouteTitle';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';

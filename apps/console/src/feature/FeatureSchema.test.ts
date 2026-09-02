@@ -9,7 +9,7 @@ import { orderKey } from './order/OrderQuery';
 import { ListingPageSchema } from './product/ProductSchema';
 import { productKey } from './product/ProductQuery';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
-import { queryCondition } from '../shared/api/QueryState';
+import { queryCondition } from '../shared/presentation/QueryState';
 
 describe('Console feature-owned response schemas', () => {
   it('normalizes database bigint strings only when safe', () => {

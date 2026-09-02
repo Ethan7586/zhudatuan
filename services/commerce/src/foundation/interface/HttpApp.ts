@@ -8,6 +8,7 @@ import type { OperationMetrics } from '../telemetry/OperationMetrics';
 import type { CsrfProtector } from '../security/CsrfProtector';
 import { ErrorMapper } from './ErrorMapper';
 import { operationController } from './OperationController';
+import { isHttpStream } from './HttpStream';
 
 export class HttpApp {
   private readonly origins: ReadonlySet<string>;
@@ -59,6 +60,12 @@ export class HttpApp {
       observedStatus = result.status;
       const response = operationResponse(operation, request, result, this.origins);
       observedStatus = response.status;
+      if (isHttpStream(response.body)) {
+        const streamContext = { requestId, traceId: request.headers.get('x-trace-id') ?? requestId, operation: operation.id, version: CONTRACT_VERSION };
+        const streamStarted = performance.now();
+        response.body.onClose((reason) => this.metrics?.stream(streamContext, performance.now() - streamStarted, reason));
+        return secureStream(response.status, response.body, request.signal, requestId, origin, response.headers);
+      }
       return secure(response.status, response.body, requestId, origin, response.headers, operation.cachePolicy);
     } catch (cause) {
       if (requestCancelled(cause, request.signal)) {
@@ -161,6 +168,20 @@ function secure(status: number, body: unknown, requestId: string, origin?: strin
   return new Response(serialized, { status, headers: output });
 }
 
+function secureStream(status: number, stream: import('./HttpStream').HttpStream, signal: AbortSignal, requestId: string, origin?: string | null, headers: Readonly<Record<string, string>> = {}): Response {
+  const output = new Headers({
+    'content-type': 'text/event-stream; charset=utf-8',
+    'cache-control': 'no-cache, no-transform',
+    connection: 'keep-alive',
+    'x-accel-buffering': 'no',
+    'x-request-id': requestId,
+    'x-content-type-options': 'nosniff',
+    ...(origin ? { 'access-control-allow-origin': origin, 'access-control-allow-credentials': 'true', 'access-control-expose-headers': BrowserResponseHeaders.join(','), vary: 'origin' } : {}),
+  });
+  for (const [name, value] of Object.entries(headers)) output.set(name, value);
+  return new Response(stream.readable(signal), { status, headers: output });
+}
+
 function preflight(request: Request, requestId: string, origin: string | null): Response {
   if (!origin) return secure(400, { code: 'ORIGIN_REQUIRED', requestId }, requestId);
   const method = request.headers.get('access-control-request-method');
@@ -214,6 +235,10 @@ function operationResponse(operation: ReturnType<typeof OperationCatalog.get>, r
   if (operation.responseMode === 'empty') {
     if (result.status !== 204 || result.body !== undefined) throw new ApplicationError('INTERNAL_ERROR');
     return { status: 204, body: undefined, headers } as const;
+  }
+  if (operation.responseMode === 'stream') {
+    if (result.status !== 200 || !isHttpStream(result.body)) throw new ApplicationError('INTERNAL_ERROR');
+    return { status: 200, body: result.body, headers } as const;
   }
   if (operation.cachePolicy === 'etag' && headers.etag && request.headers.get('if-none-match') === headers.etag) {
     return { status: 304, body: undefined, headers } as const;

@@ -3,7 +3,7 @@ import { createFetchIdentityProvidersRead, createFetchIdentityProvidersTest } fr
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
 import { consoleCommand, consoleRequest } from '../../../shared/api/Client';
-import { queryCondition, safeQueryError } from '../../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../../shared/presentation/QueryState';
 import { appConfig } from '../../../shared/config/AppConfig';
 import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 

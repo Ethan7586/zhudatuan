@@ -6,6 +6,7 @@ import { createCatalogOperations } from './operations/catalog';
 import { createOrderOperations } from './operations/order';
 import { createIdentityOperations } from './operations/identity';
 import { createRuntimeOperations } from './operations/runtime';
+import { createSupportOperations } from './operations/support';
 import type { RequestContext } from './RequestContext';
 import type { Transport, TransportRequest, TransportResponse } from './Transport';
 
@@ -152,6 +153,49 @@ describe('ApiClient contract identity', () => {
     const cached = { status: 'live', eventLoop: 'responsive' } as const;
     await expect(createRuntimeOperations(client).healthLive({}, { ...context(), ifNoneMatch: '"health"', cachedResponse: cached })).resolves.toEqual(cached);
     await expect(createRuntimeOperations(client).healthLive({}, { ...context(), ifNoneMatch: '"health"' })).rejects.toMatchObject({ code: 'CONTRACT_RESPONSE_INVALID', status: 502 });
+  });
+
+  it('opens stream operations with every authentication header and Last-Event-ID', async () => {
+    let request: TransportRequest | undefined;
+    const encoder = new TextEncoder();
+    const client = new ApiClient('https://shop.example', {
+      send: () => Promise.reject(new Error('UNEXPECTED_JSON_REQUEST')),
+      open: (value) => {
+        request = value;
+        return Promise.resolve({
+          status: 200,
+          headers: { 'x-request-id': 'request:stream' },
+          stream: new ReadableStream<Uint8Array>({
+            start(controller) {
+              controller.enqueue(encoder.encode('id: event:2\ndata: {"id":"event:2","type":"support.message.sent","scopeId":"mall:one","ticketId":"ticket:one","conversationId":"conversation:one","messageId":"message:one","sequence":2,"version":3,"occurredAt":"2026-09-02T12:00:00.000Z"}\n\n'));
+              controller.close();
+            },
+          }),
+        });
+      },
+    });
+    const stream = createSupportOperations(client).eventsRead(
+      { query: { conversationId: 'conversation:one' } },
+      {
+        ...context(),
+        target: 'console',
+        scope: { kind: 'mall', id: 'mall:one' },
+        accessVersion: 9,
+        deviceId: 'device:one',
+        lastEventId: 'event:1',
+      }
+    );
+
+    await expect(stream[Symbol.asyncIterator]().next()).resolves.toMatchObject({ done: false, value: { id: 'event:2', sequence: 2 } });
+    expect(request?.headers).toMatchObject({
+      accept: 'text/event-stream',
+      'last-event-id': 'event:1',
+      'x-client-target': 'console',
+      'x-scope-hint': 'mall:one',
+      'x-access-version': '9',
+      'x-device-id': 'device:one',
+    });
+    stream.close();
   });
 });
 

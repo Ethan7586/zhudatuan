@@ -301,10 +301,17 @@ async function ensureLocalStore(database: Client): Promise<void> {
 
 async function ensureLocalSupport(database: Client): Promise<void> {
   await database.query(
-    `insert into support.account(id,scope_id,channel,external_ref,secret_ref,state,version)
-    values('support-account-local-inapp',$1,'inapp','smartwing-local',null,'active',0)
+    `insert into support.account(
+      id,scope_id,channel,external_ref,secret_ref,state,version,
+      validation_state,validation_code,validated_at,secret_version
+    )
+    values('support-account-local-inapp',$1,'inapp','smartwing-local',null,'active',1,
+      'notrequired','SUPPORT_ACCOUNT_LOCAL',clock_timestamp(),null)
     on conflict(id) do update set scope_id=excluded.scope_id,channel=excluded.channel,
-      external_ref=excluded.external_ref,secret_ref=null,state='active'`,
+      external_ref=excluded.external_ref,secret_ref=null,state='active',
+      validation_state='notrequired',validation_code='SUPPORT_ACCOUNT_LOCAL',
+      validated_at=coalesce(support.account.validated_at,excluded.validated_at),secret_version=null,
+      version=greatest(support.account.version,excluded.version)`,
     [LOCAL_OWNER.mall]
   );
   await database.query(
@@ -402,7 +409,10 @@ async function assertBaseline(database: Client): Promise<void> {
     (select count(*) from benefit.account where kind='meal' and status='active') meal,
     (select count(*) from access.role where status='active') roles,
     (select count(*) from access.rolepermission) grants,
-    (select count(*) from support.account where scope_id='mall-zhudatuan' and state='active') supportaccount,
+    (select count(*) from support.account where scope_id='mall-zhudatuan' and state='active'
+      and channel='inapp' and secret_ref is null and secret_version is null
+      and validation_state='notrequired' and validation_code='SUPPORT_ACCOUNT_LOCAL'
+      and validated_at is not null) supportaccount,
     (select count(*) from support.agent where scope_id='mall-zhudatuan' and state='available') supportagent,
     (select count(*) from support.assignmentrule where scope_id='mall-zhudatuan' and state='active') supportrule,
     (select count(*) from support.sla where scope_id='mall-zhudatuan' and priority in('low','normal','high','urgent')) supportslas,

@@ -31,7 +31,7 @@ export function Dialog({ open, title, children, onClose, dismissable = true, eye
                   {eyebrow === undefined ? null : <p>{eyebrow}</p>}
                   <Heading slot="title">{title}</Heading>
                 </div>
-                <Button aria-label="关闭" onPress={close}>
+                <Button aria-label="关闭" onPress={close} isDisabled={!dismissable}>
                   <span aria-hidden="true">×</span>
                 </Button>
               </header>

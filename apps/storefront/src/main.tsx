@@ -1,5 +1,7 @@
 import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import { ErrorBoundary } from './app/ErrorBoundary';
+import { QueryRuntime } from './app/QueryRuntime';
 import './index.css';
 
 const App = lazy(() => import('./app/App').then((module) => ({ default: module.App })));
@@ -8,8 +10,12 @@ if (root === null) throw new Error('STOREFRONT_ROOT_MISSING');
 
 createRoot(root).render(
   <StrictMode>
-    <Suspense fallback={<main className="storefrontloading">正在加载福利商城…</main>}>
-      <App />
-    </Suspense>
+    <ErrorBoundary>
+      <QueryRuntime>
+        <Suspense fallback={<main className="storefrontloading">正在加载福利商城…</main>}>
+          <App />
+        </Suspense>
+      </QueryRuntime>
+    </ErrorBoundary>
   </StrictMode>
 );

@@ -70,7 +70,7 @@ export type { ExtensionOperations } from './extension';
 export type { NavigationOperations } from './navigation';
 export type { ReferralOperations } from './referral';
 export type { StorefrontOperations } from './storefront';
-export type { OperationMethod } from '../OperationDescriptor';
+export type { EventOperationMethod, OperationMethod } from '../OperationDescriptor';
 
 export const SDK_OPERATION_IDS = Object.freeze([
   "runtime.health.live",
@@ -273,6 +273,8 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "support.slas.read",
   "support.slas.manage",
   "support.history.read",
+  "support.events.read",
+  "support.readstates.manage",
   "notification.notifications.read",
   "notification.notifications.ack",
   "notification.preferences.read",

@@ -15,7 +15,7 @@ export interface OperationDefinition {
   readonly makerChecker: boolean;
   readonly originPolicy: 'none' | 'sameorigin' | 'service' | 'signed';
   readonly csrfPolicy: 'none' | 'required';
-  readonly responseMode: 'json' | 'redirect' | 'empty';
+  readonly responseMode: 'json' | 'redirect' | 'empty' | 'stream';
   readonly cachePolicy: 'none' | 'private' | 'etag';
   readonly targetPolicy: 'public' | 'exact' | 'service' | 'webhook';
   readonly idempotencyPolicy: 'none' | 'required' | 'provider';
@@ -47,7 +47,9 @@ export function buildOpenapi(operations: readonly OperationDefinition[], errorCa
         ? { '303': { description: 'Validated same-site redirect', headers: { Location: { required: true, schema: { type: 'string', format: 'uri' } } } } }
         : operation.responseMode === 'empty'
           ? { '204': { description: 'Success without a response body' } }
-          : { '200': response('Success', operation.responseSchema) };
+          : operation.responseMode === 'stream'
+            ? { '200': { description: 'Server-sent event stream', content: { 'text/event-stream': { schema: { type: 'string' } } } } }
+            : { '200': response('Success', operation.responseSchema) };
     if (operation.cachePolicy === 'etag') responses['304'] = { description: 'Not modified', headers: { ETag: { required: true, schema: { type: 'string' } } } };
     for (const status of errorStatuses(operation.errorUnion, errorCatalog)) responses[String(status)] = response('Typed operation error', 'Error');
     paths[operation.path] ??= {};
@@ -149,7 +151,7 @@ export function sdkSource(values: readonly OperationDefinition[]): string {
   const clientFields = [...groups].map(([domain]) => `  readonly ${domain}: ${typeName(domain)}Operations;`).join('\n');
   const factories = [...groups].map(([domain]) => `    ${domain}: create${typeName(domain)}Operations(client),`).join('\n');
   const ids = values.map(({ id }) => `  ${JSON.stringify(id)},`).join('\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport type { OperationExecutor } from '../OperationDescriptor';\n${imports}\n\n${exports}\nexport type { OperationMethod } from '../OperationDescriptor';\n\nexport const SDK_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface CommerceClient {\n${clientFields}\n}\n\nexport function createCommerceClient(client: OperationExecutor): CommerceClient { return Object.freeze({\n${factories}\n  }); }\n`;
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport type { OperationExecutor } from '../OperationDescriptor';\n${imports}\n\n${exports}\nexport type { EventOperationMethod, OperationMethod } from '../OperationDescriptor';\n\nexport const SDK_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface CommerceClient {\n${clientFields}\n}\n\nexport function createCommerceClient(client: OperationExecutor): CommerceClient { return Object.freeze({\n${factories}\n  }); }\n`;
 }
 
 export function sdkDomainSources(values: readonly OperationDefinition[]): ReadonlyMap<string, string> {
@@ -159,7 +161,9 @@ export function sdkDomainSources(values: readonly OperationDefinition[]): Readon
 function sdkDomainSource(domain: string, operations: readonly OperationDefinition[]): string {
   const name = typeName(domain);
   const ids = operations.map(({ id }) => `  ${JSON.stringify(id)},`).join('\n');
-  const methods = operations.map((operation) => `  readonly ${methodName(operation.id)}: OperationMethod<${JSON.stringify(operation.id)}>;`).join('\n');
+  const methods = operations
+    .map((operation) => `  readonly ${methodName(operation.id)}: ${operation.responseMode === 'stream' ? 'EventOperationMethod' : 'OperationMethod'}<${JSON.stringify(operation.id)}>;`)
+    .join('\n');
   const bindings = operations.map((operation) => `    ${methodName(operation.id)}: bind${typeName(methodName(operation.id))}(client),`).join('\n');
   const factories = operations
     .map((operation) => {
@@ -174,10 +178,12 @@ function sdkDomainSource(domain: string, operations: readonly OperationDefinitio
         idempotent: operation.idempotent,
         timeout: operation.timeout,
       });
-      return `export function createFetch${name}${method}(baseUrl: string): OperationMethod<${JSON.stringify(operation.id)}> { return bind${method}(new ApiClient(baseUrl, new FetchTransport())); }\n\nfunction bind${method}(client: OperationExecutor): OperationMethod<${JSON.stringify(operation.id)}> { return bindOperation(client, defineOperation(${descriptor})); }`;
+      const operationMethod = operation.responseMode === 'stream' ? 'EventOperationMethod' : 'OperationMethod';
+      const binder = operation.responseMode === 'stream' ? 'bindEventOperation' : 'bindOperation';
+      return `export function createFetch${name}${method}(baseUrl: string): ${operationMethod}<${JSON.stringify(operation.id)}> { return bind${method}(new ApiClient(baseUrl, new FetchTransport())); }\n\nfunction bind${method}(client: OperationExecutor): ${operationMethod}<${JSON.stringify(operation.id)}> { return ${binder}(client, defineOperation(${descriptor})); }`;
     })
     .join('\n\n');
-  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindOperation, defineOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
+  return `// Generated from definitions/operations.yml. Do not edit.\nimport type { OperationId } from '@shop/contract';\nimport { ApiClient } from '../ApiClient';\nimport { FetchTransport } from '../FetchTransport';\nimport { bindEventOperation, bindOperation, defineOperation, type EventOperationMethod, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';\n\nexport const ${domain.toUpperCase()}_OPERATION_IDS = Object.freeze([\n${ids}\n] as const satisfies readonly OperationId[]);\n\nexport interface ${name}Operations {\n${methods}\n}\n\nexport function createFetch${name}(baseUrl: string): ${name}Operations { return create${name}Operations(new ApiClient(baseUrl, new FetchTransport())); }\n\nexport function create${name}Operations(client: OperationExecutor): ${name}Operations { return Object.freeze({\n${bindings}\n  }); }\n\n${factories}\n`;
 }
 
 function requestSchema(operation: OperationDefinition): unknown {

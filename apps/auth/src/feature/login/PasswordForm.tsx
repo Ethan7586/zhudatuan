@@ -80,7 +80,7 @@ export function PasswordForm({
       <button
         type="submit"
         disabled={!accepted || busy}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-medium text-white shadow-md shadow-blue-500/10 transition-all hover:bg-[var(--sw-brand-dark)] disabled:cursor-not-allowed disabled:bg-slate-300"
+        className="authprimary flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-medium shadow-md shadow-blue-500/10 transition-all hover:bg-[var(--sw-brand-dark)] disabled:cursor-not-allowed disabled:bg-slate-300"
       >
         {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
         {busy ? '验证中...' : '登录'}

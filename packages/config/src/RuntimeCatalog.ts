@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = '4d985388bebd1eb90f54a81144d6bf1d97107182dd7c1e8b7a19743b058702a3' as const;
+export const CONFIG_CHECKSUM = 'b2ca34d0f93b4bc8fc22ee077f3dafb22196da78898820e99f575bae70036c31' as const;
 
 export const CACHE_CATALOG = Object.freeze({
   "experience": {
@@ -103,6 +103,17 @@ export const RUNTIME_LIMITS = Object.freeze({
     "headersTimeoutMilliseconds": 10000,
     "keepAliveTimeoutMilliseconds": 5000,
     "maximumRequestsPerSocket": 1000
+  },
+  "stream": {
+    "retentionEvents": 10000,
+    "blockMilliseconds": 5000,
+    "heartbeatMilliseconds": 15000,
+    "maximumConnections": 2000,
+    "maximumConnectionsPerScope": 100,
+    "maximumEventBytes": 65536,
+    "readBatch": 100,
+    "reconnectMinimumMilliseconds": 500,
+    "reconnectMaximumMilliseconds": 30000
   },
   "pool": {
     "query": {

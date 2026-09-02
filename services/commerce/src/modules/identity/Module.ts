@@ -14,7 +14,6 @@ import { ACTION_PROOF_PORT, IDENTITY_ACCESS_PORT, INVITATION_ACCESS_PORT } from 
 import { IDENTITY_MEMBER_PORT, INVITATION_MEMBER_PORT } from '../member/public';
 import { IDENTITY_ORGANIZATION_PORT } from '../organization/public';
 import { AuthenticationService } from './application/service/AuthenticationService';
-import { InvitationAuthenticator } from './application/service/InvitationAuthenticator';
 import { OtpAuthenticator } from './application/service/OtpAuthenticator';
 import { PasswordAuthenticator } from './application/service/PasswordAuthenticator';
 import { CompleteEnrollment } from './application/service/CompleteEnrollment';
@@ -22,6 +21,7 @@ import { CompleteFederation } from './application/service/CompleteFederation';
 import { CompleteSession } from './application/service/CompleteSession';
 import { CreateChallenge } from './application/service/CreateChallenge';
 import { CreateInvitation } from './application/service/CreateInvitation';
+import { PrepareEmployeeInvitation } from './application/service/PrepareEmployeeInvitation';
 import { CreateIdentityLink } from './application/service/CreateIdentityLink';
 import { ExchangeTicket } from './application/service/ExchangeTicket';
 import { ManageCredential } from './application/service/ManageCredential';
@@ -158,6 +158,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   const csrf = context.service(CSRF_PROTECTOR);
   const telemetry = context.service(TELEMETRY);
   const repository = new PgInvitationRepository();
+  const invitationGenerator = new InvitationGenerator();
   const hasher = new InvitationHasher(keys.invitation);
   const returns = new ReturnTargetSigner(context.service(RETURN_TARGETS), keys.session);
   const invitationLookup = new InvitationLookup(repository, hasher);
@@ -176,50 +177,23 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   const sessionRepository = new PgSessionRepository();
   const sessions = new DefaultSessionIssuer(csrf, keys.identity, identityAccess, cookies, sessionRepository);
   const challenges = new PgChallenge();
-  const challengeCommands = new CreateChallenge(kms, context.service(RISK_GATE), challenges, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members);
   const providerClient = new ProviderHttpClient(context.service(SECRET_STORE));
   const providers = new PgProviderRepository(providerClient, keys.identity);
   const resolver = new ProviderResolver(providers, identityProviderRegistry(providerClient, keys.identity));
   const invitationAccess = context.ports.get(INVITATION_ACCESS_PORT);
   const redeemer = new InvitationRedeemer(repository, invitationAccess, telemetry);
   const invited = context.ports.get(INVITATION_MEMBER_PORT);
+  const organizations = context.ports.get(IDENTITY_ORGANIZATION_PORT);
+  const challengeCommands = new CreateChallenge(kms, context.service(RISK_GATE), challenges, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members, invitationAccess, invited);
   const federationRepository = new PgFederationRepository(members, identityAccess);
   const selector = new MembershipSelector(new PgMembershipSelection(), sessions, protector, identityAccess, members, federationRepository, returns, cookies);
   const linkcases = new PgLinkCaseRepository();
   const linkRepository = new PgIdentityLinkRepository();
   const federation = new FederationService(
-    federationRepository,
-    linkcases,
-    resolver,
-    new SubjectHasher({ version: 'current', value: keys.identity }),
-    protector,
-    new NonceService(),
-    kms,
-    sessions,
-    returns,
-    context.ports.get(IDENTITY_ORGANIZATION_PORT),
-    identityAccess,
-    cookies,
-    linkRepository
-  );
-  const invitationAuthenticator = new InvitationAuthenticator(
-    repository,
-    invitationAccess,
-    hasher,
-    protector,
-    sessions,
-    returns,
-    tickets,
-    members,
-    invited,
-    kms,
-    keys.session,
-    invitationGuard,
-    redeemer,
-    cookies,
-    challenges,
-    invitationFailures,
-    invitationLookup
+    federationRepository, linkcases, resolver,
+    new SubjectHasher({ version: 'current', value: keys.identity }), protector, new NonceService(),
+    kms, sessions, returns, organizations,
+    identityAccess, cookies, linkRepository
   );
   const authentication = new AuthenticationService(
     new CredentialRegistry([
@@ -227,25 +201,12 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
       new OtpAuthenticator(keys.identity, keys.session, sessions, returns, tickets, challenges, identityAccess, members, selector, assurances),
     ])
   );
+  const enrollmentRepository = new PgEnrollmentRepository();
   const enrollments = new EnrollmentService(
-    repository,
-    invitationAccess,
-    invited,
-    sessions,
-    returns,
-    hasher,
-    keys.identity,
-    keys.session,
-    tickets,
-    challenges,
-    linkcases,
-    redeemer,
-    cookies,
-    telemetry,
-    new PgEnrollmentRepository(),
-    assurances,
-    events,
-    invitationFailures
+    repository, invitationAccess, invited, sessions, hasher,
+    keys.identity, keys.session, tickets, challenges, linkcases,
+    redeemer, cookies, telemetry, enrollmentRepository, assurances,
+    events, invitationFailures
   );
   const passwords = new PasswordPolicy();
   const credentialCommands = new ManageCredential(passwords, challenges, members, kms, context.service(RISK_GATE), keys.identity, keys.session, credentials, assurances, sessionRepository, events);
@@ -253,7 +214,7 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
   const revocation = new RevokeSession(sessionRepository, cookies, events);
   const linker = new IdentityLinker(linkRepository);
   return [
-    new SessionsCreateHandler(authentication.action(), new StartFederation(federation).lifecycle(), invitationAuthenticator),
+    new SessionsCreateHandler(authentication.action(), new StartFederation(federation).lifecycle()),
     new SessionsCompleteHandler(new CompleteSession(repository, redeemer, sessions, returns, keys.session, tickets, challenges, cookies, assurances, invitationFailures).lifecycle()),
     new TicketsExchangeHandler(new ExchangeTicket(tickets, returns, csrf, cookies).action()),
     new SessionReadHandler(new ReadSession(members, kms, cookies, credentials).lifecycle()),
@@ -264,11 +225,47 @@ function composeIdentity(context: ModuleContext): readonly RegisteredOperationHa
     new MembershipsSwitchHandler(new SwitchMembership(members, identityAccess, sessions, sessionRepository, events).action()),
     new ChallengesCreateHandler(challengeCommands.lifecycle()),
     new MobileChallengesCreateHandler(challengeCommands.mobile()),
-    new InvitationsResolveHandler(new ResolveInvitation(invitationLookup, invitationGuard, telemetry, registrations)),
+    new InvitationsResolveHandler(
+      new ResolveInvitation(
+        repository,
+        invitationAccess,
+        invited,
+        organizations,
+        invitationLookup,
+        invitationGuard,
+        protector,
+        kms,
+        hasher,
+        keys.session,
+        sessions,
+        tickets,
+        returns,
+        cookies,
+        challenges,
+        redeemer,
+        invitationFailures,
+        registrations,
+        telemetry
+      )
+    ),
     new InvitationsReadHandler(new ReadInvitations(repository).action()),
-    new InvitationsCreateHandler(new CreateInvitation(repository, invitationAccess, new InvitationGenerator(), hasher, registrations, events, telemetry).action()),
+    new InvitationsCreateHandler(
+      new CreateInvitation(
+        repository,
+        invitationAccess,
+        invited,
+        enrollmentRepository,
+        new PrepareEmployeeInvitation(kms, invitationGenerator, hasher),
+        kms,
+        invitationGenerator,
+        hasher,
+        registrations,
+        events,
+        telemetry
+      ).lifecycle()
+    ),
     new InvitationsRevokeHandler(new RevokeInvitation(repository, events).action()),
-    new EnrollmentsReadHandler(new ReadEnrollment(repository, registrations).action()),
+    new EnrollmentsReadHandler(new ReadEnrollment(repository, registrations, invitationAccess, invited, organizations).action()),
     new EnrollmentsCompleteHandler(new CompleteEnrollment(kms, enrollments).lifecycle()),
     new MembersManageHandler(new ManageMember(identityAccess, members).action()),
     new PasswordChangeHandler(credentialCommands.change()),

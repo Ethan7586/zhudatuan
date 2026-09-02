@@ -4,7 +4,9 @@ import { publicPort } from '../../../bootstrap/ModuleRegistry';
 export interface PendingInvitationMember {
   readonly member: string;
   readonly principal: string;
+  readonly displayName: string;
   readonly mobileCiphertext: string | null;
+  readonly mobileMasked: string | null;
 }
 export interface InvitationMobileOwner {
   readonly member: string;
@@ -14,7 +16,9 @@ export interface InvitationMemberPort {
   pending(context: ReadTransactionContext, member: string): Promise<PendingInvitationMember>;
   lockPending(context: WriteTransactionContext, member: string): Promise<PendingInvitationMember>;
   mobileOwner(context: ReadTransactionContext, fingerprint: string, exceptMember?: string): Promise<InvitationMobileOwner | null>;
-  assertMobileAvailable(context: ReadTransactionContext, fingerprint: string, exceptMember?: string): Promise<void>;
+  assertMobileAvailable(context: WriteTransactionContext, fingerprint: string, exceptMember?: string): Promise<void>;
+  lockMobile(context: WriteTransactionContext, fingerprint: string): Promise<void>;
+  mobile(context: ReadTransactionContext, principal: string): Promise<Readonly<{ ciphertext: string }> | null>;
   createPending(context: WriteTransactionContext, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void>;
   activate(context: WriteTransactionContext, input: Readonly<{ member: string; principal: string; display: string; mobileCiphertext: string; mobileFingerprint: string; mobileMasked: string }>): Promise<void>;
 }

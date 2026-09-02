@@ -8,11 +8,11 @@ describe('PgMemberReadPort', () => {
   it('reads the canonical access membership and maps its active member', async () => {
     const query = vi.fn(async (sql: string) => {
       if (sql.includes('from member.profile')) {
-        return { rows: [{ id: 'member:one', display_name: '测试员工', status: 'active', version: 4 }], rowCount: 1 } as unknown as QueryResult;
+        return { rows: [{ id: 'member:one', display_name: '测试员工', employee_no: 'E1001', mobile_masked: '138****0000', status: 'active', version: 4 }], rowCount: 1 } as unknown as QueryResult;
       }
       return { rows: [], rowCount: 0 } as unknown as QueryResult;
     });
-    await expect(withReadTransaction(query, (context) => new PgMemberReadPort().summary(context, 'member:one'))).resolves.toEqual({ id: 'member:one', displayName: '测试员工', status: 'active', version: 4 });
+    await expect(withReadTransaction(query, (context) => new PgMemberReadPort().summary(context, 'member:one'))).resolves.toEqual({ id: 'member:one', displayName: '测试员工', employeeNo: 'E1001', mobileMasked: '138****0000', status: 'active', version: 4 });
     expect(query).toHaveBeenCalledWith(expect.stringContaining('from member.profile'), ['member:one']);
   });
 });

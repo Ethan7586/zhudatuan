@@ -5,14 +5,11 @@ import type { OperationRequest, OperationResult } from '../../../../foundation/a
 import type { IdentityAction, IdentityLifecycle } from '../model/IdentityAction';
 import { identityReply, identityRequest } from '../model/IdentityExecution';
 import type { LoadedFederationStart, PreparedFederationStart } from '../service/FederationService';
-import type { InvitationAuthenticator, LoadedInvitationAuthentication, PreparedInvitationAuthentication } from '../service/InvitationAuthenticator';
-import { authenticationOperationResult } from '../service/AuthenticationStrategy';
 
-type LoadedSession = Readonly<{ kind: 'authentication' }> | Readonly<{ kind: 'federation'; value: LoadedFederationStart }> | Readonly<{ kind: 'invitation'; value: LoadedInvitationAuthentication }>;
+type LoadedSession = Readonly<{ kind: 'authentication' }> | Readonly<{ kind: 'federation'; value: LoadedFederationStart }>;
 type PreparedSession =
   | Readonly<{ kind: 'authentication'; request: OperationRequest }>
-  | Readonly<{ kind: 'federation'; request: OperationRequest; preparation: PreparedFederationStart }>
-  | Readonly<{ kind: 'invitation'; request: OperationRequest; preparation: PreparedInvitationAuthentication }>;
+  | Readonly<{ kind: 'federation'; request: OperationRequest; preparation: PreparedFederationStart }>;
 
 export class SessionsCreateHandler implements DurableOperationHandler<'identity.sessions.create', PreparedSession, OperationResult, 'write', LoadedSession> {
   readonly operation = 'identity.sessions.create' as const;
@@ -20,8 +17,7 @@ export class SessionsCreateHandler implements DurableOperationHandler<'identity.
 
   constructor(
     private readonly authenticate: IdentityAction,
-    private readonly federation: IdentityLifecycle<PreparedFederationStart, LoadedFederationStart>,
-    private readonly invitation: InvitationAuthenticator
+    private readonly federation: IdentityLifecycle<PreparedFederationStart, LoadedFederationStart>
   ) {}
 
   async load(input: OperationInputFor<'identity.sessions.create'>, context: HandlerContext<'identity.sessions.create'>): Promise<LoadedSession> {
@@ -29,9 +25,6 @@ export class SessionsCreateHandler implements DurableOperationHandler<'identity.
     if (input.body.method === 'federation') {
       if (!this.federation.load) throw new Error('FEDERATION_LOAD_REQUIRED');
       return Object.freeze({ kind: 'federation', value: await this.federation.load(request, context.transaction) });
-    }
-    if (input.body.method === 'invitation') {
-      return Object.freeze({ kind: 'invitation', value: await this.invitation.load(request, context.transaction, input.body) });
     }
     return Object.freeze({ kind: 'authentication' });
   }
@@ -42,23 +35,14 @@ export class SessionsCreateHandler implements DurableOperationHandler<'identity.
       if (!this.federation.prepare) throw new Error('FEDERATION_PREPARE_REQUIRED');
       return Object.freeze({ kind: 'federation', request, preparation: await this.federation.prepare(request, loaded.value) });
     }
-    if (loaded.kind === 'invitation') {
-      return Object.freeze({ kind: 'invitation', request, preparation: await this.invitation.prepare(request, loaded.value) });
-    }
     return Object.freeze({ kind: 'authentication', request });
   }
 
-  transactionScope(_input: OperationInputFor<'identity.sessions.create'>, prepared: PreparedSession): string | undefined {
-    return prepared.kind === 'invitation' ? prepared.preparation.loaded.invitation.state.organization : undefined;
-  }
-
-  async commit(input: OperationInputFor<'identity.sessions.create'>, prepared: PreparedSession, context: CommitContext<'identity.sessions.create'>) {
+  async commit(_input: OperationInputFor<'identity.sessions.create'>, prepared: PreparedSession, context: CommitContext<'identity.sessions.create'>) {
     const result =
       prepared.kind === 'federation'
         ? await this.federation.execute(prepared.request, context.transaction, prepared.preparation)
-        : prepared.kind === 'invitation'
-          ? authenticationOperationResult(await this.invitation.commit(prepared.request, context.transaction, input.body, prepared.preparation))
-          : await this.authenticate(prepared.request, context.transaction);
+        : await this.authenticate(prepared.request, context.transaction);
     return Object.freeze({ checkpoint: result, response: identityReply<'identity.sessions.create'>(result) });
   }
 

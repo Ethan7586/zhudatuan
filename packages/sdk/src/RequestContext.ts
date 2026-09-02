@@ -22,5 +22,6 @@ export interface RequestContext {
   readonly target?: 'console' | 'storefront';
   readonly catalogVersion?: string;
   readonly ifNoneMatch?: string;
+  readonly lastEventId?: string;
   readonly cachedResponse?: unknown;
 }

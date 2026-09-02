@@ -822,7 +822,10 @@
         "conversation": "id",
         "member": "id",
         "message": "id",
-        "ticket": "id"
+        "scope": "id",
+        "sequence": "positiveinteger",
+        "ticket": "id",
+        "version": "positiveinteger"
       },
       "schema": "contract://events/support.message.sent/v1",
       "type": "support.message.sent",
@@ -834,7 +837,9 @@
         "agent": "id",
         "conversation": "id",
         "member": "id",
-        "ticket": "id"
+        "scope": "id",
+        "ticket": "id",
+        "version": "positiveinteger"
       },
       "schema": "contract://events/support.ticket.assigned/v1",
       "type": "support.ticket.assigned",
@@ -843,13 +848,92 @@
     {
       "module": "support",
       "payload": {
+        "conversation": "id",
         "escalation": "id",
         "member": "id",
         "reason": "string",
-        "ticket": "id"
+        "scope": "id",
+        "ticket": "id",
+        "version": "positiveinteger"
       },
       "schema": "contract://events/support.sla.escalated/v1",
       "type": "support.sla.escalated",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "payload": {
+        "conversation": "id",
+        "scope": "id",
+        "state": "string",
+        "ticket": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/support.ticket.updated/v1",
+      "type": "support.ticket.updated",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "payload": {
+        "conversation": "id",
+        "scope": "id",
+        "ticket": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/support.ticket.closed/v1",
+      "type": "support.ticket.closed",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "payload": {
+        "conversation": "id",
+        "scope": "id",
+        "ticket": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/support.ticket.reopened/v1",
+      "type": "support.ticket.reopened",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "payload": {
+        "conversation": "id",
+        "member": "id",
+        "scope": "id",
+        "sequence": "positiveinteger",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/support.readstate.updated/v1",
+      "type": "support.readstate.updated",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "payload": {
+        "conversation": "id",
+        "evidence": "id",
+        "scope": "id",
+        "ticket": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/support.attachment.ready/v1",
+      "type": "support.attachment.ready",
+      "version": 1
+    },
+    {
+      "module": "support",
+      "payload": {
+        "conversation": "id",
+        "evidence": "id",
+        "scope": "id",
+        "ticket": "id",
+        "version": "positiveinteger"
+      },
+      "schema": "contract://events/support.attachment.rejected/v1",
+      "type": "support.attachment.rejected",
       "version": 1
     },
     {

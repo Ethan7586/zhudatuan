@@ -1,5 +1,3 @@
-import { ErrorBoundary } from './ErrorBoundary';
-import { QueryRuntime } from './QueryRuntime';
 import { SessionRuntime } from './SessionRuntime';
 import { Router } from '../route/Router';
 import { BrowserRouter } from 'react-router';
@@ -13,15 +11,11 @@ export function App() {
     return <EntryFailure />;
   }
   return (
-    <ErrorBoundary>
-      <BrowserRouter basename={entry.basePath}>
-        <QueryRuntime>
-          <SessionRuntime entry={entry}>
-            <Router />
-          </SessionRuntime>
-        </QueryRuntime>
-      </BrowserRouter>
-    </ErrorBoundary>
+    <BrowserRouter basename={entry.basePath}>
+      <SessionRuntime entry={entry}>
+        <Router />
+      </SessionRuntime>
+    </BrowserRouter>
   );
 }
 

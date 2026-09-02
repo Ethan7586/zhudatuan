@@ -497,6 +497,22 @@ nodes:
       empty: hide,
     }
   - {
+      id: groupinvitation,
+      surface: console,
+      scope: enterprise,
+      parent: groupsettings,
+      title: 员工邀请,
+      icon: member,
+      route: /scopes/:scopeKind/:scopeId/settings/invitations,
+      component: invitation,
+      order: 15,
+      entry: identity.invitations.read,
+      permissions: [identity.invitation.read],
+      capabilities: [identity.invitations.read],
+      requirements: [MVPGROUPSETTING],
+      empty: hide,
+    }
+  - {
       id: grouppartner,
       surface: console,
       scope: enterprise,
@@ -605,6 +621,22 @@ nodes:
       entry: member.members.read,
       permissions: [member.read],
       capabilities: [member.members.read],
+      requirements: [MVPMALLSETTING],
+      empty: hide,
+    }
+  - {
+      id: mallinvitation,
+      surface: console,
+      scope: mall,
+      parent: mallsettings,
+      title: 员工邀请,
+      icon: member,
+      route: /scopes/:scopeKind/:scopeId/settings/invitations,
+      component: invitation,
+      order: 15,
+      entry: identity.invitations.read,
+      permissions: [identity.invitation.read],
+      capabilities: [identity.invitations.read],
       requirements: [MVPMALLSETTING],
       empty: hide,
     }

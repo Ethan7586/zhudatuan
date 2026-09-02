@@ -1,5 +1,5 @@
 export type AuthTarget = 'console' | 'storefront';
-export type AuthMethod = 'password' | 'otp' | 'invitation';
+export type AuthMethod = 'password' | 'otp' | 'invite';
 
 export interface MembershipChoice {
   readonly id: string;
@@ -19,20 +19,8 @@ export type AuthenticationOutcome =
   | Readonly<{ kind: 'enrollment'; id: string; expiresAt: string }>
   | Readonly<{ kind: 'enrolled'; target: 'storefront' }>;
 
-export interface EnrollmentPolicy {
-  readonly termsTitle: string;
-  readonly termsBody: string;
-  readonly privacyTitle: string;
-  readonly privacyBody: string;
-  readonly termsHash: string;
-}
-
-export interface EnrollmentState {
-  readonly id: string;
-  readonly expiresAt: string;
-  readonly target: AuthTarget;
-  readonly policy: EnrollmentPolicy;
-}
+export type { EnrollmentState } from '../../feature/invitation/model/Enrollment';
+export type { RegistrationPolicy as EnrollmentPolicy } from '../../feature/invitation/model/RegistrationPolicy';
 
 export interface ProviderChoice {
   readonly id: string;

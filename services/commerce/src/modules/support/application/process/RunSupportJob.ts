@@ -1,6 +1,8 @@
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
 import type { TransactionManager, TransactionOptions } from '../../../../foundation/persistence/TransactionManager';
+import type { AttachmentScanPort } from '../port/AttachmentScanPort';
 import type { SupportJobRepository } from '../port/SupportJobRepository';
+import type { EvaluateSla } from './EvaluateSla';
+import type { RelaySupportEvents } from './RelaySupportEvents';
 
 export interface SupportJobExecution {
   readonly scope: string;
@@ -13,44 +15,32 @@ export class RunSupportJob {
   constructor(
     private readonly transactions: TransactionManager,
     private readonly repository: SupportJobRepository,
-    private readonly objects: ObjectStore
+    private readonly scanner: AttachmentScanPort,
+    private readonly sla: EvaluateSla,
+    private readonly relay: RelaySupportEvents
   ) {}
 
   async scan(id: string, execution: SupportJobExecution): Promise<void> {
     const options = this.options(execution, 'supportscan');
     const item = await this.transactions.read(options, (context) => this.repository.evidence(context, id));
     if (!item) return;
-    let valid = false;
-    try {
-      const metadata = await this.objects.inspect(item.objectReference);
-      valid =
-        metadata.sha256 === item.sha256 &&
-        metadata.size === item.size &&
-        metadata.contentType === item.contentType &&
-        metadata.size <= 10 * 1024 * 1024 &&
-        ['image/jpeg', 'image/png', 'application/pdf', 'text/plain'].includes(metadata.contentType);
-    } catch {
-      valid = false;
-    }
-    await this.transactions.write(options, (context) => this.repository.completeEvidence(context, id, valid));
+    const result = await this.scanner.scan(item);
+    await this.transactions.write(options, (context) => this.repository.completeEvidence(context, item, result.clean, result.reason));
   }
 
   escalate(ticket: string, reason: 'response' | 'resolution', execution: SupportJobExecution): Promise<void> {
-    const options = this.options(execution, 'supportsla');
-    return this.transactions.write(options, (context) => this.repository.escalate(context, ticket, reason));
+    return this.sla.execute(ticket, reason, execution);
   }
 
-  private options(execution: SupportJobExecution, kind: 'supportsla' | 'supportscan'): TransactionOptions {
-    return {
-      tenant: execution.scope,
-      membership: '',
-      scope: execution.scope,
-      actor: `job:${kind}`,
-      trace: execution.trace,
-      operation: `job.support.${kind}`,
-      workload: 'jobs',
-      signal: execution.signal,
-      deadline: execution.deadline,
-    };
+  relayEvent(event: string, execution: SupportJobExecution): Promise<void> {
+    return this.relay.execute(event, execution);
+  }
+
+  reassign(agent: string, cursor: string | null, execution: SupportJobExecution): Promise<void> {
+    return this.transactions.write(this.options(execution, 'supportreassign'), (context) => this.repository.reassign(context, agent, cursor));
+  }
+
+  private options(execution: SupportJobExecution, kind: 'supportscan' | 'supportreassign'): TransactionOptions {
+    return { tenant: execution.scope, membership: '', scope: execution.scope, actor: `job:${kind}`, trace: execution.trace, operation: `job.support.${kind}`, workload: 'jobs', signal: execution.signal, deadline: execution.deadline };
   }
 }

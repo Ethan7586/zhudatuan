@@ -3,6 +3,8 @@ import type { ReadTransactionContext } from '../../../foundation/persistence/Tra
 export interface MemberSummary {
   readonly id: string;
   readonly displayName: string;
+  readonly employeeNo: string | null;
+  readonly mobileMasked: string | null;
   readonly status: string;
   readonly version: number;
 }

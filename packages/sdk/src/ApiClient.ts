@@ -4,6 +4,7 @@ import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Deadline } from '@shop/kernel/deadline';
 import { ApiError } from './error';
 import { errorCause } from './ErrorCause';
+import type { EventStream } from './EventStream';
 import type { OperationDescriptor, OperationExecutor } from './OperationDescriptor';
 import type { RequestContext } from './RequestContext';
 import { RetryPolicy } from './RetryPolicy';
@@ -26,6 +27,7 @@ export class ApiClient implements OperationExecutor {
 
   async execute<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): Promise<OperationOutputFor<TKey>> {
     if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
+    if (operation.responseMode === 'stream') throw new Error('SDK_STREAM_OPERATION_REQUIRES_STREAM_METHOD');
     if (operation.method !== 'GET' && operation.audience !== 'webhook' && context.idempotencyKey === undefined) {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
@@ -34,10 +36,26 @@ export class ApiClient implements OperationExecutor {
     return value;
   }
 
+  stream<TKey extends OperationId>(operation: OperationDescriptor<TKey>, input: OperationInputFor<TKey>, context: RequestContext): EventStream<OperationOutputFor<TKey>> {
+    if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
+    if (operation.method !== 'GET' || operation.responseMode !== 'stream') throw new Error('SDK_OPERATION_NOT_STREAM');
+    if (this.transport.open === undefined) throw new Error('SDK_STREAM_TRANSPORT_UNAVAILABLE');
+    const parsed = operation.input.parse(input);
+    return new DeferredEventStream(async () => {
+      const { JsonEventStream } = await import('./EventStream');
+      return new JsonEventStream(
+        (lastEventId, signal) => this.transport.open!(this.request(operation.path, operation.method, parsed, context, signal, 'text/event-stream', lastEventId)),
+        operation.output,
+        context.lastEventId,
+        context.signal
+      );
+    });
+  }
+
   private async send<TOutput>(path: string, method: string, input: WireInput, context: RequestContext, responseMode: OperationDescriptor<OperationId>['responseMode'], idempotent: boolean, output: Schema<TOutput>): Promise<TOutput> {
     // Operation timeouts are service SLO budgets; public network latency is governed by the configured HTTP deadline.
     const deadline = Deadline.after(RUNTIME_LIMITS.http.totalDeadlineMilliseconds, context.signal);
-    const request = this.request(path, method, input, context, deadline.signal);
+    const request = this.request(path, method, input, context, deadline.signal, 'application/json');
     const canRetry = idempotent || context.idempotencyKey !== undefined;
     let attempt = 1;
     try {
@@ -86,7 +104,7 @@ export class ApiClient implements OperationExecutor {
     }
   }
 
-  private request(pathTemplate: string, method: string, input: WireInput, context: RequestContext, signal: AbortSignal): TransportRequest {
+  private request(pathTemplate: string, method: string, input: WireInput, context: RequestContext, signal: AbortSignal, accept: 'application/json' | 'text/event-stream', lastEventId?: string): TransportRequest {
     const path = pathTemplate.replace(/\{([a-z][a-z0-9]*)\}/g, (_match, key: string) => {
       const value = input.path?.[key];
       if (!value) throw new Error(`SDK_PATH_VALUE_MISSING:${key}`);
@@ -98,7 +116,7 @@ export class ApiClient implements OperationExecutor {
       for (const value of Array.isArray(raw) ? raw : [raw]) url.searchParams.append(key, String(value));
     }
     const headers: Record<string, string> = {
-      [HttpHeader.accept]: 'application/json',
+      [HttpHeader.accept]: accept,
       [HttpHeader.contractVersion]: CONTRACT_VERSION,
       [HttpHeader.clientVersion]: context.clientVersion,
       [HttpHeader.traceId]: context.traceId,
@@ -110,6 +128,7 @@ export class ApiClient implements OperationExecutor {
     if (context.idempotencyKey !== undefined) headers[HttpHeader.idempotencyKey] = context.idempotencyKey;
     if (context.expectedVersion !== undefined) headers[HttpHeader.ifMatch] = `"${context.expectedVersion}"`;
     if (context.ifNoneMatch !== undefined) headers[HttpHeader.ifNoneMatch] = context.ifNoneMatch;
+    if (lastEventId !== undefined) headers[HttpHeader.lastEventId] = lastEventId;
     if (context.catalogVersion !== undefined) headers[HttpHeader.navigationCatalog] = context.catalogVersion;
     if (context.proof !== undefined) headers[HttpHeader.actionProof] = context.proof;
     if (context.csrfToken !== undefined) headers[HttpHeader.csrfToken] = context.csrfToken;
@@ -122,6 +141,35 @@ export class ApiClient implements OperationExecutor {
       ...(input.body === undefined ? {} : { body: JSON.stringify(input.body) }),
       signal,
     };
+  }
+}
+
+class DeferredEventStream<T> implements EventStream<T> {
+  private source: EventStream<T> | undefined;
+  private closed = false;
+  private consumed = false;
+
+  constructor(private readonly create: () => Promise<EventStream<T>>) {}
+
+  close(): void {
+    this.closed = true;
+    this.source?.close();
+  }
+
+  [Symbol.asyncIterator](): AsyncIterator<T> {
+    if (this.consumed) throw new Error('SDK_STREAM_ALREADY_CONSUMED');
+    this.consumed = true;
+    return this.events()[Symbol.asyncIterator]();
+  }
+
+  private async *events(): AsyncGenerator<T> {
+    const source = await this.create();
+    this.source = source;
+    if (this.closed) {
+      source.close();
+      return;
+    }
+    for await (const event of source) yield event;
   }
 }
 

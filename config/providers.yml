@@ -1,6 +1,6 @@
 generated: true
 source: config/requirements.yml#providers
-workbookSha256: f1e7b21d4f042f032af508fc50a32b4a2df810495b0fa2406305d5d6bb15947f
+workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
 providers:
   - id: jdproduct
     package: '@shop/providerjdproduct'

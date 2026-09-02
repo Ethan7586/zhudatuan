@@ -9,8 +9,9 @@ const root = resolve(import.meta.dirname, '..');
 const check = process.argv.includes('--check');
 const cache = parse(await readFile(resolve(root, 'config/cache.yml'), 'utf8'));
 const capacity = parse(await readFile(resolve(root, 'config/capacity.yml'), 'utf8'));
+const telemetry = parse(await readFile(resolve(root, 'config/telemetry.yml'), 'utf8'));
 const network = parse(await readFile(resolve(root, 'infrastructure/network/Edge.yml'), 'utf8'));
-validate(cache, capacity, network);
+validate(cache, capacity, telemetry, network);
 
 const source =
   `// Generated from config/cache.yml and config/capacity.yml. Do not edit.\n` +
@@ -20,6 +21,12 @@ const source =
   `export const PROVIDER_CAPACITY = Object.freeze(${JSON.stringify(capacity.provider, null, 2)} as const);\n\n` +
   `export const RUNTIME_LIMITS = Object.freeze(${JSON.stringify(capacity.runtime, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/config/src/RuntimeCatalog.ts'), source);
+
+const redactionSource =
+  `// Generated from config/telemetry.yml. Do not edit.\n` +
+  `export const REDACTION_KEYS = Object.freeze(${JSON.stringify(telemetry.redaction.deny, null, 2)} as const);\n\n` +
+  `export const REDACTION_KEY_PATTERN = new RegExp(\`(?:\${REDACTION_KEYS.join('|')})\`, 'i');\n`;
+await emit(resolve(root, 'packages/telemetry/src/RedactionCatalog.ts'), redactionSource);
 
 const origins = Object.freeze({
   api: origin(network.routes.api.host),
@@ -33,7 +40,7 @@ const networkSource =
   `export const NETWORK_CATALOG = Object.freeze(${JSON.stringify({ origins, storefront: { entryPath: network.routes.storefront.entryPath, fallback: network.routes.storefront.fallback } }, null, 2)} as const);\n`;
 await emit(resolve(root, 'packages/config/src/NetworkCatalog.ts'), networkSource);
 
-function validate(cacheDocument, capacityDocument, networkDocument) {
+function validate(cacheDocument, capacityDocument, telemetryDocument, networkDocument) {
   if (cacheDocument?.version !== 1 || cacheDocument.owner !== 'platform' || typeof cacheDocument.caches !== 'object') throw new Error('CACHE_CATALOG_INVALID');
   for (const [name, value] of Object.entries(cacheDocument.caches)) {
     if (
@@ -57,11 +64,23 @@ function validate(cacheDocument, capacityDocument, networkDocument) {
     typeof capacityDocument.runtime?.authentication?.otp !== 'object' ||
     typeof capacityDocument.runtime?.external !== 'object' ||
     typeof capacityDocument.runtime?.http !== 'object' ||
+    typeof capacityDocument.runtime?.stream !== 'object' ||
     typeof capacityDocument.runtime?.pool !== 'object' ||
     typeof capacityDocument.runtime?.poolBudget !== 'object' ||
     typeof capacityDocument.runtime?.sql !== 'object'
   ) {
     throw new Error('CAPACITY_CATALOG_INVALID');
+  }
+  const redaction = telemetryDocument?.redaction?.deny;
+  if (
+    telemetryDocument?.version !== 1 ||
+    telemetryDocument.owner !== 'reliability' ||
+    !Array.isArray(redaction) ||
+    redaction.length === 0 ||
+    new Set(redaction).size !== redaction.length ||
+    !redaction.every((value) => typeof value === 'string' && /^[a-z][a-z0-9]*$/.test(value))
+  ) {
+    throw new Error('TELEMETRY_REDACTION_INVALID');
   }
   if (
     networkDocument?.version !== 1 ||
@@ -81,6 +100,13 @@ function validate(cacheDocument, capacityDocument, networkDocument) {
   }
   for (const [name, value] of Object.entries(capacityDocument.runtime.http)) {
     if (!Number.isSafeInteger(value) || value < 1) throw new Error(`HTTP_CAPACITY_INVALID:${name}`);
+  }
+  const stream = capacityDocument.runtime.stream;
+  for (const name of ['retentionEvents', 'blockMilliseconds', 'heartbeatMilliseconds', 'maximumConnections', 'maximumConnectionsPerScope', 'maximumEventBytes', 'readBatch', 'reconnectMinimumMilliseconds', 'reconnectMaximumMilliseconds']) {
+    if (!Number.isSafeInteger(stream[name]) || stream[name] < 1) throw new Error(`STREAM_CAPACITY_INVALID:${name}`);
+  }
+  if (stream.maximumConnectionsPerScope > stream.maximumConnections || stream.reconnectMinimumMilliseconds > stream.reconnectMaximumMilliseconds || stream.blockMilliseconds >= stream.heartbeatMilliseconds) {
+    throw new Error('STREAM_CAPACITY_RELATION_INVALID');
   }
   for (const [name, value] of Object.entries(capacityDocument.runtime.pool)) {
     if (

@@ -1,19 +1,19 @@
 import { Button } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../../shared/presentation/QueryState';
 import type { DataColumn } from '../../../shared/ui/DataTable';
 import { PagedResource } from '../../../shared/ui/PagedResource';
 import { pageCursor } from '../../../shared/url/PageCursor';
 import { accessKey, readAccess } from './AccessQuery';
 import type { AccessMembership } from './AccessSchema';
-import { InvitationPanel } from './InvitationPanel';
 import { executeAccessChange, type AccessChange } from './AccessCommand';
-import { AccessDialog, type AccessIntent } from './AccessDialog';
+import type { AccessIntent } from './AccessDialog';
 import './Access.css';
+
+const AccessDialog = lazy(() => import('./AccessDialog').then((module) => ({ default: module.AccessDialog })));
 
 export function Component() {
   const context = useConsoleContext();
@@ -21,20 +21,7 @@ export function Component() {
   const [search, setSearch] = useSearchParams();
   const [intent, setIntent] = useState<AccessIntent>();
   const cursor = search.get('cursor') ?? undefined;
-  const canReadInvitations = context.session.permissions.includes('identity.invitation.read') && context.session.capabilities.includes('identity.invitations.read');
-  const view = search.get('view') === 'invitations' && canReadInvitations ? 'invitations' : 'members';
-  const query = useQuery({ queryKey: accessKey(context, cursor), queryFn: ({ signal }) => readAccess(context, cursor, signal), enabled: view === 'members' });
-  const tabs = (
-    <AccessTabs
-      active={view}
-      canReadInvitations={canReadInvitations}
-      onSelect={(next) => {
-        const value = new URLSearchParams();
-        if (next === 'invitations') value.set('view', 'invitations');
-        setSearch(value);
-      }}
-    />
-  );
+  const query = useQuery({ queryKey: accessKey(context, cursor), queryFn: ({ signal }) => readAccess(context, cursor, signal) });
   const data = query.data;
   const error = safeQueryError(query.error);
   const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.items.length === 0 });
@@ -80,19 +67,17 @@ export function Component() {
     ],
     [canOverride, canRole, canScope, context.session.membership]
   );
-  if (view === 'invitations') return <InvitationPanel tabs={tabs} />;
   return (
     <>
       <PagedResource
         title="权限中心"
         eyebrow="SMART WING ACCESS"
-        description="统一维护管理员角色、成员覆盖权限、项目范围和邀请；默认拒绝与显式拒绝始终优先。"
+        description="统一维护管理员角色、成员覆盖权限和项目范围；默认拒绝与显式拒绝始终优先。"
         condition={state}
         {...(error === undefined ? {} : { error })}
         rows={data?.items ?? []}
         columns={columns}
         rowKey={(row) => row.id}
-        actions={tabs}
         count={data?.count ?? 0}
         {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
         boundary={{ title: '关键授权已接入双人复核', message: '编辑权限、项目范围和自定义角色均要求高强度二次验证、当前版本、另一位管理员签发的一次性复核凭证、防重复提交与提交后权威回读；所有者角色只能通过所有权转移流程变更。' }}
@@ -101,36 +86,25 @@ export function Component() {
         }}
         next={(next) => setSearch(pageCursor(search, next))}
       />
-      <AccessDialog
-        intent={intent}
-        permissions={context.session.permissions}
-        scopeKind={context.scope.kind}
-        scopeResource={context.scope.id}
-        makerMembership={context.session.membership}
-        assurance={context.session.assurance.level}
-        busy={mutation.isPending}
-        {...(mutationError === undefined ? {} : { error: mutationError })}
-        onClose={() => {
-          if (!mutation.isPending) setIntent(undefined);
-        }}
-        onSubmit={(change) => mutation.mutate(change)}
-      />
+      {intent === undefined ? null : (
+        <Suspense fallback={<p role="status">正在打开安全复核…</p>}>
+          <AccessDialog
+            intent={intent}
+            permissions={context.session.permissions}
+            scopeKind={context.scope.kind}
+            scopeResource={context.scope.id}
+            makerMembership={context.session.membership}
+            assurance={context.session.assurance.level}
+            busy={mutation.isPending}
+            {...(mutationError === undefined ? {} : { error: mutationError })}
+            onClose={() => {
+              if (!mutation.isPending) setIntent(undefined);
+            }}
+            onSubmit={(change) => mutation.mutate(change)}
+          />
+        </Suspense>
+      )}
     </>
-  );
-}
-
-function AccessTabs({ active, canReadInvitations, onSelect }: Readonly<{ active: 'members' | 'invitations'; canReadInvitations: boolean; onSelect: (value: 'members' | 'invitations') => void }>): ReactNode {
-  return (
-    <div className="accesstabs" role="tablist" aria-label="权限中心视图">
-      <button type="button" className="shopbutton shopbuttondefault" role="tab" aria-selected={active === 'members'} onClick={() => onSelect('members')}>
-        成员与权限
-      </button>
-      {canReadInvitations ? (
-        <button type="button" className="shopbutton shopbuttondefault" role="tab" aria-selected={active === 'invitations'} onClick={() => onSelect('invitations')}>
-          邀请
-        </button>
-      ) : null}
-    </div>
   );
 }
 

@@ -33,7 +33,7 @@ export interface AuthenticationReply {
 }
 
 export interface AuthenticationStrategy {
-  readonly method: 'password' | 'otp' | 'invitation' | 'federation';
+  readonly method: 'password' | 'otp' | 'federation';
   authenticate(request: OperationRequest, database: WriteTransactionContext, body: AuthenticationBody): Promise<AuthenticationReply>;
 }
 

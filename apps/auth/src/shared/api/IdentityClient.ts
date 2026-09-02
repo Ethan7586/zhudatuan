@@ -5,7 +5,9 @@ import type { AuthTarget } from '@shop/config/client';
 import type { OperationOutputFor } from '@shop/contract';
 import { appConfig } from '../../config/AppConfig';
 import type { AuthReturnRequest } from '../../entity/authentication/AuthClient';
+import type { ChallengeRequest, EnrollmentCompletion } from '../../entity/authentication/AuthClient';
 import { deviceId, randomToken } from '../security/Device';
+import { mapEnrollment } from '../../feature/invitation/infrastructure/InvitationMapper';
 
 interface Authorization {
   readonly request: Readonly<{ state: string; nonce: string; challenge: string }>;
@@ -25,7 +27,6 @@ interface BootstrapState {
 type AuthenticationBody = Readonly<
   | { method: 'password'; subject: string; password: string; target: AuthTarget; returnTarget?: string }
   | { method: 'otp'; subject: string; challenge: string; code: string; target: AuthTarget; returnTarget?: string }
-  | { method: 'invitation'; code: string; target: AuthTarget; returnTarget?: string }
 >;
 
 export class IdentityClient {
@@ -41,8 +42,15 @@ export class IdentityClient {
     return this.authenticate({ method: 'otp', subject: subject.trim(), challenge, code: code.trim(), target }, target, returns, signal);
   }
 
-  invitation(code: string, target: AuthTarget, returns?: AuthReturnRequest, signal?: AbortSignal) {
-    return this.authenticate({ method: 'invitation', code, target }, target, returns, signal);
+  async invitation(code: string, target: AuthTarget, returns?: AuthReturnRequest, signal?: AbortSignal) {
+    const [authorization, bootstrap] = await Promise.all([beginAuthorization(), this.bootstrap(target, returns, signal)]);
+    const result = await this.request(
+      this.identity.invitationsResolve(
+        { body: { code: code.trim(), target, returnTarget: bootstrap.returnTarget, authorization: authorization.request } },
+        command(target, bootstrap.csrf, signal)
+      )
+    );
+    return this.finishAuthentication(result, authorization, target, signal);
   }
 
   async invitationProof(reference: string, code: string, target: AuthTarget, returns?: AuthReturnRequest, signal?: AbortSignal) {
@@ -60,53 +68,47 @@ export class IdentityClient {
         command(target, bootstrap.csrf, signal)
       )
     );
-    return this.finish(result, authorization, target, signal);
+    return this.finishAuthentication(result, authorization, target, signal);
   }
 
-  async challenge(destination: string, purpose: 'login' | 'password_reset' | 'enrollment', target: AuthTarget = 'storefront', returns?: AuthReturnRequest, signal?: AbortSignal) {
+  async challenge(request: ChallengeRequest, target: AuthTarget = 'storefront', returns?: AuthReturnRequest, signal?: AbortSignal) {
     const bootstrap = await this.bootstrap(target, returns, signal);
-    const result = await this.request(this.identity.challengesCreate({ body: { destination: destination.trim(), purpose } }, command(target, bootstrap.csrf, signal)));
+    const body = request.purpose === 'login' || request.purpose === 'password_reset'
+      ? { purpose: request.purpose, destination: request.destination.trim() }
+      : request.purpose === 'enrollment'
+        ? { purpose: request.purpose, enrollmentId: request.enrollmentId }
+        : { purpose: request.purpose, enrollmentId: request.enrollmentId, destination: request.destination.trim() };
+    const result = await this.request(this.identity.challengesCreate({ body }, command(target, bootstrap.csrf, signal)));
     return Object.freeze({ id: result.id, expiresAt: result.expires_at });
   }
 
   async enrollment(id: string, signal?: AbortSignal) {
     const result = await this.request(this.identity.enrollmentsRead({ path: { id } }, query('storefront', signal)));
-    return Object.freeze({
-      id: result.id,
-      target: result.target,
-      expiresAt: result.expiresAt,
-      policy: Object.freeze({
-        termsTitle: result.policy.terms_title,
-        termsBody: result.policy.terms_body,
-        privacyTitle: result.policy.privacy_title,
-        privacyBody: result.policy.privacy_body,
-        termsHash: result.policy.terms_hash,
-      }),
-    });
+    return mapEnrollment(result);
   }
 
-  async completeEnrollment(input: Readonly<{ id: string; subject: string; challenge: string; code: string; termsHash: string; password: string; displayName: string }>, signal?: AbortSignal) {
+  async completeEnrollment(input: EnrollmentCompletion, signal?: AbortSignal) {
     const [authorization, bootstrap] = await Promise.all([beginAuthorization(), this.bootstrap('storefront', undefined, signal)]);
     const result = await this.request(
       this.identity.enrollmentsComplete(
         {
           path: { id: input.id },
-          body: {
-            subject: input.subject.trim(),
-            challenge: input.challenge,
-            code: input.code.trim(),
-            termsAccepted: true,
-            termsHash: input.termsHash,
-            password: input.password,
-            displayName: input.displayName.trim(),
-            authorization: authorization.request,
-          },
+          body: input.subjectMode === 'bound'
+            ? {
+                mode: 'bound', challenge: input.challenge, code: input.code.trim(), password: input.password,
+                ...(input.displayName === undefined ? {} : { displayName: input.displayName.trim() }),
+                termsAccepted: true, termsHash: input.termsHash, authorization: authorization.request,
+              }
+            : {
+                mode: 'campaign', subject: input.subject?.trim() ?? '', challenge: input.challenge, code: input.code.trim(), password: input.password,
+                displayName: input.displayName?.trim() ?? '', termsAccepted: true, termsHash: input.termsHash, authorization: authorization.request,
+              },
         },
         command('storefront', bootstrap.csrf, signal)
       )
     );
     if (result.kind === 'enrolled') return result;
-    return this.finish(result, authorization, 'storefront', signal);
+    return this.finishAuthentication(result, authorization, 'storefront', signal);
   }
 
   async providers(returns: AuthReturnRequest | undefined, target: AuthTarget, signal?: AbortSignal) {
@@ -140,10 +142,16 @@ export class IdentityClient {
   private async authenticate(body: AuthenticationBody, target: AuthTarget, returns?: AuthReturnRequest, signal?: AbortSignal) {
     const [authorization, bootstrap] = await Promise.all([beginAuthorization(), this.bootstrap(target, returns, signal)]);
     const result = await this.request(this.identity.sessionsCreate({ body: { ...body, returnTarget: bootstrap.returnTarget, authorization: authorization.request } }, command(target, bootstrap.csrf, signal)));
-    return this.finish(result, authorization, target, signal);
+    return this.finishAuthentication(result, authorization, target, signal);
   }
 
-  private async finish(result: OperationOutputFor<'identity.sessions.create'>, authorization: Authorization, target: AuthTarget, signal?: AbortSignal) {
+  private async finishAuthentication(
+    result: OperationOutputFor<'identity.sessions.create'> | OperationOutputFor<'identity.invitations.resolve'> | OperationOutputFor<'identity.sessions.complete'> | OperationOutputFor<'identity.enrollments.complete'>,
+    authorization: Authorization,
+    target: AuthTarget,
+    signal?: AbortSignal
+  ) {
+    if (result.kind === 'enrolled') return result;
     if (result.kind === 'selection') return result;
     if (result.kind === 'enrollment') return Object.freeze({ kind: 'enrollment', id: result.enrollment.id, expiresAt: result.enrollment.expiresAt });
     if (result.kind === 'proofRequired') {

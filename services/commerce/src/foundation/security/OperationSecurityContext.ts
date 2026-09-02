@@ -21,6 +21,8 @@ export interface PreauthSecurityContext {
   readonly version: number;
   readonly expires: Date;
   readonly trace: string;
+  readonly authorization: Readonly<{ stateHash: string; nonceHash: string; challenge: string }> | null;
+  readonly returnTarget: string | null;
 }
 
 export interface SessionSecurityContext {

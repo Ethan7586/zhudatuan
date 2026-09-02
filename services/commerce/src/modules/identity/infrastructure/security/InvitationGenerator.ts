@@ -4,6 +4,6 @@ import type { InvitationCodePort } from '../../application/port/InvitationSecuri
 
 export class InvitationGenerator implements InvitationCodePort {
   issue(): InvitationCode {
-    return InvitationCode.issue(randomBytes(20));
+    return InvitationCode.issue(randomBytes(24));
   }
 }

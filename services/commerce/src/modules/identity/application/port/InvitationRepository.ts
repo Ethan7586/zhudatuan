@@ -84,7 +84,18 @@ export interface InvitationRepository {
   reserve(
     context: WriteTransactionContext,
     invitation: Invitation,
-    input: Readonly<{ claim: string; preauth: Buffer; browser: Buffer; device: Buffer; recipient: Buffer | null; principal: string | null; proof: 'otp' | 'sso' | 'terms' }>
+    input: Readonly<{
+      claim: string;
+      preauth: Buffer;
+      browser: Buffer;
+      device: Buffer;
+      recipient: Buffer | null;
+      principal: string | null;
+      proof: 'otp' | 'sso' | 'terms';
+      state: 'reserved' | 'proofpending';
+      authorization: Readonly<{ stateHash: string; nonceHash: string; challenge: string }>;
+      returnTarget: string;
+    }>
   ): Promise<InvitationClaim>;
   consume(context: WriteTransactionContext, invitation: Invitation, input: Readonly<{ session: string | null; assurance: 1 | 2 | 3; trace: string; principal?: string; membership?: string }>): Promise<InvitationReceipt>;
   consumeClaim(context: WriteTransactionContext, claim: string, version: number): Promise<void>;

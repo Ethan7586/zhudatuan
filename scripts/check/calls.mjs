@@ -11,6 +11,7 @@ import { auditExtensions } from './callgraph/extensions.mjs';
 import { auditJobs } from './callgraph/jobs.mjs';
 import { auditOperations } from './callgraph/operations.mjs';
 import { auditRoutes } from './callgraph/routes.mjs';
+import { auditServices } from './callgraph/services.mjs';
 
 const retiredParts = new Set(['admin-web', 'auth-web', 'commerce-api', 'core-read-cache', 'jobs', 'storefront-web', 'wechat-miniapp']);
 const allowedOrphanNames = new Set(['vite-env.d.ts', 'worker-configuration.d.ts', 'env.d.ts']);
@@ -294,6 +295,7 @@ export function audit() {
   values.push(...auditExtensions(sourceFiles, sources));
   values.push(...auditDatabase(sources));
   values.push(...auditRoutes(sourceFiles, sources));
+  values.push(...auditServices(sourceFiles));
   return [...new Map(values.map((value) => [violationKey(value), value])).values()].sort((left, right) => violationKey(left).localeCompare(violationKey(right)));
 }
 

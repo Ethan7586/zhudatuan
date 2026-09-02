@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, safeQueryError } from '../../shared/presentation/QueryState';
 import { ProductCatalogHeader } from './ProductCatalogHeader';
 import { ProductActionDialog, PoolDialog, type ProductAction } from './ProductActions';
 import { setListingsPublication } from './ProductCommand';

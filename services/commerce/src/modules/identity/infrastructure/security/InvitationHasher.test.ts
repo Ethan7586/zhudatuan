@@ -5,7 +5,7 @@ import { InvitationHasher } from './InvitationHasher';
 const v1 = { version: 'v1', value: 'invitation-key-version-one-value-00000001' };
 const v2 = { version: 'v2', value: 'invitation-key-version-two-value-00000002' };
 const v3 = { version: 'v3', value: 'invitation-key-version-three-value-00000003' };
-const code = InvitationCode.issue(Buffer.alloc(20, 9));
+const code = InvitationCode.issue(Buffer.alloc(24, 9));
 
 describe('InvitationHasher key rotation', () => {
   it('keeps token and recipient verification valid during the bounded previous-key window', () => {

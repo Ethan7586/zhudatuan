@@ -1,18 +1,19 @@
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
-import { randomUUID } from 'node:crypto';
 import { DomainError } from '../../../../foundation/domain/DomainError';
-import type { InvitationAccessPort, InvitationCampaignActivation, InvitationCampaignValidation, InvitationGrantPlan } from '../../public/InvitationAccessPort';
+import type { EmployeeInvitationPreparation, InvitationAccessPort, InvitationCampaignActivation, InvitationCampaignValidation, InvitationGrantPlan, PendingEmployeeAccess } from '../../public/InvitationAccessPort';
 import type { GrantPlan } from '../../domain/model/GrantPlan';
 import type { DelegationPolicy } from '../../domain/policy/DelegationPolicy';
 import type { ActivateMembership } from './ActivateMembership';
 import type { AccessRepository } from '../port/AccessRepository';
 import type { CreateInvitationGrant, BuiltGrant, InvitationPlanInput } from './CreateInvitationGrant';
+import type { AccessOrganizationPort } from '../../../organization/public';
 export class DelegationService implements InvitationAccessPort {
   constructor(
     private readonly repository: AccessRepository,
     private readonly policy: DelegationPolicy,
     private readonly activation: ActivateMembership,
-    private readonly grants: CreateInvitationGrant
+    private readonly grants: CreateInvitationGrant,
+    private readonly organizations: AccessOrganizationPort
   ) {}
   async plan(context: ReadTransactionContext, input: InvitationPlanInput): Promise<InvitationGrantPlan> {
     const built = await this.grants.execute(context, input);
@@ -49,15 +50,15 @@ export class DelegationService implements InvitationAccessPort {
     }>
   > {
     await this.campaignTemplate(context, input);
-    await this.repository.createCampaignMembership(context, {
+    await this.repository.createStorefrontMembership(context, {
       membership: input.membership,
       member: input.member,
       principal: input.principal,
       organization: input.organization,
       issuer: input.issuer,
-      mallGrant: `scope:${randomUUID()}`,
-      ownerGrant: `scope:${randomUUID()}`,
-      selfGrant: `scope:${randomUUID()}`,
+      issuerAccessVersion: input.issuerAccessVersion,
+      employeeNo: null,
+      department: null,
     });
     const actual = await this.grants.execute(context, {
       issuer: input.issuer,
@@ -71,6 +72,46 @@ export class DelegationService implements InvitationAccessPort {
     });
     this.assertDelegation(actual);
     return Object.freeze({ activationDigest: actual.plan.digest() });
+  }
+  async prepareEmployee(context: WriteTransactionContext, input: EmployeeInvitationPreparation): Promise<Readonly<{ grantDigest: string }>> {
+    const template = await this.grants.execute(context, {
+      issuer: input.issuer,
+      membership: null,
+      organization: input.organization,
+      target: 'storefront',
+      kind: 'campaign',
+      policy: input.policy,
+      termsHash: input.termsHash,
+      expiresAt: input.expiresAt,
+    });
+    this.assertDelegation(template);
+    if (template.issuerVersion !== input.issuerAccessVersion) throw new DomainError('VERSION_CONFLICT');
+    if (input.department !== null && !(await this.organizations.employeeDepartment(context, input.department, input.organization))) {
+      throw new DomainError('DELEGATION_DENIED');
+    }
+    await this.repository.createStorefrontMembership(context, {
+      membership: input.membership,
+      member: input.member,
+      principal: input.principal,
+      organization: input.organization,
+      issuer: input.issuer,
+      issuerAccessVersion: input.issuerAccessVersion,
+      employeeNo: input.employeeNo,
+      department: input.department,
+    });
+    const actual = await this.grants.execute(context, {
+      issuer: input.issuer,
+      membership: input.membership,
+      organization: input.organization,
+      target: 'storefront',
+      kind: 'enrollment',
+      policy: input.policy,
+      termsHash: input.termsHash,
+      expiresAt: input.expiresAt,
+    });
+    this.assertDelegation(actual);
+    if (actual.issuerVersion !== input.issuerAccessVersion || actual.plan.principal !== input.principal) throw new DomainError('INVITATION_STALE');
+    return Object.freeze({ grantDigest: actual.plan.digest() });
   }
   private async campaignTemplate(context: ReadTransactionContext, input: InvitationCampaignValidation): Promise<BuiltGrant> {
     const template = await this.grants.execute(context, {
@@ -126,6 +167,12 @@ export class DelegationService implements InvitationAccessPort {
     const member = await this.repository.pendingMember(context, membership);
     if (member === null) throw new DomainError('MEMBERSHIP_NOT_INVITED');
     return member;
+  }
+  async pendingEmployee(context: ReadTransactionContext, membership: string): Promise<PendingEmployeeAccess> {
+    const employee = await this.repository.pendingEmployee(context, membership);
+    if (employee === null) throw new DomainError('MEMBERSHIP_NOT_INVITED');
+    const department = employee.department === null ? null : await this.organizations.employeeDepartment(context, employee.department, employee.organization);
+    return Object.freeze({ member: employee.member, employeeNo: employee.employeeNo, departmentName: department?.name ?? null });
   }
   private assertDelegation(built: BuiltGrant): void {
     const delegation = {

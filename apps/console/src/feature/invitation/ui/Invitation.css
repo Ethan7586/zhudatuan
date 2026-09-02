@@ -1,0 +1,27 @@
+.invitationtoolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--sw-space-1); }
+.invitationtoolbar label { display: grid; gap: var(--sw-space-0-5); color: var(--sw-text-secondary); font-size: var(--sw-font-size-caption); font-weight: 700; }
+.invitationtoolbar select, .invitationform :where(input, select, textarea) { min-height: 2.75rem; border: .0625rem solid var(--sw-border); border-radius: var(--sw-radius-sm); background: var(--sw-surface); color: var(--sw-text); padding: var(--sw-space-1); }
+.invitationform { display: grid; gap: var(--sw-space-1); }
+.invitationform label { color: var(--sw-text-secondary); font-size: var(--sw-font-size-body-sm); font-weight: 700; }
+.invitationform textarea { min-height: 6rem; resize: vertical; }
+.invitationform :where(input, select, textarea):focus { border-color: var(--sw-brand); outline: none; box-shadow: var(--sw-shadow-card); }
+.invitationlead { margin: 0; color: var(--sw-muted); }
+.invitationgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-1); }
+.invitationgrid > div { display: grid; gap: var(--sw-space-1); }
+.invitationpreview, .invitationsecure { display: grid; gap: var(--sw-space-0-5); border: .0625rem solid var(--sw-brand); border-radius: var(--sw-radius-md); background: var(--sw-brand-light); padding: var(--sw-space-2); }
+.invitationpreview small, .invitationsecure span { color: var(--sw-text-secondary); }
+.invitationwarning { margin: 0; border-radius: var(--sw-radius-sm); background: var(--sw-warning-surface); color: var(--sw-warning-strong); padding: var(--sw-space-1-5); }
+.invitationerror, .invitationfielderror { margin: 0; color: var(--sw-danger-strong); }
+.invitationerror { border-radius: var(--sw-radius-sm); background: var(--sw-danger-surface); padding: var(--sw-space-1); }
+.invitationfielderror { font-size: var(--sw-font-size-caption); }
+.invitationactions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sw-space-1); border-top: .0625rem solid var(--sw-border); padding-top: var(--sw-space-2); }
+.invitationreceipt, .invitationreceiptconfirm { display: grid; gap: var(--sw-space-2); }
+.invitationreceipt code { display: block; border: .0625rem dashed var(--sw-brand); border-radius: var(--sw-radius-md); background: var(--sw-surface-subtle); color: var(--sw-brand-dark); padding: var(--sw-space-2); font: 800 var(--sw-font-size-h3)/1.6 var(--sw-font-mono); letter-spacing: .08em; overflow-wrap: anywhere; text-align: center; }
+.invitationreceiptmeta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-1); margin: 0; }
+.invitationreceiptmeta div { border-bottom: .0625rem solid var(--sw-border); padding: var(--sw-space-1) 0; }
+.invitationreceiptmeta dt { color: var(--sw-muted); font-size: var(--sw-font-size-caption); }
+.invitationreceiptmeta dd { margin: var(--sw-space-0-5) 0 0; color: var(--sw-text); font-weight: 700; }
+.invitationstatus { display: inline-flex; border-radius: 999px; padding: var(--sw-space-0-5) var(--sw-space-1); background: var(--sw-surface-subtle); font-size: var(--sw-font-size-caption); font-weight: 800; }
+.invitationstatusactive { background: var(--sw-success-surface); color: var(--sw-success-strong); }
+.invitationstatusrevoked, .invitationstatusexpired { background: var(--sw-danger-surface); color: var(--sw-danger-strong); }
+@media (max-width: 48rem) { .invitationgrid, .invitationreceiptmeta { grid-template-columns: 1fr; } .invitationtoolbar { align-items: stretch; } .invitationtoolbar > * { flex: 1 1 100%; } }

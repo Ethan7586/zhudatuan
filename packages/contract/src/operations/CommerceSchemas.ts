@@ -204,6 +204,8 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "support.slas.read": Object.freeze({ input: exactOperationInput("SupportSlasReadInput", [] as const, false), output: exactOperationOutput("SupportSlasReadOutput") }),
   "support.slas.manage": Object.freeze({ input: exactOperationInput("SupportSlasManageInput", ["slaid"] as const, true), output: exactOperationOutput("SupportSlasManageOutput") }),
   "support.history.read": Object.freeze({ input: exactOperationInput("SupportHistoryReadInput", ["caseid"] as const, false), output: exactOperationOutput("SupportHistoryReadOutput") }),
+  "support.events.read": Object.freeze({ input: exactOperationInput("SupportEventsReadInput", [] as const, false), output: exactOperationOutput("SupportEventsReadOutput") }),
+  "support.readstates.manage": Object.freeze({ input: exactOperationInput("SupportReadstatesManageInput", ["conversationid"] as const, true), output: exactOperationOutput("SupportReadstatesManageOutput") }),
   "notification.notifications.read": Object.freeze({ input: exactOperationInput("NotificationNotificationsReadInput", [] as const, false), output: exactOperationOutput("NotificationNotificationsReadOutput") }),
   "notification.notifications.ack": Object.freeze({ input: exactOperationInput("NotificationNotificationsAckInput", ["notificationid"] as const, true), output: exactOperationOutput("NotificationNotificationsAckOutput") }),
   "notification.preferences.read": Object.freeze({ input: exactOperationInput("NotificationPreferencesReadInput", [] as const, false), output: exactOperationOutput("NotificationPreferencesReadOutput") }),

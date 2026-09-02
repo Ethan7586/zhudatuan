@@ -17,4 +17,8 @@ export class GetOrderSummary {
   execute(context: ReadTransactionContext, order: string, scopes: readonly string[], member: string, memberOnly: boolean): Promise<OrderSummary | null> {
     return this.repository.find(context, order, scopes, member, memberOnly);
   }
+
+  recent(context: ReadTransactionContext, scopes: readonly string[], member: string, memberOnly: boolean, limit = 5): Promise<readonly OrderSummary[]> {
+    return this.repository.recent(context, scopes, member, memberOnly, limit);
+  }
 }

@@ -842,9 +842,14 @@ operations:
     requestSchema: IdentityInvitationsResolveInput
     responseSchema: IdentityInvitationsResolveOutput
     errorUnion:
+      - AUTH_TICKET_EXCHANGE_REJECTED
+      - CHALLENGE_INVALID
       - IDEMPOTENCY_CONFLICT
       - INTERNAL_ERROR
       - INVITATION_INVALID
+      - PREAUTH_EXPIRED
+      - PREAUTH_REQUIRED
+      - PROOF_REQUIRED
       - RATE_LIMITED
       - VALIDATION_FAILED
     idempotencyScope: actor-operation-scope
@@ -915,7 +920,7 @@ operations:
     permission: identity.invitation.issue
     capability: identity.invitations.create
     scopeKinds: *a4
-    assuranceLevel: stepup
+    assuranceLevel: mfa
     makerChecker: false
     requestSchema: IdentityInvitationsCreateInput
     responseSchema: IdentityInvitationsCreateOutput
@@ -924,9 +929,12 @@ operations:
       - AUTHORIZATION_DENIED
       - CAPABILITY_DENIED
       - DELEGATION_DENIED
+      - EMPLOYEE_NUMBER_CONFLICT
       - IDEMPOTENCY_CONFLICT
       - IDEMPOTENCY_REPLAY_FORBIDDEN
+      - IDENTITY_ALREADY_EXISTS
       - INTERNAL_ERROR
+      - INVITATION_KIND_DENIED
       - MEMBERSHIP_NOT_INVITED
       - OWNER_TRANSFER_REQUIRED
       - RATE_LIMITED
@@ -1075,7 +1083,7 @@ operations:
     rateClass: identity
     risk: high
     resourceResolver: none
-    idempotent: false
+    idempotent: true
     requirements:
       - MVPGROUPSETTING
       - MVPMALLSETTING
@@ -8491,14 +8499,19 @@ operations:
       - INTERNAL_ERROR
       - RATE_LIMITED
       - SCOPE_DENIED
+      - SUPPORT_ATTACHMENT_NOT_READY
+      - SUPPORT_ATTACHMENT_REJECTED
+      - SUPPORT_CLIENT_MESSAGE_CONFLICT
+      - SUPPORT_TICKET_NOT_WRITABLE
       - VALIDATION_FAILED
+      - VERSION_CONFLICT
     idempotencyScope: actor-operation-scope
-    expectedVersion: none
+    expectedVersion: required
     timeout: 800
     rateClass: write
     risk: elevated
     resourceResolver: support.resource
-    idempotent: false
+    idempotent: true
     requirements:
       - MVPGROUPSUPPORT
       - MVPMALLSUPPORT
@@ -9025,6 +9038,91 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: none
+  - id: support.events.read
+    owner: support
+    method: GET
+    path: /api/v1/support/events
+    audience: public
+    targets: [console, storefront]
+    permission: support.event.read
+    capability: support.events.read
+    scopeKinds: *a9
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: SupportEventsReadInput
+    responseSchema: SupportEventsReadOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - SUPPORT_EVENT_CURSOR_EXPIRED
+      - SUPPORT_STREAM_UNAVAILABLE
+      - VALIDATION_FAILED
+    idempotencyScope: none
+    expectedVersion: none
+    timeout: 15000
+    rateClass: read
+    risk: elevated
+    resourceResolver: support.resource
+    idempotent: true
+    requirements:
+      - MVPGROUPSUPPORT
+      - MVPMALLSUPPORT
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/modules/support/application/handler/EventsReadHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+    resourceParameter: null
+    originPolicy: none
+    csrfPolicy: none
+    responseMode: stream
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: none
+  - id: support.readstates.manage
+    owner: support
+    method: PUT
+    path: /api/v1/support/conversations/{conversationid}/readstate
+    audience: public
+    targets: [console, storefront]
+    permission: support.readstate.manage
+    capability: support.readstates.manage
+    scopeKinds: *a9
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: SupportReadstatesManageInput
+    responseSchema: SupportReadstatesManageOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: actor-operation-scope
+    expectedVersion: none
+    timeout: 800
+    rateClass: write
+    risk: low
+    resourceResolver: support.resource
+    idempotent: true
+    requirements:
+      - MVPGROUPSUPPORT
+      - MVPMALLSUPPORT
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/modules/support/application/handler/ReadstatesManageHandler.ts
+    sdk: packages/sdk/src/operations/support.ts
+    resourceParameter: conversationid
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
   - id: notification.notifications.read
     owner: notification
     method: GET

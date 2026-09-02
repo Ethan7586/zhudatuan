@@ -18,6 +18,7 @@ import { PartnerManifest } from '../feature/settings/partner/Manifest';
 import { ProviderManifest } from '../feature/settings/provider/Manifest';
 import { RiskManifest } from '../feature/settings/risk/Manifest';
 import { SupportManifest } from '../feature/support/Manifest';
+import { InvitationManifest } from '../feature/invitation/Manifest';
 import { VoucherManifest } from '../feature/voucher/Manifest';
 import type { ComponentManifest, ComponentRoute } from '../shared/manifest/ComponentManifest';
 
@@ -33,6 +34,7 @@ const manifests: readonly ComponentManifest[] = Object.freeze([
   FinanceManifest,
   ReportingManifest,
   SupportManifest,
+  InvitationManifest,
   SettingsManifest,
   AccessManifest,
   MemberManifest,

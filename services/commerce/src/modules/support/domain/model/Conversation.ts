@@ -8,8 +8,10 @@ export class Conversation {
     readonly channel: ConversationChannel,
     readonly subject: string,
     readonly order: string | null,
+    readonly latestSequence: number,
     readonly version: number
   ) {
-    if (!id || !scope || !subject.trim() || !Number.isSafeInteger(version) || version < 0) throw new Error('SUPPORT_CONVERSATION_INVALID');
+    if (!id || !scope || !subject.trim() || !Number.isSafeInteger(latestSequence) || latestSequence < 0 || !Number.isSafeInteger(version) || version < 0) throw new Error('SUPPORT_CONVERSATION_INVALID');
+    Object.freeze(this);
   }
 }

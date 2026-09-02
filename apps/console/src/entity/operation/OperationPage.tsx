@@ -2,7 +2,7 @@ import { ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import type { OperationId } from '@shop/contract';
 import type { ReactNode } from 'react';
-import { queryCondition, queryErrorCode, safeQueryError } from '../../shared/api/QueryState';
+import { queryCondition, queryErrorCode, safeQueryError } from '../../shared/presentation/QueryState';
 import { useConsoleContext } from '../session/ConsoleContext';
 import type { ConsoleContext } from '../session/ConsoleSession';
 import { AssurancePrompt } from '../session/AssurancePrompt';

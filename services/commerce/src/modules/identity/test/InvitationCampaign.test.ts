@@ -56,7 +56,7 @@ describe('campaign enrollment invitation', () => {
             kind: 'campaign',
             target: 'storefront',
             recipient_hash: Buffer.alloc(32, 2),
-            state: 'proofpending',
+            state: 'reserved',
             proof_method: 'otp',
             expires_at: new Date('2026-08-30T01:05:00Z'),
             proved_at: null,
@@ -74,12 +74,15 @@ describe('campaign enrollment invitation', () => {
         recipient: Buffer.alloc(32, 2),
         principal: null,
         proof: 'otp',
+        state: 'reserved',
+        authorization: { stateHash: 'a'.repeat(64), nonceHash: 'b'.repeat(64), challenge: 'c'.repeat(43) },
+        returnTarget: 'signed-return-target',
       })
     );
     const reserve = queries[1]!;
     const preauth = queries[2]!;
     const outbox = queries[3]!;
-    expect(claim).toMatchObject({ kind: 'campaign', state: 'proofpending', version: 1 });
+    expect(claim).toMatchObject({ kind: 'campaign', state: 'reserved', version: 1 });
     expect(reserve.text).toContain('invitation.use_count+(select count(*)');
     expect(reserve.text).toContain('<invitation.max_uses');
     expect(preauth.text).toContain("null,'[]'::jsonb");
@@ -135,14 +138,14 @@ describe('campaign enrollment invitation', () => {
       consumeClaim: vi.fn(),
     };
     const access = { validateCampaign: vi.fn(), createCampaign: vi.fn(async () => ({ activationDigest: 'c'.repeat(64) })), activate: vi.fn() };
-    const members = { mobileOwner: async () => null, createPending: vi.fn(), activate: vi.fn() };
+    const members = { lockMobile: vi.fn(), mobileOwner: async () => null, createPending: vi.fn(), activate: vi.fn() };
     const hasher = { matchesRecipient: () => true };
     const challenges = { consume: vi.fn() };
     const count = vi.fn();
     const telemetry = { metrics: { count, duration: vi.fn() } } as never;
     const redeemer = new InvitationRedeemer(repository as never, access as never, telemetry);
     const cookies = new SessionCookieAdapter();
-    const enrollments = { findPrincipal: async () => null, createPrincipal: vi.fn(), activatePrincipal: vi.fn(), createPassword: vi.fn() };
+    const enrollments = { findPrincipal: async () => null, createPendingPrincipal: vi.fn(), activatePrincipal: vi.fn(), createPassword: vi.fn() };
     const assurances = { record: vi.fn() };
     const events = { publish: vi.fn() };
     const enrollment = new EnrollmentService(
@@ -150,7 +153,6 @@ describe('campaign enrollment invitation', () => {
       access as never,
       members as never,
       sessions as never,
-      {} as never,
       hasher as never,
       'identity-key-value-at-least-thirty-two-bytes',
       'session-key-value-at-least-thirty-two-bytes',
@@ -180,6 +182,7 @@ describe('campaign enrollment invitation', () => {
           invitation: invitation.state.id,
           scope: invitation.state.organization,
           body: {
+            mode: 'campaign',
             subject: '+85291234567',
             password: 'Password1!',
             challenge: 'challenge:one',
@@ -193,6 +196,10 @@ describe('campaign enrollment invitation', () => {
           password: 'password-hash',
           mobile: { ciphertext: 'cipher', keyVersion: 'v1', fingerprint: 'f'.repeat(64) },
           principal: 'principal:new',
+          mode: 'campaign',
+          display: 'Campaign Member',
+          authorization: {} as never,
+          returnTarget: 'signed-return-target',
         });
       }
     );

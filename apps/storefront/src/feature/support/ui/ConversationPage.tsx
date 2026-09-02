@@ -1,126 +1,153 @@
-import { ArrowLeft, CircleAlert, LoaderCircle, Paperclip, Send } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState, type FormEvent } from 'react';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import { ApiError } from '@shop/sdk/error';
+import { ArrowLeft, CircleAlert, LoaderCircle, Paperclip, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useSession } from '../../../shared/runtime/SessionContext';
-import { supportQuery } from '../application/SupportQuery';
-import { readConversation } from '../application/ReadConversation';
+import { conversationDrafts } from '../application/ConversationDraft';
+import { readCase } from '../application/ReadCases';
+import { ReadConversation } from '../application/ReadConversation';
 import { SendMessage } from '../application/SendMessage';
+import { UpdateReadState } from '../application/UpdateReadState';
 import { UploadAttachment } from '../application/UploadAttachment';
+import { SupportEventSource } from '../infrastructure/SupportEventSource';
+import { supportGateway } from '../infrastructure/SupportGateway';
+import { mergeConversations } from '../infrastructure/SupportMapper';
+import type { PendingAttachment, SupportAttachment } from '../model/Attachment';
+import type { Conversation, MessageDraft, SupportMessage } from '../model/Message';
+import { SupportComposer } from './SupportComposer';
+import './Support.css';
 
-export function ConversationPage({ caseId }: { readonly caseId: string }) {
-  const session = useSession();
+const reader = new ReadConversation();
+const sender = new SendMessage();
+const uploader = new UploadAttachment();
+const readUpdater = new UpdateReadState();
+const events = new SupportEventSource();
+type Session = NonNullable<ReturnType<typeof useSession>['session']>;
+
+export function ConversationPage({ caseId }: Readonly<{ caseId: string }>) {
+  const runtime = useSession();
+  const session = runtime.session;
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const send = useRef(new SendMessage());
-  const upload = useRef(new UploadAttachment());
-  const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const scope = session.scope || 'guest';
-  const key = supportQuery(scope, caseId);
-  const query = useQuery({ queryKey: key, queryFn: ({ signal }) => readConversation(required(session.session), caseId, signal), enabled: session.status === 'authenticated' });
-  const refresh = () => queryClient.invalidateQueries({ queryKey: key });
+  const cache = useQueryClient();
+  const scope = runtime.scope || 'guest';
+  const ticketKey = useMemo(() => ['storefront', scope, 'support.ticket', caseId] as const, [caseId, scope]);
+  const conversationKey = useMemo(() => ['storefront', scope, 'support.conversation', caseId] as const, [caseId, scope]);
+  const [draft, setDraft] = useState(() => conversationDrafts.read(caseId));
+  const [failed, setFailed] = useState<MessageDraft | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [newMessage, setNewMessage] = useState(false);
+  const viewport = useRef<HTMLDivElement>(null);
+  const scroll = useRef({ caseId, first: 0, last: 0, height: 0, bottom: true });
+  const lastRead = useRef(0);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!session.session) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await send.current.execute(session.session, caseId, message);
-      setMessage('');
-      await refresh();
-    } catch (cause) {
-      setError(text(cause, '消息发送失败'));
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function attach(file: File | undefined) {
-    if (!session.session || !file) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await upload.current.execute(session.session, caseId, file);
-      await refresh();
-    } catch (cause) {
-      setError(text(cause, '附件上传失败'));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const ticket = useQuery({ queryKey: ticketKey, queryFn: ({ signal }) => readCase(required(session), caseId, signal), enabled: runtime.status === 'authenticated' });
+  const conversation = useInfiniteQuery({
+    queryKey: conversationKey,
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam, signal }) => reader.execute(required(session), caseId, pageParam, signal),
+    getNextPageParam: (page) => page.nextCursor,
+    enabled: runtime.status === 'authenticated',
+    staleTime: 10_000,
+  });
+  const merged = useMemo(() => mergeConversations(conversation.data?.pages ?? []), [conversation.data]);
 
-  return (
-    <section className="sw-web-container mx-auto max-w-[900px] px-3 py-5 text-xs">
-      <header className="mb-4 flex items-center gap-3">
-        <button type="button" aria-label="返回客服中心" onClick={() => void navigate('/support')} className="grid h-9 w-9 place-items-center rounded-full border bg-white">
-          <ArrowLeft size={17} />
-        </button>
-        <div>
-          <h1 className="text-xl font-black">工单会话</h1>
-          <p className="text-gray-500">{caseId}</p>
-        </div>
-      </header>
-      {error || query.isError ? (
-        <div role="alert" className="mb-3 flex items-center gap-2 rounded-lg bg-red-50 p-3 font-bold text-red-700">
-          <CircleAlert size={16} />
-          {error ?? '会话加载失败'}
-        </div>
-      ) : null}
-      <div className="min-h-[420px] space-y-3 rounded-xl border bg-gray-50 p-4">
-        {query.isPending ? (
-          <p role="status" className="flex items-center justify-center gap-2 py-20 text-gray-400">
-            <LoaderCircle className="animate-spin" size={17} />
-            正在读取会话…
-          </p>
-        ) : null}
-        {query.data?.items.map((item) => (
-          <article key={item.id} className={`max-w-[82%] rounded-xl px-3 py-2 shadow-sm ${item.authorType === 'member' ? 'ml-auto bg-[var(--sw-brand)] text-white' : 'bg-white text-gray-700'}`}>
-            <p className="whitespace-pre-wrap break-words leading-5">{item.body}</p>
-            <time className={`mt-1 block text-[10px] ${item.authorType === 'member' ? 'text-blue-100' : 'text-gray-400'}`}>{format(item.createdAt)}</time>
-          </article>
-        ))}
-        {query.data?.attachments.map((item) => (
-          <div key={item.id} className="flex items-center gap-2 rounded-lg border bg-white p-2 text-gray-500">
-            <Paperclip size={14} />
-            <span className="min-w-0 flex-1 truncate">{item.contentType}</span>
-            <span>{Math.ceil(item.size / 1024)}KB</span>
-          </div>
-        ))}
-        {query.data && query.data.items.length === 0 ? <p className="py-20 text-center text-gray-400">尚无消息</p> : null}
-      </div>
-      <form onSubmit={(event) => void submit(event)} className="mt-3 flex items-end gap-2 rounded-xl border bg-white p-3">
-        <label className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-lg border" aria-label="上传附件">
-          <Paperclip size={17} />
-          <input
-            type="file"
-            className="sr-only"
-            accept="image/jpeg,image/png,application/pdf,text/plain"
-            disabled={busy}
-            onChange={(event) => {
-              void attach(event.target.files?.[0]);
-              event.currentTarget.value = '';
-            }}
-          />
-        </label>
-        <textarea aria-label="消息内容" value={message} onChange={(event) => setMessage(event.target.value)} rows={2} maxLength={4000} className="min-h-10 flex-1 resize-y rounded-lg border px-3 py-2" />
-        <button type="submit" disabled={busy || !message.trim()} className="inline-flex h-10 items-center gap-1 rounded-lg bg-[var(--sw-brand)] px-4 font-bold text-white disabled:opacity-50">
-          <Send size={15} />
-          发送
-        </button>
-      </form>
+  const updateDraft = useCallback((next: typeof draft) => { setDraft(next); conversationDrafts.write(caseId, next); }, [caseId]);
+  useEffect(() => { const next = conversationDrafts.read(caseId); setDraft(next); setFailed(null); setNotice(''); lastRead.current = 0; }, [caseId]);
+  useEffect(() => {
+    const guard = (event: BeforeUnloadEvent) => { if (conversationDrafts.hasUnsent()) event.preventDefault(); };
+    window.addEventListener('beforeunload', guard); return () => window.removeEventListener('beforeunload', guard);
+  }, []);
+
+  const refreshLatest = useCallback(async () => {
+    if (!session) return;
+    const latest = await reader.execute(session, caseId);
+    cache.setQueryData<InfiniteData<Conversation, string | undefined>>(conversationKey, (current) => current ? { ...current, pages: [latest, ...current.pages.slice(1)] } : { pages: [latest], pageParams: [undefined] });
+  }, [cache, caseId, conversationKey, session]);
+  useEffect(() => {
+    const conversationId = ticket.data?.conversationId;
+    if (!session || !conversationId) return;
+    const controller = new AbortController();
+    setConnected(true);
+    void events.listen(session, conversationId, (event) => {
+      if (event.ticketId !== caseId) return;
+      if (event.evidenceId && (event.type === 'support.attachment.ready' || event.type === 'support.attachment.rejected')) {
+        const current = conversationDrafts.read(caseId);
+        updateDraft({ ...current, attachments: current.attachments.map((item) => item.id === event.evidenceId ? { ...item, state: event.type === 'support.attachment.ready' ? 'clean' : 'rejected' } : item) });
+      }
+      if (event.type === 'support.message.sent' || event.type.startsWith('support.ticket.') || event.type.startsWith('support.attachment.')) {
+        void refreshLatest(); void ticket.refetch();
+      }
+    }, controller.signal).catch(() => {
+      if (!controller.signal.aborted) { setConnected(false); setNotice('实时连接正在恢复，已同步服务器最新状态。'); void refreshLatest(); void ticket.refetch(); }
+    });
+    return () => controller.abort();
+  }, [caseId, refreshLatest, session, ticket.data?.conversationId, updateDraft]);
+
+  const send = useMutation({
+    mutationFn: (value: MessageDraft) => sender.execute(required(session), value),
+    onSuccess: async (value, sent) => {
+      conversationDrafts.clear(sent.caseId); setDraft({ message: '', attachments: [] }); setFailed(null); setNotice('');
+      cache.setQueryData(ticketKey, (current: typeof ticket.data) => current ? { ...current, state: value.ticket.state, version: value.ticket.version } : current);
+      await refreshLatest();
+    },
+    onError: async (cause, value) => {
+      setFailed(value);
+      if (cause instanceof ApiError && cause.code === 'VERSION_CONFLICT') { setNotice('工单状态刚刚发生变化，消息和附件已保留。请确认最新状态后原样重试。'); await Promise.all([ticket.refetch(), refreshLatest()]); }
+      else setNotice(errorText(cause, '消息发送失败，内容已保留。'));
+    },
+  });
+  const upload = useMutation({
+    mutationFn: ({ file }: Readonly<{ file: File; localId: string }>) => uploader.execute(required(session), caseId, file),
+    onMutate: ({ file, localId }) => updateDraft({ ...draft, attachments: [...draft.attachments, { id: localId, name: file.name, state: 'uploading' }] }),
+    onSuccess: (value, input) => updateDraft({ ...conversationDrafts.read(caseId), attachments: conversationDrafts.read(caseId).attachments.map((item) => item.id === input.localId ? value : item) }),
+    onError: (cause, input) => updateDraft({ ...conversationDrafts.read(caseId), attachments: conversationDrafts.read(caseId).attachments.map((item) => item.id === input.localId ? { ...item, state: 'failed', error: errorText(cause, '上传失败') } : item) }),
+  });
+
+  const markRead = useCallback((sequence: number) => {
+    const conversationId = ticket.data?.conversationId;
+    if (!session || !conversationId || sequence <= Math.max(lastRead.current, merged.lastReadSequence)) return;
+    lastRead.current = sequence;
+    void readUpdater.execute(session, conversationId, sequence).catch(() => { lastRead.current = merged.lastReadSequence; });
+  }, [merged.lastReadSequence, session, ticket.data?.conversationId]);
+  useLayoutEffect(() => {
+    const element = viewport.current; if (!element) return;
+    const first = merged.items[0]?.sequence ?? 0; const last = merged.items.at(-1)?.sequence ?? 0; const previous = scroll.current;
+    if (previous.caseId !== caseId) { element.scrollTop = element.scrollHeight; setNewMessage(false); }
+    else if (previous.first && first < previous.first) element.scrollTop += element.scrollHeight - previous.height;
+    else if (last > previous.last && previous.bottom) { element.scrollTop = element.scrollHeight; setNewMessage(false); }
+    else if (last > previous.last) setNewMessage(true);
+    const bottom = element.scrollHeight - element.scrollTop - element.clientHeight < 96;
+    scroll.current = { caseId, first, last, height: element.scrollHeight, bottom };
+    if (bottom && last) markRead(last);
+  }, [caseId, markRead, merged.items]);
+
+  const sendCurrent = () => {
+    const current = ticket.data;
+    if (!current) return;
+    send.mutate(sender.create(caseId, current.version, draft.message, draft.attachments.filter((item) => item.state === 'clean').map((item) => item.id)));
+  };
+  const unavailable = !ticket.data ? '正在确认工单状态…' : ticket.data.state === 'closed' ? '工单已关闭，如需继续咨询请创建新工单' : !session?.csrfToken ? '登录会话已过期，请重新登录' : '';
+  const error = notice || (ticket.data === null ? '找不到此工单，或您无权查看。' : ticket.error || conversation.error ? '会话加载失败，请检查网络后重试。' : '');
+  return <main className="storesupportconversation">
+    <header className="storesupportconversationheader"><button type="button" aria-label="返回客服中心" onClick={() => void navigate('/support')}><ArrowLeft size={18} /></button><div><p>SMART WING SERVICE</p><h1>{ticket.data?.subject ?? '工单会话'}</h1><span>{caseId} · {connected ? '实时连接正常' : '正在恢复实时连接'}</span></div><button type="button" aria-label="刷新会话" onClick={() => { void ticket.refetch(); void refreshLatest(); }}><RefreshCw size={17} /></button></header>
+    {error ? <p className="storesupporterror" role="alert"><CircleAlert size={16} />{error}</p> : null}
+    <section className="storesupportmessages" ref={viewport} aria-label="工单消息" onScroll={(event) => { const element = event.currentTarget; const bottom = element.scrollHeight - element.scrollTop - element.clientHeight < 96; scroll.current = { ...scroll.current, height: element.scrollHeight, bottom }; if (bottom) { setNewMessage(false); markRead(merged.items.at(-1)?.sequence ?? 0); } }}>
+      {conversation.hasNextPage ? <button className="storesupportearlier" type="button" disabled={conversation.isFetchingNextPage} onClick={() => void conversation.fetchNextPage()}>{conversation.isFetchingNextPage ? '加载中…' : '加载更早消息'}</button> : null}
+      {conversation.isPending ? <p className="storesupportloading" role="status"><LoaderCircle size={18} />正在读取会话…</p> : null}
+      {merged.items.map((message, index) => <MessageBubble key={message.id} message={message} attachments={merged.attachments.filter((item) => item.messageId === message.id)} showDate={index === 0 || day(message.createdAt) !== day(merged.items[index - 1]!.createdAt)} />)}
+      {send.isPending && send.variables ? <DraftBubble draft={send.variables} state="sending" /> : failed ? <DraftBubble draft={failed} state="failed" /> : null}
+      {newMessage ? <button className="storesupportnewmessage" type="button" onClick={() => { if (viewport.current) viewport.current.scrollTop = viewport.current.scrollHeight; setNewMessage(false); }}>有新消息</button> : null}
+      {!conversation.isPending && merged.items.length === 0 ? <p className="storesupportempty">尚无消息</p> : null}
     </section>
-  );
+    <SupportComposer value={draft.message} unavailable={unavailable} sending={send.isPending} failed={failed !== null} attachments={draft.attachments} onChange={(message) => updateDraft({ ...draft, message })} onSend={sendCurrent} onRetry={() => { if (failed) send.mutate(failed); }} onFile={(file) => upload.mutate({ file, localId: `upload:${crypto.randomUUID()}` })} />
+  </main>;
 }
 
-function required<T>(value: T | null): T {
-  if (!value) throw new Error('AUTHENTICATION_REQUIRED');
-  return value;
-}
-function format(value: string) {
-  return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
-}
-function text(cause: unknown, fallback: string) {
-  return cause instanceof Error && cause.message ? cause.message : fallback;
-}
+function MessageBubble({ message, attachments, showDate }: Readonly<{ message: SupportMessage; attachments: readonly SupportAttachment[]; showDate: boolean }>) { return <>{showDate ? <div className="storesupportdate">{day(message.createdAt)}</div> : null}<article className="storesupportmessage" data-author={message.authorType}><div><strong>{message.authorType === 'member' ? '我' : '客服'}</strong><time dateTime={message.createdAt}>{format(message.createdAt)}</time></div><p>{message.body}</p>{attachments.length ? <ul>{attachments.map((item) => <li key={item.id}><Paperclip size={14} />{item.download ? <a href={item.download.url} rel="noreferrer">{item.name}</a> : <span>{item.name}</span>}<em>{item.state === 'clean' ? '已通过安全检查' : item.state === 'pending' ? '安全扫描中' : '已拒绝'}</em></li>)}</ul> : null}<small>已发送 · #{message.sequence}</small></article></>; }
+function DraftBubble({ draft, state }: Readonly<{ draft: MessageDraft; state: 'sending' | 'failed' }>) { return <article className="storesupportmessage" data-author="member" data-delivery={state}><div><strong>我</strong></div><p>{draft.message}</p><small>{state === 'sending' ? '正在发送…' : '发送失败，可原样重试'}</small></article>; }
+function required(value: Session | null): Session { if (!value) throw new Error('AUTHENTICATION_REQUIRED'); return value; }
+function day(value: string): string { return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(value)); }
+function format(value: string): string { return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }); }
+function errorText(cause: unknown, fallback: string): string { return cause instanceof Error && cause.message ? cause.message : fallback; }

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '../../shared/api/QueryState';
+import { safeQueryError } from '../../shared/presentation/QueryState';
 import { FinanceColumnSettings } from './FinanceColumnSettings';
 import { FinanceFilters, emptyFinanceFilter } from './FinanceFilters';
 import { FinanceHeader } from './FinanceHeader';

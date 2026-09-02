@@ -7,7 +7,7 @@ import { InvitationCode } from '../../domain/model/InvitationCode';
 import type { InvitationRepository } from '../port/InvitationRepository';
 import type { InvitationHashPort } from '../port/InvitationSecurity';
 
-const DECOY = InvitationCode.issue(Buffer.alloc(20));
+const DECOY = InvitationCode.issue(Buffer.alloc(24));
 
 export class InvitationLookup {
   constructor(

@@ -40,4 +40,27 @@ describe('FetchTransport', () => {
     });
     expect(fetcher).toHaveBeenCalledOnce();
   });
+
+  it('opens a successful event stream without buffering it', async () => {
+    const body = new ReadableStream<Uint8Array>();
+    const fetcher = vi.fn().mockResolvedValue(new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream; charset=utf-8' } }));
+
+    const response = await new FetchTransport(fetcher).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} });
+
+    expect(response.status).toBe(200);
+    expect(response.stream).toBe(body);
+    expect(response.body).toBeUndefined();
+  });
+
+  it('buffers only bounded JSON error responses during a stream handshake', async () => {
+    const payload = JSON.stringify({ code: 'AUTHENTICATION_REQUIRED' });
+    const response = await new FetchTransport(vi.fn().mockResolvedValue(new Response(payload, { status: 401, headers: { 'content-type': 'application/json' } }))).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} });
+    expect(response).toMatchObject({ status: 401, body: payload });
+    expect(response.stream).toBeUndefined();
+  });
+
+  it('rejects a successful stream with the wrong media type or a missing body', async () => {
+    await expect(new FetchTransport(vi.fn().mockResolvedValue(new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }))).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} })).rejects.toThrow('SDK_STREAM_CONTENT_TYPE_INVALID');
+    await expect(new FetchTransport(vi.fn().mockResolvedValue(new Response(null, { status: 200, headers: { 'content-type': 'text/event-stream' } }))).open({ method: 'GET', url: 'https://api.example.test/events', headers: {} })).rejects.toThrow('SDK_STREAM_BODY_MISSING');
+  });
 });

@@ -21,7 +21,7 @@ describe('InvitationFailure', () => {
 
     expect(publish).toHaveBeenCalledWith(context, 'identity.invitation.failed', 'invitation', 'invitation:one', 'mall:one', 'trace:one', {
       invitationId: 'invitation:one',
-      operation: 'identity.sessions.create',
+      operation: 'identity.invitations.resolve',
       reason: 'INVITATION_STALE',
     });
     const event = JSON.stringify(publish.mock.calls);
@@ -32,14 +32,14 @@ describe('InvitationFailure', () => {
 
 function request(): OperationRequest {
   return {
-    type: 'identity.sessions.create',
+    type: 'identity.invitations.resolve',
     security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:one' },
     input: {
       path: {},
       query: {},
       headers: { 'x-trace-id': 'trace:one' },
-      body: { method: 'invitation', code: 'INVITE-SECRET', proof: '123456' },
-      rawBody: '{"method":"invitation","code":"INVITE-SECRET","proof":"123456"}',
+      body: { code: 'INVITE-SECRET', target: 'storefront', returnTarget: 'signed-target' },
+      rawBody: '{"code":"INVITE-SECRET","target":"storefront","returnTarget":"signed-target"}',
       deadline: Date.now() + 1_000,
       signal: new AbortController().signal,
       idempotency: 'invitation:failure',

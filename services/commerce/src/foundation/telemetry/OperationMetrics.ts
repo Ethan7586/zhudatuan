@@ -25,4 +25,10 @@ export class OperationMetrics {
     this.telemetry.metrics.count('commerce.operation.count', 1, measured);
     this.telemetry.metrics.duration('commerce.operation.duration', milliseconds, measured);
   }
+
+  stream(context: TelemetryContext, milliseconds: number, reason: string): void {
+    const measured = { ...context, result: reason, durationMs: milliseconds };
+    this.telemetry.metrics.count('commerce.stream.closed', 1, measured);
+    this.telemetry.metrics.duration('commerce.stream.duration', milliseconds, measured);
+  }
 }

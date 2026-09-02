@@ -1,0 +1,38 @@
+// Generated from config/telemetry.yml. Do not edit.
+export const REDACTION_KEYS = Object.freeze([
+  "authorization",
+  "address",
+  "apikey",
+  "attachment",
+  "body",
+  "callback",
+  "cardcode",
+  "cardsecret",
+  "challenge",
+  "ciphertext",
+  "claim",
+  "code",
+  "cookie",
+  "credential",
+  "csrf",
+  "destination",
+  "email",
+  "evidence",
+  "filename",
+  "invite",
+  "message",
+  "mobile",
+  "nonce",
+  "objectref",
+  "otp",
+  "password",
+  "phone",
+  "preauth",
+  "privatekey",
+  "recipient",
+  "secret",
+  "token",
+  "tokenhash"
+] as const);
+
+export const REDACTION_KEY_PATTERN = new RegExp(`(?:${REDACTION_KEYS.join('|')})`, 'i');

@@ -1,7 +1,10 @@
 import type { StorefrontSession } from '../../../shared/api/Session';
-import { SupportGateway } from '../infrastructure/SupportGateway';
+import { supportGateway, type SupportGateway } from '../infrastructure/SupportGateway';
 import type { Conversation } from '../model/Message';
 
-export function readConversation(session: StorefrontSession, caseId: string, signal?: AbortSignal): Promise<Conversation> {
-  return SupportGateway.conversation(session, caseId, signal);
+export class ReadConversation {
+  constructor(private readonly gateway: SupportGateway = supportGateway) {}
+  execute(session: StorefrontSession, caseId: string, cursor?: string, signal?: AbortSignal): Promise<Conversation> {
+    return this.gateway.conversation(session, caseId, cursor, signal);
+  }
 }

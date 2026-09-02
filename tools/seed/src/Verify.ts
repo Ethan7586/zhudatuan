@@ -8,7 +8,7 @@ import { localFetch } from '@shop/localinfra';
 import { localSecret } from './LocalSecrets';
 
 const CURRENT_SCHEMA_RELATIONS = 246;
-const CURRENT_MIGRATIONS = 146;
+const CURRENT_MIGRATIONS = 147;
 const LOCAL_ACCOUNT = 'ethan';
 const LOCAL_MOBILE = '+8613800138000';
 
@@ -324,7 +324,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
       'idempotency-key': randomUUID(),
       'if-match': String(consoleAccessVersion),
     },
-    body: JSON.stringify({ kind: 'signin', target: 'storefront', membershipId: 'membership-storefront-ethan-local', recipient: LOCAL_MOBILE, expiresAt: new Date(Date.now() + 24 * 60 * 60_000).toISOString(), reason: '本地统一权限验收' }),
+    body: JSON.stringify({ kind: 'signin', target: 'storefront', membershipId: 'membership-storefront-ethan-local', expiresAt: new Date(Date.now() + 24 * 60 * 60_000).toISOString(), reason: '本地统一权限验收' }),
   });
   if (invitation.status !== 201) throw new Error(`LOCAL_INVITATION_CREATE_INVALID:${invitation.status}:${await invitation.text()}`);
   const invitationEtag = invitation.headers.get('etag');
@@ -347,7 +347,12 @@ async function verifyEmployeeSession(password: string): Promise<void> {
         'x-contract-version': CONTRACT_VERSION,
         'x-request-id': randomUUID(),
       },
-      body: JSON.stringify({ code: invitationCode, target: 'storefront' }),
+      body: JSON.stringify({
+        code: invitationCode,
+        target: 'storefront',
+        returnTarget: bootstraps[0].returnTarget,
+        authorization: { state: token(), nonce: token(), challenge: token() },
+      }),
     });
   const activeResolution = await resolveInvitation();
   if (activeResolution.status !== 200) throw new Error(`LOCAL_INVITATION_RESOLVE_INVALID:${activeResolution.status}:${await activeResolution.text()}`);
