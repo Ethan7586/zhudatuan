@@ -165,6 +165,7 @@ const REPAIR_FILES = [
   '20260902140000_align_senior_administrator_business_permissions.sql',
   '20260903100000_separate_operator_business_scope.sql',
   '20260903101000_allow_platform_owner_invitation_history.sql',
+  '20260903102000_invitation_record_target_and_creator_scope.sql',
 ];
 
 const mode = process.argv[2];

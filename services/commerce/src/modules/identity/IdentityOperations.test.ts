@@ -251,10 +251,11 @@ describe('administrator invitation issuance', () => {
     });
 
     expect(response).toMatchObject({ status: 201, body: { target_client: 'operator', code: expect.stringMatching(/^[A-F]{2}[0-9A-F]{8}$/) } });
-    expect(invitationSql).toContain('target_client,storefront_organization_id');
+    expect(invitationSql).toContain('target_client,storefront_organization_id,destination_masked');
     expect(invitationValues[7]).toBe('role-zhudatuan-pending-operator');
     expect(invitationValues[12]).toBe('operator');
     expect(invitationValues[13]).toBe('mall:one');
+    expect(invitationValues[14]).toBe('138****8000');
   });
 });
 

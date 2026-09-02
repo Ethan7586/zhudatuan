@@ -395,7 +395,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         if (targetClient === 'operator' && access.scope.kind !== 'platform'
           && (access.scope.kind !== 'tenant' || access.scope.id !== access.scope.tenant)) throw new Error('INVITATION_SCOPE_INVALID');
         if (targetClient === 'storefront' && access.scope.kind !== 'mall') throw new Error('INVITATION_SCOPE_INVALID');
-        const destinationHash = targetClient === 'operator' ? digest(canonicalMobile(textField(body, 'destination', 32))) : null;
+        const destination = targetClient === 'operator' ? canonicalMobile(textField(body, 'destination', 32)) : null;
+        const destinationHash = destination === null ? null : digest(destination);
         const requestedStorefront = typeof body.storefrontOrganization === 'string' && body.storefrontOrganization.trim().length > 0
           ? body.storefrontOrganization.trim() : null;
         const storefronts = targetClient === 'operator'
@@ -424,13 +425,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const result = await database.query(
           `insert into member.invite(id,organization_id,label,destination_hash,token_hash,expires_at,created_by,
         role_id,allowed_destination_hash,max_uses,use_count,effective_at,status,created_at,registration_policy_id,terms_hash,version,
-        target_client,storefront_organization_id)
-        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,clock_timestamp(),'active',clock_timestamp(),$11,$12,0,$13,$14)
+        target_client,storefront_organization_id,destination_masked)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,clock_timestamp(),'active',clock_timestamp(),$11,$12,0,$13,$14,$15)
         returning id,label,case target_client when 'operator' then 'console' else target_client end target,
           max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
           [id, invitationScope, label, destinationHash ?? digest(id), digest(code), expiresAt, access.membership.id,
             role.rows[0].id, destinationHash, maxUses, policy.rows[0].id, policy.rows[0].terms_hash,
-            targetClient, storefronts.rows[0]?.id ?? null]
+            targetClient, storefronts.rows[0]?.id ?? null, destination === null ? null : maskInvitationMobile(destination)]
         );
         const saved = result.rows[0];
         if (!saved) throw new Error('INVITE_INVALID');
@@ -501,7 +502,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
             (challenge, code) => codeDigest(challenge, `${code}:${inviteHash}`), undefined,
             { purpose: 'registration', destinationHash: subjectHash });
-          const invitation = await requireValidInvite(memberPort.consumeInvite(database, inviteHash, subjectHash));
+          const invitation = await requireValidInvite(memberPort.consumeInvite(database, inviteHash, subjectHash, operatorMembership));
           const organization = invitation.organization_id;
           if (body.termsAccepted !== true || body.termsHash !== invitation.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
           await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
@@ -1044,6 +1045,10 @@ async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {
 
 function maskMobile(value: string): string {
   return `${value.slice(0, 3)}****${value.slice(-4)}`;
+}
+
+function maskInvitationMobile(value: string): string {
+  return maskMobile(/^\+86(1[3-9][0-9]{9})$/.exec(value)?.[1] ?? value);
 }
 
 interface FinancialActionRequest {

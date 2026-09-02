@@ -18619,7 +18619,7 @@ objects:
   - id: member.invite.zhudatuanidentityapi
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
+    source: database/supabase/migrations/20260903102000_invitation_record_target_and_creator_scope.sql
   - id: member.invite.zhudatuanidentityapiinsert
     kind: policy
     owner: member

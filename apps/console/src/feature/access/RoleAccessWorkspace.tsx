@@ -233,6 +233,7 @@ function InvitationRecordCard({ record }: Readonly<{ record: InvitationRecord }>
   return <article className="invitationrecordcard">
     <header><div><span>邀请对象</span><strong>{record.label}</strong></div><Badge tone={invitationStatusTone(record.status)}>{invitationStatusLabel(record.status)}</Badge></header>
     <dl>
+      <div><dt>邀请人</dt><dd>{record.created_by_name ?? '历史记录，创建人不可还原'}</dd></div>
       <div><dt>管理员级别</dt><dd>{record.governance_level === 'senior_administrator' ? '高级管理员' : '普通管理员'}</dd></div>
       <div><dt>是否已使用</dt><dd>{invitationWasUsed(record) ? '已使用' : '未使用'}</dd></div>
       <div><dt>是否已作废</dt><dd>{record.status === 'revoked' ? '已作废' : '未作废'}</dd></div>

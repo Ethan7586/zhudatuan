@@ -1,6 +1,7 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 
 export interface MemberInvite {
+  readonly id: string;
   readonly organization_id: string;
   readonly role_id: string;
   readonly target_client: 'storefront' | 'operator';
@@ -64,7 +65,8 @@ export class MemberPort {
     if (!result.rows[0]) throw new Error('INVITE_INVALID');
   }
 
-  async consumeInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<MemberInvite> {
+  async consumeInvite(database: OperationDatabase, token: string, destinationHash: string,
+    acceptedOperatorMembershipId: string): Promise<MemberInvite> {
     const result = await database.query<MemberInvite>(`with candidate as materialized(
       select invite.id,invite.organization_id,invite.role_id,invite.terms_hash,invite.target_client,invite.storefront_organization_id,
         case when invite.target_client='operator' and invite.role_id='role-senior-administrator-v1:'||invite.organization_id
@@ -80,11 +82,14 @@ export class MemberPort {
         and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
         and policy.terms_hash=invite.terms_hash for update of invite
     ), consumed as(update member.invite invite set use_count=invite.use_count+1,
-      accepted_at=case when invite.use_count+1=invite.max_uses then clock_timestamp() else invite.accepted_at end,version=invite.version+1
+      accepted_at=case when invite.use_count+1=invite.max_uses then clock_timestamp() else invite.accepted_at end,
+      accepted_membership_id=case when candidate.target_client='operator' then $3 else invite.accepted_membership_id end,
+      version=invite.version+1
       from candidate where invite.id=candidate.id
-      returning candidate.organization_id,candidate.role_id,candidate.terms_hash,candidate.target_client,
+      returning candidate.id,candidate.organization_id,candidate.role_id,candidate.terms_hash,candidate.target_client,
         candidate.storefront_organization_id,candidate.governance_level)
-      select organization_id,role_id,terms_hash,target_client,storefront_organization_id,governance_level from consumed`, [token, destinationHash]);
+      select id,organization_id,role_id,terms_hash,target_client,storefront_organization_id,governance_level from consumed`,
+    [token, destinationHash, acceptedOperatorMembershipId]);
     const invitation = result.rows[0];
     if (!invitation) throw new Error('INVITE_INVALID');
     return invitation;

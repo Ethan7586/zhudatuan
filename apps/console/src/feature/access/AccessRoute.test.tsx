@@ -202,25 +202,28 @@ describe('custom identity and permission directory', () => {
     view.unmount();
 
     invitationRecords = [{
-      id: 'invite:one', scope: 'tenant:one', scope_name: '主打团商户', label: '高级管理员邀请',
+      id: 'invite:one', scope: 'tenant:one', scope_name: '主打团商户', label: '134****7586',
       governance_level: 'senior_administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
       max_uses: 1, use_count: 0, starts_at: '2026-09-02T12:00:00.000Z', expires_at: '2026-09-09T12:00:00.000Z',
       accepted_at: null, status: 'active', created_at: '2026-09-02T12:00:00.000Z', version: '0',
     }, {
-      id: 'invite:used', scope: 'tenant:one', scope_name: '主打团商户', label: '已使用的高级管理员邀请',
+      id: 'invite:used', scope: 'tenant:one', scope_name: '主打团商户', label: '李厚亿 · 134****7586',
       governance_level: 'senior_administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
       max_uses: 1, use_count: 1, starts_at: '2026-09-01T12:00:00.000Z', expires_at: '2026-09-08T12:00:00.000Z',
       accepted_at: '2026-09-02T10:00:00.000Z', status: 'used', created_at: '2026-09-01T12:00:00.000Z', version: '1',
     }, {
-      id: 'invite:revoked', scope: 'tenant:one', scope_name: '主打团商户', label: '已作废普通管理员邀请',
+      id: 'invite:revoked', scope: 'tenant:one', scope_name: '主打团商户', label: '历史记录，邀请对象不可还原',
       governance_level: 'administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
       max_uses: 1, use_count: 0, starts_at: '2026-08-31T12:00:00.000Z', expires_at: '2026-09-07T12:00:00.000Z',
       accepted_at: null, status: 'revoked', created_at: '2026-08-31T12:00:00.000Z', version: '1',
     }];
     renderWorkspace(context, '/scopes/tenant/tenant%3Aone/settings/access?section=invitations');
     expect(screen.getByRole('heading', { name: '邀请记录' })).toBeTruthy();
-    expect(await screen.findByText('高级管理员邀请')).toBeTruthy();
+    expect(await screen.findByText('134****7586')).toBeTruthy();
+    expect(screen.getByText('李厚亿 · 134****7586')).toBeTruthy();
+    expect(screen.getByText('历史记录，邀请对象不可还原')).toBeTruthy();
     expect(screen.getAllByText('邀请对象')).toHaveLength(3);
+    expect(screen.getAllByText('邀请人')).toHaveLength(3);
     expect(screen.getAllByText('高级管理员')).toHaveLength(2);
     expect(screen.getByText('生效中')).toBeTruthy();
     expect(screen.getAllByText('已使用').length).toBeGreaterThanOrEqual(2);
