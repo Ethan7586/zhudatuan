@@ -250,10 +250,11 @@ begin
     if resolved is null then
       select organization_id into resolved from access.membership where id=p_membership_id;
     end if;
-  elsif exists(select 1 from capability.operation where operation_id=p_operation and audience='member')
+  elsif (exists(select 1 from capability.operation where operation_id=p_operation and audience='member')
       or p_operation like 'cart.%' or p_operation like 'checkout.%' or p_operation in(
       'order.orders.create','order.aftersales.apply','payment.intents.create','benefit.accounts.read',
-      'notification.notifications.read','notification.preferences.manage','notification.endpoints.manage') then
+      'notification.notifications.read','notification.preferences.manage','notification.endpoints.manage'))
+      and exists(select 1 from access.membership where id=p_membership_id and client='storefront') then
     select profile.id into resolved from access.membership membership join member.profile profile on profile.id=membership.member_id where membership.id=p_membership_id;
   elsif p_operation in('order.orders.read','order.aftersales.read','support.cases.read','support.messages.read')
       and exists(select 1 from access.membership where id=p_membership_id and client='storefront') then

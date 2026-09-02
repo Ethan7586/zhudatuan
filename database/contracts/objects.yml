@@ -230,7 +230,7 @@ objects:
   - id: access.resource_scope
     kind: function
     owner: access
-    source: database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    source: database/supabase/migrations/20260903100000_separate_operator_business_scope.sql
     operationalOwner: access
   - id: access.scope_allowed
     kind: function

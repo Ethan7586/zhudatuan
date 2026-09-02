@@ -47,13 +47,16 @@ describe('WebBusinessScopeResolver', () => {
       && values?.[0] === actor.membership && values[1] === actor.session)).toBe(true);
   });
 
-  it('retains canonical scope resolution for every other operation', async () => {
+  it('retains the requested console scope for shared member-audience business reads', async () => {
     const mall: Scope = { kind: 'mall', id: 'mall:one', path: [] };
-    const pool = { query: async (sql: string) => {
+    const pool = { query: async (sql: string, values?: readonly unknown[]) => {
       expect(sql).toContain('access.resolve_scope');
+      expect(values).toEqual([actor.membership, 'catalog.listings.read', null, 'mall:one']);
       return result([{ scope: mall }]);
     } } as unknown as DatabasePool;
-    await expect(new WebBusinessScopeResolver(pool).resolve({ ...actor, target: 'console' }, 'catalog.listings.read')).resolves.toEqual(mall);
+    await expect(new WebBusinessScopeResolver(pool).resolve(
+      { ...actor, target: 'console' }, 'catalog.listings.read', undefined, 'mall:one',
+    )).resolves.toEqual(mall);
   });
 });
 
