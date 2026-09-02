@@ -157,6 +157,7 @@ const REPAIR_FILES = [
   '20260902132000_canonical_governance_context.sql',
   '20260902133000_repair_console_support_scope_contract.sql',
   '20260902134000_senior_administrator_role.sql',
+  '20260902135000_owner_identity_runtime_boundary.sql',
 ];
 
 const mode = process.argv[2];
@@ -1049,6 +1050,12 @@ async function verifyObjectContract(database) {
 
   const roleRows = await database.query(
     `with roles(role) as (values('shopapp'),('shopjob'),('shopmigration'),('shopread')),
+    canonical_function_grants(role,signature) as (values
+      ('zhudatuanidentityapi','access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text)'),
+      ('zhudatuanidentityapi','access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text)'),
+      ('zhudatuanidentityapi','access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint)'),
+      ('zhudatuanidentityapi','access.create_owner_transfer(text,text,text,text,bigint,bigint)'),
+      ('zhudatuanidentityapi','access.expire_owner_transfers()')),
     table_privilege(privilege) as (values('SELECT'),('INSERT'),('UPDATE'),('DELETE'),('TRUNCATE'),('REFERENCES'),('TRIGGER')),
     schema_privilege(privilege) as (values('USAGE'),('CREATE')),
     schemas as (select namespace.nspname schema,namespace.nspowner::regrole::text owner
@@ -1067,7 +1074,13 @@ async function verifyObjectContract(database) {
       where role<>owner and has_table_privilege(role,schemaname||'.'||viewname,privilege)
     union all
     select role||':function:'||replace(signature,' ','')||':execute' from roles cross join functions
-      where role<>owner and has_function_privilege(role,oid,'EXECUTE')`,
+      where role<>owner and has_function_privilege(role,oid,'EXECUTE')
+    union all
+    select grant_contract.role||':function:'||replace(functions.signature,' ','')||':execute'
+      from canonical_function_grants grant_contract join functions
+        on replace(functions.signature,' ','')=grant_contract.signature
+      where grant_contract.role<>functions.owner
+        and has_function_privilege(grant_contract.role,functions.oid,'EXECUTE')`,
     [schemas]
   );
   compareSet(
