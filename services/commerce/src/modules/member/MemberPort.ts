@@ -6,6 +6,7 @@ export interface MemberInvite {
   readonly target_client: 'storefront' | 'operator';
   readonly terms_hash: string;
   readonly storefront_organization_id: string | null;
+  readonly governance_level: 'administrator' | 'senior_administrator' | null;
 }
 
 export interface MemberProfile {
@@ -34,7 +35,9 @@ export class MemberPort {
   invite(database: OperationDatabase, token: string) {
     return database.query(
       `select policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,invite.terms_hash,
-        invite.target_client,invite.effective_at,invite.expires_at
+        invite.target_client,invite.effective_at,invite.expires_at,
+        case when invite.target_client='operator' and invite.role_id='role-senior-administrator-v1:'||invite.organization_id
+          then 'senior_administrator' when invite.target_client='operator' then 'administrator' end governance_level
       from member.invite invite join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
       join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
@@ -63,7 +66,10 @@ export class MemberPort {
 
   async consumeInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<MemberInvite> {
     const result = await database.query<MemberInvite>(`with candidate as materialized(
-      select invite.id,invite.organization_id,invite.role_id,invite.terms_hash,invite.target_client,invite.storefront_organization_id from member.invite invite
+      select invite.id,invite.organization_id,invite.role_id,invite.terms_hash,invite.target_client,invite.storefront_organization_id,
+        case when invite.target_client='operator' and invite.role_id='role-senior-administrator-v1:'||invite.organization_id
+          then 'senior_administrator' when invite.target_client='operator' then 'administrator' end governance_level
+      from member.invite invite
       join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
       join organization.organization organization on organization.id=invite.organization_id
       join access.role role on role.id=invite.role_id and role.scope_id=invite.organization_id
@@ -76,8 +82,9 @@ export class MemberPort {
     ), consumed as(update member.invite invite set use_count=invite.use_count+1,
       accepted_at=case when invite.use_count+1=invite.max_uses then clock_timestamp() else invite.accepted_at end,version=invite.version+1
       from candidate where invite.id=candidate.id
-      returning candidate.organization_id,candidate.role_id,candidate.terms_hash,candidate.target_client,candidate.storefront_organization_id)
-      select organization_id,role_id,terms_hash,target_client,storefront_organization_id from consumed`, [token, destinationHash]);
+      returning candidate.organization_id,candidate.role_id,candidate.terms_hash,candidate.target_client,
+        candidate.storefront_organization_id,candidate.governance_level)
+      select organization_id,role_id,terms_hash,target_client,storefront_organization_id,governance_level from consumed`, [token, destinationHash]);
     const invitation = result.rows[0];
     if (!invitation) throw new Error('INVITE_INVALID');
     return invitation;
@@ -113,9 +120,11 @@ function registrationInviteBoundary(): string {
   return `(role.status='active' and organization.status='active' and (
     (invite.target_client='storefront' and invite.role_id='role-zhudatuan-storefront-member'
       and invite.storefront_organization_id is null and organization.kind='mall')
-    or (invite.target_client='operator' and invite.role_id='role-zhudatuan-pending-operator'
+    or (invite.target_client='operator'
       and invite.storefront_organization_id is not null and organization.kind='tenant'
-      and not exists(select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id)
+      and ((invite.role_id='role-zhudatuan-pending-operator'
+          and not exists(select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))
+        or invite.role_id='role-senior-administrator-v1:'||invite.organization_id)
       and exists(select 1 from organization.organization storefront
         join organization.unitclosure closure on closure.descendant_id=storefront.id
         where storefront.id=invite.storefront_organization_id and storefront.kind='mall' and storefront.status='active'

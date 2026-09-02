@@ -41,6 +41,19 @@ describe('PgGovernanceResolver canonical Owner identity', () => {
     });
   });
 
+  it('projects the database-backed senior administrator level without treating it as Owner', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [{
+      ...row('tenant', 'tenant-zhudatuan', 'tenant-zhudatuan', false),
+      governance_level: 'senior_administrator',
+    }] });
+    const resolver = new PgGovernanceResolver({ query } as never);
+
+    await expect(resolver.resolve(ACTOR, MEMBERSHIP, scope('tenant', 'tenant-zhudatuan'))).resolves.toMatchObject({
+      governanceLevel: 'senior_administrator', isExactOwner: false,
+      ownerMembershipId: 'membership:real-owner',
+    });
+  });
+
   it('fails closed when the database identity does not match the authenticated actor', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [{ ...row('self', ACTOR.id, `self:${ACTOR.id}`, true), actor_principal_id: 'principal:other' }] });
     const resolver = new PgGovernanceResolver({ query } as never);
@@ -59,6 +72,16 @@ describe('governance identity inference audit', () => {
       const source = await readFile(join(process.cwd(), file), 'utf8');
       expect(source).not.toMatch(/role-platform-owner-v2|access\.platformowner|zhudatuan_owner_context|\/owner\/i/);
     }
+  });
+
+  it('keeps the senior role projection separate from Owner-only governance permissions', async () => {
+    const source = await readFile(join(process.cwd(), '../../database/supabase/migrations/20260902134000_senior_administrator_role.sql'), 'utf8');
+    for (const permission of [
+      'access.ownership.read', 'access.ownership.transfer', 'access.ownership.accept',
+      'identity.registration.reset',
+      'access.role.manage', 'access.scope.manage', 'capability.assignment.manage',
+    ]) expect(source).toContain(`'${permission}'`);
+    expect(source).toContain("assignment.role_id='role-senior-administrator-v1:'||actor_context.organization_id");
   });
 });
 
