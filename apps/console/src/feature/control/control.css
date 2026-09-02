@@ -1,3 +1,69 @@
+.merchantcapabilityscreen {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: rgb(3 14 30 / 78%);
+  padding: 20px;
+  backdrop-filter: blur(9px);
+}
+
+.merchantcapabilitywindow {
+  display: grid;
+  width: min(1420px, 100%);
+  max-height: calc(100vh - 40px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid rgb(146 178 224 / 34%);
+  border-radius: 20px;
+  background: #f5f7fa;
+  box-shadow: 0 30px 90px rgb(0 8 24 / 42%);
+}
+
+.merchantcapabilitybar {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  background: #07182f;
+  padding: 11px 14px 11px 18px;
+  color: #fff;
+}
+
+.merchantcapabilityidentity,
+.merchantcapabilityactions { display: flex; align-items: center; }
+.merchantcapabilityidentity { gap: 11px; }
+.merchantcapabilityidentity > span { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 11px; background: #f5f7fa; }
+.merchantcapabilityidentity img { width: 42px; height: 42px; }
+.merchantcapabilityidentity div { display: grid; gap: 3px; }
+.merchantcapabilityidentity small { color: #8fb4ee; font-size: 8px; font-weight: 800; letter-spacing: .16em; }
+.merchantcapabilityidentity strong { font-size: 14px; letter-spacing: -.01em; }
+.merchantcapabilityactions { gap: 10px; }
+.merchantcapabilityactions > span { border: 1px solid rgb(143 180 238 / 24%); border-radius: 999px; background: rgb(31 94 255 / 12%); padding: 5px 9px; color: #bcd2f2; font-size: 9px; font-weight: 700; }
+.merchantcapabilityactions button { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgb(255 255 255 / 13%); border-radius: 9px; background: rgb(255 255 255 / 7%); color: #d9e6f7; font: inherit; font-size: 20px; line-height: 1; cursor: pointer; }
+.merchantcapabilityactions button:hover { background: rgb(255 255 255 / 13%); color: #fff; }
+.merchantcapabilityactions button:focus-visible { outline: 2px solid #75a7ff; outline-offset: 2px; }
+
+.merchantcapabilitybody { min-height: 0; overflow: auto; padding: 16px; }
+
+.merchantcapabilityfooter {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #dfe7f2;
+  background: #fff;
+  padding: 8px 18px;
+}
+.merchantcapabilityfooter span { display: flex; align-items: center; gap: 7px; color: #143a8f; font-size: 8px; font-weight: 800; letter-spacing: .13em; }
+.merchantcapabilityfooter i { width: 7px; height: 7px; border-radius: 50%; background: #1f5eff; }
+.merchantcapabilityfooter p { margin: 0; color: #74869c; font-size: 9px; }
+
 .merchantpage {
   display: grid;
   gap: 14px;
@@ -138,6 +204,14 @@
 }
 
 @media (max-width: 640px) {
+  .merchantcapabilityscreen { padding: 0; }
+  .merchantcapabilitywindow { width: 100%; max-height: 100vh; border: 0; border-radius: 0; }
+  .merchantcapabilitybar { min-height: 62px; padding-inline: 12px 10px; }
+  .merchantcapabilityidentity > span { width: 40px; height: 40px; }
+  .merchantcapabilityidentity img { width: 38px; height: 38px; }
+  .merchantcapabilityactions > span { display: none; }
+  .merchantcapabilitybody { padding: 10px; }
+  .merchantcapabilityfooter { align-items: flex-start; flex-direction: column; gap: 3px; }
   .merchanthero { display: grid; padding: 18px; }
   .merchantheroaside { width: 100%; grid-template-columns: auto 1fr auto; align-items: center; justify-items: start; border-top: 1px solid #dce7f6; border-left: 0; padding: 14px 0 0; }
   .merchantheroaside img { width: 34px; height: 34px; }

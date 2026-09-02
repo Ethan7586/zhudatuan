@@ -13,13 +13,13 @@ const navigationCss = readFileSync('src/shell/navigation.css', 'utf8');
 afterEach(cleanup);
 
 describe('Sidebar commerce navigation', () => {
-  it('places commerce after control and before products', async () => {
+  it('keeps merchant governance out of ordinary navigation and places commerce before products', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     renderSidebar('enterprise', false, onNavigate);
     const navigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(navigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    expect(labels.indexOf('商家管理')).toBeLessThan(labels.indexOf('商城管理'));
+    expect(labels).not.toContain('商家管理');
     expect(labels.indexOf('商城管理')).toBeLessThan(labels.indexOf('商品治理台'));
 
     await user.click(screen.getByRole('button', { name: '商城管理' }));
@@ -48,7 +48,7 @@ describe('Sidebar commerce navigation', () => {
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
 
-  it('keeps all 12 main items in order, then profile, then bottom support', () => {
+  it('keeps all 11 ordinary main items in order, then profile, then bottom support', () => {
     const { container } = renderSidebar('enterprise', false, vi.fn());
     const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(primaryNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
@@ -56,7 +56,7 @@ describe('Sidebar commerce navigation', () => {
     const supportNavigation = screen.getByRole('navigation', { name: '客服系统' });
 
     expect(labels).toEqual([
-      '经营驾驶舱', '数据报表', '商家管理', '商城管理', '商品治理台', '订单管理系统', '分销返佣系统',
+      '经营驾驶舱', '数据报表', '商城管理', '商品治理台', '订单管理系统', '分销返佣系统',
       '渠道接入系统', '卡券治理台', '财务与对账台', '会员与权限', '系统治理台',
     ]);
     expect(primaryNavigation.nextElementSibling).toBe(profile);

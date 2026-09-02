@@ -1,4 +1,5 @@
 import './control.css';
+import { useNavigate } from 'react-router';
 
 const deliveryStages = Object.freeze([
   { number: '01', title: '商家身份', detail: '名称、Owner 与独立经营边界' },
@@ -21,8 +22,24 @@ const summaries = Object.freeze([
 ]);
 
 export function Component() {
+  const navigate = useNavigate();
+
   return (
-    <section className="merchantpage" aria-label="商家管理">
+    <section className="merchantcapabilityscreen" aria-label="商家管理系统能力">
+      <article className="merchantcapabilitywindow">
+        <header className="merchantcapabilitybar">
+          <div className="merchantcapabilityidentity">
+            <span><img src="/brand/zhudatuan-mark-blue.svg" alt="" aria-hidden="true" /></span>
+            <div><small>PLATFORM CONTROL PLANE</small><strong>系统能力 · 商家管理</strong></div>
+          </div>
+          <div className="merchantcapabilityactions">
+            <span>按需唤起</span>
+            <button type="button" aria-label="关闭商家管理" onClick={() => navigate('../applications', { replace: true })}>×</button>
+          </div>
+        </header>
+
+        <div className="merchantcapabilitybody">
+          <div className="merchantpage">
       <header className="merchanthero">
         <div className="merchantherocopy">
           <span className="merchantkicker">ZHUDATUAN MERCHANT OPERATIONS</span>
@@ -40,7 +57,7 @@ export function Component() {
       </header>
 
       <p className="merchantpreviewnotice" role="status">
-        当前仅展示商家管理外观，不读取商家数据，也不会产生任何创建或绑定操作。
+        当前仅展示平台级系统能力外观，不读取商家数据，也不会产生任何创建或绑定操作。
       </p>
 
       <div className="merchantsummary" aria-label="商家状态概览">
@@ -91,6 +108,14 @@ export function Component() {
           </div>
         </aside>
       </div>
+          </div>
+        </div>
+
+        <footer className="merchantcapabilityfooter">
+          <span><i aria-hidden="true" />SYSTEM CAPABILITY</span>
+          <p>由 Agent 或平台治理任务申请调用，完成后退出并重新隐藏。</p>
+        </footer>
+      </article>
     </section>
   );
 }

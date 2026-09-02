@@ -3,7 +3,7 @@ import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModul
 export const controlModule = {
   id: 'control',
   status: 'enabled',
-  navigation: { placement: 'main', group: 'overview', order: 20, label: '商家管理', icon: 'control' },
+  navigation: { placement: 'none', group: null, order: 20, label: '商家管理' },
   routes: [{
     id: 'control.index',
     path: 'control',
