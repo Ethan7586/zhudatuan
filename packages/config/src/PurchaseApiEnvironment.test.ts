@@ -3,6 +3,7 @@ import {
   PURCHASE_API_ENVIRONMENT_KEYS,
   purchaseApiAllowedOrigins,
   purchaseApiEnvironment,
+  purchasePaymentProviderEnabled,
   purchaseApiPort,
 } from './PurchaseApiEnvironment';
 
@@ -35,6 +36,17 @@ describe('purchase API environment', () => {
     expect(purchaseApiPort(environment)).toBe(4323);
     expect(purchaseApiAllowedOrigins(environment)).toEqual(['https://zhudatuan.com']);
     expect(new Set(PURCHASE_API_ENVIRONMENT_KEYS).size).toBe(PURCHASE_API_ENVIRONMENT_KEYS.length);
+  });
+
+  it('keeps the purchase core available when the complete payment provider group is absent', () => {
+    const disabled: Record<string, string> = { ...valid() };
+    for (const key of ['KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_PAYMENT_CONFIG_REF']) {
+      delete disabled[key];
+    }
+    expect(purchasePaymentProviderEnabled(disabled)).toBe(false);
+    expect(purchaseApiEnvironment(disabled).DATABASE_API_CONNECTION_REF).toBe('zhudatuan/purchase/database/api');
+    expect(() => purchaseApiEnvironment({ ...disabled, KMS_ENDPOINT: 'https://127.0.0.1:8544' }))
+      .toThrow('PURCHASE_PAYMENT_CONFIGURATION_PARTIAL');
   });
 
   it('fails closed on full-runtime dependencies, public binds, and non-purchase origins', () => {
