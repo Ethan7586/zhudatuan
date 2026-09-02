@@ -43,7 +43,7 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, scopeKind, 
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
-        <span className="sidebarproductmark" aria-hidden="true">F</span>
+        <span className="sidebarproductmark" aria-hidden="true"><img src="/brand/zhudatuan-mark-blue.svg" alt="" /></span>
         <span className="sidebarbrandcopy"><strong>主打团</strong><small>经营与权限管理</small></span>
         <button className="sidebartoggle" type="button" onClick={onToggle}
           aria-label={collapsed ? '展开导航' : '收起导航'} aria-expanded={!collapsed}>

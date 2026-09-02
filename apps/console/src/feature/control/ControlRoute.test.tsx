@@ -1,31 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { HttpResponse, http } from 'msw';
-import { setupServer } from 'msw/node';
-import { MemoryRouter } from 'react-router';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
-import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { Component } from './ControlRoute';
 
-const context: ConsoleContext = {
-  session: {
-    actor: 'actor:1',
-    membership: 'membership:1',
-    accessVersion: 7,
-    permissions: [],
-    capabilities: [],
-    target: 'console',
-    scope: { kind: 'enterprise', id: 'enterprise:1' },
-    scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
-    assurance: { level: 2 },
-    syncedAt: '2026-08-26T00:00:00Z',
-  },
-  profile: { display_name: '测试运维', employee_no: null },
-  scope: { kind: 'enterprise', id: 'enterprise:1' },
-  scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
-};
+describe('Merchant management preview', () => {
+  it('renders the approved presentation without exposing unfinished writes', () => {
+    render(<Component />);
 
 const controlHealth = {
   status: 'degraded',

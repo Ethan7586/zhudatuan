@@ -1,27 +1,26 @@
-import { ResourceState } from '@shop/design';
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
-import { CapabilityChain } from './CapabilityChain';
-import { ActiveChange, AuditTimeline } from './ControlChanges';
-import { AuditDialog, ChangeDialog, EvidenceDialog, RecoveryDialog } from './ControlDialogs';
-import { ControlHero } from './ControlHero';
-import { controlKey, readControl } from './ControlQuery';
-import type { ControlChange, ControlIncident } from './ControlSchema';
-import { IncidentQueue } from './IncidentQueue';
 import './control.css';
 
+const deliveryStages = Object.freeze([
+  { number: '01', title: '商家身份', detail: '名称、Owner 与独立经营边界' },
+  { number: '02', title: '品牌外观', detail: 'Logo、主色与后台名称' },
+  { number: '03', title: '默认商城', detail: '自动建立 L0 标准商城' },
+  { number: '04', title: '域名体系', detail: '商城、后台与账户入口' },
+  { number: '05', title: '微信生态', detail: '小程序、公众号与支付' },
+]);
+
+const sharedCapabilities = Object.freeze([
+  '商城装修', '商品库存', '订单履约', '支付退款',
+  '财务对账', '会员权益', '分销返佣', '渠道接入',
+]);
+
+const summaries = Object.freeze([
+  { label: '商家总数', tone: 'brand', detail: '接入数据后显示' },
+  { label: '正常经营', tone: 'success', detail: '共享发动机运行状态' },
+  { label: '开通进行中', tone: 'warning', detail: '逐步完成交付节点' },
+  { label: '待完成接入', tone: 'neutral', detail: '域名与微信渠道' },
+]);
+
 export function Component() {
-  const context = useConsoleContext();
-  const query = useQuery({
-    queryKey: controlKey(context),
-    queryFn: ({ signal }) => readControl(context, signal),
-    refetchInterval: 30_000,
-  });
-  const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
-    hasData: query.data !== undefined, empty: false, stale: query.isStale });
   return (
     <section className="controlpage" aria-label="智慧翼中控台">
       <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
@@ -29,38 +28,4 @@ export function Component() {
       </ResourceState>
     </section>
   );
-}
-
-function ControlContent({ data, refreshing, onRefresh }: Readonly<{
-  data: Awaited<ReturnType<typeof readControl>>;
-  refreshing: boolean;
-  onRefresh: () => void;
-}>) {
-  const plane = data.controlPlane;
-  const [selectedId, setSelectedId] = useState<string>();
-  const [evidence, setEvidence] = useState<ControlIncident>();
-  const [recovery, setRecovery] = useState<ControlIncident>();
-  const [recoveryConfirmed, setRecoveryConfirmed] = useState(false);
-  const [changeAction, setChangeAction] = useState<'plan' | 'pause' | 'rollback'>();
-  const [change, setChange] = useState<ControlChange>();
-  const [auditOpen, setAuditOpen] = useState(false);
-  const selected = plane?.incidents.find((incident) => incident.id === selectedId) ?? plane?.incidents[0];
-  const openChange = (action: 'plan' | 'pause' | 'rollback', item: ControlChange) => { setChange(item); setChangeAction(action); };
-  const closeRecovery = () => { setRecovery(undefined); setRecoveryConfirmed(false); };
-  return <div className="controlstack">
-    <ControlHero plane={plane} refreshing={refreshing} onRefresh={onRefresh} />
-    <div className="controlprimarygrid">
-      <IncidentQueue incidents={plane?.incidents ?? []} selectedId={selected?.id} onSelect={(incident) => setSelectedId(incident.id)}
-        onEvidence={setEvidence} onExecute={(incident) => { setRecoveryConfirmed(false); setRecovery(incident); }} />
-      <CapabilityChain capabilities={plane?.capabilities ?? []} affected={selected?.affectedCapabilities ?? []} />
-    </div>
-    <div className="controlsecondarygrid">
-      <ActiveChange change={plane?.changes[0]} onAction={openChange} />
-      <AuditTimeline audits={plane?.audits ?? []} onOpen={() => setAuditOpen(true)} />
-    </div>
-    <EvidenceDialog incident={evidence} onClose={() => setEvidence(undefined)} />
-    <RecoveryDialog incident={recovery} confirmed={recoveryConfirmed} onConfirm={() => setRecoveryConfirmed(true)} onClose={closeRecovery} />
-    <ChangeDialog action={changeAction} change={change} onClose={() => { setChangeAction(undefined); setChange(undefined); }} />
-    <AuditDialog open={auditOpen} audits={plane?.audits ?? []} onClose={() => setAuditOpen(false)} />
-  </div>;
 }

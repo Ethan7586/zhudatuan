@@ -15,7 +15,7 @@ describe('Sidebar commerce navigation', () => {
     renderSidebar('enterprise', false, onNavigate);
     const navigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(navigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    expect(labels.indexOf('系统中控台')).toBeLessThan(labels.indexOf('商城管理'));
+    expect(labels.indexOf('商家管理')).toBeLessThan(labels.indexOf('商城管理'));
     expect(labels.indexOf('商城管理')).toBeLessThan(labels.indexOf('商品治理台'));
 
     await user.click(screen.getByRole('button', { name: '商城管理' }));
