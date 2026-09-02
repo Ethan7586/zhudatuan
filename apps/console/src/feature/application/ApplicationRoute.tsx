@@ -16,6 +16,7 @@ import {
   canCreateMall,
   completeMallCreateStepup,
   createMall,
+  isMallMobileMissing,
   isMallStepupRequired,
   mallCreationError,
   mallCreationRequiresStepup,
@@ -29,6 +30,7 @@ import {
   type MallStepupChallenge,
 } from './MallCreateCommand';
 import { MallCreateDialog, type MallCreatePhase } from './MallCreateDialog';
+import { appConfig } from '../../shared/config/AppConfig';
 import './application-workspace.css';
 import './application-table.css';
 import './application-dialogs.css';
@@ -57,6 +59,7 @@ export function Component() {
   const [mallCreateChallenge, setMallCreateChallenge] = useState<MallStepupChallenge>();
   const [mallCreateResult, setMallCreateResult] = useState<CreatedMall>();
   const [mallStepupCompleted, setMallStepupCompleted] = useState(false);
+  const [mallMobileEnrollment, setMallMobileEnrollment] = useState(false);
   const presentation = applicationScopePresentation(context.scope.kind);
   const provisioningScope = mallProvisioningScope(context);
   const enterpriseScopes = mallEnterpriseScopes(context);
@@ -120,6 +123,7 @@ export function Component() {
     setMallCreateChallenge(undefined);
     setMallCreateResult(undefined);
     setMallStepupCompleted(false);
+    setMallMobileEnrollment(false);
   };
 
   const openMallCreate = () => {
@@ -128,6 +132,7 @@ export function Component() {
     setFlowOpen(false);
     setMallCreateError(undefined);
     setMallCreatePhase('form');
+    setMallMobileEnrollment(false);
     setMallCreateOpen(true);
   };
 
@@ -155,6 +160,12 @@ export function Component() {
       setMallCreateChallenge(challenge);
       setMallCreatePhase('verification');
     } catch (cause) {
+      if (isMallMobileMissing(cause)) {
+        setMallCreateError(undefined);
+        setMallCreatePhase('form');
+        setMallMobileEnrollment(true);
+        return;
+      }
       setMallCreateError(mallCreationError(cause));
       setMallCreatePhase('form');
     }
