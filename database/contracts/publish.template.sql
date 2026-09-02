@@ -49,7 +49,7 @@ where mapping.role_id=role.id
 insert into access.rolepermission(role_id,permission_id,effect)
 select distinct role.id,permission.id,'allow'
 from access.role role
-join capability.operation operation on operation.audience='operator'
+join capability.operation operation on operation.audience<>'public'
 join capability.capability capability on capability.id=operation.capability_id and capability.status='active'
 join access.permission permission on permission.code=operation.permission_code and permission.status='active'
 where role.id='role-senior-administrator-v1:'||role.scope_id

@@ -89,7 +89,7 @@ describe('governance identity inference audit', () => {
     expect(publicationSource).not.toContain('tenant-zhudatuan');
     expect(publicationSource).toContain("tenant.kind='tenant' and tenant.status='active'");
     expect(publicationSource).toContain("'role-senior-administrator-v1:'||tenant.id");
-    expect(publicationSource).toContain("join capability.operation operation on operation.audience='operator'");
+    expect(publicationSource).toContain("join capability.operation operation on operation.audience<>'public'");
     expect(publicationSource).toContain("join capability.capability capability on capability.id=operation.capability_id and capability.status='active'");
     expect(publicationSource).toContain("join access.permission permission on permission.code=operation.permission_code and permission.status='active'");
     expect(publicationSource).toContain("role.id='role-senior-administrator-v1:'||role.scope_id");
