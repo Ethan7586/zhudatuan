@@ -93,19 +93,20 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarproductmark {
   display: grid;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 20%);
-  border-radius: 11px;
-  background: #1f5eff;
+  border: 1px solid rgb(255 255 255 / 88%);
+  border-radius: 13px;
+  background: linear-gradient(145deg, #fff 0%, #f1f5fb 100%);
+  box-shadow: 0 8px 22px rgb(0 13 38 / 26%), inset 0 0 0 1px rgb(20 58 143 / 5%);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarproductmark img {
-  width: 42px;
-  height: 42px;
-  filter: brightness(0) invert(1);
+  display: block;
+  width: 34px;
+  height: 34px;
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand .swbrand-mark img {
@@ -113,11 +114,13 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandcopy strong {
+  color: #fff;
   font-size: 15px;
+  font-weight: 750;
   letter-spacing: -0.025em;
 }
 
-.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandcopy small { color: #fff; }
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandcopy small { color: #b8c8dc; }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation {
   overflow-y: auto;

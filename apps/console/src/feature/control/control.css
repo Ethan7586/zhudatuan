@@ -40,8 +40,8 @@
 .merchantcapabilityidentity,
 .merchantcapabilityactions { display: flex; align-items: center; }
 .merchantcapabilityidentity { gap: 11px; }
-.merchantcapabilityidentity > span { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgb(255 228 166 / 54%); border-radius: 11px; background: #1f5eff; box-shadow: 0 7px 18px rgb(0 29 92 / 30%); }
-.merchantcapabilityidentity img { width: 42px; height: 42px; filter: brightness(0) invert(1); }
+.merchantcapabilityidentity > span { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgb(255 238 199 / 70%); border-radius: 11px; background: linear-gradient(145deg, #fff 0%, #f3f6fb 100%); box-shadow: 0 7px 18px rgb(0 20 58 / 28%); }
+.merchantcapabilityidentity img { display: block; width: 32px; height: 32px; }
 .merchantcapabilityidentity div { display: grid; gap: 3px; }
 .merchantcapabilityidentity small { color: #fff; font-size: 8px; font-weight: 800; letter-spacing: .16em; }
 .merchantcapabilityidentity strong { font-size: 14px; letter-spacing: -.01em; }
@@ -211,7 +211,7 @@
   .merchantcapabilitywindow { width: 100%; max-height: 100vh; border: 0; border-radius: 0; }
   .merchantcapabilitybar { min-height: 62px; padding-inline: 12px 10px; }
   .merchantcapabilityidentity > span { width: 40px; height: 40px; }
-  .merchantcapabilityidentity img { width: 38px; height: 38px; }
+  .merchantcapabilityidentity img { width: 30px; height: 30px; }
   .merchantcapabilityactions > span { display: none; }
   .merchantcapabilitybody { padding: 10px; }
   .merchantcapabilityfooter { align-items: flex-start; flex-direction: column; gap: 3px; }
