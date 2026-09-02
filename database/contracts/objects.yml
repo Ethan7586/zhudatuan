@@ -23,17 +23,17 @@ objects:
   - id: access.cancel_owner_transfer
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
     operationalOwner: access
   - id: access.change_zhudatuan_owner_mobile
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
     operationalOwner: access
   - id: access.commit_owner_transfer
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
     operationalOwner: access
   - id: access.consume_action_proof
     kind: function
@@ -43,7 +43,7 @@ objects:
   - id: access.create_owner_transfer
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
     operationalOwner: access
   - id: access.enforce_platform_owner_operator_coverage
     kind: function
@@ -63,7 +63,7 @@ objects:
   - id: access.expire_owner_transfers
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
     operationalOwner: access
   - id: access.issue_action_proof
     kind: function
@@ -945,27 +945,27 @@ objects:
     owner: support
     source: database/supabase/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
-  - id: shopapp:function:access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text):execute
+  - id: zhudatuanidentityapi:function:access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    role: shopapp
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
+    role: zhudatuanidentityapi
     objectType: function
     target: access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text)
     privilege: execute
-  - id: shopapp:function:access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text):execute
+  - id: zhudatuanidentityapi:function:access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    role: shopapp
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
+    role: zhudatuanidentityapi
     objectType: function
     target: access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text)
     privilege: execute
-  - id: shopapp:function:access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint):execute
+  - id: zhudatuanidentityapi:function:access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    role: shopapp
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
+    role: zhudatuanidentityapi
     objectType: function
     target: access.commit_owner_transfer(text,text,text,text,bigint,bigint,bigint)
     privilege: execute
@@ -977,19 +977,19 @@ objects:
     objectType: function
     target: access.consume_action_proof(text,text,text,text,text,text,text,text,bigint,text)
     privilege: execute
-  - id: shopapp:function:access.create_owner_transfer(text,text,text,text,bigint,bigint):execute
+  - id: zhudatuanidentityapi:function:access.create_owner_transfer(text,text,text,text,bigint,bigint):execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    role: shopapp
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
+    role: zhudatuanidentityapi
     objectType: function
     target: access.create_owner_transfer(text,text,text,text,bigint,bigint)
     privilege: execute
-  - id: shopapp:function:access.expire_owner_transfers():execute
+  - id: zhudatuanidentityapi:function:access.expire_owner_transfers():execute
     kind: grant
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
-    role: shopapp
+    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
+    role: zhudatuanidentityapi
     objectType: function
     target: access.expire_owner_transfers()
     privilege: execute
