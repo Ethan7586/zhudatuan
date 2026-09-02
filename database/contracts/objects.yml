@@ -116,6 +116,11 @@ objects:
     owner: access
     source: database/supabase/migrations/20260902138000_fix_administrator_registration_role_boundary.sql
     operationalOwner: access
+  - id: access.initialize_storefront_qualification
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260903105000_initialize_storefront_qualification.sql
+    operationalOwner: access
   - id: access.provision_mall_owner
     kind: function
     owner: access
@@ -21631,6 +21636,11 @@ objects:
     owner: voucher
     source: database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql
     rls: true
+  - id: access.membership.initialize_storefront_qualification
+    kind: trigger
+    owner: access
+    source: database/supabase/migrations/20260903105000_initialize_storefront_qualification.sql
+    operationalOwner: access
   - id: access.membership.platform_owner_singleton_membership
     kind: trigger
     owner: access
