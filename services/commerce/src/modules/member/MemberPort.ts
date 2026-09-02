@@ -1,6 +1,7 @@
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 
 export interface MemberInvite {
+  readonly id: string;
   readonly organization_id: string;
   readonly role_id: string;
   readonly terms_hash: string;

@@ -39,6 +39,7 @@ describe('MemberPort invitation constraints', () => {
     const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) =>
       result([
         {
+          id: 'invite:one',
           organization_id: 'organization:one',
           role_id: 'role:console-pending',
           storefront_organization_id: 'mall:one',
@@ -50,7 +51,9 @@ describe('MemberPort invitation constraints', () => {
     );
     const port = new MemberPort();
 
-    await expect(port.consumeInvite({ query } as unknown as OperationDatabase, 'invite-hash', 'destination-hash')).resolves.toMatchObject({
+    await expect(port.consumeInvite({ query } as unknown as OperationDatabase, 'invite-hash', 'destination-hash',
+      'membership:accepted')).resolves.toMatchObject({
+      id: 'invite:one',
       organization_id: 'organization:one',
       role_id: 'role:console-pending',
       storefront_organization_id: 'mall:one',
@@ -63,14 +66,16 @@ describe('MemberPort invitation constraints', () => {
     expect(sql).toContain('(invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)');
     expect(sql).toContain("invite.role_id='role-senior-administrator-v1:'||invite.organization_id");
     expect(sql).toContain('target_client,storefront_organization_id');
-    expect(values).toEqual(['invite-hash', 'destination-hash']);
+    expect(sql).toContain("accepted_membership_id=case when candidate.target_client='operator' then $3");
+    expect(values).toEqual(['invite-hash', 'destination-hash', 'membership:accepted']);
   });
 
   it('rejects an invitation when the guarded update consumes no row', async () => {
     const port = new MemberPort();
     const database = { query: vi.fn(async () => result([])) } as unknown as OperationDatabase;
 
-    await expect(port.consumeInvite(database, 'invite-hash', 'wrong-destination')).rejects.toThrow('INVITE_INVALID');
+    await expect(port.consumeInvite(database, 'invite-hash', 'wrong-destination', 'membership:accepted'))
+      .rejects.toThrow('INVITE_INVALID');
   });
 });
 
