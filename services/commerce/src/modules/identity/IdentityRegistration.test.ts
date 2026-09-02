@@ -114,13 +114,15 @@ describe('canonical member registration security boundary', () => {
     expect(revocation?.values).toEqual(['principal:stepup']);
   });
 
-  it('delegates exact Owner mobile enrollment to the atomic database boundary', async () => {
+  it('delegates the dynamic Owner under a resolved self scope to the atomic database boundary', async () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
       mobileCiphertext: null, passwordEvidence: true, exactOwner: true });
 
     const response = await identityOperations(context(harness.pool)).invoke(mobileManageRequest());
 
     expect(response.status).toBe(200);
+    const owner = harness.queries.find(({ text }) => text.includes('from access.platformowner owner'));
+    expect(owner?.values).toEqual(['membership:stepup', 'principal:stepup']);
     const boundary = harness.queries.find(({ text }) => text.includes('access.change_zhudatuan_owner_mobile'));
     expect(boundary?.values.slice(0, 3)).toEqual(['principal:stepup', 'session:stepup', 'challenge:phone-change']);
     expect(boundary?.values.slice(4)).toEqual([
@@ -603,7 +605,7 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
       actor: { id: 'principal:stepup', session: 'session:stepup', membership: 'membership:stepup', credentialVersion: 1,
         accessVersion: 1, target: 'console', assurance: { level: 2 } },
       membership: { id: 'membership:stepup', active: true, accessVersion: 1, denies: [], grants: [] },
-      scope: { id: 'self:principal:stepup', kind: 'self', path: [] }, accessVersion: 1,
+      scope: { id: 'principal:stepup', kind: 'self', path: [] }, accessVersion: 1,
       capabilities: [type], assurance: { level: 2 }, trace: `trace:${idempotency}`,
     },
     input: {
@@ -665,7 +667,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result([{ result: input.ownerPasswordRotation
           ? { credential_version: 2, version: 2, sessions_revoked: 1 } : null }]);
       }
-      if (text.includes('access.zhudatuan_owner_context')) return result([{ exact_owner: input.exactOwner === true }]);
+      if (text.includes('from access.platformowner owner')) return result([{ exact_owner: input.exactOwner === true }]);
       if (text.includes('access.change_zhudatuan_owner_mobile')) {
         return result([{ profile: { id: 'member:test', display_name: '测试会员', mobile_masked: '138****8000',
           version: 2, session_revoked: true, access_version: 2 } }]);
