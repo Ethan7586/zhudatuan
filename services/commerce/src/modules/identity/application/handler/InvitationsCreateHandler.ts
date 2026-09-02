@@ -25,10 +25,6 @@ export class InvitationsCreateHandler
     return Object.freeze({ request, preparation: await this.lifecycle.prepare(request, loaded) });
   }
 
-  transactionScope(_input: OperationInputFor<'identity.invitations.create'>, prepared: PreparedIdentityLifecycle<PreparedInvitation>): string | undefined {
-    return prepared.preparation.kind === 'enrollment' ? prepared.preparation.organization : undefined;
-  }
-
   async commit(_input: OperationInputFor<'identity.invitations.create'>, prepared: PreparedIdentityLifecycle<PreparedInvitation>, context: CommitContext<'identity.invitations.create'>) {
     const result = await this.lifecycle.execute(prepared.request, context.transaction, prepared.preparation);
     return Object.freeze({
