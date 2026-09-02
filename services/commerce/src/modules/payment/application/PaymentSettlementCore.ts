@@ -10,7 +10,7 @@ export interface SettlementVoucher {
 }
 
 export interface SettlementInventory {
-  commit(database: OperationDatabase, order: string): Promise<void>;
+  commit(database: OperationDatabase, mall: string, order: string): Promise<void>;
 }
 
 export interface SettlementMarketing {
@@ -18,7 +18,7 @@ export interface SettlementMarketing {
 }
 
 export interface SettlementFulfillment {
-  create(database: OperationDatabase, input: Readonly<{ order: string; payment: string }>): Promise<readonly string[]>;
+  create(database: OperationDatabase, input: Readonly<{ mall: string; member: string; order: string; payment: string }>): Promise<readonly string[]>;
 }
 
 export interface SettlementOrders {
@@ -56,41 +56,45 @@ export class PaymentSettlementCore {
   ) {}
 
   async capture(database: OperationDatabase, target: SettlementTarget, source: 'wechat' | 'internal' | 'mixed'): Promise<string> {
-    const locked = await database.query<{ state: string }>(`select state from payment.intent where id=$1 and order_id=$2 for update`,
-    [target.intent, target.order]);
+    const locked = await database.query<{ state: string }>(`select state from payment.intent
+      where id=$1 and order_id=$2 and mall_id=$3 for update`, [target.intent, target.order, target.mall]);
     const intentState = locked.rows[0]?.state;
     if (!intentState) throw new Error('PAYMENT_INTENT_NOT_FOUND');
     const paymentState = await this.orders.paymentState(database, target.order);
-    const existing = await database.query<{ id: string }>('select id from payment.payment where intent_id=$1', [target.intent]);
+    const existing = await database.query<{ id: string }>('select id from payment.payment where mall_id=$1 and intent_id=$2',
+    [target.mall, target.intent]);
     if (existing.rows[0]) return existing.rows[0].id;
     if (!['created','authorizing','authorized'].includes(intentState) || !['unpaid','authorizing'].includes(paymentState)) {
       throw new Error('PAYMENT_CAPTURE_STATE_INVALID');
     }
     const plans = (await database.query<PlanRow>(`select sequence,kind,reference_id,amount_minor::float8 amount_minor,state
-      from payment.intenttender where intent_id=$1 order by sequence for update`, [target.intent])).rows;
+      from payment.intenttender where mall_id=$1 and intent_id=$2 order by sequence for update`, [target.mall, target.intent])).rows;
     if (plans.reduce((sum, plan) => sum + plan.amount_minor, 0) !== target.amountMinor) throw new Error('PAYMENT_TENDER_SUM_MISMATCH');
     for (const plan of plans) {
       if (plan.kind === 'benefit') await this.consumeBenefit(database, target.order, plan);
       if (plan.kind === 'voucher') await this.consumeVoucher(database, target.order, target.member, plan);
       if (plan.kind === 'wechat' && source === 'internal') throw new Error('PAYMENT_EXTERNAL_TENDER_NOT_CAPTURED');
     }
-    await this.inventory.commit(database, target.order);
+    await this.inventory.commit(database, target.mall, target.order);
     await this.marketing.commit(database, target.order);
-    await database.query(`update payment.intenttender set state='captured' where intent_id=$1 and state in('planned','held')`, [target.intent]);
-    await database.query(`update payment.intent set state='captured',version=version+1 where id=$1`, [target.intent]);
+    await database.query(`update payment.intenttender set state='captured' where mall_id=$1 and intent_id=$2
+      and state in('planned','held')`, [target.mall, target.intent]);
+    await database.query(`update payment.intent set state='captured',version=version+1 where mall_id=$1 and id=$2`, [target.mall, target.intent]);
     const payment = `payment:${target.intent}`;
-    await database.query(`insert into payment.payment(id,intent_id,amount_minor,currency,captured_minor,refunded_minor,state,version)
-      values($1,$2,$3,$4,$3,0,'captured',0)`, [payment, target.intent, target.amountMinor, target.currency]);
+    await database.query(`insert into payment.payment(id,mall_id,intent_id,amount_minor,currency,captured_minor,refunded_minor,state,version)
+      values($1,$2,$3,$4,$5,$4,0,'captured',0)`, [payment, target.mall, target.intent, target.amountMinor, target.currency]);
     if (target.amountMinor > 0) {
       await database.query(`insert into payment.capture(id,scope_id,mall_id,member_id,order_id,source,currency,amount_minor,state,idempotency_key,
         completed_at,created_at) values($1,$2,$3,$4,$5,$6,$7,$8,'succeeded',$9,clock_timestamp(),clock_timestamp())`,
       [`capture:${target.intent}`, target.scope, target.mall, target.member, target.order, source, target.currency, target.amountMinor, target.intent]);
-      await database.query(`insert into payment.allocation(payment_id,target_type,target_id,amount_minor,currency)
-        values($1,'order',$2,$3,$4)`, [payment, target.order, target.amountMinor, target.currency]);
+      await database.query(`insert into payment.allocation(mall_id,payment_id,target_type,target_id,amount_minor,currency)
+        values($1,$2,'order',$3,$4,$5)`, [target.mall, payment, target.order, target.amountMinor, target.currency]);
     }
     await this.orders.markPaid(database, target.order);
-    const fulfillments = await this.fulfillment.create(database, { order: target.order, payment });
-    for (const fulfillment of fulfillments) await enqueue(database, target.scope, fulfillment);
+    const fulfillments = await this.fulfillment.create(database, {
+      mall: target.mall, member: target.member, order: target.order, payment,
+    });
+    for (const fulfillment of fulfillments) await enqueue(database, target.mall, fulfillment);
     await events(database, target, payment);
     return payment;
   }

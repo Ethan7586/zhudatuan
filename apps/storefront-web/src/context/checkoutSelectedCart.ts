@@ -3,6 +3,7 @@ import { productionApi } from '../services/productionApi';
 
 export interface CheckoutResult {
   selectedItems: CartItem[];
+  paymentState: 'captured' | 'authorizing' | 'reconciling';
 }
 
 export async function checkoutSelectedCartRequest(cart: CartItem[], addresses: DeliveryAddress[], user: UserProfile): Promise<CheckoutResult> {
@@ -21,10 +22,10 @@ export async function checkoutSelectedCartRequest(cart: CartItem[], addresses: D
   }
 
   const requestId = crypto.randomUUID();
-  await productionApi.checkoutWithInternalBenefits({
+  const payment = await productionApi.checkout({
     addressId: address.id,
     items: selectedItems.map((item) => ({ listingId: item.product.id, quantity: item.quantity })),
     idempotencyKey: `checkout-${requestId}`,
   });
-  return { selectedItems };
+  return { selectedItems, paymentState: payment.paymentState };
 }

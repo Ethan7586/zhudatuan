@@ -6,6 +6,7 @@ import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { ExtensionRegistry } from '../bootstrap/ExtensionRegistry';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
+import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { DECISION_SINK } from '../foundation/security/DecisionSink';
@@ -50,6 +51,7 @@ describe('purchase API entrypoint', () => {
         container.bind(RISK_GATE, { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) });
         container.bind(PURCHASE_QUOTE_KEY, 'q'.repeat(43));
         container.bind(PAYMENT_GATEWAY, new DisabledExternalPaymentGateway());
+        container.bind(KMS_CLIENT, new KmsClient('https://127.0.0.1:8544', 'k'.repeat(43)));
       },
     });
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
@@ -65,14 +67,19 @@ describe('purchase API entrypoint', () => {
     ]) expect(bootstrapped.routes.match(method!, path!)).toBeNull();
   });
 
-  it('has no static dependency on full runtime, provider gateways, or payment administration', () => {
+  it('contains only the exact WeChat gateway and no full runtime, refund, webhook, finance, or payment administration', () => {
     const closure = sourceClosure(join(import.meta.dirname, 'PurchaseApiMain.ts'));
+    const providerInfrastructure = [...closure]
+      .filter((file) => file.includes('/modules/payment/infrastructure/'))
+      .map((file) => file.slice(file.indexOf('/modules/payment/infrastructure/')))
+      .sort();
+    expect(providerInfrastructure).toEqual(['/modules/payment/infrastructure/adapter/WechatGateway.ts']);
     const forbidden = [...closure].filter((file) => [
       '/bootstrap/CommerceRuntime.ts', '/bootstrap/ProviderLoader.ts', '/app/modules.ts',
       '/modules/payment/PaymentModule.ts', '/modules/payment/PaymentOperations.ts', '/modules/payment/PaymentJobs.ts',
-      '/modules/payment/PaymentWebhook.ts', '/modules/payment/PaymentOperationSupport.ts',
+      '/modules/payment/PaymentWebhook.ts',
       '/modules/payment/application/RefundPlanner.ts', '/modules/payment/application/RefundSettlement.ts',
-      '/modules/payment/infrastructure/', '/modules/finance/',
+      '/modules/finance/',
       '/bootstrap/ProviderFactories.ts', '/foundation/infrastructure/ObjectStore.ts', '/foundation/cache/',
     ].some((candidate) => file.includes(candidate)));
     expect(forbidden).toEqual([]);

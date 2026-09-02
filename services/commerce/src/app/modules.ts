@@ -24,6 +24,7 @@ import { OrganizationModule } from '../modules/organization/OrganizationModule';
 import { PartnerModule } from '../modules/partner/PartnerModule';
 import { PaymentModule } from '../modules/payment/PaymentModule';
 import { PricingModule } from '../modules/pricing/PricingModule';
+import { ProvisioningModule } from '../modules/provisioning/ProvisioningModule';
 import { QualificationModule } from '../modules/qualification/QualificationModule';
 import { ReportingModule } from '../modules/reporting/ReportingModule';
 import { RiskModule } from '../modules/risk/RiskModule';
@@ -35,11 +36,12 @@ import { EVENT_SCHEMA_TYPES } from './events';
 export const BUSINESS_MODULES: readonly CommerceModule[] = Object.freeze([
   IdentityModule, OrganizationModule, AccessModule, CapabilityModule, PartnerModule, MemberModule, QualificationModule,
   CatalogModule, PricingModule, InventoryModule, ExperienceModule, MarketingModule, ReferralModule, CartModule, CheckoutModule, OrderModule,
+  ProvisioningModule,
   FulfillmentModule, VerificationModule, PaymentModule, VoucherModule, BenefitModule, FinanceModule, ChannelModule, SupportModule,
   NotificationModule, ReportingModule, RiskModule, AuditModule, ExtensionModule,
 ]);
 
 export const COMMERCE_MODULES: readonly CommerceModule[] = Object.freeze([RuntimeModule, ObservabilityModule, ...BUSINESS_MODULES]);
 
-if (BUSINESS_MODULES.length !== 29 || new Set(BUSINESS_MODULES.map(({ id }) => id)).size !== 29) throw new Error('BUSINESS_MODULE_CATALOG_INVALID');
+if (BUSINESS_MODULES.length !== 30 || new Set(BUSINESS_MODULES.map(({ id }) => id)).size !== 30) throw new Error('BUSINESS_MODULE_CATALOG_INVALID');
 if (new Set<string>(EVENT_SCHEMA_TYPES).size !== EVENT_SCHEMA_TYPES.length) throw new Error('EVENT_SCHEMA_CATALOG_DUPLICATE');

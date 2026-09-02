@@ -38,7 +38,7 @@ const [caddy, deliverySource, service, environment, configSource, buildSource, o
   read('services/commerce/src/modules/webbusiness/WebBusinessOperationIds.ts'),
   read('services/commerce/src/entry/PurchaseApiMain.ts'),
   read('services/commerce/src/entry/PurchaseApiReadyMain.ts'),
-  read('database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql'),
+  read('database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql'),
   read('database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql'),
   read('database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql'),
   read('database/supabase/migrations/20260829054500_zhudatuan_identity_login_acl_repair.sql'),
@@ -139,13 +139,15 @@ assertExactSet(receiptSchema.required ?? [], [
   'serverFingerprint', 'completedAt', 'checks',
 ], 'PURCHASE_RECEIPT_REQUIRED_FIELDS');
 assertExactSet(receiptSchema.properties?.checks?.required ?? [], [
-  'quoteCreated', 'orderCreated', 'paymentIntentCreated', 'paymentCaptured', 'benefitDebited', 'benefitLedgerRecorded',
-  'benefitLotMovementRecorded', 'inventoryStockUpdated', 'inventoryReservationRecorded', 'orderReadable', 'fulfillmentCreated',
-  'outboxRecorded', 'jobRecorded', 'idempotentReplayVerified', 'rollbackVerified', 'negativeRoutesRejected', 'auditRecorded',
+  'quoteCreated', 'orderCreated', 'paymentIntentCreated', 'wechatPrepayCreated', 'paymentAttemptRecorded',
+  'paymentPrepayRecorded', 'recoveryJobRecorded', 'providerPaymentObserved', 'paymentCaptured', 'inventoryStockUpdated',
+  'inventoryReservationRecorded', 'orderReadable', 'fulfillmentCreated', 'outboxRecorded', 'idempotentReplayVerified',
+  'duplicatePaymentRequestVerified', 'duplicateProviderResultVerified', 'paymentFailureRecoveryVerified', 'mallIsolationVerified',
+  'rollbackVerified', 'negativeRoutesRejected', 'auditRecorded',
 ], 'PURCHASE_RECEIPT_CHECKS');
 if (receiptSchema.additionalProperties !== false
-  || receiptSchema.properties?.schema?.const !== 'zhudatuan.purchase-e2e-receipt.v1'
-  || receiptSchema.properties?.schemaVersion?.const !== '20260828180000'
+  || receiptSchema.properties?.schema?.const !== 'zhudatuan.purchase-e2e-receipt.v2'
+  || receiptSchema.properties?.schemaVersion?.const !== '20260902011000'
   || receiptSchema.properties?.targetEnvironment?.const !== 'production'
   || receiptSchema.properties?.databaseRole?.const !== 'zhudatuanpurchaseapi'
   || receiptSchema.properties?.databaseName?.const !== 'zhudatuan_registration'
@@ -188,11 +190,18 @@ assertExactSet(environmentKeys, [
   'QUOTE_KEY_REF',
   'SECRET_STORE_ENDPOINT',
   'SECRET_STORE_BEARER_TOKEN',
+  'KMS_ENDPOINT',
+  'KMS_BEARER_TOKEN',
+  'WECHAT_APPLICATION_CONFIG_REF',
+  'WECHAT_PAYMENT_CONFIG_REF',
   'NODE_EXTRA_CA_CERTS',
 ], 'PURCHASE_ENVIRONMENT_KEYS');
 if (!environment.includes('API_ALLOWED_ORIGINS=https://zhudatuan.com')
   || !environment.includes('DATABASE_API_CONNECTION_REF=zhudatuan/purchase/database/api')
   || !environment.includes('QUOTE_KEY_REF=zhudatuan/purchase/checkout/quote')
+  || !environment.includes('KMS_ENDPOINT=https://127.0.0.1:8544')
+  || !environment.includes('WECHAT_APPLICATION_CONFIG_REF=zhudatuan/purchase/wechat/applications')
+  || !environment.includes('WECHAT_PAYMENT_CONFIG_REF=zhudatuan/purchase/payment/wechat')
   || !environment.includes('NODE_EXTRA_CA_CERTS=/opt/zhudatuan/shared/tls/internal-ca.crt')) {
   throw new Error('PURCHASE_PRIVATE_DEPENDENCY_CONFIGURATION_INVALID');
 }
@@ -202,6 +211,7 @@ const configKeys = [...configKeysBlock.matchAll(/'([A-Z][A-Z0-9_]*)'/g)].map((ma
 assertExactSet(configKeys, [
   'PURCHASE_API_PROFILE', 'API_PORT', 'API_BIND_HOST', 'APP_ENV', 'AUTH_MODE', 'SERVICE_VERSION', 'API_ALLOWED_ORIGINS',
   'DATABASE_API_CONNECTION_REF', 'QUOTE_KEY_REF', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN',
+  'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_PAYMENT_CONFIG_REF',
 ], 'PURCHASE_CONFIG_KEYS');
 
 for (const token of [
@@ -210,7 +220,7 @@ for (const token of [
 ]) {
   if (!buildSource.includes(token)) throw new Error(`PURCHASE_BUILD_ENTRY_MISSING:${token}`);
 }
-const migrationMarker = migrationSource.match(/values\('20260828180000','([a-f0-9]{64})'\)/)?.[1];
+const migrationMarker = migrationSource.match(/values\('20260902011000','([a-f0-9]{64})'\)/)?.[1];
 const runtimeMarker = runtimeSource.match(/PURCHASE_SCHEMA_CHECKSUM = '([a-f0-9]{64})'/)?.[1];
 if (!migrationMarker || migrationMarker === '0'.repeat(64) || migrationMarker !== runtimeMarker) {
   throw new Error('PURCHASE_SCHEMA_MARKER_DRIFT');
@@ -244,7 +254,7 @@ if (normalizedBootstrapRepairDigest !== bootstrapRepairMarker) {
   throw new Error('REGISTRATION_BOOTSTRAP_REPAIR_NORMALIZED_DIGEST_DRIFT');
 }
 const loginAclMarker = loginAclMigrationSource.match(/values\('20260829054500','([a-f0-9]{64})'\)/)?.[1];
-if (!loginAclMarker || loginAclMarker === '0'.repeat(64) || loginAclMarker !== runnerMarker) {
+if (!loginAclMarker || loginAclMarker === '0'.repeat(64)) {
   throw new Error('IDENTITY_LOGIN_ACL_SCHEMA_MARKER_DRIFT');
 }
 const normalizedLoginAclDigest = createHash('sha256')
@@ -253,10 +263,26 @@ const normalizedLoginAclDigest = createHash('sha256')
 if (normalizedLoginAclDigest !== loginAclMarker) {
   throw new Error('IDENTITY_LOGIN_ACL_NORMALIZED_DIGEST_DRIFT');
 }
-if (!migrationRunnerSource.includes("REGISTRATION_TARGET_VERSION = '20260829054500'")
-  || !migrationRunnerSource.includes("name='20260829054500_zhudatuan_identity_login_acl_repair.sql'")) {
+const migrationFiles = readdirSync(resolve(root, 'database/supabase/migrations'))
+  .filter((name) => name.endsWith('.sql'))
+  .sort();
+const targetFile = migrationFiles.at(-1);
+const targetVersion = targetFile?.slice(0, 14);
+const targetMigrationSource = targetFile
+  ? readFileSync(resolve(root, 'database/supabase/migrations', targetFile), 'utf8')
+  : '';
+const targetMarker = targetVersion
+  ? targetMigrationSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1]
+  : undefined;
+const runnerVersion = migrationRunnerSource.match(/REGISTRATION_TARGET_VERSION = '([0-9]{14})'/)?.[1];
+if (!targetFile || !targetVersion || runnerVersion !== targetVersion || runnerMarker !== targetMarker
+  || !migrationRunnerSource.includes(`name='${targetFile}'`)) {
   throw new Error('PURCHASE_REGISTRATION_MIGRATION_TARGET_INVALID');
 }
+const normalizedTargetDigest = createHash('sha256')
+  .update(targetMigrationSource.replaceAll(targetMarker, '0'.repeat(64)))
+  .digest('hex');
+if (normalizedTargetDigest !== targetMarker) throw new Error('PURCHASE_REGISTRATION_MIGRATION_TARGET_DIGEST_DRIFT');
 for (const token of ['purchaseApiEnvironment', 'purchaseApiPort', '/health/ready', 'ZHUDATUAN_PURCHASE_API_READY']) {
   if (!purchaseReady.includes(token)) throw new Error(`PURCHASE_READINESS_BOUNDARY_MISSING:${token}`);
 }
@@ -283,27 +309,29 @@ const forbiddenSourcePaths = [
   '/foundation/infrastructure/ObjectStore.ts',
   '/foundation/cache/',
   '/modules/finance/',
-  '/modules/benefit/BenefitPort.ts',
-  '/modules/voucher/application/port/VoucherPort.ts',
   '/modules/channel/',
   '/modules/payment/PaymentModule.ts',
   '/modules/payment/PaymentOperations.ts',
   '/modules/payment/PaymentJobs.ts',
   '/modules/payment/PaymentWebhook.ts',
-  '/modules/payment/PaymentOperationSupport.ts',
   '/modules/payment/application/RefundPlanner.ts',
   '/modules/payment/application/RefundSettlement.ts',
   '/modules/payment/interface/',
-  '/modules/payment/infrastructure/',
   '/modules/order/OrderOperations.ts',
   '/modules/reporting/',
   '/modules/extension/',
 ];
 const forbiddenClosure = [...closure].filter((file) => forbiddenSourcePaths.some((path) => file.includes(path)));
 if (forbiddenClosure.length > 0) throw new Error(`PURCHASE_FORBIDDEN_SOURCE_CLOSURE:${JSON.stringify(forbiddenClosure)}`);
+const paymentInfrastructure = [...closure].filter((file) => file.includes('/modules/payment/infrastructure/'));
+if (paymentInfrastructure.some((file) => !file.endsWith('/modules/payment/infrastructure/adapter/WechatGateway.ts'))) {
+  throw new Error(`PURCHASE_PAYMENT_INFRASTRUCTURE_CLOSURE_INVALID:${JSON.stringify(paymentInfrastructure)}`);
+}
 for (const file of closure) {
   const source = readFileSync(file, 'utf8');
-  if (source.includes('commerce-api') || source.includes('hbbtzn') || /@shop\/(?:provider|wechatpayment)/.test(source)
+  const permittedWechatAdapter = file.endsWith('/modules/payment/infrastructure/adapter/WechatGateway.ts');
+  if (source.includes('commerce-api') || source.includes('hbbtzn')
+    || (/@shop\/(?:provider|wechatpayment)/.test(source) && !permittedWechatAdapter)
     || /(?:^|\/)apps\//.test(file)) throw new Error(`PURCHASE_FORBIDDEN_SOURCE_TOKEN:${file}`);
 }
 const ownedSources = [...closure].filter((file) => basename(file).includes('Purchase')

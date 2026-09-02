@@ -27498,6 +27498,143 @@
         "x-stepup": true
       }
     },
+    "/api/v1/provisioning/malls": {
+      "post": {
+        "operationId": "provisioning.malls.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "provisioning.malls.create",
+        "tags": [
+          "provisioning"
+        ],
+        "x-audience": "operator",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "optional",
+        "x-idempotency": "required",
+        "x-idempotent": false,
+        "x-permission": "organization.layer.manage",
+        "x-requirements": [
+          "MVP06",
+          "MVP15"
+        ],
+        "x-risk": "critical",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "platform"
+        ],
+        "x-stepup": true
+      }
+    },
     "/api/v1/qualifications": {
       "get": {
         "operationId": "qualification.center.read",

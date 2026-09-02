@@ -44,6 +44,8 @@ class PaymentOperations implements OperationUsecase {
 
   private async create(request: OperationRequest): Promise<OperationResult> {
     const access = requireAccess(request);
+    const mall = access.mall_id;
+    if (!mall) throw new Error('SCOPE_DENIED');
     const body = bodyRecord(request);
     const order = String(body.order ?? '');
     if (!order) throw new Error('VALIDATION_FAILED:order');
@@ -61,23 +63,24 @@ class PaymentOperations implements OperationUsecase {
         await client.query('commit');
         return cached;
       }
-      const existing = await client.query<IntentState>(`select intent.id intent,intent.order_id,orders.order_number,orders.scope_id,orders.mall_id,
-        orders.member_id,intent.amount_minor::float8 total_minor,coalesce(wechat.amount_minor,0)::float8 amount_minor,
+      const existing = await client.query<IntentState>(`select intent.id intent,intent.order_id,orders.order_number,intent.mall_id scope_id,intent.mall_id,
+        intent.member_id,intent.amount_minor::float8 total_minor,coalesce(wechat.amount_minor,0)::float8 amount_minor,
         identity.id payer_identity,identity.subject_ciphertext payer_ciphertext,attempt.id attempt,attempt.state,attempt.scene,
         attempt.application_hash,prepay.parameters,intent.expires_at
-        from ordering.orderrecord orders join access.membership membership on membership.member_id=orders.member_id and membership.id=$2
-        join payment.intent intent on intent.order_id=orders.id
-        left join payment.intenttender wechat on wechat.intent_id=intent.id and wechat.kind='wechat'
+        from payment.intent intent join ordering.orderrecord orders on orders.id=intent.order_id and orders.mall_id=intent.mall_id
+        join access.membership membership on membership.member_id=intent.member_id and membership.id=$2
+        left join payment.intenttender wechat on wechat.mall_id=intent.mall_id and wechat.intent_id=intent.id and wechat.kind='wechat'
         left join lateral(select candidate.id,candidate.state,candidate.scene,candidate.application_hash from payment.attempt candidate where candidate.intent_id=intent.id
-          and candidate.provider='wechat' order by candidate.requested_at desc,candidate.id desc limit 1) attempt on true
-        left join payment.prepay prepay on prepay.intent_id=intent.id
-        join member.profile profile on profile.id=orders.member_id
+          and candidate.mall_id=intent.mall_id and candidate.provider='wechat' order by candidate.requested_at desc,candidate.id desc limit 1) attempt on true
+        left join payment.prepay prepay on prepay.mall_id=intent.mall_id and prepay.intent_id=intent.id
+        join member.profile profile on profile.id=intent.member_id
         left join lateral(select candidate.id,candidate.subject_ciphertext from identity.federatedidentity candidate
           where candidate.principal_id=profile.principal_id and candidate.provider='wechat' and candidate.status='active'
             and candidate.subject_ciphertext is not null and candidate.application_hash=$3
           order by candidate.updated_at desc,candidate.id desc limit 1) identity on true
-        where orders.id=$1 and orders.payment_state in('unpaid','authorizing') and intent.state in('created','authorizing','authorized')
-        for update of intent,orders`, [order, access.membership.id, application.applicationHash]);
+        where intent.mall_id=$4 and orders.id=$1 and orders.payment_state in('unpaid','authorizing')
+          and intent.state in('created','authorizing','authorized')
+        for update of intent,orders`, [order, access.membership.id, application.applicationHash, mall]);
       const prior = existing.rows[0];
       if (!prior) throw new Error('PAYMENT_INTENT_NOT_PAYABLE');
       if (prior.attempt && (prior.scene !== scene || prior.application_hash !== application.applicationHash)) {
@@ -103,13 +106,16 @@ class PaymentOperations implements OperationUsecase {
       }
       if (!prior.payer_identity || !prior.payer_ciphertext) throw new Error('WECHAT_IDENTITY_REQUIRED');
       if (prior.attempt) {
-        await client.query("update payment.attempt set state='started',requested_at=clock_timestamp(),completed_at=null where id=$1", [prior.attempt]);
+        await client.query("update payment.attempt set state='started',requested_at=clock_timestamp(),completed_at=null where mall_id=$1 and id=$2",
+        [prior.mall_id, prior.attempt]);
         state = prior;
       } else {
         const attempt = `attempt:${randomUUID()}`;
-        await client.query(`insert into payment.attempt(id,intent_id,tender_id,provider,scene,application_hash,state,requested_at)
-          values($1,$2,'tender:wechat','wechat',$3,$4,'started',clock_timestamp())`, [attempt, prior.intent, scene, application.applicationHash]);
-        await client.query("update payment.intent set state='authorizing',version=version+1 where id=$1 and state='created'", [prior.intent]);
+        await client.query(`insert into payment.attempt(id,mall_id,intent_id,tender_id,provider,scene,application_hash,state,requested_at)
+          values($1,$2,$3,'tender:wechat','wechat',$4,$5,'started',clock_timestamp())`,
+        [attempt, prior.mall_id, prior.intent, scene, application.applicationHash]);
+        await client.query("update payment.intent set state='authorizing',version=version+1 where mall_id=$1 and id=$2 and state='created'",
+        [prior.mall_id, prior.intent]);
         await orderPort.markAuthorizing(client, order);
         state = { ...prior, attempt, state: 'started' };
       }
@@ -123,17 +129,18 @@ class PaymentOperations implements OperationUsecase {
     try {
       const payer = await this.kms.decrypt('identity/wechat', state.payer_ciphertext!, { identity: state.payer_identity! });
       const payerHash = createHash('sha256').update(payer).digest('hex');
-      await transaction(this.pool, request, (database) => database.query(`update payment.attempt set payer_hash=$2
-        where id=$1 and state in('started','unknown','pending')`, [state.attempt!, payerHash]));
+      await transaction(this.pool, request, (database) => database.query(`update payment.attempt set payer_hash=$3
+        where mall_id=$1 and id=$2 and state in('started','unknown','pending')`, [state.mall_id, state.attempt!, payerHash]));
       const parameters = await this.gateway.prepay({ description: `主打团福利商城-${state.order_number}`,
         orderNumber: PaymentReference.payment(state.order_number).text, amountMinor: state.amount_minor, payer,
         application, expiresAt: wechatTime(state.expires_at) });
       const response = { status: 201, body: { intent: state.intent, parameters } } satisfies OperationResult;
       await transaction(this.pool, request, async (database) => {
-        await database.query(`with saved as (insert into payment.prepay(intent_id,parameters,provider_request_id,created_at) values($1,$2::jsonb,$3,clock_timestamp())
-        on conflict(intent_id) do update set parameters=excluded.parameters,provider_request_id=excluded.provider_request_id returning parameters)
-        update payment.attempt set state='pending',payer_hash=$5,completed_at=clock_timestamp() where id=$4`,
-        [state.intent, JSON.stringify(parameters), parameters.providerRequestId || null, state.attempt!, payerHash]);
+        await database.query(`with saved as (insert into payment.prepay(mall_id,intent_id,parameters,provider_request_id,created_at)
+        values($1,$2,$3::jsonb,$4,clock_timestamp()) on conflict(mall_id,intent_id) do update
+        set mall_id=excluded.mall_id,parameters=excluded.parameters,provider_request_id=excluded.provider_request_id returning parameters)
+        update payment.attempt set state='pending',payer_hash=$6,completed_at=clock_timestamp() where mall_id=$1 and id=$5`,
+        [state.mall_id, state.intent, JSON.stringify(parameters), parameters.providerRequestId || null, state.attempt!, payerHash]);
         await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
         values($1,'paymentquery','payment',$2,jsonb_build_object('intent',$3::text),'queued',10,clock_timestamp()+interval '5 seconds',clock_timestamp(),clock_timestamp())
         on conflict(id) do update set state='queued',available_at=excluded.available_at,updated_at=clock_timestamp(),attempts=0`,
@@ -144,7 +151,8 @@ class PaymentOperations implements OperationUsecase {
     } catch (cause) {
       if (providerOutcomeUnknown(cause)) {
         await transaction(this.pool, request, async (database) => {
-          await database.query("update payment.attempt set state='unknown',completed_at=clock_timestamp() where id=$1 and state='started'", [state.attempt!]);
+          await database.query("update payment.attempt set state='unknown',completed_at=clock_timestamp() where mall_id=$1 and id=$2 and state='started'",
+          [state.mall_id, state.attempt!]);
           await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
             values($1,'paymentquery','payment',$2,jsonb_build_object('intent',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())
             on conflict(id) do update set state='queued',available_at=clock_timestamp(),updated_at=clock_timestamp()`,
@@ -152,13 +160,17 @@ class PaymentOperations implements OperationUsecase {
         });
         return { status: 202, body: { intent: state.intent, state: 'reconciling' } };
       }
-      await transaction(this.pool, request, (database) => database.query("update payment.attempt set state='failed',completed_at=clock_timestamp() where id=$1 and state='started'", [state.attempt!]));
+      await transaction(this.pool, request, (database) => database.query(
+        "update payment.attempt set state='failed',completed_at=clock_timestamp() where mall_id=$1 and id=$2 and state='started'",
+        [state.mall_id, state.attempt!]));
       throw cause;
     }
   }
 
   private async refund(request: OperationRequest): Promise<OperationResult> {
     const access = requireAccess(request);
+    const mall = access.mall_id;
+    if (!mall) throw new Error('SCOPE_DENIED');
     const body = bodyRecord(request);
     const id = `refund:${randomUUID()}`;
     const amount = integerField(body, 'amountMinor', 1);
@@ -168,10 +180,10 @@ class PaymentOperations implements OperationUsecase {
       const cached = await claimRequest(database, request, access.actor.id, access.scope.id);
       if (cached) return cached;
       const refund = await this.refunds.create(database, { id, payment, amountMinor: amount, idempotency: request.input.idempotency!, reason,
-        scope: access.scope.id });
+        mall });
       await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
         values($1,'paymentrefund','payment',$2,jsonb_build_object('refund',$3::text,'actor',$4::text),'queued',10,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
-      [`job:${refund.id}`, access.scope.id, refund.id, access.actor.id]);
+      [`job:${refund.id}`, mall, refund.id, access.actor.id]);
       const response = { status: 202, body: refund } satisfies OperationResult;
       await completeRequest(this.audit, database, request, response, access.actor.id, access.scope.id);
       return response;
@@ -179,20 +191,25 @@ class PaymentOperations implements OperationUsecase {
   }
 
   private async readRecoveries(request: OperationRequest): Promise<OperationResult> {
-    requireAccess(request);
+    const access = requireAccess(request);
+    const mall = access.mall_id;
+    if (!mall) throw new Error('SCOPE_DENIED');
     const page = queryPage(request);
     return transaction(this.pool, request, async (database) => {
-      const result = await database.query(`select recovery.id,recovery.order_id,orders.order_number,recovery.resource_type,recovery.resource_id,
+      const result = await database.query(`select recovery.id,recovery.order_id,recovery.evidence->>'orderNumber' order_number,
+        recovery.resource_type,recovery.resource_id,
         recovery.severity,recovery.state,recovery.error_code,recovery.evidence,recovery.occurrence_count,recovery.opened_at,recovery.resolved_at,
-        recovery.resolution_request_id from payment.recoverycase recovery left join ordering.orderrecord orders on orders.id=recovery.order_id
-        where access.scope_allowed(recovery.scope_id) and ($1::timestamptz is null or (recovery.opened_at,recovery.id)<($1::timestamptz,$2))
-        order by recovery.opened_at desc,recovery.id desc limit $3`, [page.sort, page.id, page.fetch]);
+        recovery.resolution_request_id from payment.recoverycase recovery where recovery.mall_id=$1
+        and ($2::timestamptz is null or (recovery.opened_at,recovery.id)<($2::timestamptz,$3))
+        order by recovery.opened_at desc,recovery.id desc limit $4`, [mall, page.sort, page.id, page.fetch]);
       return keysetResult(result, page, 'opened_at');
     });
   }
 
   private async resolveRecovery(request: OperationRequest): Promise<OperationResult> {
     const access = requireAccess(request);
+    const mall = access.mall_id;
+    if (!mall) throw new Error('SCOPE_DENIED');
     const body = bodyRecord(request);
     const action = textField(body, 'action', 32);
     if (!['replay', 'requery', 'retryrefund', 'resolve'].includes(action)) throw new Error('PAYMENT_RECOVERY_ACTION_INVALID');
@@ -201,14 +218,14 @@ class PaymentOperations implements OperationUsecase {
     return transaction(this.pool, request, async (database) => {
       const cached = await claimRequest(database, request, access.actor.id, access.scope.id);
       if (cached) return cached;
-      const recovery = (await database.query<{ id: string; scope_id: string; resource_type: string; resource_id: string;
-        state: string; evidence: Record<string, unknown> }>(`select id,scope_id,resource_type,resource_id,state,evidence from payment.recoverycase
-        where id=$1 and access.scope_allowed(scope_id) for update`, [caseid])).rows[0];
+      const recovery = (await database.query<{ id: string; mall_id: string; resource_type: string; resource_id: string;
+        state: string; evidence: Record<string, unknown> }>(`select id,mall_id,resource_type,resource_id,state,evidence
+        from payment.recoverycase where mall_id=$1 and id=$2 for update`, [mall, caseid])).rows[0];
       if (!recovery) throw new Error('PAYMENT_RECOVERY_NOT_FOUND');
       if (recovery.state !== 'open') throw new Error('PAYMENT_RECOVERY_ALREADY_RESOLVED');
       const requestid = `recoveryrequest:${createHash('sha256').update(`${caseid}:${request.input.idempotency}`).digest('hex').slice(0, 32)}`;
-      await database.query(`insert into payment.recoveryrequest(id,case_id,scope_id,actor_id,membership_id,reason,evidence_hash,trace_id,created_at)
-        values($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp())`, [requestid, caseid, recovery.scope_id, access.actor.id, access.membership.id,
+      await database.query(`insert into payment.recoveryrequest(id,case_id,scope_id,mall_id,actor_id,membership_id,reason,evidence_hash,trace_id,created_at)
+        values($1,$2,$3,$3,$4,$5,$6,$7,$8,clock_timestamp())`, [requestid, caseid, recovery.mall_id, access.actor.id, access.membership.id,
         reason, createHash('sha256').update(JSON.stringify(recovery.evidence)).digest('hex'), access.trace]);
       if (action === 'replay') {
         if (recovery.resource_type !== 'deadletter') throw new Error('PAYMENT_RECOVERY_RESOURCE_INVALID');
@@ -217,27 +234,32 @@ class PaymentOperations implements OperationUsecase {
         if ((kind !== 'paymentquery' && kind !== 'paymentrefund') || payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
           throw new Error('PAYMENT_DEADLETTER_EVIDENCE_INVALID');
         }
-        await enqueueRecovery(database, requestid, kind, recovery.scope_id, payload as Readonly<Record<string, string>>);
+        await enqueueRecovery(database, requestid, kind, recovery.mall_id, payload as Readonly<Record<string, string>>);
         await database.query(`update runtime.deadletter set reviewed_at=clock_timestamp() where id=$1 and owner='payment'`, [recovery.evidence.deadletter]);
       }
       if (action === 'requery') {
         if (recovery.resource_type !== 'intent') throw new Error('PAYMENT_RECOVERY_RESOURCE_INVALID');
-        const intent = await database.query('select id from payment.intent where id=$1', [recovery.resource_id]);
+        const intent = await database.query('select id from payment.intent where mall_id=$1 and id=$2',
+        [recovery.mall_id, recovery.resource_id]);
         if (!intent.rows[0]) throw new Error('PAYMENT_INTENT_NOT_FOUND');
-        await enqueueRecovery(database, requestid, 'paymentquery', recovery.scope_id, { intent: recovery.resource_id });
+        await enqueueRecovery(database, requestid, 'paymentquery', recovery.mall_id, { intent: recovery.resource_id });
       }
       if (action === 'retryrefund') {
         const refund = recovery.resource_type === 'refund' ? recovery.resource_id : String(recovery.evidence.refund ?? '');
-        const refundable = await database.query<{ state: string }>('select state from payment.refund where id=$1 for update', [refund]);
+        const refundable = await database.query<{ state: string }>('select state from payment.refund where mall_id=$1 and id=$2 for update',
+        [recovery.mall_id, refund]);
         if (!refundable.rows[0] || refundable.rows[0].state === 'succeeded') throw new Error('PAYMENT_REFUND_NOT_RETRYABLE');
         if (refundable.rows[0].state === 'failed') {
-          await database.query(`update payment.refund set state='requested',version=version+1 where id=$1`, [refund]);
-          await database.query(`update payment.refundtender set state='planned' where refund_id=$1 and state='failed'`, [refund]);
+          await database.query(`update payment.refund set state='requested',version=version+1 where mall_id=$1 and id=$2`,
+          [recovery.mall_id, refund]);
+          await database.query(`update payment.refundtender set state='planned' where mall_id=$1 and refund_id=$2 and state='failed'`,
+          [recovery.mall_id, refund]);
         }
-        await enqueueRecovery(database, requestid, 'paymentrefund', recovery.scope_id, { refund });
+        await enqueueRecovery(database, requestid, 'paymentrefund', recovery.mall_id, { refund });
       }
       if (action === 'resolve') {
-        await database.query(`update payment.recoverycase set state='resolved',resolved_at=clock_timestamp(),resolution_request_id=$2 where id=$1`, [caseid, requestid]);
+        await database.query(`update payment.recoverycase set state='resolved',resolved_at=clock_timestamp(),resolution_request_id=$3
+          where mall_id=$1 and id=$2`, [recovery.mall_id, caseid, requestid]);
         if (recovery.resource_type === 'deadletter') await database.query(`update runtime.deadletter set reviewed_at=clock_timestamp()
           where id=$1 and owner='payment'`, [recovery.evidence.deadletter]);
       }

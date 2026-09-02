@@ -34,7 +34,7 @@ describe('Console navigation selector', () => {
     for (const scopeKind of SCOPE_KINDS) {
       const label = selectConsoleNavigationItems(consoleModules, scopeKind)
         .find(({ moduleId }) => moduleId === 'applications')?.label;
-      if (scopeKind === 'platform' || scopeKind === 'distributor' || scopeKind === 'tenant') {
+      if (scopeKind === 'distributor' || scopeKind === 'tenant') {
         expect(label).toBe('应用治理');
       } else if (scopeKind === 'mall') {
         expect(label).toBe('店铺装修');

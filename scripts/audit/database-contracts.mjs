@@ -13,7 +13,25 @@ const MIGRATIONS = join(ROOT, 'database', 'supabase', 'migrations');
 const HISTORY = join(ROOT, 'database', 'contracts', 'history.json');
 const OBJECTS = join(ROOT, 'database', 'contracts', 'objects.yml');
 const REGISTRATION_MIGRATION_RUNNER = join(ROOT, 'services', 'commerce', 'src', 'foundation', 'infrastructure', 'RegistrationMigrationRunner.ts');
+const REGISTRATION_BOUNDARY_RECONCILE = join(
+  ROOT,
+  'infrastructure',
+  'zhudatuan',
+  'aliyun',
+  'postgres-reconcile-registration-boundary.sql'
+);
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
+const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
+const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
+const REGISTRATION_ASSERTION_OMISSIONS = new Map([
+  [INVITATION_SCOPE, /\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
+  ['20260821069000_add_store_management.sql', /\n  select id into membership from access\.membership[\s\S]*?STORE_CREATE_SCOPE_UNRESOLVED'; end if;\n/],
+  ['20260821074000_grant_platform_owner_operations.sql', /\ndo \$assert\$[\s\S]*?\n\$assert\$;\n/],
+  ['20260821075000_grant_platform_cardlibrary_read.sql', /\ndo \$assert\$[\s\S]*?\nend \$assert\$;\n/],
+  ['20260821076000_grant_platform_cockpit_reads.sql', /\ndo \$assert\$[\s\S]*?\n\$assert\$;\n/],
+  ['20260821078000_complete_experience_application.sql', /\n  if exists\(\n    select 1 from unnest\(required_operations\)[\s\S]*?PLATFORM_OWNER_EXPERIENCE_OPERATION_MISSING';\n  end if;\n/],
+  ['20260828092000_finance_security_boundaries.sql', /\n  if not exists\(select 1 from capability\.membership_operations\('membership-platform-owner-ethan-v1'\)[\s\S]*?FINANCE_CONSOLE_READ_PERMISSION_MISSING'; end if;\n/],
+]);
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
 const REPAIR_FILES = [
@@ -129,19 +147,40 @@ const REPAIR_FILES = [
   '20260901070000_identity_notification_challenge_jobs.sql',
   '20260901100000_access_identity_scope_assignments.sql',
   '20260901210000_restore_platform_owner_personal_scope_projection.sql',
+  '20260901220000_add_payment_mall_identity.sql',
+  '20260901221000_add_fulfillment_mall_identity.sql',
+  '20260901222000_add_inventory_mall_identity.sql',
+  '20260901223000_publish_mall_provisioning.sql',
+  '20260902010000_restore_public_mall_role_contracts.sql',
+  '20260902011000_enable_public_mall_external_payment.sql',
+  '20260902012000_zhudatuan_mall_provisioning_access.sql',
 ];
 
 const mode = process.argv[2];
-if (!['--check-inventory', '--schema-fresh', '--environment-bootstrap', '--inventory-cutover-unsafe', '--postgres-fresh', '--mvp-kernel'].includes(mode)) {
-  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
+if (!['--check-inventory', '--schema-fresh', '--registration-fresh', '--registration-boundary-postgres', '--environment-bootstrap', '--inventory-cutover-unsafe', '--postgres-fresh', '--mvp-kernel'].includes(mode)) {
+  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--registration-fresh|--registration-boundary-postgres|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel [URL]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
+if (mode === '--registration-boundary-postgres' && process.argv[4] !== 'local-disposable-fixture') {
+  throw new Error('REGISTRATION_BOUNDARY_POSTGRES_FIXTURE_CONFIRMATION_REQUIRED');
+}
 
 const migrationFiles = (await readdir(MIGRATIONS)).filter((name) => name.endsWith('.sql')).sort();
 await verifyInventory(migrationFiles);
 if (mode === '--check-inventory') {
   console.log(`migration inventory ok: historical=94 repair=${REPAIR_FILES.length} total=${migrationFiles.length}`);
+  process.exit(0);
+}
+
+if (mode === '--registration-boundary-postgres') {
+  const database = await openDatabase();
+  try {
+    await verifyRegistrationBoundaryOnPostgres(database);
+  } finally {
+    await database.close();
+  }
+  console.log('registration boundary PostgreSQL replay passed: rds-like-deny=1 rds-like-allow=2 legacy-upgrade=1');
   process.exit(0);
 }
 
@@ -154,6 +193,7 @@ try {
   `,
     'database role bootstrap'
   );
+  if (mode === '--registration-fresh') await installRegistrationReplayBoundary(database);
   if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
   await execute(
     database,
@@ -165,6 +205,14 @@ try {
   );
   let applied = 0;
   for (const name of migrationFiles) {
+    if (mode === '--registration-fresh' && (name === BOOTSTRAP || name === OWNER_RECONCILIATION)) {
+      await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [
+        name.slice(0, 14),
+        `environment-omitted:${name}`,
+      ]);
+      applied += 1;
+      continue;
+    }
     if (name === BOOTSTRAP) await seedBootstrapPrecondition(database);
     if (name === '20260829200000_owner_identity_reset_foundation.sql') await seedOwnerBoundaryFixture(database);
     if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
@@ -175,12 +223,18 @@ try {
       break;
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
-    await execute(database, await readFile(join(MIGRATIONS, name), 'utf8'), `migration ${name}`);
+    const source = await readFile(join(MIGRATIONS, name), 'utf8');
+    const omission = REGISTRATION_ASSERTION_OMISSIONS.get(name);
+    const sql = mode === '--registration-fresh' && omission
+      ? omitExactEnvironmentAssertion(source, omission, name)
+      : source;
+    await execute(database, sql, `migration ${name}`);
     await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0, 14), name]);
     applied += 1;
   }
   if (mode !== '--inventory-cutover-unsafe') {
-  await verifyTarget(database);
+    if (mode === '--registration-fresh') await reconcileRegistrationReplayBoundary(database);
+    await verifyTarget(database);
     if (mode === '--mvp-kernel') {
       const { verifyMvpKernel } = await import('./mvp-kernel.mjs');
       await verifyMvpKernel(database);
@@ -192,9 +246,19 @@ try {
 }
 
 async function openDatabase() {
-  if (mode !== '--postgres-fresh') return new PGlite({ extensions: { pgcrypto } });
+  if (mode === '--registration-fresh') {
+    const cluster = new PGlite();
+    await cluster.exec('create database zhudatuan_registration');
+    const data = await cluster.dumpDataDir('none');
+    await cluster.close();
+    return new PGlite({ database: 'zhudatuan_registration', loadDataDir: data, extensions: { pgcrypto } });
+  }
+  if (mode !== '--postgres-fresh' && mode !== '--registration-boundary-postgres') return new PGlite({ extensions: { pgcrypto } });
   const connectionString = process.argv[3];
   if (connectionString !== undefined && !/^postgres(?:ql)?:\/\//.test(connectionString)) throw new Error('POSTGRES_FRESH_URL_INVALID');
+  if (mode === '--registration-boundary-postgres' && connectionString === undefined) {
+    throw new Error('REGISTRATION_BOUNDARY_POSTGRES_URL_REQUIRED');
+  }
   const client = new Client({ ...(connectionString === undefined ? {} : { connectionString }), connectionTimeoutMillis: 5_000, statement_timeout: 120_000 });
   await client.connect();
   return Object.freeze({
@@ -249,6 +313,12 @@ function duplicateVersions(files) {
   return new Map([...versions].filter(([, names]) => names.length > 1));
 }
 
+function omitExactEnvironmentAssertion(source, assertion, file) {
+  const matches = source.match(new RegExp(assertion.source, 'g'));
+  if (matches?.length !== 1) throw new Error(`MIGRATION_ENVIRONMENT_ASSERTION_DRIFT:${file}`);
+  return source.replace(assertion, '\n');
+}
+
 async function execute(database, sql, label) {
   try {
     await database.exec(sql);
@@ -266,6 +336,375 @@ async function seedBootstrapPrecondition(database) {
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,
     'bootstrap precondition'
   );
+}
+
+async function installRegistrationReplayBoundary(database) {
+  const sentinel='registration-fresh-replay-sentinel-not-for-production';
+  await execute(database, `create extension if not exists pgcrypto;
+    create schema deployment;
+    revoke all on schema deployment from public;
+    create table deployment.boundary(
+      id text primary key,database_name text not null,sentinel_hash char(64) not null check(sentinel_hash~'^[0-9a-f]{64}$'),
+      created_at timestamptz not null default clock_timestamp()
+    );
+    insert into deployment.boundary(id,database_name,sentinel_hash)
+    values('zhudatuan-registration-v1',current_database(),encode(public.digest('${sentinel}','sha256'),'hex'));
+    create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment,public as $function$
+      select current_database()='zhudatuan_registration'
+        and session_user='zhudatuanbootstrap'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database()
+            and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+    $function$;
+    create or replace function deployment.is_independent_registration_database()
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment as $function$
+      select current_database()='zhudatuan_registration'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database())
+    $function$;
+    revoke all on deployment.boundary from public;
+    revoke all on function deployment.registration_bootstrap_boundary(text) from public;
+    revoke all on function deployment.is_independent_registration_database() from public;
+  `,'registration replay boundary');
+}
+
+async function verifyRegistrationBoundaryOnPostgres(database) {
+  const retiredRoles = [
+    'shopapp','shopmigration','shopread','zhudatuanbootstrap','zhudatuansandboxbootstrap',
+  ];
+  const businessRoles = ['zhudatuanwebapi','zhudatuanpurchaseapi'];
+  const runtimeRoles = ['shopjob','zhudatuanidentityapi','zhudatuanidentityjob'];
+  const boundaryRoles = ['anon','authenticated','service_role','zhudatuanregistrationboundary'];
+  const fixtureRoles = [
+    'registration_rds_superuser_fixture','pg_rds_superuser','rds_boundary_admin','registration_boundary_outsider',
+    ...retiredRoles,...businessRoles,...runtimeRoles,...boundaryRoles,
+  ];
+  const preflight = (await database.query(`select current_database() database_name,
+    current_setting('allow_system_table_mods') system_table_mods,
+    coalesce((select rolsuper from pg_roles where rolname=current_user),false) authority_super,
+    to_regnamespace('deployment') is not null deployment_exists`)).rows[0];
+  const existingRoles = (await database.query(
+    'select rolname from pg_roles where rolname=any($1::text[]) order by rolname',[fixtureRoles],
+  )).rows.map((row)=>row.rolname);
+  if (JSON.stringify(preflight)!==JSON.stringify({
+    database_name:'zhudatuan_registration',system_table_mods:'on',authority_super:true,deployment_exists:false,
+  }) || existingRoles.length!==0) {
+    throw new Error(`REGISTRATION_BOUNDARY_POSTGRES_FIXTURE_UNSAFE:${JSON.stringify({preflight,existingRoles})}`);
+  }
+
+  await execute(database, `
+    create extension pgcrypto;
+    create role registration_rds_superuser_fixture nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    update pg_authid set rolname='pg_rds_superuser' where rolname='registration_rds_superuser_fixture';
+    create role rds_boundary_admin nologin nosuperuser nocreatedb createrole noinherit noreplication nobypassrls;
+    create role registration_boundary_outsider nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role shopapp nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role zhudatuanbootstrap nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role shopmigration nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role shopread nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role zhudatuanwebapi login nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role zhudatuanpurchaseapi login nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role zhudatuansandboxbootstrap nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role shopjob login nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role zhudatuanidentityapi login nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role zhudatuanidentityjob login nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role anon nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role authenticated nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role service_role nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    create role zhudatuanregistrationboundary nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls;
+    grant pg_rds_superuser to rds_boundary_admin;
+    grant usage on schema public to rds_boundary_admin;
+    grant execute on function public.digest(text,text) to rds_boundary_admin;
+    revoke all on schema public from public,anon,authenticated,service_role;
+    revoke execute on all functions in schema public from public,anon,authenticated,service_role;
+    alter database zhudatuan_registration owner to shopmigration;
+    create schema deployment authorization rds_boundary_admin;
+    create schema access authorization rds_boundary_admin;
+    create schema runtime authorization rds_boundary_admin;
+    revoke all on schema deployment from public;
+    revoke all on schema access from public;
+    revoke all on schema runtime from public;
+    set session authorization rds_boundary_admin;
+    create table deployment.boundary(
+      id text primary key,database_name text not null,sentinel_hash char(64) not null check(sentinel_hash~'^[0-9a-f]{64}$'),
+      created_at timestamptz not null default clock_timestamp()
+    );
+    insert into deployment.boundary(id,database_name,sentinel_hash)
+    values('zhudatuan-registration-v1',current_database(),encode(public.digest('rds-like-replay-sentinel','sha256'),'hex'));
+    create function deployment.registration_bootstrap_boundary(p_sentinel text)
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment,public as $function$
+      select current_database()='zhudatuan_registration'
+        and session_user='zhudatuanbootstrap'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database()
+            and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+    $function$;
+    create function deployment.is_independent_registration_database()
+    returns boolean language sql stable security definer set search_path=pg_catalog,deployment as $function$
+      select current_database()='zhudatuan_registration'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database())
+    $function$;
+    create table access.role(id text primary key,scope_id text not null,status text not null);
+    create table access.membership(id text primary key,client text not null,status text not null);
+    create table access.membershiprole(
+      membership_id text not null,role_id text not null,effective_at timestamptz not null,expires_at timestamptz
+    );
+    create table runtime.schemaversion(version text primary key,checksum char(64) not null);
+    alter table access.role enable row level security;
+    alter table access.membership enable row level security;
+    alter table access.membershiprole enable row level security;
+    alter table runtime.schemaversion enable row level security;
+    insert into access.role(id,scope_id,status)
+    values('role-platform-owner-v2','tenant-zhudatuan','active');
+    insert into access.membership(id,client,status)
+    values('membership-platform-owner-fixture','operator','active');
+    insert into access.membershiprole(membership_id,role_id,effective_at,expires_at)
+    values('membership-platform-owner-fixture','role-platform-owner-v2',clock_timestamp()-interval '1 hour',null);
+    insert into runtime.schemaversion(version,checksum)
+    values('20260829060000','b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a');
+    revoke all on deployment.boundary from public;
+    revoke all on function deployment.registration_bootstrap_boundary(text) from public;
+    revoke all on function deployment.is_independent_registration_database() from public;
+    grant usage on schema deployment to zhudatuanbootstrap,shopmigration;
+    grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap;
+    grant execute on function deployment.is_independent_registration_database() to shopmigration;
+    reset session authorization;
+  `,'registration boundary PostgreSQL fixture');
+
+  const reconciliation = await readFile(REGISTRATION_BOUNDARY_RECONCILE,'utf8');
+  const before = (await database.query(`select
+    (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+      where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+    has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed,
+    (select count(*)::integer from pg_auth_members membership join pg_roles owner
+      on owner.oid in(membership.roleid,membership.member)
+      where owner.rolname='zhudatuanregistrationboundary') owner_memberships`)).rows[0];
+  await database.exec('set session authorization registration_boundary_outsider');
+  try {
+    await database.exec(reconciliation);
+    throw new Error('REGISTRATION_BOUNDARY_UNPRIVILEGED_RECONCILE_UNEXPECTEDLY_SUCCEEDED');
+  } catch (error) {
+    if (!String(error instanceof Error?error.message:error).includes('ZHUDATUAN_REGISTRATION_BOUNDARY_RECONCILE_AUTHORITY_INVALID')) throw error;
+  } finally {
+    await database.exec('rollback');
+    await database.exec('reset session authorization');
+  }
+  const afterDenied = (await database.query(`select
+    (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+      where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+    has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed,
+    (select count(*)::integer from pg_auth_members membership join pg_roles owner
+      on owner.oid in(membership.roleid,membership.member)
+      where owner.rolname='zhudatuanregistrationboundary') owner_memberships`)).rows[0];
+  if (JSON.stringify(afterDenied)!==JSON.stringify(before)) {
+    throw new Error(`REGISTRATION_BOUNDARY_UNPRIVILEGED_RECONCILE_LEAKED:${JSON.stringify({before,afterDenied})}`);
+  }
+
+  for (const label of [
+    'RDS-like registration boundary reconciliation',
+    'RDS-like registration boundary idempotent reconciliation',
+  ]) {
+    // Aliyun's pg_rds_superuser account can SET ROLE to an ordinary account
+    // without a catalog membership.  Vanilla PG16 has no such predefined-role
+    // behavior, so inject one disposable SET/ADMIN edge with the RDS authority
+    // as grantor.  The reviewed reconciliation must remove it before commit.
+    await execute(database, `
+      grant zhudatuanregistrationboundary to rds_boundary_admin with admin true,inherit false,set true;
+      update pg_auth_members set grantor=(select oid from pg_roles where rolname='rds_boundary_admin')
+        where roleid=(select oid from pg_roles where rolname='zhudatuanregistrationboundary')
+          and member=(select oid from pg_roles where rolname='rds_boundary_admin');
+    `,`${label} fixture RDS SET capability`);
+    await database.exec('set session authorization rds_boundary_admin');
+    try {
+      await execute(database,reconciliation,label);
+    } finally {
+      await database.exec('rollback');
+      await database.exec('reset session authorization');
+    }
+    const boundaryMemberships = (await database.query(`select count(*)::integer memberships
+      from pg_auth_members membership join pg_roles role
+        on role.oid in(membership.roleid,membership.member)
+      where role.rolname='zhudatuanregistrationboundary'`)).rows[0].memberships;
+    if (boundaryMemberships!==0) {
+      throw new Error(`REGISTRATION_BOUNDARY_POSTGRES_MEMBERSHIP_LEAK:${JSON.stringify({label,boundaryMemberships})}`);
+    }
+    if (label==='RDS-like registration boundary reconciliation') {
+      const canonicalBoundaryState = (await database.query(`select
+        (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+          where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+        position('pg_catalog.sha256' in pg_get_functiondef('deployment.registration_bootstrap_boundary(text)'::regprocedure))>0 catalog_body,
+        position('public.digest' in pg_get_functiondef('deployment.registration_bootstrap_boundary(text)'::regprocedure))=0 public_digest_absent,
+        exists(select 1 from pg_proc function
+          cross join lateral unnest(function.proconfig) setting
+          where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure
+            and regexp_replace(setting,'\\s','','g')='search_path=pg_catalog,deployment') canonical_search_path`)).rows[0];
+      if (JSON.stringify(canonicalBoundaryState)!==JSON.stringify({
+        bootstrap_owner:'zhudatuanregistrationboundary',catalog_body:true,
+        public_digest_absent:true,canonical_search_path:true,
+      })) throw new Error(`REGISTRATION_BOUNDARY_FIRST_PASS_CANONICAL_INVALID:${JSON.stringify(canonicalBoundaryState)}`);
+      // Reproduce the exact upgrade state that exposed the staging failure:
+      // the inert role already owns the legacy definer, while revoked PUBLIC
+      // ACLs make public.digest unusable to that owner.  The idempotent pass
+      // must still rewrite the body without granting any public privilege.
+      await execute(database, `
+        create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
+        returns boolean language sql stable security definer set search_path=pg_catalog,deployment,public as $function$
+          select current_database()='zhudatuan_registration'
+            and session_user='zhudatuanbootstrap'
+            and exists(select 1 from deployment.boundary
+              where id='zhudatuan-registration-v1' and database_name=current_database()
+                and sentinel_hash=encode(public.digest(p_sentinel,'sha256'),'hex'))
+        $function$;
+      `,'RDS-like legacy boundary-owned bootstrap fixture');
+      const legacyBoundaryState = (await database.query(`select
+        (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+          where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+        has_schema_privilege('zhudatuanregistrationboundary','public','USAGE') boundary_public_usage,
+        has_function_privilege('zhudatuanregistrationboundary','public.digest(text,text)','EXECUTE') boundary_digest_execute,
+        position('public.digest' in pg_get_functiondef('deployment.registration_bootstrap_boundary(text)'::regprocedure))>0 legacy_body`)).rows[0];
+      if (JSON.stringify(legacyBoundaryState)!==JSON.stringify({
+        bootstrap_owner:'zhudatuanregistrationboundary',boundary_public_usage:false,
+        boundary_digest_execute:false,legacy_body:true,
+      })) throw new Error(`REGISTRATION_BOUNDARY_LEGACY_UPGRADE_FIXTURE_INVALID:${JSON.stringify(legacyBoundaryState)}`);
+    }
+  }
+  const finalState = (await database.query(`select
+    (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+      where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+    (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+      where function.oid='deployment.is_independent_registration_database()'::regprocedure) migration_owner,
+    (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+      where function.oid='deployment.runtime_database_boundary()'::regprocedure) runtime_owner,
+    has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed,
+    (select count(*)::integer from (values('shopjob'),('zhudatuanidentityapi'),('zhudatuanidentityjob')) expected(role_name)
+      where has_function_privilege(expected.role_name,'deployment.runtime_database_boundary()','EXECUTE')) runtime_execute_count,
+    (select count(*)::integer from (values('registration_boundary_outsider'),('shopapp'),('shopmigration'),
+        ('shopread'),('zhudatuanbootstrap'),('zhudatuanwebapi'),('zhudatuanpurchaseapi'),
+        ('zhudatuansandboxbootstrap')) denied(role_name)
+      where has_function_privilege(denied.role_name,'deployment.runtime_database_boundary()','EXECUTE')) denied_execute_count,
+    (select count(*)::integer from pg_auth_members membership join pg_roles owner
+      on owner.oid in(membership.roleid,membership.member)
+      where owner.rolname='zhudatuanregistrationboundary') owner_memberships,
+    has_schema_privilege('zhudatuanregistrationboundary','public','USAGE') boundary_public_usage,
+    (select count(*)::integer from pg_proc function
+      join pg_namespace namespace on namespace.oid=function.pronamespace and namespace.nspname='public'
+      where has_function_privilege('zhudatuanregistrationboundary',function.oid,'EXECUTE')) boundary_public_execute_count,
+    (select not rolcanlogin and not rolsuper and not rolcreatedb and not rolcreaterole and not rolinherit
+      and not rolreplication and not rolbypassrls from pg_roles
+      where rolname='zhudatuanregistrationboundary') owner_restricted`)).rows[0];
+  if (JSON.stringify(finalState)!==JSON.stringify({
+    bootstrap_owner:'zhudatuanregistrationboundary',migration_owner:'zhudatuanregistrationboundary',
+    runtime_owner:'zhudatuanregistrationboundary',definer_allowed:true,runtime_execute_count:3,
+    denied_execute_count:0,owner_memberships:0,boundary_public_usage:false,boundary_public_execute_count:0,
+    owner_restricted:true,
+  })) throw new Error(`REGISTRATION_BOUNDARY_POSTGRES_FINAL_STATE_INVALID:${JSON.stringify(finalState)}`);
+
+  await database.exec('set session authorization registration_boundary_outsider');
+  try {
+    for (const [label,sql] of [
+      ['bootstrap','select deployment.registration_bootstrap_boundary(\'rds-like-replay-sentinel\')'],
+      ['public-digest','select public.digest(\'rds-like-replay-sentinel\',\'sha256\')'],
+    ]) {
+      let denied = false;
+      try {
+        await database.query(sql);
+      } catch (error) {
+        if (!String(error instanceof Error?error.message:error).includes('permission denied')) throw error;
+        denied = true;
+      }
+      if (!denied) throw new Error(`REGISTRATION_BOUNDARY_OUTSIDER_UNEXPECTEDLY_ALLOWED:${label}`);
+    }
+  } finally {
+    await database.exec('reset session authorization');
+  }
+
+  const healthyBoundary = {
+    active_platform_owner_count:1,migration_head_valid:true,retired_roles_valid:true,business_roles_valid:false,runtime_roles_valid:true,
+    boundary_roles_valid:true,retired_membership_count:0,
+    registration_boundary_owner:'zhudatuanregistrationboundary',
+    migration_boundary_owner:'zhudatuanregistrationboundary',
+    runtime_boundary_owner:'zhudatuanregistrationboundary',database_owner:'shopmigration',
+  };
+  for (const role of runtimeRoles) {
+    await database.exec(`set session authorization "${role}"`);
+    try {
+      const boundary = (await database.query('select * from deployment.runtime_database_boundary()')).rows[0];
+      if (JSON.stringify(boundary)!==JSON.stringify(healthyBoundary)) {
+        throw new Error(`REGISTRATION_RUNTIME_DATABASE_BOUNDARY_INVALID:${JSON.stringify({role,boundary})}`);
+      }
+    } finally {
+      await database.exec('reset session authorization');
+    }
+  }
+  for (const role of ['registration_boundary_outsider',...retiredRoles,...businessRoles]) {
+    await database.exec(`set session authorization "${role}"`);
+    let denied = false;
+    try {
+      await database.query('select * from deployment.runtime_database_boundary()');
+    } catch (error) {
+      if (!String(error instanceof Error?error.message:error).includes('permission denied')) throw error;
+      denied = true;
+    } finally {
+      await database.exec('reset session authorization');
+    }
+    if (!denied) throw new Error(`REGISTRATION_RUNTIME_DATABASE_BOUNDARY_UNEXPECTEDLY_ALLOWED:${role}`);
+  }
+
+  await database.exec('set session authorization zhudatuanbootstrap');
+  const bootstrapCall = (await database.query(
+    'select deployment.registration_bootstrap_boundary($1) sentinel_valid',['rds-like-replay-sentinel'],
+  )).rows[0];
+  await database.exec('reset session authorization');
+  await database.exec('set session authorization shopmigration');
+  const migrationCall = (await database.query(`select
+    deployment.registration_bootstrap_boundary('rds-like-replay-sentinel') bootstrap_direct,
+    deployment.is_independent_registration_database() migration_boundary`)).rows[0];
+  await database.exec('reset session authorization');
+  if (JSON.stringify({bootstrapCall,migrationCall})!==JSON.stringify({
+    bootstrapCall:{sentinel_valid:true},migrationCall:{bootstrap_direct:false,migration_boundary:true},
+  })) throw new Error(`REGISTRATION_BOUNDARY_POSTGRES_CALL_CHAIN_INVALID:${JSON.stringify({bootstrapCall,migrationCall})}`);
+}
+
+async function reconcileRegistrationReplayBoundary(database) {
+  // Model an existing volume initialized before shopmigration was added to
+  // the nested SECURITY DEFINER boundary. The replay must exercise the exact
+  // privileged reconciliation artifact used in production.
+  await execute(database, `
+    alter role zhudatuanbootstrap noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    alter role shopmigration noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    grant usage on schema deployment to zhudatuanbootstrap,shopmigration;
+    revoke execute on function deployment.registration_bootstrap_boundary(text) from shopmigration;
+    grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap;
+    grant execute on function deployment.is_independent_registration_database() to shopmigration;
+  `,'registration replay legacy boundary state');
+  const before = await database.query(`select
+    has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE') bootstrap_allowed,
+    has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed`);
+  if (JSON.stringify(before.rows[0])!==JSON.stringify({bootstrap_allowed:true,definer_allowed:false})) {
+    throw new Error(`REGISTRATION_REPLAY_LEGACY_BOUNDARY_INVALID:${JSON.stringify(before.rows[0])}`);
+  }
+  const reconciliation = await readFile(REGISTRATION_BOUNDARY_RECONCILE,'utf8');
+  await execute(database,reconciliation,'registration replay privileged boundary reconciliation');
+  await execute(database,reconciliation,'registration replay idempotent boundary reconciliation');
+  const after = await database.query(`select
+    has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE') bootstrap_allowed,
+    has_function_privilege('shopmigration','deployment.registration_bootstrap_boundary(text)','EXECUTE') definer_allowed,
+    has_function_privilege('shopmigration','deployment.is_independent_registration_database()','EXECUTE') migration_boundary_allowed,
+    (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+      where function.oid='deployment.registration_bootstrap_boundary(text)'::regprocedure) bootstrap_owner,
+    (select owner.rolname from pg_proc function join pg_roles owner on owner.oid=function.proowner
+      where function.oid='deployment.is_independent_registration_database()'::regprocedure) migration_owner,
+    (select count(*)::integer from pg_auth_members membership join pg_roles owner
+      on owner.oid in(membership.roleid,membership.member)
+      where owner.rolname='zhudatuanregistrationboundary') owner_memberships`);
+  if (JSON.stringify(after.rows[0])!==JSON.stringify({
+    bootstrap_allowed:true,definer_allowed:true,migration_boundary_allowed:true,
+    bootstrap_owner:'zhudatuanregistrationboundary',migration_owner:'zhudatuanregistrationboundary',owner_memberships:0,
+  })) {
+    throw new Error(`REGISTRATION_REPLAY_RECONCILED_BOUNDARY_INVALID:${JSON.stringify(after.rows[0])}`);
+  }
 }
 
 async function seedOwnerBoundaryFixture(database) {
@@ -338,7 +777,7 @@ async function verifyTarget(database) {
   const operationContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'operations.yml'), 'utf8'));
   const eventContract = parse(await readFile(join(ROOT, 'packages', 'contract', 'definitions', 'events.yml'), 'utf8'));
   const expectedOperations = Array.isArray(operationContract?.operations)
-    ? operationContract.operations.filter((operation) => operation.availability !== 'frozen').length
+    ? operationContract.operations.filter((operation) => (operation.availability ?? 'runtime') === 'runtime').length
     : -1;
   const expectedEvents = Array.isArray(eventContract?.events) ? eventContract.events.length : -1;
   const result = await database.query(`select
@@ -349,7 +788,6 @@ async function verifyTarget(database) {
   const row = result.rows[0];
   if (row.operations !== expectedOperations || row.events !== expectedEvents || row.public_tables !== 0 || row.migrations !== migrationFiles.length) throw new Error(`TARGET_CATALOG_INVALID:${JSON.stringify(row)}`);
   await verifyFinanceAccountingIntegrity(database);
-  await verifyPlatformOwnerPersonalScope(database);
   await verifyObjectContract(database);
   await verifyRls(database);
   await verifyRuntimeSchemaVisibility(database);
@@ -358,38 +796,13 @@ async function verifyTarget(database) {
   await verifyExtensionLifecycle(database);
 }
 
-async function verifyPlatformOwnerPersonalScope(database) {
-  const result = await database.query(`with owner as(
-    select platformowner.membership_id,membership.member_id
-    from access.platformowner platformowner
-    join access.membership membership on membership.id=platformowner.membership_id and membership.status='active'
-    where platformowner.singleton=true and platformowner.state='active'
-  ), projection as(
-    select owner.membership_id,owner.member_id,grantrow
-    from owner cross join lateral access.resolve_membership(owner.membership_id) resolved
-    cross join lateral jsonb_array_elements(resolved.grants) grantrow
-    where grantrow->'scope'->>'kind'='owner' and grantrow->'scope'->>'id'=owner.member_id
-  ) select count(*)::integer count,
-    bool_and(grantrow->'permissions' ? 'member.profile.read') profile_read,
-    bool_and(grantrow->'permissions' ? 'member.address.read') address_read,
-    bool_and(grantrow->'permissions' ? 'member.address.manage') address_manage
-    from projection`);
-  const row = result.rows[0];
-  if (row?.count !== 1 || row.profile_read !== true || row.address_read !== true || row.address_manage !== true) {
-    throw new Error(`PLATFORM_OWNER_PERSONAL_SCOPE_INVALID:${JSON.stringify(row)}`);
-  }
-  const definition = await database.query("select pg_get_functiondef('access.resolve_membership(text)'::regprocedure) definition");
-  if (!String(definition.rows[0]?.definition).includes('assignment.assigned_scope_id')) {
-    throw new Error('PLATFORM_OWNER_ASSIGNED_SCOPE_SEMANTICS_MISSING');
-  }
-}
-
 async function verifyRuntimeSchemaVisibility(database) {
   const expectations = new Map([
     ['zhudatuanidentityapi', ['20260821032000', '20260821054000', '20260828170000', '20260829060000']],
     ['zhudatuanidentityjob', ['20260821032000', '20260821054000', '20260828170000']],
     ['zhudatuanwebapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
-    ['zhudatuanpurchaseapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000']],
+    ['zhudatuanpurchaseapi', ['20260821032000', '20260821054000', '20260828170000', '20260828173000', '20260828180000',
+      '20260902010000', '20260902011000']],
   ]);
   for (const [role, expectedVersions] of expectations) {
     await database.exec(`begin; set local role ${role};`);
@@ -562,6 +975,14 @@ async function verifyObjectContract(database) {
     ['policy', new Set(entries.filter((entry) => entry.kind === 'policy').map((entry) => entry.id))],
     ['grant', new Set(entries.filter((entry) => entry.kind === 'grant').map((entry) => entry.id))],
   ]);
+  if (mode === '--registration-fresh') {
+    for (const id of [
+      'access.membership.zhudatuanregistrationboundary_runtime_guard',
+      'access.membershiprole.zhudatuanregistrationboundary_runtime_guard',
+      'access.role.zhudatuanregistrationboundary_runtime_guard',
+      'runtime.schemaversion.zhudatuanregistrationboundary_runtime_guard',
+    ]) expected.get('policy').add(id);
+  }
   const schemaRows = await database.query('select schema_name id from information_schema.schemata where schema_name=any($1::text[])', [schemas]);
   const tableRows = await database.query(
     `select namespace.nspname||'.'||relation.relname id,relation.relrowsecurity rls

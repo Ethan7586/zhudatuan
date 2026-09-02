@@ -196,6 +196,29 @@ api.zhudatuan.com {
 		}
 	}
 
+	# Mall creation is a single selected Console command on its own runtime.
+	# Exact method and path matching prevents any future Provisioning operation
+	# from becoming reachable merely because it shares the module name.
+	@mallProvisioningPreflight {
+		method OPTIONS
+		path /api/v1/provisioning/malls
+	}
+	handle @mallProvisioningPreflight {
+		reverse_proxy 127.0.0.1:4325 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@mallProvisioningApi {
+		method POST
+		path /api/v1/provisioning/malls
+	}
+	handle @mallProvisioningApi {
+		reverse_proxy 127.0.0.1:4325 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	# Purchase commands have an independent runtime and database role. Match both
 	# method and exact path before the read-oriented WebBusiness surface because
 	# GET /api/v1/orders remains owned by WebBusiness on 4322.

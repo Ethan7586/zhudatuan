@@ -87,7 +87,17 @@ describe('ScopeShell route handles', () => {
     const presentation = handleForPath('applications').presentation;
     for (const kind of SCOPE_KINDS) {
       const resolved = resolveConsoleRoutePresentation(presentation, kind);
-      if (kind === 'platform' || kind === 'distributor' || kind === 'tenant') {
+      if (kind === 'platform') {
+        expect(resolved).toEqual({
+          title: '商城管理',
+          summary: '创建、查找和管理独立商城，并跟踪开店与发布进度。',
+        });
+      } else if (kind === 'enterprise') {
+        expect(resolved).toEqual({
+          title: '商城管理',
+          summary: '创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。',
+        });
+      } else if (kind === 'distributor' || kind === 'tenant') {
         expect(resolved).toEqual({
           title: '应用治理',
           summary: '跨商城查看应用、版本、发布状态、域名绑定与治理异常。',

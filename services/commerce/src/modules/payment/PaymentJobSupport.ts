@@ -8,7 +8,7 @@ export type ProviderObservation = Awaited<ReturnType<PaymentGateway['query']>>;
 export interface IntentTarget {
   readonly intent: string;
   readonly order_id: string;
-  readonly order_number: string;
+  readonly provider_reference: string;
   readonly scope_id: string;
   readonly mall_id: string;
   readonly member_id: string;
@@ -51,11 +51,11 @@ export async function recordProviderObservation(pool: DatabasePool, selected: In
     state: observed.state, transaction: observed.transaction ?? null, amountMinor: observed.amountMinor, currency: selected.currency,
     receipt: observed.evidence });
   const event = `${source}:${paymentDigest(`${selected.intent}:${identity}`)}`;
-  await pool.query(`insert into payment.observation(id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at,
+  await pool.query(`insert into payment.observation(id,mall_id,attempt_id,provider_event_id,state,amount_minor,currency,payload_hash,observed_at,
     provider_occurred_at,provider_effect,provider_effect_hash)
-    values($1,$2,$3,$4,$5,$6,$7,clock_timestamp(),$8::timestamptz,$9::jsonb,
-      case when $8::timestamptz is null then null else encode(public.digest($9::jsonb::text,'sha256'),'hex') end)
-    on conflict(provider_event_id) do nothing`,
-  [`observation:${paymentDigest(event)}`, selected.attempt, event, observed.state, observed.amountMinor, selected.currency,
-    paymentDigest(evidence), occurredAt, occurredAt === null ? null : evidence]);
+    values($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp(),$9::timestamptz,$10::jsonb,
+      case when $9::timestamptz is null then null else encode(public.digest($10::jsonb::text,'sha256'),'hex') end)
+    on conflict(mall_id,provider_event_id) do nothing`,
+  [`observation:${paymentDigest(event)}`, selected.mall_id, selected.attempt, event, observed.state, observed.amountMinor,
+    selected.currency, paymentDigest(evidence), occurredAt, occurredAt === null ? null : evidence]);
 }

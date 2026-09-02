@@ -27,7 +27,7 @@ describe('Sidebar commerce navigation', () => {
   });
 
   it.each([
-    ['platform', '应用治理'],
+    ['platform', '商城管理'],
     ['distributor', '应用治理'],
     ['tenant', '应用治理'],
     ['enterprise', '商城管理'],

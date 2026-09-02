@@ -607,6 +607,17 @@ operations:
     requirements:
       - MVP03
       - OMS-004
+  - id: provisioning.malls.create
+    owner: provisioning
+    method: POST
+    path: /api/v1/provisioning/malls
+    audience: operator
+    permission: organization.layer.manage
+    idempotent: false
+    schema: structural
+    requirements:
+      - MVP06
+      - MVP15
   - id: access.center.read
     owner: access
     method: GET

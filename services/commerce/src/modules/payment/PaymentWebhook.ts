@@ -17,19 +17,22 @@ export class PaymentWebhook {
     const hash = createHash('sha256').update(request.input.rawBody).digest('hex');
     const trace = request.input.headers['request-id'] ?? `wechat:${observed.id}`;
     await paymentTransaction(this.pool, request, async (database) => {
-      const resolved = await database.query<{ scope: string | null }>('select payment.webhook_scope($1,$2) scope',
-        [observed.kind, observed.providerReference]);
+      const applicationHash = observed.kind === 'payment' ? observed.application.applicationHash : null;
+      const resolved = await database.query<{ scope: string | null }>('select payment.webhook_scope($1,$2,$3) scope',
+        [observed.kind, observed.providerReference, applicationHash]);
       let scope = resolved.rows[0]?.scope;
       if (!scope) throw new Error('PAYMENT_WEBHOOK_TARGET_NOT_FOUND');
       await applyApiDatabaseContext(database, { tenant: '', membership: '', scope, actor: 'provider:wechat', trace });
       let payload: Record<string, string>;
       if (observed.kind === 'payment') {
-        const target = await database.query<PaymentTarget>(`select intent.id,tender.amount_minor::float8 amount_minor,intent.currency,orders.scope_id,
+        const target = await database.query<PaymentTarget>(`select intent.id,tender.amount_minor::float8 amount_minor,intent.currency,
+          intent.mall_id scope_id,
           attempt.payer_hash,attempt.scene,attempt.application_hash from payment.intent intent
-          join payment.intenttender tender on tender.intent_id=intent.id and tender.kind='wechat'
-          join lateral(select payer_hash,scene,application_hash from payment.attempt where intent_id=intent.id and provider='wechat'
+          join payment.intenttender tender on tender.mall_id=intent.mall_id and tender.intent_id=intent.id and tender.kind='wechat'
+          join lateral(select payer_hash,scene,application_hash from payment.attempt where mall_id=intent.mall_id
+            and intent_id=intent.id and provider='wechat'
             order by requested_at desc,id desc limit 1) attempt on true
-          join ordering.orderrecord orders on orders.id=intent.order_id where intent.provider_reference=$1 for update of intent`, [observed.providerReference]);
+          where intent.mall_id=$1 and intent.provider_reference=$2 for update of intent`, [scope, observed.providerReference]);
         const intent = target.rows[0];
         if (!intent || intent.amount_minor !== observed.amountMinor || intent.currency !== observed.currency || intent.payer_hash !== observed.payerHash
           || intent.scene !== observed.application.scene || intent.application_hash !== observed.application.applicationHash) {
@@ -39,11 +42,14 @@ export class PaymentWebhook {
         payload = { intent: intent.id, providerEvent: `wechatpayment:${observed.id}` };
       } else {
         const target = await database.query<RefundTarget>(`select refund.id,
-          coalesce((select sum(leg.amount_minor) from payment.refundtender leg where leg.refund_id=refund.id and leg.kind='wechat'),0)::float8 amount_minor,
-          coalesce((select plan.amount_minor from payment.intenttender plan where plan.intent_id=intent.id and plan.kind='wechat'),0)::float8 total_minor,
-          orders.scope_id from payment.refund refund join payment.payment payment on payment.id=refund.payment_id
-          join payment.intent intent on intent.id=payment.intent_id join ordering.orderrecord orders on orders.id=intent.order_id
-          where refund.provider_reference=$1 for update of refund`, [observed.providerReference]);
+          coalesce((select sum(leg.amount_minor) from payment.refundtender leg where leg.mall_id=refund.mall_id
+            and leg.refund_id=refund.id and leg.kind='wechat'),0)::float8 amount_minor,
+          coalesce((select plan.amount_minor from payment.intenttender plan where plan.mall_id=intent.mall_id
+            and plan.intent_id=intent.id and plan.kind='wechat'),0)::float8 total_minor,
+          refund.mall_id scope_id from payment.refund refund
+          join payment.payment payment on payment.mall_id=refund.mall_id and payment.id=refund.payment_id
+          join payment.intent intent on intent.mall_id=payment.mall_id and intent.id=payment.intent_id
+          where refund.mall_id=$1 and refund.provider_reference=$2 for update of refund`, [scope, observed.providerReference]);
         const refund = target.rows[0];
         if (!refund || refund.amount_minor !== observed.amountMinor || refund.total_minor !== observed.totalMinor) {
           throw new Error('REFUND_WEBHOOK_INTEGRITY_MISMATCH');

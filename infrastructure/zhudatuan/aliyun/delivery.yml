@@ -12,8 +12,18 @@ runtime:
   webBusinessApiProfile: web-business-only
   purchaseApiPort: 4323
   purchaseApiProfile: purchase-only
+  mallProvisioningApiPort: 4325
+  mallProvisioningApiProfile: mall-provisioning-only
   identityNotificationProfile: identity-notification-only
 oneShots:
+  mallProvisioningRole:
+    artifact: infrastructure/zhudatuan/aliyun/postgres-provision-mall-role.sh
+    environment: infrastructure/zhudatuan/aliyun/mall-provisioning-role.env.example
+    invocation: cluster-authority-psql
+    databaseRole: cluster-owner
+    before:
+      - registrationMigration
+    createsRuntimeRole: zhudatuanprovisioningapi
   registrationBoundaryReconcile:
     artifact: infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql
     invocation: docker-compose-psql-stdin
@@ -114,6 +124,25 @@ routes:
       - payment.webhooks.wechat
       - payment.recoveries.read
       - payment.recoveries.resolve
+  mallProvisioningApi:
+    host: api.zhudatuan.com
+    workspace: services/commerce
+    artifact: services/commerce/dist/MallProvisioningApiMain.js
+    readinessArtifact: services/commerce/dist/MallProvisioningApiReadyMain.js
+    process: zhudatuan-mall-provisioning-api
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-mall-provisioning-api.service
+    environment: infrastructure/zhudatuan/aliyun/mall-provisioning-api.env.example
+    profile: mall-provisioning-only
+    databaseRole: zhudatuanprovisioningapi
+    port: 4325
+    allowedMethods:
+      - POST
+    allowedPaths:
+      - /api/v1/provisioning/malls
+    preflightMethods:
+      - OPTIONS
+    preflightPaths:
+      - /api/v1/provisioning/malls
   identityNotificationJobs:
     workspace: services/commerce
     artifact: services/commerce/dist

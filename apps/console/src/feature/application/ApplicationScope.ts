@@ -15,7 +15,7 @@ export interface CommerceScopePresentation {
 
 const governance: CommerceScopePresentation = Object.freeze({
   mode: 'governance',
-  navigationLabel: '築店 · 应用治理',
+  navigationLabel: '应用治理',
   title: '应用治理',
   eyebrow: 'COMMERCE GOVERNANCE',
   description: '跨商城查看应用、版本、发布状态、域名绑定与治理异常。',
@@ -26,18 +26,18 @@ const governance: CommerceScopePresentation = Object.freeze({
 
 const management: CommerceScopePresentation = Object.freeze({
   mode: 'management',
-  navigationLabel: '築店 · 商城管理',
+  navigationLabel: '商城管理',
   title: '商城管理',
-  eyebrow: 'MALL OPERATIONS',
-  description: '创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。',
+  eyebrow: 'zhudatuan 主打团',
+  description: '创建、查找和管理独立商城，并跟踪开店草稿与发布状态。',
   primaryAction: '创建商城',
-  ownership: '集团建店视角',
-  ownershipDetail: '集团负责建立商城及其初始商品池；完成后切换到新商城继续装修。',
+  ownership: '商城控制面',
+  ownershipDetail: '平台原子建立商城身份、初始商品池和开店草稿；商城建立后可独立装修与经营。',
 });
 
 const design: CommerceScopePresentation = Object.freeze({
   mode: 'design',
-  navigationLabel: '築店 · 店铺装修',
+  navigationLabel: '店铺装修',
   title: '店铺装修',
   eyebrow: 'STOREFRONT DESIGN',
   description: '管理页面、模板、导航、预览和发布，让当前商城形成完整消费入口。',
@@ -47,7 +47,7 @@ const design: CommerceScopePresentation = Object.freeze({
 });
 
 export function applicationScopePresentation(kind: ConsoleScope['kind']): CommerceScopePresentation {
-  if (kind === 'platform' || kind === 'distributor' || kind === 'tenant') return governance;
+  if (kind === 'distributor' || kind === 'tenant') return governance;
   if (kind === 'mall') return design;
   return management;
 }

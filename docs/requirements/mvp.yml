@@ -427,6 +427,7 @@ requirements:
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
+      - provisioning.malls.create
       - member.profile.read
       - member.addresses.read
       - member.addresses.manage
@@ -486,6 +487,7 @@ requirements:
       - order
       - payment
       - pricing
+      - provisioning
       - runtime
       - verification
     tables:
@@ -508,6 +510,7 @@ requirements:
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
+      - services/commerce/src/modules/provisioning
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:
@@ -1710,6 +1713,7 @@ requirements:
       - identity.mobile.manage
       - identity.stepup.start
       - identity.stepup.complete
+      - provisioning.malls.create
       - member.profile.read
       - member.addresses.read
       - member.addresses.manage
@@ -1769,6 +1773,7 @@ requirements:
       - order
       - payment
       - pricing
+      - provisioning
       - runtime
       - verification
     tables:
@@ -1791,6 +1796,7 @@ requirements:
       - services/commerce/src/modules/order
       - services/commerce/src/modules/payment
       - services/commerce/src/modules/pricing
+      - services/commerce/src/modules/provisioning
       - services/commerce/src/modules/runtime
       - services/commerce/src/modules/verification
     unitTests:

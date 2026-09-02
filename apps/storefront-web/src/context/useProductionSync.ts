@@ -29,18 +29,16 @@ type CatalogPageLoader = typeof productionApi.listProducts;
 
 async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProduct[]> {
   const items = new Map<string, ApiProduct>();
-  let cursor: number | null = 0;
-  let pageCount = 0;
+  let cursor: string | undefined;
 
-  while (cursor !== null && pageCount < 60) {
+  for (let pageCount = 0; pageCount < 60; pageCount += 1) {
     const page = await loadPage({
-      cursor,
+      ...(cursor ? { cursor } : {}),
       limit: 100,
     });
     page.items.forEach((item) => items.set(item.id, item));
-    if (page.pagination.nextCursor === cursor) break;
+    if (!page.pagination.nextCursor || page.pagination.nextCursor === cursor) break;
     cursor = page.pagination.nextCursor;
-    pageCount += 1;
   }
   return [...items.values()];
 }

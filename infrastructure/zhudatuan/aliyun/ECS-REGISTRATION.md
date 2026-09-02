@@ -20,7 +20,7 @@
 2. 建立獨立資料目錄、專用 `zhudatuan` 系統帳號及 0600 私密配置。
 3. 由 `zhudatuan-registration-database.service` 啟動 `registration-compose.yml` 的單一 PostgreSQL，只接受 `127.0.0.1:55432`。
 4. 啟動 `zhudatuan-internal-runtime.service`；它只執行已 bundle 的 `InternalRuntimeMain.js`，Secret Store 與 KMS 兩個 readiness 全部成功後才成為 active。
-5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。Migration inventory、registration-only transform ledger、`20260828170000` 註冊基線、`20260828173000` WebBusiness access、`20260828180000` Purchase schema、`20260828183000` runtime readiness repair、`20260829040000` registration bootstrap repair 與 `20260829054500` identity login ACL repair 任一失敗即停止。Purchase E2E receipt 仍固定驗證 `20260828180000`，不得與 migration runner 的最終 head 混用。
+5. 執行 `zhudatuan-migration.service`；它只執行已 bundle 的 `services/commerce/dist/RegistrationMigrationMain.js`，不會讀 `.env.local`、`tsx` 或寫入原碼。完整 migration inventory、歷史雜湊、受管 repair 順序與最終 head `20260902012000` 任一不一致即停止；Purchase E2E receipt 仍鎖定其支付邊界版本 `20260902011000` 與規範化 checksum。
 6. Migration 完成後，以資料庫 cluster owner 執行一次版本化的 `postgres-reconcile-registration-boundary.sql`，只修復既有資料卷中 `zhudatuanbootstrap → SECURITY DEFINER(shopmigration) → registration_bootstrap_boundary` 的嵌套 EXECUTE 鏈；不得在伺服器互動式手寫 GRANT。正式命令如下：
 
 ```sh
@@ -47,7 +47,7 @@ sudo docker compose --env-file /opt/zhudatuan/shared/postgres.env \
 - PM2 只管理靜態 Storefront；API 與 Jobs 只能由上述 systemd units 管理，禁止雙 supervisor。
 - `/opt/zhudatuan/shared/api.env` 必須逐鍵取自 `identity-registration-api.env.example`；任何 Redis、Payment、Provider、Finance、WeChat、Object Store 或 Extension 變數都會令 API fail closed。
 - `/opt/zhudatuan/shared/web-business-api.env` 必須逐鍵取自 `web-business-api.env.example`；不得放入 profile、host、port、Redis、Payment、Provider、Finance、WeChat、Object Store 或 Extension 變數。
-- `/opt/zhudatuan/shared/purchase-api.env` 必須逐鍵取自 `purchase-api.env.example`；只可包含獨立 DB、quote key 與 Secret Store 依賴，不得放入 profile、host、port、Redis、Session、Identity、KMS、WeChat、Provider、Finance、Object Store 或 Extension 變數。
+- `/opt/zhudatuan/shared/purchase-api.env` 必須逐鍵取自 `purchase-api.env.example`；只可包含獨立 DB、quote key、Secret Store、KMS、兩個精確 WeChat 配置 ref 與內部 CA，不得放入 profile、host、port、Redis、Session、Identity、Finance、Object Store 或 Extension 變數。
 - `/opt/zhudatuan/shared/identity-notification-jobs.env` 必須逐鍵取自 `identity-notification-jobs.env.example`；任何 full Jobs 依賴都會令 worker fail closed。
 - Units 對 `/opt/smart-wing`、`/opt/smart-wiston`、`/opt/shop-test` 使用 `InaccessiblePaths`，不得讀取舊服務工作樹。
 
@@ -58,7 +58,7 @@ sudo docker compose --env-file /opt/zhudatuan/shared/postgres.env \
 - `/opt/zhudatuan/shared/migration.env`：僅 Migration allowlist；目錄固定為 Release 內 migrations。
 - `/opt/zhudatuan/shared/api.env`：僅 registration-only API allowlist。
 - `/opt/zhudatuan/shared/web-business-api.env`：僅 web-business-only API allowlist，使用獨立 `zhudatuanwebapi` 資料庫角色與獨立 workload token。
-- `/opt/zhudatuan/shared/purchase-api.env`：僅 purchase-only API allowlist，使用獨立 purchase 資料庫角色與 Secret Store workload token。
+- `/opt/zhudatuan/shared/purchase-api.env`：僅 purchase-only API allowlist，使用獨立 purchase 資料庫角色、Secret Store／KMS workload token與精確 WeChat application／payment 配置 ref。
 - `/opt/zhudatuan/shared/identity-notification-jobs.env`：僅 identity notification worker allowlist。
 - 一次性邀請才使用 `registration-bootstrap.env.example`；必須由 `zhudatuanbootstrap` 連至固定 loopback／port／DB，並通過該 DB 初始化的不可寫 sentinel。生產只執行已編譯的 `services/commerce/dist/BootstrapRegistration.js`，禁止在 Release 上用 `tsx` 即時編譯。
 - 一次性原生商品驗收才使用 `sandbox-catalog-bootstrap.env.example`；必須由 `zhudatuansandboxbootstrap` 連至固定 loopback／port／DB，且只可在 `APP_ENV=test` 執行。完成後刪除該私密 env。
@@ -83,7 +83,7 @@ node --env-file=/opt/zhudatuan/shared/sandbox-member-welfare-bootstrap.env \
 
 Quote → order → internal benefit capture 可使用正式 canonical 福利發放流程，或僅在此獨立 test DB 使用上述 Owner-operated welfare one-shot。不得把餘額放進 migration、catalog、qualification 或註冊流程；未實際完成三段 E2E 前，`publicCutoverRequiresPurchaseE2e` 必須維持阻斷，且 `release.publicCutover` 必須為 `blocked`。
 
-未來 E2E receipt 必須符合 `purchase-e2e-receipt.schema.json`，綁定 Release commit、`20260828180000` 最終 checksum、production target、資料庫名稱／server fingerprint、`zhudatuanpurchaseapi` 角色、quote／order create／payment intent 與 capture／benefit ledger 與 lot movement／inventory stock 與 reservation／order read／fulfillment／outbox／job／idempotent replay／rollback／negative route／audit 證據及完成時間。本輪沒有真 PostgreSQL E2E，因此不得建立 receipt；`delivery.yml` 的 receipt 必須保持 `null`，公開 Purchase POST／OPTIONS 由 Caddy 精確回覆 503，僅可從 loopback 直連 4323 驗收。
+未來 E2E receipt 必須符合 `purchase-e2e-receipt.schema.json` v2，綁定 Release commit、`20260902011000` 規範化 checksum、production target、資料庫名稱／server fingerprint、`zhudatuanpurchaseapi` 角色，以及 quote、order、WeChat prepay、attempt／prepay 持久化、主動查單、capture、庫存、履約、outbox、冪等重放、重複渠道結果、故障恢復、商城隔離、回滾、負向路由與 audit 證據。本地已有真 PostgreSQL 17 角色鏈路驗收，但尚未完成生產微信渠道 E2E，因此不得建立 receipt；`delivery.yml` 的 receipt 必須保持 `null`，公開 Purchase POST／OPTIONS 由 Caddy 精確回覆 503，僅可從 loopback 直連 4323 驗收。
 
 ## Secret Store／KMS 工作負載認證
 

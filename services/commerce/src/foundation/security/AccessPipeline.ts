@@ -9,6 +9,7 @@ import { StepupPolicy } from './StepupPolicy';
 import type { DecisionSink } from './DecisionSink';
 import { assertRiskAllowed, type RiskGate } from './RiskGate';
 import type { ActionProofVerifier } from './ActionProof';
+import { ResolveMallContext } from '../../modules/mall/MallContext';
 
 export interface MembershipResolver {
   resolve(actor: string): Promise<MembershipAccess | MembershipSnapshot>;
@@ -28,6 +29,8 @@ export interface CapabilityResolver {
 }
 
 export class AccessPipeline {
+  private readonly mallContexts = new ResolveMallContext();
+
   constructor(
     private readonly sessions: SessionResolver,
     private readonly memberships: MembershipResolver,
@@ -60,6 +63,7 @@ export class AccessPipeline {
       scope = await this.scopes.resolve(actor, operation, resource, scopeHint);
       const scopeDecision = checkScope(membership, permission, scope, now);
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
+      const mallContext = this.mallContexts.resolve(scope, membership, scopeHint);
       const capabilities = await this.capabilities.resolve(membership.id);
       if (!capabilities.includes(operation)) throw new DomainError('PERMISSION_DENIED', { operation });
       const assuranceFailure = checkAssurance(permission, { now, ...(actor.assurance.verified === undefined ? {} : { stepupAt: actor.assurance.verified }) });
@@ -75,7 +79,16 @@ export class AccessPipeline {
         }
       }
       await this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, ...(resource === undefined ? {} : { resource }) });
-      return { actor, membership, scope, accessVersion, capabilities, assurance: actor.assurance, trace };
+      return {
+        actor,
+        membership,
+        scope,
+        ...(mallContext === null ? {} : { mallContext, mall_id: mallContext.mall_id }),
+        accessVersion,
+        capabilities,
+        assurance: actor.assurance,
+        trace,
+      };
     } catch (cause) {
       const reason = cause instanceof DomainError ? cause.code : cause instanceof Error ? cause.message : 'AUTHORIZATION_FAILED';
       await this.decisions.append({

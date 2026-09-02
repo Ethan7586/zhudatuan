@@ -4,6 +4,7 @@ import type { OperationExecutor } from '../OperationDescriptor';
 import { createRuntimeOperations, type RuntimeOperations } from './runtime';
 import { createIdentityOperations, type IdentityOperations } from './identity';
 import { createOrganizationOperations, type OrganizationOperations } from './organization';
+import { createProvisioningOperations, type ProvisioningOperations } from './provisioning';
 import { createAccessOperations, type AccessOperations } from './access';
 import { createCapabilityOperations, type CapabilityOperations } from './capability';
 import { createPartnerOperations, type PartnerOperations } from './partner';
@@ -38,6 +39,7 @@ import { createApprovalOperations, type ApprovalOperations } from './approval';
 export type { RuntimeOperations } from './runtime';
 export type { IdentityOperations } from './identity';
 export type { OrganizationOperations } from './organization';
+export type { ProvisioningOperations } from './provisioning';
 export type { AccessOperations } from './access';
 export type { CapabilityOperations } from './capability';
 export type { PartnerOperations } from './partner';
@@ -98,6 +100,7 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.wechat.session",
   "identity.wechat.bind",
   "organization.layers.read",
+  "provisioning.malls.create",
   "access.center.read",
   "access.roles.manage",
   "access.scopes.manage",
@@ -401,6 +404,7 @@ export interface CommerceClient {
   readonly runtime: RuntimeOperations;
   readonly identity: IdentityOperations;
   readonly organization: OrganizationOperations;
+  readonly provisioning: ProvisioningOperations;
   readonly access: AccessOperations;
   readonly capability: CapabilityOperations;
   readonly partner: PartnerOperations;
@@ -438,6 +442,7 @@ export function createCommerceClient(client: OperationExecutor): CommerceClient 
     runtime: createRuntimeOperations(client),
     identity: createIdentityOperations(client),
     organization: createOrganizationOperations(client),
+    provisioning: createProvisioningOperations(client),
     access: createAccessOperations(client),
     capability: createCapabilityOperations(client),
     partner: createPartnerOperations(client),

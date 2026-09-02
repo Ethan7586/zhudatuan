@@ -20,8 +20,8 @@ describe('PaymentJobProcessor provider accounting time', () => {
     const calls: Array<Readonly<{ sql: string; values: readonly unknown[] }>> = [];
     const client = transactionalClient((sql, values) => {
       calls.push({ sql, values });
-      if (sql.includes('from payment.intent intent join ordering.orderrecord') && sql.includes('for update of intent')) {
-        return rows([{ intent_state: 'captured', payment_state: 'paid', lifecycle_state: 'active', payment: 'payment:intent:one' }]);
+      if (sql.includes('from payment.intent intent join payment.attempt') && sql.includes('for update of intent,attempt')) {
+        return rows([{ intent_state: 'captured', payment: 'payment:intent:one' }]);
       }
       if (sql.includes('update payment.attempt set state=')) return rows([{ id: 'attempt:one' }]);
       if (sql.includes('update payment.capture set completed_at=')) return rows([{ id: 'capture:intent:one' }]);
@@ -52,8 +52,8 @@ describe('PaymentJobProcessor provider accounting time', () => {
 
   it('rejects a conflicting replay instead of replacing an already sealed payment effect', async () => {
     const client = transactionalClient((sql) => {
-      if (sql.includes('from payment.intent intent join ordering.orderrecord') && sql.includes('for update of intent')) {
-        return rows([{ intent_state: 'captured', payment_state: 'paid', lifecycle_state: 'active', payment: 'payment:intent:one' }]);
+      if (sql.includes('from payment.intent intent join payment.attempt') && sql.includes('for update of intent,attempt')) {
+        return rows([{ intent_state: 'captured', payment: 'payment:intent:one' }]);
       }
       if (sql.includes('update payment.attempt set state=')) return rows([]);
       return rows([]);
@@ -84,8 +84,8 @@ describe('PaymentJobProcessor provider accounting time', () => {
     await new PaymentJobProcessor(pool, provider, 'paymentrefund').process(job('paymentrefund', { refund: 'refund:one' }), new AbortController().signal);
 
     const persisted = calls.find((call) => call.sql.includes("update payment.providerattempt set outcome='succeeded'"));
-    expect(persisted?.values[2]).toBe(monthEnd);
-    expect(String(persisted?.values[3])).toContain('"kind":"payment.refund"');
+    expect(persisted?.values[3]).toBe(monthEnd);
+    expect(String(persisted?.values[4])).toContain('"kind":"payment.refund"');
   });
 
   it.each([undefined, 'not-a-provider-time'])('does not seal or complete a successful refund without valid provider time (%s)', async (occurredAt) => {
@@ -113,7 +113,7 @@ describe('PaymentJobProcessor provider accounting time', () => {
 
 function paymentPool(client: ReturnType<typeof transactionalClient>): DatabasePool {
   const query = vi.fn(async (sql: string, values: readonly unknown[] = []) => {
-    if (sql.includes('from payment.intent intent join ordering.orderrecord') && !sql.includes('for update of intent')) return intentTarget();
+    if (sql.includes('from payment.intent intent join payment.intenttender')) return intentTarget();
     if (sql.includes('insert into payment.observation')) return rows([]);
     throw new Error(`UNEXPECTED_QUERY:${sql}:${JSON.stringify(values)}`);
   });
@@ -187,7 +187,7 @@ function intentTarget(): QueryResult<Record<string, unknown>> {
     {
       intent: 'intent:one',
       order_id: 'order:one',
-      order_number: 'SW202608280001',
+      provider_reference: 'SWPAY202608280001',
       scope_id: 'mall:one',
       mall_id: 'mall:one',
       member_id: 'member:one',

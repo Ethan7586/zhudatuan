@@ -133,5 +133,5 @@ function applicationColumns(mode: CommerceWorkspaceMode, actions: ApplicationAct
 function tableCaption(mode: CommerceWorkspaceMode): string {
   if (mode === 'governance') return '应用治理列表';
   if (mode === 'design') return '店铺装修应用';
-  return '集团商城列表';
+  return '商城列表';
 }

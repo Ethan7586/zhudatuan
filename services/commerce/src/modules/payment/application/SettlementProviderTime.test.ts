@@ -101,11 +101,11 @@ describe('RefundSettlement provider accounting time', () => {
       monthEnd
     );
 
-    await new RefundSettlement().complete(fixture.database, 'refund:one', 'wechat-refund:one');
+    await new RefundSettlement().complete(fixture.database, 'mall:one', 'refund:one', 'wechat-refund:one');
 
     const authority = fixture.calls.find((call) => call.sql.includes('from payment.providerattempt attempt'));
     const financial = fixture.calls.find((call) => call.sql.includes('insert into runtime.outbox'));
-    expect(authority?.values).toEqual(['refund:one', 'wechat-refund:one', 400, 'CNY']);
+    expect(authority?.values).toEqual(['mall:one', 'refund:one', 'wechat-refund:one', 400, 'CNY']);
     expect(financial?.values[10]).toBe(monthEnd);
     expect(dependencies.benefitRefund).toHaveBeenCalledOnce();
   });
@@ -113,7 +113,7 @@ describe('RefundSettlement provider accounting time', () => {
   it('keeps an internal-only refund on the transactional clock', async () => {
     const fixture = refundDatabase([{ sequence: 1, kind: 'benefit', reference_id: 'benefit:one', amount_minor: 1000 }], null);
 
-    await new RefundSettlement().complete(fixture.database, 'refund:one', null);
+    await new RefundSettlement().complete(fixture.database, 'mall:one', 'refund:one', null);
 
     expect(fixture.calls.some((call) => call.sql.includes('from payment.providerattempt attempt'))).toBe(false);
     const financial = fixture.calls.find((call) => call.sql.includes('insert into runtime.outbox'));
@@ -126,7 +126,7 @@ describe('RefundSettlement provider accounting time', () => {
   ])('fails closed before mutation for an external refund with %s', async (_case, providerReference, occurredAt) => {
     const fixture = refundDatabase([{ sequence: 1, kind: 'wechat', reference_id: null, amount_minor: 1000 }], occurredAt, 'wechat-refund:one');
 
-    await expect(new RefundSettlement().complete(fixture.database, 'refund:one', providerReference)).rejects.toThrow('PAYMENT_REFUND_PROVIDER_EFFECT_REQUIRED');
+    await expect(new RefundSettlement().complete(fixture.database, 'mall:one', 'refund:one', providerReference)).rejects.toThrow('PAYMENT_REFUND_PROVIDER_EFFECT_REQUIRED');
     expect(fixture.calls.some((call) => call.sql.includes('update payment.payment'))).toBe(false);
   });
 });
@@ -178,7 +178,7 @@ function refundDatabase(legs: readonly Record<string, unknown>[], occurredAt: st
     }
     if (sql.includes('from payment.refundtender')) return rows(legs);
     if (sql.includes('from payment.providerattempt attempt')) {
-      return values[1] === authoritativeReference && occurredAt !== null ? rows([{ occurred_at: occurredAt }]) : rows([]);
+      return values[2] === authoritativeReference && occurredAt !== null ? rows([{ occurred_at: occurredAt }]) : rows([]);
     }
     if (sql.includes('update payment.payment')) return rows([{ refunded_minor: 1000, captured_minor: 1000 }]);
     return rows([]);

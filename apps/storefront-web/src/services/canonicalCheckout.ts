@@ -1,6 +1,7 @@
 import { canonicalCall, canonicalClient, sessionContext } from './canonicalApiClient';
 import { nonNegativeInteger, record, records, text, version } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
+import { requestWechatJsapiPayment } from './wechatJsapiPayment';
 
 export interface CanonicalCheckoutInput {
   readonly addressId: string;
@@ -10,10 +11,10 @@ export interface CanonicalCheckoutInput {
 
 export interface CanonicalCheckoutResult {
   readonly orderId: string;
-  readonly paymentState: 'captured';
+  readonly paymentState: 'captured' | 'authorizing' | 'reconciling';
 }
 
-export async function checkoutWithCanonicalBenefits(input: CanonicalCheckoutInput): Promise<CanonicalCheckoutResult> {
+export async function checkoutWithCanonicalPayment(input: CanonicalCheckoutInput): Promise<CanonicalCheckoutResult> {
   const client = canonicalClient();
   const [cartValue, accountValue] = await Promise.all([
     canonicalCall(() => client.cart.currentRead({}, sessionContext())),
@@ -22,8 +23,6 @@ export async function checkoutWithCanonicalBenefits(input: CanonicalCheckoutInpu
   const cart = record(cartValue, 'cart.current');
   assertCartMatches(records(cart.items ?? [], 'cart.current.items'), input.items);
   const benefits = benefitChoices(accountValue);
-  if (benefits.length === 0) throw new ProductionApiError('没有可用于结算的人民币福利账户', 409, 'BENEFIT_BALANCE_UNAVAILABLE');
-
   const quoteValue = await canonicalCall(() => client.checkout.quoteCreate({
     body: { address: input.addressId, invoice: null, delivery: {}, vouchers: [], benefits },
   }, sessionContext({ write: true, idempotencyKey: `${input.idempotencyKey}:quote`, expectedVersion: version(cart.version ?? 0, 'cart.current.version') })));
@@ -33,9 +32,7 @@ export async function checkoutWithCanonicalBenefits(input: CanonicalCheckoutInpu
   if (rejections.length > 0) {
     throw new ProductionApiError('购物车中存在后端拒绝结算的商品，请刷新后重试', 409, 'CHECKOUT_REJECTED');
   }
-  if (nonNegativeInteger(quote.personalMinor, 'checkout.quote.personalMinor') !== 0) {
-    throw new ProductionApiError('福利账户不足；外部支付尚未接入，订单未创建', 409, 'EXTERNAL_PAYMENT_REQUIRED');
-  }
+  const personalMinor = nonNegativeInteger(quote.personalMinor, 'checkout.quote.personalMinor');
 
   const orderValue = await canonicalCall(() => client.order.ordersCreate({ body: { quote: text(quote.id, 'checkout.quote.id') } }, sessionContext({
     write: true,
@@ -43,8 +40,8 @@ export async function checkoutWithCanonicalBenefits(input: CanonicalCheckoutInpu
   })));
   const order = record(orderValue, 'order.create');
   const paymentPlan = record(order.payment, 'order.create.payment');
-  if (nonNegativeInteger(paymentPlan.personalMinor, 'order.create.payment.personalMinor') !== 0) {
-    throw new ProductionApiError('订单需要外部支付，当前流程不会伪造支付成功', 409, 'EXTERNAL_PAYMENT_REQUIRED');
+  if (nonNegativeInteger(paymentPlan.personalMinor, 'order.create.payment.personalMinor') !== personalMinor) {
+    throw new ProductionApiError('订单支付计划与报价不一致，请刷新后重试', 409, 'PAYMENT_PLAN_CHANGED');
   }
   const orderId = text(order.id, 'order.create.id');
   const paymentValue = await canonicalCall(() => client.payment.intentsCreate({ body: { order: orderId, scene: 'jsapi' } }, sessionContext({
@@ -52,11 +49,16 @@ export async function checkoutWithCanonicalBenefits(input: CanonicalCheckoutInpu
     idempotencyKey: `${input.idempotencyKey}:payment`,
   })));
   const payment = record(paymentValue, 'payment.intent');
-  if (payment.state !== 'captured') {
-    const state = typeof payment.state === 'string' ? payment.state : 'unknown';
-    throw new ProductionApiError(`支付未完成，服务端状态为 ${state}`, 409, 'PAYMENT_NOT_CAPTURED');
+  if (payment.state === 'captured') return Object.freeze({ orderId, paymentState: 'captured' });
+  if (payment.parameters !== undefined) {
+    await requestWechatJsapiPayment(payment.parameters);
+    return Object.freeze({ orderId, paymentState: 'authorizing' });
   }
-  return Object.freeze({ orderId, paymentState: 'captured' });
+  if (payment.state === 'authorizing' || payment.state === 'reconciling') {
+    return Object.freeze({ orderId, paymentState: payment.state });
+  }
+  const state = typeof payment.state === 'string' ? payment.state : 'unknown';
+  throw new ProductionApiError(`支付未完成，服务端状态为 ${state}`, 409, 'PAYMENT_NOT_STARTED');
 }
 
 function assertCartMatches(serverItems: readonly Record<string, unknown>[], expectedItems: CanonicalCheckoutInput['items']): void {

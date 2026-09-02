@@ -131,6 +131,12 @@ objects:
     owner: access
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
     operationalOwner: access
+  - id: access.purchase_checkout_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902010000_restore_public_mall_role_contracts.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchaseCheckoutContext.ts
   - id: access.purchase_fulfillment_allowed
     kind: function
     owner: access
@@ -166,6 +172,24 @@ objects:
     owner: access
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
     operationalOwner: access
+  - id: access.purchase_order_quote
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902010000_restore_public_mall_role_contracts.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchaseOrderQuoteStore.ts
+  - id: access.purchase_payment_intent_context
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchasePaymentIntentContext.ts
+  - id: access.purchase_enqueue_payment_query
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+    callers:
+      - services/commerce/src/modules/purchase/PurchasePaymentRecoveryQueue.ts
   - id: access.purchase_quote_allowed
     kind: function
     owner: access
@@ -774,7 +798,7 @@ objects:
   - id: payment.webhook_scope
     kind: function
     owner: payment
-    source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
+    source: database/supabase/migrations/20260901220000_add_payment_mall_identity.sql
     callers:
       - services/commerce/src/modules/payment/PaymentWebhook.ts
   - id: pricing.purchase_quote_immutable
@@ -1390,13 +1414,13 @@ objects:
     objectType: function
     target: invoice.decide_request(text,text,text,jsonb,bigint)
     privilege: execute
-  - id: shopapp:function:payment.webhook_scope(text,text):execute
+  - id: shopapp:function:payment.webhook_scope(text,text,text):execute
     kind: grant
     owner: payment
-    source: database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql
+    source: database/supabase/migrations/20260901220000_add_payment_mall_identity.sql
     role: shopapp
     objectType: function
-    target: payment.webhook_scope(text,text)
+    target: payment.webhook_scope(text,text,text)
     privilege: execute
   - id: shopapp:function:referral.attach_withdrawal_claims(text,text,text[]):execute
     kind: grant
@@ -18897,6 +18921,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.attempt.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.attempt.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.attempt.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
   - id: payment.capture.appscope
     kind: policy
     owner: payment
@@ -19001,6 +19037,18 @@ objects:
     kind: policy
     owner: payment
     source: database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: payment.prepay.zhudatuanpurchaseapiinsert
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.prepay.zhudatuanpurchaseapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
+  - id: payment.prepay.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql
   - id: payment.providerattempt.appscope
     kind: policy
     owner: payment
@@ -22179,3 +22227,127 @@ objects:
     kind: policy
     owner: experience
     source: database/supabase/migrations/20260831150000_identity_experience_application_commands.sql
+  - id: access.decisionaudit.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: access.decisionaudit.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: access
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.accessrecord.zhudatuanprovisioningapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.archiveref.zhudatuanprovisioningapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.record.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.record.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: catalog.pool.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: catalog.poolbinding.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: catalog
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.application.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.application.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.application.zhudatuanprovisioningapiupdate
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.binding.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: experience.version.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: experience
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.organization.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.organization.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.sourcebinding.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.sourcebinding.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.unitclosure.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: organization.unitclosure.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: organization
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.case.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.decision.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.decision.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.listentry.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.policy.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.policyversion.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: risk.signal.zhudatuanprovisioningapi
+    kind: policy
+    owner: risk
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.idempotency.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.idempotency.zhudatuanprovisioningapiselect
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.idempotency.zhudatuanprovisioningapiupdate
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.outbox.zhudatuanprovisioningapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: runtime.schemaversion.zhudatuanprovisioningapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql

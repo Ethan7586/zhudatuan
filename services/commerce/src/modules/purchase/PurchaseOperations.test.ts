@@ -6,6 +6,7 @@ import type { AuditSink } from '../../foundation/application/AuditSink';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import type { OperationRequest } from '../../foundation/application/OperationHandler';
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
+import { KMS_CLIENT, type KmsClient } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
 import { DECISION_SINK, type DecisionSink } from '../../foundation/security/DecisionSink';
 import { RISK_GATE, type RiskGate } from '../../foundation/security/RiskGate';
@@ -95,6 +96,12 @@ describe('purchase-only payment operation', () => {
           stored = { request_hash: String(values[3]), state: 'started', response: null };
         }
         if (text.startsWith('select request_hash,state,response')) return result(stored ? [stored] : []);
+        if (text.includes('access.purchase_payment_intent_context')) return result([{
+          intent: 'intent:one', attempt: null, order_id: 'order:one', order_number: 'SW20260828000000000001',
+          scope_id: 'mall:one', mall_id: 'mall:one', member_id: 'member:one', total_minor: 100, amount_minor: 0,
+          payer_identity: null, payer_ciphertext: null, state: null, parameters: null, scene: null,
+          application_hash: null, expires_at: '2026-09-02T08:00:00Z',
+        }]);
         if (text.includes('select intent.id intent')) return result([{ ...intent(), unsupported_tenders: external ? 1 : 0 }]);
         if (text.includes("update runtime.idempotency set state='completed'")) {
           stored = { request_hash: stored!.request_hash, state: 'completed', response: JSON.parse(String(values[3])) };
@@ -133,7 +140,7 @@ describe('purchase-only order response', () => {
       status: 201,
       body: {
         id: 'order:one', order_number: 'SW20260828000000000001', payment_state: 'unpaid', fulfillment_state: 'unallocated',
-        aftersale_state: 'none', lifecycle_state: 'created', version: 0, address_snapshot: { recipient_ciphertext: 'secret' },
+        aftersale_state: 'none', lifecycle_state: 'created', version: '0', address_snapshot: { recipient_ciphertext: 'secret' },
         invoice_snapshot: { taxid_ciphertext: 'secret' }, evidence: { tenders: [{ account: 'benefit:one' }] },
         dependencies: { private: true }, tenders: [{ kind: 'benefit' }],
         payment: { intent: 'intent:one', personalMinor: 0, action: 'payment.intents.create', provider: 'private' },
@@ -164,6 +171,7 @@ function context(pool: DatabasePool, gateway: PaymentGateway, risk: RiskGate): M
   container.bind(DATABASE_POOL, pool);
   container.bind(AUDIT_SINK, audit);
   container.bind(PAYMENT_GATEWAY, gateway);
+  container.bind(KMS_CLIENT, { decrypt: async () => 'openid:one' } as unknown as KmsClient);
   container.bind(RISK_GATE, risk);
   container.bind(DECISION_SINK, fakeDecisions());
   return { container } as unknown as ModuleContext;
@@ -177,6 +185,7 @@ function request(level: number, target: 'console' | 'storefront' | 'store' | 'su
         accessVersion: 1, target, assurance: { level } },
       membership: { id: 'membership:one', active: true, accessVersion: 1, denies: [], grants: [] },
       scope: { id: 'member:one', kind: 'owner', tenant: 'mall:one', path: [] },
+      mall_id: 'mall:one', mallContext: { mall_id: 'mall:one' },
       accessVersion: 1, capabilities: ['payment.intents.create'], assurance: { level }, trace: 'trace:one',
     },
     input: { path: {}, query: {}, headers: {}, body: { order: 'order:one', scene: 'jsapi' }, rawBody: '{}',
