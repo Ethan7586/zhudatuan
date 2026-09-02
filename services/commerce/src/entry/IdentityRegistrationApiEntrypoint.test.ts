@@ -70,6 +70,8 @@ describe('identity registration API entrypoint', () => {
       'identity.invitations.revoke',
       'identity.members.create',
       'identity.password.reset',
+      'identity.stepup.start',
+      'identity.stepup.complete',
       'member.members.read',
       'member.imports.read',
       'access.center.read',
@@ -171,6 +173,8 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')?.operation).toBe('identity.sessions.create');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/password/reset')?.operation).toBe('identity.password.reset');
+    expect(bootstrapped.routes.match('POST', '/api/v1/identity/stepup/challenges')?.operation).toBe('identity.stepup.start');
+    expect(bootstrapped.routes.match('POST', '/api/v1/identity/stepup/verifications')?.operation).toBe('identity.stepup.complete');
     expect(bootstrapped.routes.match('GET', '/api/v1/identity/sessions')).toBeNull();
     expect(bootstrapped.routes.match('GET', '/api/v1/members')?.operation).toBe('member.members.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/members/imports/x')?.operation).toBe('member.imports.read');

@@ -56,6 +56,8 @@ export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
   'identity.invitations.revoke',
   'identity.members.create',
   'identity.password.reset',
+  'identity.stepup.start',
+  'identity.stepup.complete',
 ] as const satisfies readonly OperationId[]);
 
 export function identityRegistrationOperations(context: ModuleContext): OperationUsecase {
