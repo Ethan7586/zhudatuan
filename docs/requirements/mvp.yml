@@ -397,6 +397,7 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - provisioning.malls.create
+      - provisioning.malls.read
       - member.profile.read
       - member.addresses.read
       - member.addresses.manage
@@ -1330,6 +1331,7 @@ requirements:
       - organization.stores.read
       - organization.stores.manage
       - member.members.read
+      - member.invitations.read
       - member.profile.read
       - member.addresses.read
       - member.addresses.manage
@@ -1579,6 +1581,7 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - provisioning.malls.create
+      - provisioning.malls.read
       - member.profile.read
       - member.addresses.read
       - member.addresses.manage
@@ -2515,6 +2518,7 @@ requirements:
       - organization.stores.read
       - organization.stores.manage
       - member.members.read
+      - member.invitations.read
       - member.profile.read
       - member.addresses.read
       - member.addresses.manage

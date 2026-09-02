@@ -8,26 +8,36 @@ describe('mall provisioning engine', () => {
     const calls: QueryCall[] = [];
     const database = recordingDatabase(calls, (text) => {
       if (text.startsWith('select parent.id')) return [{ id: 'enterprise:one' }];
+      if (text.startsWith('select membership_id')) return [{
+        membership_id: 'membership:mall-owner', member_id: 'member:owner', principal_id: 'principal:owner',
+      }];
       return [];
     });
     const engine = new CreateMall();
     const plan = engine.plan({
       scope: 'organization-platform-root',
-      enterprise: 'enterprise:one',
+      parent: 'enterprise:one',
       code: 'MALL_ONE',
       publicSlug: 'mall-one',
       name: '一号商城',
-      actor: 'member:owner',
+      actor: 'principal:owner',
+      actorMembership: 'membership:source-owner',
     });
 
     expect(await engine.preflight(database, plan)).toBeNull();
     const created = await engine.execute(database, plan);
 
     expect(created).toEqual({
+      organizationId: plan.mall,
+      scopeId: plan.mall,
       mallId: plan.mall,
+      parentId: 'enterprise:one',
       enterpriseId: 'enterprise:one',
       applicationId: plan.application,
       poolId: plan.pool,
+      ownerMembershipId: 'membership:mall-owner',
+      ownerMemberId: 'member:owner',
+      ownerPrincipalId: 'principal:owner',
       code: 'MALL_ONE',
       publicSlug: 'mall-one',
       name: '一号商城',
@@ -53,8 +63,8 @@ describe('mall provisioning engine', () => {
     });
     const engine = new CreateMall();
     const plan = engine.plan({
-      scope: 'organization-platform-root', enterprise: 'enterprise:one', code: 'MALL_ONE',
-      publicSlug: 'mall-one', name: '一号商城', actor: 'member:owner',
+      scope: 'organization-platform-root', parent: 'enterprise:one', code: 'MALL_ONE',
+      publicSlug: 'mall-one', name: '一号商城', actor: 'principal:owner', actorMembership: 'membership:owner',
     });
 
     expect(await engine.preflight(database, plan)).toBe('MALL_CODE_CONFLICT');
@@ -72,8 +82,8 @@ describe('mall provisioning engine', () => {
     });
     const engine = new CreateMall();
     const input = {
-      scope: 'organization-platform-root', enterprise: 'enterprise:one', code: 'MALL_ONE',
-      publicSlug: 'mall-one', name: '一号商城', actor: 'member:owner',
+      scope: 'organization-platform-root', parent: 'enterprise:one', code: 'MALL_ONE',
+      publicSlug: 'mall-one', name: '一号商城', actor: 'principal:owner', actorMembership: 'membership:owner',
     } as const;
     const first = engine.plan(input);
     const second = engine.plan(input);

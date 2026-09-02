@@ -23,9 +23,13 @@ describe('mall provisioning API runtime', () => {
     };
     const pool = (state: typeof healthy) => ({ query: async (sql: string, values: readonly unknown[]) => {
       expect(sql).toContain("to_regprocedure('access.resolve_scope(text,text,text,text)')");
+      expect(sql).toContain("to_regprocedure('access.provision_mall_owner(text,text,text,text,text,text)')");
+      expect(sql).toContain("to_regprocedure('access.read_provisioned_mall(text)')");
+      expect(sql).toContain("to_regclass('access.mallowner')");
       expect(sql).toContain("has_table_privilege(current_user,'organization.organization','SELECT,INSERT')");
       expect(sql).toContain("has_column_privilege(current_user,'experience.application','head_version_id','UPDATE')");
       expect(sql).toContain("not has_table_privilege(current_user,'identity.session','SELECT,INSERT,UPDATE,DELETE')");
+      expect(sql).toContain("not has_table_privilege(current_user,'access.mallowner','SELECT,INSERT,UPDATE,DELETE')");
       expect(sql).toContain("not has_schema_privilege(current_user,'payment','USAGE')");
       expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
       expect(values).toContain(MALL_PROVISIONING_SCHEMA_VERSION);

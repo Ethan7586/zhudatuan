@@ -32,8 +32,8 @@ import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/Ris
 import type { Container } from './Container';
 import { ExtensionRegistry } from './ExtensionRegistry';
 
-export const MALL_PROVISIONING_SCHEMA_VERSION = '20260902012000' as const;
-export const MALL_PROVISIONING_SCHEMA_CHECKSUM = '3a36f65b55737f624fc3d717a8f8815685908eae0cdb57673aeb5ba465887995' as const;
+export const MALL_PROVISIONING_SCHEMA_VERSION = '20260903101000' as const;
+export const MALL_PROVISIONING_SCHEMA_CHECKSUM = '93c46ec2519b7fd7c95e78d5bd64b6a2ec06b66e9c4e381093a426c1371920f5' as const;
 
 interface CompatibilityRow {
   readonly current_user: string;
@@ -130,6 +130,7 @@ export async function mallProvisioningRuntimeCompatibility(
       to_regclass('access.decisionaudit'),to_regclass('risk.policy'),to_regclass('risk.policyversion'),
       to_regclass('risk.signal'),to_regclass('risk.listentry'),to_regclass('risk.decision'),to_regclass('risk.case'),
       to_regclass('audit.record'),to_regclass('audit.accessrecord'),to_regclass('audit.archiveref'),
+      to_regclass('access.mallowner'),
       to_regclass('organization.organization'),to_regclass('organization.unitclosure'),to_regclass('organization.sourcebinding'),
       to_regclass('catalog.pool'),to_regclass('catalog.poolbinding'),to_regclass('experience.application'),
       to_regclass('experience.version'),to_regclass('experience.binding')
@@ -137,13 +138,17 @@ export async function mallProvisioningRuntimeCompatibility(
     array_position(array[
       to_regprocedure('identity.resolve_session(text)'),to_regprocedure('access.resolve_membership(text)'),
       to_regprocedure('access.membership_version(text)'),to_regprocedure('access.resolve_scope(text,text,text,text)'),
-      to_regprocedure('capability.membership_operations(text)')
+      to_regprocedure('capability.membership_operations(text)'),
+      to_regprocedure('access.provision_mall_owner(text,text,text,text,text,text)'),
+      to_regprocedure('access.read_provisioned_mall(text)')
     ],null) is null
       and has_function_privilege(current_user,'identity.resolve_session(text)','EXECUTE')
       and has_function_privilege(current_user,'access.resolve_membership(text)','EXECUTE')
       and has_function_privilege(current_user,'access.membership_version(text)','EXECUTE')
       and has_function_privilege(current_user,'access.resolve_scope(text,text,text,text)','EXECUTE')
-      and has_function_privilege(current_user,'capability.membership_operations(text)','EXECUTE') functions,
+      and has_function_privilege(current_user,'capability.membership_operations(text)','EXECUTE')
+      and has_function_privilege(current_user,'access.provision_mall_owner(text,text,text,text,text,text)','EXECUTE')
+      and has_function_privilege(current_user,'access.read_provisioned_mall(text)','EXECUTE') functions,
     has_table_privilege(current_user,'runtime.schemaversion','SELECT')
       and has_table_privilege(current_user,'runtime.idempotency','SELECT,INSERT,UPDATE')
       and has_table_privilege(current_user,'runtime.outbox','INSERT')
@@ -169,6 +174,7 @@ export async function mallProvisioningRuntimeCompatibility(
       and has_table_privilege(current_user,'experience.binding','INSERT') selected_writes,
     not has_table_privilege(current_user,'identity.session','SELECT,INSERT,UPDATE,DELETE')
       and not has_table_privilege(current_user,'access.membership','SELECT,INSERT,UPDATE,DELETE')
+      and not has_table_privilege(current_user,'access.mallowner','SELECT,INSERT,UPDATE,DELETE')
       and not has_table_privilege(current_user,'organization.organization','UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
       and not has_table_privilege(current_user,'organization.unitclosure','UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
       and not has_table_privilege(current_user,'organization.sourcebinding','UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')

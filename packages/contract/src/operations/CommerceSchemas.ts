@@ -29,6 +29,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "identity.wechat.bind": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "organization.layers.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "provisioning.malls.create": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+  "provisioning.malls.read": Object.freeze({ input: structuralOperationInput(["mallid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "access.center.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "access.roles.manage": Object.freeze({ input: structuralOperationInput(["roleid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "access.scopes.manage": Object.freeze({ input: structuralOperationInput(["membershipid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),

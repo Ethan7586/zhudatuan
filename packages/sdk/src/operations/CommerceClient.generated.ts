@@ -95,6 +95,7 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.wechat.bind",
   "organization.layers.read",
   "provisioning.malls.create",
+  "provisioning.malls.read",
   "access.center.read",
   "access.roles.manage",
   "access.scopes.manage",

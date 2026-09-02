@@ -18745,6 +18745,11 @@ objects:
     owner: access
     source: database/supabase/migrations/20260821013000_create_identity_access.sql
     rls: true
+  - id: access.mallowner
+    kind: table
+    owner: access
+    source: database/supabase/migrations/20260903101000_provision_l1_mall_owner.sql
+    rls: true
   - id: access.membership
     kind: table
     owner: access

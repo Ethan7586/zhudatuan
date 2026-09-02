@@ -39,7 +39,9 @@ if (!moduleSource.includes("defineSelectedModule(\n  'provisioning'")
   || moduleSource.includes("['organization', 'catalog', 'experience']")) {
   throw new Error('MALL_PROVISIONING_SELECTED_MODULE_INVALID');
 }
-if (!operations.includes("'provisioning.malls.create'") || operations.match(/provisioning\.[a-z.]+/g)?.length !== 2) {
+if (!operations.includes("'provisioning.malls.create'")
+  || !operations.includes("'provisioning.malls.read'")
+  || operations.match(/provisioning\.[a-z.]+/g)?.length !== 4) {
   throw new Error('MALL_PROVISIONING_OPERATION_SET_INVALID');
 }
 
@@ -90,9 +92,11 @@ for (const token of ['API_ALLOWED_ORIGINS=https://console.zhudatuan.com',
   if (!environment.includes(token)) throw new Error(`MALL_PROVISIONING_ENVIRONMENT_TOKEN_MISSING:${token}`);
 }
 
-if ((caddy.match(/path \/api\/v1\/provisioning\/malls/g) ?? []).length !== 2
-  || (caddy.match(/reverse_proxy 127\.0\.0\.1:4325/g) ?? []).length !== 2
-  || !caddy.includes('@mallProvisioningPreflight') || !caddy.includes('@mallProvisioningApi')) {
+if ((caddy.match(/path \/api\/v1\/provisioning\/malls/g) ?? []).length !== 3
+  || (caddy.match(/reverse_proxy 127\.0\.0\.1:4325/g) ?? []).length !== 3
+  || !caddy.includes('@mallProvisioningPreflight') || !caddy.includes('@mallProvisioningApi')
+  || !caddy.includes('@mallProvisioningRead') || !caddy.includes('method GET')
+  || !caddy.includes('path /api/v1/provisioning/malls/*')) {
   throw new Error('MALL_PROVISIONING_CADDY_ROUTE_INVALID');
 }
 for (const token of ['mallProvisioningApiPort: 4325', 'mallProvisioningApiProfile: mall-provisioning-only',
@@ -107,7 +111,7 @@ for (const token of [
 
 const marker = migration.match(/values\('20260902012000','([a-f0-9]{64})'\)/)?.[1];
 const runtimeMarker = runtime.match(/MALL_PROVISIONING_SCHEMA_CHECKSUM = '([a-f0-9]{64})'/)?.[1];
-if (!marker || marker === '0'.repeat(64) || marker !== runtimeMarker) throw new Error('MALL_PROVISIONING_SCHEMA_MARKER_DRIFT');
+if (!marker || marker === '0'.repeat(64)) throw new Error('MALL_PROVISIONING_SCHEMA_MARKER_DRIFT');
 const normalized = createHash('sha256').update(migration.replaceAll(marker, '0'.repeat(64))).digest('hex');
 if (normalized !== marker) throw new Error('MALL_PROVISIONING_SCHEMA_NORMALIZED_DIGEST_DRIFT');
 const governanceMarker = governanceMigration.match(/values\('20260902132000','([a-f0-9]{64})'\)/)?.[1];
@@ -122,7 +126,7 @@ const targetSource = targetFile ? await read(`database/supabase/migrations/${tar
 const targetMarker = targetVersion
   ? targetSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1]
   : undefined;
-if (!targetFile || !targetVersion || !targetMarker || targetMarker === '0'.repeat(64)
+if (!targetFile || !targetVersion || !targetMarker || targetMarker === '0'.repeat(64) || runtimeMarker !== targetMarker
   || !runner.includes(`REGISTRATION_TARGET_VERSION = '${targetVersion}'`)
   || !runner.includes(`REGISTRATION_TARGET_CHECKSUM = '${targetMarker}'`)
   || !runner.includes(`name='${targetFile}'`)) {
@@ -147,7 +151,7 @@ if ((objectContract.match(/\.zhudatuanprovisioningapi(?:insert|select|update)?/g
   throw new Error('MALL_PROVISIONING_POLICY_CONTRACT_INCOMPLETE');
 }
 
-console.log('mall provisioning deployment contract passed: operation=1 profile=selected role=dedicated port=4325 route=exact');
+console.log('mall provisioning deployment contract passed: operations=2 profile=selected role=dedicated port=4325 route=exact');
 
 function assertExactSet(actual, expected, code) {
   const left = [...new Set(actual)].sort();
