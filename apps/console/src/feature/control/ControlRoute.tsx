@@ -1,4 +1,5 @@
 import './control.css';
+import { useNavigate } from 'react-router';
 
 const deliveryStages = Object.freeze([
   { number: '01', title: '商家身份', detail: '名称、Owner 与独立经营边界' },
@@ -21,6 +22,8 @@ const summaries = Object.freeze([
 ]);
 
 export function Component() {
+  const navigate = useNavigate();
+
   return (
     <section className="controlpage" aria-label="智慧翼中控台">
       <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>

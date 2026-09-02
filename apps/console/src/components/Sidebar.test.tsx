@@ -9,13 +9,13 @@ import { Sidebar } from './Sidebar';
 afterEach(cleanup);
 
 describe('Sidebar commerce navigation', () => {
-  it('places commerce after control and before products', async () => {
+  it('keeps merchant governance out of ordinary navigation and places commerce before products', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     renderSidebar('enterprise', false, onNavigate);
     const navigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(navigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    expect(labels.indexOf('商家管理')).toBeLessThan(labels.indexOf('商城管理'));
+    expect(labels).not.toContain('商家管理');
     expect(labels.indexOf('商城管理')).toBeLessThan(labels.indexOf('商品治理台'));
 
     await user.click(screen.getByRole('button', { name: '商城管理' }));

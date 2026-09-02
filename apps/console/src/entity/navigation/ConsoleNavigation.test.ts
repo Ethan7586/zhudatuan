@@ -5,7 +5,7 @@ import { consoleModules } from '../../route/ConsoleModuleRegistry';
 import { selectConsoleNavigationItems } from './ConsoleNavigation';
 
 describe('Console navigation selector', () => {
-  it('derives the approved 12 main items and bottom support in navigation order', () => {
+  it('derives the 11 ordinary main items and bottom support in navigation order', () => {
     const items = selectConsoleNavigationItems(consoleModules, 'enterprise');
 
     expect(items.filter(({ placement }) => placement === 'main').map(({ moduleId, label, icon, order }) => ({ moduleId, label, icon, order }))).toEqual([
@@ -25,6 +25,7 @@ describe('Console navigation selector', () => {
     expect(items.filter(({ placement }) => placement === 'bottom')).toEqual([
       expect.objectContaining({ moduleId: 'support', suffix: 'support', label: '客服系统', icon: 'support', order: 130 }),
     ]);
+    expect(items.find(({ moduleId }) => moduleId === 'control')).toBeUndefined();
     expect(items.find(({ moduleId }) => moduleId === 'referral')).toMatchObject({
       suffix: 'referral/settings', preferredScopeKind: 'mall', status: 'enabled',
     });

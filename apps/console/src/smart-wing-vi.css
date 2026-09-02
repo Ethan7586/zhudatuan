@@ -86,29 +86,31 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand {
+  gap: 10px;
   border-bottom-color: rgb(255 255 255 / 8%);
+  padding-block: 14px;
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarproductmark {
   display: grid;
-  width: var(--sw-icon-container-md);
-  height: var(--sw-icon-container-md);
-  flex: 0 0 var(--sw-icon-container-md);
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
   place-items: center;
-  border-radius: var(--sw-radius-sm);
-  background: #fff;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 12%), 0 8px 20px rgb(0 23 61 / 28%);
+  border: 1px solid #dfe7f3;
+  border-radius: 11px;
+  background: #f5f7fa;
 }
 
-.consolelayout[data-visual-theme='admin-web-v1'] .sidebarproductmark img { width: 27px; height: 27px; }
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarproductmark img { width: 42px; height: 42px; }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrand .swbrand-mark img {
   box-shadow: 0 0 0 1px rgb(255 255 255 / 10%), 0 8px 20px rgb(0 61 183 / 34%);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarbrandcopy strong {
+  font-size: 15px;
   letter-spacing: -0.025em;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 16%);
 }
 
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation {
