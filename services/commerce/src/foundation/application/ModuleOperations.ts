@@ -29,7 +29,7 @@ const IDENTITY_AUDIT_INPUT_ALLOWLIST: Readonly<Partial<Record<OperationId, reado
   'identity.tickets.exchange': Object.freeze([]),
   'identity.challenges.create': Object.freeze(['purpose']),
   'identity.invitations.read': Object.freeze([]),
-  'identity.invitations.create': Object.freeze(['label', 'targetClient', 'maxUses', 'expiresAt', 'storefrontOrganization']),
+  'identity.invitations.create': Object.freeze(['label', 'targetClient', 'governanceLevel', 'maxUses', 'expiresAt', 'storefrontOrganization']),
   'identity.invitations.revoke': Object.freeze([]),
   'identity.members.create': Object.freeze(['termsAccepted', 'termsHash']),
   'identity.members.manage': Object.freeze(['action', 'status', 'departmentId']),

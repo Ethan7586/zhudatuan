@@ -24,6 +24,7 @@ const session = {
   accessVersion: 7,
   permissions: [],
   capabilities: ['reporting.dashboard.read'],
+  governance: { level: 'owner', exactOwner: true, organization: 'organization-platform-root' },
   assurance: { level: 2 },
   target: 'console',
   syncedAt: '2026-09-01T20:46:00.000Z',
@@ -61,6 +62,7 @@ describe('console scope loader profile isolation', () => {
     const context = await loadPlatformScope();
 
     expect(context.scope).toEqual(platformScope);
+    expect(context.session.governance).toEqual(session.governance);
     expect(api.identitySessionRead).not.toHaveBeenCalled();
   });
 

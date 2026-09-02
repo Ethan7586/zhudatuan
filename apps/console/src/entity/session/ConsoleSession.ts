@@ -10,6 +10,12 @@ export const ScopeSchema = z.object({
   path: z.array(z.object({ kind: z.enum(SCOPE_KINDS), id: z.string().min(1) })).optional(),
 });
 
+export const GovernanceSchema = z.object({
+  level: z.enum(['owner', 'senior_administrator', 'administrator', 'member']),
+  exactOwner: z.boolean(),
+  organization: z.string().min(1),
+});
+
 export const SessionSchema = z.object({
   actor: z.string().min(1),
   membership: z.string().min(1),
@@ -18,6 +24,7 @@ export const SessionSchema = z.object({
   accessVersion: DatabaseIntegerSchema,
   permissions: z.array(z.string().min(1)),
   capabilities: z.array(z.string().min(1)),
+  governance: GovernanceSchema.optional(),
   assurance: z.object({
     level: z.number().int().nonnegative(),
     verified: z.string().min(1).optional(),

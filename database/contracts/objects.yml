@@ -114,7 +114,7 @@ objects:
   - id: access.protect_zhudatuan_registration_access_write
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
     operationalOwner: access
   - id: access.purchase_application_allowed
     kind: function
@@ -286,6 +286,11 @@ objects:
     kind: function
     owner: access
     source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    operationalOwner: access
+  - id: access.zhudatuan_operator_invitation_allowed
+    kind: function
+    owner: access
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
     operationalOwner: access
   - id: access.zhudatuan_owner_context
     kind: function
@@ -793,7 +798,7 @@ objects:
   - id: member.protect_zhudatuan_invite_update
     kind: function
     owner: member
-    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
     operationalOwner: identity
   - id: notification.resource_scope
     kind: function
@@ -1064,6 +1069,14 @@ objects:
     role: shopapp
     objectType: function
     target: access.scope_object(text)
+    privilege: execute
+  - id: shopapp:function:access.zhudatuan_operator_invitation_allowed(text,boolean):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
+    role: shopapp
+    objectType: function
+    target: access.zhudatuan_operator_invitation_allowed(text,boolean)
     privilege: execute
   - id: shopapp:function:access.zhudatuan_owner_context():execute
     kind: grant
@@ -17046,7 +17059,7 @@ objects:
   - id: access.membershiprole.zhudatuanidentityapiinsert
     kind: policy
     owner: access
-    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
   - id: access.owneractionproof.owneractionproof_shopapp
     kind: policy
     owner: access
@@ -18606,15 +18619,15 @@ objects:
   - id: member.invite.zhudatuanidentityapi
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
   - id: member.invite.zhudatuanidentityapiinsert
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
   - id: member.invite.zhudatuanidentityapiupdate
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
+    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
   - id: member.profile.appscope
     kind: policy
     owner: member
