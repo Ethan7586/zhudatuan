@@ -846,7 +846,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           } else if (!stepup.accepts(true, access.assurance, new Date())) reject(403, 'MOBILE_CHANGE_STEP_UP_REQUIRED');
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, access.actor.id,
             { purpose: 'phone_change', destinationHash: digest(mobile), sessionHash: sessionDigest(access.actor.session) });
-          const owner = await database.query<{ exact_owner: boolean }>('select access.zhudatuan_owner_context() exact_owner');
+          const owner = await database.query<{ exact_owner: boolean }>(`select exists(
+            select 1 from access.platformowner owner
+            join access.membership membership on membership.id=owner.membership_id
+            join member.profile profile on profile.id=membership.member_id
+            where owner.singleton=true and owner.state='active'
+              and owner.membership_id=$1 and profile.principal_id=$2
+          ) exact_owner`, [access.membership.id, access.actor.id]);
           if (owner.rows[0]?.exact_owner === true) {
             const changed = await database.query<{ profile: Readonly<Record<string, unknown>> }>(
               `select access.change_zhudatuan_owner_mobile($1,$2,$3,$4,$5,$6,$7,$8,$9) profile`,
