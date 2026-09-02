@@ -12,6 +12,7 @@ const InvitationSchema = z.strictObject({
   privacy_body: z.string().min(1),
   terms_hash: z.string().regex(/^[a-f0-9]{64}$/i),
   target_client: z.enum(['storefront', 'operator']),
+  governance_level: z.enum(['administrator', 'senior_administrator']).nullable().optional(),
   effective_at: z.iso.datetime(),
   expires_at: z.iso.datetime(),
 });
@@ -41,6 +42,7 @@ export interface CanonicalInvitation {
   readonly privacyBody: string;
   readonly termsHash: string;
   readonly target: 'storefront' | 'console';
+  readonly governanceLevel?: 'administrator' | 'senior_administrator';
   readonly effectiveAt: string;
   readonly expiresAt: string;
 }
@@ -92,6 +94,7 @@ export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortS
     privacyBody: output.privacy_body,
     termsHash: output.terms_hash,
     target: output.target_client === 'operator' ? 'console' : 'storefront',
+    ...(output.governance_level == null ? {} : { governanceLevel: output.governance_level }),
     effectiveAt: output.effective_at,
     expiresAt: output.expires_at,
   });
