@@ -1342,8 +1342,12 @@ export const LoginPage: React.FC = () => {
                   required
                   autoComplete="new-password"
                   placeholder="再次输入密码"
+                  aria-invalid={registration.confirmPassword.length > 0 && registration.password !== registration.confirmPassword}
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
+                {registration.confirmPassword.length > 0
+                  && registration.password !== registration.confirmPassword
+                  ? <span role="alert" className="text-xs text-rose-500">两次输入的密码不一致</span> : null}
               </label>
             </div>
 
