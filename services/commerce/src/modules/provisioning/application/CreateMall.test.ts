@@ -54,7 +54,7 @@ describe('mall provisioning engine', () => {
     expect(JSON.parse(String(version?.values[2]))).toMatchObject({ version: 2, application: plan.application });
   });
 
-  it('locks the platform root and stops before writes when the mall code exists', async () => {
+  it('locks the mall identity without requiring cross-module update privileges and stops before writes on conflict', async () => {
     const calls: QueryCall[] = [];
     const database = recordingDatabase(calls, (text) => {
       if (text.startsWith('select parent.id')) return [{ id: 'enterprise:one' }];
@@ -68,7 +68,8 @@ describe('mall provisioning engine', () => {
     });
 
     expect(await engine.preflight(database, plan)).toBe('MALL_CODE_CONFLICT');
-    expect(calls[0]?.text).toContain('for update of root,parent');
+    expect(calls[0]?.text).toContain('pg_advisory_xact_lock');
+    expect(calls[1]?.text).not.toContain('for update');
     expect(calls.some(({ text }) => text.startsWith('insert into'))).toBe(false);
   });
 

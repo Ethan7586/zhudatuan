@@ -182,7 +182,7 @@ for (const forbidden of [
 for (const token of [
   'positive=2','wrong-address=1','nonempty=1','wrong-sentinel=1','zero-mutation=3',
   'assertSnapshot(pristine','assertSnapshot(nonempty','assertSnapshot(initialized',
-  "proof!=='t|shopmigration|0|1|14'",'POSTGRES_INIT_FIXTURE_SECRET_OUTPUT',
+  "proof!=='t|shopmigration|0|1|15'",'POSTGRES_INIT_FIXTURE_SECRET_OUTPUT',
 ]) {
   if (!postgresInitFixtureSource.includes(token)) {
     throw new Error(`REGISTRATION_RDS_INIT_PG16_FIXTURE_GUARD_MISSING:${token}`);

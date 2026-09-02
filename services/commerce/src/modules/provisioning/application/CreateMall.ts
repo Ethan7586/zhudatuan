@@ -1,8 +1,11 @@
 import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import { catalogProvisioningPort, type CatalogProvisioningPort } from '../../catalog/CatalogModule';
-import { experienceProvisioningPort, type ExperienceProvisioningPort } from '../../experience/ExperienceModule';
-import { organizationPort, type OrganizationPort } from '../../organization/OrganizationModule';
+import { catalogProvisioningPort, type CatalogProvisioningPort } from '../../catalog/CatalogProvisioningPort';
+import { experienceProvisioningPort, type ExperienceProvisioningPort } from '../../experience/ExperienceProvisioningPort';
+import {
+  mallOrganizationProvisioningPort,
+  type MallOrganizationProvisioningPort,
+} from '../../organization/MallOrganizationProvisioningPort';
 
 export interface CreateMallInput {
   readonly scope: string;
@@ -36,7 +39,7 @@ export type MallProvisioningConflict = 'MALL_PARENT_INVALID' | 'MALL_CODE_CONFLI
 
 export class CreateMall {
   constructor(
-    private readonly organizations: OrganizationPort = organizationPort,
+    private readonly organizations: MallOrganizationProvisioningPort = mallOrganizationProvisioningPort,
     private readonly catalog: CatalogProvisioningPort = catalogProvisioningPort,
     private readonly experience: ExperienceProvisioningPort = experienceProvisioningPort,
   ) {}
@@ -54,7 +57,7 @@ export class CreateMall {
   }
 
   async preflight(database: OperationDatabase, plan: MallProvisioningPlan): Promise<MallProvisioningConflict | null> {
-    const organizationConflict = await this.organizations.mallConflict(database, {
+    const organizationConflict = await this.organizations.conflict(database, {
       scope: plan.scope,
       parent: plan.enterprise,
       code: plan.code,
@@ -66,7 +69,7 @@ export class CreateMall {
   }
 
   async execute(database: OperationDatabase, plan: MallProvisioningPlan): Promise<CreatedMall> {
-    await this.organizations.createMall(database, {
+    await this.organizations.create(database, {
       id: plan.mall,
       scope: plan.scope,
       parent: plan.enterprise,

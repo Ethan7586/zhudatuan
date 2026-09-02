@@ -87,7 +87,7 @@ test('database init preprovisions both login roles without putting credentials i
   assert.match(databaseInit, /ZHUDATUAN_RDS_INIT_ROLE_ATTRIBUTE_INVALID/);
   assert.doesNotMatch(databaseInit, /--set|--variable|-v[= ]/);
   assert.match(databaseInit,
-    /revoke all on deployment\.boundary[\s\S]+zhudatuanwebapi,\s*zhudatuanpurchaseapi,zhudatuansandboxbootstrap/);
+    /revoke all on deployment\.boundary[\s\S]+zhudatuanwebapi,\s*zhudatuanpurchaseapi,zhudatuanprovisioningapi,zhudatuansandboxbootstrap/);
   assert.match(databaseInit, /grant execute on function deployment\.is_independent_registration_database\(\) to shopmigration/);
   assert.doesNotMatch(databaseInit, /grant (?:select|insert|update|delete)[^;]*deployment\.boundary to (?:zhudatuanwebapi|zhudatuansandboxbootstrap)/i);
   assert.match(databaseEnvironment, /^ZHUDATUAN_WEB_API_PASSWORD=/m);

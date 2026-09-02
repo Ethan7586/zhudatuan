@@ -153,6 +153,7 @@ const REPAIR_FILES = [
   '20260901223000_publish_mall_provisioning.sql',
   '20260902010000_restore_public_mall_role_contracts.sql',
   '20260902011000_enable_public_mall_external_payment.sql',
+  '20260902012000_zhudatuan_mall_provisioning_access.sql',
 ];
 
 const mode = process.argv[2];

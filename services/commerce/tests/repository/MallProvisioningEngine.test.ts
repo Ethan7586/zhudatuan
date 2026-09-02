@@ -2,13 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { Client } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Container } from '../../src/bootstrap/Container';
+import { assertMallProvisioningRuntimeCompatibility } from '../../src/bootstrap/MallProvisioningApiRuntime';
 import type { ModuleContext } from '../../src/bootstrap/ModuleRegistry';
-import type { AuditSink } from '../../src/foundation/application/AuditSink';
 import { AUDIT_SINK } from '../../src/foundation/application/AuditSink';
 import type { OperationRequest, OperationResult } from '../../src/foundation/application/OperationHandler';
 import type { TransactionContext } from '../../src/foundation/application/UnitOfWork';
 import { PgUnitOfWork } from '../../src/foundation/infrastructure/PgUnitOfWork';
 import { DATABASE_POOL, createPool, type DatabasePool } from '../../src/foundation/persistence/Pool';
+import { RecordAudit } from '../../src/modules/audit/application/command/RecordAudit';
+import { PgAuditRepository } from '../../src/modules/audit/infrastructure/persistence/PgAuditRepository';
 import { provisioningOperations } from '../../src/modules/provisioning/ProvisioningOperations';
 import { CreateMall, type CreatedMall } from '../../src/modules/provisioning/application/CreateMall';
 
@@ -38,6 +40,7 @@ describe.runIf(endpointAvailable)('Mall provisioning engine on PostgreSQL', () =
     await admin.query(`insert into organization.unitclosure(ancestor_id,descendant_id,depth)
       values($1,$1,0),($1,$2,1),($2,$2,0)`, [root, enterprise]);
     pool = createPool(runtimeConnection!, 'api');
+    await assertMallProvisioningRuntimeCompatibility(pool);
     operations = provisioningOperations(context(pool));
   });
 
@@ -73,15 +76,16 @@ describe.runIf(endpointAvailable)('Mall provisioning engine on PostgreSQL', () =
     const mall = createdMall(first);
     created.push(mall);
 
-    const evidence = (await admin.query<{ organizations: number; pools: number; applications: number; idempotency: number }>(
+    const evidence = (await admin.query<{ organizations: number; pools: number; applications: number; idempotency: number; audits: number }>(
       `select
         (select count(*)::integer from organization.organization where id=$1) organizations,
         (select count(*)::integer from catalog.pool where id=$2 and scope_id=$1) pools,
         (select count(*)::integer from experience.application where id=$3 and scope_id=$1) applications,
-        (select count(*)::integer from runtime.idempotency where scope=$4 and actor_id=$5 and key=$6 and state='completed') idempotency`,
+        (select count(*)::integer from runtime.idempotency where scope=$4 and actor_id=$5 and key=$6 and state='completed') idempotency,
+        (select count(*)::integer from audit.record where scope_id=$4 and actor_id=$5 and action='provisioning.malls.create') audits`,
       [mall.mallId, mall.poolId, mall.applicationId, root, actor, request.input.idempotency],
     )).rows[0];
-    expect(evidence).toEqual({ organizations: 1, pools: 1, applications: 1, idempotency: 1 });
+    expect(evidence).toEqual({ organizations: 1, pools: 1, applications: 1, idempotency: 1, audits: 1 });
   });
 
   it('serializes different commands competing for the same mall identity', async () => {
@@ -190,9 +194,8 @@ describe.runIf(endpointAvailable)('Mall provisioning engine on PostgreSQL', () =
 
 function context(pool: DatabasePool): ModuleContext {
   const container = new Container();
-  const audit: AuditSink = { record: async () => undefined, access: async () => undefined };
   container.bind(DATABASE_POOL, pool);
-  container.bind(AUDIT_SINK, audit);
+  container.bind(AUDIT_SINK, new RecordAudit(new PgAuditRepository()));
   return { container } as unknown as ModuleContext;
 }
 

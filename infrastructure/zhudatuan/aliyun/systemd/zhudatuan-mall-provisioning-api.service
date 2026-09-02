@@ -1,0 +1,46 @@
+[Unit]
+Description=Zhudatuan selected-operation Mall Provisioning API
+Requires=zhudatuan-internal-runtime.service docker.service
+After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service docker.service
+ConditionPathExists=/opt/zhudatuan/current/services/commerce/dist/MallProvisioningApiMain.js
+ConditionPathExists=/opt/zhudatuan/current/services/commerce/dist/MallProvisioningApiReadyMain.js
+ConditionPathExists=/opt/zhudatuan/shared/mall-provisioning-api.env
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+WorkingDirectory=/opt/zhudatuan/current
+Environment=NODE_ENV=production
+Environment=MALL_PROVISIONING_API_PROFILE=mall-provisioning-only
+Environment=API_PORT=4325
+Environment=API_BIND_HOST=127.0.0.1
+EnvironmentFile=/opt/zhudatuan/shared/mall-provisioning-api.env
+ExecStart=/usr/bin/env MALL_PROVISIONING_API_PROFILE=mall-provisioning-only API_PORT=4325 API_BIND_HOST=127.0.0.1 /usr/bin/node services/commerce/dist/MallProvisioningApiMain.js
+ExecStartPost=/usr/bin/env MALL_PROVISIONING_API_PROFILE=mall-provisioning-only API_PORT=4325 API_BIND_HOST=127.0.0.1 /usr/bin/node services/commerce/dist/MallProvisioningApiReadyMain.js
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=45
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadOnlyPaths=/opt/zhudatuan/current /opt/zhudatuan/shared
+InaccessiblePaths=-/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
+
+[Install]
+WantedBy=multi-user.target

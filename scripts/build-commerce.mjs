@@ -11,6 +11,8 @@ await build({
     WebBusinessApiReadyMain: 'services/commerce/src/entry/WebBusinessApiReadyMain.ts',
     PurchaseApiMain: 'services/commerce/src/entry/PurchaseApiMain.ts',
     PurchaseApiReadyMain: 'services/commerce/src/entry/PurchaseApiReadyMain.ts',
+    MallProvisioningApiMain: 'services/commerce/src/entry/MallProvisioningApiMain.ts',
+    MallProvisioningApiReadyMain: 'services/commerce/src/entry/MallProvisioningApiReadyMain.ts',
     JobsMain: 'services/commerce/src/entry/JobsMain.ts',
     IdentityNotificationJobsOnlyMain: 'services/commerce/src/entry/IdentityNotificationJobsOnlyMain.ts',
     IdentityNotificationJobsReadyMain: 'services/commerce/src/entry/IdentityNotificationJobsReadyMain.ts',
