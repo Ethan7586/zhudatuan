@@ -213,7 +213,7 @@ objects:
   - id: access.resolve_governance
     kind: function
     owner: access
-    source: database/supabase/migrations/20260902132000_canonical_governance_context.sql
+    source: database/supabase/migrations/20260902134000_senior_administrator_role.sql
     operationalOwner: access
   - id: access.resolve_membership
     kind: function

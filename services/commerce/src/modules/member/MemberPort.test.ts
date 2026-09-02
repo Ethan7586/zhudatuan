@@ -26,6 +26,7 @@ describe('MemberPort invitation constraints', () => {
 
     const [sql, values = []] = query.mock.calls[0]!;
     expect(sql).toContain('invite.target_client');
+    expect(sql).toContain("invite.role_id='role-senior-administrator-v1:'||invite.organization_id");
     expect(sql).toContain("invite.status='active'");
     expect(sql).toContain('invite.effective_at<=clock_timestamp()');
     expect(sql).toContain('invite.expires_at>clock_timestamp()');
@@ -43,6 +44,7 @@ describe('MemberPort invitation constraints', () => {
           storefront_organization_id: 'mall:one',
           target_client: 'operator',
           terms_hash: 'f'.repeat(64),
+          governance_level: 'senior_administrator',
         },
       ])
     );
@@ -53,11 +55,13 @@ describe('MemberPort invitation constraints', () => {
       role_id: 'role:console-pending',
       storefront_organization_id: 'mall:one',
       target_client: 'operator',
+      governance_level: 'senior_administrator',
     });
 
     const [sql, values = []] = query.mock.calls[0]!;
     expect(sql).toContain('effective_at<=clock_timestamp()');
     expect(sql).toContain('(invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)');
+    expect(sql).toContain("invite.role_id='role-senior-administrator-v1:'||invite.organization_id");
     expect(sql).toContain('target_client,storefront_organization_id');
     expect(values).toEqual(['invite-hash', 'destination-hash']);
   });

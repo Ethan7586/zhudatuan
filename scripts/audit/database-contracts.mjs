@@ -156,6 +156,7 @@ const REPAIR_FILES = [
   '20260902012000_zhudatuan_mall_provisioning_access.sql',
   '20260902132000_canonical_governance_context.sql',
   '20260902133000_repair_console_support_scope_contract.sql',
+  '20260902134000_senior_administrator_role.sql',
 ];
 
 const mode = process.argv[2];

@@ -211,6 +211,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
       },
       'identity.session.read': async (request, database) => {
         const access = requireAccess(request);
+        const governance = requireGovernanceContext(access);
         const permissions = [...new Set(access.membership.grants.flatMap((grant) => grant.permissions).filter((permission) => !access.membership.denies.includes(permission)))].sort();
         const scopes = [...new Map(access.membership.grants.map((grant) => [grant.scope.id, grant.scope] as const)).values()];
         const csrf = requestCookie(request.input.headers.cookie, 'shop_csrf');
@@ -236,6 +237,11 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             capabilities: access.capabilities,
             assurance: access.assurance,
             target: access.actor.target,
+            governance: {
+              level: governance.governanceLevel,
+              exactOwner: governance.isExactOwner,
+              organization: governance.organizationId,
+            },
             ...(member.displayName === null ? {} : {
               profile: { display_name: member.displayName, employee_no: null },
             }),
@@ -359,6 +365,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const requestedTarget = body.targetClient;
         if (requestedTarget !== undefined && requestedTarget !== 'storefront' && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
         const targetClient = registrationOnly ? 'operator' : requestedTarget ?? 'storefront';
+        const governanceLevel = invitationGovernanceLevel(body.governanceLevel, targetClient);
         const invitationScope = access.scope.kind === 'platform' && targetClient === 'operator'
           ? textField(body, 'tenantId') : access.scope.id;
         if (access.scope.kind === 'platform' && targetClient === 'operator') {
@@ -368,9 +375,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (target.rows[0]?.id !== invitationScope) reject(403, 'PERMISSION_DENIED');
           await database.query(`select set_config('app.scope_id',$1,true)`, [invitationScope]);
         }
-        const { exactOwner } = requireInvitationManager(request, registrationOnly);
+        requireInvitationManager(request);
         if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
-        if (targetClient === 'operator' && !exactOwner) reject(403, 'PERMISSION_DENIED');
         const maxUses = integerField(body, 'maxUses', 1);
         const expiresAt = inviteExpiry(body.expiresAt);
         if (label.length < 2 || maxUses > 500 || (targetClient === 'operator' && maxUses !== 1)) throw new Error('INVALID_INVITATION_INPUT');
@@ -387,11 +393,16 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               and ($2::text is null or storefront.id=$2) order by storefront.id limit 2`, [invitationScope, requestedStorefront])
           : { rows: [] };
         if (targetClient === 'operator' && storefronts.rows.length !== 1) throw new Error('STOREFRONT_SCOPE_REQUIRED');
-        const roleId = targetClient === 'operator' ? 'role-zhudatuan-pending-operator' : 'role-zhudatuan-storefront-member';
+        const roleId = targetClient === 'operator'
+          ? governanceLevel === 'senior_administrator'
+            ? seniorAdministratorRoleId(invitationScope)
+            : 'role-zhudatuan-pending-operator'
+          : 'role-zhudatuan-storefront-member';
         const role = await database.query<{ id: string }>(`select role.id from access.role role where role.id=$1
         and role.status='active' and role.scope_id=$2
-        and ($1<>'role-zhudatuan-pending-operator' or not exists(
-          select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))`, [roleId, invitationScope]);
+        and ($3::text is distinct from 'administrator' or not exists(
+          select 1 from access.rolepermission pendingpermission where pendingpermission.role_id=role.id))`,
+        [roleId, invitationScope, governanceLevel]);
         if (role.rows[0]?.id !== roleId) throw new Error('EMPLOYEE_ROLE_NOT_FOUND');
         const policy = await database.query<{ id: string; terms_hash: string }>(`select id,terms_hash from identity.registrationpolicy
         where effective_at<=clock_timestamp() and (retired_at is null or retired_at>clock_timestamp()) order by version desc limit 1`);
@@ -411,10 +422,10 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         );
         const saved = result.rows[0];
         if (!saved) throw new Error('INVITE_INVALID');
-        return { status: 201, body: { ...saved, code }, headers: { etag: '"0"' } };
+        return { status: 201, body: { ...saved, code, ...(governanceLevel === null ? {} : { governanceLevel }) }, headers: { etag: '"0"' } };
       },
       'identity.invitations.revoke': async (request, database) => {
-        const { exactOwner } = requireInvitationManager(request, registrationOnly);
+        const { invitationAuthority } = requireInvitationManager(request);
         const body = bodyRecord(request);
         const reason = textField(body, 'reason', 1000);
         if (reason.length < 4) throw new Error('CHANGE_REASON_REQUIRED');
@@ -426,7 +437,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           and (target_client<>'operator' or $4::boolean)
           and status='active' and ($2::bigint is null or version=$2)
         returning id,label,target_client,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, request.input.expectedVersion ?? null, registrationOnly, exactOwner]
+          [id, request.input.expectedVersion ?? null, registrationOnly, invitationAuthority]
         );
         if (result.rows[0]) return rowResult(result);
         const current = await database.query<{ status: string; version: number }>(
@@ -434,7 +445,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         where id=$1 and access.scope_allowed(organization_id)
           and (not $2::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
           and (target_client<>'operator' or $3::boolean)`,
-          [id, registrationOnly, exactOwner]
+          [id, registrationOnly, invitationAuthority]
         );
         if (!current.rows[0]) throw new Error('INVITATION_NOT_FOUND');
         if (request.input.expectedVersion !== undefined && current.rows[0].version !== request.input.expectedVersion) throw new Error('VERSION_CONFLICT');
@@ -531,8 +542,12 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             member,
             membership,
             ...(invitation.target_client === 'operator' ? { operatorMembership } : {}),
+            ...(invitation.governance_level === null ? {} : { governanceLevel: invitation.governance_level }),
           });
-          return { status: 201, body: result };
+          return { status: 201, body: {
+            ...result,
+            ...(invitation.governance_level === null ? {} : { governanceLevel: invitation.governance_level }),
+          } };
         },
       }),
       'identity.members.manage': async (request, database) => {
@@ -577,12 +592,24 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           await database.query('update access.membership set employee_no=$2 where id=$1', [membership, typeof body.employeeNo === 'string' ? body.employeeNo.trim() || null : null]);
           return { status: 201, body: { ...result, membershipId: membership, memberId: member, userId: principal } };
         }
-        const target = await database.query<{ member_id: string }>(
-          `select member_id from access.membership where id=$1
-        and access.scope_allowed(organization_id) for update`,
-          [membershipId]
+        const target = await database.query<{
+          member_id: string;
+          governance_level: 'owner' | 'senior_administrator' | 'administrator' | 'member';
+        }>(
+          `select membership.member_id,target_governance.governance_level
+          from access.membership membership
+          join member.profile profile on profile.id=membership.member_id
+          cross join lateral access.resolve_governance(
+            membership.id,profile.principal_id,$2,$3) target_governance
+          where membership.id=$1 and access.scope_allowed(membership.organization_id)
+          for update of membership`,
+          [membershipId, access.scope.kind, access.scope.id]
         );
         if (!target.rows[0]) throw new Error('MEMBERSHIP_NOT_FOUND');
+        if (!requireGovernanceContext(access).isExactOwner
+          && (target.rows[0].governance_level === 'owner' || target.rows[0].governance_level === 'senior_administrator')) {
+          reject(403, 'PERMISSION_DENIED');
+        }
         if (action === 'status') {
           const status = body.status === 'offboarded' ? 'left' : body.status;
           if (!['active', 'suspended', 'left'].includes(String(status))) throw new Error('MEMBERSHIP_STATUS_INVALID');
@@ -970,13 +997,29 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
   return new ModuleOperations('identity', pool, audit, selected, ownedOperations);
 }
 
-function requireInvitationManager(request: OperationRequest, registrationOnly: boolean) {
+function requireInvitationManager(request: OperationRequest) {
   const access = requireAccess(request);
   const permission = access.membership.grants.some((grant) => grant.permissions.includes('identity.invitation.manage'));
   if (access.actor.target !== 'console' || !access.capabilities.includes(request.type) || !permission) reject(403, 'PERMISSION_DENIED');
-  const exactOwner = requireGovernanceContext(access).isExactOwner;
-  if (registrationOnly && !exactOwner) reject(403, 'PERMISSION_DENIED');
-  return { access, exactOwner };
+  const governance = requireGovernanceContext(access);
+  const invitationAuthority = governance.isExactOwner || governance.governanceLevel === 'senior_administrator';
+  if (!invitationAuthority) reject(403, 'PERMISSION_DENIED');
+  return { access, invitationAuthority };
+}
+
+function invitationGovernanceLevel(value: unknown, targetClient: 'storefront' | 'operator'):
+  'administrator' | 'senior_administrator' | null {
+  if (targetClient !== 'operator') {
+    if (value !== undefined) throw new Error('INVALID_INVITATION_INPUT');
+    return null;
+  }
+  if (value === undefined || value === 'administrator') return 'administrator';
+  if (value === 'senior_administrator') return value;
+  throw new Error('INVALID_INVITATION_INPUT');
+}
+
+function seniorAdministratorRoleId(organization: string): string {
+  return `role-senior-administrator-v1:${organization}`;
 }
 
 async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {

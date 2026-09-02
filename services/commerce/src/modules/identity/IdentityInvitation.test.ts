@@ -19,6 +19,7 @@ describe('operator invitation security boundary', () => {
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(createRequest(managerAccess()));
 
     expect(response).toMatchObject({ status: 201, body: { target: 'console', max_uses: 1 } });
+    expect(response.body).toMatchObject({ governanceLevel: 'administrator' });
     const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
     expect(inserted?.values[1]).toBe('tenant-zhudatuan');
     expect(inserted?.values[7]).toBe('role-zhudatuan-pending-operator');
@@ -28,6 +29,49 @@ describe('operator invitation security boundary', () => {
     expect(inserted?.values[13]).toBe('mall-zhudatuan');
     const roleLookup = harness.queries.find(({ text }) => text.includes('pendingpermission'));
     expect(roleLookup?.text).toContain('not exists');
+  });
+
+  it('persists an exact-owner senior administrator invitation with the tenant-scoped formal role', async () => {
+    const harness = invitationHarness();
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(createRequest(managerAccess(), undefined, undefined, 'senior_administrator'));
+
+    expect(response).toMatchObject({ status: 201, body: { governanceLevel: 'senior_administrator' } });
+    const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
+    expect(inserted?.values[7]).toBe('role-senior-administrator-v1:tenant-zhudatuan');
+    const roleLookup = harness.queries.find(({ text }) => text.includes('select role.id'));
+    expect(roleLookup?.values).toEqual([
+      'role-senior-administrator-v1:tenant-zhudatuan', 'tenant-zhudatuan', 'senior_administrator',
+    ]);
+  });
+
+  it('lets a senior administrator create a senior administrator invitation', async () => {
+    const harness = invitationHarness({ exactOwner: false });
+    const access = managerAccess({
+      actor: 'principal:senior-administrator', membership: 'membership:senior-administrator',
+      isExactOwner: false, governanceLevel: 'senior_administrator',
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(createRequest(access, undefined, undefined, 'senior_administrator'));
+
+    expect(response).toMatchObject({ status: 201, body: { governanceLevel: 'senior_administrator' } });
+    const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
+    expect(inserted?.values[7]).toBe('role-senior-administrator-v1:tenant-zhudatuan');
+  });
+
+  it('rejects unknown governance levels instead of inferring a role from the label', async () => {
+    const harness = invitationHarness();
+    const base = createRequest(managerAccess());
+    const request: OperationRequest = { ...base, input: {
+      ...base.input,
+      body: { ...(base.input.body as Readonly<Record<string, unknown>>), governanceLevel: '高级管理员' },
+    } };
+
+    await expect(identityRegistrationOperations(context(harness.pool)).invoke(request))
+      .rejects.toThrow('INVALID_INVITATION_INPUT');
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
   });
 
   it('accepts platform scope and narrows creation to the selected authorized tenant', async () => {
@@ -66,7 +110,7 @@ describe('operator invitation security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
   });
 
-  it('keeps full-runtime operator invitation creation exact-owner-only', async () => {
+  it('keeps full-runtime operator invitation creation unavailable to an ordinary administrator', async () => {
     const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({ actor: 'principal:tenant-manager', membership: 'membership:tenant-manager', isExactOwner: false });
 
@@ -74,6 +118,19 @@ describe('operator invitation security boundary', () => {
 
     expect(response).toEqual({ status: 403, body: { code: 'PERMISSION_DENIED' } });
     expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
+  });
+
+  it('lets a senior administrator create an operator invitation in full runtime', async () => {
+    const harness = invitationHarness({ exactOwner: false });
+    const access = managerAccess({
+      actor: 'principal:senior-administrator', membership: 'membership:senior-administrator',
+      isExactOwner: false, governanceLevel: 'senior_administrator',
+    });
+
+    const response = await identityOperations(context(harness.pool))
+      .invoke(createRequest(access, 'operator', undefined, 'administrator'));
+
+    expect(response).toMatchObject({ status: 201, body: { target: 'console', governanceLevel: 'administrator' } });
   });
 
   it('creates a consumable storefront invitation with the canonical storefront role in full runtime', async () => {
@@ -87,6 +144,33 @@ describe('operator invitation security boundary', () => {
     expect(inserted?.values[1]).toBe('mall-zhudatuan');
     expect(inserted?.values[7]).toBe('role-zhudatuan-storefront-member');
     expect(inserted?.values[12]).toBe('storefront');
+  });
+
+  it('lets a senior administrator create storefront invitations through the same invitation model', async () => {
+    const harness = invitationHarness({ exactOwner: false });
+    const access = managerAccess({
+      actor: 'principal:senior-administrator', membership: 'membership:senior-administrator',
+      scope: mallScope(), isExactOwner: false, governanceLevel: 'senior_administrator',
+    });
+
+    const response = await identityOperations(context(harness.pool)).invoke(createRequest(access));
+
+    expect(response).toMatchObject({ status: 201, body: { target: 'storefront' } });
+    const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
+    expect(inserted?.values[7]).toBe('role-zhudatuan-storefront-member');
+    expect(access.governance).toMatchObject({ governanceLevel: 'senior_administrator', isExactOwner: false });
+  });
+
+  it('rejects storefront invitations from an ordinary administrator even with a stale invitation grant', async () => {
+    const harness = invitationHarness({ exactOwner: false });
+    const access = managerAccess({
+      actor: 'principal:administrator', membership: 'membership:administrator',
+      scope: mallScope(), isExactOwner: false, governanceLevel: 'administrator',
+    });
+
+    await expect(identityOperations(context(harness.pool)).invoke(createRequest(access)))
+      .resolves.toEqual({ status: 403, body: { code: 'PERMISSION_DENIED' } });
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
   });
 
   it('rejects storefront creation outside a mall scope before generating an invitation', async () => {
@@ -105,7 +189,8 @@ describe('operator invitation security boundary', () => {
       .rejects.toThrow('EMPLOYEE_ROLE_NOT_FOUND');
     const lookup = harness.queries.find(({ text }) => text.includes('select role.id'));
     expect(lookup?.text).toContain('role.scope_id=$2');
-    expect(lookup?.values).toEqual(['role-zhudatuan-storefront-member', 'mall-zhudatuan']);
+    expect(lookup?.text).toContain("$3::text is distinct from 'administrator'");
+    expect(lookup?.values).toEqual(['role-zhudatuan-storefront-member', 'mall-zhudatuan', null]);
     expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
   });
 
@@ -158,7 +243,7 @@ describe('operator invitation security boundary', () => {
     expect(updated?.values[2]).toBe(true);
   });
 
-  it('keeps full-runtime operator invitation revoke exact-owner-only', async () => {
+  it('keeps full-runtime operator invitation revoke unavailable to an ordinary administrator', async () => {
     const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({
       actor: 'principal:tenant-manager', membership: 'membership:tenant-manager',
@@ -166,10 +251,23 @@ describe('operator invitation security boundary', () => {
     });
 
     await expect(identityOperations(context(harness.pool)).invoke(revokeRequest(access)))
-      .rejects.toThrow('INVITATION_NOT_FOUND');
+      .resolves.toEqual({ status: 403, body: { code: 'PERMISSION_DENIED' } });
+    expect(harness.queries.some(({ text }) => text.includes("update member.invite set status='disabled'"))).toBe(false);
+  });
+
+  it('lets a senior administrator revoke an operator invitation', async () => {
+    const harness = invitationHarness({ revokeRows: [{ id: 'invite:storefront', status: 'disabled', version: 2 }] });
+    const access = managerAccess({
+      actor: 'principal:senior-administrator', membership: 'membership:senior-administrator',
+      capabilities: ['identity.invitations.revoke'], isExactOwner: false,
+      governanceLevel: 'senior_administrator',
+    });
+
+    const response = await identityOperations(context(harness.pool)).invoke(revokeRequest(access));
+
+    expect(response).toMatchObject({ status: 200, body: { status: 'disabled' } });
     const updated = harness.queries.find(({ text }) => text.includes("update member.invite set status='disabled'"));
-    expect(updated?.text).toContain("target_client<>'operator' or $4::boolean");
-    expect(updated?.values[3]).toBe(false);
+    expect(updated?.values[3]).toBe(true);
   });
 
   it('lets a transferred owner mint operator invitations without matching any fixed principal string', async () => {
@@ -183,7 +281,8 @@ describe('operator invitation security boundary', () => {
   });
 });
 
-function createRequest(access: AccessContext, targetClient?: 'storefront' | 'operator', tenantId?: string): OperationRequest {
+function createRequest(access: AccessContext, targetClient?: 'storefront' | 'operator', tenantId?: string,
+  governanceLevel?: 'administrator' | 'senior_administrator'): OperationRequest {
   return {
     type: 'identity.invitations.create',
     access,
@@ -191,7 +290,8 @@ function createRequest(access: AccessContext, targetClient?: 'storefront' | 'ope
       path: {}, query: {}, headers: {},
       body: { label: '普通管理员邀请', destination: '+8613800138000', maxUses: 1,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1_000).toISOString(), ...(targetClient === undefined ? {} : { targetClient }),
-        ...(tenantId === undefined ? {} : { tenantId }) },
+        ...(tenantId === undefined ? {} : { tenantId }),
+        ...(governanceLevel === undefined ? {} : { governanceLevel }) },
       rawBody: '', deadline: Date.now() + 5_000, signal: new AbortController().signal,
       idempotency: 'operator-invitation:create',
     },
@@ -215,6 +315,7 @@ function managerAccess(overrides: Readonly<{
   actor?: string;
   membership?: string;
   isExactOwner?: boolean;
+  governanceLevel?: 'owner' | 'senior_administrator' | 'administrator';
   scope?: AccessContext['scope'];
 }> = {}): AccessContext {
   const scope = overrides.scope ?? { kind: 'tenant' as const, id: 'tenant-zhudatuan', tenant: 'tenant-zhudatuan', path: [] };
@@ -226,7 +327,7 @@ function managerAccess(overrides: Readonly<{
       scope, permissions: ['identity.invitation.manage'], effective: '2026-08-29T00:00:00.000Z', expires: null,
     }] },
     governance: {
-      governanceLevel: overrides.isExactOwner === false ? 'administrator' : 'owner',
+      governanceLevel: overrides.governanceLevel ?? (overrides.isExactOwner === false ? 'administrator' : 'owner'),
       isExactOwner: overrides.isExactOwner !== false,
       actorMembershipId: membership,
       actorPrincipalId: overrides.actor ?? 'principal:zhudatuan:owner:ethan:v1',
