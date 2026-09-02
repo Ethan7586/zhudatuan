@@ -375,8 +375,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (target.rows[0]?.id !== invitationScope) reject(403, 'PERMISSION_DENIED');
           await database.query(`select set_config('app.scope_id',$1,true)`, [invitationScope]);
         }
-        requireInvitationManager(request);
+        const { governance } = requireInvitationManager(request);
         if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
+        if (governanceLevel === 'senior_administrator' && !governance.isExactOwner) reject(403, 'PERMISSION_DENIED');
         const maxUses = integerField(body, 'maxUses', 1);
         const expiresAt = inviteExpiry(body.expiresAt);
         if (label.length < 2 || maxUses > 500 || (targetClient === 'operator' && maxUses !== 1)) throw new Error('INVALID_INVITATION_INPUT');
@@ -1004,7 +1005,7 @@ function requireInvitationManager(request: OperationRequest) {
   const governance = requireGovernanceContext(access);
   const invitationAuthority = governance.isExactOwner || governance.governanceLevel === 'senior_administrator';
   if (!invitationAuthority) reject(403, 'PERMISSION_DENIED');
-  return { access, invitationAuthority };
+  return { access, governance, invitationAuthority };
 }
 
 function invitationGovernanceLevel(value: unknown, targetClient: 'storefront' | 'operator'):
