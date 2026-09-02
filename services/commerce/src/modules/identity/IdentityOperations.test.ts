@@ -33,9 +33,13 @@ describe('identity session projection', () => {
       end: async () => undefined,
     };
 
+    const baseAccess = access();
     const response = await identityOperations(context(pool)).invoke({
       type: 'identity.session.read',
-      access: { ...access(), capabilities: ['identity.session.read'] },
+      access: { ...baseAccess, capabilities: ['identity.session.read'], governance: {
+        ...baseAccess.governance!, governanceLevel: 'senior_administrator', isExactOwner: false,
+        ownerMembershipId: 'membership:owner',
+      } },
       input: {
         path: {}, query: {}, headers: {}, body: null, rawBody: '',
         deadline: Date.now() + 1_000, signal: new AbortController().signal,
@@ -47,8 +51,46 @@ describe('identity session projection', () => {
       body: {
         profile: { display_name: '张三', employee_no: null },
         security: { phoneMasked: '+86****8000' },
+        governance: { level: 'senior_administrator', exactOwner: false, organization: 'organization:one' },
       },
     });
+  });
+});
+
+describe('governance-aware member management', () => {
+  it('lets a senior administrator manage an ordinary member through the canonical target resolver', async () => {
+    const harness = memberManagementHarness('administrator');
+
+    const response = await identityOperations(context(harness.pool)).invoke(
+      memberStatusRequest(governanceAccess('senior_administrator', false))
+    );
+
+    expect(response).toMatchObject({ status: 200, body: { id: 'membership:target', status: 'suspended' } });
+    const targetRead = harness.queries.find(({ text }) => text.includes('target_governance.governance_level'));
+    expect(targetRead?.text).toContain('access.resolve_governance');
+    expect(targetRead?.values).toEqual(['membership:target', 'tenant', 'tenant:one']);
+  });
+
+  it.each(['owner', 'senior_administrator'] as const)(
+    'rejects a non-owner managing a protected %s membership',
+    async (targetGovernance) => {
+      const harness = memberManagementHarness(targetGovernance);
+
+      await expect(identityOperations(context(harness.pool)).invoke(
+        memberStatusRequest(governanceAccess('senior_administrator', false))
+      )).resolves.toEqual({ status: 403, body: { code: 'PERMISSION_DENIED' } });
+      expect(harness.queries.some(({ text }) => text.includes('set status=$2'))).toBe(false);
+    }
+  );
+
+  it('preserves exact Owner authority over a senior administrator membership', async () => {
+    const harness = memberManagementHarness('senior_administrator');
+
+    const response = await identityOperations(context(harness.pool)).invoke(
+      memberStatusRequest(governanceAccess('owner', true))
+    );
+
+    expect(response).toMatchObject({ status: 200, body: { id: 'membership:target', status: 'suspended' } });
   });
 });
 
@@ -310,6 +352,72 @@ function access(): NonNullable<OperationRequest['access']> {
     assurance: { level: 1 },
     trace: 'trace:one',
   };
+}
+
+function governanceAccess(
+  governanceLevel: 'owner' | 'senior_administrator',
+  isExactOwner: boolean
+): NonNullable<OperationRequest['access']> {
+  const base = access();
+  const scope = { kind: 'tenant' as const, id: 'tenant:one', tenant: 'tenant:one', path: [] };
+  return {
+    ...base,
+    scope,
+    membership: { ...base.membership, grants: [{
+      scope, permissions: ['member.manage'], effective: '2026-09-02T00:00:00.000Z', expires: null,
+    }] },
+    governance: {
+      ...base.governance!, governanceLevel, isExactOwner, organizationId: 'tenant:one',
+      ownerMembershipId: isExactOwner ? base.membership.id : 'membership:owner',
+      scope: { kind: 'tenant', semanticId: 'tenant:one', storageId: 'tenant:one' },
+    },
+    capabilities: ['identity.members.manage'],
+  };
+}
+
+function memberStatusRequest(accessContext: NonNullable<OperationRequest['access']>): OperationRequest {
+  return {
+    type: 'identity.members.manage',
+    access: accessContext,
+    input: {
+      path: { membershipid: 'membership:target' }, query: {}, headers: {},
+      body: { action: 'status', status: 'suspended', reason: '验证治理身份边界' }, rawBody: '',
+      deadline: Date.now() + 1_000, signal: new AbortController().signal,
+      idempotency: 'member-status:target',
+    },
+  };
+}
+
+function memberManagementHarness(targetGovernance: 'owner' | 'senior_administrator' | 'administrator'): Readonly<{
+  pool: DatabasePool;
+  queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
+}> {
+  let requestHash = '';
+  const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+  const client = {
+    query: async (text: string, values: readonly unknown[] = []) => {
+      queries.push({ text, values });
+      if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.startsWith('select request_hash,state,response')) {
+        return result([{ request_hash: requestHash, state: 'started', response: null }]);
+      }
+      if (text.includes('target_governance.governance_level')) {
+        return result([{ member_id: 'member:target', governance_level: targetGovernance }]);
+      }
+      if (text.includes('set status=$2')) {
+        return result([{ id: 'membership:target', member_id: 'member:target', status: values[1] }]);
+      }
+      return result([]);
+    },
+    release: () => undefined,
+  } as unknown as PoolClient;
+  const pool: DatabasePool = {
+    connect: async () => client,
+    query: async () => result([]),
+    workload: () => pool,
+    end: async () => undefined,
+  };
+  return { pool, queries };
 }
 
 function result(rows: readonly Record<string, unknown>[]): QueryResult {

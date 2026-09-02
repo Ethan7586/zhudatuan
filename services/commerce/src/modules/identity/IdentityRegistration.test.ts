@@ -427,7 +427,7 @@ describe('canonical member registration security boundary', () => {
     const response = await identityRegistrationOperations(context(harness.pool))
       .invoke(registrationRequest('registration:operator-complete'));
 
-    expect(response).toMatchObject({ status: 201, body: { client: 'operator' } });
+    expect(response).toMatchObject({ status: 201, body: { client: 'operator', governanceLevel: 'administrator' } });
     const memberships = harness.queries.filter(({ text }) => text.includes('insert into access.membership('));
     expect(memberships).toHaveLength(2);
     expect(memberships[0]?.text).toContain("'storefront'");
@@ -437,6 +437,23 @@ describe('canonical member registration security boundary', () => {
     const roles = harness.queries.filter(({ text }) => text.includes('insert into access.membershiprole'));
     expect(roles[0]?.values).toContain('role-zhudatuan-storefront-member');
     expect(roles[1]?.values).toContain('role-zhudatuan-pending-operator');
+  });
+
+  it('turns a senior invitation into a tenant-scoped senior operator without creating Owner state', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true, subjectExists: false, inviteAccepted: true, operatorInvite: true, seniorInvite: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(registrationRequest('registration:senior-complete'));
+
+    expect(response).toMatchObject({ status: 201, body: { client: 'operator', governanceLevel: 'senior_administrator' } });
+    const roles = harness.queries.filter(({ text }) => text.includes('insert into access.membershiprole'));
+    expect(roles[1]?.values).toContain('role-senior-administrator-v1:tenant-zhudatuan');
+    expect(harness.queries.some(({ text }) => text.includes('insert into access.platformowner'))).toBe(false);
+    const operatorScopes = harness.queries.find(({ text, values }) => text.includes('insert into access.scopegrant')
+      && values.includes('tenant-zhudatuan'));
+    expect(operatorScopes?.text).toContain("'tenant'");
   });
 });
 
@@ -620,6 +637,7 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
 }
 
 function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subjectExists: boolean; inviteAccepted?: boolean; operatorInvite?: boolean;
+  seniorInvite?: boolean;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
   challengePrincipal?: string | null; credentialSecret?: string; ownerPasswordRotation?: boolean }>): Readonly<{
   pool: DatabasePool;
@@ -648,11 +666,13 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       }
       if (text.includes('with candidate as materialized') && text.includes('update member.invite')) {
         return result(input.inviteAccepted ? [input.operatorInvite ? {
-          organization_id: 'tenant-zhudatuan', role_id: 'role-zhudatuan-pending-operator', terms_hash: 'f'.repeat(64),
-          target_client: 'operator', storefront_organization_id: 'mall-zhudatuan',
+          organization_id: 'tenant-zhudatuan',
+          role_id: input.seniorInvite ? 'role-senior-administrator-v1:tenant-zhudatuan' : 'role-zhudatuan-pending-operator',
+          terms_hash: 'f'.repeat(64), target_client: 'operator', storefront_organization_id: 'mall-zhudatuan',
+          governance_level: input.seniorInvite ? 'senior_administrator' : 'administrator',
         } : {
           organization_id: 'mall-zhudatuan', role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64),
-          target_client: 'storefront', storefront_organization_id: null,
+          target_client: 'storefront', storefront_organization_id: null, governance_level: null,
         }] : []);
       }
       if (text.includes('select mobile_ciphertext from member.profile')) {

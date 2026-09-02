@@ -97,8 +97,13 @@ export function accessOperatorReadActions(): OperationActions {
                     and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id)))
               group by coalesce(assignment.assigned_scope_id,role.scope_id),coalesce(assignment.scope_source,'inherited')
             ) scoped),'[]') scopes,
-          role.id in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator') governance,
-          role.id not in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator') editable
+          (role.id in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator')
+            or role.id='role-senior-administrator-v1:'||role.scope_id) governance,
+          case when role.id='role-platform-owner-v2' then 'owner'
+            when role.id='role-senior-administrator-v1:'||role.scope_id then 'senior_administrator'
+            when role.id='role-zhudatuan-pending-operator' then 'administrator' end governance_level,
+          (role.id not in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator')
+            and role.id<>'role-senior-administrator-v1:'||role.scope_id) editable
           from access.role role where role.scope_id=$1 order by governance desc,role.name,role.id`, [access.scope.id]),
       ]);
       const pageResult = keysetResult(result, page, 'id');
