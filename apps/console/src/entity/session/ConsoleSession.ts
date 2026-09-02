@@ -8,6 +8,7 @@ export const ScopeSchema = z.object({
   id: z.string().min(1),
   tenant: z.string().min(1).optional(),
   name: z.string().min(1).optional(),
+  parent_id: z.string().min(1).nullable().optional(),
   path: z.array(z.object({ kind: z.enum(SCOPE_KINDS), id: z.string().min(1) })).optional(),
 });
 
@@ -60,9 +61,26 @@ export interface ConsoleContext {
 }
 
 export function uniqueScopes(scopes: readonly ConsoleScope[]): readonly ConsoleScope[] {
-  const unique = [...new Map(scopes.map((scope) => [`${scope.kind}:${scope.id}`, scope] as const)).values()];
+  const merged = new Map<string, ConsoleScope>();
+  for (const scope of scopes) {
+    const key = `${scope.kind}:${scope.id}`;
+    const current = merged.get(key);
+    merged.set(key, current === undefined ? scope : mergeScope(current, scope));
+  }
+  const unique = [...merged.values()];
   unique.sort((left, right) => scopeRank(left.kind) - scopeRank(right.kind) || (left.name ?? left.id).localeCompare(right.name ?? right.id));
   return Object.freeze(unique);
+}
+
+function mergeScope(current: ConsoleScope, candidate: ConsoleScope): ConsoleScope {
+  return Object.freeze({
+    ...current,
+    ...candidate,
+    ...(candidate.tenant ?? current.tenant ? { tenant: candidate.tenant ?? current.tenant } : {}),
+    ...(candidate.name ?? current.name ? { name: candidate.name ?? current.name } : {}),
+    ...(candidate.parent_id !== undefined || current.parent_id !== undefined ? { parent_id: candidate.parent_id ?? current.parent_id ?? null } : {}),
+    ...(candidate.path ?? current.path ? { path: candidate.path ?? current.path } : {}),
+  });
 }
 
 function scopeRank(kind: ScopeKind): number {

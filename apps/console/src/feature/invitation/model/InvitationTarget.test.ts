@@ -9,8 +9,9 @@ describe('invitation targets', () => {
   it('returns only malls governed by the current enterprise', () => {
     const enterprise = { id: 'enterprise:one', kind: 'enterprise', name: '一号企业' };
     expect(invitationTargets(enterprise, [
-      { id: 'mall:two', kind: 'mall', name: '二号商城', path: [{ id: 'platform' }, { id: 'enterprise:two' }] },
-      { id: 'mall:one', kind: 'mall', name: '一号商城', path: [{ id: 'platform' }, enterprise] },
+      { id: 'enterprise:two', kind: 'enterprise', parent_id: 'platform' },
+      { id: 'mall:two', kind: 'mall', name: '二号商城', parent_id: 'enterprise:two' },
+      { id: 'mall:one', kind: 'mall', name: '一号商城', parent_id: enterprise.id },
     ])).toEqual([{ id: 'mall:one', name: '一号商城' }]);
   });
 

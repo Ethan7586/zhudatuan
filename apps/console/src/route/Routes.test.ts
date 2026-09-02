@@ -26,11 +26,12 @@ describe('Console Route Registry', () => {
 
   it('deduplicates scopes and normalizes access versions', () => {
     const scopes = uniqueScopes([
-      { kind: 'mall', id: 'mall:2', name: '喜悦会' },
+      { kind: 'mall', id: 'mall:2' },
       { kind: 'enterprise', id: 'group:1', name: '鸿泰集团' },
-      { kind: 'mall', id: 'mall:2', name: '喜悦会' },
+      { kind: 'mall', id: 'mall:2', name: '喜悦会', parent_id: 'group:1' },
     ]);
     expect(scopes.map(({ id }) => id)).toEqual(['group:1', 'mall:2']);
+    expect(scopes[1]).toMatchObject({ name: '喜悦会', parent_id: 'group:1' });
     const session = SessionSchema.parse({
       actor: 'actor:1',
       membership: 'membership:1',
