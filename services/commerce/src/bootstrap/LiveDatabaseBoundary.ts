@@ -18,6 +18,11 @@ export interface LiveDatabaseBoundaryState {
   readonly database_owner: string | null;
 }
 
+interface BoundaryRequirements {
+  readonly businessRoles: boolean;
+  readonly retiredRoles: boolean;
+}
+
 const BOUNDARY_OWNER = 'zhudatuanregistrationboundary';
 
 export async function assertLiveDatabaseBoundary(
