@@ -48,6 +48,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "organization.stores.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "organization.stores.manage": Object.freeze({ input: structuralOperationInput(["storeid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "member.members.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+  "member.invitations.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "member.profile.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "member.addresses.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "member.addresses.manage": Object.freeze({ input: structuralOperationInput(["addressid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),

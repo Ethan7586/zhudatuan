@@ -76,6 +76,7 @@ describe('identity registration API entrypoint', () => {
       'identity.stepup.start',
       'identity.stepup.complete',
       'member.members.read',
+      'member.invitations.read',
       'member.imports.read',
       'access.center.read',
       'finance.entries.read',
