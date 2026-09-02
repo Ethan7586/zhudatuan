@@ -70,6 +70,9 @@ describe('identity registration API entrypoint', () => {
       'identity.invitations.revoke',
       'identity.members.create',
       'identity.password.reset',
+      'identity.password.verify',
+      'identity.mobile.challenge',
+      'identity.mobile.manage',
       'identity.stepup.start',
       'identity.stepup.complete',
       'member.members.read',
@@ -173,6 +176,9 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')?.operation).toBe('identity.sessions.create');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/password/reset')?.operation).toBe('identity.password.reset');
+    expect(bootstrapped.routes.match('POST', '/api/v1/identity/password/verify')?.operation).toBe('identity.password.verify');
+    expect(bootstrapped.routes.match('POST', '/api/v1/identity/mobile/challenges')?.operation).toBe('identity.mobile.challenge');
+    expect(bootstrapped.routes.match('PUT', '/api/v1/identity/mobile')?.operation).toBe('identity.mobile.manage');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/stepup/challenges')?.operation).toBe('identity.stepup.start');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/stepup/verifications')?.operation).toBe('identity.stepup.complete');
     expect(bootstrapped.routes.match('GET', '/api/v1/identity/sessions')).toBeNull();

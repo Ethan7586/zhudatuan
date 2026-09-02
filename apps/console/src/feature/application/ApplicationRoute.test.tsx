@@ -128,6 +128,58 @@ describe('Commerce application workspace', () => {
     expect(await screen.findByText('主打团甄选商城')).toBeTruthy();
   });
 
+  it('guides an owner without a mobile through enrollment before mall creation', async () => {
+    const user = userEvent.setup();
+    const enrollmentCalls: string[] = [];
+    server.use(
+      http.post('*/api/v1/identity/stepup/challenges', () => HttpResponse.json({
+        code: 'STEP_UP_DESTINATION_MISSING', message: 'No verified mobile is available.', requestId: 'request:no-mobile',
+      }, { status: 409 })),
+      http.post('*/api/v1/identity/password/verify', async ({ request }) => {
+        enrollmentCalls.push('password.verify');
+        expect(await request.json()).toEqual({ password: 'owner-password' });
+        return HttpResponse.json({ verified: true, verifiedAt: '2026-09-02T04:00:00.000Z' });
+      }),
+      http.post('*/api/v1/identity/mobile/challenges', async ({ request }) => {
+        enrollmentCalls.push('mobile.challenge');
+        expect(await request.json()).toEqual({ destination: '+8613800138000' });
+        return HttpResponse.json({
+          id: 'challenge:mobile', purpose: 'phone_change', expires_at: '2026-09-02T04:10:00.000Z',
+        }, { status: 202 });
+      }),
+      http.put('*/api/v1/identity/mobile', async ({ request }) => {
+        enrollmentCalls.push('mobile.manage');
+        expect(request.headers.get('x-access-version')).toBe('11');
+        expect(request.headers.get('x-csrf-token')).toBe('csrf-token-1234567890');
+        expect(await request.json()).toEqual({
+          mobile: '+8613800138000', challenge: 'challenge:mobile', code: '654321',
+        });
+        return HttpResponse.json({ id: 'member:owner', version: 2 });
+      }),
+    );
+
+    renderRoute('/applications', scope('enterprise', 'enterprise:hongtai', '鸿泰集团'));
+    await screen.findByRole('table', { name: '商城列表' });
+    await user.click(screen.getByRole('button', { name: '创建商城' }));
+    const dialog = await screen.findByRole('dialog', { name: '创建商城' });
+    await user.type(within(dialog).getByRole('textbox', { name: '商城名称' }), '宏泰甄选');
+    await user.type(within(dialog).getByRole('textbox', { name: '商城代码' }), 'HONGTAI');
+    await user.type(within(dialog).getByRole('textbox', { name: '访问标识' }), 'hongtai');
+    await user.click(within(dialog).getByRole('button', { name: '确认创建' }));
+
+    expect(await within(dialog).findByRole('heading', { name: '先绑定安全手机号' })).toBeTruthy();
+    await user.type(within(dialog).getByLabelText('当前账户密码'), 'owner-password');
+    await user.click(within(dialog).getByRole('button', { name: '验证当前密码' }));
+    await user.type(await within(dialog).findByLabelText('中国大陆手机号'), '13800138000');
+    await user.click(within(dialog).getByRole('button', { name: '获取绑定验证码' }));
+    await user.type(await within(dialog).findByLabelText('六位手机验证码'), '654321');
+    await user.click(within(dialog).getByRole('button', { name: '验证并绑定手机号' }));
+
+    expect(await within(dialog).findByText('手机号已绑定')).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: '使用新手机号重新登录' })).toBeTruthy();
+    expect(enrollmentCalls).toEqual(['password.verify', 'mobile.challenge', 'mobile.manage']);
+  });
+
   it('creates an application through the generated command and rereads the authoritative list', async () => {
     const user = userEvent.setup();
     let created = false;

@@ -56,6 +56,9 @@ export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
   'identity.invitations.revoke',
   'identity.members.create',
   'identity.password.reset',
+  'identity.password.verify',
+  'identity.mobile.challenge',
+  'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
 ] as const satisfies readonly OperationId[]);

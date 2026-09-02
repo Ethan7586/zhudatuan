@@ -1,7 +1,8 @@
 import { Button, Dialog } from '@shop/design';
 import { useState, type FormEvent } from 'react';
-import type { ConsoleScope } from '../../entity/session/ConsoleSession';
+import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
 import type { CreatedMall, MallCreateDraft } from './MallCreateCommand';
+import { MallMobileEnrollment } from './MallMobileEnrollment';
 
 export type MallCreatePhase = 'form' | 'starting' | 'verification' | 'verifying' | 'creating' | 'success';
 const MALL_CODE_PATTERN = /^[A-Z][A-Z0-9_]{2,31}$/;
@@ -17,8 +18,11 @@ export function MallCreateDialog({
   challengeExpiresAt,
   error,
   result,
+  context,
+  mobileEnrollment,
   onSubmit,
   onVerify,
+  onRelogin,
   onClose,
 }: Readonly<{
   open: boolean;
@@ -29,8 +33,11 @@ export function MallCreateDialog({
   challengeExpiresAt: string | undefined;
   error: string | undefined;
   result: CreatedMall | undefined;
+  context: ConsoleContext;
+  mobileEnrollment: boolean;
   onSubmit: (draft: MallCreateDraft) => void;
   onVerify: (code: string) => void;
+  onRelogin: () => void;
   onClose: () => void;
 }>) {
   const [enterpriseId, setEnterpriseId] = useState(() => preferredEnterpriseId ?? enterprises[0]?.id ?? '');
@@ -46,7 +53,9 @@ export function MallCreateDialog({
 
   return <Dialog open={open} title={dialogTitle(phase)} eyebrow="zhudatuan 主打团 · 商城管理"
     dismissable={!busy} onClose={onClose}>
-    {phase === 'success' && result !== undefined
+    {mobileEnrollment
+      ? <MallMobileEnrollment context={context} onRelogin={onRelogin} />
+      : phase === 'success' && result !== undefined
       ? <Success result={result} onClose={onClose} />
       : phase === 'verification' || phase === 'verifying'
         ? <Verification code={verificationCode} expiresAt={challengeExpiresAt} busy={busy} error={error}

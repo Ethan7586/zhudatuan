@@ -1,6 +1,12 @@
 import { ApiError } from '@shop/sdk';
 import { createIdempotencyKey } from '@shop/sdk/context';
-import { createFetchIdentityStepupComplete, createFetchIdentityStepupStart } from '@shop/sdk/identity';
+import {
+  createFetchIdentityMobileChallenge,
+  createFetchIdentityMobileManage,
+  createFetchIdentityPasswordVerify,
+  createFetchIdentityStepupComplete,
+  createFetchIdentityStepupStart,
+} from '@shop/sdk/identity';
 import { createFetchProvisioningMallsCreate } from '@shop/sdk/provisioning';
 import { z } from 'zod';
 import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
@@ -8,6 +14,9 @@ import { consoleCommand } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
 
 const mallsCreate = createFetchProvisioningMallsCreate(appConfig.apiBaseUrl);
+const passwordVerify = createFetchIdentityPasswordVerify(appConfig.apiBaseUrl);
+const mobileChallenge = createFetchIdentityMobileChallenge(appConfig.apiBaseUrl);
+const mobileManage = createFetchIdentityMobileManage(appConfig.apiBaseUrl);
 const stepupStart = createFetchIdentityStepupStart(appConfig.apiBaseUrl);
 const stepupComplete = createFetchIdentityStepupComplete(appConfig.apiBaseUrl);
 
@@ -34,6 +43,21 @@ const StepupCompleteSchema = z.object({
   assurance_level: z.number().int().min(3),
 });
 
+const PasswordVerificationSchema = z.object({
+  verified: z.literal(true),
+  verifiedAt: z.string().min(1),
+});
+
+const MobileChallengeSchema = z.object({
+  id: z.string().min(1),
+  purpose: z.literal('phone_change'),
+  expires_at: z.string().min(1),
+});
+
+const MobileReceiptSchema = z.object({
+  id: z.string().min(1),
+});
+
 export interface MallCreateDraft {
   readonly enterpriseId: string;
   readonly name: string;
@@ -47,6 +71,7 @@ export interface MallCreateAttempt extends MallCreateDraft {
 
 export type CreatedMall = z.infer<typeof CreatedMallSchema>;
 export type MallStepupChallenge = z.infer<typeof StepupChallengeSchema>;
+export type MallMobileChallenge = z.infer<typeof MobileChallengeSchema>;
 
 export function mallProvisioningScope(context: ConsoleContext): ConsoleScope | undefined {
   if (context.scope.kind === 'platform') return context.scope;
@@ -93,6 +118,42 @@ export async function startMallCreateStepup(
   return StepupChallengeSchema.parse(value);
 }
 
+export async function verifyMallEnrollmentPassword(
+  context: ConsoleContext,
+  password: string,
+  signal?: AbortSignal,
+): Promise<void> {
+  const value = await passwordVerify({ body: { password } }, identityCommand(context, signal));
+  PasswordVerificationSchema.parse(value);
+}
+
+export async function requestMallEnrollmentCode(
+  context: ConsoleContext,
+  mainlandMobile: string,
+  signal?: AbortSignal,
+): Promise<MallMobileChallenge> {
+  const value = await mobileChallenge(
+    { body: { destination: canonicalMainlandMobile(mainlandMobile) } },
+    identityCommand(context, signal),
+  );
+  return MobileChallengeSchema.parse(value);
+}
+
+export async function bindMallEnrollmentMobile(
+  context: ConsoleContext,
+  mainlandMobile: string,
+  challenge: string,
+  code: string,
+  signal?: AbortSignal,
+): Promise<void> {
+  const value = await mobileManage({ body: {
+    mobile: canonicalMainlandMobile(mainlandMobile),
+    challenge,
+    code: code.trim(),
+  } }, identityCommand(context, signal));
+  MobileReceiptSchema.parse(value);
+}
+
 export async function completeMallCreateStepup(
   context: ConsoleContext,
   platformScope: ConsoleScope,
@@ -132,6 +193,21 @@ export function isMallStepupRequired(error: unknown): boolean {
   return apiErrorCode(error) === 'STEPUP_REQUIRED';
 }
 
+export function isMallMobileMissing(error: unknown): boolean {
+  return apiErrorCode(error) === 'STEP_UP_DESTINATION_MISSING';
+}
+
+export function mallEnrollmentError(error: unknown): string {
+  const code = apiErrorCode(error) ?? (error instanceof Error ? error.message : undefined);
+  if (code === 'CREDENTIAL_INVALID') return '当前密码不正确，请重新输入。';
+  if (code === 'IDENTITY_SUBJECT_EXISTS') return '该手机号已经绑定其他账号。';
+  if (code === 'CHALLENGE_INVALID' || code === 'CHALLENGE_CODE_INVALID') return '验证码不正确，请重新获取。';
+  if (code === 'CHALLENGE_EXPIRED') return '验证码已过期，请重新获取。';
+  if (code === 'MOBILE_ENROLLMENT_PASSWORD_REQUIRED') return '密码验证已失效，请重新开始绑定。';
+  if (error instanceof ApiError) return `${error.code} · 请求 ${error.requestId}`;
+  return error instanceof Error ? error.message : '手机号绑定失败，请稍后重试。';
+}
+
 export function mallCreationError(error: unknown): string {
   const code = apiErrorCode(error) ?? (error instanceof Error ? error.message : undefined);
   if (code === 'MALL_CODE_CONFLICT') return '商城代码已被当前集团使用，请更换后重试。';
@@ -147,4 +223,17 @@ function apiErrorCode(error: unknown): string | undefined {
   if (error instanceof ApiError) return error.code;
   if (typeof error !== 'object' || error === null || !('code' in error)) return undefined;
   return typeof error.code === 'string' ? error.code : undefined;
+}
+
+function identityCommand(context: ConsoleContext, signal?: AbortSignal) {
+  return consoleCommand(undefined, {
+    accessVersion: context.session.accessVersion,
+    ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+    ...(signal === undefined ? {} : { signal }),
+  });
+}
+
+function canonicalMainlandMobile(value: string): string {
+  if (!/^1[3-9][0-9]{9}$/.test(value)) throw new Error('请输入有效的中国大陆手机号。');
+  return `+86${value}`;
 }
