@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { Component } from './ControlRoute';
 
-describe('Merchant management preview', () => {
+describe('Merchant service center preview', () => {
   it('renders the approved presentation without exposing unfinished writes', () => {
     render(<MemoryRouter><Component /></MemoryRouter>);
 

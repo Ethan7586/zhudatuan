@@ -9,17 +9,28 @@ import { Sidebar } from './Sidebar';
 afterEach(cleanup);
 
 describe('Sidebar commerce navigation', () => {
-  it('keeps merchant governance out of ordinary navigation and places commerce before products', async () => {
+  it('keeps the merchant service center out of merchant navigation and places commerce before products', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     renderSidebar('enterprise', false, onNavigate);
     const navigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(navigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    expect(labels).not.toContain('商家管理');
+    expect(labels).not.toContain('商家服务中心');
     expect(labels.indexOf('商城管理')).toBeLessThan(labels.indexOf('商品治理台'));
 
     await user.click(screen.getByRole('button', { name: '商城管理' }));
     expect(onNavigate).toHaveBeenCalledWith('applications');
+  });
+
+  it('shows the merchant service center only in platform navigation', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    renderSidebar('platform', false, onNavigate);
+
+    const target = screen.getByRole('button', { name: '商家服务中心' });
+    expect(target.getAttribute('data-module')).toBe('control');
+    await user.click(target);
+    expect(onNavigate).toHaveBeenCalledWith('control');
   });
 
   it.each([

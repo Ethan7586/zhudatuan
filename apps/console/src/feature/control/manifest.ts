@@ -10,6 +10,6 @@ export const controlModule = {
     kind: 'entry',
     lazy: () => import('./ControlRoute'),
     operations: ['runtime.health.dependency'],
-    presentation: { title: '商家管理', summary: '开通和管理独立品牌、域名、渠道与商城体系' },
+    presentation: { title: '商家服务中心', summary: '为商家开通独立品牌、域名、渠道与商城体系' },
   }],
 } as const satisfies ConsoleModuleManifest<'control'>;

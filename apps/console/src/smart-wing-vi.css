@@ -164,6 +164,28 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   filter: drop-shadow(0 2px 5px rgb(31 94 255 / 35%));
 }
 
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[data-module='control'] {
+  border-color: rgb(222 190 117 / 24%);
+  background: linear-gradient(90deg, rgb(180 132 34 / 20%), rgb(180 132 34 / 5%));
+  color: #f4e3bb;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[data-module='control'] > svg {
+  color: #e7c979;
+  filter: drop-shadow(0 2px 5px rgb(198 154 59 / 24%));
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[data-module='control']:hover,
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[data-module='control'][aria-current='page'] {
+  border-color: rgb(232 205 143 / 38%);
+  background: linear-gradient(90deg, rgb(180 132 34 / 34%), rgb(180 132 34 / 12%));
+  box-shadow: inset 0 1px 0 rgb(255 241 207 / 8%), 0 8px 20px rgb(48 31 0 / 16%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarnavigation button[data-module='control'][aria-current='page']::after {
+  background: #e7c979;
+}
+
 .consolelayout[data-visual-theme='admin-web-v1'] .sidebarprofile {
   width: 100%;
   height: 56px;
