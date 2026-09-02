@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { Client } from 'pg';
-import { localSeedEnvironment } from '@shop/config/server';
+import { localSeedEnvironment, TARGET_SCHEMA_HEAD } from '@shop/config/server';
 import { COMMERCE_OPERATIONS, CONTRACT_VERSION } from '@shop/contract';
 import { KmsClient } from '../../../services/commerce/src/foundation/infrastructure/KmsClient';
 import { HttpObjectStore } from '../../../services/commerce/src/foundation/infrastructure/ObjectStore';
@@ -8,7 +8,6 @@ import { localFetch } from '@shop/localinfra';
 import { localSecret } from './LocalSecrets';
 
 const CURRENT_SCHEMA_RELATIONS = 246;
-const CURRENT_MIGRATIONS = 147;
 const LOCAL_ACCOUNT = 'ethan';
 const LOCAL_MOBILE = '+8613800138000';
 
@@ -44,13 +43,14 @@ await verifyEmployeeSession(ethanPassword);
 const database = new Client({ connectionString });
 await database.connect();
 try {
-  const result = await database.query<{ tables: string; migrations: string; operations: string; publicobjects: string }>(`select
+  const result = await database.query<{ tables: string; migrations: string; operations: string; publicobjects: string; head: boolean }>(`select
     (select count(*) from information_schema.tables where table_schema not in('pg_catalog','information_schema')) tables,
     (select count(*) from supabase_migrations.schema_migrations) migrations,
     (select count(*) from runtime.operation) operations,
-    (select count(*) from information_schema.tables where table_schema='public') publicobjects`);
+    (select count(*) from information_schema.tables where table_schema='public') publicobjects,
+    (select exists(select 1 from runtime.schemaversion where version=$1)) head`, [TARGET_SCHEMA_HEAD]);
   const counts = result.rows[0];
-  if (!counts || Number(counts.tables) < CURRENT_SCHEMA_RELATIONS || Number(counts.migrations) < CURRENT_MIGRATIONS || Number(counts.operations) < COMMERCE_OPERATIONS.length || Number(counts.publicobjects) !== 0) {
+  if (!counts || Number(counts.tables) < CURRENT_SCHEMA_RELATIONS || counts.head !== true || Number(counts.operations) < COMMERCE_OPERATIONS.length || Number(counts.publicobjects) !== 0) {
     throw new Error(`LOCAL_RUNTIME_COUNTS_INVALID:${JSON.stringify(counts)}`);
   }
   process.stdout.write(`LOCAL_P0_VERIFIED tables=${counts.tables} migrations=${counts.migrations} operations=${counts.operations} public=${counts.publicobjects}\n`);
@@ -316,16 +316,18 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     throw new Error(`LOCAL_STORE_UPDATE_INVALID:${updatedStore.status}:${JSON.stringify(updatedStorePayload)}`);
   const staleStore = await saveStore({ name: '过期版本不应生效', status: 'active', mall: 'mall-zhudatuan', regionCode: '310000', serviceRadiusMeters: 5000, address: null }, storeEtag);
   if (staleStore.status !== 409) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
-  const invitation = await localFetch('http://127.0.0.1:3001/api/v1/identity/invitations', {
-    method: 'POST',
-    headers: {
-      ...sessionHeaders(consoleSession),
-      'content-type': 'application/json',
-      'idempotency-key': randomUUID(),
-      'if-match': String(consoleAccessVersion),
-    },
-    body: JSON.stringify({ kind: 'signin', target: 'storefront', membershipId: 'membership-storefront-ethan-local', expiresAt: new Date(Date.now() + 24 * 60 * 60_000).toISOString(), reason: '本地统一权限验收' }),
-  });
+  const createInvitation = () =>
+    localFetch('http://127.0.0.1:3001/api/v1/identity/invitations', {
+      method: 'POST',
+      headers: {
+        ...sessionHeaders(consoleSession),
+        'content-type': 'application/json',
+        'idempotency-key': randomUUID(),
+        'if-match': String(consoleAccessVersion),
+      },
+      body: JSON.stringify({ kind: 'signin', target: 'storefront', membershipId: 'membership-storefront-ethan-local', expiresAt: new Date(Date.now() + 24 * 60 * 60_000).toISOString(), reason: '本地统一权限验收' }),
+    });
+  const invitation = await createInvitation();
   if (invitation.status !== 201) throw new Error(`LOCAL_INVITATION_CREATE_INVALID:${invitation.status}:${await invitation.text()}`);
   const invitationEtag = invitation.headers.get('etag');
   const created: unknown = await invitation.json();
@@ -336,7 +338,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   if (typeof invitationId !== 'string' || typeof invitationCode !== 'string' || invitationEtag === null || !['number', 'string'].includes(typeof invitationVersion)) {
     throw new Error(`LOCAL_INVITATION_RESPONSE_INVALID:${invitationEtag ?? 'NO_ETAG'}:${JSON.stringify(created)}`);
   }
-  const resolveInvitation = () =>
+  const resolveInvitation = (code: string) =>
     localFetch('http://127.0.0.1:3001/api/v1/identity/invitations/resolve', {
       method: 'POST',
       headers: {
@@ -348,26 +350,42 @@ async function verifyEmployeeSession(password: string): Promise<void> {
         'x-request-id': randomUUID(),
       },
       body: JSON.stringify({
-        code: invitationCode,
+        code,
         target: 'storefront',
         returnTarget: bootstraps[0].returnTarget,
         authorization: { state: token(), nonce: token(), challenge: token() },
       }),
     });
-  const activeResolution = await resolveInvitation();
-  if (activeResolution.status !== 200) throw new Error(`LOCAL_INVITATION_RESOLVE_INVALID:${activeResolution.status}:${await activeResolution.text()}`);
-  const revoke = await localFetch(`http://127.0.0.1:3001/api/v1/identity/invitations/${encodeURIComponent(invitationId)}`, {
+  const activeResolution = await resolveInvitation(invitationCode);
+  const activeResolutionPayload: unknown = await activeResolution.json();
+  if (
+    activeResolution.status !== 201 ||
+    activeResolutionPayload === null ||
+    typeof activeResolutionPayload !== 'object' ||
+    Array.isArray(activeResolutionPayload) ||
+    (activeResolutionPayload as Readonly<Record<string, unknown>>).kind !== 'session'
+  )
+    throw new Error(`LOCAL_INVITATION_RESOLVE_INVALID:${activeResolution.status}:${JSON.stringify(activeResolutionPayload)}`);
+  const revocable = await createInvitation();
+  const revocableEtag = revocable.headers.get('etag');
+  const revocablePayload: unknown = await revocable.json();
+  const revocableId = revocablePayload !== null && typeof revocablePayload === 'object' && !Array.isArray(revocablePayload) ? (revocablePayload as Readonly<Record<string, unknown>>).id : null;
+  const revocableCode = revocablePayload !== null && typeof revocablePayload === 'object' && !Array.isArray(revocablePayload) ? (revocablePayload as Readonly<Record<string, unknown>>).code : null;
+  if (revocable.status !== 201 || typeof revocableId !== 'string' || typeof revocableCode !== 'string' || revocableEtag === null) {
+    throw new Error(`LOCAL_REVOCABLE_INVITATION_INVALID:${revocable.status}:${JSON.stringify(revocablePayload)}`);
+  }
+  const revoke = await localFetch(`http://127.0.0.1:3001/api/v1/identity/invitations/${encodeURIComponent(revocableId)}`, {
     method: 'DELETE',
     headers: {
       ...sessionHeaders(consoleSession),
       'content-type': 'application/json',
       'idempotency-key': randomUUID(),
-      'if-match': invitationEtag,
+      'if-match': revocableEtag,
     },
     body: JSON.stringify({ reason: '本地验证完成后撤销' }),
   });
   if (revoke.status !== 200) throw new Error(`LOCAL_INVITATION_REVOKE_INVALID:${revoke.status}:${await revoke.text()}`);
-  const revokedResolution = await resolveInvitation();
+  const revokedResolution = await resolveInvitation(revocableCode);
   const revokedResolutionPayload: unknown = await revokedResolution.json();
   if (
     revokedResolution.status !== 400 ||
