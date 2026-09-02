@@ -78,6 +78,30 @@ export const LoginPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [lockoutSeconds]);
 
+  useEffect(() => {
+    if (!registrationDeepLink) return;
+    let active = true;
+    setRegistrationBusy('invite');
+    setFormError('');
+    void resolveCanonicalInvite(registrationDeepLink)
+      .then((invitation) => {
+        if (!active) return;
+        setRegistrationInvite(invitation);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
+        setRegistrationNotice(`已进入【${invitation.organizationName}】手机注册通道`);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRegistrationInvite(null);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
+        setFormError(error instanceof Error ? error.message : '邀请码验证失败');
+      })
+      .finally(() => {
+        if (active) setRegistrationBusy(null);
+      });
+    return () => { active = false; };
+  }, [registrationDeepLink]);
+
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
     setFormError('');
