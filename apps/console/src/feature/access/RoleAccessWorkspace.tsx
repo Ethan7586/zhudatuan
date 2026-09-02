@@ -220,8 +220,18 @@ function InvitationRecordsPanel({ available, readable, records, pending, fetchin
       <InvitationRecordsState title="还没有邀请记录" detail="生成第一条管理员邀请后，记录会自动出现在这里。" />
     ) : (
       <>
-        <div className="invitationrecordslist" aria-label={`已显示 ${records.length} 条邀请记录`}>
-          {records.map((record) => <InvitationRecordCard key={record.id} record={record} />)}
+        <div className="invitationrecordstablewrap">
+          <table className="invitationrecordstable" aria-label={`邀请记录，共 ${records.length} 条`}>
+            <thead><tr>
+              <th scope="col">被邀请人</th>
+              <th scope="col">邀请人</th>
+              <th scope="col">管理员级别</th>
+              <th scope="col">状态</th>
+              <th scope="col">创建时间</th>
+              <th scope="col">接受时间</th>
+            </tr></thead>
+            <tbody>{records.map((record) => <InvitationRecordRow key={record.id} record={record} />)}</tbody>
+          </table>
         </div>
         {hasMore ? <Button onPress={onMore} isPending={fetchingMore}>加载更多</Button> : <p className="invitationrecordsend">已显示全部记录</p>}
       </>
@@ -229,17 +239,15 @@ function InvitationRecordsPanel({ available, readable, records, pending, fetchin
   </Surface>;
 }
 
-function InvitationRecordCard({ record }: Readonly<{ record: InvitationRecord }>) {
-  return <article className="invitationrecordcard">
-    <header><div><span>邀请对象</span><strong>{record.label}</strong></div><Badge tone={invitationStatusTone(record.status)}>{invitationStatusLabel(record.status)}</Badge></header>
-    <dl>
-      <div><dt>邀请人</dt><dd>{record.created_by_name ?? '历史记录，创建人不可还原'}</dd></div>
-      <div><dt>管理员级别</dt><dd>{record.governance_level === 'senior_administrator' ? '高级管理员' : '普通管理员'}</dd></div>
-      <div><dt>是否已使用</dt><dd>{invitationWasUsed(record) ? '已使用' : '未使用'}</dd></div>
-      <div><dt>是否已作废</dt><dd>{record.status === 'revoked' ? '已作废' : '未作废'}</dd></div>
-      <div><dt>创建时间</dt><dd>{formatInvitationDate(record.created_at)}</dd></div>
-    </dl>
-  </article>;
+function InvitationRecordRow({ record }: Readonly<{ record: InvitationRecord }>) {
+  return <tr>
+    <td className="invitationrecordstarget"><strong>{invitationTarget(record)}</strong></td>
+    <td>{record.created_by_name ?? '历史记录，创建人不可还原'}</td>
+    <td>{record.governance_level === 'senior_administrator' ? '高级管理员' : '普通管理员'}</td>
+    <td><Badge tone={invitationStatusTone(record.status)}>{invitationStatusLabel(record.status)}</Badge></td>
+    <td>{formatInvitationDate(record.created_at)}</td>
+    <td>{record.accepted_at === null ? '—' : formatInvitationDate(record.accepted_at)}</td>
+  </tr>;
 }
 
 function InvitationRecordsState({ title, detail, action, onAction }: Readonly<{
@@ -261,8 +269,9 @@ function invitationStatusTone(status: InvitationRecord['status']): 'success' | '
   return { active: 'success', used: 'info', expired: 'warning', revoked: 'danger' }[status] as 'success' | 'info' | 'warning' | 'danger';
 }
 
-function invitationWasUsed(record: InvitationRecord): boolean {
-  return record.use_count > 0 || record.accepted_at !== null;
+function invitationTarget(record: InvitationRecord): string {
+  if (record.invitee_name !== null && record.destination_masked !== null) return `${record.invitee_name} · ${record.destination_masked}`;
+  return record.invitee_name ?? record.destination_masked ?? record.label;
 }
 
 function formatInvitationDate(value: string): string {

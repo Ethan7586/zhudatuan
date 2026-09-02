@@ -3,6 +3,7 @@ import type { OperationDatabase } from '../../foundation/application/ModuleOpera
 export interface MemberInvite {
   readonly id: string;
   readonly organization_id: string;
+  readonly created_by: string;
   readonly role_id: string;
   readonly terms_hash: string;
 }
