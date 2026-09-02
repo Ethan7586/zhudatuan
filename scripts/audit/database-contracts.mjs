@@ -82,6 +82,7 @@ const REPAIR_FILES = [
   '20260902010000_restore_public_mall_role_contracts.sql',
   '20260902011000_enable_public_mall_external_payment.sql',
   '20260902012000_zhudatuan_mall_provisioning_access.sql',
+  '20260902132000_canonical_governance_context.sql',
   '20260902133000_repair_console_support_scope_contract.sql',
 ];
 

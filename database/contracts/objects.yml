@@ -248,6 +248,14 @@ objects:
     objectType: function
     target: access.membership_version(text)
     privilege: execute
+  - id: shopapp:function:access.resolve_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: database/supabase/migrations/20260902132000_canonical_governance_context.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_governance(text,text,text,text)
+    privilege: execute
   - id: shopapp:function:access.resolve_membership(text):execute
     kind: grant
     owner: access

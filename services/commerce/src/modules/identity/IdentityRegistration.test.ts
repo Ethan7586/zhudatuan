@@ -118,11 +118,10 @@ describe('canonical member registration security boundary', () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
       mobileCiphertext: null, passwordEvidence: true, exactOwner: true });
 
-    const response = await identityOperations(context(harness.pool)).invoke(mobileManageRequest());
+    const response = await identityOperations(context(harness.pool)).invoke(mobileManageRequest(true));
 
     expect(response.status).toBe(200);
-    const owner = harness.queries.find(({ text }) => text.includes('from access.platformowner owner'));
-    expect(owner?.values).toEqual(['membership:stepup', 'principal:stepup']);
+    expect(harness.queries.some(({ text }) => text.includes('from access.platformowner owner'))).toBe(false);
     const boundary = harness.queries.find(({ text }) => text.includes('access.change_zhudatuan_owner_mobile'));
     expect(boundary?.values.slice(0, 3)).toEqual(['principal:stepup', 'session:stepup', 'challenge:phone-change']);
     expect(boundary?.values.slice(4)).toEqual([
@@ -573,10 +572,10 @@ function mobileChallengeRequest(body: Readonly<Record<string, unknown>>): Operat
   return authenticatedRequest('identity.mobile.challenge', body, 'mobile:challenge');
 }
 
-function mobileManageRequest(): OperationRequest {
+function mobileManageRequest(isExactOwner = false): OperationRequest {
   return authenticatedRequest('identity.mobile.manage', {
     mobile: SUBJECT, challenge: 'challenge:phone-change', code: '123456',
-  }, 'mobile:manage');
+  }, 'mobile:manage', isExactOwner);
 }
 
 function stepupCompleteRequest(): OperationRequest {
@@ -598,7 +597,7 @@ function passwordResetRequest(): OperationRequest {
 }
 
 function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Record<string, unknown>>,
-  idempotency: string): OperationRequest {
+  idempotency: string, isExactOwner = false): OperationRequest {
   return {
     type,
     access: {
@@ -606,6 +605,11 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
         accessVersion: 1, target: 'console', assurance: { level: 2 } },
       membership: { id: 'membership:stepup', active: true, accessVersion: 1, denies: [], grants: [] },
       scope: { id: 'principal:stepup', kind: 'self', path: [] }, accessVersion: 1,
+      governance: { governanceLevel: isExactOwner ? 'owner' : 'administrator', isExactOwner,
+        actorMembershipId: 'membership:stepup', actorPrincipalId: 'principal:stepup', organizationId: 'tenant-zhudatuan',
+        ownerMembershipId: isExactOwner ? 'membership:stepup' : 'membership:owner',
+        scope: { kind: 'self', semanticId: 'principal:stepup', storageId: 'self:principal:stepup' },
+        resolvedAt: new Date('2026-09-02T00:00:00.000Z') },
       capabilities: [type], assurance: { level: 2 }, trace: `trace:${idempotency}`,
     },
     input: {

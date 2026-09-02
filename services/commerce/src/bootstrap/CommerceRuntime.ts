@@ -4,6 +4,7 @@ import type { OperationId } from '@shop/contract';
 import { apiReturnTargets, WechatApplicationCatalog, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
+import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { createPool, type DatabasePool } from '../foundation/persistence/Pool';

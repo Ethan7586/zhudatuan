@@ -9,6 +9,7 @@ import { StepupPolicy } from './StepupPolicy';
 import type { DecisionSink } from './DecisionSink';
 import { assertRiskAllowed, type RiskGate } from './RiskGate';
 import { ResolveMallContext } from '../../modules/mall/MallContext';
+import type { GovernanceResolver } from './GovernanceResolver';
 
 export interface MembershipResolver {
   resolve(actor: string): Promise<MembershipAccess>;
@@ -54,6 +55,7 @@ export class AccessPipeline {
       scope = await this.scopes.resolve(actor, operation, resource ?? scopeHint);
       const scopeDecision = checkScope(membership, permission, scope, now);
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
+      const governance = await this.governance?.resolve(actor, membership, scope);
       const mallContext = this.mallContexts.resolve(scope, membership, scopeHint);
       const capabilities = await this.capabilities.resolve(membership.id);
       if (!capabilities.includes(operation)) throw new DomainError('PERMISSION_DENIED', { operation });
