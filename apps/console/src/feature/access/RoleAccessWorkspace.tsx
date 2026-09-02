@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
+import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
 import { accessKey, readAccess } from './AccessQuery';
 import type { AccessRole } from './AccessSchema';
 import { roleCommandAvailable } from './AccessRoleCommand';
@@ -22,9 +23,7 @@ export function RoleAccessWorkspace() {
   const [invitationOpen, setInvitationOpen] = useState(false);
   const canRead = context.session.permissions.includes('access.center.read');
   const canWrite = roleCommandAvailable(context);
-  const invitationAvailable = context.session.permissions.includes('identity.invitation.manage')
-    && context.session.capabilities.includes('identity.invitations.create')
-    && context.session.csrf !== undefined;
+  const invitationEnabled = memberInvitationAvailable(context);
   const query = useQuery({
     queryKey: accessKey(context),
     queryFn: ({ signal }) => readAccess(context, undefined, signal),
@@ -53,7 +52,7 @@ export function RoleAccessWorkspace() {
         eyebrow="MEMBERS & PERMISSIONS · CUSTOM IDENTITY"
         title="会员与权限"
         description="像 Discord 一样先命名自定义身份，再从权威目录自由组合跨功能权限。"
-        actions={invitationAvailable ? <Button tone="primary" onPress={() => setInvitationOpen(true)}>邀请新成员</Button> : undefined}
+        actions={invitationEnabled ? <Button tone="primary" onPress={() => setInvitationOpen(true)}>邀请新成员</Button> : undefined}
       />
 
       <Surface className="roleaccessprinciple" depth="flat" padding="default" radius="large">
@@ -64,7 +63,7 @@ export function RoleAccessWorkspace() {
       <AccessWorkspaceTabs current={section} />
 
       {section === 'invitations' ? (
-        <InvitationRecordsPanel available={invitationAvailable} onInvite={() => setInvitationOpen(true)} />
+        <InvitationRecordsPanel available={invitationEnabled} onInvite={() => setInvitationOpen(true)} />
       ) : !canRead ? (
         <WorkspaceState tone="denied" title="无权读取身份目录" detail="当前会话没有 access.center.read 权限。" />
       ) : query.isPending && query.data === undefined ? (

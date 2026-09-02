@@ -9,6 +9,7 @@ import { formatDate } from '../../shared/ui/Format';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
+import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
 import { memberKey, readMembers } from '../member/MemberQuery';
 import { MemberRegistrationResetDialog } from '../member/MemberRegistrationResetDialog';
 import type { Member } from '../member/MemberSchema';
@@ -62,7 +63,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   const primaryFetching = primary === 'access' ? accessQuery.isFetching : memberQuery.isFetching;
   const primaryError = safeQueryError(primary === 'access' ? accessQuery.error : memberQuery.error);
   const secondaryError = safeQueryError(primary === 'access' ? memberQuery.error : accessQuery.error);
-  const invitationAvailable = context.session.permissions.includes('identity.invitation.manage') && context.session.capabilities.includes('identity.invitations.create') && context.session.csrf !== undefined;
+  const invitationEnabled = memberInvitationAvailable(context);
   const resetAvailable = context.session.permissions.includes('identity.registration.reset') && context.session.capabilities.includes('identity.members.reset') && context.session.csrf !== undefined;
   const roleCount = useMemo(() => new Set(rows.flatMap((row) => row.access?.roles.map((role) => role.role) ?? [])).size, [rows]);
   const activeCount = rows.filter((row) => rowStatus(row) === 'active').length;
@@ -93,7 +94,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
                 成员管理与邀请码
               </Button>
             ) : null}
-            {invitationAvailable ? (
+            {invitationEnabled ? (
               <Button className="memberaccessprimary" tone="primary" onPress={() => setInvitationOpen(true)}>
                 生成管理员邀请码
               </Button>

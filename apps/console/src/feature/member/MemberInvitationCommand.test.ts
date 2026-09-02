@@ -2,7 +2,7 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { createMemberInvitation } from './MemberInvitationCommand';
+import { createMemberInvitation, memberInvitationAvailable } from './MemberInvitationCommand';
 
 const requests: Request[] = [];
 const bodies: unknown[] = [];
@@ -31,7 +31,7 @@ describe('member invitation command', () => {
       validityDays: 3,
     });
 
-    expect(value).toMatchObject({ id: 'invite:one', target: 'console', version: 0 });
+    expect(value).toMatchObject({ id: 'invite:one', target: 'console', governanceLevel: 'administrator', version: 0 });
     expect(bodies[0]).toMatchObject({ label: '普通管理员邀请', destination: '13800138000', targetClient: 'operator', maxUses: 1 });
     expect(new Date(String((bodies[0] as Readonly<Record<string, unknown>>).expiresAt)).getTime()).toBeGreaterThan(Date.now());
     expect(requests[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
@@ -51,6 +51,20 @@ describe('member invitation command', () => {
         validityDays: 7,
       })
     ).rejects.toThrow();
+  });
+
+  it('accepts the previous receipt shape during a rolling deployment', async () => {
+    const { governanceLevel: _governanceLevel, ...legacyReceipt } = receipt();
+    server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json(legacyReceipt, { status: 201 })));
+
+    const value = await createMemberInvitation(context, {
+      label: '普通管理员邀请',
+      destination: '13800138000',
+      maxUses: 1,
+      validityDays: 7,
+    });
+
+    expect(value.governanceLevel).toBeUndefined();
   });
 
   it('keeps the platform scope and sends the selected tenant to the backend', async () => {
@@ -82,6 +96,39 @@ describe('member invitation command', () => {
     ).rejects.toThrow('INVITATION_CSRF_MISSING');
     expect(requests).toHaveLength(0);
   });
+
+  it('rejects an ordinary administrator even when stale permission evidence remains', async () => {
+    const ordinary = {
+      ...context,
+      session: {
+        ...context.session,
+        governance: { level: 'administrator' as const, exactOwner: false, organization: 'tenant:one' },
+      },
+    };
+
+    expect(memberInvitationAvailable(ordinary)).toBe(false);
+    await expect(createMemberInvitation(ordinary, {
+      label: '不应创建', destination: '13800138000', maxUses: 1, validityDays: 7,
+    })).rejects.toThrow('INVITATION_NOT_AVAILABLE');
+    expect(requests).toHaveLength(0);
+  });
+
+  it('keeps the ordinary invitation command available to a senior administrator', async () => {
+    const senior = {
+      ...context,
+      session: {
+        ...context.session,
+        governance: { level: 'senior_administrator' as const, exactOwner: false, organization: 'tenant:one' },
+      },
+    };
+
+    await createMemberInvitation(senior, {
+      label: '高级管理员创建普通管理员', destination: '13800138000', maxUses: 1, validityDays: 7,
+    });
+
+    expect(memberInvitationAvailable(senior)).toBe(true);
+    expect(bodies[0]).not.toHaveProperty('governanceLevel');
+  });
 });
 
 const context: ConsoleContext = {
@@ -91,6 +138,7 @@ const context: ConsoleContext = {
     accessVersion: 7,
     permissions: ['identity.invitation.manage'],
     capabilities: ['identity.invitations.create'],
+    governance: { level: 'owner', exactOwner: true, organization: 'tenant:one' },
     assurance: { level: 2 },
     csrf: 'csrf-token-for-invitation',
     target: 'console',
@@ -110,6 +158,7 @@ function receipt() {
     code: 'A'.repeat(32),
     label: '普通管理员邀请',
     target: 'console',
+    governanceLevel: 'administrator',
     max_uses: 2,
     use_count: 0,
     starts_at: now,
