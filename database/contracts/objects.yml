@@ -290,7 +290,7 @@ objects:
   - id: access.zhudatuan_operator_invitation_allowed
     kind: function
     owner: access
-    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
+    source: database/supabase/migrations/20260903101000_allow_platform_owner_invitation_history.sql
     operationalOwner: access
   - id: access.zhudatuan_owner_context
     kind: function
