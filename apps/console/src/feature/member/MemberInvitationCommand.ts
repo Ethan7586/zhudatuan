@@ -14,14 +14,24 @@ export function memberInvitationAvailable(context: ConsoleContext): boolean {
     && context.session.csrf !== undefined;
 }
 
+export function memberInvitationLevelAvailable(
+  context: ConsoleContext,
+  governanceLevel: MemberInvitationDraft['governanceLevel'],
+): boolean {
+  if (!memberInvitationAvailable(context)) return false;
+  if (governanceLevel === 'administrator') return true;
+  return context.session.governance?.level === 'owner' && context.session.governance.exactOwner;
+}
+
 export async function createMemberInvitation(context: ConsoleContext, draft: MemberInvitationDraft, signal?: AbortSignal) {
   const csrfToken = context.session.csrf;
   if (csrfToken === undefined) throw new Error('INVITATION_CSRF_MISSING');
   if (!memberInvitationAvailable(context)) throw new Error('INVITATION_NOT_AVAILABLE');
   const command = memberInvitationCommand(draft);
+  if (!memberInvitationLevelAvailable(context, command.governanceLevel)) throw new Error('INVITATION_LEVEL_NOT_AVAILABLE');
   const body = command.tenantId === undefined
-    ? { label: command.label, destination: command.destination, targetClient: command.targetClient, maxUses: command.maxUses, expiresAt: command.expiresAt }
-    : { label: command.label, destination: command.destination, targetClient: command.targetClient, maxUses: command.maxUses, expiresAt: command.expiresAt, tenantId: command.tenantId };
+    ? { label: command.label, destination: command.destination, targetClient: command.targetClient, governanceLevel: command.governanceLevel, maxUses: command.maxUses, expiresAt: command.expiresAt }
+    : { label: command.label, destination: command.destination, targetClient: command.targetClient, governanceLevel: command.governanceLevel, maxUses: command.maxUses, expiresAt: command.expiresAt, tenantId: command.tenantId };
   const value = await invitationsCreate(
     { body },
     consoleCommand(context.scope, {

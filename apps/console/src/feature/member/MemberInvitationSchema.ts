@@ -4,6 +4,7 @@ import { DatabaseIntegerSchema } from '../../shared/schema/DatabaseInteger';
 export const MemberInvitationDraftSchema = z.strictObject({
   label: z.string().trim().min(2).max(80),
   destination: z.string().trim().regex(/^1[3-9]\d{9}$/),
+  governanceLevel: z.enum(['administrator', 'senior_administrator']).default('administrator'),
   maxUses: z.coerce.number().int().min(1).max(1),
   validityDays: z.coerce.number().int().min(1).max(90),
   tenantId: z.string().trim().min(1).max(255).optional(),
@@ -13,6 +14,7 @@ export const MemberInvitationCommandSchema = z.strictObject({
   label: z.string().trim().min(2).max(80),
   destination: z.string().regex(/^1[3-9]\d{9}$/),
   targetClient: z.literal('operator'),
+  governanceLevel: z.enum(['administrator', 'senior_administrator']),
   maxUses: z.literal(1),
   expiresAt: z.iso.datetime(),
   tenantId: z.string().min(1).max(255).optional(),
@@ -42,6 +44,7 @@ export function memberInvitationCommand(value: unknown, now = Date.now()): z.inf
     label: draft.label,
     destination: draft.destination,
     targetClient: 'operator',
+    governanceLevel: draft.governanceLevel,
     maxUses: draft.maxUses,
     expiresAt: new Date(now + draft.validityDays * 86_400_000).toISOString(),
     ...(draft.tenantId === undefined ? {} : { tenantId: draft.tenantId }),

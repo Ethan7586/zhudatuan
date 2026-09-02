@@ -27,12 +27,13 @@ describe('member invitation command', () => {
     const value = await createMemberInvitation(context, {
       label: '普通管理员邀请',
       destination: '13800138000',
+      governanceLevel: 'administrator',
       maxUses: 1,
       validityDays: 3,
     });
 
     expect(value).toMatchObject({ id: 'invite:one', target: 'console', governanceLevel: 'administrator', version: 0 });
-    expect(bodies[0]).toMatchObject({ label: '普通管理员邀请', destination: '13800138000', targetClient: 'operator', maxUses: 1 });
+    expect(bodies[0]).toMatchObject({ label: '普通管理员邀请', destination: '13800138000', targetClient: 'operator', governanceLevel: 'administrator', maxUses: 1 });
     expect(new Date(String((bodies[0] as Readonly<Record<string, unknown>>).expiresAt)).getTime()).toBeGreaterThan(Date.now());
     expect(requests[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
     expect(requests[0]?.headers.get('x-access-version')).toBe('7');
@@ -47,6 +48,7 @@ describe('member invitation command', () => {
       createMemberInvitation(context, {
         label: '普通管理员邀请',
         destination: '13800138000',
+        governanceLevel: 'administrator',
         maxUses: 1,
         validityDays: 7,
       })
@@ -60,6 +62,7 @@ describe('member invitation command', () => {
     const value = await createMemberInvitation(context, {
       label: '普通管理员邀请',
       destination: '13800138000',
+      governanceLevel: 'administrator',
       maxUses: 1,
       validityDays: 7,
     });
@@ -74,6 +77,7 @@ describe('member invitation command', () => {
     await createMemberInvitation(platformContext, {
       label: '平台管理员邀请',
       destination: '13800138000',
+      governanceLevel: 'administrator',
       maxUses: 1,
       validityDays: 7,
       tenantId: 'tenant:one',
@@ -90,6 +94,7 @@ describe('member invitation command', () => {
       createMemberInvitation(withoutCsrf, {
         label: '普通管理员邀请',
         destination: '13800138000',
+        governanceLevel: 'administrator',
         maxUses: 1,
         validityDays: 7,
       })
@@ -108,7 +113,7 @@ describe('member invitation command', () => {
 
     expect(memberInvitationAvailable(ordinary)).toBe(false);
     await expect(createMemberInvitation(ordinary, {
-      label: '不应创建', destination: '13800138000', maxUses: 1, validityDays: 7,
+      label: '不应创建', destination: '13800138000', governanceLevel: 'administrator', maxUses: 1, validityDays: 7,
     })).rejects.toThrow('INVITATION_NOT_AVAILABLE');
     expect(requests).toHaveLength(0);
   });
@@ -123,11 +128,34 @@ describe('member invitation command', () => {
     };
 
     await createMemberInvitation(senior, {
-      label: '高级管理员创建普通管理员', destination: '13800138000', maxUses: 1, validityDays: 7,
+      label: '高级管理员创建普通管理员', destination: '13800138000', governanceLevel: 'administrator', maxUses: 1, validityDays: 7,
     });
 
     expect(memberInvitationAvailable(senior)).toBe(true);
-    expect(bodies[0]).not.toHaveProperty('governanceLevel');
+    expect(bodies[0]).toMatchObject({ governanceLevel: 'administrator' });
+  });
+
+  it('lets only an exact Owner request a senior administrator invitation', async () => {
+    await createMemberInvitation(context, {
+      label: '高级管理员邀请', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
+    });
+
+    expect(bodies[0]).toMatchObject({ governanceLevel: 'senior_administrator' });
+  });
+
+  it('rejects a senior administrator requesting a peer before transport', async () => {
+    const senior = {
+      ...context,
+      session: {
+        ...context.session,
+        governance: { level: 'senior_administrator' as const, exactOwner: false, organization: 'tenant:one' },
+      },
+    };
+
+    await expect(createMemberInvitation(senior, {
+      label: '不应创建同级', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
+    })).rejects.toThrow('INVITATION_LEVEL_NOT_AVAILABLE');
+    expect(requests).toHaveLength(0);
   });
 });
 

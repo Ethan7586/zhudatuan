@@ -20,6 +20,7 @@ export function MemberInvitationDialog({
   const mutation = useMutation({ mutationFn: (draft: Parameters<typeof createMemberInvitation>[1]) => createMemberInvitation(context, draft) });
   const receipt = mutation.data;
   const tenantScopes = context.scopes.filter((scope) => scope.kind === 'tenant' && scope.id === 'tenant-zhudatuan');
+  const canSelectSenior = context.session.governance?.level === 'owner' && context.session.governance.exactOwner;
 
   const resetAndClose = () => {
     mutation.reset();
@@ -41,6 +42,7 @@ export function MemberInvitationDialog({
     const draft = MemberInvitationDraftSchema.safeParse({
       label: form.get('label'),
       destination: form.get('destination'),
+      governanceLevel: form.get('governanceLevel'),
       maxUses: form.get('maxUses'),
       validityDays: form.get('validityDays'),
       ...(context.scope.kind === 'platform' ? { tenantId: form.get('tenantId') } : {}),
@@ -67,7 +69,7 @@ export function MemberInvitationDialog({
   };
 
   return (
-    <Dialog open={open} title={receipt === undefined ? '生成管理员邀请码' : '邀请码已生成'} eyebrow="ZERO-PERMISSION CONSOLE INVITATION" dismissable={!mutation.isPending && receipt === undefined} onClose={requestClose}>
+    <Dialog open={open} title={receipt === undefined ? '生成管理员邀请码' : '邀请码已生成'} eyebrow="CONSOLE ADMINISTRATOR INVITATION" dismissable={!mutation.isPending && receipt === undefined} onClose={requestClose}>
       {receipt === undefined ? (
         <Form className={`command memberinvitationform${mutation.isPending ? ' memberinvitationformpending' : ''}`} label="生成管理员邀请码" onSubmit={submit}>
           <div className="memberinvitationbody">
@@ -77,7 +79,9 @@ export function MemberInvitationDialog({
                   <span className="memberinvitationhinticon" aria-hidden="true">
                     i
                   </span>
-                  <span>邀请固定创建待授权普通管理员并绑定受邀手机号，仅可使用一次。受邀人完成手机验证后会同时获得购物身份与零业务权限的 Console 身份。</span>
+                  <span>{canSelectSenior
+                    ? '请选择管理员级别并绑定受邀手机号。普通管理员注册后等待授权；高级管理员获得当前范围的全部业务功能，但不能任命同级或管理 Owner。'
+                    : '邀请固定创建待授权普通管理员并绑定受邀手机号，仅可使用一次。受邀人完成手机验证后会同时获得购物身份与零业务权限的 Console 身份。'}</span>
                 </p>
                 {context.scope.kind === 'platform' ? (
                   <label>
@@ -98,6 +102,21 @@ export function MemberInvitationDialog({
                     授权范围：<strong>{context.scope.name ?? context.scope.id}</strong>
                   </p>
                 )}
+                {canSelectSenior ? (
+                  <fieldset className="memberinvitationlevels">
+                    <legend>管理员级别</legend>
+                    <div>
+                      <label>
+                        <input name="governanceLevel" type="radio" value="administrator" defaultChecked />
+                        <span><strong>普通管理员</strong><small>注册后等待分配身份、权限与范围</small></span>
+                      </label>
+                      <label>
+                        <input name="governanceLevel" type="radio" value="senior_administrator" />
+                        <span><strong>高级管理员</strong><small>全部业务功能，不可任命同级或管理 Owner</small></span>
+                      </label>
+                    </div>
+                  </fieldset>
+                ) : <input name="governanceLevel" type="hidden" value="administrator" />}
               </section>
               <section className="memberinvitationdetails">
                 <label>
@@ -106,7 +125,7 @@ export function MemberInvitationDialog({
                 </label>
                 <label>
                   邀请名称
-                  <input name="label" defaultValue="普通管理员邀请" minLength={2} maxLength={80} required autoFocus={context.scope.kind !== 'platform'} />
+                  <input name="label" defaultValue="管理员邀请" minLength={2} maxLength={80} required autoFocus={context.scope.kind !== 'platform'} />
                 </label>
                 <section className="memberinvitationpolicy" aria-label="邀请规则">
                   <p>邀请规则</p>
@@ -165,7 +184,7 @@ export function MemberInvitationDialog({
           <dl>
             <div>
               <dt>身份</dt>
-              <dd>待授权普通管理员</dd>
+              <dd>{receipt.governanceLevel === 'senior_administrator' ? '高级管理员' : '待授权普通管理员'}</dd>
             </div>
             <div>
               <dt>次数</dt>

@@ -107,13 +107,79 @@
   font-weight: var(--sw-font-weight-semibold);
 }
 
-.memberinvitationform input:not([type='hidden']),
+.memberinvitationform input:not([type='hidden']):not([type='radio']),
 .memberinvitationform select {
   height: var(--sw-control-height);
   border-radius: var(--sw-radius-sm);
   padding: 0 var(--sw-control-padding-compact);
   color: var(--sw-text);
   font-size: var(--sw-font-size-body-sm);
+}
+
+.memberinvitationlevels {
+  display: grid;
+  gap: var(--sw-space-1);
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.memberinvitationlevels legend {
+  margin-bottom: var(--sw-control-gap-compact);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-label-sm);
+  font-weight: var(--sw-font-weight-semibold);
+}
+
+.memberinvitationlevels > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sw-space-1);
+}
+
+.memberinvitationlevels label {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sw-space-1);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1-5);
+  cursor: pointer;
+}
+
+.memberinvitationlevels label:has(input:checked) {
+  border-color: var(--sw-brand);
+  background: var(--sw-brand-light);
+  box-shadow: inset 0 0 0 var(--sw-border-width) var(--sw-brand);
+}
+
+.memberinvitationlevels input[type='radio'] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0.125rem 0 0;
+  padding: 0;
+  accent-color: var(--sw-brand);
+}
+
+.memberinvitationlevels span {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.memberinvitationlevels strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-label);
+}
+
+.memberinvitationlevels small {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-regular);
+  line-height: var(--sw-line-height-caption);
 }
 
 .memberinvitationform :is(input, select):focus {
@@ -346,6 +412,10 @@
 
   .memberinvitationpolicy {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .memberinvitationlevels > div {
+    grid-template-columns: 1fr;
   }
 
   .memberinvitationpolicy > p {
