@@ -30,7 +30,7 @@ try {
   await run('npm', ['--workspace', '@shop/commerce', 'run', 'test:integration', '--', 'MallProvisioningEngine.test.ts'], {
     environment: { SHOP_TEST_ADMIN_DATABASE_URL: adminUrl, SHOP_TEST_DATABASE_URL: runtimeUrl },
   });
-  console.log('mall provisioning PostgreSQL 17 acceptance passed: replay=full role=zhudatuanprovisioningapi tests=4');
+  console.log('mall provisioning PostgreSQL 17 acceptance passed: replay=full role=zhudatuanprovisioningapi chain=PROV-001');
 } finally {
   await run('docker', ['rm', '-f', container], { allowFailure: true, quiet: true });
 }

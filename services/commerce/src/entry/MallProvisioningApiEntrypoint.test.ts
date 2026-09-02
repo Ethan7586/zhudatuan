@@ -16,10 +16,11 @@ import { MALL_PROVISIONING_RUNTIME_OPERATION_IDS } from '../modules/runtime/Mall
 
 const APPROVED_MALL_PROVISIONING_OPERATIONS = [
   'provisioning.malls.create',
+  'provisioning.malls.read',
 ] as const satisfies readonly OperationId[];
 
 describe('mall provisioning API entrypoint', () => {
-  it('contains only health and the single mall creation command', () => {
+  it('contains only health, mall creation, and provisioning readiness read', () => {
     expect(MALL_PROVISIONING_OPERATION_IDS).toEqual(APPROVED_MALL_PROVISIONING_OPERATIONS);
     expect([...MALL_PROVISIONING_RUNTIME_OPERATION_IDS, ...MALL_PROVISIONING_OPERATION_IDS]).toEqual([
       'runtime.health.live',
@@ -29,7 +30,7 @@ describe('mall provisioning API entrypoint', () => {
     ]);
   });
 
-  it('exposes exactly one business route and no mall mutation or commerce runtime surface', async () => {
+  it('exposes exactly the provisioning create/read routes and no unrelated mutation surface', async () => {
     const operationIds = [...MALL_PROVISIONING_RUNTIME_OPERATION_IDS, ...MALL_PROVISIONING_OPERATION_IDS];
     const pool = { workload: () => pool } as unknown as DatabasePool;
     const bootstrapped = await bootstrapApi({
@@ -48,6 +49,8 @@ describe('mall provisioning API entrypoint', () => {
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
     expect(bootstrapped.routes.match('POST', '/api/v1/provisioning/malls')?.operation)
       .toBe('provisioning.malls.create');
+    expect(bootstrapped.routes.match('GET', '/api/v1/provisioning/malls/mall:one')?.operation)
+      .toBe('provisioning.malls.read');
     for (const [method, path] of [
       ['GET', '/api/v1/provisioning/malls'],
       ['PATCH', '/api/v1/provisioning/malls/mall:one'],
@@ -63,6 +66,7 @@ describe('mall provisioning API entrypoint', () => {
       '/modules/catalog/CatalogProvisioningPort.ts',
       '/modules/experience/ExperienceProvisioningPort.ts',
       '/modules/organization/MallOrganizationProvisioningPort.ts',
+      '/modules/provisioning/MallOwnerProvisioningPort.ts',
     ];
     for (const port of requiredPorts) expect([...closure].some((file) => file.endsWith(port))).toBe(true);
     const forbidden = [...closure].filter((file) => [

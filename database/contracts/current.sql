@@ -31,6 +31,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('identity.wechat.bind','identity','POST','/api/v1/identity/wechat/bindings','1.0.0'),
   ('organization.layers.read','organization','GET','/api/v1/organizations/layers','1.0.0'),
   ('provisioning.malls.create','provisioning','POST','/api/v1/provisioning/malls','1.0.0'),
+  ('provisioning.malls.read','provisioning','GET','/api/v1/provisioning/malls/{mallid}','1.0.0'),
   ('access.center.read','access','GET','/api/v1/access/center','1.0.0'),
   ('access.roles.manage','access','PUT','/api/v1/access/roles/{roleid}','1.0.0'),
   ('access.scopes.manage','access','PUT','/api/v1/access/memberships/{membershipid}/scopes','1.0.0'),
@@ -552,6 +553,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('identity.wechat.bind','operation','identity.wechat.bind',1,'active'),
   ('organization.layers.read','operation','organization.layers.read',1,'active'),
   ('provisioning.malls.create','operation','provisioning.malls.create',1,'active'),
+  ('provisioning.malls.read','operation','provisioning.malls.read',1,'active'),
   ('access.center.read','operation','access.center.read',1,'active'),
   ('access.roles.manage','operation','access.roles.manage',1,'active'),
   ('access.scopes.manage','operation','access.scopes.manage',1,'active'),
@@ -806,6 +808,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.wechat.bind','identity.wechat.bind','identity.credential.manage','member'),
   ('organization.layers.read','organization.layers.read','organization.layer.read','operator'),
   ('provisioning.malls.create','provisioning.malls.create','organization.layer.manage','operator'),
+  ('provisioning.malls.read','provisioning.malls.read','organization.layer.read','operator'),
   ('access.center.read','access.center.read','access.center.read','operator'),
   ('access.roles.manage','access.roles.manage','access.role.manage','operator'),
   ('access.scopes.manage','access.scopes.manage','access.scope.manage','operator'),
@@ -1486,6 +1489,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','f0c4fb9e6c9368dc2fb33f74c423e3ebf26d1882ae0f9b50e169fa61334ad2fa');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','a8a514c9238d93c2e79e541036a4565a318cd693457775a58902fb0e5d5d4615');
 
 commit;

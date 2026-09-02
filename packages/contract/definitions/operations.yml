@@ -618,6 +618,17 @@ operations:
     requirements:
       - MVP06
       - MVP15
+  - id: provisioning.malls.read
+    owner: provisioning
+    method: GET
+    path: /api/v1/provisioning/malls/{mallid}
+    audience: operator
+    permission: organization.layer.read
+    idempotent: true
+    schema: structural
+    requirements:
+      - MVP06
+      - MVP15
   - id: access.center.read
     owner: access
     method: GET

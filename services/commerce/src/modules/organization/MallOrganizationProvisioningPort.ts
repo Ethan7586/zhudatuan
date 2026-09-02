@@ -22,7 +22,12 @@ export class MallOrganizationProvisioningPort {
       join organization.unitclosure visible on visible.ancestor_id=root.id
       join organization.organization parent on parent.id=visible.descendant_id
       where root.id=$1 and root.kind='platform' and root.status='active'
-        and parent.id=$2 and parent.kind='enterprise' and parent.status='active'`, [input.scope, input.parent]);
+        and parent.id=$2 and parent.status='active' and (
+          parent.kind='enterprise' or (parent.kind='mall' and exists(
+            select 1 from organization.organization enterprise
+            where enterprise.id=parent.parent_id and enterprise.kind='enterprise' and enterprise.status='active'
+          ))
+        )`, [input.scope, input.parent]);
     if (!parent.rows[0]) return 'MALL_PARENT_INVALID';
     const existing = await database.query(`select 1 from organization.organization mall
       join organization.sourcebinding binding on binding.organization_id=mall.id and binding.source_type='mall'

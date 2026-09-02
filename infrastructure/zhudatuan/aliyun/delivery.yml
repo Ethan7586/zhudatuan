@@ -137,8 +137,10 @@ routes:
     port: 4325
     allowedMethods:
       - POST
+      - GET
     allowedPaths:
       - /api/v1/provisioning/malls
+      - /api/v1/provisioning/malls/*
     preflightMethods:
       - OPTIONS
     preflightPaths:

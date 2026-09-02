@@ -219,6 +219,16 @@ api.zhudatuan.com {
 		}
 	}
 
+	@mallProvisioningRead {
+		method GET
+		path /api/v1/provisioning/malls/*
+	}
+	handle @mallProvisioningRead {
+		reverse_proxy 127.0.0.1:4325 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	# Purchase commands have an independent runtime and database role. Match both
 	# method and exact path before the read-oriented WebBusiness surface because
 	# GET /api/v1/orders remains owned by WebBusiness on 4322.
