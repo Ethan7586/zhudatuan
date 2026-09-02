@@ -11,7 +11,7 @@ describe('Console navigation selector', () => {
     expect(items.filter(({ placement }) => placement === 'main').map(({ moduleId, label, icon, order }) => ({ moduleId, label, icon, order }))).toEqual([
       { moduleId: 'cockpit', label: '经营驾驶舱', icon: 'trend', order: 10 },
       { moduleId: 'reports', label: '数据报表', icon: 'trend', order: 15 },
-      { moduleId: 'control', label: '系统中控台', icon: 'control', order: 20 },
+      { moduleId: 'control', label: '商家管理', icon: 'control', order: 20 },
       { moduleId: 'applications', label: '商城管理', icon: 'building', order: 30 },
       { moduleId: 'products', label: '商品治理台', icon: 'products', order: 40 },
       { moduleId: 'orders', label: '订单管理系统', icon: 'orders', order: 50 },

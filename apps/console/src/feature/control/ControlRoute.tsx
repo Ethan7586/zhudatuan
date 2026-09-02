@@ -1,66 +1,96 @@
-import { ResourceState } from '@shop/design';
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
-import { CapabilityChain } from './CapabilityChain';
-import { ActiveChange, AuditTimeline } from './ControlChanges';
-import { AuditDialog, ChangeDialog, EvidenceDialog, RecoveryDialog } from './ControlDialogs';
-import { ControlHero } from './ControlHero';
-import { controlKey, readControl } from './ControlQuery';
-import type { ControlChange, ControlIncident } from './ControlSchema';
-import { IncidentQueue } from './IncidentQueue';
 import './control.css';
 
+const deliveryStages = Object.freeze([
+  { number: '01', title: '商家身份', detail: '名称、Owner 与独立经营边界' },
+  { number: '02', title: '品牌外观', detail: 'Logo、主色与后台名称' },
+  { number: '03', title: '默认商城', detail: '自动建立 L0 标准商城' },
+  { number: '04', title: '域名体系', detail: '商城、后台与账户入口' },
+  { number: '05', title: '微信生态', detail: '小程序、公众号与支付' },
+]);
+
+const sharedCapabilities = Object.freeze([
+  '商城装修', '商品库存', '订单履约', '支付退款',
+  '财务对账', '会员权益', '分销返佣', '渠道接入',
+]);
+
+const summaries = Object.freeze([
+  { label: '商家总数', tone: 'brand', detail: '接入数据后显示' },
+  { label: '正常经营', tone: 'success', detail: '共享发动机运行状态' },
+  { label: '开通进行中', tone: 'warning', detail: '逐步完成交付节点' },
+  { label: '待完成接入', tone: 'neutral', detail: '域名与微信渠道' },
+]);
+
 export function Component() {
-  const context = useConsoleContext();
-  const query = useQuery({
-    queryKey: controlKey(context),
-    queryFn: ({ signal }) => readControl(context, signal),
-    refetchInterval: 30_000,
-  });
-  const error = safeQueryError(query.error);
-  const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
-    hasData: query.data !== undefined, empty: false, stale: query.isStale });
   return (
-    <section className="controlpage" aria-label="主打团中控台">
-      <ResourceState condition={condition} resourceLabel="主打团中控台" {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
-        {query.data === undefined ? <span /> : <ControlContent data={query.data} refreshing={query.isFetching} onRefresh={() => { void query.refetch(); }} />}
-      </ResourceState>
+    <section className="merchantpage" aria-label="商家管理">
+      <header className="merchanthero">
+        <div className="merchantherocopy">
+          <span className="merchantkicker">ZHUDATUAN MERCHANT OPERATIONS</span>
+          <h1>商家管理</h1>
+          <p>一套共享业务发动机，开通独立品牌、域名、渠道与商城体系。</p>
+          <div className="merchantprinciples" aria-label="商家系统原则">
+            <span>共享业务逻辑</span><span>经营数据独立</span><span>外部渠道独立</span>
+          </div>
+        </div>
+        <div className="merchantheroaside">
+          <img src="/brand/zhudatuan-mark-blue.svg" alt="" aria-hidden="true" />
+          <span>界面设计预览</span>
+          <button type="button" disabled title="功能将在后续批次接入">开通商家</button>
+        </div>
+      </header>
+
+      <p className="merchantpreviewnotice" role="status">
+        当前仅展示商家管理外观，不读取商家数据，也不会产生任何创建或绑定操作。
+      </p>
+
+      <div className="merchantsummary" aria-label="商家状态概览">
+        {summaries.map((item) => <article key={item.label} data-tone={item.tone}>
+          <span>{item.label}</span><strong aria-label="尚未接入">—</strong><small>{item.detail}</small>
+        </article>)}
+      </div>
+
+      <section className="merchantpanel merchantdelivery" aria-labelledby="merchantdeliverytitle">
+        <header>
+          <div><span>STANDARD DELIVERY</span><h2 id="merchantdeliverytitle">标准开通路径</h2></div>
+          <small>一个入口完成整套商家系统交付</small>
+        </header>
+        <ol>
+          {deliveryStages.map((stage) => <li key={stage.number}>
+            <span>{stage.number}</span>
+            <div><strong>{stage.title}</strong><small>{stage.detail}</small></div>
+          </li>)}
+        </ol>
+      </section>
+
+      <div className="merchantworkspace">
+        <section className="merchantpanel merchantdirectory" aria-labelledby="merchantdirectorytitle">
+          <header>
+            <div><span>MERCHANT DIRECTORY</span><h2 id="merchantdirectorytitle">商家目录</h2></div>
+            <label>搜索商家<input aria-label="搜索商家" placeholder="名称、域名或负责人" disabled /></label>
+          </header>
+          <div className="merchanttabs" aria-label="商家目录分类">
+            <span data-active="true">全部商家</span><span>正常经营</span><span>开通中</span><span>需要处理</span>
+          </div>
+          <div className="merchantempty">
+            <img src="/brand/zhudatuan-mark-blue.svg" alt="" aria-hidden="true" />
+            <strong>商家目录即将在这里出现</strong>
+            <p>后续接入真实平台实例后，可从这里查看每个商家的品牌、域名、默认商城和渠道状态。</p>
+            <button type="button" disabled>开通第一个商家</button>
+          </div>
+        </section>
+
+        <aside className="merchantpanel merchantengine" aria-labelledby="merchantenginetitle">
+          <header><span>SHARED ENGINE</span><h2 id="merchantenginetitle">共享业务发动机</h2></header>
+          <p>所有商家使用同一套标准能力，升级一次即可同步获得新版本。</p>
+          <div className="merchantcapabilities">
+            {sharedCapabilities.map((capability) => <span key={capability}>{capability}</span>)}
+          </div>
+          <div className="merchanthierarchy">
+            <strong>L0 ～ L11</strong>
+            <span>每个商家独立生成和管理自己的商城层级</span>
+          </div>
+        </aside>
+      </div>
     </section>
   );
-}
-
-function ControlContent({ data, refreshing, onRefresh }: Readonly<{
-  data: Awaited<ReturnType<typeof readControl>>;
-  refreshing: boolean;
-  onRefresh: () => void;
-}>) {
-  const plane = data.controlPlane;
-  const [selectedId, setSelectedId] = useState<string>();
-  const [evidence, setEvidence] = useState<ControlIncident>();
-  const [recovery, setRecovery] = useState<ControlIncident>();
-  const [recoveryConfirmed, setRecoveryConfirmed] = useState(false);
-  const [changeAction, setChangeAction] = useState<'plan' | 'pause' | 'rollback'>();
-  const [change, setChange] = useState<ControlChange>();
-  const [auditOpen, setAuditOpen] = useState(false);
-  const selected = plane?.incidents.find((incident) => incident.id === selectedId) ?? plane?.incidents[0];
-  const openChange = (action: 'plan' | 'pause' | 'rollback', item: ControlChange) => { setChange(item); setChangeAction(action); };
-  const closeRecovery = () => { setRecovery(undefined); setRecoveryConfirmed(false); };
-  return <div className="controlstack">
-    <ControlHero plane={plane} refreshing={refreshing} onRefresh={onRefresh} />
-    <div className="controlprimarygrid">
-      <IncidentQueue incidents={plane?.incidents ?? []} selectedId={selected?.id} onSelect={(incident) => setSelectedId(incident.id)}
-        onEvidence={setEvidence} onExecute={(incident) => { setRecoveryConfirmed(false); setRecovery(incident); }} />
-      <CapabilityChain capabilities={plane?.capabilities ?? []} affected={selected?.affectedCapabilities ?? []} />
-    </div>
-    <div className="controlsecondarygrid">
-      <ActiveChange change={plane?.changes[0]} onAction={openChange} />
-      <AuditTimeline audits={plane?.audits ?? []} onOpen={() => setAuditOpen(true)} />
-    </div>
-    <EvidenceDialog incident={evidence} onClose={() => setEvidence(undefined)} />
-    <RecoveryDialog incident={recovery} confirmed={recoveryConfirmed} onConfirm={() => setRecoveryConfirmed(true)} onClose={closeRecovery} />
-    <ChangeDialog action={changeAction} change={change} onClose={() => { setChangeAction(undefined); setChange(undefined); }} />
-    <AuditDialog open={auditOpen} audits={plane?.audits ?? []} onClose={() => setAuditOpen(false)} />
-  </div>;
 }

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">zhudatuan 主打团蓝色图形标</title>
+  <desc id="desc">四方围合，中间是以皇冠为点的主字，右下由品牌亮蓝收角。</desc>
+  <g fill="none" stroke="#143A8F" stroke-width="24" stroke-linecap="butt" stroke-linejoin="round">
+    <path d="M170 222H52c-10 0-18-8-18-18V52c0-10 8-18 18-18h152c10 0 18 8 18 18v116"/>
+  </g>
+  <path fill="#1F5EFF" d="M222 166v38c0 10-8 18-18 18h-38l22-22 16-16Z"/>
+  <g fill="#143A8F">
+    <path d="M82 72l14 10 12-18 12 18 14-10-3 21H85Z"/>
+    <rect x="85" y="97" width="46" height="6" rx="1"/>
+    <rect x="72" y="112" width="112" height="18" rx="2"/>
+    <rect x="119" y="112" width="18" height="94" rx="2"/>
+    <rect x="78" y="151" width="100" height="16" rx="2"/>
+    <rect x="66" y="190" width="124" height="18" rx="2"/>
+  </g>
+</svg>

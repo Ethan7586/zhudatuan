@@ -3,13 +3,13 @@ import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModul
 export const controlModule = {
   id: 'control',
   status: 'enabled',
-  navigation: { placement: 'main', group: 'overview', order: 20, label: '系统中控台', icon: 'control' },
+  navigation: { placement: 'main', group: 'overview', order: 20, label: '商家管理', icon: 'control' },
   routes: [{
     id: 'control.index',
     path: 'control',
     kind: 'entry',
     lazy: () => import('./ControlRoute'),
     operations: ['runtime.health.dependency'],
-    presentation: { title: '中控台', summary: '系统效率、处理能力和恢复状态' },
+    presentation: { title: '商家管理', summary: '开通和管理独立品牌、域名、渠道与商城体系' },
   }],
 } as const satisfies ConsoleModuleManifest<'control'>;
