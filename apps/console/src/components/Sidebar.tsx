@@ -29,7 +29,8 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, mainItems, 
       <nav aria-label="工作台与治理系统" className="sidebarnavigation">
         {mainItems.map((item) => {
           const label = navigationLabel(item);
-          return <button key={item.moduleId} type="button" onClick={() => onNavigate(item.suffix)} data-status={item.status}
+          return <button key={item.moduleId} type="button" onClick={() => onNavigate(item.suffix)} data-module={item.moduleId}
+            data-status={item.status}
             aria-disabled={item.status === 'disabled' ? true : undefined}
             aria-label={label} aria-current={item.moduleId === active ? 'page' : undefined}
             title={collapsed ? label : undefined}>

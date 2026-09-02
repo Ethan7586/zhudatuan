@@ -40,6 +40,7 @@ interface NavigationConfigBase {
   readonly order: number;
   readonly label: string;
   readonly labelByScopeKind?: Partial<Record<ConsoleScope['kind'], string>>;
+  readonly scopeKinds?: readonly ConsoleScope['kind'][];
   readonly preferredScopeKind?: ConsoleScope['kind'];
 }
 

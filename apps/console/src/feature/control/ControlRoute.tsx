@@ -25,16 +25,16 @@ export function Component() {
   const navigate = useNavigate();
 
   return (
-    <section className="merchantcapabilityscreen" aria-label="商家管理系统能力">
+    <section className="merchantcapabilityscreen" aria-label="商家服务中心">
       <article className="merchantcapabilitywindow">
         <header className="merchantcapabilitybar">
           <div className="merchantcapabilityidentity">
             <span><img src="/brand/zhudatuan-mark-blue.svg" alt="" aria-hidden="true" /></span>
-            <div><small>PLATFORM CONTROL PLANE</small><strong>系统能力 · 商家管理</strong></div>
+            <div><small>ZHUDATUAN PLATFORM SERVICE</small><strong>主打团 · 商家服务中心</strong></div>
           </div>
           <div className="merchantcapabilityactions">
-            <span>按需唤起</span>
-            <button type="button" aria-label="关闭商家管理" onClick={() => navigate('../applications', { replace: true })}>×</button>
+            <span>平台专属</span>
+            <button type="button" aria-label="关闭商家服务中心" onClick={() => navigate('../applications', { replace: true })}>×</button>
           </div>
         </header>
 
@@ -42,9 +42,9 @@ export function Component() {
           <div className="merchantpage">
       <header className="merchanthero">
         <div className="merchantherocopy">
-          <span className="merchantkicker">ZHUDATUAN MERCHANT OPERATIONS</span>
-          <h1>商家管理</h1>
-          <p>一套共享业务发动机，开通独立品牌、域名、渠道与商城体系。</p>
+          <span className="merchantkicker">ZHUDATUAN MERCHANT SERVICE</span>
+          <h1>商家服务中心</h1>
+          <p>由主打团为商家开通独立品牌、域名、渠道与商城体系。</p>
           <div className="merchantprinciples" aria-label="商家系统原则">
             <span>共享业务逻辑</span><span>经营数据独立</span><span>外部渠道独立</span>
           </div>
@@ -112,8 +112,8 @@ export function Component() {
         </div>
 
         <footer className="merchantcapabilityfooter">
-          <span><i aria-hidden="true" />SYSTEM CAPABILITY</span>
-          <p>由 Agent 或平台治理任务申请调用，完成后退出并重新隐藏。</p>
+          <span><i aria-hidden="true" />PLATFORM SERVICE</span>
+          <p>仅供主打团平台方使用；商家只管理自己的店铺与商城。</p>
         </footer>
       </article>
     </section>

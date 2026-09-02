@@ -44,6 +44,15 @@ describe('Console navigation selector', () => {
     }
   });
 
+  it('shows the merchant service center only in the platform scope', () => {
+    expect(selectConsoleNavigationItems(consoleModules, 'platform')
+      .find(({ moduleId }) => moduleId === 'control')).toMatchObject({
+      suffix: 'control', label: '商家服务中心', placement: 'main', order: 20,
+    });
+    expect(selectConsoleNavigationItems(consoleModules, 'mall')
+      .find(({ moduleId }) => moduleId === 'control')).toBeUndefined();
+  });
+
   it('keeps disabled navigable, omits hidden, and emits restored reports navigation', () => {
     const modules = withStatus('products', 'disabled', withStatus('channels', 'hidden', consoleModules));
     const items = selectConsoleNavigationItems(modules, 'enterprise');

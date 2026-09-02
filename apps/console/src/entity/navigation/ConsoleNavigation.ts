@@ -29,6 +29,7 @@ export function selectConsoleNavigationItems(
   for (const module of modules) {
     const navigation = module.navigation;
     if (module.status === 'hidden' || navigation.placement === 'none') continue;
+    if (navigation.scopeKinds !== undefined && !navigation.scopeKinds.includes(scopeKind)) continue;
     const entry = module.routes.find(({ kind }) => kind === 'entry');
     if (entry === undefined) continue;
     if (available !== undefined && entry.operations.length > 0
