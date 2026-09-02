@@ -87,6 +87,7 @@ const REPAIR_FILES = [
   '20260902134000_senior_administrator_role.sql',
   '20260902135000_owner_identity_runtime_boundary.sql',
   '20260902136000_administrator_invitation_runtime_alignment.sql',
+  '20260902137000_separate_login_account_from_mobile.sql',
 ];
 
 const mode = process.argv[2];

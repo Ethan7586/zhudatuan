@@ -112,6 +112,7 @@ describe('canonical member registration security boundary', () => {
     const revocation = harness.queries.find(({ text }) => text.includes("revoked_reason='mobile_changed'"));
     expect(revocation?.text).not.toContain('id<>');
     expect(revocation?.values).toEqual(['principal:stepup']);
+    expect(harness.queries.some(({ text }) => text.includes('update identity.credential set subject_hash'))).toBe(false);
   });
 
   it('delegates the dynamic Owner under a resolved self scope to the atomic database boundary', async () => {
@@ -228,16 +229,53 @@ describe('canonical member registration security boundary', () => {
     expect(challenge?.values[3]).toBe(subjectDigest(SUBJECT));
   });
 
-  it('continues to reject login challenges on the registration API surface', async () => {
-    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false });
+  it('resolves password reset through the independently bound mobile identity', async () => {
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
+      boundMobilePrincipal: 'principal:bound-mobile' });
 
-    await expect(identityRegistrationOperations(context(harness.pool)).invoke(challengeRequest({
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(challengeRequest({
+      destination: SUBJECT,
+      purpose: 'password_reset',
+    }));
+
+    expect(response.status).toBe(202);
+    const challenge = harness.queries.find(({ text }) => text.includes('with challenge as'));
+    expect(challenge?.values[1]).toBe('principal:bound-mobile');
+    expect(harness.queries.some(({ text }) => text.includes('select principal_id from identity.credential'))).toBe(false);
+  });
+
+  it('allows login challenges on the deployed identity registration API surface', async () => {
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
+      boundMobilePrincipal: 'principal:mobile-login' });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(challengeRequest({
       destination: SUBJECT,
       purpose: 'login',
-    }))).rejects.toMatchObject({
-      result: { status: 400, body: { code: 'CHALLENGE_PURPOSE_INVALID' } },
+    }));
+
+    expect(response.status).toBe(202);
+    const challenge = harness.queries.find(({ text }) => text.includes('with challenge as'));
+    expect(challenge?.values.slice(1, 4)).toEqual(['principal:mobile-login', 'login', subjectDigest(SUBJECT)]);
+    expect(harness.queries.some(({ text }) => text.includes("'identitynotification','identity'"))).toBe(true);
+  });
+
+  it('logs in with a bound mobile while preserving the original password credential subject', async () => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
+      boundMobilePrincipal: 'principal:mobile-login', credentialSecret: await new PasswordPolicy().hash(password),
+      loginMemberships: true });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password));
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        principal: 'principal:mobile-login',
+        memberships: [{ id: 'membership:console:one', client: 'console' }, { id: 'membership:console:two', client: 'console' }],
+      },
     });
-    expect(harness.queries).toHaveLength(0);
+    const credential = harness.queries.find(({ text }) => text.includes('select credential.principal_id,credential.secret_hash'));
+    expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
   });
 
   it('rejects an invalid invitation before creating a challenge or queuing an SMS job', async () => {
@@ -568,6 +606,26 @@ function challengeRequest(body: Readonly<Record<string, unknown>>): OperationReq
   };
 }
 
+function passwordLoginRequest(subject: string, password: string): OperationRequest {
+  return {
+    type: 'identity.sessions.create',
+    access: null,
+    input: {
+      path: {}, query: {}, headers: { 'x-device-id': 'device:password-login-test' },
+      body: { provider: 'password', subject, password, target: 'console', authorization: authorizationRequest() },
+      rawBody: '', deadline: Date.now() + 5_000, signal: new AbortController().signal,
+      idempotency: 'password:mobile-login',
+    },
+  };
+}
+
+function authorizationRequest(): Readonly<Record<string, string>> {
+  return {
+    state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43),
+    returnTarget: 'https://console.example.test/auth/callback',
+  };
+}
+
 function stepupRequest(body: Readonly<Record<string, unknown>>): OperationRequest {
   return {
     type: 'identity.stepup.start',
@@ -639,7 +697,8 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
 function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subjectExists: boolean; inviteAccepted?: boolean; operatorInvite?: boolean;
   seniorInvite?: boolean;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
-  challengePrincipal?: string | null; credentialSecret?: string; ownerPasswordRotation?: boolean }>): Readonly<{
+  challengePrincipal?: string | null; boundMobilePrincipal?: string | null;
+  credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean }>): Readonly<{
   pool: DatabasePool;
   queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
 }> {
@@ -657,6 +716,19 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       }
       if (text.includes('select principal_id from identity.credential')) {
         return result([{ principal_id: input.challengePrincipal ?? 'principal:password-reset' }]);
+      }
+      if (text.includes('profile.mobile_token=any')) {
+        return result(input.boundMobilePrincipal ? [{ principal_id: input.boundMobilePrincipal }] : []);
+      }
+      if (text.includes('select credential.principal_id,credential.secret_hash')) {
+        return result(input.credentialSecret ? [{ principal_id: input.boundMobilePrincipal ?? 'principal:password-login',
+          secret_hash: input.credentialSecret, credential_version: 2 }] : []);
+      }
+      if (text.includes('select membership.id,membership.access_version,membership.client')) {
+        return result(input.loginMemberships ? [
+          { id: 'membership:console:one', access_version: 1, client: 'operator' },
+          { id: 'membership:console:two', access_version: 1, client: 'operator' },
+        ] : []);
       }
       if (text.includes('with challenge as') && text.includes('identity.challengesecret')) {
         return result([{ id: String(values[0]), purpose: String(values[2]), expires_at: '2099-01-01T00:00:00.000Z' }]);

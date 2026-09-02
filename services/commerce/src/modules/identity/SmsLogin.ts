@@ -5,6 +5,10 @@ export interface SmsLoginPrincipal {
   readonly credential_version: number;
 }
 
+export interface PasswordLoginCredential extends SmsLoginPrincipal {
+  readonly secret_hash: string | null;
+}
+
 export async function resolveBoundMobilePrincipal(database: OperationDatabase, mobileTokens: readonly string[]): Promise<string | null> {
   const matches = await database.query<{ principal_id: string }>(
     `select principal.id principal_id from identity.principal principal
@@ -14,6 +18,24 @@ export async function resolveBoundMobilePrincipal(database: OperationDatabase, m
     [mobileTokens]
   );
   return matches.rows.length === 1 ? matches.rows[0]!.principal_id : null;
+}
+
+export async function resolvePasswordLoginCredential(
+  database: OperationDatabase,
+  input: Readonly<{ subjectHash: string; mobileTokens?: readonly string[] }>
+): Promise<PasswordLoginCredential | undefined> {
+  const mobilePrincipal = input.mobileTokens === undefined
+    ? null
+    : await resolveBoundMobilePrincipal(database, input.mobileTokens);
+  const credential = await database.query<PasswordLoginCredential>(
+    `select credential.principal_id,credential.secret_hash,principal.credential_version
+      from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
+      where credential.provider='password' and credential.status='active' and principal.status='active'
+        and (($2::text is null and credential.subject_hash=$1) or ($2::text is not null and credential.principal_id=$2))
+      order by credential.created_at,credential.id limit 1 for update of credential,principal`,
+    [input.subjectHash, mobilePrincipal]
+  );
+  return credential.rows[0];
 }
 
 export async function verifySmsLoginChallenge(
