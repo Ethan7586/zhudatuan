@@ -79,7 +79,7 @@ export class PgEmployeeAccessRepository extends PgAccessMembershipRepository {
       `select membership.member_id member,membership.organization_id organization,membership.employee_no,
       (select grantrow.scope_id from access.scopegrant grantrow
         where grantrow.membership_id=membership.id and grantrow.scope_kind='department'
-          and grantrow.effect='allow' and grantrow.revoked_at is null
+          and grantrow.effect='allow'
           and (grantrow.expires_at is null or grantrow.expires_at>clock_timestamp())
         order by grantrow.effective_at desc,grantrow.id limit 1) department
       from access.membership membership where membership.id=$1 and membership.status='invited' and membership.client='storefront'`,
