@@ -46,19 +46,18 @@ describe('operator invitation security boundary', () => {
     ]);
   });
 
-  it('lets a senior administrator create a senior administrator invitation', async () => {
+  it('rejects a senior administrator creating a senior administrator invitation', async () => {
     const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({
       actor: 'principal:senior-administrator', membership: 'membership:senior-administrator',
       isExactOwner: false, governanceLevel: 'senior_administrator',
     });
 
-    const response = await identityRegistrationOperations(context(harness.pool))
-      .invoke(createRequest(access, undefined, undefined, 'senior_administrator'));
+    await expect(identityRegistrationOperations(context(harness.pool))
+      .invoke(createRequest(access, undefined, undefined, 'senior_administrator')))
+      .resolves.toEqual({ status: 403, body: { code: 'PERMISSION_DENIED' } });
 
-    expect(response).toMatchObject({ status: 201, body: { governanceLevel: 'senior_administrator' } });
-    const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
-    expect(inserted?.values[7]).toBe('role-senior-administrator-v1:tenant-zhudatuan');
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
   });
 
   it('rejects unknown governance levels instead of inferring a role from the label', async () => {

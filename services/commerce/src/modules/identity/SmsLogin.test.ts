@@ -5,6 +5,7 @@ import {
   consumeSmsLoginChallenge,
   recordInvalidSmsLoginChallenge,
   resolveBoundMobilePrincipal,
+  resolvePasswordLoginCredential,
   verifySmsLoginChallenge,
 } from './SmsLogin';
 
@@ -13,6 +14,33 @@ describe('SMS login database boundary', () => {
     await expect(resolveBoundMobilePrincipal(database([{ principal_id: 'principal:one' }]), ['token'])).resolves.toBe('principal:one');
     await expect(resolveBoundMobilePrincipal(database([]), ['token'])).resolves.toBeNull();
     await expect(resolveBoundMobilePrincipal(database([{ principal_id: 'one' }, { principal_id: 'two' }]), ['token'])).resolves.toBeNull();
+  });
+
+  it('keeps the original account subject as the password credential lookup', async () => {
+    const db = databaseSequence([{
+      principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 4,
+    }]);
+
+    await expect(resolvePasswordLoginCredential(db, { subjectHash: 'account-hash' })).resolves.toEqual({
+      principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 4,
+    });
+    expect(db.calls).toHaveLength(1);
+    expect(db.calls[0]?.values).toEqual(['account-hash', null]);
+    expect(db.calls[0]?.text).toContain('credential.subject_hash=$1');
+  });
+
+  it('resolves a bound mobile to the principal before reading its unchanged password credential', async () => {
+    const db = databaseSequence(
+      [{ principal_id: 'principal:owner' }],
+      [{ principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 5 }],
+    );
+
+    await expect(resolvePasswordLoginCredential(db, {
+      subjectHash: 'mobile-hash', mobileTokens: ['mobile-hash', 'mobile-fingerprint'],
+    })).resolves.toMatchObject({ principal_id: 'principal:owner', credential_version: 5 });
+    expect(db.calls[0]?.text).toContain('profile.mobile_token=any');
+    expect(db.calls[1]?.values).toEqual(['mobile-hash', 'principal:owner']);
+    expect(db.calls[1]?.text).toContain('credential.principal_id=$2');
   });
 
   it('binds verification to login purpose, destination, expiry and an unconsumed locked row', async () => {
@@ -55,6 +83,21 @@ function database(rows: readonly Record<string, unknown>[]): OperationDatabase &
     calls,
     query: async (text: string, values: readonly unknown[] = []) => {
       calls.push({ text, values });
+      return { rows, rowCount: rows.length } as unknown as QueryResult;
+    },
+  } as unknown as OperationDatabase & { calls: Array<Readonly<{ text: string; values: readonly unknown[] }>> };
+}
+
+function databaseSequence(...responses: readonly (readonly Record<string, unknown>[])[]): OperationDatabase & {
+  readonly calls: Array<Readonly<{ text: string; values: readonly unknown[] }>>;
+} {
+  const calls: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+  let index = 0;
+  return {
+    calls,
+    query: async (text: string, values: readonly unknown[] = []) => {
+      calls.push({ text, values });
+      const rows = responses[index++] ?? [];
       return { rows, rowCount: rows.length } as unknown as QueryResult;
     },
   } as unknown as OperationDatabase & { calls: Array<Readonly<{ text: string; values: readonly unknown[] }>> };

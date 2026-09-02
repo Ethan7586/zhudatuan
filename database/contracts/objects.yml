@@ -28,7 +28,7 @@ objects:
   - id: access.change_zhudatuan_owner_mobile
     kind: function
     owner: access
-    source: database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql
+    source: database/supabase/migrations/20260902137000_separate_login_account_from_mobile.sql
     operationalOwner: access
   - id: access.commit_owner_transfer
     kind: function

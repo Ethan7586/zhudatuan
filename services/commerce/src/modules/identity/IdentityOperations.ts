@@ -20,8 +20,8 @@ import { authTarget, consumeChallenge, requestCookie, sessionCookies } from './I
 import { accessPort } from '../access/AccessPort';
 import { memberPort } from '../member/MemberPort';
 import { organizationPort } from '../organization/OrganizationPort';
-import { canonicalMobile } from './IdentitySubject';
-import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolveBoundMobilePrincipal, verifySmsLoginChallenge } from './SmsLogin';
+import { canonicalIdentitySubject, canonicalMobile } from './IdentitySubject';
+import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolveBoundMobilePrincipal, resolvePasswordLoginCredential, verifySmsLoginChallenge } from './SmsLogin';
 
 export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.sessions.create',
@@ -90,27 +90,34 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const authorization = AuthTransaction.start(body.authorization);
           const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
           if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
-          const normalizedSubject = provider === 'phone_otp' ? canonicalMobile(textField(body, 'subject', 32)) : textField(body, 'subject');
+          const normalizedSubject = provider === 'phone_otp'
+            ? canonicalMobile(textField(body, 'subject', 32))
+            : canonicalIdentitySubject(textField(body, 'subject'));
           const subject = digest(normalizedSubject);
+          const passwordMobile = provider === 'password' && /^\+[1-9][0-9]{7,14}$/.test(normalizedSubject)
+            ? normalizedSubject
+            : undefined;
+          const mobileLookup = passwordMobile === undefined
+            ? undefined
+            : await kms.encrypt('identity/mobile', passwordMobile, { purpose: 'password_login' });
+          const mobileTokens = passwordMobile === undefined
+            ? undefined
+            : [subject, mobileLookup!.fingerprint, createHash('sha256').update(passwordMobile).digest('hex')];
           return {
             body,
             provider,
             authorization,
             subject,
+            mobileTokens,
           };
         },
-        execute: async (request, database, { body, provider, authorization, subject }) => {
+        execute: async (request, database, { body, provider, authorization, subject, mobileTokens }) => {
           let found: Readonly<{ principal_id: string; credential_version: number }> | undefined;
           let loginChallenge: string | undefined;
           let loginCode: string | undefined;
           if (provider === 'password') {
-            const credential = await database.query<{ principal_id: string; secret_hash: string | null; credential_version: number }>(
-              `select credential.principal_id,credential.secret_hash,principal.credential_version
-            from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
-            where credential.provider='password' and credential.subject_hash=$1 and credential.status='active' and principal.status='active' for update`,
-              [subject]
-            );
-            const credentialFound = credential.rows[0];
+            const credentialFound = await resolvePasswordLoginCredential(database,
+              mobileTokens === undefined ? { subjectHash: subject } : { subjectHash: subject, mobileTokens });
             if (!(await passwords.verify(textField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
               reject(401, 'CREDENTIAL_INVALID');
             }
@@ -303,18 +310,19 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const id = `challenge:${randomUUID()}`;
           const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
           const purpose = textField(body, 'purpose');
-          if (registrationOnly && purpose !== 'registration' && purpose !== 'password_reset') reject(400, 'CHALLENGE_PURPOSE_INVALID');
+          if (registrationOnly && purpose !== 'registration' && purpose !== 'login' && purpose !== 'password_reset') reject(400, 'CHALLENGE_PURPOSE_INVALID');
           if (!['registration', 'login', 'password_reset', 'wechat_bind'].includes(purpose)) throw new Error('CHALLENGE_PURPOSE_INVALID');
           const requestedDestination = textField(body, 'destination').trim();
           const destination = purpose === 'registration' || purpose === 'login' || purpose === 'password_reset'
             ? canonicalMobile(requestedDestination) : requestedDestination;
           const destinationHash = digest(destination);
           const inviteHash = purpose === 'registration' ? digest(textField(body, 'invite')) : undefined;
-          const legacyMobileToken = purpose === 'login' ? createHash('sha256').update(destination).digest('hex') : undefined;
+          const resolvesBoundMobile = purpose === 'login' || purpose === 'password_reset';
+          const legacyMobileToken = resolvesBoundMobile ? createHash('sha256').update(destination).digest('hex') : undefined;
           const [envelope, recipient, mobileLookup] = await Promise.all([
             kms.encrypt('identity/challenge', code, { challenge: id, purpose }),
             kms.encrypt('identity/destination', destination, { challenge: id, purpose }),
-            purpose === 'login' ? kms.encrypt('identity/mobile', destination, { challenge: id, purpose }) : Promise.resolve(undefined),
+            resolvesBoundMobile ? kms.encrypt('identity/mobile', destination, { challenge: id, purpose }) : Promise.resolve(undefined),
           ]);
           return { body, id, code, purpose, destinationHash, inviteHash, legacyMobileToken, envelope, recipient, mobileLookup };
         },
@@ -325,9 +333,10 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             await requireValidInvite(memberPort.assertRegistrationInvite(database, inviteHash, destinationHash));
           }
           let principal = typeof body.principal === 'string' ? body.principal : null;
-          if (purpose === 'login') {
+          if (purpose === 'login' || purpose === 'password_reset') {
             principal = await resolveBoundMobilePrincipal(database, [destinationHash, mobileLookup!.fingerprint, legacyMobileToken!]);
-          } else if (purpose === 'password_reset') {
+          }
+          if (purpose === 'password_reset' && principal === null) {
             const credential = await database.query<{ principal_id: string }>(
               `select principal_id from identity.credential
             where provider='password' and subject_hash=$1 and status='active'`,
@@ -376,6 +385,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           await database.query(`select set_config('app.scope_id',$1,true)`, [invitationScope]);
         }
         requireInvitationManager(request);
+        if (governanceLevel === 'senior_administrator' && !requireGovernanceContext(access).isExactOwner) {
+          reject(403, 'PERMISSION_DENIED');
+        }
         if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
         const maxUses = integerField(body, 'maxUses', 1);
         const expiresAt = inviteExpiry(body.expiresAt);
@@ -878,7 +890,6 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           }
           const credential = await database.query<{ id: string }>(`select id from identity.credential where principal_id=$1 and provider='password' and status='active' for update`, [access.actor.id]);
           if (!credential.rows[0]) throw new Error('CREDENTIAL_NOT_FOUND');
-          await database.query(`update identity.credential set subject_hash=$2,rotated_at=clock_timestamp() where id=$1`, [credential.rows[0].id, digest(mobile)]);
           const result = await memberPort.changeMobile(database, access.actor.id, envelope.ciphertext, envelope.fingerprint, maskMobile(mobile));
           await database.query(`update identity.assurance set expires_at=least(coalesce(expires_at,clock_timestamp()),clock_timestamp())
             where principal_id=$1 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`, [access.actor.id]);
