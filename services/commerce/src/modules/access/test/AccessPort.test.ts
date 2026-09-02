@@ -19,6 +19,9 @@ describe('AccessPort directory membership resolution', () => {
     ]);
     expect(query.mock.calls[0]?.[0]).toContain('access.scopegrant scopegrant');
     expect(query.mock.calls[0]?.[0]).toContain('access.membershipoverride override');
+    expect(query.mock.calls[0]?.[0]).toContain('organization.unitclosure governed');
+    expect(query.mock.calls[0]?.[0]).toContain("allowed.effect='allow'");
+    expect(query.mock.calls[0]?.[0]).toContain("denied.effect='deny'");
     expect(query.mock.calls[0]?.[0]).not.toContain('access.scopegrant grant');
   });
 
