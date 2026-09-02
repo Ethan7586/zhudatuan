@@ -76,12 +76,23 @@ describe('governance identity inference audit', () => {
 
   it('keeps the senior role projection separate from Owner-only governance permissions', async () => {
     const source = await readFile(join(process.cwd(), '../../database/supabase/migrations/20260902134000_senior_administrator_role.sql'), 'utf8');
+    const publicationSource = await readFile(join(process.cwd(), '../../database/contracts/publish.template.sql'), 'utf8');
     for (const permission of [
       'access.ownership.read', 'access.ownership.transfer', 'access.ownership.accept',
       'identity.registration.reset',
       'access.role.manage', 'access.scope.manage', 'capability.assignment.manage',
-    ]) expect(source).toContain(`'${permission}'`);
+    ]) {
+      expect(source).toContain(`'${permission}'`);
+      expect(publicationSource).toContain(`'${permission}'`);
+    }
     expect(source).toContain("assignment.role_id='role-senior-administrator-v1:'||actor_context.organization_id");
+    expect(publicationSource).not.toContain('tenant-zhudatuan');
+    expect(publicationSource).toContain("tenant.kind='tenant' and tenant.status='active'");
+    expect(publicationSource).toContain("'role-senior-administrator-v1:'||tenant.id");
+    expect(publicationSource).toContain("join capability.operation operation on operation.audience='operator'");
+    expect(publicationSource).toContain("join capability.capability capability on capability.id=operation.capability_id and capability.status='active'");
+    expect(publicationSource).toContain("join access.permission permission on permission.code=operation.permission_code and permission.status='active'");
+    expect(publicationSource).toContain("role.id='role-senior-administrator-v1:'||role.scope_id");
   });
 });
 

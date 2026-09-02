@@ -1028,6 +1028,32 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('channel.operations.replay','channel.operations.replay','channel.operation.replay','operator'),
   ('extension.installations.read','extension.installations.read','extension.installation.read','operator');
 
+insert into access.role(id,scope_id,name,status,version)
+select 'role-senior-administrator-v1:'||tenant.id,tenant.id,'高级管理员','active',1
+from organization.organization tenant
+where tenant.kind='tenant' and tenant.status='active'
+on conflict(id) do update
+set scope_id=excluded.scope_id,name=excluded.name,status='active',version=access.role.version+1;
+
+delete from access.rolepermission mapping
+using access.role role
+where mapping.role_id=role.id
+  and role.id='role-senior-administrator-v1:'||role.scope_id;
+
+insert into access.rolepermission(role_id,permission_id,effect)
+select distinct role.id,permission.id,'allow'
+from access.role role
+join capability.operation operation on operation.audience='operator'
+join capability.capability capability on capability.id=operation.capability_id and capability.status='active'
+join access.permission permission on permission.code=operation.permission_code and permission.status='active'
+where role.id='role-senior-administrator-v1:'||role.scope_id
+  and permission.code not in(
+    'access.ownership.read','access.ownership.transfer','access.ownership.accept',
+    'identity.registration.reset',
+    'access.role.manage','access.scope.manage','capability.assignment.manage'
+  )
+on conflict do nothing;
+
 insert into capability.entitlement(id,scope_id,capability_id,state,quota,effective_at,expires_at,version)
 select 'platform:'||capability.id,'organization-platform-root',capability.id,'enabled',null,'1970-01-01T00:00:00Z',null,0
 from capability.capability capability
