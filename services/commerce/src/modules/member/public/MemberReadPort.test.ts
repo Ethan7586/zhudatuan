@@ -12,7 +12,7 @@ describe('PgMemberReadPort', () => {
       }
       return { rows: [], rowCount: 0 } as unknown as QueryResult;
     });
-    await expect(withReadTransaction(query, (context) => new PgMemberReadPort().summary(context, 'member:one'))).resolves.toEqual({ id: 'member:one', displayName: '测试员工', employeeNo: 'E1001', mobileMasked: '138****0000', status: 'active', version: 4 });
-    expect(query).toHaveBeenCalledWith(expect.stringContaining('from member.profile'), ['member:one']);
+    await expect(withReadTransaction(query, (context) => new PgMemberReadPort().summary(context, 'member:one', 'mall:one'))).resolves.toEqual({ id: 'member:one', displayName: '测试员工', employeeNo: 'E1001', mobileMasked: '138****0000', status: 'active', version: 4 });
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('access.membership candidate'), ['member:one', 'mall:one']);
   });
 });

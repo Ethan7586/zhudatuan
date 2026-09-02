@@ -9,6 +9,6 @@ export interface MemberSummary {
   readonly version: number;
 }
 export interface MemberReadPort {
-  summary(context: ReadTransactionContext, member: string): Promise<MemberSummary | null>;
+  summary(context: ReadTransactionContext, member: string, scope: string): Promise<MemberSummary | null>;
 }
 export const MEMBER_READ_PORT = publicPort<MemberReadPort>('member', 'read');

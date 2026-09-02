@@ -40,7 +40,7 @@ export class PgSupportContextRepository implements SupportContextPort {
 
   async view(context: ReadTransactionContext, scope: string, member: string, memberOnly: boolean): Promise<SupportContextView> {
     const scopes = await this.descendants(context, scope);
-    const profile = await this.profiles.summary(context, member);
+    const profile = await this.profiles.summary(context, member, scope);
     if (!profile) throw new Error('SUPPORT_MEMBER_NOT_FOUND');
     const orders = await this.orders.recent(context, scopes, member, memberOnly, 5);
     const benefits = await this.benefits.recent(context, member, scopes, 5);

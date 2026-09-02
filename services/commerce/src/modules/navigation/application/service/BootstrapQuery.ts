@@ -30,12 +30,12 @@ export class BootstrapQuery {
   async execute(input: OperationInputFor<'storefront.bootstrap.read'>, context: HandlerContext<'storefront.bootstrap.read'>) {
     const handle = entryHandle(context);
     const binding = await this.ports.experience.resolveEntry(context.transaction, handle);
+    assertEntryMall(context, binding.mall);
     const identity = this.ports.identity.resolve(context.security, context.headers);
     const transaction = context.transaction;
     const memberId = identity.membership ? await this.ports.membership.member(transaction, identity.membership) : null;
-    const member = memberId ? await this.ports.member.summary(transaction, memberId) : null;
+    const member = memberId ? await this.ports.member.summary(transaction, memberId, binding.mall) : null;
     if (identity.state === 'member' && !member) throw new Error('STOREFRONT_MEMBERSHIP_INVALID');
-    assertEntryMall(context, binding.mall);
     const navigation = this.ports.navigation.storefront();
     const tasks = [
       () => this.ports.experience.published(transaction, binding),
