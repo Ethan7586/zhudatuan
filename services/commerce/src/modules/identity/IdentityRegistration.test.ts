@@ -347,6 +347,10 @@ describe('canonical member registration security boundary', () => {
     expect(memberships[0]?.values).toContain('mall-zhudatuan');
     expect(memberships[1]?.text).toContain("'operator'");
     expect(memberships[1]?.values).toContain('tenant-zhudatuan');
+    const invitationConsumption = harness.queries.find(({ text }) => text.includes('with candidate as materialized')
+      && text.includes('update member.invite'));
+    expect(invitationConsumption?.text).toContain("accepted_membership_id=case when candidate.target_client='operator' then $3");
+    expect(memberships[1]?.values).toContain(invitationConsumption?.values[2]);
     const roles = harness.queries.filter(({ text }) => text.includes('insert into access.membershiprole'));
     expect(roles[0]?.values).toContain('role-zhudatuan-storefront-member');
     expect(roles[1]?.values).toContain('role-zhudatuan-pending-operator');

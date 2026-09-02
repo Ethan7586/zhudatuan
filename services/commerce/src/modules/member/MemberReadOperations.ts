@@ -61,7 +61,12 @@ export function memberOperatorReadActions(): OperationActions {
       const access = requireAccess(request);
       const page = queryPage(request);
       const result = await database.query(`select invitation.id,invitation.organization_id scope,
-        organization.name scope_name,invitation.label,
+        organization.name scope_name,case
+          when accepted_profile.display_name is not null and invitation.destination_masked is not null
+            then accepted_profile.display_name||' · '||invitation.destination_masked
+          when accepted_profile.display_name is not null then accepted_profile.display_name
+          when invitation.destination_masked is not null then invitation.destination_masked
+          else '历史记录，邀请对象不可还原' end label,
         case when invitation.role_id='role-senior-administrator-v1:'||invitation.organization_id
           then 'senior_administrator' else 'administrator' end governance_level,
         invitation.created_by,creator.display_name created_by_name,
@@ -76,6 +81,8 @@ export function memberOperatorReadActions(): OperationActions {
         join organization.organization organization on organization.id=invitation.organization_id
         left join access.membership creator_membership on creator_membership.id=invitation.created_by
         left join member.profile creator on creator.id=creator_membership.member_id
+        left join access.membership accepted_membership on accepted_membership.id=invitation.accepted_membership_id
+        left join member.profile accepted_profile on accepted_profile.id=accepted_membership.member_id
         where invitation.target_client='operator'
           and exists(select 1 from organization.unitclosure boundary
             where boundary.ancestor_id=$1 and boundary.descendant_id=invitation.organization_id)

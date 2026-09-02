@@ -119,7 +119,7 @@ objects:
   - id: access.provision_mall_owner
     kind: function
     owner: access
-    source: database/supabase/migrations/20260903101000_provision_l1_mall_owner.sql
+    source: database/supabase/migrations/20260903103000_provision_l1_mall_owner.sql
     callers:
       - services/commerce/src/modules/provisioning/MallOwnerProvisioningPort.ts
   - id: access.purchase_application_allowed
@@ -219,7 +219,7 @@ objects:
   - id: access.read_provisioned_mall
     kind: function
     owner: access
-    source: database/supabase/migrations/20260903101000_provision_l1_mall_owner.sql
+    source: database/supabase/migrations/20260903103000_provision_l1_mall_owner.sql
     callers:
       - services/commerce/src/modules/provisioning/MallOwnerProvisioningPort.ts
   - id: access.resolve_governance
@@ -302,7 +302,7 @@ objects:
   - id: access.zhudatuan_operator_invitation_allowed
     kind: function
     owner: access
-    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
+    source: database/supabase/migrations/20260903101000_allow_platform_owner_invitation_history.sql
     operationalOwner: access
   - id: access.zhudatuan_owner_context
     kind: function
@@ -18631,7 +18631,7 @@ objects:
   - id: member.invite.zhudatuanidentityapi
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
+    source: database/supabase/migrations/20260903102000_invitation_record_target_and_creator_scope.sql
   - id: member.invite.zhudatuanidentityapiinsert
     kind: policy
     owner: member
@@ -20289,7 +20289,7 @@ objects:
   - id: access.mallowner
     kind: table
     owner: access
-    source: database/supabase/migrations/20260903101000_provision_l1_mall_owner.sql
+    source: database/supabase/migrations/20260903103000_provision_l1_mall_owner.sql
     rls: true
   - id: access.membership
     kind: table

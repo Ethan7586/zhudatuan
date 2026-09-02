@@ -5,9 +5,9 @@ select pg_advisory_xact_lock(hashtext('zhudatuan:provision-l1-mall-owner:v1'));
 do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion
-      where version='20260903100000'
-        and checksum='9942a46274ce8717f79b0878ac1deaa590650c0eb0fca29676424b8d0da54c43')
-    or exists(select 1 from runtime.schemaversion where version>'20260903100000') then
+      where version='20260903102000'
+        and checksum='6ccf447fd41ac42af725555b3e24ede4fa0a7cdeb9e64eb2f32ab8686d368ece')
+    or exists(select 1 from runtime.schemaversion where version>'20260903102000') then
     raise exception 'PROVISION_L1_MALL_OWNER_PREDECESSOR_INVALID';
   end if;
 end
@@ -123,10 +123,10 @@ from organization.organization root
 where root.kind='platform' and root.parent_id is null and root.status='active';
 
 alter policy zhudatuanprovisioningapi on runtime.schemaversion
-  using(version in('20260821032000','20260821054000','20260901223000','20260902012000','20260903101000'));
+  using(version in('20260821032000','20260821054000','20260901223000','20260902012000','20260903103000'));
 
 insert into runtime.schemaversion(version,checksum)
-values('20260903101000','93c46ec2519b7fd7c95e78d5bd64b6a2ec06b66e9c4e381093a426c1371920f5');
+values('20260903103000','d06eb0a303bcba4f532e7c362b12850dc5ac25634d2c6163b1bd5454dd0369d7');
 
 do $assert$
 begin
@@ -152,8 +152,8 @@ begin
     raise exception 'PROVISION_L1_MALL_READ_CONTRACT_INVALID';
   end if;
   if not exists(select 1 from runtime.schemaversion
-    where version='20260903101000'
-      and checksum='93c46ec2519b7fd7c95e78d5bd64b6a2ec06b66e9c4e381093a426c1371920f5') then
+    where version='20260903103000'
+      and checksum='d06eb0a303bcba4f532e7c362b12850dc5ac25634d2c6163b1bd5454dd0369d7') then
     raise exception 'PROVISION_L1_MALL_OWNER_SCHEMA_VERSION_INVALID';
   end if;
 end

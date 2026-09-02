@@ -32,8 +32,8 @@ import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/Ris
 import type { Container } from './Container';
 import { ExtensionRegistry } from './ExtensionRegistry';
 
-export const MALL_PROVISIONING_SCHEMA_VERSION = '20260903101000' as const;
-export const MALL_PROVISIONING_SCHEMA_CHECKSUM = '93c46ec2519b7fd7c95e78d5bd64b6a2ec06b66e9c4e381093a426c1371920f5' as const;
+export const MALL_PROVISIONING_SCHEMA_VERSION = '20260903103000' as const;
+export const MALL_PROVISIONING_SCHEMA_CHECKSUM = 'd06eb0a303bcba4f532e7c362b12850dc5ac25634d2c6163b1bd5454dd0369d7' as const;
 
 interface CompatibilityRow {
   readonly current_user: string;
