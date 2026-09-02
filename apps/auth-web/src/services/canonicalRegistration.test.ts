@@ -32,6 +32,7 @@ describe('canonical registration', () => {
       privacyBody: '隐私政策正文',
       termsHash: TERMS_HASH,
       target: 'console',
+      governanceLevel: 'administrator',
       effectiveAt: '2026-08-28T00:00:00.000Z',
       expiresAt: '2026-09-28T00:00:00.000Z',
     });
@@ -44,10 +45,20 @@ describe('canonical registration', () => {
   });
 
   it('keeps a storefront invitation distinct from an operator invitation', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...invitation(), target_client: 'storefront' }));
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...invitation(), target_client: 'storefront', governance_level: null }));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(resolveCanonicalInvite('storefront-invitation')).resolves.toMatchObject({ target: 'storefront' });
+  });
+
+  it('preserves the authoritative senior administrator level from invitation resolution', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...invitation(), governance_level: 'senior_administrator' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveCanonicalInvite('senior-invitation')).resolves.toMatchObject({
+      target: 'console',
+      governanceLevel: 'senior_administrator',
+    });
   });
 
   it('creates a registration-only challenge with stable device metadata', async () => {
@@ -139,6 +150,7 @@ describe('canonical registration', () => {
       ...membership(),
       id: 'membership:operator-one',
       client: 'operator',
+      governanceLevel: 'senior_administrator',
     }, 201));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -154,6 +166,7 @@ describe('canonical registration', () => {
     })).resolves.toMatchObject({
       membership: 'membership:operator-one',
       target: 'console',
+      governanceLevel: 'senior_administrator',
       status: 'active',
     });
   });
@@ -235,6 +248,7 @@ function invitation(): Readonly<Record<string, unknown>> {
     privacy_body: '隐私政策正文',
     terms_hash: TERMS_HASH,
     target_client: 'operator',
+    governance_level: 'administrator',
     effective_at: '2026-08-28T00:00:00.000Z',
     expires_at: '2026-09-28T00:00:00.000Z',
   };

@@ -22,4 +22,12 @@ describe('invitation registration presentation', () => {
     expect(storefront.footer).toContain('只开通消费商城');
     expect(storefront.footer).toContain('不开通运营后台');
   });
+
+  it('shows the authoritative senior administrator scope after verification', () => {
+    const presentation = registrationPresentation('console', 'senior_administrator');
+
+    expect(presentation.title).toBe('注册高级管理员');
+    expect(presentation.resolvedNotice).toContain('全部业务功能');
+    expect(presentation.footer).toContain('不具备 Owner');
+  });
 });

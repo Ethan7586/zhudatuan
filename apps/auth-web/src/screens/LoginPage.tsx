@@ -101,7 +101,7 @@ export const LoginPage: React.FC = () => {
   // 首次登录修改密码
   const [showForcePasswordModal, setShowForcePasswordModal] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
-  const registrationCopy = registrationPresentation(registrationInvite?.target);
+  const registrationCopy = registrationPresentation(registrationInvite?.target, registrationInvite?.governanceLevel);
 
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
