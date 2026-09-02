@@ -75,6 +75,19 @@ describe('canonical member registration security boundary', () => {
     expect(challenge?.values[4]).toBe(sessionEvidenceDigest('session:stepup'));
   });
 
+  it('stores password verification with the session digest required by first mobile enrollment', async () => {
+    const credentialSecret = await new PasswordPolicy().hash('Current!Password1');
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, credentialSecret });
+
+    const response = await identityOperations(context(harness.pool)).invoke(authenticatedRequest(
+      'identity.password.verify', { password: 'Current!Password1' }, 'password:verify'
+    ));
+
+    expect(response.status).toBe(200);
+    const evidence = harness.queries.find(({ text }) => text.includes("$3,'password',2,$4"));
+    expect(evidence?.values[3]).toBe(sessionEvidenceDigest('session:stepup'));
+  });
+
   it('requires fresh password proof before the first mobile enrollment', async () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, mobileCiphertext: null });
 
@@ -451,6 +464,9 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.includes("method='password'") && text.includes('evidence_hash')) return result(input.passwordEvidence ? [{ exists: 1 }] : []);
       if (text.includes('select id,secret_hash from identity.credential')) {
         return result(input.credentialSecret ? [{ id: 'credential:password:test', secret_hash: input.credentialSecret }] : []);
+      }
+      if (text.includes('select secret_hash from identity.credential')) {
+        return result(input.credentialSecret ? [{ secret_hash: input.credentialSecret }] : []);
       }
       if (text.includes('identity.rotate_zhudatuan_owner_password')) {
         return result([{ result: input.ownerPasswordRotation

@@ -759,7 +759,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         await database.query(
           `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
         values($1,$2,$3,'password',2,$4,$5::timestamptz,$5::timestamptz+interval '10 minutes')`,
-          [`assurance:${randomUUID()}`, access.actor.id, access.actor.session, digest(access.actor.session), verifiedAt]
+          [`assurance:${randomUUID()}`, access.actor.id, access.actor.session, sessionDigest(access.actor.session), verifiedAt]
         );
         await database.query(
           `update identity.session set assurance_level=greatest(assurance_level,2),last_seen_at=clock_timestamp()
