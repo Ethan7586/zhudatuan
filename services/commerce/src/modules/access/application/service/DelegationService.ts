@@ -24,15 +24,28 @@ export class DelegationService implements InvitationAccessPort {
   async validate(
     context: ReadTransactionContext,
     invitation: Readonly<{
+      kind: 'signin' | 'enrollment';
       issuer: string;
       issuerAccessVersion: number;
       membership: string;
       grantDigest: string;
       organization: string;
       target: 'console' | 'storefront';
+      policy: string | null;
+      termsHash: string | null;
+      expiresAt: Date;
     }>
   ): Promise<void> {
-    const built = await this.grants.execute(context, { issuer: invitation.issuer, membership: invitation.membership, organization: invitation.organization, target: invitation.target, kind: 'signin', policy: null, termsHash: null });
+    const built = await this.grants.execute(context, {
+      issuer: invitation.issuer,
+      membership: invitation.membership,
+      organization: invitation.organization,
+      target: invitation.target,
+      kind: invitation.kind,
+      policy: invitation.policy,
+      termsHash: invitation.termsHash,
+      expiresAt: invitation.expiresAt,
+    });
     this.assertDelegation(built);
     if (built.issuerVersion !== invitation.issuerAccessVersion || built.plan.digest() !== invitation.grantDigest) {
       throw new DomainError('INVITATION_STALE');

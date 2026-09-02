@@ -61,7 +61,21 @@ export interface InvitationAccessPort {
       expiresAt?: Date;
     }>
   ): Promise<InvitationGrantPlan>;
-  validate(context: ReadTransactionContext, invitation: Readonly<{ issuer: string; issuerAccessVersion: number; membership: string; grantDigest: string; organization: string; target: 'console' | 'storefront' }>): Promise<void>;
+  validate(
+    context: ReadTransactionContext,
+    invitation: Readonly<{
+      kind: 'signin' | 'enrollment';
+      issuer: string;
+      issuerAccessVersion: number;
+      membership: string;
+      grantDigest: string;
+      organization: string;
+      target: 'console' | 'storefront';
+      policy: string | null;
+      termsHash: string | null;
+      expiresAt: Date;
+    }>
+  ): Promise<void>;
   validateCampaign(context: ReadTransactionContext, input: InvitationCampaignValidation): Promise<void>;
   createCampaign(context: WriteTransactionContext, input: InvitationCampaignActivation): Promise<Readonly<{ activationDigest: string }>>;
   prepareEmployee(context: WriteTransactionContext, input: EmployeeInvitationPreparation): Promise<Readonly<{ grantDigest: string }>>;

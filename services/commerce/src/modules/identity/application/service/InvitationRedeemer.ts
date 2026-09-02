@@ -17,8 +17,19 @@ export class InvitationRedeemer {
 
   validate(database: ReadTransactionContext, invitation: Invitation, target: 'console' | 'storefront'): Promise<void> {
     const state = invitation.state;
-    if (!state.membership) throw new Error('INVITATION_MEMBERSHIP_MISSING');
-    return this.access.validate(database, { issuer: state.issuer, issuerAccessVersion: state.issuerAccessVersion, membership: state.membership, grantDigest: state.grantDigest, organization: state.organization, target });
+    if (!state.membership || state.kind === 'campaign') throw new Error('INVITATION_MEMBERSHIP_MISSING');
+    return this.access.validate(database, {
+      kind: state.kind,
+      issuer: state.issuer,
+      issuerAccessVersion: state.issuerAccessVersion,
+      membership: state.membership,
+      grantDigest: state.grantDigest,
+      organization: state.organization,
+      target,
+      policy: state.policy,
+      termsHash: state.termsHash,
+      expiresAt: state.expiresAt,
+    });
   }
 
   async consume(
