@@ -20,6 +20,7 @@ import {
   PgScopeResolver,
   PgSessionResolver,
 } from '../foundation/security/PgAccessResolvers';
+import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import { DECISION_SINK } from '../foundation/security/DecisionSink';
 import { RISK_GATE } from '../foundation/security/RiskGate';
@@ -85,6 +86,9 @@ export async function createMallProvisioningApiRuntime(
     new SystemClock(),
     risk,
     decisions,
+    undefined,
+    undefined,
+    new PgGovernanceResolver(pool),
   );
   const handlers = new Map<OperationId, OperationHandler>();
   const extensions = new ExtensionRegistry({ verify: async () => false });

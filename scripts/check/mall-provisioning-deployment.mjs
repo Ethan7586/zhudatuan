@@ -6,7 +6,7 @@ import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 const root = repositoryRoot;
 const read = (path) => readFile(resolve(root, path), 'utf8');
 const [main, runtime, moduleSource, operations, config, configTest, service, environment, caddy, delivery,
-  migration, runner, build, roleProvisioner, objectContract] = await Promise.all([
+  migration, governanceMigration, runner, build, roleProvisioner, objectContract] = await Promise.all([
   read('services/commerce/src/entry/MallProvisioningApiMain.ts'),
   read('services/commerce/src/bootstrap/MallProvisioningApiRuntime.ts'),
   read('services/commerce/src/modules/provisioning/MallProvisioningModule.ts'),
@@ -18,6 +18,7 @@ const [main, runtime, moduleSource, operations, config, configTest, service, env
   read('infrastructure/zhudatuan/aliyun/Caddyfile'),
   read('infrastructure/zhudatuan/aliyun/delivery.yml'),
   read('database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql'),
+  read('database/supabase/migrations/20260902132000_canonical_governance_context.sql'),
   read('services/commerce/src/foundation/infrastructure/RegistrationMigrationRunner.ts'),
   read('scripts/build-commerce.mjs'),
   read('infrastructure/zhudatuan/aliyun/postgres-provision-mall-role.sh'),
@@ -109,8 +110,12 @@ const runtimeMarker = runtime.match(/MALL_PROVISIONING_SCHEMA_CHECKSUM = '([a-f0
 if (!marker || marker === '0'.repeat(64) || marker !== runtimeMarker) throw new Error('MALL_PROVISIONING_SCHEMA_MARKER_DRIFT');
 const normalized = createHash('sha256').update(migration.replaceAll(marker, '0'.repeat(64))).digest('hex');
 if (normalized !== marker) throw new Error('MALL_PROVISIONING_SCHEMA_NORMALIZED_DIGEST_DRIFT');
-for (const token of ["REGISTRATION_TARGET_VERSION = '20260902012000'", `REGISTRATION_TARGET_CHECKSUM = '${marker}'`,
-  "name='20260902012000_zhudatuan_mall_provisioning_access.sql'"]) {
+const governanceMarker = governanceMigration.match(/values\('20260902132000','([a-f0-9]{64})'\)/)?.[1];
+if (!governanceMarker || governanceMarker === '0'.repeat(64)) throw new Error('GOVERNANCE_SCHEMA_MARKER_MISSING');
+const normalizedGovernance = createHash('sha256').update(governanceMigration.replaceAll(governanceMarker, '0'.repeat(64))).digest('hex');
+if (normalizedGovernance !== governanceMarker) throw new Error('GOVERNANCE_SCHEMA_NORMALIZED_DIGEST_DRIFT');
+for (const token of ["REGISTRATION_TARGET_VERSION = '20260902132000'", `REGISTRATION_TARGET_CHECKSUM = '${governanceMarker}'`,
+  "name='20260902132000_canonical_governance_context.sql'"]) {
   if (!runner.includes(token)) throw new Error(`MALL_PROVISIONING_MIGRATION_RUNNER_DRIFT:${token}`);
 }
 for (const token of ['zhudatuanprovisioningapi', 'identity.resolve_session(text)', 'organization.organization',

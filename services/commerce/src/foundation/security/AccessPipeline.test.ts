@@ -188,7 +188,16 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
     { evaluate: risk },
     { append: decisions },
     undefined,
-    options.actionProof
+    options.actionProof,
+    { resolve: vi.fn(async () => ({
+      governanceLevel: 'member' as const,
+      isExactOwner: false,
+      actorMembershipId: actor.membership,
+      actorPrincipalId: actor.id,
+      organizationId: scope.tenant ?? scope.id,
+      scope: { kind: scope.kind, semanticId: scope.id, storageId: scope.kind === 'self' ? `self:${scope.id}` : scope.id },
+      resolvedAt: NOW,
+    })) }
   );
   return { pipeline, membership, risk, decisions };
 }

@@ -4,6 +4,7 @@ import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, rowResult, type OperationActions } from '../../foundation/application/ModuleOperations';
 import { keysetResult, queryPage } from '../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { requireGovernanceContext } from '../../foundation/security/AccessContext';
 
 export const MEMBER_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'member.members.read',
@@ -14,6 +15,7 @@ export function memberOperatorReadActions(): OperationActions {
   return {
     'member.members.read': async (request, database) => {
       const access = requireAccess(request);
+      const governance = requireGovernanceContext(access);
       const page = queryPage(request);
       const result = await database.query(`with anchor as(
         select distinct on(profile.id) profile.id,profile.principal_id,profile.display_name,profile.status,
@@ -38,22 +40,20 @@ export function memberOperatorReadActions(): OperationActions {
         (anchor.principal_id<>$5 and anchor.principal_status='active'
           and exists(select 1 from identity.credential credential where credential.principal_id=anchor.principal_id
             and credential.provider='password' and credential.status='active')
-          and not exists(select 1 from access.membership owned
-            join access.membershiprole assignment on assignment.membership_id=owned.id
-              and assignment.role_id='role-platform-owner-v2' and assignment.effective_at<=clock_timestamp()
-              and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-            where owned.member_id=anchor.id and owned.status='active')) reset_allowed,
+          and not exists(select 1 from access.membership owner_membership
+            where owner_membership.id=$6 and owner_membership.member_id=anchor.id
+              and owner_membership.status='active')) reset_allowed,
         case
           when anchor.principal_id=$5 then 'SELF_PROTECTED'
-          when exists(select 1 from access.membership owned join access.membershiprole assignment on assignment.membership_id=owned.id
-            and assignment.role_id='role-platform-owner-v2' and assignment.effective_at<=clock_timestamp()
-            and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-            where owned.member_id=anchor.id and owned.status='active') then 'OWNER_PROTECTED'
+          when exists(select 1 from access.membership owner_membership
+            where owner_membership.id=$6 and owner_membership.member_id=anchor.id
+              and owner_membership.status='active') then 'OWNER_PROTECTED'
           when anchor.principal_status<>'active' then 'IDENTITY_INACTIVE'
           when not exists(select 1 from identity.credential credential where credential.principal_id=anchor.principal_id
             and credential.provider='password' and credential.status='active') then 'LOGIN_IDENTITY_MISSING'
           else null end reset_block_reason
-      from selected anchor order by anchor.directory_sort desc,anchor.id desc limit $4`, [access.scope.id, page.sort, page.id, page.fetch, access.actor.id]);
+      from selected anchor order by anchor.directory_sort desc,anchor.id desc limit $4`,
+      [access.scope.id, page.sort, page.id, page.fetch, access.actor.id, governance.ownerMembershipId ?? null]);
       return keysetResult(result, page, 'directory_sort', 'id');
     },
     'member.imports.read': async (request, database) => {

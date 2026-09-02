@@ -7,6 +7,7 @@ import { bodyRecord, integerField, textField } from '../../foundation/interface/
 import type { OperationRequest, OperationUsecase } from '../../foundation/application/OperationHandler';
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
+import { requireGovernanceContext } from '../../foundation/security/AccessContext';
 import { StepupPolicy } from '../../foundation/security/StepupPolicy';
 import { IDENTITY_SECURITY_KEYS } from '../../foundation/infrastructure/SecretStore';
 import { PasswordPolicy } from './domain/policy/PasswordPolicy';
@@ -367,7 +368,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (target.rows[0]?.id !== invitationScope) reject(403, 'PERMISSION_DENIED');
           await database.query(`select set_config('app.scope_id',$1,true)`, [invitationScope]);
         }
-        const { exactOwner } = await requireInvitationManager(request, database, registrationOnly);
+        const { exactOwner } = requireInvitationManager(request, registrationOnly);
         if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
         if (targetClient === 'operator' && !exactOwner) reject(403, 'PERMISSION_DENIED');
         const maxUses = integerField(body, 'maxUses', 1);
@@ -413,7 +414,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         return { status: 201, body: { ...saved, code }, headers: { etag: '"0"' } };
       },
       'identity.invitations.revoke': async (request, database) => {
-        const { exactOwner } = await requireInvitationManager(request, database, registrationOnly);
+        const { exactOwner } = requireInvitationManager(request, registrationOnly);
         const body = bodyRecord(request);
         const reason = textField(body, 'reason', 1000);
         if (reason.length < 4) throw new Error('CHANGE_REASON_REQUIRED');
@@ -612,18 +613,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
       },
       'identity.members.reset': async (request, database) => {
         const access = requireAccess(request);
+        const governance = requireGovernanceContext(access);
         const reason = textField(bodyRecord(request), 'reason', 500).trim();
         if (reason.length < 4) reject(422, 'CHANGE_REASON_REQUIRED');
         const expectedVersion = request.input.expectedVersion;
         if (expectedVersion === undefined) reject(400, 'EXPECTED_VERSION_REQUIRED');
 
-        const root = await database.query(`select 1 from access.membership membership
-          join access.membershiprole assignment on assignment.membership_id=membership.id
-            and assignment.role_id='role-platform-owner-v2'
-            and assignment.effective_at<=clock_timestamp()
-            and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-          where membership.id=$1 and membership.status='active'`, [access.membership.id]);
-        if (!root.rows[0]) reject(403, 'PERMISSION_DENIED');
+        if (!governance.isExactOwner) reject(403, 'PERMISSION_DENIED');
 
         const target = await database.query<{
           member_id: string; principal_id: string; principal_status: string; principal_version: number; organization_id: string;
@@ -639,12 +635,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         if (selected.principal_id === access.actor.id) reject(409, 'OWNER_MEMBERSHIP_PROTECTED');
         if (Number(selected.principal_version) !== expectedVersion) reject(409, 'VERSION_CONFLICT');
 
-        const protectedOwner = await database.query(`select 1 from access.membership membership
-          join access.membershiprole assignment on assignment.membership_id=membership.id
-            and assignment.role_id='role-platform-owner-v2'
-            and assignment.effective_at<=clock_timestamp()
-            and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-          where membership.member_id=$1 and membership.status='active'`, [selected.member_id]);
+        const protectedOwner = await database.query(`select 1 from access.membership owner_membership
+          where owner_membership.id=$1 and owner_membership.member_id=$2 and owner_membership.status='active'`,
+        [governance.ownerMembershipId ?? null, selected.member_id]);
         if (protectedOwner.rows[0]) reject(409, 'OWNER_MEMBERSHIP_PROTECTED');
 
         const memberships = await database.query<{ id: string; organization_id: string }>(
@@ -833,6 +826,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           return { access, body, mobile, envelope };
         },
         execute: async (_request, database, { access, body, mobile, envelope }) => {
+          const governance = requireGovernanceContext(access);
           await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
           const profile = await database.query<{ mobile_ciphertext: string | null }>(
             `select mobile_ciphertext from member.profile where principal_id=$1 and status='active' for update`, [access.actor.id]);
@@ -846,14 +840,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           } else if (!stepup.accepts(true, access.assurance, new Date())) reject(403, 'MOBILE_CHANGE_STEP_UP_REQUIRED');
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, access.actor.id,
             { purpose: 'phone_change', destinationHash: digest(mobile), sessionHash: sessionDigest(access.actor.session) });
-          const owner = await database.query<{ exact_owner: boolean }>(`select exists(
-            select 1 from access.platformowner owner
-            join access.membership membership on membership.id=owner.membership_id
-            join member.profile profile on profile.id=membership.member_id
-            where owner.singleton=true and owner.state='active'
-              and owner.membership_id=$1 and profile.principal_id=$2
-          ) exact_owner`, [access.membership.id, access.actor.id]);
-          if (owner.rows[0]?.exact_owner === true) {
+          if (governance.isExactOwner) {
             const changed = await database.query<{ profile: Readonly<Record<string, unknown>> }>(
               `select access.change_zhudatuan_owner_mobile($1,$2,$3,$4,$5,$6,$7,$8,$9) profile`,
               [access.actor.id, access.actor.session, textField(body, 'challenge'), envelope.ciphertext,
@@ -983,19 +970,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
   return new ModuleOperations('identity', pool, audit, selected, ownedOperations);
 }
 
-async function requireInvitationManager(request: OperationRequest, database: OperationDatabase, registrationOnly: boolean) {
+function requireInvitationManager(request: OperationRequest, registrationOnly: boolean) {
   const access = requireAccess(request);
   const permission = access.membership.grants.some((grant) => grant.permissions.includes('identity.invitation.manage'));
   if (access.actor.target !== 'console' || !access.capabilities.includes(request.type) || !permission) reject(403, 'PERMISSION_DENIED');
-  const exactOwner = await zhudatuanInvitationOwner(database, registrationOnly);
+  const exactOwner = requireGovernanceContext(access).isExactOwner;
   if (registrationOnly && !exactOwner) reject(403, 'PERMISSION_DENIED');
   return { access, exactOwner };
-}
-
-async function zhudatuanInvitationOwner(database: OperationDatabase, registrationOnly: boolean): Promise<boolean> {
-  const probe = registrationOnly ? 'access.zhudatuan_invitation_owner()' : 'access.zhudatuan_owner_context()';
-  const result = await database.query<{ exact_owner: boolean }>(`select ${probe} exact_owner`);
-  return result.rows[0]?.exact_owner === true;
 }
 
 async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {

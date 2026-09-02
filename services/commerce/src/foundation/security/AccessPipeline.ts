@@ -10,6 +10,7 @@ import type { DecisionSink } from './DecisionSink';
 import { assertRiskAllowed, type RiskGate } from './RiskGate';
 import type { ActionProofVerifier } from './ActionProof';
 import { ResolveMallContext } from '../../modules/mall/MallContext';
+import type { GovernanceResolver } from './GovernanceResolver';
 
 export interface MembershipResolver {
   resolve(actor: string): Promise<MembershipAccess | MembershipSnapshot>;
@@ -41,7 +42,8 @@ export class AccessPipeline {
     private readonly risk: RiskGate,
     private readonly decisions: DecisionSink,
     private readonly stepup = new StepupPolicy(),
-    private readonly actionProof?: ActionProofVerifier
+    private readonly actionProof?: ActionProofVerifier,
+    private readonly governance?: GovernanceResolver
   ) {}
 
   async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string): Promise<AccessContext> {
@@ -63,6 +65,7 @@ export class AccessPipeline {
       scope = await this.scopes.resolve(actor, operation, resource, scopeHint);
       const scopeDecision = checkScope(membership, permission, scope, now);
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
+      const governance = await this.governance?.resolve(actor, membership, scope);
       const mallContext = this.mallContexts.resolve(scope, membership, scopeHint);
       const capabilities = await this.capabilities.resolve(membership.id);
       if (!capabilities.includes(operation)) throw new DomainError('PERMISSION_DENIED', { operation });
@@ -83,6 +86,7 @@ export class AccessPipeline {
         actor,
         membership,
         scope,
+        ...(governance === undefined ? {} : { governance }),
         ...(mallContext === null ? {} : { mallContext, mall_id: mallContext.mall_id }),
         accessVersion,
         capabilities,

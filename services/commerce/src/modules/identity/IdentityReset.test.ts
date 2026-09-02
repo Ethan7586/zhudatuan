@@ -22,11 +22,10 @@ describe('root identity registration reset', () => {
         statements.push({ text, values });
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) return rows([{ request_hash: requestHash, state: 'started', response: null }]);
-        if (text.includes("where membership.id=$1 and membership.status='active'")) return rows([{ allowed: 1 }]);
         if (text.includes('principal.version principal_version')) {
           return rows([{ member_id: 'member:target', principal_id: 'principal:target', principal_status: 'active', principal_version: 7, organization_id: 'tenant:one' }]);
         }
-        if (text.includes('where membership.member_id=$1') && text.includes('role-platform-owner-v2')) return rows([]);
+        if (text.includes('from access.membership owner_membership')) return rows([]);
         if (text.startsWith('select id,organization_id from access.membership')) {
           return rows([{ id: 'membership:target:storefront', organization_id: 'tenant:one' }, { id: 'membership:target:operator', organization_id: 'tenant:one' }]);
         }
@@ -67,7 +66,6 @@ describe('root identity registration reset', () => {
         statements.push(text);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) return rows([{ request_hash: requestHash, state: 'started', response: null }]);
-        if (text.includes("where membership.id=$1 and membership.status='active'")) return rows([{ allowed: 1 }]);
         if (text.includes('principal.version principal_version')) {
           return rows([{ member_id: 'member:owner', principal_id: 'actor:one', principal_status: 'active', principal_version: 7, organization_id: 'organization:one' }]);
         }
@@ -116,6 +114,10 @@ function access(): NonNullable<OperationRequest['access']> {
     actor: { id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target: 'console', assurance: { level: 1 } },
     membership: { id: 'membership:one', active: true, accessVersion: 1, denies: [], grants: [] },
     scope: { kind: 'platform', id: 'organization:one', path: [] }, accessVersion: 1,
+    governance: { governanceLevel: 'owner', isExactOwner: true, actorMembershipId: 'membership:one', actorPrincipalId: 'actor:one',
+      organizationId: 'organization:one', ownerMembershipId: 'membership:one',
+      scope: { kind: 'platform', semanticId: 'organization:one', storageId: 'organization:one' },
+      resolvedAt: new Date('2026-09-02T00:00:00.000Z') },
     capabilities: ['identity.members.reset'], assurance: { level: 1 }, trace: 'trace:one',
   };
 }
