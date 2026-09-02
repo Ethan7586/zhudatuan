@@ -14,6 +14,11 @@ interface Authorization {
   readonly secret: Readonly<{ state: string; nonce: string; verifier: string }>;
 }
 
+interface PendingEnrollmentAuthorization {
+  readonly authorization: Authorization;
+  readonly expiresAt: number;
+}
+
 interface BootstrapState {
   readonly target: AuthTarget;
   readonly returnTargetRequest?: string;
@@ -33,6 +38,7 @@ export class IdentityClient {
   private readonly identity = createFetchIdentity(appConfig.apiOrigin);
   private readonly bootstraps = new Map<AuthTarget, BootstrapState>();
   private readonly pending = new Map<string, Promise<BootstrapState>>();
+  private readonly enrollmentAuthorizations = new Map<string, PendingEnrollmentAuthorization>();
 
   password(subject: string, password: string, target: AuthTarget, returns?: AuthReturnRequest, signal?: AbortSignal) {
     return this.authenticate({ method: 'password', subject: subject.trim(), password, target }, target, returns, signal);
@@ -88,7 +94,8 @@ export class IdentityClient {
   }
 
   async completeEnrollment(input: EnrollmentCompletion, signal?: AbortSignal) {
-    const [authorization, bootstrap] = await Promise.all([beginAuthorization(), this.bootstrap('storefront', undefined, signal)]);
+    const authorization = this.enrollmentAuthorization(input.id);
+    const bootstrap = await this.bootstrap('storefront', undefined, signal);
     const result = await this.request(
       this.identity.enrollmentsComplete(
         {
@@ -107,8 +114,13 @@ export class IdentityClient {
         command('storefront', bootstrap.csrf, signal)
       )
     );
-    if (result.kind === 'enrolled') return result;
-    return this.finishAuthentication(result, authorization, 'storefront', signal);
+    if (result.kind === 'enrolled') {
+      this.enrollmentAuthorizations.delete(input.id);
+      return result;
+    }
+    const completed = await this.finishAuthentication(result, authorization, 'storefront', signal);
+    this.enrollmentAuthorizations.delete(input.id);
+    return completed;
   }
 
   async providers(returns: AuthReturnRequest | undefined, target: AuthTarget, signal?: AbortSignal) {
@@ -153,7 +165,13 @@ export class IdentityClient {
   ) {
     if (result.kind === 'enrolled') return result;
     if (result.kind === 'selection') return result;
-    if (result.kind === 'enrollment') return Object.freeze({ kind: 'enrollment', id: result.enrollment.id, expiresAt: result.enrollment.expiresAt });
+    if (result.kind === 'enrollment') {
+      const expiresAt = Date.parse(result.enrollment.expiresAt);
+      if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) throw new Error('注册会话已失效，请重新使用邀请码');
+      this.pruneEnrollmentAuthorizations();
+      this.enrollmentAuthorizations.set(result.enrollment.id, Object.freeze({ authorization, expiresAt }));
+      return Object.freeze({ kind: 'enrollment', id: result.enrollment.id, expiresAt: result.enrollment.expiresAt });
+    }
     if (result.kind === 'proofRequired') {
       if (!result.proof.reference) throw new Error('身份服务未返回必要的验证引用');
       return Object.freeze({ kind: 'proofRequired', reference: result.proof.reference, expiresAt: result.proof.expiresAt, method: result.proof.method, target: result.proof.target });
@@ -182,6 +200,20 @@ export class IdentityClient {
     } catch (cause) {
       if (!(cause instanceof ApiError)) throw cause;
       throw new Error(cause.message, { cause });
+    }
+  }
+
+  private enrollmentAuthorization(id: string): Authorization {
+    this.pruneEnrollmentAuthorizations();
+    const pending = this.enrollmentAuthorizations.get(id);
+    if (pending === undefined) throw new Error('注册会话已失效，请重新使用邀请码');
+    return pending.authorization;
+  }
+
+  private pruneEnrollmentAuthorizations(): void {
+    const now = Date.now();
+    for (const [id, pending] of this.enrollmentAuthorizations) {
+      if (pending.expiresAt <= now) this.enrollmentAuthorizations.delete(id);
     }
   }
 

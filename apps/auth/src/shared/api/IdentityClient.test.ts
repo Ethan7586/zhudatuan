@@ -60,7 +60,9 @@ describe('IdentityClient', () => {
           privacy_body: '正文',
           terms_hash: 'a'.repeat(64),
         },
-      })
+      }),
+      json({ kind: 'session', ticket: 't'.repeat(64), returnTarget: TARGET_PROOF }, 201),
+      json({ returnTarget: { url: 'http://127.0.0.1:3000/', proof: TARGET_PROOF, expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' }, expiresIn: 3600 })
     );
     vi.stubGlobal('fetch', fetcher);
     const client = new IdentityClient();
@@ -68,11 +70,23 @@ describe('IdentityClient', () => {
     await expect(client.invitation('invitation-secret', 'storefront')).resolves.toMatchObject({ kind: 'enrollment', id: 'claim:one' });
     expect(requests[1]?.url).not.toContain('invitation-secret');
     expect(requests[1]?.url).toContain('/api/v1/identity/invitations/resolve');
-    expect(parsedBody(requests[1])).toMatchObject({ code: 'invitation-secret', target: 'storefront', authorization: { state: STRING_MATCHER, nonce: STRING_MATCHER, challenge: STRING_MATCHER } });
+    const invitationBody = parsedBody(requests[1]) as Readonly<{ authorization: Readonly<{ state: string; nonce: string; challenge: string }> }>;
+    expect(invitationBody).toMatchObject({ code: 'invitation-secret', target: 'storefront', authorization: { state: STRING_MATCHER, nonce: STRING_MATCHER, challenge: STRING_MATCHER } });
     expect(parsedBody(requests[1])).not.toHaveProperty('method');
     await expect(client.enrollment('claim:one')).resolves.toMatchObject({ id: 'claim:one', policy: { termsHash: 'a'.repeat(64) } });
     expect(requests[2]?.url).toContain('/api/v1/identity/enrollments/claim%3Aone');
     expect(requests[2]?.url).not.toContain('invitation-secret');
+    await expect(client.completeEnrollment({
+      id: 'claim:one',
+      subjectMode: 'bound',
+      challenge: 'challenge:one',
+      code: '123456',
+      password: 'Strong!Pass123',
+      displayName: '张三',
+      termsHash: 'a'.repeat(64),
+    })).resolves.toEqual({ kind: 'authenticated', redirectUrl: 'http://127.0.0.1:3000/' });
+    expect(parsedBody(requests[3])).toMatchObject({ authorization: invitationBody.authorization });
+    expect(parsedBody(requests[4])).toMatchObject({ ticket: 't'.repeat(64), state: invitationBody.authorization.state, returnTarget: TARGET_PROOF });
   });
 
   it('creates a bound enrollment challenge without accepting a destination', async () => {
