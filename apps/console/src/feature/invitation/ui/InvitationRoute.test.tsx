@@ -54,6 +54,7 @@ function renderRoute(value: ConsoleContext) {
 
 function context(level: number): ConsoleContext {
   const scope = { kind: 'enterprise' as const, id: 'enterprise:one', name: '示例企业' };
+  const mall = { kind: 'mall' as const, id: 'mall:one', name: '示例商城', path: [{ kind: 'platform' as const, id: 'platform' }, { kind: 'enterprise' as const, id: scope.id }, { kind: 'mall' as const, id: 'mall:one' }] };
   return {
     session: {
       actor: 'actor:one',
@@ -63,7 +64,7 @@ function context(level: number): ConsoleContext {
       capabilities: ['identity.invitations.create', 'identity.invitations.read', 'identity.invitations.revoke'],
       target: 'console',
       scope,
-      scopes: [scope],
+      scopes: [scope, mall],
       assurance: { level },
       security: { hasLocalCredential: true, phoneMasked: '138****8000', passwordChangedAt: null },
       csrf: 'csrf-token-long-enough',
@@ -71,6 +72,6 @@ function context(level: number): ConsoleContext {
     },
     profile: { display_name: '管理员', employee_no: null },
     scope,
-    scopes: [scope],
+    scopes: [scope, mall],
   };
 }

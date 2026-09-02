@@ -11,6 +11,7 @@ import { RevokeInvitation } from '../application/RevokeInvitation';
 import { InvitationGateway } from '../infrastructure/InvitationGateway';
 import type { Invitation, InvitationFilter, InvitationReceipt } from '../model/Invitation';
 import type { InvitationDraft } from '../model/InvitationDraft';
+import { invitationTargets } from '../model/InvitationTarget';
 import { CampaignInvitationDialog } from './CampaignInvitationDialog';
 import { EmployeeInvitationDialog } from './EmployeeInvitationDialog';
 import { InvitationReceiptDialog } from './InvitationReceiptDialog';
@@ -64,6 +65,7 @@ export function Component() {
     },
   });
   const departments = useMemo(() => (context.scopes as readonly Readonly<{ id: string; kind: string; name?: string; path?: readonly Readonly<{ id: string }>[] }>[]).filter((scope) => scope.kind === 'department' && (scope.path?.some((entry) => entry.id === context.scope.id) ?? true)).map((scope) => ({ id: scope.id, name: scope.name ?? scope.id })), [context.scope.id, context.scopes]);
+  const storefronts = useMemo(() => invitationTargets(context.scope, context.scopes), [context.scope, context.scopes]);
   const updateFilter = (name: string, value: string) => {
     const next = new URLSearchParams(search);
     if (value === '') next.delete(name); else next.set(name, value);
@@ -96,18 +98,18 @@ export function Component() {
           <label>位置<select value={filter.target ?? ''} onChange={(event) => updateFilter('target', event.target.value)}><option value="">全部</option><option value="storefront">员工商城</option><option value="console">管理控制台</option></select></label>
           <label>类型<select value={filter.kind ?? ''} onChange={(event) => updateFilter('kind', event.target.value)}><option value="">全部</option><option value="enrollment">员工注册</option><option value="campaign">共享注册</option><option value="signin">登录邀请</option></select></label>
           <label>状态<select value={filter.status ?? ''} onChange={(event) => updateFilter('status', event.target.value)}><option value="">全部</option><option value="active">生效中</option><option value="exhausted">已用尽</option><option value="revoked">已撤销</option><option value="expired">已过期</option></select></label>
-          <Button tone="primary" onPress={() => openCreate('employee')} isDisabled={!canIssue || context.session.assurance.level < 2}>邀请员工</Button>
+          <Button tone="primary" onPress={() => openCreate('employee')} isDisabled={!canIssue || storefronts.length === 0 || context.session.assurance.level < 2}>邀请员工</Button>
           <Button onPress={() => openCreate('signin')} isDisabled={!canIssue || context.session.assurance.level < 3}>登录邀请</Button>
-          <Button onPress={() => openCreate('campaign')} isDisabled={!canIssue || context.session.assurance.level < 3}>共享邀请</Button>
+          <Button onPress={() => openCreate('campaign')} isDisabled={!canIssue || storefronts.length === 0 || context.session.assurance.level < 3}>共享邀请</Button>
         </div>}
-        boundary={{ title: context.session.assurance.level < 2 ? '需要重新验证身份' : '一次性安全回执', message: context.session.assurance.level < 2 ? '员工邀请至少需要双因素验证；登录和共享邀请需要更高强度验证。' : '创建失败会保留表单；成功回执关闭后，邀请码无法恢复。' }}
+        boundary={{ title: context.session.assurance.level < 2 ? '需要重新验证身份' : storefronts.length === 0 ? '当前范围没有可邀请商城' : '一次性安全回执', message: context.session.assurance.level < 2 ? '员工邀请至少需要双因素验证；登录和共享邀请需要更高强度验证。' : storefronts.length === 0 ? '切换到包含已授权商城的集团或商城范围后再创建注册邀请。' : '创建失败会保留表单；成功回执关闭后，邀请码无法恢复。' }}
         retry={() => void query.refetch()}
         next={(cursor) => updateFilter('cursor', cursor)}
       />
-      <EmployeeInvitationDialog open={createKind === 'employee'} scope={context.scope.id} departments={departments} busy={createMutation.isPending} {...(createError ? { error: createError } : {})} onClose={() => !createMutation.isPending && setCreateKind(undefined)} onSubmit={(draft) => createMutation.mutateAsync(draft).then(() => undefined)} />
-      <CampaignInvitationDialog open={createKind === 'campaign'} scope={context.scope.id} busy={createMutation.isPending} {...(createError ? { error: createError } : {})} onClose={() => !createMutation.isPending && setCreateKind(undefined)} onSubmit={(draft) => createMutation.mutateAsync(draft).then(() => undefined)} />
+      <EmployeeInvitationDialog open={createKind === 'employee'} targets={storefronts} departments={departments} busy={createMutation.isPending} {...(createError ? { error: createError } : {})} onClose={() => !createMutation.isPending && setCreateKind(undefined)} onSubmit={(draft) => createMutation.mutateAsync(draft).then(() => undefined)} />
+      <CampaignInvitationDialog open={createKind === 'campaign'} targets={storefronts} busy={createMutation.isPending} {...(createError ? { error: createError } : {})} onClose={() => !createMutation.isPending && setCreateKind(undefined)} onSubmit={(draft) => createMutation.mutateAsync(draft).then(() => undefined)} />
       <SigninInvitationDialog open={createKind === 'signin'} memberships={memberships.data?.items ?? []} busy={createMutation.isPending} {...(createError ? { error: createError } : {})} onClose={() => !createMutation.isPending && setCreateKind(undefined)} onSubmit={(draft) => createMutation.mutateAsync(draft).then(() => undefined)} />
-      <InvitationReceiptDialog {...(receipt === undefined ? {} : { receipt })} organization={context.scope.name ?? context.scope.id} onDiscard={() => setReceipt(undefined)} />
+      <InvitationReceiptDialog {...(receipt === undefined ? {} : { receipt })} organization={receipt === undefined ? context.scope.name ?? context.scope.id : storefronts.find(({ id }) => id === receipt.organizationId)?.name ?? receipt.organizationId} onDiscard={() => setReceipt(undefined)} />
       <InvitationRevokeDialog {...(revoking === undefined ? {} : { invitation: revoking })} busy={revokeMutation.isPending} {...(revokeError ? { error: revokeError } : {})} onClose={() => { if (!revokeMutation.isPending) setRevoking(undefined); }} onSubmit={(reason) => revokeMutation.mutateAsync(reason).then(() => undefined)} />
     </>
   );
