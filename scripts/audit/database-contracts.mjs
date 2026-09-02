@@ -508,6 +508,12 @@ async function verifyRegistrationBoundaryOnPostgres(database) {
     'RDS-like registration boundary reconciliation',
     'RDS-like registration boundary idempotent reconciliation',
   ]) {
+    if (label==='RDS-like registration boundary idempotent reconciliation') {
+      await execute(database,`
+        revoke execute on function deployment.registration_bootstrap_boundary(text) from zhudatuanbootstrap,shopmigration;
+        revoke execute on function deployment.is_independent_registration_database() from shopmigration;
+      `,`${label} transferred-owner ACL drift`);
+    }
     // Aliyun's pg_rds_superuser account can SET ROLE to an ordinary account
     // without a catalog membership.  Vanilla PG16 has no such predefined-role
     // behavior, so inject one disposable SET/ADMIN edge with the RDS authority
@@ -691,6 +697,10 @@ async function reconcileRegistrationReplayBoundary(database) {
   }
   const reconciliation = await readFile(REGISTRATION_BOUNDARY_RECONCILE,'utf8');
   await execute(database,reconciliation,'registration replay privileged boundary reconciliation');
+  await execute(database,`
+    revoke execute on function deployment.registration_bootstrap_boundary(text) from zhudatuanbootstrap,shopmigration;
+    revoke execute on function deployment.is_independent_registration_database() from shopmigration;
+  `,'registration replay transferred-owner ACL drift');
   await execute(database,reconciliation,'registration replay idempotent boundary reconciliation');
   const after = await database.query(`select
     has_function_privilege('zhudatuanbootstrap','deployment.registration_bootstrap_boundary(text)','EXECUTE') bootstrap_allowed,
