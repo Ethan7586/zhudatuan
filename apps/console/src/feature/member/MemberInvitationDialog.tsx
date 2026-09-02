@@ -19,6 +19,7 @@ export function MemberInvitationDialog({
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const mutation = useMutation({ mutationFn: (draft: Parameters<typeof createMemberInvitation>[1]) => createMemberInvitation(context, draft) });
   const tenantScopes = context.scopes.filter((scope) => scope.kind === 'tenant' && scope.id === 'tenant-zhudatuan');
+  const canSelectSenior = context.session.governance?.level === 'owner' && context.session.governance.exactOwner;
 
   const close = () => {
     if (mutation.isPending) return;
@@ -36,6 +37,7 @@ export function MemberInvitationDialog({
     const draft = MemberInvitationDraftSchema.safeParse({
       label: form.get('label'),
       destination: form.get('destination'),
+      governanceLevel: form.get('governanceLevel'),
       maxUses: form.get('maxUses'),
       validityDays: form.get('validityDays'),
       ...(context.scope.kind === 'platform' ? { tenantId: form.get('tenantId') } : {}),
@@ -133,7 +135,7 @@ export function MemberInvitationDialog({
           <dl>
             <div>
               <dt>身份</dt>
-              <dd>待授权普通管理员</dd>
+              <dd>{receipt.governanceLevel === 'senior_administrator' ? '高级管理员' : '待授权普通管理员'}</dd>
             </div>
             <div>
               <dt>次数</dt>

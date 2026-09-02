@@ -14,8 +14,11 @@ const resetWrites: Array<Readonly<{ body: unknown; headers: Headers }>> = [];
 const server = setupServer(
   http.get('*/api/v1/members', () => HttpResponse.json(memberPage())),
   http.post('*/api/v1/identity/invitations', async ({ request }) => {
-    writes.push({ body: await request.clone().json(), headers: request.headers });
-    return HttpResponse.json(invitationReceipt(), { status: 201 });
+    const body = await request.clone().json();
+    writes.push({ body, headers: request.headers });
+    const governanceLevel = (body as Readonly<{ governanceLevel?: unknown }>).governanceLevel === 'senior_administrator'
+      ? 'senior_administrator' : 'administrator';
+    return HttpResponse.json(invitationReceipt(governanceLevel), { status: 201 });
   }),
   http.post('*/api/v1/identity/password/verify', () => HttpResponse.json({ verified: true, verifiedAt: '2026-08-29T00:00:00.000Z' })),
   http.put('*/api/v1/identity/members/:membershipid/registration', async ({ request }) => {
@@ -44,8 +47,9 @@ describe('member administrator invitation', () => {
 
     await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
-    expect(within(dialog).queryByLabelText('角色')).toBeNull();
-    expect(within(dialog).getByText(/固定创建待授权普通管理员/)).toBeTruthy();
+    const level = within(dialog).getByRole('group', { name: '管理员级别' });
+    expect((within(level).getByRole('radio', { name: /^普通管理员/ }) as HTMLInputElement).checked).toBe(true);
+    expect((within(level).getByRole('radio', { name: /^高级管理员/ }) as HTMLInputElement).checked).toBe(false);
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
     await user.clear(within(dialog).getByLabelText('邀请名称'));
     await user.type(within(dialog).getByLabelText('邀请名称'), '集团运营邀请');
@@ -54,7 +58,7 @@ describe('member administrator invitation', () => {
 
     const receipt = await screen.findByRole('dialog', { name: '邀请码已生成' });
     expect(within(receipt).getByText('A'.repeat(32))).toBeTruthy();
-    expect(writes[0]?.body).toMatchObject({ label: '集团运营邀请', destination: '13800138000', targetClient: 'operator', maxUses: 1 });
+    expect(writes[0]?.body).toMatchObject({ label: '集团运营邀请', destination: '13800138000', targetClient: 'operator', governanceLevel: 'administrator', maxUses: 1 });
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
     expect(writes[0]?.headers.get('x-access-version')).toBe('7');
     expect(writes[0]?.headers.get('x-csrf-token')).toBe('csrf-token-for-invitation');
@@ -69,6 +73,46 @@ describe('member administrator invitation', () => {
     await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
     expect(await screen.findByRole('dialog', { name: '生成管理员邀请码' })).toBeTruthy();
     expect(screen.queryByText('A'.repeat(32))).toBeNull();
+  });
+
+  it('lets an Owner select a senior administrator and shows the real level in the receipt', async () => {
+    const user = userEvent.setup();
+    renderRoute(ownerContext);
+    await screen.findByRole('table', { name: '成员管理' });
+    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
+
+    await user.click(within(dialog).getByRole('radio', { name: /^高级管理员/ }));
+    await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
+    await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
+
+    const receipt = await screen.findByRole('dialog', { name: '邀请码已生成' });
+    expect(writes[0]?.body).toMatchObject({ governanceLevel: 'senior_administrator' });
+    expect(within(receipt).getByText('高级管理员')).toBeTruthy();
+  });
+
+  it('does not show the peer-level option to a senior administrator', async () => {
+    const user = userEvent.setup();
+    const seniorContext: ConsoleContext = {
+      ...ownerContext,
+      session: {
+        ...ownerContext.session,
+        governance: { level: 'senior_administrator', exactOwner: false, organization: 'tenant:one' },
+      },
+    };
+    renderRoute(seniorContext);
+    await screen.findByRole('table', { name: '成员管理' });
+    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
+
+    expect(within(dialog).queryByRole('group', { name: '管理员级别' })).toBeNull();
+    expect(within(dialog).queryByRole('radio', { name: /^高级管理员/ })).toBeNull();
+    expect(within(dialog).getByText(/固定创建待授权普通管理员/)).toBeTruthy();
+    await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
+    await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
+
+    await screen.findByRole('dialog', { name: '邀请码已生成' });
+    expect(writes[0]?.body).toMatchObject({ governanceLevel: 'administrator' });
   });
 
   it('keeps the platform entry visible and creates the invitation for the selected tenant', async () => {
@@ -283,13 +327,14 @@ function resetReceipt() {
   };
 }
 
-function invitationReceipt() {
+function invitationReceipt(governanceLevel: 'administrator' | 'senior_administrator' = 'administrator') {
   const now = new Date().toISOString();
   return {
     id: 'invite:one',
     code: 'A'.repeat(32),
     label: '集团运营邀请',
     target: 'console',
+    governanceLevel,
     max_uses: 2,
     use_count: 0,
     starts_at: now,
