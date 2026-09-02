@@ -1,7 +1,8 @@
 import { Button, Dialog } from '@shop/design';
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
 import type { CreatedMall, MallCreateDraft } from './MallCreateCommand';
+import { initialMallOpeningDraft, MallCreateJourney, mallCoreDraft, type MallOpeningDraft } from './MallCreateJourney';
 import { MallMobileEnrollment } from './MallMobileEnrollment';
 
 export type MallCreatePhase = 'form' | 'starting' | 'verification' | 'verifying' | 'creating' | 'success';
@@ -40,16 +41,16 @@ export function MallCreateDialog({
   onRelogin: () => void;
   onClose: () => void;
 }>) {
-  const [enterpriseId, setEnterpriseId] = useState(() => preferredEnterpriseId ?? enterprises[0]?.id ?? '');
-  const [name, setName] = useState('');
-  const [code, setCode] = useState('');
-  const [publicSlug, setPublicSlug] = useState('');
+  const [draft, setDraft] = useState(() => initialMallOpeningDraft(preferredEnterpriseId ?? enterprises[0]?.id ?? ''));
   const [verificationCode, setVerificationCode] = useState('');
   const busy = phase === 'starting' || phase === 'verifying' || phase === 'creating';
 
-  const valid = enterpriseId !== '' && name.trim().length > 0
-    && MALL_CODE_PATTERN.test(code)
-    && MALL_SLUG_PATTERN.test(publicSlug);
+  const valid = draft.enterpriseId !== '' && draft.name.trim().length > 0
+    && MALL_CODE_PATTERN.test(draft.code)
+    && MALL_SLUG_PATTERN.test(draft.publicSlug);
+  const updateDraft = (field: keyof MallOpeningDraft, value: string) => {
+    setDraft((current) => ({ ...current, [field]: value }));
+  };
 
   return <Dialog open={open} title={dialogTitle(phase)} eyebrow="zhudatuan 主打团 · 商城管理"
     dismissable={!busy} onClose={onClose}>
@@ -60,39 +61,8 @@ export function MallCreateDialog({
       : phase === 'verification' || phase === 'verifying'
         ? <Verification code={verificationCode} expiresAt={challengeExpiresAt} busy={busy} error={error}
             onCode={setVerificationCode} onVerify={onVerify} onClose={onClose} />
-        : <form className="command" onSubmit={(event) => submitMall(event, valid, { enterpriseId, name, code, publicSlug }, onSubmit)}>
-          <p className="commandhint">一次提交建立商城身份、组织归属、独立商品池和开店草稿；任一步失败都会整体回滚。</p>
-          {!available ? <p className="notice" role="status">当前范围没有商城创建能力，请切换到平台控制范围。</p> : null}
-          {enterprises.length === 0 ? <p className="notice" role="status">当前没有可用于建店的集团范围。</p> : null}
-          <div className="fieldgrid">
-            <label>所属集团
-              <select aria-label="所属集团" value={enterpriseId} disabled={busy} required
-                onChange={(event) => setEnterpriseId(event.target.value)}>
-                <option value="">请选择集团</option>
-                {enterprises.map((enterprise) => <option key={enterprise.id} value={enterprise.id}>{enterprise.name ?? enterprise.id}</option>)}
-              </select>
-            </label>
-            <label>商城名称
-              <input aria-label="商城名称" value={name} maxLength={120} disabled={busy} required placeholder="例如：甄选商城"
-                onChange={(event) => setName(event.target.value)} />
-            </label>
-            <label>商城代码
-              <input aria-label="商城代码" value={code} maxLength={32} disabled={busy} required placeholder="例如：ZHENXUAN"
-                onChange={(event) => setCode(event.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))} />
-              <small className="muted">3～32 位，以字母开头，只使用大写字母、数字和下划线。</small>
-            </label>
-            <label>访问标识
-              <input aria-label="访问标识" value={publicSlug} maxLength={48} disabled={busy} required placeholder="例如：zhenxuan"
-                onChange={(event) => setPublicSlug(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} />
-              <small className="muted">3～48 位，用于商城访问地址，只使用小写字母、数字和短横线。</small>
-            </label>
-          </div>
-          {error === undefined ? null : <p className="notice" role="alert">{error}</p>}
-          <footer><Button onPress={onClose} isDisabled={busy}>取消</Button>
-            <Button type="submit" tone="primary" isDisabled={!available || !valid || busy}>
-              {phase === 'starting' ? '发送验证码中' : phase === 'creating' ? '创建中' : '确认创建'}
-            </Button></footer>
-        </form>}
+        : <MallCreateJourney draft={draft} enterprises={enterprises} available={available} busy={busy} valid={valid}
+            error={error} onChange={updateDraft} onSubmit={() => onSubmit(mallCoreDraft(draft))} onClose={onClose} />}
   </Dialog>;
 }
 
@@ -134,11 +104,6 @@ function Success({ result, onClose }: Readonly<{ result: CreatedMall; onClose: (
     </dl>
     <footer><Button tone="primary" onPress={onClose}>完成</Button></footer>
   </section>;
-}
-
-function submitMall(event: FormEvent<HTMLFormElement>, valid: boolean, draft: MallCreateDraft, onSubmit: (draft: MallCreateDraft) => void) {
-  event.preventDefault();
-  if (valid) onSubmit(draft);
 }
 
 function dialogTitle(phase: MallCreatePhase): string {
