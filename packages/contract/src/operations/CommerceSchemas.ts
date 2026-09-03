@@ -15,6 +15,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "identity.sessions.revoke": Object.freeze({ input: structuralOperationInput(["sessionid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "identity.challenges.create": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "identity.invitations.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
+  "identity.storefronts.read": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "identity.invitations.create": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "identity.invitations.revoke": Object.freeze({ input: structuralOperationInput(["invitationid"] as const), output: structuralOperationOutput(), fidelity: "structural" }),
   "identity.members.create": Object.freeze({ input: structuralOperationInput([] as const), output: structuralOperationOutput(), fidelity: "structural" }),

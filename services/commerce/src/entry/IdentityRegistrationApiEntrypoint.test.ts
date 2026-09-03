@@ -66,6 +66,7 @@ describe('identity registration API entrypoint', () => {
       'identity.session.delete',
       'identity.challenges.create',
       'identity.invitations.read',
+      'identity.storefronts.read',
       'identity.invitations.create',
       'identity.invitations.revoke',
       'identity.members.create',

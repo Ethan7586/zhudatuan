@@ -21,8 +21,8 @@ describe('storefront auth origin boundary', () => {
     const h5 = new URL(storefrontAuthHref('h5'));
     const mini = new URL(storefrontAuthHref('mini'));
 
-    expect(Object.fromEntries(web.searchParams)).toEqual({ target: 'storefront', surface: 'web' });
-    expect(Object.fromEntries(h5.searchParams)).toEqual({ target: 'storefront', surface: 'h5' });
-    expect(Object.fromEntries(mini.searchParams)).toEqual({ target: 'storefront', surface: 'mini' });
+    expect(Object.fromEntries(web.searchParams)).toEqual({ target: 'storefront', surface: 'web', application: 'zdt-l1-verify' });
+    expect(Object.fromEntries(h5.searchParams)).toEqual({ target: 'storefront', surface: 'h5', application: 'zdt-l1-verify' });
+    expect(Object.fromEntries(mini.searchParams)).toEqual({ target: 'storefront', surface: 'mini', application: 'zdt-l1-verify' });
   });
 });

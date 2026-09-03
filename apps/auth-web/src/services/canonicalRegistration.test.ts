@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { canonicalRegistrationMobile, createCanonicalMember, createCanonicalRegistrationChallenge, resolveCanonicalInvite } from './canonicalRegistration';
+import {
+  canonicalRegistrationMobile,
+  createCanonicalMember,
+  createCanonicalRegistrationChallenge,
+  createCanonicalStorefrontRegistrationChallenge,
+  resolveCanonicalInvite,
+  resolveCanonicalStorefrontRegistration,
+} from './canonicalRegistration';
 
 const TERMS_HASH = 'a'.repeat(64);
 
@@ -53,6 +60,18 @@ describe('canonical registration', () => {
     await expect(resolveCanonicalInvite('storefront-invitation')).resolves.toMatchObject({ target: 'storefront' });
   });
 
+  it('resolves a storefront self-registration context without an invitation', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(storefrontRegistration()));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveCanonicalStorefrontRegistration('zdt-l1-verify')).resolves.toMatchObject({
+      applicationSlug: 'zdt-l1-verify', organizationId: 'mall:l1-hongtai', organizationName: '宏泰甄选', target: 'storefront',
+    });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/storefronts/resolve');
+    expect(JSON.parse(String(init?.body))).toEqual({ application: 'zdt-l1-verify' });
+  });
+
   it('preserves the authoritative senior administrator level from invitation resolution', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...invitation(), governance_level: 'senior_administrator' }));
     vi.stubGlobal('fetch', fetchMock);
@@ -87,6 +106,51 @@ describe('canonical registration', () => {
     expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
     expect(JSON.parse(String(init?.body))).toEqual({ destination: '+8613800138000', invite: 'invitation-secret', purpose: 'registration' });
     expectCanonicalHeaders(init?.headers);
+  });
+
+  it('creates an L6 self-registration challenge from the storefront application', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      id: 'challenge:storefront-one', purpose: 'registration', expires_at: '2026-09-03T12:10:00.000Z',
+    }, 202));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createCanonicalStorefrontRegistrationChallenge('13800138000', 'zdt-l1-verify');
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(JSON.parse(String(init?.body))).toEqual({
+      destination: '+8613800138000', application: 'zdt-l1-verify', purpose: 'registration',
+    });
+  });
+
+  it('creates and directly enters an L6 storefront membership without an invitation field', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
+      if (new URL(String(input)).pathname === '/api/v1/identity/members') {
+        const authorization = JSON.parse(String(init?.body)).authorization;
+        return jsonResponse({
+          ...membership(), organization_id: 'mall:l1-hongtai',
+          authentication: {
+            session: 'session:storefront-self', csrf: 'csrf-token-at-least-sixteen-characters', expiresIn: 43_200,
+            membership: 'membership:storefront-one', target: 'storefront',
+            callback: { ticket: 't'.repeat(64), state: authorization.state },
+          },
+        }, 201);
+      }
+      return jsonResponse({
+        returnTarget: { url: 'http://127.0.0.1:3000/', proof: 'signed-return-target-proof', expiresAt: '2099-01-01T00:00:00.000Z' },
+        expiresIn: 43_200,
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createCanonicalMember({
+      subject: '13800138000', password: 'Generated!Password2', displayName: 'L6消费者8000',
+      applicationSlug: 'zdt-l1-verify', challengeId: 'challenge:storefront-one', code: '483921',
+      termsAccepted: true, termsHash: TERMS_HASH, directLogin: true,
+    });
+
+    const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(body).toMatchObject({ application: 'zdt-l1-verify', subject: '+8613800138000' });
+    expect(body).not.toHaveProperty('invite');
   });
 
   it('creates a storefront member with exact terms evidence and preserves password whitespace', async () => {
@@ -312,6 +376,15 @@ function invitation(): Readonly<Record<string, unknown>> {
     governance_level: 'administrator',
     effective_at: '2026-08-28T00:00:00.000Z',
     expires_at: '2026-09-28T00:00:00.000Z',
+  };
+}
+
+function storefrontRegistration(): Readonly<Record<string, unknown>> {
+  return {
+    terms_title: '主打团用户服务协议', terms_body: '服务协议正文',
+    privacy_title: '主打团隐私政策', privacy_body: '隐私政策正文', terms_hash: TERMS_HASH,
+    application_id: 'application:zdt-l1-verify', application_slug: 'zdt-l1-verify',
+    organization_id: 'mall:l1-hongtai', organization_name: '宏泰甄选', target_client: 'storefront',
   };
 }
 

@@ -313,6 +313,35 @@ operations:
       - MVP21
       - MVP22
       - MVP23
+  - id: identity.storefronts.read
+    owner: identity
+    method: POST
+    path: /api/v1/identity/storefronts/resolve
+    audience: public
+    idempotent: false
+    schema: structural
+    requirements:
+      - MVP03
+      - MVP04
+      - MVP05
+      - MVP06
+      - MVP07
+      - MVP08
+      - MVP09
+      - MVP10
+      - MVP11
+      - MVP12
+      - MVP13
+      - MVP14
+      - MVP15
+      - MVP16
+      - MVP17
+      - MVP18
+      - MVP19
+      - MVP20
+      - MVP21
+      - MVP22
+      - MVP23
   - id: identity.invitations.create
     owner: identity
     method: POST

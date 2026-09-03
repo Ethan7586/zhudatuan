@@ -114,7 +114,7 @@ objects:
   - id: access.protect_zhudatuan_registration_access_write
     kind: function
     owner: access
-    source: database/supabase/migrations/20260903108000_allow_existing_consumer_identity_registration.sql
+    source: database/supabase/migrations/20260903112000_enable_l6_storefront_self_registration.sql
     operationalOwner: access
   - id: access.initialize_storefront_qualification
     kind: function

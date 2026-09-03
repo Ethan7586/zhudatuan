@@ -18,7 +18,7 @@ import { RETURN_TARGETS } from './infrastructure/ReturnTargetCatalog';
 import { ReturnTargetSigner } from './infrastructure/ReturnTargetSigner';
 import { authTarget, consumeChallenge, requestCookie, sessionCookies } from './IdentitySecurity';
 import { accessPort } from '../access/AccessPort';
-import { memberPort } from '../member/MemberPort';
+import { memberPort, type MemberInvite } from '../member/MemberPort';
 import { organizationPort } from '../organization/OrganizationPort';
 import { canonicalIdentitySubject, canonicalMobile } from './IdentitySubject';
 import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolveBoundMobilePrincipal, resolvePasswordLoginCredential, verifySmsLoginChallenge } from './SmsLogin';
@@ -32,6 +32,7 @@ export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.sessions.revoke',
   'identity.challenges.create',
   'identity.invitations.read',
+  'identity.storefronts.read',
   'identity.invitations.create',
   'identity.invitations.revoke',
   'identity.members.create',
@@ -53,6 +54,7 @@ export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
   'identity.session.delete',
   'identity.challenges.create',
   'identity.invitations.read',
+  'identity.storefronts.read',
   'identity.invitations.create',
   'identity.invitations.revoke',
   'identity.members.create',
@@ -316,7 +318,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const destination = purpose === 'registration' || purpose === 'login' || purpose === 'password_reset'
             ? canonicalMobile(requestedDestination) : requestedDestination;
           const destinationHash = digest(destination);
-          const inviteHash = purpose === 'registration' ? digest(textField(body, 'invite')) : undefined;
+          const registration = purpose === 'registration' ? registrationReference(body) : undefined;
+          const registrationHash = registration === undefined ? undefined
+            : digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
           const resolvesBoundMobile = purpose === 'login' || purpose === 'password_reset';
           const legacyMobileToken = resolvesBoundMobile ? createHash('sha256').update(destination).digest('hex') : undefined;
           const [envelope, recipient, mobileLookup] = await Promise.all([
@@ -324,13 +328,17 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             kms.encrypt('identity/destination', destination, { challenge: id, purpose }),
             resolvesBoundMobile ? kms.encrypt('identity/mobile', destination, { challenge: id, purpose }) : Promise.resolve(undefined),
           ]);
-          return { body, id, code, purpose, destinationHash, inviteHash, legacyMobileToken, envelope, recipient, mobileLookup };
+          return { body, id, code, purpose, destinationHash, registration, registrationHash, legacyMobileToken, envelope, recipient, mobileLookup };
         },
         execute: async (request, database, prepared) => {
-          const { body, id, code, purpose, destinationHash, inviteHash, legacyMobileToken, envelope, recipient, mobileLookup } = prepared;
+          const { body, id, code, purpose, destinationHash, registration, registrationHash, legacyMobileToken, envelope, recipient, mobileLookup } = prepared;
           if (purpose === 'registration') {
-            if (!inviteHash) throw new Error('INVITE_INVALID');
-            await requireValidInvite(memberPort.assertRegistrationInvite(database, inviteHash, destinationHash));
+            if (!registration || !registrationHash) throw new Error('REGISTRATION_CONTEXT_INVALID');
+            if (registration.kind === 'invite') {
+              await requireValidInvite(memberPort.assertRegistrationInvite(database, registrationHash, destinationHash));
+            } else {
+              await requireValidStorefront(memberPort.storefrontRegistration(database, registration.value));
+            }
           }
           let principal = typeof body.principal === 'string' ? body.principal : null;
           if (purpose === 'login' || purpose === 'password_reset') {
@@ -342,7 +350,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           values($1,$2,$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
         ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
-            [id, principal, purpose, destinationHash, codeDigest(id, inviteHash === undefined ? code : `${code}:${inviteHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+            [id, principal, purpose, destinationHash, codeDigest(id, registrationHash === undefined ? code : `${code}:${registrationHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
@@ -358,6 +366,25 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         const body = bodyRecord(request);
         const result = await memberPort.invite(database, digest(textField(body, 'invite')));
         return rowResult(result);
+      },
+      'identity.storefronts.read': async (request, database) => {
+        const body = bodyRecord(request);
+        const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, storefrontSlug(body)));
+        return {
+          status: 200,
+          body: {
+            terms_title: storefront.terms_title,
+            terms_body: storefront.terms_body,
+            privacy_title: storefront.privacy_title,
+            privacy_body: storefront.privacy_body,
+            terms_hash: storefront.terms_hash,
+            application_id: storefront.application_id,
+            application_slug: storefront.application_slug,
+            organization_id: storefront.organization_id,
+            organization_name: storefront.organization_name,
+            target_client: 'storefront',
+          },
+        };
       },
       'identity.invitations.create': async (request, database) => {
         const access = requireAccess(request);
@@ -509,14 +536,31 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             if (!existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           }
           if (existing.rows[0] && authorization === null) reject(409, 'IDENTITY_SUBJECT_EXISTS');
-          const inviteHash = digest(textField(body, 'invite'));
+          const registration = registrationReference(body);
+          const registrationHash = digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
-            (challenge, code) => codeDigest(challenge, `${code}:${inviteHash}`), undefined,
+            (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
             { purpose: 'registration', destinationHash: subjectHash });
-          const invitation = await requireValidInvite(memberPort.consumeInvite(database, inviteHash, subjectHash, operatorMembership));
-          if (authorization !== null && invitation.target_client !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
-          const organization = invitation.organization_id;
-          if (body.termsAccepted !== true || body.termsHash !== invitation.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
+          let registrationTarget: MemberInvite;
+          if (registration.kind === 'invite') {
+            registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
+          } else {
+            const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, registration.value));
+            registrationTarget = {
+              id: `storefront:${storefront.application_id}`,
+              organization_id: storefront.organization_id,
+              created_by: '',
+              role_id: storefront.role_id,
+              target_client: 'storefront',
+              terms_hash: storefront.terms_hash,
+              storefront_organization_id: null,
+              governance_level: null,
+            };
+            await database.query(`select set_config('app.registration_mall_id',$1,true)`, [storefront.organization_id]);
+          }
+          if (authorization !== null && registrationTarget.target_client !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
+          const organization = registrationTarget.organization_id;
+          if (body.termsAccepted !== true || body.termsHash !== registrationTarget.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
           let resolvedPrincipal = principal;
           let resolvedMember = member;
           let credentialVersion = 1;
@@ -541,7 +585,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               member: resolvedMember,
               principal: resolvedPrincipal,
               organization,
-              role: invitation.role_id,
+              role: registrationTarget.role_id,
               scopeKind,
               scopes: [scopes[0], scopes[1], scopes[2]],
             });
@@ -566,16 +610,16 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
               [assurance, principal, subjectHash]
             );
-            result = invitation.target_client === 'operator'
+            result = registrationTarget.target_client === 'operator'
               ? await accessPort.createOperatorRegistration(database, {
                   storefrontMembership: membership,
                   operatorMembership,
-                  governanceParentMembership: invitation.created_by,
+                  governanceParentMembership: registrationTarget.created_by,
                   member,
                   principal,
                   operatorOrganization: organization,
-                  storefrontOrganization: invitation.storefront_organization_id!,
-                  operatorRole: invitation.role_id,
+                  storefrontOrganization: registrationTarget.storefront_organization_id!,
+                  operatorRole: registrationTarget.role_id,
                   storefrontRole: 'role-zhudatuan-storefront-member',
                   storefrontScopes: [scopes[0], scopes[1], scopes[2]],
                   operatorScopes: [scopes[3], scopes[4]],
@@ -585,7 +629,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
                   member,
                   principal,
                   organization,
-                  role: invitation.role_id,
+                  role: registrationTarget.role_id,
                   scopeKind,
                   scopes: [scopes[0], scopes[1], scopes[2]],
                 });
@@ -596,12 +640,12 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             principal: resolvedPrincipal,
             member: resolvedMember,
             membership: registeredMembership,
-            ...(invitation.target_client === 'operator' ? { operatorMembership } : {}),
-            ...(invitation.governance_level === null ? {} : { governanceLevel: invitation.governance_level }),
+            ...(registrationTarget.target_client === 'operator' ? { operatorMembership } : {}),
+            ...(registrationTarget.governance_level === null ? {} : { governanceLevel: registrationTarget.governance_level }),
           });
           const responseBody = {
             ...result,
-            ...(invitation.governance_level === null ? {} : { governanceLevel: invitation.governance_level }),
+            ...(registrationTarget.governance_level === null ? {} : { governanceLevel: registrationTarget.governance_level }),
           };
           if (authorization === null) return { status: 201, body: responseBody };
           const session = `session:${randomUUID()}`;
@@ -1118,6 +1162,28 @@ async function requireValidInvite<T>(operation: Promise<T>): Promise<T> {
     if (cause instanceof Error && cause.message === 'INVITE_INVALID') reject(400, 'INVITE_INVALID');
     throw cause;
   }
+}
+
+type RegistrationReference = Readonly<{ kind: 'invite' | 'storefront'; value: string }>;
+
+function registrationReference(body: Readonly<Record<string, unknown>>): RegistrationReference {
+  const hasInvite = typeof body.invite === 'string' && body.invite.trim().length > 0;
+  const hasStorefront = typeof body.application === 'string' && body.application.trim().length > 0;
+  if (hasInvite === hasStorefront) throw new Error('REGISTRATION_CONTEXT_INVALID');
+  if (hasInvite) return Object.freeze({ kind: 'invite', value: textField(body, 'invite') });
+  return Object.freeze({ kind: 'storefront', value: storefrontSlug(body) });
+}
+
+function storefrontSlug(body: Readonly<Record<string, unknown>>): string {
+  const value = textField(body, 'application', 48).trim();
+  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(value)) throw new Error('STOREFRONT_NOT_FOUND');
+  return value;
+}
+
+async function requireValidStorefront<T>(operation: Promise<T | undefined>): Promise<T> {
+  const storefront = await operation;
+  if (storefront === undefined) reject(404, 'STOREFRONT_NOT_FOUND');
+  return storefront;
 }
 
 function maskMobile(value: string): string {

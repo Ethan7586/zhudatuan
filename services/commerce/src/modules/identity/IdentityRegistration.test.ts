@@ -291,6 +291,40 @@ describe('canonical member registration security boundary', () => {
     expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
   });
 
+  it('resolves an active storefront as the public L6 self-registration context', async () => {
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(storefrontContextRequest());
+
+    expect(response).toMatchObject({
+      status: 200,
+      body: {
+        application_slug: 'zdt-l1-verify',
+        organization_id: 'mall:l1-hongtai',
+        organization_name: '宏泰甄选',
+        target_client: 'storefront',
+        terms_hash: 'f'.repeat(64),
+      },
+    });
+  });
+
+  it('creates a registration challenge from the storefront context without an invitation', async () => {
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(challengeRequest({
+      destination: SUBJECT,
+      purpose: 'registration',
+      application: 'zdt-l1-verify',
+    }));
+
+    expect(response.status).toBe(202);
+    expect(harness.queries.some(({ text }) => text.includes('select invite.id from member.invite'))).toBe(false);
+    const storefront = harness.queries.find(({ text }) => text.includes('from experience.application application'));
+    expect(storefront?.values).toEqual(['zdt-l1-verify']);
+    const challenge = harness.queries.find(({ text }) => text.includes('with challenge as'));
+    expect(challenge?.values[4]).toEqual(expect.stringMatching(/^[a-f0-9]{64}$/));
+  });
+
   it('rejects mobile password login when the profile and credential belong to different principals', async () => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: true,
       boundMobilePrincipal: 'principal:owner', credentialSecret: await new PasswordPolicy().hash('Current!Password1') });
@@ -340,6 +374,57 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+  });
+
+  it('self-registers an L6 membership in the selected storefront without consuming an invitation', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true,
+      subjectExists: false,
+      storefrontAvailable: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(storefrontRegistrationRequest('registration:storefront-self'));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: {
+        organization_id: 'mall:l1-hongtai',
+        client: 'storefront',
+        authentication: { target: 'storefront' },
+      },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
+    const registrationMall = harness.queries.find(({ text }) => text.includes("set_config('app.registration_mall_id'"));
+    expect(registrationMall?.values).toEqual(['mall:l1-hongtai']);
+    const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership(')
+      && text.includes("'storefront'"));
+    expect(membership?.values).toContain('mall:l1-hongtai');
+    const roles = harness.queries.find(({ text }) => text.includes('insert into access.membershiprole'));
+    expect(roles?.values).toContain('role-zhudatuan-storefront-member:mall:l1-hongtai');
+  });
+
+  it('reuses one phone identity while creating an independent membership in another storefront', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true,
+      subjectExists: false,
+      boundMobilePrincipal: 'principal:existing-phone',
+      storefrontAvailable: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(storefrontRegistrationRequest('registration:second-storefront'));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: { member_id: 'member:existing-phone', organization_id: 'mall:l1-hongtai', client: 'storefront' },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.credential'))).toBe(false);
+    const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership(')
+      && text.includes("'storefront'"));
+    expect(membership?.values).toContain('member:existing-phone');
+    expect(membership?.values).toContain('mall:l1-hongtai');
   });
 
   it('reuses an existing phone identity, creates the invited storefront membership, and opens its session', async () => {
@@ -471,6 +556,45 @@ function registrationRequest(idempotency: string, directLogin = false): Operatio
   };
 }
 
+function storefrontRegistrationRequest(idempotency: string): OperationRequest {
+  return {
+    type: 'identity.members.create',
+    access: null,
+    input: {
+      path: {},
+      query: {},
+      headers: { 'x-device-id': 'device:storefront-registration-test' },
+      body: {
+        subject: SUBJECT,
+        password: 'Automatic!Password1',
+        displayName: 'L6消费者8000',
+        challenge: 'challenge:registration',
+        code: '123456',
+        application: 'zdt-l1-verify',
+        termsAccepted: true,
+        termsHash: 'f'.repeat(64),
+        authorization: authorizationRequest(),
+      },
+      rawBody: '',
+      deadline: Date.now() + 5_000,
+      signal: new AbortController().signal,
+      idempotency,
+    },
+  };
+}
+
+function storefrontContextRequest(): OperationRequest {
+  return {
+    type: 'identity.storefronts.read',
+    access: null,
+    input: {
+      path: {}, query: {}, headers: { 'x-device-id': 'device:storefront-context-test' },
+      body: { application: 'zdt-l1-verify' }, rawBody: '', deadline: Date.now() + 5_000,
+      signal: new AbortController().signal, idempotency: 'registration:storefront-context',
+    },
+  };
+}
+
 function challengeRequest(body: Readonly<Record<string, unknown>>): OperationRequest {
   return {
     type: 'identity.challenges.create',
@@ -578,6 +702,7 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
 
 function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subjectExists: boolean; inviteAccepted?: boolean; operatorInvite?: boolean;
   seniorInvite?: boolean;
+  storefrontAvailable?: boolean;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
   challengePrincipal?: string | null; boundMobilePrincipal?: string | null;
   credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean; existingMembership?: boolean }>): Readonly<{
@@ -595,6 +720,15 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       }
       if (text.includes('select credential.principal_id,principal.credential_version')) {
         return result(input.subjectExists ? [{ principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
+      }
+      if (text.includes('from experience.application application') && text.includes('application.public_slug=$1')) {
+        return result(input.storefrontAvailable ? [{
+          application_id: 'application:zdt-l1-verify', application_slug: 'zdt-l1-verify',
+          organization_id: 'mall:l1-hongtai', organization_name: '宏泰甄选',
+          role_id: 'role-zhudatuan-storefront-member:mall:l1-hongtai',
+          terms_title: '主打团用户服务协议', terms_body: '服务协议正文',
+          privacy_title: '主打团隐私政策', privacy_body: '隐私政策正文', terms_hash: 'f'.repeat(64),
+        }] : []);
       }
       if (text.includes('select principal.id principal_id,principal.credential_version')) {
         return result([{ principal_id: String(values[0]), credential_version: 4 }]);
