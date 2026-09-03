@@ -6,6 +6,7 @@ export const LayerPageSchema = z.object({
       id: z.string().min(1),
       kind: z.string().min(1),
       parent_id: z.string().nullable().optional(),
+      parent_name: z.string().nullable(),
       name: z.string().min(1),
       timezone: z.string().min(1).optional(),
       status: z.string().min(1),

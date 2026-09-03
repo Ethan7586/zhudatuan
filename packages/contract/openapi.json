@@ -28014,6 +28014,16 @@
                     }
                   ]
                 },
+                "parent_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "status": {
                   "enum": [
                     "draft",
@@ -28033,6 +28043,7 @@
                 "id",
                 "kind",
                 "parent_id",
+                "parent_name",
                 "name",
                 "timezone",
                 "status",

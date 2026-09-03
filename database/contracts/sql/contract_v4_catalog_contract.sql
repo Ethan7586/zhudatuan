@@ -5,7 +5,7 @@ do $contract$ begin
   end if;
   if (select count(*) from runtime.event)<>103 then raise exception 'CONTRACT_V4_EVENT_CATALOG_MISMATCH'; end if;
   if not exists(select 1 from runtime.contractcatalog where artifact='commerce' and version='4.0.0'
-    and checksum='c72879f2f0db66b06ddfd611cb5c4784d892321e52c6bc8184e31045997fd4f4' and status='active') then
+    and checksum='bbef05ea5f447e575590131054c0f391681002a9b4a20ab4c9f80364b155d436' and status='active') then
     raise exception 'CONTRACT_V4_IDENTITY_MISMATCH';
   end if;
   if exists(select 1 from runtime.operation where contract_version<>'4.0.0') then

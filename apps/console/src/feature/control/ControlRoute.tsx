@@ -1,4 +1,4 @@
-import { chineseDomainLabel, chineseReference, chineseSectionLabel, hasFailureCode, queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseSectionLabel, hasFailureCode, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { AssurancePrompt } from '../../entity/session/AssurancePrompt';
@@ -14,14 +14,14 @@ import type { Distributor, Layer, RuntimeControl } from './ControlSchema';
 const layerColumns: readonly DataColumn<Layer>[] = [
   { key: 'name', label: '组织', render: (row) => row.name },
   { key: 'kind', label: '层级', render: (row) => chineseDomainLabel(row.kind) },
-  { key: 'parent', label: '上级', render: (row) => chineseReference('上级组织', row.parent_id) },
+  { key: 'parent', label: '上级组织', render: (row) => (row.parent_id === null || row.parent_id === undefined ? '顶层组织' : (row.parent_name ?? '上级组织名称不可用')) },
   { key: 'timezone', label: '时区', render: (row) => chineseDomainLabel(row.timezone, '其他时区') },
   { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },
   { key: 'version', label: '版本', render: (row) => row.version ?? '—' },
 ];
 const distributorColumns: readonly DataColumn<Distributor>[] = [
   { key: 'name', label: '分销商', render: (row) => row.name },
-  { key: 'code', label: '编码', render: (row) => chineseReference('分销编码', row.code) },
+  { key: 'code', label: '分销商编码', render: (row) => row.code },
   { key: 'settlement', label: '结算模式', render: (row) => chineseDomainLabel(row.settlement_mode) },
   { key: 'tenants', label: '租户数', render: (row) => row.tenant_count },
   { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },

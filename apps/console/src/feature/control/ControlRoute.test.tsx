@@ -13,7 +13,7 @@ const server = setupServer(
   http.get('*/api/v1/organizations/layers', ({ request }) => {
     expect(request.headers.get('x-scope-hint')).toBe('platform:one');
     expect(request.headers.get('x-access-version')).toBe('7');
-    return HttpResponse.json({ items: [{ id: 'enterprise:one', kind: 'enterprise', parent_id: 'platform:one', name: '鸿泰集团', timezone: 'Asia/Shanghai', status: 'active', version: 2 }], count: 1 });
+    return HttpResponse.json({ items: [{ id: 'enterprise:one', kind: 'enterprise', parent_id: 'platform:one', parent_name: '福利商城平台', name: '鸿泰集团', timezone: 'Asia/Shanghai', status: 'active', version: 2 }], count: 1 });
   }),
   http.get('*/api/v1/channels/distributors', ({ request }) => {
     expect(request.headers.get('x-scope-hint')).toBe('distributor:root');
@@ -69,7 +69,9 @@ describe('Control route', () => {
     renderRoute({ kind: 'platform', id: 'platform:one' });
     expect(await screen.findByRole('heading', { level: 1, name: '平台层' })).toBeTruthy();
     expect(await screen.findByText('鸿泰集团')).toBeTruthy();
+    expect(screen.getByText('福利商城平台')).toBeTruthy();
     expect(screen.getByText('企业')).toBeTruthy();
+    expect(screen.queryByText('platform:one')).toBeNull();
     expect(screen.queryByText('enterprise')).toBeNull();
   });
 
@@ -77,6 +79,7 @@ describe('Control route', () => {
     renderRoute({ kind: 'distributor', id: 'distributor:root' });
     expect(await screen.findByRole('heading', { level: 1, name: '分销层' })).toBeTruthy();
     expect(await screen.findByText('华东分销')).toBeTruthy();
+    expect(screen.getByText('D001')).toBeTruthy();
     expect(screen.getByText('按月')).toBeTruthy();
     expect(screen.queryByText('monthly')).toBeNull();
   });

@@ -67,7 +67,7 @@ export const SECURITY_OUTPUT_SCHEMAS = {
   IdentityProvidersManageOutput: provider,
   IdentityProvidersTestOutput: strictObject({ status: literal(['healthy', 'degraded', 'unavailable']), checkedat: text }),
 
-  OrganizationLayersReadOutput: page(strictObject({ id: text, kind: scopeKind, parent_id: nullableText, name: text, timezone: text, status: literal(['draft', 'active', 'disabled']), version: number() })),
+  OrganizationLayersReadOutput: page(strictObject({ id: text, kind: scopeKind, parent_id: nullableText, parent_name: nullableText, name: text, timezone: text, status: literal(['draft', 'active', 'disabled']), version: number() })),
   AccessCenterReadOutput: page(
     strictObject({
       id: text,

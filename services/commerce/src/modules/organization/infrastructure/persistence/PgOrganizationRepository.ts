@@ -8,12 +8,15 @@ export class PgOrganizationRepository implements OrganizationRepository {
   private readonly inbox = new PgDirectoryInbox();
   constructor(private readonly transactions: PgTransactionAccess) {}
   async layers(context: ReadTransactionContext, input: Parameters<OrganizationRepository['layers']>[1]) {
-    const result = await this.transactions
-      .database(context)
-      .query(
-        `select child.id,child.kind,child.parent_id,child.name,child.timezone,child.status,child.version from organization.unitclosure visible join organization.organization child on child.id=visible.descendant_id where visible.ancestor_id=$1 and ($2::text is null or child.id>$2) order by child.id limit $3`,
-        [input.scope, input.after, input.fetch]
-      );
+    const result = await this.transactions.database(context).query(
+      `select child.id,child.kind,child.parent_id,parent.name parent_name,child.name,child.timezone,child.status,child.version
+        from organization.unitclosure visible
+        join organization.organization child on child.id=visible.descendant_id
+        left join organization.organization parent on parent.id=child.parent_id
+        where visible.ancestor_id=$1 and ($2::text is null or child.id>$2)
+        order by child.id limit $3`,
+      [input.scope, input.after, input.fetch]
+    );
     return result.rows;
   }
   directories(context: ReadTransactionContext, scope: string, after: string | null, fetch: number) {

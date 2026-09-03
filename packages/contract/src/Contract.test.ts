@@ -87,6 +87,24 @@ describe('contract truth', () => {
     expect(() => schema.parse({ items: [withoutAccount], count: 1 })).toThrow();
   });
 
+  it('requires readable parent names on organization layers', () => {
+    const row = {
+      id: 'enterprise:one',
+      kind: 'enterprise',
+      parent_id: 'platform:one',
+      parent_name: '福利商城平台',
+      name: '鸿泰集团',
+      timezone: 'Asia/Shanghai',
+      status: 'active',
+      version: 2,
+    } as const;
+    const schema = OPERATION_SCHEMAS['organization.layers.read'].output;
+
+    expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
+    const { parent_name: _parentName, ...withoutParentName } = row;
+    expect(() => schema.parse({ items: [withoutParentName], count: 1 })).toThrow();
+  });
+
   it('publishes one strict runtime payload schema for every event', () => {
     const eventTypes = COMMERCE_EVENTS.map(({ type }) => type).sort();
     expect(Object.keys(EVENT_PAYLOAD_SCHEMAS).sort()).toEqual(eventTypes);
