@@ -14,6 +14,8 @@ await build({
     JobsMain: 'services/commerce/src/entry/JobsMain.ts',
     IdentityNotificationJobsOnlyMain: 'services/commerce/src/entry/IdentityNotificationJobsOnlyMain.ts',
     IdentityNotificationJobsReadyMain: 'services/commerce/src/entry/IdentityNotificationJobsReadyMain.ts',
+    PaymentJobsOnlyMain: 'services/commerce/src/entry/PaymentJobsOnlyMain.ts',
+    PaymentJobsReadyMain: 'services/commerce/src/entry/PaymentJobsReadyMain.ts',
     MigrationMain: 'services/commerce/src/entry/MigrationMain.ts',
     RegistrationMigrationMain: 'services/commerce/src/entry/RegistrationMigrationMain.ts',
     SmokeMain: 'services/commerce/src/entry/SmokeMain.ts',

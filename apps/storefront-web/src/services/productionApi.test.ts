@@ -192,8 +192,9 @@ describe('canonical storefront production API', () => {
     }
   });
 
-  it('does not create an order when the authoritative quote requires external payment', async () => {
-    const fetcher = apiFetch({ personalMinor: 100 });
+  it('creates the external-payment order, invokes WeChat once, and reports paid only after the server confirms it', async () => {
+    const fetcher = apiFetch({ personalMinor: 100, confirmedOrderPaymentState: 'paid' });
+    const invoke = wechatBridge('get_brand_wcpay_request:ok');
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
@@ -202,7 +203,7 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:external',
-    })).rejects.toMatchObject({ code: 'EXTERNAL_PAYMENT_REQUIRED' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'captured' });
     const postOrder = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === '/api/v1/orders' && init?.method === 'POST');
     expect(postOrder).toBeUndefined();
   });
@@ -217,11 +218,42 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:pending',
-    })).rejects.toMatchObject({ code: 'PAYMENT_NOT_CAPTURED' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
+  });
+
+  it('reports reconciling when WeChat returns success but the canonical order is not paid yet', async () => {
+    const fetcher = apiFetch({ personalMinor: 100 });
+    wechatBridge('get_brand_wcpay_request:ok');
+    vi.stubGlobal('fetch', fetcher);
+    const { checkoutWithCanonicalPayment } = await import('./canonicalCheckout');
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(checkoutWithCanonicalPayment({
+      addressId: 'address:one',
+      items: [{ listingId: 'listing:one', quantity: 1 }],
+      idempotencyKey: 'checkout:reconcile-after-wechat',
+    }, { attempts: 1, wait: async () => undefined })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
+  });
+
+  it('preserves the created order and reports an explicit cancellation when the user closes WeChat Pay', async () => {
+    const fetcher = apiFetch({ personalMinor: 100 });
+    wechatBridge('get_brand_wcpay_request:cancel');
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(productionApi.checkout({
+      addressId: 'address:one',
+      items: [{ listingId: 'listing:one', quantity: 1 }],
+      idempotencyKey: 'checkout:cancelled',
+    })).rejects.toMatchObject({ code: 'PAYMENT_CANCELLED' });
+    expect(requestInit(fetcher, '/api/v1/orders', 'POST')).toBeTruthy();
   });
 });
 
-function apiFetch(options: { personalMinor?: number; paymentState?: string } = {}) {
+function apiFetch(options: { personalMinor?: number; paymentState?: string; confirmedOrderPaymentState?: string } = {}) {
+  let orderReads = 0;
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const path = new URL(String(input)).pathname;
     const method = init?.method ?? 'GET';
@@ -236,18 +268,6 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
       }
       return json({ items: [] });
     }
-    if (path === '/api/v1/catalog/public/products') return json({
-      items: [{
-        id: 'listing:one', skuId: 'sku:one', name: '空气炸锅', subtitle: '企业严选', categoryCode: 'welfare', coverUrl: null,
-        priceCents: 21900, marketPriceCents: 25900, availableStock: 6, supplierName: '平台自营', isTest: false,
-        purchasable: false, qualification: { visible: true, purchasable: false, visibilityReason: 'PUBLIC_CATALOG', purchaseReason: 'LOGIN_REQUIRED' },
-      }],
-      pagination: { nextCursor: null },
-    });
-    if (path === '/api/v1/identity/storefronts/resolve') return json({
-      organization_id: 'mall:l1-hongtai',
-      organization_name: '宏泰甄选',
-    });
     if (path === '/api/v1/catalog/listings') return json({ items: [{ id: 'listing:one', sku_id: 'sku:one', title: '空气炸锅', status: 'published', product_type: 'physical', cover_url: null, subtitle: '企业严选' }] });
     // PostgreSQL bigint values arrive over JSON as decimal strings in production.
     if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: '21900', compare_minor: '25900', currency: 'CNY' }] });

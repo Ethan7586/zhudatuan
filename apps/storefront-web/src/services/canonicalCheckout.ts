@@ -13,7 +13,20 @@ export interface CanonicalCheckoutResult {
   readonly paymentState: 'captured';
 }
 
-export async function checkoutWithCanonicalBenefits(input: CanonicalCheckoutInput): Promise<CanonicalCheckoutResult> {
+export interface PaymentConfirmationOptions {
+  readonly attempts: number;
+  readonly wait: () => Promise<void>;
+}
+
+const DEFAULT_CONFIRMATION: PaymentConfirmationOptions = Object.freeze({
+  attempts: 45,
+  wait: () => new Promise<void>((resolve) => window.setTimeout(resolve, 1_000)),
+});
+
+export async function checkoutWithCanonicalPayment(
+  input: CanonicalCheckoutInput,
+  confirmation: PaymentConfirmationOptions = DEFAULT_CONFIRMATION,
+): Promise<CanonicalCheckoutResult> {
   const client = canonicalClient();
   const [cartValue, accountValue] = await Promise.all([
     canonicalCall(() => client.cart.currentRead({}, sessionContext())),
@@ -52,11 +65,28 @@ export async function checkoutWithCanonicalBenefits(input: CanonicalCheckoutInpu
     idempotencyKey: `${input.idempotencyKey}:payment`,
   })));
   const payment = record(paymentValue, 'payment.intent');
-  if (payment.state !== 'captured') {
-    const state = typeof payment.state === 'string' ? payment.state : 'unknown';
-    throw new ProductionApiError(`支付未完成，服务端状态为 ${state}`, 409, 'PAYMENT_NOT_CAPTURED');
+  if (payment.state === 'captured') return Object.freeze({ orderId, paymentState: 'captured' });
+  if (payment.parameters !== undefined) {
+    await requestWechatJsapiPayment(payment.parameters);
+    return Object.freeze({ orderId, paymentState: await waitForPaymentConfirmation(client, orderId, confirmation) });
   }
   return Object.freeze({ orderId, paymentState: 'captured' });
+}
+
+async function waitForPaymentConfirmation(
+  client: ReturnType<typeof canonicalClient>,
+  orderId: string,
+  options: PaymentConfirmationOptions,
+): Promise<'captured' | 'reconciling'> {
+  for (let attempt = 0; attempt < options.attempts; attempt += 1) {
+    const value = record(await canonicalCall(() => client.order.ordersRead({ query: { limit: 100 } }, sessionContext())), 'order.orders');
+    const order = records(value.items ?? [], 'order.orders.items').find((item) => item.id === orderId);
+    if (order?.payment_state === 'paid' || (typeof order?.payment_state === 'string' && order.payment_state.includes('refund'))) {
+      return 'captured';
+    }
+    if (attempt + 1 < options.attempts) await options.wait();
+  }
+  return 'reconciling';
 }
 
 function assertCartMatches(serverItems: readonly Record<string, unknown>[], expectedItems: CanonicalCheckoutInput['items']): void {
