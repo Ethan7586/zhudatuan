@@ -1,11 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter } from 'react-router';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
+import { StepupProvider } from '../../entity/session/StepupContext';
 import { Component } from './ControlRoute';
 
 const server = setupServer(
@@ -84,9 +85,21 @@ describe('Control route', () => {
     expect(await screen.findByText('任务队列')).toBeTruthy();
     expect(screen.getByText('迁移 20260831045000 · 合同 contract-che')).toBeTruthy();
   });
+
+  it('turns protected runtime health into a visible verification action', async () => {
+    const request = vi.fn();
+    server.use(http.get('*/health/dependency', () => HttpResponse.json({ code: 'STEPUP_REQUIRED', message: 'STEPUP_REQUIRED', requestId: 'request:control', retryable: false }, { status: 403 })));
+    renderRoute({ kind: 'enterprise', id: 'enterprise:one' }, request);
+
+    const action = await screen.findByRole('button', { name: '立即完成二次验证' });
+    expect(screen.getByText(/运行状态包含数据库、任务队列与扩展健康信息/)).toBeTruthy();
+    expect(screen.queryByText(/request:control/)).toBeNull();
+    fireEvent.click(action);
+    expect(request).toHaveBeenCalledOnce();
+  });
 });
 
-function renderRoute(scope: ConsoleScope) {
+function renderRoute(scope: ConsoleScope, request = vi.fn()) {
   const context: ConsoleContext = {
     session: {
       actor: 'actor:one',
@@ -110,7 +123,9 @@ function renderRoute(scope: ConsoleScope) {
     <MemoryRouter>
       <QueryClientProvider client={client}>
         <ConsoleContextProvider value={context}>
-          <Component />
+          <StepupProvider controller={{ request }}>
+            <Component />
+          </StepupProvider>
         </ConsoleContextProvider>
       </QueryClientProvider>
     </MemoryRouter>

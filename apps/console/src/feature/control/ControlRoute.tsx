@@ -1,6 +1,7 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { hasFailureCode, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
+import { AssurancePrompt } from '../../entity/session/AssurancePrompt';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 
 import type { DataColumn } from '../../shared/ui/DataTable';
@@ -48,6 +49,9 @@ export function Component() {
   const error = safeQueryError(query.error);
   const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: data !== undefined, empty: data?.kind === 'runtime' ? false : data?.page.items.length === 0 });
   const runtimeScope = context.scope.kind !== 'platform' && context.scope.kind !== 'distributor';
+  if (runtimeScope && hasFailureCode(query.error, 'STEPUP_REQUIRED')) {
+    return <AssurancePrompt title="智慧翼中控台" description="运行状态包含数据库、任务队列与扩展健康信息。请完成短信二次验证后查看，成功后会自动返回当前数据范围。" />;
+  }
   if (runtimeScope) {
     const rows = data?.kind === 'runtime' ? runtimeRows(data.health) : [];
     return (
