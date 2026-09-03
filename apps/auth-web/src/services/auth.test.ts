@@ -5,6 +5,8 @@ import {
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
+  resolveH5LoginOrigin,
+  resolveMiniProgramLoginOrigin,
   resolveStorefrontLoginOrigin,
   TEST_ACCOUNT_MEMBERSHIPS,
   verifyStepUp,
@@ -39,6 +41,18 @@ describe('public test authentication fixtures', () => {
     expect(resolveStorefrontLoginOrigin('https://store.staging.example', false, 'https://store.staging.example')).toBe('https://store.staging.example');
     expect(() => resolveStorefrontLoginOrigin('https://example.com')).toThrow('不在允许清单');
     expect(() => resolveStorefrontLoginOrigin('http://127.0.0.1:3000')).toThrow('不在允许清单');
+  });
+
+  it('keeps the H5 storefront on its dedicated zhudatuan hostname', () => {
+    expect(resolveH5LoginOrigin()).toBe('https://h5.zhudatuan.com');
+    expect(resolveH5LoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
+    expect(() => resolveH5LoginOrigin('https://hbbtzn.com')).toThrow('不在允许清单');
+  });
+
+  it('keeps the mini program on its dedicated zhudatuan hostname', () => {
+    expect(resolveMiniProgramLoginOrigin()).toBe('https://mini.zhudatuan.com');
+    expect(resolveMiniProgramLoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
+    expect(() => resolveMiniProgramLoginOrigin('https://hbbtzn.com')).toThrow('不在允许清单');
   });
 
   it('builds a credential-free login URL for top-level POST', () => {

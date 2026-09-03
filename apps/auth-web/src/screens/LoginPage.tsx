@@ -14,6 +14,8 @@ import {
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
+  resolveH5LoginOrigin,
+  resolveMiniProgramLoginOrigin,
   resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
@@ -215,8 +217,6 @@ export const LoginPage: React.FC = () => {
 
   const storefrontDestination = (webDestination: string): string => {
     if (storefrontSurface === 'web') return webDestination;
-    const consumerFacadeOrigin = runtimeConsumerFacadeOrigin();
-    if (storefrontSurface === 'h5' && consumerFacadeOrigin) return `${consumerFacadeOrigin}/`;
     const localOrigin = import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined;
     if (storefrontSurface === 'mini') {
       return `${resolveMiniProgramLoginOrigin(import.meta.env.VITE_MINI_PROGRAM_ORIGIN || localOrigin, import.meta.env.DEV)}/`;

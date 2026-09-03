@@ -1,0 +1,22 @@
+{
+  "$schema": "../../../../node_modules/wrangler/config-schema.json",
+  "name": "zhudatuan-mini",
+  "main": "../../../../apps/storefront-web/dist/server/index.js",
+  "compatibility_date": "2026-09-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "no_bundle": true,
+  "rules": [
+    { "type": "ESModule", "globs": ["**/*.js", "**/*.mjs"] }
+  ],
+  "assets": {
+    "directory": "../../../../apps/storefront-web/dist/client"
+  },
+  "vars": {
+    "APP_ENV": "production",
+    "AUTH_MODE": "membership"
+  },
+  "routes": [
+    { "pattern": "mini.zhudatuan.com", "custom_domain": true }
+  ]
+}

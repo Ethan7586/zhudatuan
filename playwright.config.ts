@@ -19,6 +19,9 @@ function webServer(workspace: string, origin: string, environment: Readonly<Reco
 const viteEnvironment = Object.freeze({
   VITE_API_BASE_URL: API_ORIGIN,
   VITE_AUTH_BASE_URL: AUTH_ORIGIN,
+  VITE_STOREFRONT_ORIGIN: STOREFRONT_ORIGIN,
+        VITE_H5_ORIGIN: STOREFRONT_ORIGIN,
+        VITE_MINI_PROGRAM_ORIGIN: STOREFRONT_ORIGIN,
   VITE_CLIENT_VERSION: clientVersion,
   DISABLE_HMR: 'true',
 });
