@@ -52,8 +52,13 @@ export interface InvitationCreatedRecord {
 }
 
 export interface InvitationListRecord extends InvitationCreatedRecord {
-  readonly recipient: string | null;
+  readonly recipient_display_name: string | null;
+  readonly recipient_employee_no: string | null;
+  readonly recipient_mobile_masked: string | null;
   readonly issuer_membership_id: string;
+  readonly issuer_display_name: string;
+  readonly issuer_employee_no: string | null;
+  readonly issuer_mobile_masked: string | null;
   readonly issuer_access_version: number;
   readonly revoked_at: string | null;
   readonly revoked_by: string | null;

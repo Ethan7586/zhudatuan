@@ -164,10 +164,20 @@ export class PgInvitationRepository extends PgInvitationRedemption implements In
   async read(context: ReadTransactionContext, filter: InvitationFilter): Promise<readonly InvitationListRecord[]> {
     const database = this.transactions.database(context);
     const result = await database.query<ListRow>(
-      `select id,kind,target,organization_id,membership_id,
-      case when recipient_hash is null then null else '已绑定' end recipient,issuer_membership_id,issuer_access_version,
-      minimum_assurance,max_uses,use_count,not_before,expires_at,status,reason,created_at,revoked_at,revoked_by,revoke_reason,version
-      from identity.invitation invitation where $1=nullif(current_setting('app.scope_id',true),'')
+      `select invitation.id,invitation.kind,invitation.target,invitation.organization_id,invitation.membership_id,
+      recipientprofile.display_name recipient_display_name,recipientmembership.employee_no recipient_employee_no,
+      recipientprofile.mobile_masked recipient_mobile_masked,invitation.issuer_membership_id,
+      issuerprofile.display_name issuer_display_name,issuermembership.employee_no issuer_employee_no,
+      issuerprofile.mobile_masked issuer_mobile_masked,invitation.issuer_access_version,
+      invitation.minimum_assurance,invitation.max_uses,invitation.use_count,invitation.not_before,invitation.expires_at,
+      invitation.status,invitation.reason,invitation.created_at,invitation.revoked_at,invitation.revoked_by,
+      invitation.revoke_reason,invitation.version
+      from identity.invitation invitation
+      left join access.membership recipientmembership on recipientmembership.id=invitation.membership_id
+      left join member.profile recipientprofile on recipientprofile.id=recipientmembership.member_id
+      join access.membership issuermembership on issuermembership.id=invitation.issuer_membership_id
+      join member.profile issuerprofile on issuerprofile.id=issuermembership.member_id
+      where $1=nullif(current_setting('app.scope_id',true),'')
       and access.scope_allowed(invitation.organization_id)
       and ($2::text is null or invitation.target=$2) and ($3::text is null or invitation.kind=$3)
       and ($4::text is null or invitation.status=$4)

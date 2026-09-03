@@ -37,7 +37,56 @@ describe('InvitationRoute assurance boundary', () => {
     expect((screen.getByRole('button', { name: '登录邀请' }) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByRole('button', { name: '共享邀请' }) as HTMLButtonElement).disabled).toBe(true);
   });
+
+  it('shows readable issuer and recipient accounts without exposing membership identifiers', async () => {
+    server.use(
+      http.get('*/api/v1/identity/invitations', () =>
+        HttpResponse.json({
+          items: [invitation()],
+          count: 1,
+        })
+      )
+    );
+    renderRoute(context(3));
+
+    expect(await screen.findByText('李小明')).toBeTruthy();
+    expect(screen.getByText('员工号 E1002')).toBeTruthy();
+    expect(screen.getByText('王主管')).toBeTruthy();
+    expect(screen.getByText('员工号 E1001')).toBeTruthy();
+    expect(screen.queryByText('membership:owner')).toBeNull();
+    expect(screen.queryByText('membership:employee')).toBeNull();
+  });
 });
+
+function invitation() {
+  return {
+    id: 'invitation:one',
+    kind: 'enrollment',
+    target: 'storefront',
+    organization_id: 'mall:one',
+    membership_id: 'membership:employee',
+    recipient_display_name: '李小明',
+    recipient_employee_no: 'E1002',
+    recipient_mobile_masked: '139****0002',
+    issuer_membership_id: 'membership:owner',
+    issuer_display_name: '王主管',
+    issuer_employee_no: 'E1001',
+    issuer_mobile_masked: '138****0001',
+    issuer_access_version: 3,
+    minimum_assurance: 2,
+    max_uses: 1,
+    use_count: 0,
+    not_before: '2026-09-03T00:00:00.000Z',
+    expires_at: '2026-09-06T00:00:00.000Z',
+    status: 'active',
+    reason: '新员工入职',
+    created_at: '2026-09-03T00:00:00.000Z',
+    revoked_at: null,
+    revoked_by: null,
+    revoke_reason: null,
+    version: 1,
+  } as const;
+}
 
 function renderRoute(value: ConsoleContext) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -54,7 +103,16 @@ function renderRoute(value: ConsoleContext) {
 
 function context(level: number): ConsoleContext {
   const scope = { kind: 'enterprise' as const, id: 'enterprise:one', name: '示例企业' };
-  const mall = { kind: 'mall' as const, id: 'mall:one', name: '示例商城', path: [{ kind: 'platform' as const, id: 'platform' }, { kind: 'enterprise' as const, id: scope.id }, { kind: 'mall' as const, id: 'mall:one' }] };
+  const mall = {
+    kind: 'mall' as const,
+    id: 'mall:one',
+    name: '示例商城',
+    path: [
+      { kind: 'platform' as const, id: 'platform' },
+      { kind: 'enterprise' as const, id: scope.id },
+      { kind: 'mall' as const, id: 'mall:one' },
+    ],
+  };
   return {
     session: {
       actor: 'actor:one',

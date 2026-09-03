@@ -170,6 +170,7 @@ const REPAIR_FILES = [
   '20260903102000_publish_order_filters.sql',
   '20260903103000_publish_account_labels.sql',
   '20260903104000_publish_organization_labels.sql',
+  '20260903105000_publish_invitation_accounts.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v4_catalog_contract.sql',

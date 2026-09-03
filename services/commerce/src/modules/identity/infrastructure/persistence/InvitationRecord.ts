@@ -42,8 +42,13 @@ export interface CreatedRow {
   readonly version: number;
 }
 export interface ListRow extends CreatedRow {
-  readonly recipient: string | null;
+  readonly recipient_display_name: string | null;
+  readonly recipient_employee_no: string | null;
+  readonly recipient_mobile_masked: string | null;
   readonly issuer_membership_id: string;
+  readonly issuer_display_name: string;
+  readonly issuer_employee_no: string | null;
+  readonly issuer_mobile_masked: string | null;
   readonly issuer_access_version: number;
   readonly revoked_at: Date | null;
   readonly revoked_by: string | null;
@@ -142,8 +147,13 @@ export function createdOf(row: CreatedRow): InvitationCreatedRecord {
 export function listOf(row: ListRow): InvitationListRecord {
   return Object.freeze({
     ...createdOf(row),
-    recipient: row.recipient,
+    recipient_display_name: row.recipient_display_name,
+    recipient_employee_no: row.recipient_employee_no,
+    recipient_mobile_masked: row.recipient_mobile_masked,
     issuer_membership_id: row.issuer_membership_id,
+    issuer_display_name: row.issuer_display_name,
+    issuer_employee_no: row.issuer_employee_no,
+    issuer_mobile_masked: row.issuer_mobile_masked,
     issuer_access_version: Number(row.issuer_access_version),
     revoked_at: row.revoked_at?.toISOString() ?? null,
     revoked_by: row.revoked_by,

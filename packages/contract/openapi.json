@@ -19175,8 +19175,31 @@
                 "issuer_access_version": {
                   "type": "number"
                 },
+                "issuer_display_name": {
+                  "type": "string"
+                },
+                "issuer_employee_no": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "issuer_membership_id": {
                   "type": "string"
+                },
+                "issuer_mobile_masked": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "kind": {
                   "enum": [
@@ -19211,7 +19234,27 @@
                 "reason": {
                   "type": "string"
                 },
-                "recipient": {
+                "recipient_display_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "recipient_employee_no": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "recipient_mobile_masked": {
                   "anyOf": [
                     {
                       "type": "string"
@@ -19281,8 +19324,13 @@
                 "target",
                 "organization_id",
                 "membership_id",
-                "recipient",
+                "recipient_display_name",
+                "recipient_employee_no",
+                "recipient_mobile_masked",
                 "issuer_membership_id",
+                "issuer_display_name",
+                "issuer_employee_no",
+                "issuer_mobile_masked",
                 "issuer_access_version",
                 "minimum_assurance",
                 "max_uses",
