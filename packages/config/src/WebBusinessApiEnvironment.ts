@@ -67,6 +67,9 @@ export function validateWebBusinessApiEnvironment(source: EnvironmentSource): vo
   const origins = apiAllowedOrigins(source);
   if (app === 'production' && [...origins].sort().join(',') !== [
     'https://console.zhudatuan.com',
+    'https://hbbtzn.com',
+    'https://mall.hbbtzn.com',
+    'https://www.hbbtzn.com',
     'https://zhudatuan.com',
   ].sort().join(',')) throw new Error('WEB_BUSINESS_API_ORIGINS_INVALID');
   if (webBusinessApiPort(source) !== 4322) throw new Error('WEB_BUSINESS_API_PORT_INVALID');

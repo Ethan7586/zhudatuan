@@ -215,7 +215,7 @@ assertExactSet(
   ['APP_ENV', 'AUTH_MODE', 'SERVICE_VERSION', 'API_ALLOWED_ORIGINS', 'PUBLIC_MALL_SLUG', 'DATABASE_API_CONNECTION_REF', 'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN', 'NODE_EXTRA_CA_CERTS'],
   'WEB_BUSINESS_ENVIRONMENT_KEYS'
 );
-if (!environment.includes('API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://zhudatuan.com')) {
+if (!environment.includes('API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com')) {
   throw new Error('WEB_BUSINESS_ORIGIN_ALLOWLIST_INVALID');
 }
 if (!environment.includes('PUBLIC_MALL_SLUG=zdt-l1-verify')) throw new Error('WEB_BUSINESS_PUBLIC_MALL_SLUG_INVALID');
