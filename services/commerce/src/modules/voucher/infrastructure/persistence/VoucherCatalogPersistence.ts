@@ -83,7 +83,7 @@ export function voucherCatalogPersistence(organizations: Pick<OrganizationReadPo
         `select program.id,program.scope_id,program.name,program.value_minor,program.currency,program.default_valid_days,
       program.status,program.approval_required,program.version,coalesce((select jsonb_agg(jsonb_build_object('version',version.version,
         'valueMinor',version.value_minor,'validityDays',version.default_valid_days,'approvalRequired',version.approval_required,'status',version.status,
-        'changedBy',version.changed_by,'changedAt',version.changed_at) order by version.version desc) from voucher.programversion version
+        'changedBy',version.changed_by,'changedAt',to_char(version.changed_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')) order by version.version desc) from voucher.programversion version
         where version.program_id=program.id),'[]'::jsonb) versions from voucher.program program
       where access.scope_allowed(program.scope_id) and ($1::text is null or program.id>$1) order by program.id limit $2`,
         [page.id, page.fetch]

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationRequest } from '../../../foundation/application/OperationRequest';
 import type { VoucherAction } from '../infrastructure/persistence/VoucherAction';
+import { voucherCatalogPersistence } from '../infrastructure/persistence/VoucherCatalogPersistence';
 import { voucherQueryPersistence } from '../infrastructure/persistence/VoucherQueryPersistence';
 
 describe('voucher member queries', () => {
@@ -15,8 +16,18 @@ describe('voucher member queries', () => {
   });
 });
 
-function request(): OperationRequest {
-  const type = 'voucher.redemptions.read';
+describe('voucher program queries', () => {
+  it('projects nested version timestamps as canonical UTC instants', async () => {
+    const query = vi.fn(async (_sql: string, _values?: readonly unknown[]) => ({ rows: [], rowCount: 0, command: 'SELECT', oid: 0, fields: [] }));
+    const actions = voucherCatalogPersistence({ descendants: vi.fn(async () => []) });
+    const action = actions.readPrograms as VoucherAction;
+    await action(request('voucher.programs.read'), { query } as never);
+    const [sql] = query.mock.calls[0]!;
+    expect(sql).toContain(`to_char(version.changed_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`);
+  });
+});
+
+function request(type: OperationRequest['type'] = 'voucher.redemptions.read'): OperationRequest {
   return {
     type,
     input: { path: {}, query: {}, headers: {}, body: undefined, rawBody: '', deadline: Date.now() + 1000, signal: new AbortController().signal },
