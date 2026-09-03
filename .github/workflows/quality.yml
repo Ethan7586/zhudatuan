@@ -63,6 +63,7 @@ jobs:
           npm ci
           npm run check:cleaninstall
           npm run check:artifacts
+          npm run check:domains
           npm run check:approved-ui
           npm run check:registration-deployment
           npm run check:purchase-deployment
@@ -92,6 +93,7 @@ jobs:
       - name: Build locked applications and services
         run: |
           npm run build
+          npm run check:domain-bundles
           npx playwright install --with-deps chromium
           npm run release:console:verify -- --dist apps/console/dist --expected-commit "$GITHUB_SHA" --require-clean
           docker build --file infrastructure/aliyun/Dockerfile --tag zhudatuan-commerce:${{ github.sha }} .

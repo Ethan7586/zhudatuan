@@ -12,10 +12,21 @@ runtime:
   webBusinessApiProfile: web-business-only
   purchaseApiPort: 4323
   purchaseApiProfile: purchase-only
+  paymentWebhookApiPort: 4326
+  paymentWebhookApiProfile: payment-webhook-only
   mallProvisioningApiPort: 4325
   mallProvisioningApiProfile: mall-provisioning-only
   identityNotificationProfile: identity-notification-only
+  paymentJobsProfile: payment-only
 oneShots:
+  paymentWebhookRole:
+    artifact: infrastructure/zhudatuan/aliyun/postgres-provision-payment-webhook-role.sh
+    environment: infrastructure/zhudatuan/aliyun/payment-webhook-role.env.example
+    invocation: cluster-authority-psql
+    databaseRole: cluster-owner
+    before:
+      - registrationMigration
+    createsRuntimeRole: zhudatuanpaymentwebhookapi
   mallProvisioningRole:
     artifact: infrastructure/zhudatuan/aliyun/postgres-provision-mall-role.sh
     environment: infrastructure/zhudatuan/aliyun/mall-provisioning-role.env.example
@@ -124,6 +135,27 @@ routes:
       - payment.webhooks.wechat
       - payment.recoveries.read
       - payment.recoveries.resolve
+  paymentWebhookApi:
+    host: api.zhudatuan.com
+    workspace: services/commerce
+    artifact: services/commerce/dist/PaymentWebhookApiMain.js
+    readinessArtifact: services/commerce/dist/PaymentWebhookApiReadyMain.js
+    process: zhudatuan-payment-webhook-api
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-payment-webhook-api.service
+    environment: infrastructure/zhudatuan/aliyun/payment-webhook-api.env.example
+    profile: payment-webhook-only
+    databaseRole: zhudatuanpaymentwebhookapi
+    roleProvisioner: infrastructure/zhudatuan/aliyun/postgres-provision-payment-webhook-role.sh
+    port: 4326
+    allowedMethods:
+      - POST
+    allowedPaths:
+      - /api/v1/webhooks/wechat/payment
+    forbiddenOperations:
+      - payment.intents.create
+      - payment.refunds.request
+      - payment.recoveries.read
+      - payment.recoveries.resolve
   mallProvisioningApi:
     host: api.zhudatuan.com
     workspace: services/commerce
@@ -150,6 +182,20 @@ routes:
     artifact: services/commerce/dist
     process: zhudatuan-identity-notification-jobs
     profile: identity-notification-only
+  paymentJobs:
+    workspace: services/commerce
+    artifacts:
+      - services/commerce/dist/PaymentJobsOnlyMain.js
+      - services/commerce/dist/PaymentJobsReadyMain.js
+    process: zhudatuan-payment-jobs
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-payment-jobs.service
+    environment: infrastructure/zhudatuan/aliyun/payment-jobs.env.example
+    profile: payment-only
+    databaseRole: shopjob
+    databaseConnectionRef: zhudatuan/payment/database/jobs
+    allowedJobs:
+      - paymentquery
+      - paymentrefund
   media:
     host: media.zhudatuan.com
     root: /opt/zhudatuan/media

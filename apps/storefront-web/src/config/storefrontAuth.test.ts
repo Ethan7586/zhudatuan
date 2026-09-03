@@ -5,6 +5,7 @@ describe('storefront auth origin boundary', () => {
   it('always uses the canonical account center in production', () => {
     expect(resolveStorefrontAuthOrigin(undefined, 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin('https://accounts.zhudatuan.com', 'production')).toBe('https://accounts.zhudatuan.com');
+    expect(resolveStorefrontAuthOrigin('https://accounts.hbbtzn.com', 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin(LOCAL_STOREFRONT_AUTH_ORIGIN, 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
     expect(resolveStorefrontAuthOrigin('https://attacker.example', 'production')).toBe(CANONICAL_STOREFRONT_AUTH_ORIGIN);
   });
@@ -16,6 +17,12 @@ describe('storefront auth origin boundary', () => {
   });
 
   it('opens the account center in consumer mode', () => {
-    expect(storefrontAuthHref()).toContain('?target=storefront');
+    const web = new URL(storefrontAuthHref('web'));
+    const h5 = new URL(storefrontAuthHref('h5'));
+    const mini = new URL(storefrontAuthHref('mini'));
+
+    expect(Object.fromEntries(web.searchParams)).toEqual({ target: 'storefront', surface: 'web' });
+    expect(Object.fromEntries(h5.searchParams)).toEqual({ target: 'storefront', surface: 'h5' });
+    expect(Object.fromEntries(mini.searchParams)).toEqual({ target: 'storefront', surface: 'mini' });
   });
 });

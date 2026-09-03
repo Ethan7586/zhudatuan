@@ -12,9 +12,13 @@ import { Membership, PreAuthContext } from '../types';
 import { defaultTermsAccepted } from '../services/termsAcceptance';
 import {
   changeInitialPassword,
+  buildAccountLoginPath,
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
+  resolveH5LoginOrigin,
+  resolveMiniProgramLoginOrigin,
+  resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
   createCanonicalLoginChallenge,
@@ -55,6 +59,10 @@ export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
   const isCanonicalConsoleRequest = typeof window === 'undefined' || new URLSearchParams(window.location.search).get('target') !== 'storefront';
+  const requestedStorefrontSurface = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('surface') : null;
+  const storefrontSurface = requestedStorefrontSurface === 'h5' || requestedStorefrontSurface === 'mini'
+    ? requestedStorefrontSurface
+    : 'web';
   const [registrationDeepLink] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
@@ -95,6 +103,7 @@ export const LoginPage: React.FC = () => {
   const [resetForm, setResetForm] = useState({ mobile: '', code: '', challengeId: '', password: '', confirm: '' });
 
   // UI 视觉交互状态
+  const [isEnterpriseLogin, setIsEnterpriseLogin] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
@@ -160,6 +169,24 @@ export const LoginPage: React.FC = () => {
     setFormError('');
     setFormNotice('');
     setFieldErrors({});
+  };
+
+  const storefrontDestination = (webDestination: string): string => {
+    if (storefrontSurface === 'web') return webDestination;
+    const localOrigin = import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined;
+    if (storefrontSurface === 'mini') {
+      return `${resolveMiniProgramLoginOrigin(import.meta.env.VITE_MINI_PROGRAM_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
+    }
+    return `${resolveH5LoginOrigin(import.meta.env.VITE_H5_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
+  };
+
+  const handleLoginModeToggle = () => {
+    if (isEnterpriseLogin) {
+      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+      window.location.assign(storefrontDestination(resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV)));
+      return;
+    }
+    setIsEnterpriseLogin(true);
   };
 
   const fillDevelopmentAccount = (account: string) => {
@@ -319,7 +346,7 @@ export const LoginPage: React.FC = () => {
       });
       if (created.target === 'storefront' && isConsumerRegistration) {
         if (!created.redirectUrl) throw new Error('消费者登录会话未能建立，请重新获取验证码');
-        window.location.replace(created.redirectUrl);
+        window.location.replace(storefrontDestination(created.redirectUrl));
         return;
       }
       setIdentifier(registration.mobile.trim());
@@ -402,7 +429,7 @@ export const LoginPage: React.FC = () => {
         ? await loginCanonicalStorefrontEntryWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
         : await loginCanonicalStorefrontEntry(identifier, password);
       if (result.kind === 'authenticated') {
-        window.location.replace(result.redirectUrl);
+        window.location.replace(storefrontDestination(result.redirectUrl));
         return;
       }
       setPreAuthContext(result.context);
@@ -448,7 +475,7 @@ export const LoginPage: React.FC = () => {
       window.parent.postMessage({ type: 'smart-wing:storefront-login-complete', membershipId }, window.location.origin);
       return;
     }
-    window.location.replace(result.redirectUrl);
+    window.location.replace(storefrontDestination(result.redirectUrl));
   };
 
   const completeAdminLogin = () => {
@@ -604,16 +631,27 @@ export const LoginPage: React.FC = () => {
           <UserX className="w-12 h-12 text-slate-400 mx-auto mb-3" />
           <h4 className="text-base font-semibold text-slate-800 mb-1">未找到关联的企业福利计划</h4>
           <p className="text-xs text-slate-5-00 text-slate-500 mb-4 max-w-sm mx-auto">该账号当前未被录入任何企业的福利发放名单或运营后台。请联系您所在企业的 HR 或福利管理员进行绑定。</p>
-          <button
-            onClick={() => {
-              setStage(1);
-              setFormError('');
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--sw-brand)] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            切换其他账号登录
-          </button>
+          <div className="flex flex-wrap justify-center gap-2">
+            {!isCanonicalConsoleRequest && (
+              <a
+                href={buildAccountLoginPath('console')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-[var(--sw-brand)] hover:opacity-90 rounded-lg transition-opacity"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                进入运营后台
+              </a>
+            )}
+            <button
+              onClick={() => {
+                setStage(1);
+                setFormError('');
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[var(--sw-brand)] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              切换其他账号登录
+            </button>
+          </div>
         </div>
       );
     }
@@ -789,7 +827,10 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : 'min-h-screen bg-slate-50 flex flex-col justify-between'} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}>
+    <div
+      data-login-mode={isEnterpriseLogin ? 'enterprise' : 'consumer'}
+      className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : `min-h-screen flex flex-col justify-between transition-colors duration-300 ${isEnterpriseLogin ? 'bg-slate-950' : 'bg-slate-50'}`} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}
+    >
       {import.meta.env.DEV && !isStorefrontEmbed && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-300">
           <div className="flex items-center gap-2">
@@ -813,7 +854,7 @@ export const LoginPage: React.FC = () => {
       {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
       <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
         <div
-          className={`relative w-full ${isCanonicalConsoleRequest ? `${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl` : 'max-w-[430px]'} ${isStorefrontEmbed ? 'overflow-visible p-3' : isCanonicalConsoleRequest ? 'overflow-hidden' : ''}`}
+          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br shadow-xl transition-colors duration-300 ${isEnterpriseLogin ? 'from-[var(--sw-brand-dark)] to-slate-950' : 'from-[var(--sw-brand)] to-[var(--sw-brand-dark)]'} ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
         >
           {isStorefrontEmbed && (
             <button
@@ -890,6 +931,17 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {stage === 1 && (
+                    <button
+                      type="button"
+                      onClick={handleLoginModeToggle}
+                      aria-pressed={isEnterpriseLogin}
+                      className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] font-bold transition-colors ${isEnterpriseLogin ? 'border-[var(--sw-brand-dark)] bg-[var(--sw-brand-dark)] text-white hover:bg-slate-900' : 'border-blue-200 bg-white text-[var(--sw-brand)] hover:bg-blue-50'}`}
+                    >
+                      {isEnterpriseLogin ? <Store className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
+                      {isEnterpriseLogin ? '福利商城' : '企业管理'}
+                    </button>
+                  )}
                   <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-5 w-5 rounded-md" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
                     {stage === 1 && '账号认证'}
@@ -929,10 +981,10 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
+                {/* 第一段：普通登录默认两入口；切换企业管理后展示企业入口 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    {isCanonicalConsoleRequest && <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
+                    <div className={`grid ${isEnterpriseLogin ? 'grid-cols-4' : 'grid-cols-2'} gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium`} role="tablist" aria-label="登录方式">
                       <button
                         type="button"
                         onClick={() => selectAuthMethod('otp')}
@@ -951,25 +1003,29 @@ export const LoginPage: React.FC = () => {
                       >
                         密码登录
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('work_weixin')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'work_weixin'}
-                      >
-                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('sso')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'sso'}
-                      >
-                        企业 SSO
-                      </button>
-                    </div>}
+                      {isEnterpriseLogin && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => selectAuthMethod('work_weixin')}
+                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                            role="tab"
+                            aria-selected={activeTab === 'work_weixin'}
+                          >
+                            {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => selectAuthMethod('sso')}
+                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                            role="tab"
+                            aria-selected={activeTab === 'sso'}
+                          >
+                            企业 SSO
+                          </button>
+                        </>
+                      )}
+                    </div>
 
                     <div id="login-method-panel" role="tabpanel" aria-live="polite">
                       {activeTab === 'otp' && (

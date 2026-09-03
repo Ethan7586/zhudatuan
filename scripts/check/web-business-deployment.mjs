@@ -128,14 +128,14 @@ assertExactSet(
   [...apiHost.matchAll(/^\s*@(\w+)(?:\s+path\b|\s*\{)/gm)].map((match) => match[1]),
   ['registrationHealth', 'registrationPreflight', 'registrationPost', 'registrationSessionRead', 'registrationSessionDelete',
     'registrationInvitationDelete', 'registrationOperatorRead', 'mallProvisioningPreflight', 'mallProvisioningApi', 'mallProvisioningRead',
-    'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi',
+    'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi', 'paymentWebhookApi',
     'consoleSupportPreflight', 'consoleSupportRead', 'consoleSupportSend', 'apiPublicCatalog', 'webBusinessApi'],
   'CANONICAL_API_PATH_MATCHERS'
 );
 assertExactList(
   [...apiHost.matchAll(/reverse_proxy\s+127\.0\.0\.1:(\d+)/g)].map((match) => match[1]),
   ['4321', '4321', '4321', '4321', '4321', '4321', '4321', '4325', '4325', '4325',
-    '4323', '4323', '4324', '4324', '4324', '4322', '4322'],
+    '4323', '4323', '4326', '4324', '4324', '4324', '4322', '4322'],
   'CANONICAL_API_PROXY_TARGETS'
 );
 if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@registrationSessionRead',
@@ -147,7 +147,8 @@ if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@reg
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchasePreflight')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchaseApi')
   || apiHost.indexOf('handle @purchasePreflight') > apiHost.indexOf('handle @purchaseApi')
-  || apiHost.indexOf('handle @purchaseApi') > apiHost.indexOf('handle @apiPublicCatalog')
+  || apiHost.indexOf('handle @purchaseApi') > apiHost.indexOf('handle @paymentWebhookApi')
+  || apiHost.indexOf('handle @paymentWebhookApi') > apiHost.indexOf('handle @apiPublicCatalog')
   || apiHost.indexOf('handle @apiPublicCatalog') > apiHost.indexOf('handle @webBusinessApi')
   || apiHost.indexOf('handle @webBusinessApi') > apiHost.indexOf('respond "Not Found" 404')) {
   throw new Error('CANONICAL_API_HANDLER_ORDER_INVALID');

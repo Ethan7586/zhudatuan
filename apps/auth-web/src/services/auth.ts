@@ -8,8 +8,9 @@ import { Membership } from '../types';
 import { resolveBuildTimeOrigin } from './originPolicy';
 
 const CANONICAL_ADMIN_ORIGIN = 'https://console.zhudatuan.com';
-const CANONICAL_STOREFRONT_ORIGIN = 'https://mall.hbbtzn.com';
-const LEGACY_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
+const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
+const CANONICAL_H5_ORIGIN = 'https://h5.zhudatuan.com';
+const CANONICAL_MINI_PROGRAM_ORIGIN = 'https://mini.zhudatuan.com';
 
 function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string,
   allowLocalDevelopment: boolean, stagingOrigin?: string): string {
@@ -33,14 +34,26 @@ export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLoc
     CANONICAL_STOREFRONT_ORIGIN,
     '商城',
     allowLocalDevelopment,
-    stagingOrigin ?? LEGACY_STOREFRONT_ORIGIN,
+    stagingOrigin,
   );
+}
+
+export function resolveH5LoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false, stagingOrigin?: string): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_H5_ORIGIN, 'H5 商城', allowLocalDevelopment, stagingOrigin);
+}
+
+export function resolveMiniProgramLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false, stagingOrigin?: string): string {
+  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_MINI_PROGRAM_ORIGIN, '小程序商城', allowLocalDevelopment, stagingOrigin);
 }
 
 export function buildCredentialLoginAction(targetOrigin: string): string {
   const action = new URL('/api/v1/auth/login', targetOrigin);
   action.searchParams.set('redirect', '/');
   return action.toString();
+}
+
+export function buildAccountLoginPath(target: 'console' | 'storefront'): string {
+  return target === 'console' ? '/login?client=console' : '/login?target=storefront';
 }
 
 /**

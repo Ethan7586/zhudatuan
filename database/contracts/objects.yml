@@ -22415,3 +22415,51 @@ objects:
     kind: policy
     owner: runtime
     source: database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql
+  - id: audit.accessrecord.zhudatuanpaymentwebhookapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: audit.archiveref.zhudatuanpaymentwebhookapi
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: audit.record.zhudatuanpaymentwebhookapiinsert
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: audit.record.zhudatuanpaymentwebhookapiselect
+    kind: policy
+    owner: audit
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: payment.attempt.zhudatuanpaymentwebhookapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: payment.intent.zhudatuanpaymentwebhookapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: payment.intenttender.zhudatuanpaymentwebhookapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: payment.payment.zhudatuanpaymentwebhookapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: payment.refund.zhudatuanpaymentwebhookapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: payment.refundtender.zhudatuanpaymentwebhookapiselect
+    kind: policy
+    owner: payment
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: runtime.job.zhudatuanpaymentwebhookapiinsert
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql
+  - id: runtime.schemaversion.zhudatuanpaymentwebhookapi
+    kind: policy
+    owner: runtime
+    source: database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql

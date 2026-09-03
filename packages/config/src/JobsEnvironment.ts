@@ -23,7 +23,7 @@ export const JOBS_ENVIRONMENT_KEYS = [
 ] as const;
 
 export type JobsEnvironment = Readonly<Partial<Record<(typeof JOBS_ENVIRONMENT_KEYS)[number], string>>>;
-export type JobRuntimeProfile = 'full' | 'identity-notification-only';
+export type JobRuntimeProfile = 'full' | 'identity-notification-only' | 'payment-only';
 
 const IDENTITY_NOTIFICATION_KEYS = new Set<string>([
   'APP_ENV',
@@ -35,6 +35,17 @@ const IDENTITY_NOTIFICATION_KEYS = new Set<string>([
   'KMS_ENDPOINT',
   'KMS_BEARER_TOKEN',
   'IDENTITY_NOTIFICATION_CONFIG_REF',
+  'JOB_WORKER_ID',
+]);
+const PAYMENT_KEYS = new Set<string>([
+  'APP_ENV',
+  'SERVICE_VERSION',
+  'JOB_RUNTIME_PROFILE',
+  'DATABASE_JOB_CONNECTION_REF',
+  'SECRET_STORE_ENDPOINT',
+  'SECRET_STORE_BEARER_TOKEN',
+  'WECHAT_APPLICATION_CONFIG_REF',
+  'WECHAT_PAYMENT_CONFIG_REF',
   'JOB_WORKER_ID',
 ]);
 const SERVICE_CONFIGURATION_KEY = /^(?:API_|APP_ENV$|AUTH_|DATABASE_|EXTENSION_|IDENTITY_|INVOICE_|JOB_|KMS_|NOTIFICATION_|OBJECT_|PAYMENT_|PAYOUT_|PII_|PUBLIC_|QUOTE_|REDIS_|SECRET_|SESSION_|SERVICE_VERSION$|WECHAT_)/;
@@ -73,6 +84,27 @@ export function validateJobsEnvironment(source: JobsEnvironment | EnvironmentSou
     ]);
     return;
   }
+  if (profile === 'payment-only') {
+    for (const key of Object.keys(source).filter((candidate) => SERVICE_CONFIGURATION_KEY.test(candidate)
+      && !PAYMENT_KEYS.has(candidate)).sort()) throw new Error(`JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:${key}`);
+    requiredValue(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING');
+    bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
+    requiredValue(source.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING');
+    requiredValue(source.WECHAT_PAYMENT_CONFIG_REF, 'WECHAT_PAYMENT_CONFIG_REF_MISSING');
+    rejectConfigured(source, [
+      'REDIS_CONNECTION_REF',
+      'EXTENSION_MANIFEST_KEY_REF',
+      'KMS_ENDPOINT',
+      'KMS_BEARER_TOKEN',
+      'INVOICE_CONFIG_REF',
+      'PAYOUT_CONFIG_REF',
+      'NOTIFICATION_CONFIG_REF',
+      'IDENTITY_NOTIFICATION_CONFIG_REF',
+      'OBJECT_STORE_ENDPOINT',
+      'OBJECT_STORE_TOKEN_REF',
+    ]);
+    return;
+  }
   rejectConfigured(source, ['IDENTITY_NOTIFICATION_CONFIG_REF']);
   requiredValue(source.REDIS_CONNECTION_REF, 'REDIS_CONNECTION_REF_MISSING');
   requiredValue(source.EXTENSION_MANIFEST_KEY_REF, 'EXTENSION_MANIFEST_KEY_REF_MISSING');
@@ -91,7 +123,7 @@ export function validateJobsEnvironment(source: JobsEnvironment | EnvironmentSou
 }
 
 export function jobRuntimeProfile(source: JobsEnvironment | EnvironmentSource): JobRuntimeProfile {
-  return enumValue(source.JOB_RUNTIME_PROFILE, ['full', 'identity-notification-only'], 'JOB_RUNTIME_PROFILE_INVALID');
+  return enumValue(source.JOB_RUNTIME_PROFILE, ['full', 'identity-notification-only', 'payment-only'], 'JOB_RUNTIME_PROFILE_INVALID');
 }
 
 function rejectConfigured(source: JobsEnvironment | EnvironmentSource, keys: readonly (typeof JOBS_ENVIRONMENT_KEYS)[number][]): void {

@@ -65,8 +65,8 @@ describe('runtime configuration schema', () => {
       APP_ENV: 'production',
       AUTH_MODE: 'membership',
       SERVICE_VERSION: '1.0.0',
-      API_ALLOWED_ORIGINS: 'https://accounts.hbbtzn.com,https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com',
-      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","storefront":"https://mall.hbbtzn.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}',
+      API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://h5.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://mini.zhudatuan.com,https://www.hbbtzn.com,https://zhudatuan.com',
+      AUTH_RETURN_TARGETS: '{"console":"https://console.zhudatuan.com","storefront":"https://zhudatuan.com","store":"https://console.zhudatuan.com/entrances/store","supplier":"https://console.zhudatuan.com/entrances/supplier"}',
       DATABASE_API_CONNECTION_REF: 'zhudatuan/database/api',
       SESSION_KEY_REF: 'zhudatuan/identity/session',
       IDENTITY_KEY_REF: 'zhudatuan/identity/index',
@@ -251,9 +251,35 @@ describe('runtime configuration schema', () => {
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   });
 
+  it('accepts only payment dependencies for the payment-only Jobs profile', () => {
+    const payment = {
+      APP_ENV: 'production',
+      SERVICE_VERSION: '1.0.0',
+      JOB_RUNTIME_PROFILE: 'payment-only',
+      DATABASE_JOB_CONNECTION_REF: 'zhudatuan/payment/database/jobs',
+      SECRET_STORE_ENDPOINT: 'https://secrets.internal',
+      SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
+      WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/purchase/wechat/applications',
+      WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/purchase/payment/wechat',
+      JOB_WORKER_ID: 'zhudatuan-payment-1',
+    };
+    expect(jobRuntimeProfile(payment)).toBe('payment-only');
+    expect(() => validateJobsEnvironment(payment)).not.toThrow();
+    expect(() => validateJobsEnvironment({ ...payment, WECHAT_PAYMENT_CONFIG_REF: '' }))
+      .toThrow('WECHAT_PAYMENT_CONFIG_REF_MISSING');
+    expect(() => validateJobsEnvironment({ ...payment, REDIS_CONNECTION_REF: 'zhudatuan/redis/jobs' }))
+      .toThrow('JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:REDIS_CONNECTION_REF');
+    expect(() => validateJobsEnvironment({ ...payment, IDENTITY_NOTIFICATION_CONFIG_REF: 'zhudatuan/identity/notification' }))
+      .toThrow('JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:IDENTITY_NOTIFICATION_CONFIG_REF');
+  });
+
   it('fails closed for incomplete browser, storefront, and miniapp deployment identity', () => {
     const client = { VITE_API_BASE_URL: 'https://api.example.com', VITE_AUTH_BASE_URL: 'https://auth.example.com', VITE_CLIENT_VERSION: '2.4.1' };
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
+    const productionClient = { ...client, APP_ENV: 'production', VITE_API_BASE_URL: 'https://api.zhudatuan.com', VITE_AUTH_BASE_URL: 'https://accounts.zhudatuan.com' };
+    expect(clientEnvironment(productionClient).apiBaseUrl).toBe('https://api.zhudatuan.com');
+    expect(() => clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com' })).toThrow('CLIENT_API_BASE_URL_INVALID');
+    expect(() => clientEnvironment({ ...productionClient, VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' })).toThrow('CLIENT_AUTH_BASE_URL_INVALID');
     expect(() => clientEnvironment({ ...client, VITE_CLIENT_VERSION: '' })).toThrow('CLIENT_VERSION_MISSING');
     expect(() => clientEnvironment({ NEXT_PUBLIC_API_BASE_URL: 'https://api.example.com', NEXT_PUBLIC_AUTH_BASE_URL: 'https://auth.example.com', NEXT_PUBLIC_CLIENT_VERSION: '2.4.1' })).toThrow('CLIENT_API_BASE_URL_MISSING');
     expect(() => miniappEnvironment({ apiBaseUrl: 'https://api.example.com', mallId: '', clientVersion: '2.4.1' })).toThrow('MINIAPP_MALL_ID_INVALID');
