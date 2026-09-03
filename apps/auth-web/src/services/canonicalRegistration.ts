@@ -56,6 +56,7 @@ const MembershipSchema = z.strictObject({
   member_id: z.string().min(1),
   organization_id: z.string().min(1),
   client: z.enum(['storefront', 'operator']),
+  governance_parent_membership_id: z.string().min(1).nullable().optional(),
   governanceLevel: z.enum(['administrator', 'senior_administrator']).optional(),
   employee_no: z.string().nullable(),
   status: z.literal('active'),

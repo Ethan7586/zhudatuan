@@ -1,4 +1,5 @@
 const ROOT_STOREFRONT_HOST = 'hbbtzn.com';
+const API_UPSTREAM_ORIGIN = 'https://api.zhudatuan.com';
 
 const UPSTREAM_ORIGINS = Object.freeze({
   [ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com',
@@ -23,6 +24,10 @@ function rewriteOrigins(value: string, origins: Readonly<Record<string, string>>
     (current, [source, destination]) => current.replaceAll(source, destination),
     value,
   );
+}
+
+function isApiPath(pathname: string): boolean {
+  return pathname === '/api' || pathname.startsWith('/api/');
 }
 
 function storefrontPath(request: Request, incoming: URL): string {
@@ -87,7 +92,8 @@ const worker = {
     const upstreamOrigin = UPSTREAM_ORIGINS[incoming.hostname as keyof typeof UPSTREAM_ORIGINS];
     if (!upstreamOrigin) return new Response('Not Found', { status: 404 });
 
-    const target = new URL(`${storefrontPath(request, incoming)}${incoming.search}`, upstreamOrigin);
+    const path = storefrontPath(request, incoming);
+    const target = new URL(`${path}${incoming.search}`, isApiPath(path) ? API_UPSTREAM_ORIGIN : upstreamOrigin);
     return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
   },
 };

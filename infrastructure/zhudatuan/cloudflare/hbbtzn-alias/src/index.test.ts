@@ -16,7 +16,7 @@ describe('hbbtzn H5 alias worker', () => {
     expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://zhudatuan.com/h5?source=desktop');
   });
 
-  it('keeps assets and API paths intact', async () => {
+  it('keeps assets intact and sends API paths to the canonical API', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('ok'));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -24,10 +24,10 @@ describe('hbbtzn H5 alias worker', () => {
     await worker.fetch(new Request('https://hbbtzn.com/api/v1/catalog/listings'));
 
     expect((fetchMock.mock.calls[0][0] as Request).url).toBe('https://zhudatuan.com/assets/app.js');
-    expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://zhudatuan.com/api/v1/catalog/listings');
+    expect((fetchMock.mock.calls[1][0] as Request).url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
   });
 
-  it('keeps the H5 storefront proxy on the canonical zhudatuan upstream', async () => {
+  it('keeps the public H5 origin while proxying its API to the canonical API upstream', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -36,7 +36,7 @@ describe('hbbtzn H5 alias worker', () => {
     }));
 
     const upstreamRequest = fetchMock.mock.calls[0][0] as Request;
-    expect(upstreamRequest.url).toBe('https://zhudatuan.com/api/v1/catalog/listings');
+    expect(upstreamRequest.url).toBe('https://api.zhudatuan.com/api/v1/catalog/listings');
     expect(upstreamRequest.headers.get('origin')).toBe('https://zhudatuan.com');
   });
 

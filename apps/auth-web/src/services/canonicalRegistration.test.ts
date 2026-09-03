@@ -394,6 +394,7 @@ function membership(): Readonly<Record<string, unknown>> {
     member_id: 'member:one',
     organization_id: 'enterprise:one',
     client: 'storefront',
+    governance_parent_membership_id: null,
     employee_no: null,
     status: 'active',
     access_version: 1,
