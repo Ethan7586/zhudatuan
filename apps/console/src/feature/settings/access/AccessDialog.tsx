@@ -1,5 +1,4 @@
 import { Button, Dialog } from '@shop/design';
-import { chineseReference } from '@shop/presentation';
 import { useEffect, useMemo, useState } from 'react';
 import { createActionRequest } from '../../../shared/security/ActionRequest';
 import { accessEnvelope, type AccessChange, type AccessRole } from './AccessCommand';
@@ -89,8 +88,9 @@ export function AccessDialog({
         }}
       >
         <section className="accesstarget">
-          <span>目标成员关系</span>
-          <strong>{chineseReference('成员', intent?.membership.id)}</strong>
+          <span>目标账号</span>
+          <strong>{intent?.membership.display_name ?? '未选择账号'}</strong>
+          <span>{intent?.membership.employee_no ? `员工号 ${intent.membership.employee_no}` : intent?.membership.mobile_masked && intent.membership.mobile_masked !== '***' ? `手机 ${intent.membership.mobile_masked}` : '账号资料未设置员工号或手机号'}</span>
           <span>当前权限版本：第 {intent?.membership.access_version ?? 0} 版</span>
         </section>
         {intent?.kind === 'role' ? <RoleFields name={name} permissions={permissions} allows={allows} denies={denies} onName={setName} onAllows={setAllows} onDenies={setDenies} /> : null}

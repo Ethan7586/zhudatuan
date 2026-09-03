@@ -7,6 +7,9 @@ import type { Scope } from '../../domain/model/Scope';
 
 export interface AccessCenterRecord {
   readonly id: string;
+  readonly displayName: string;
+  readonly employeeNo: string | null;
+  readonly mobileMasked: string | null;
   readonly client: 'console' | 'storefront';
   readonly status: string;
   readonly accessVersion: number;

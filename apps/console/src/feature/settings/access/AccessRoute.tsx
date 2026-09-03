@@ -1,9 +1,10 @@
-import { chineseDomainLabel, chineseReference, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseSectionLabel, hasFailureCode, queryCondition, safeQueryError } from '@shop/presentation';
 import { Button } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
+import { AssurancePrompt } from '../../../entity/session/AssurancePrompt';
 
 import type { DataColumn } from '../../../shared/ui/DataTable';
 import { PagedResource } from '../../../shared/ui/PagedResource';
@@ -39,9 +40,18 @@ export function Component() {
   const mutationError = safeQueryError(mutation.error);
   const columns = useMemo<readonly DataColumn<AccessMembership>[]>(
     () => [
-      { key: 'membership', label: '成员', render: (row) => chineseReference('成员', row.id) },
+      {
+        key: 'membership',
+        label: '账号',
+        render: (row) => (
+          <div className="accessaccount">
+            <strong>{row.display_name}</strong>
+            <span>{accountLabel(row)}</span>
+          </div>
+        ),
+      },
       { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },
-      { key: 'roles', label: '角色', render: (row) => <div className="accessroles">{row.roles.length ? row.roles.map((role) => <span key={role.role}>{role.name}</span>) : '未分配'}</div> },
+      { key: 'roles', label: '角色', render: (row) => <div className="accessroles">{row.roles.length ? row.roles.map((role) => <span key={role.role}>{chineseDomainLabel(role.name, role.name)}</span>) : '未分配'}</div> },
       { key: 'scopes', label: '项目范围', render: (row) => `${row.scopes.length} 项` },
       { key: 'overrides', label: '覆盖权限', render: (row) => `${row.overrides.length} 项` },
       { key: 'version', label: '权限版本', render: (row) => `第 ${row.access_version} 版` },
@@ -68,6 +78,9 @@ export function Component() {
     ],
     [canOverride, canRole, canScope, context.session.membership]
   );
+  if (hasFailureCode(query.error, 'STEPUP_REQUIRED')) {
+    return <AssurancePrompt title="权限中心" description="管理员账号、角色和项目范围属于敏感信息。请先完成短信二次验证，成功后会自动返回并加载当前权限中心。" />;
+  }
   return (
     <>
       <PagedResource
@@ -107,6 +120,12 @@ export function Component() {
       )}
     </>
   );
+}
+
+function accountLabel(row: AccessMembership): string {
+  if (row.employee_no) return `员工号 ${row.employee_no}`;
+  if (row.mobile_masked && row.mobile_masked !== '***') return `手机 ${row.mobile_masked}`;
+  return row.client === 'storefront' ? '商城账号' : '控制台账号';
 }
 
 function allowed(context: ReturnType<typeof useConsoleContext>, permission: string, capability: string): boolean {

@@ -3,6 +3,19 @@
   flex-wrap: wrap;
   gap: var(--sw-space-1);
 }
+.accessaccount {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 9rem;
+}
+.accessaccount strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+}
+.accessaccount span {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
 .accessroles {
   display: flex;
   flex-wrap: wrap;

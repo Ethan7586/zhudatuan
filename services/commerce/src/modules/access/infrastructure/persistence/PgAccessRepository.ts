@@ -31,13 +31,14 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
   ): Promise<readonly AccessCenterRecord[]> {
     const database = this.transactions.database(context);
     const result = await database.query<CenterRow>(
-      `select membership.id,
+      `select membership.id,profile.display_name,membership.employee_no,profile.mobile_masked,
       case membership.client when 'storefront' then 'storefront' else 'console' end client,
       membership.status,membership.access_version,
       coalesce(roleitems.items,'[]'::jsonb) roles,
       coalesce(scopeitems.items,'[]'::jsonb) scopes,
       coalesce(overrideitems.items,'[]'::jsonb) overrides
       from access.membership membership
+      join member.profile profile on profile.id=membership.member_id
       left join lateral (
         select jsonb_agg(jsonb_build_object('role',assigned.id,'name',assigned.name,'kind',assigned.kind,'version',assigned.version,
           'allows',coalesce((select jsonb_agg(permission.code order by permission.code) from access.rolepermission mapping
@@ -71,6 +72,9 @@ export class PgAccessRepository extends PgAccessGovernanceRepository implements 
       result.rows.map((row) =>
         Object.freeze({
           id: row.id,
+          displayName: row.display_name,
+          employeeNo: row.employee_no,
+          mobileMasked: row.mobile_masked,
           client: row.client === 'storefront' ? 'storefront' : 'console',
           status: row.status,
           accessVersion: Number(row.access_version),

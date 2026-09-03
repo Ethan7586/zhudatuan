@@ -5,6 +5,9 @@ import { pageEnvelope } from '../../../shared/schema/PageEnvelope';
 export const AccessMembershipSchema = z
   .object({
     id: z.string().min(1),
+    display_name: z.string().min(1),
+    employee_no: z.string().nullable(),
+    mobile_masked: z.string().nullable(),
     client: z.string().min(1),
     status: z.string().min(1),
     access_version: DatabaseIntegerSchema,

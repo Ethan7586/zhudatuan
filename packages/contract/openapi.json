@@ -47,8 +47,31 @@
                   ],
                   "type": "string"
                 },
+                "display_name": {
+                  "type": "string"
+                },
+                "employee_no": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "id": {
                   "type": "string"
+                },
+                "mobile_masked": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "overrides": {
                   "items": {
@@ -197,6 +220,9 @@
               },
               "required": [
                 "id",
+                "display_name",
+                "employee_no",
+                "mobile_masked",
                 "client",
                 "status",
                 "access_version",

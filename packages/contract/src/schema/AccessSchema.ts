@@ -71,6 +71,9 @@ export const SECURITY_OUTPUT_SCHEMAS = {
   AccessCenterReadOutput: page(
     strictObject({
       id: text,
+      display_name: text,
+      employee_no: nullableText,
+      mobile_masked: nullableText,
       client: target,
       status: literal(['invited', 'active', 'suspended', 'left']),
       access_version: number(),

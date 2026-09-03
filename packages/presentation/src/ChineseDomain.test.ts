@@ -8,6 +8,7 @@ describe('Chinese domain presentation', () => {
     expect(chineseDomainLabel('partially_refunded')).toBe('部分退款');
     expect(chineseProviderLabel('jdproduct')).toBe('京东');
     expect(chineseDomainList(['welfare', 'meal'])).toBe('福利账户、餐补账户');
+    expect(chineseDomainLabel('Self Service')).toBe('自助服务');
   });
 
   it('does not leak an unknown server enum into novice-facing copy', () => {

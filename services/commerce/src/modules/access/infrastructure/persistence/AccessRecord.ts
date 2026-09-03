@@ -5,6 +5,9 @@ import { Scope } from '../../domain/model/Scope';
 
 export interface CenterRow {
   readonly id: string;
+  readonly display_name: string;
+  readonly employee_no: string | null;
+  readonly mobile_masked: string | null;
   readonly client: string;
   readonly status: string;
   readonly access_version: number;

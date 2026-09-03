@@ -67,6 +67,26 @@ describe('contract truth', () => {
     expect(() => aftersales.parse({ query: { payment: 'unknown' } })).toThrow();
   });
 
+  it('requires account labels on access-center rows', () => {
+    const row = {
+      id: 'membership:one',
+      display_name: '张三',
+      employee_no: 'E1001',
+      mobile_masked: '138****0000',
+      client: 'console',
+      status: 'active',
+      access_version: 3,
+      roles: [],
+      scopes: [],
+      overrides: [],
+    } as const;
+    const schema = OPERATION_SCHEMAS['access.center.read'].output;
+
+    expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
+    const { display_name: _displayName, ...withoutAccount } = row;
+    expect(() => schema.parse({ items: [withoutAccount], count: 1 })).toThrow();
+  });
+
   it('publishes one strict runtime payload schema for every event', () => {
     const eventTypes = COMMERCE_EVENTS.map(({ type }) => type).sort();
     expect(Object.keys(EVENT_PAYLOAD_SCHEMAS).sort()).toEqual(eventTypes);

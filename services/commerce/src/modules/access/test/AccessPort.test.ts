@@ -11,15 +11,16 @@ function port(): AccessPort {
 
 describe('AccessPort directory membership resolution', () => {
   it('reads the access center without using a reserved SQL alias', async () => {
-    const query = vi.fn(async (_sql: string) => databaseResult([{ id: 'membership:one', client: 'console', status: 'active', access_version: '3', roles: [], scopes: [], overrides: [] }]));
+    const query = vi.fn(async (_sql: string) => databaseResult([{ id: 'membership:one', display_name: '张三', employee_no: 'E1001', mobile_masked: '138****0000', client: 'console', status: 'active', access_version: '3', roles: [], scopes: [], overrides: [] }]));
     const repository = new PgAccessRepository();
 
     await expect(withReadTransaction(query, (context) => repository.center(context, { organization: 'mall:one', after: null, limit: 51 }))).resolves.toEqual([
-      { id: 'membership:one', client: 'console', status: 'active', accessVersion: 3, roles: [], scopes: [], overrides: [] },
+      { id: 'membership:one', displayName: '张三', employeeNo: 'E1001', mobileMasked: '138****0000', client: 'console', status: 'active', accessVersion: 3, roles: [], scopes: [], overrides: [] },
     ]);
     expect(query.mock.calls[0]?.[0]).toContain('access.scopegrant scopegrant');
     expect(query.mock.calls[0]?.[0]).toContain('access.membershipoverride override');
     expect(query.mock.calls[0]?.[0]).toContain('access.membership_visible_to($1,membership.id)');
+    expect(query.mock.calls[0]?.[0]).toContain('join member.profile profile on profile.id=membership.member_id');
     expect(query.mock.calls[0]?.[0]).not.toContain('organization.unitclosure');
     expect(query.mock.calls[0]?.[0]).not.toContain('access.scopegrant grant');
   });

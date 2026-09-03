@@ -143,6 +143,7 @@ const commonLabels: Readonly<Record<string, string>> = Object.freeze({
   reopened: '已重新打开',
   updated: '已更新',
   'sla.escalated': '服务时限已升级',
+  'self service': '自助服务',
 });
 
 export function chineseDomainLabel(value: string | null | undefined, fallback = '待识别'): string {
