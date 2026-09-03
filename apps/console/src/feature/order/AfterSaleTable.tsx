@@ -1,5 +1,6 @@
 import { formatMinor } from '../../shared/ui/Format';
-import { aftersaleLabel, aftersaleTone, formatOrderTime } from './OrderPresentation';
+import { chineseReference } from '@shop/presentation';
+import { aftersaleLabel, aftersaleReasonLabel, aftersaleTone, formatOrderTime } from './OrderPresentation';
 import type { AfterSaleRecord } from './AfterSaleSchema';
 
 export function AfterSaleTable({
@@ -53,16 +54,16 @@ function AfterSaleRow({ sale, active, onOpen }: Readonly<{ sale: AfterSaleRecord
     >
       <td>
         <div className="orderprimarycell">
-          <strong>{sale.id}</strong>
+          <strong>{chineseReference('售后单', sale.id)}</strong>
           <span>{formatOrderTime(sale.createdAt)}</span>
         </div>
       </td>
       <td>
-        <strong>{sale.orderId}</strong>
+        <strong>{chineseReference('内部订单', sale.orderId)}</strong>
       </td>
       <td>
         <div className="orderprimarycell">
-          <strong>{sale.reasonCode}</strong>
+          <strong>{aftersaleReasonLabel(sale.reasonCode)}</strong>
           <span>{sale.description || '—'}</span>
         </div>
       </td>
@@ -82,7 +83,7 @@ function AfterSaleRow({ sale, active, onOpen }: Readonly<{ sale: AfterSaleRecord
               event.stopPropagation();
               onOpen();
             }}
-            aria-label={`查看售后订单 ${sale.id}`}
+            aria-label={`查看${chineseReference('售后单', sale.id)}`}
           >
             查看
           </button>

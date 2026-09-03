@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, CircleAlert, Clock3, LoaderCircle, RefreshCw } from 'lucide-react';
 import { Link, useParams } from 'react-router';
+import { chineseReference } from '@shop/presentation';
 import { useSession } from '../../../shared/runtime/SessionContext';
 import { ContinuePayment } from '../application/ContinuePayment';
 import { readPayment } from '../application/ReadPayment';
@@ -60,11 +61,11 @@ export function PaymentResultPage() {
       <dl className="mt-6 rounded-xl border bg-white p-4 text-left text-xs">
         <div className="flex justify-between">
           <dt className="text-gray-400">支付编号</dt>
-          <dd className="font-mono">{payment.paymentId}</dd>
+          <dd>{chineseReference('支付记录', payment.paymentId)}</dd>
         </div>
         <div className="mt-3 flex justify-between">
           <dt className="text-gray-400">订单编号</dt>
-          <dd className="font-mono">{payment.orderId}</dd>
+          <dd>{chineseReference('内部订单', payment.orderId)}</dd>
         </div>
         <div className="mt-3 flex justify-between">
           <dt className="text-gray-400">支付有效期</dt>

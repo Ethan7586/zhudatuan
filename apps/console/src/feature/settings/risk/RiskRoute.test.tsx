@@ -66,6 +66,12 @@ describe('system governance route', () => {
     expect(screen.getByText('已拦截')).toBeTruthy();
     expect(screen.getByText('频次异常')).toBeTruthy();
     expect(screen.queryByText('actor:sensitive-identity')).toBeNull();
+    expect(screen.queryByText('riskpolicy:one')).toBeNull();
+    expect(screen.queryByText('riskcase:one')).toBeNull();
+    expect(screen.queryByText('riskdecision:one')).toBeNull();
+    expect(screen.getByText(/^策略 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.getByText(/^风险事件 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.getByText(/^决策记录 \d{4} \d{4}$/)).toBeTruthy();
   });
 
   it('turns STEPUP_REQUIRED into a visible Chinese verification action', async () => {

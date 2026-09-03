@@ -1,3 +1,4 @@
+import { chineseReference } from '@shop/presentation';
 import type { OrderRecord } from './OrderSchema';
 
 export type OrderTone = 'brand' | 'success' | 'warning' | 'danger' | 'muted';
@@ -45,10 +46,19 @@ const lifecycleLabels: Readonly<Record<string, string>> = Object.freeze({
   cancelled: '已取消',
 });
 
+const aftersaleReasonLabels: Readonly<Record<string, string>> = Object.freeze({
+  quality: '商品质量问题',
+  damaged: '运输破损',
+  wrongitem: '错发或漏发',
+  notneeded: '不再需要',
+  service: '服务未按约完成',
+});
+
 export const paymentLabel = (value: string): string => paymentLabels[value] ?? '待识别状态';
 export const fulfillmentLabel = (value: string): string => fulfillmentLabels[value] ?? '待识别状态';
 export const aftersaleLabel = (value: string): string => aftersaleLabels[value] ?? '待识别状态';
 export const lifecycleLabel = (value: string): string => lifecycleLabels[value] ?? '待识别状态';
+export const aftersaleReasonLabel = (value: string): string => aftersaleReasonLabels[value] ?? '其他售后原因';
 
 export function paymentTone(value: string): OrderTone {
   if (value === 'paid') return 'brand';
@@ -93,6 +103,6 @@ export function productSummary(order: OrderRecord): Readonly<{ title: string; de
   const quantity = lines.reduce((total, line) => total + line.quantity, 0);
   return {
     title: first.title,
-    detail: `${first.sku} · 共 ${quantity} 件${lines.length > 1 ? ` / ${lines.length} 类` : ''}`,
+    detail: `${chineseReference('商品规格', first.sku)} · 共 ${quantity} 件${lines.length > 1 ? ` / ${lines.length} 类` : ''}`,
   };
 }

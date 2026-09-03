@@ -1,4 +1,5 @@
 import { Button, Dialog } from '@shop/design';
+import { chineseReference } from '@shop/presentation';
 import { useEffect, useState } from 'react';
 import type { MemberChange } from './MemberCommand';
 import type { Member } from './MemberSchema';
@@ -41,7 +42,7 @@ export function MemberDialog({
       >
         <section className="membertarget" aria-label="当前成员">
           <strong>{member?.display_name}</strong>
-          <span>{member?.membership_id}</span>
+          <span>{chineseReference('成员', member?.membership_id)}</span>
           <small>当前权限版本：第 {member?.access_version ?? 0} 版</small>
         </section>
         <fieldset>

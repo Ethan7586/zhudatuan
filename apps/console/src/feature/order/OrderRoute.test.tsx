@@ -132,6 +132,8 @@ describe('Order route', () => {
     expect(screen.getByText(/^组织范围 \d{4} \d{4}$/)).toBeTruthy();
     expect(screen.queryByText('member:verified-1')).toBeNull();
     expect(screen.queryByText('enterprise:1')).toBeNull();
+    expect(screen.queryByText('SKU-VERIFIED-1')).toBeNull();
+    expect(screen.getByText(/^商品规格 \d{4} \d{4} · 共 2 件$/)).toBeTruthy();
     expect(screen.queryByText('不应泄漏的演示会员')).toBeNull();
     expect(screen.queryByText('不应泄漏的演示支付方式')).toBeNull();
     expect(screen.getByRole('button', { name: '全部订单' }).textContent).toBe('全部订单');
@@ -157,7 +159,10 @@ describe('Order route', () => {
     await user.click(tab);
 
     expect(await screen.findByRole('table', { name: '售后订单列表' })).toBeTruthy();
-    expect(screen.getByText('aftersale:verified-1')).toBeTruthy();
+    expect(screen.getByText(/^售后单 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.getByText(/^内部订单 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.queryByText('aftersale:verified-1')).toBeNull();
+    expect(screen.getByText('运输破损')).toBeTruthy();
     expect(screen.getByText('外包装破损')).toBeTruthy();
     expect(screen.getByText('需要退货')).toBeTruthy();
     expect(currentParams().get('view')).toBe('aftersale');

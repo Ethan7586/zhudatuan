@@ -51,7 +51,7 @@ export function OrderDrawer({
       }}
     >
       <Modal className="orderdrawermodal">
-        <AriaDialog className="orderdrawer" aria-label={`订单详情 ${order?.order_number ?? orderId}`}>
+        <AriaDialog className="orderdrawer" aria-label={`订单详情 ${order?.order_number ?? chineseReference('内部订单', orderId)}`}>
           <header className="orderdrawerheader">
             <div>
               <p>订单详情</p>

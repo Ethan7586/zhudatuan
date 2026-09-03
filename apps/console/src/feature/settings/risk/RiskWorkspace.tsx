@@ -1,4 +1,5 @@
 import type { OperationOutputFor } from '@shop/contract';
+import { chineseReference } from '@shop/presentation';
 
 type RiskPage = OperationOutputFor<'risk.center.read'>;
 type RiskItem = RiskPage['items'][number];
@@ -108,7 +109,7 @@ function PolicyCard({ item }: Readonly<{ item: RiskItem }>) {
       <header>
         <div>
           <strong>{item.name ?? '未命名策略'}</strong>
-          <small>{compactId(item.id)}</small>
+          <small>{chineseReference('策略', item.id)}</small>
         </div>
         <span data-tone={item.status === 'active' ? 'success' : 'neutral'}>{status}</span>
       </header>
@@ -145,7 +146,7 @@ function CaseCard({ item }: Readonly<{ item: RiskItem }>) {
       <header>
         <div>
           <strong>{item.outcome === null ? '风险事件' : (outcomeLabel[item.outcome] ?? '待识别结果')}</strong>
-          <small>{compactId(item.id)}</small>
+          <small>{chineseReference('风险事件', item.id)}</small>
         </div>
         <span data-tone={item.outcome === 'deny' ? 'danger' : 'warning'}>风险分 {item.score ?? 0}</span>
       </header>
@@ -156,11 +157,11 @@ function CaseCard({ item }: Readonly<{ item: RiskItem }>) {
         </div>
         <div>
           <dt>操作人</dt>
-          <dd>{maskActor(item.actor_id)}</dd>
+          <dd>{chineseReference('操作人', item.actor_id)}</dd>
         </div>
         <div>
           <dt>决策记录</dt>
-          <dd>{compactId(item.decision_id)}</dd>
+          <dd>{chineseReference('决策记录', item.decision_id)}</dd>
         </div>
         <div>
           <dt>发生时间</dt>
@@ -197,12 +198,6 @@ function Guardrail({ index, title, description }: Readonly<{ index: string; titl
 
 function percent(value: number | null): string {
   return value === null ? '—' : `${(value * 100).toFixed(2)}%`;
-}
-function compactId(value: string | null): string {
-  return value === null ? '—' : value.length <= 22 ? value : `${value.slice(0, 10)}…${value.slice(-8)}`;
-}
-function maskActor(value: string | null): string {
-  return value === null ? '未知' : value.length <= 8 ? value : `${value.slice(0, 4)}…${value.slice(-4)}`;
 }
 function formatTime(value: string | null): string {
   if (value === null) return '—';

@@ -1,5 +1,5 @@
 import { CircleAlert, Download, FileCheck2, LoaderCircle, ReceiptText } from 'lucide-react';
-import { presentError } from '@shop/presentation';
+import { chineseReference, presentError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useSession } from '../../../shared/runtime/SessionContext';
@@ -66,7 +66,7 @@ export function InvoicePanel() {
             </span>
             <div className="min-w-0">
               <b className="block truncate text-sm">
-                {invoice.kind === 'red' ? '红字电子发票' : '电子发票'} · {invoice.id}
+                {invoice.kind === 'red' ? '红字电子发票' : '电子发票'} · {chineseReference('发票', invoice.id)}
               </b>
               <p className="mt-1 text-gray-500">
                 申请 {format(invoice.createdAt)}
@@ -74,7 +74,7 @@ export function InvoicePanel() {
               </p>
               <p className="mt-1 text-gray-400">
                 状态 {stateLabel(invoice.state)}
-                {invoice.sha256 ? ` · 校验 ${invoice.sha256.slice(0, 12)}…` : ''}
+                {invoice.sha256 ? ` · ${chineseReference('校验记录', invoice.sha256)}` : ''}
               </p>
             </div>
           </div>

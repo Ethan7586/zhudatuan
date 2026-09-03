@@ -1,5 +1,5 @@
 import { ArrowLeft, Clock3, RefreshCw, ShieldAlert, type LucideIcon } from 'lucide-react';
-import { chineseProviderLabel, presentError } from '@shop/presentation';
+import { chineseProviderLabel, chineseReference, presentError } from '@shop/presentation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApplyAfterSale } from '../application/ApplyAfterSale';
 import { readAfterSale } from '../application/ReadAfterSale';
@@ -84,7 +84,7 @@ export function AfterSalePage({ orderId, onBack }: AfterSalePageProps) {
         <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <div>
             <h1 className="text-lg font-black text-gray-900">申请售后</h1>
-            <p className="mt-1 text-gray-500">订单 {orderId} · 数量、时间窗与退款金额由服务端实时判定</p>
+            <p className="mt-1 text-gray-500">{chineseReference('内部订单', orderId)} · 数量、时间窗与退款金额由服务端实时判定</p>
           </div>
           {page === null && error === null ? <State icon={RefreshCw} text="正在读取可售后商品…" /> : null}
           {error ? (
