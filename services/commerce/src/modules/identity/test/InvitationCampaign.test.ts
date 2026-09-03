@@ -48,6 +48,7 @@ describe('campaign enrollment invitation', () => {
     const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
     const query = async (text: string, values: readonly unknown[] = []) => {
       queries.push({ text, values });
+      if (text.includes('select id from identity.invitation')) return result([{ id: 'invitation:campaign' }]);
       if (text.includes('returning id::text,invitation_id,kind,target'))
         return result([
           {
@@ -79,10 +80,14 @@ describe('campaign enrollment invitation', () => {
         returnTarget: 'signed-return-target',
       })
     );
-    const reserve = queries[1]!;
-    const preauth = queries[2]!;
-    const outbox = queries[3]!;
+    const lock = queries[0]!;
+    const reserve = queries[2]!;
+    const preauth = queries[3]!;
+    const outbox = queries[4]!;
     expect(claim).toMatchObject({ kind: 'campaign', state: 'reserved', version: 1 });
+    expect(lock.text).toContain('for update');
+    expect(lock.text).toContain("status='active'");
+    expect(lock.text).toContain('expires_at>clock_timestamp()');
     expect(reserve.text).toContain('invitation.use_count+(select count(*)');
     expect(reserve.text).toContain('<invitation.max_uses');
     expect(preauth.text).toContain("null,'[]'::jsonb");

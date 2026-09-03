@@ -55,6 +55,11 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
 
   afterAll(async () => {
     await admin.query("delete from runtime.outbox where trace_id like $1 or aggregate_id like $1", [`${prefix}%`]).catch(() => undefined);
+    await admin.query(
+      `delete from identity.preauth preauth using identity.invitationclaim claim
+      where preauth.reference_id=claim.id::text and claim.invitation_id like $1`,
+      [`${prefix}%`]
+    ).catch(() => undefined);
     await admin.query("delete from identity.preauth where reference_id like $1 or principal_id like $1", [`${prefix}%`]).catch(() => undefined);
     await admin.query("delete from identity.invitationclaim where invitation_id like $1", [`${prefix}%`]).catch(() => undefined);
     await admin.query("delete from identity.invitation where id like $1", [`${prefix}%`]).catch(() => undefined);
@@ -134,7 +139,7 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
     const locked = await transactions.read(options('identity.invitations.resolve', 'invitation-read'), (context) => repository.find(context, [{ hash: Buffer.alloc(32, 7), version: `concurrency.${suffix}` }], 'storefront'));
     const reserve = (request: string, fill: number) => transactions.write(options('identity.invitations.resolve', request), (context) => repository.reserve(context, locked, {
       claim: randomUUID(),
-      preauth: Buffer.alloc(32, fill),
+      preauth: createHash('sha256').update(`${prefix}:preauth:${fill}`).digest(),
       browser: Buffer.alloc(32, fill + 2),
       device: Buffer.alloc(32, fill + 4),
       recipient: null,

@@ -28,6 +28,13 @@ export class PgInvitationRedemption {
   ): Promise<InvitationClaim> {
     const database = this.transactions.database(context);
     invitation.reserve(this.clock.now(), 0);
+    const locked = await database.query(
+      `select id from identity.invitation
+      where id=$1 and status='active' and not_before<=clock_timestamp() and expires_at>clock_timestamp()
+      for update`,
+      [invitation.state.id]
+    );
+    if (!locked.rows[0]) throw new DomainError('INVITATION_INVALID');
     await database.query(
       `update identity.invitationclaim set state='expired',updated_at=clock_timestamp(),version=version+1
       where invitation_id=$1 and state in('reserved','proofpending','proved') and expires_at<=clock_timestamp()`,
@@ -49,6 +56,7 @@ export class PgInvitationRedemption {
       expires_at,created_at,updated_at,version)
       select $1,invitation.id,invitation.kind,$3,$4,$5,$6,$7,$8,clock_timestamp()+interval '5 minutes',
         clock_timestamp(),clock_timestamp(),1 from identity.invitation invitation where invitation.id=$2 and invitation.status='active'
+        and invitation.not_before<=clock_timestamp() and invitation.expires_at>clock_timestamp()
         and invitation.use_count+(select count(*) from identity.invitationclaim open where open.invitation_id=invitation.id
           and open.state in('reserved','proofpending','proved') and open.expires_at>clock_timestamp())<invitation.max_uses
       returning id::text,invitation_id,kind,target,recipient_hash,state,proof_method,expires_at,proved_at,version`,
