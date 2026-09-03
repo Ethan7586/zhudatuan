@@ -88,7 +88,7 @@ export const LoginPage: React.FC = () => {
         if (!active) return;
         setRegistrationInvite(invitation);
         setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
-        setRegistrationNotice(`已进入【${invitation.organizationName}】手机注册通道`);
+      setRegistrationNotice(`已进入【${invitation.organizationName}】L6 消费者通道`);
       })
       .catch((error) => {
         if (!active) return;
@@ -251,7 +251,10 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const submitCredentialForm = (targetOrigin: string) => {
+  const submitCredentialForm = (
+    targetOrigin: string,
+    credential: Readonly<{ username: string; password: string }> = { username: identifier, password },
+  ) => {
     // A top-level form lets the destination host create its own __Host-
     // HttpOnly cookie. Credentials remain in the POST body and never enter the
     // URL, browser history or referrer.
@@ -260,7 +263,7 @@ export const LoginPage: React.FC = () => {
     form.action = buildCredentialLoginAction(targetOrigin);
     form.target = '_top';
     form.style.display = 'none';
-    for (const [name, value] of Object.entries({ username: identifier, password })) {
+    for (const [name, value] of Object.entries(credential)) {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = name;
@@ -889,7 +892,7 @@ export const LoginPage: React.FC = () => {
                               新用户注册
                             </button>
                           </div>
-                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建员工商城账号</p>
+                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持商城邀请码创建消费者账号</p>
 
                           <button
                             type="submit"
