@@ -33,10 +33,13 @@ describe('consumer storefront Web component standard', () => {
     });
   });
 
-  it('keeps the production root on the authoritative storefront while preserving six Web page controls', () => {
+  it('keeps the production root on authoritative phone and desktop storefronts', () => {
     const productionRoot = readFileSync(resolve(componentRoot, '../../StorefrontRoot.tsx'), 'utf8');
 
     expect(productionRoot).toContain('navigationBoundary="production"');
+    expect(productionRoot).toContain('<ProductionMobileFrame />');
+    expect(productionRoot).toContain('className="md:hidden"');
+    expect(productionRoot).toContain('className="hidden md:block"');
     expect(productionRoot).toContain("appMode === 'pc' ? 'desktop-1920' : 'laptop'");
     expect(storefrontDeviceSwitchPolicy('production', 'laptop-web')).toEqual({ disabled: false, preservePath: true });
     expect(storefrontDeviceSwitchPolicy('production', 'pc')).toEqual({ disabled: false, preservePath: true });

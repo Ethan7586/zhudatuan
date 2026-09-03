@@ -24,6 +24,7 @@ const PROFILE = {
   mobile_bound: true,
   membership_id: 'membership:one',
   organization_id: 'mall:one',
+  organization_name: '宏泰甄选',
   access_version: 7,
 };
 
@@ -59,6 +60,7 @@ describe('canonical storefront production API', () => {
     await productionApi.logout();
 
     expect(snapshot.bootstrap.actor).toMatchObject({ userId: 'member:one', displayName: 'Ethan', phoneMasked: '138****0000' });
+    expect(snapshot.bootstrap.scope.mallName).toBe('宏泰甄选');
     expect(snapshot.accounts.items.map((item) => item.balanceCents)).toEqual([20_000, 5_000]);
     expect(fetcher).toHaveBeenCalledWith('https://api.hbbtzn.com/api/v1/identity/session', expect.objectContaining({ credentials: 'include', redirect: 'error' }));
     const headers = requestHeaders(fetcher, '/api/v1/identity/session');
