@@ -52,9 +52,17 @@ function upstreamRequest(request: Request, target: URL): Request {
   });
 }
 
-function publicResponse(upstream: Response): Response {
+function publicResponse(request: Request, upstream: Response): Response {
   const headers = new Headers(upstream.headers);
-  for (const header of ['access-control-allow-origin', 'content-security-policy', 'location', 'refresh']) {
+  const requestOrigin = request.headers.get('origin');
+  const upstreamAllowedOrigin = headers.get('access-control-allow-origin');
+  const normalizedRequestOrigin = requestOrigin === null
+    ? null
+    : rewriteOrigins(requestOrigin, UPSTREAM_REQUEST_ORIGINS);
+  if (requestOrigin !== null && upstreamAllowedOrigin === normalizedRequestOrigin) {
+    headers.set('access-control-allow-origin', requestOrigin);
+  }
+  for (const header of ['content-security-policy', 'location', 'refresh']) {
     const value = headers.get(header);
     if (value) headers.set(header, rewriteOrigins(value, PUBLIC_ORIGINS));
   }
@@ -79,7 +87,7 @@ const worker = {
     if (!upstreamOrigin) return new Response('Not Found', { status: 404 });
 
     const target = new URL(`${storefrontPath(request, incoming)}${incoming.search}`, upstreamOrigin);
-    return publicResponse(await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
+    return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
   },
 };
 
