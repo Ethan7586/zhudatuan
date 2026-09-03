@@ -12,10 +12,14 @@ export function cartOperations(context: ModuleContext): ModuleOperations {
       const access = requireAccess(request);
       const result = await database.query(`select cart.id,cart.mall_id,cart.application_id,cart.version,cart.updated_at,
         coalesce(jsonb_agg(jsonb_build_object('listing',item.listing_id,'sku',item.sku_id,'quantity',item.quantity,'version',item.version,
+<<<<<<< HEAD
           'title',listing.title)) order by item.listing_id) filter(where item.listing_id is not null),'[]') items
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+=======
+          'title',listing.title) order by item.listing_id) filter(where item.listing_id is not null),'[]') items
+>>>>>>> 9b9c8f8d (fix(storefront): complete L6 checkout entry)
         from access.web_member_context($1,$2) owned
         left join cart.cart cart on cart.member_id=owned.id and cart.mall_id=owned.organization_id and cart.state='active'
         left join cart.item item on item.cart_id=cart.id left join catalog.listing listing on listing.id=item.listing_id

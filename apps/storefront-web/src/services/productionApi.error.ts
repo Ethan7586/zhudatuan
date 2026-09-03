@@ -9,6 +9,8 @@ const ERROR_MESSAGES: Readonly<Record<string, string>> = Object.freeze({
   PRICE_QUOTE_EXPIRED: '结算报价已过期，请重新提交',
   QUOTE_EXPIRED_OR_CONFLICT: '结算信息已变化，请重新提交',
   WECHAT_IDENTITY_REQUIRED: '该订单需要微信支付，但当前账号未绑定微信',
+  CHALLENGE_INVALID: '验证码不正确、已过期或已经使用',
+  STEP_UP_DESTINATION_MISSING: '当前账号没有可验证的手机号',
 });
 
 export class ProductionApiError extends Error {

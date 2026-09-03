@@ -166,6 +166,7 @@ export const productionApi = {
     return { removed: true };
   },
 
+<<<<<<< HEAD
   checkoutWithInternalBenefits: checkoutWithCanonicalBenefits,
 =======
 =======
@@ -530,4 +531,26 @@ export const productionApi = {
 >>>>>>> 018b2a71 (chore(release): capture current production source)
 =======
 >>>>>>> a7d9b2c8 (chore: establish zhudatuan main platform baseline)
+=======
+  async startPaymentPhoneVerification(): Promise<{ challengeId: string; expiresAt: string }> {
+    const value = record(await canonicalCall(() => canonicalClient().identity.stepupStart({ body: {} }, sessionContext({
+      write: true,
+      idempotencyKey: crypto.randomUUID(),
+    }))), 'identity.stepup.start');
+    return {
+      challengeId: text(value.id, 'identity.stepup.start.id'),
+      expiresAt: text(value.expires_at, 'identity.stepup.start.expires_at'),
+    };
+  },
+
+  async completePaymentPhoneVerification(challengeId: string, code: string): Promise<{ verified: true }> {
+    await canonicalCall(() => canonicalClient().identity.stepupComplete({ body: { challenge: challengeId, code } }, sessionContext({
+      write: true,
+      idempotencyKey: crypto.randomUUID(),
+    })));
+    return { verified: true };
+  },
+
+  checkout: checkoutWithCanonicalPayment,
+>>>>>>> 9b9c8f8d (fix(storefront): complete L6 checkout entry)
 };

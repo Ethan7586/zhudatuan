@@ -109,6 +109,42 @@ describe('canonical storefront production API', () => {
     expect(JSON.parse(String(address![1]?.body))).toEqual({ recipient: '张三', mobile: '13800000000', address: '文一路 1 号', region: '浙江省/杭州市/西湖区', status: 'active' });
   });
 
+  it('raises the current password session to phone assurance before payment', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(productionApi.startPaymentPhoneVerification()).resolves.toEqual({
+      challengeId: 'challenge:payment-stepup',
+      expiresAt: '2026-09-03T14:10:00.000Z',
+    });
+    await expect(productionApi.completePaymentPhoneVerification('challenge:payment-stepup', '123456')).resolves.toEqual({ verified: true });
+
+    const start = requestInit(fetcher, '/api/v1/identity/stepup/challenges', 'POST');
+    const complete = requestInit(fetcher, '/api/v1/identity/stepup/verifications', 'POST');
+    expect(new Headers(start.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
+    expect(JSON.parse(String(complete.body))).toEqual({ challenge: 'challenge:payment-stepup', code: '123456' });
+  });
+
+  it('obtains and binds a WeChat identity grant to the authenticated L6 membership', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    const { beginH5WechatAuthorization, requestH5WechatAuthorization, exchangeH5WechatCode, bindH5WechatIdentity } = await import('./h5WechatIdentity');
+    await productionApi.getHomeSnapshot();
+
+    const authorization = await beginH5WechatAuthorization();
+    await expect(requestH5WechatAuthorization(authorization)).resolves.toBe('https://open.weixin.qq.com/connect/oauth2/authorize');
+    const exchanged = await exchangeH5WechatCode('wechatCode123', authorization);
+    expect(exchanged).toEqual({ kind: 'binding', bindingToken: 'wechat-binding-token' });
+    if (exchanged.kind === 'binding') await bindH5WechatIdentity(exchanged.bindingToken);
+
+    const binding = requestInit(fetcher, '/api/v1/identity/wechat/bindings', 'POST');
+    expect(new Headers(binding.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
+    expect(JSON.parse(String(binding.body))).toEqual({ bindingToken: 'wechat-binding-token' });
+  });
+
   it('completes quote to order to payment only when the server captures an internal-benefit payment', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
@@ -168,11 +204,21 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
     if (path === '/api/v1/benefits/ledgers') return json({ items: [] });
     if (path === '/api/v1/orders' && method === 'GET') return json({ items: [] });
     if (path === '/api/v1/catalog/listings') return json({ items: [{ id: 'listing:one', sku_id: 'sku:one', title: '空气炸锅', status: 'published', product_type: 'physical', cover_url: null, subtitle: '企业严选' }] });
-    if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: 21900, compare_minor: 25900, currency: 'CNY' }] });
-    if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: 6 }] });
+    // PostgreSQL bigint values arrive over JSON as decimal strings in production.
+    if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: '21900', compare_minor: '25900', currency: 'CNY' }] });
+    if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: '6' }] });
     if (path === '/api/v1/carts/current' && method === 'GET') return json({ id: 'cart:one', version: 3, items: [{ listing: 'listing:one', sku: 'sku:one', quantity: 1, version: 0 }] });
     if (path.startsWith('/api/v1/carts/current/items/') && method === 'PUT') return json({ id: 'cart:one', version: 4 });
     if (path.startsWith('/api/v1/members/me/addresses/') && method === 'PUT') return json({ id: decodeURIComponent(path.split('/').at(-1)!), status: 'active', version: 0 });
+    if (path === '/api/v1/identity/stepup/challenges' && method === 'POST') return json({ id: 'challenge:payment-stepup', expires_at: '2026-09-03T14:10:00.000Z' }, 202);
+    if (path === '/api/v1/identity/stepup/verifications' && method === 'POST') return json({ id: 'session:one', assurance_level: 3 });
+    if (path === '/api/v1/identity/wechat/sessions' && method === 'POST') {
+      const body = JSON.parse(String(init?.body)) as { action: string };
+      return body.action === 'authorize'
+        ? json({ authorizationUrl: 'https://open.weixin.qq.com/connect/oauth2/authorize' })
+        : json({ bindingToken: 'wechat-binding-token', expiresIn: 600, state: 'registration_required' }, 202);
+    }
+    if (path === '/api/v1/identity/wechat/bindings' && method === 'POST') return json({ identity: 'wechat:one', status: 'active' });
     if (path === '/api/v1/checkouts/quotes' && method === 'POST') return json({ quote: { id: 'quote:one', personalMinor: options.personalMinor ?? 0, rejections: [] } }, 201);
     if (path === '/api/v1/orders' && method === 'POST') return json({ id: 'order:one', payment: { intent: 'intent:one', personalMinor: 0 } }, 201);
     if (path === '/api/v1/payments/intents' && method === 'POST') return json({ intent: 'intent:one', state: options.paymentState ?? 'captured', payment: 'payment:one' });
