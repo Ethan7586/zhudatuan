@@ -1,0 +1,48 @@
+{
+  "schema": "zhudatuan.production-domain-boundary.v1",
+  "decision": "2026-09-03-owner-approved",
+  "frontends": {
+    "h5": {
+      "publicOrigin": "https://hbbtzn.com",
+      "apiOrigin": "https://api.zhudatuan.com",
+      "authOrigin": "https://accounts.zhudatuan.com"
+    },
+    "miniProgram": {
+      "publicDomain": "hbbtzn.com",
+      "apiOrigin": "https://api.zhudatuan.com",
+      "authOrigin": "https://accounts.zhudatuan.com"
+    }
+  },
+  "controlPlane": {
+    "accountsOrigin": "https://accounts.zhudatuan.com",
+    "consoleOrigin": "https://console.zhudatuan.com",
+    "apiOrigin": "https://api.zhudatuan.com"
+  },
+  "canonicalOrigins": {
+    "storefrontOrigin": "https://zhudatuan.com"
+  },
+  "redirectOnlyAliases": {
+    "https://accounts.hbbtzn.com": "https://accounts.zhudatuan.com",
+    "https://api.hbbtzn.com": "https://api.zhudatuan.com",
+    "https://mall.hbbtzn.com": "https://hbbtzn.com"
+  },
+  "identityApi": {
+    "allowedOrigins": [
+      "https://accounts.zhudatuan.com",
+      "https://console.zhudatuan.com",
+      "https://hbbtzn.com",
+      "https://zhudatuan.com"
+    ],
+    "returnTargets": {
+      "console": "https://console.zhudatuan.com",
+      "storefront": "https://hbbtzn.com",
+      "store": "https://console.zhudatuan.com/entrances/store",
+      "supplier": "https://console.zhudatuan.com/entrances/supplier"
+    }
+  },
+  "changePolicy": {
+    "ownerApprovalRequired": true,
+    "frontendDomainChangeDoesNotAuthorizeControlPlaneChange": true,
+    "globalDomainReplacementForbidden": true
+  }
+}

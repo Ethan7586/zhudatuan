@@ -22,8 +22,8 @@
       "PUBLIC_MALL_SLUG=<owner-approved-mall>",
       "PUBLIC_MEDIA_BASE_URL=https://media.zhudatuan.com",
       "WECHAT_PAY_NOTIFY_URL=https://zhudatuan.com/api/v1/payments/wechat/notify",
-      "API_ALLOWED_ORIGINS=https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://zhudatuan.com",
-      "AUTH_RETURN_TARGETS={\"console\":\"https://console.zhudatuan.com\",\"storefront\":\"https://zhudatuan.com\",\"store\":\"https://console.zhudatuan.com/entrances/store\",\"supplier\":\"https://console.zhudatuan.com/entrances/supplier\"}"
+      "API_ALLOWED_ORIGINS=https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://hbbtzn.com,https://zhudatuan.com",
+      "AUTH_RETURN_TARGETS={\"console\":\"https://console.zhudatuan.com\",\"storefront\":\"https://hbbtzn.com\",\"store\":\"https://console.zhudatuan.com/entrances/store\",\"supplier\":\"https://console.zhudatuan.com/entrances/supplier\"}"
     ],
     "requiredAppliedMigrations": [
       "database/storefront-compatibility/supabase/migrations/20260828060000_auth_membership_selection_boundary.sql",
@@ -74,7 +74,7 @@
       "approvedReference": "../archives/smart-wing-20260826/Shop1/apps/auth-web/src/screens/LoginPage.tsx",
       "buildCommand": "npm run build:auth",
       "output": "apps/auth-web/dist",
-      "requiredBuildEnvironment": ["VITE_API_BASE_URL=https://api.zhudatuan.com", "VITE_CLIENT_VERSION=<release-version>", "VITE_STOREFRONT_ORIGIN=https://zhudatuan.com", "VITE_ADMIN_ORIGIN=https://console.zhudatuan.com"],
+      "requiredBuildEnvironment": ["VITE_API_BASE_URL=https://api.zhudatuan.com", "VITE_CLIENT_VERSION=<release-version>", "VITE_STOREFRONT_ORIGIN=https://hbbtzn.com", "VITE_ADMIN_ORIGIN=https://console.zhudatuan.com"],
       "acceptance": "visual-approved-canonical-login-registration",
       "sessionEndpoint": "https://api.zhudatuan.com/api/v1/identity/sessions",
       "ticketExchangeEndpoint": "https://api.zhudatuan.com/api/v1/identity/tickets/exchange",

@@ -254,6 +254,10 @@ describe('runtime configuration schema', () => {
   it('fails closed for incomplete browser, storefront, and miniapp deployment identity', () => {
     const client = { VITE_API_BASE_URL: 'https://api.example.com', VITE_AUTH_BASE_URL: 'https://auth.example.com', VITE_CLIENT_VERSION: '2.4.1' };
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
+    const productionClient = { ...client, APP_ENV: 'production', VITE_API_BASE_URL: 'https://api.zhudatuan.com', VITE_AUTH_BASE_URL: 'https://accounts.zhudatuan.com' };
+    expect(clientEnvironment(productionClient).apiBaseUrl).toBe('https://api.zhudatuan.com');
+    expect(() => clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com' })).toThrow('CLIENT_API_BASE_URL_INVALID');
+    expect(() => clientEnvironment({ ...productionClient, VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' })).toThrow('CLIENT_AUTH_BASE_URL_INVALID');
     expect(() => clientEnvironment({ ...client, VITE_CLIENT_VERSION: '' })).toThrow('CLIENT_VERSION_MISSING');
     expect(() => clientEnvironment({ NEXT_PUBLIC_API_BASE_URL: 'https://api.example.com', NEXT_PUBLIC_AUTH_BASE_URL: 'https://auth.example.com', NEXT_PUBLIC_CLIENT_VERSION: '2.4.1' })).toThrow('CLIENT_API_BASE_URL_MISSING');
     expect(() => miniappEnvironment({ apiBaseUrl: 'https://api.example.com', mallId: '', clientVersion: '2.4.1' })).toThrow('MINIAPP_MALL_ID_INVALID');
