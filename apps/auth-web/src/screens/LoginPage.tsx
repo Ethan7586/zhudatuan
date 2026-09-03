@@ -23,6 +23,7 @@ import {
 import {
   createCanonicalLoginChallenge,
   createCanonicalPasswordResetChallenge,
+  currentCanonicalStorefrontOrganization,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
   loginCanonicalStorefront,
@@ -170,8 +171,15 @@ export const LoginPage: React.FC = () => {
     setRegistrationBusy('context');
     setFormError('');
     void resolveCanonicalStorefrontRegistration(storefrontRegistrationDeepLink)
-      .then((storefront) => {
+      .then(async (storefront) => {
         if (!active) return;
+        const activeOrganization = await currentCanonicalStorefrontOrganization().catch(() => null);
+        if (!active) return;
+        if (activeOrganization === storefront.organizationId) {
+          setRegistrationOpen(false);
+          window.location.replace(storefrontDestination('https://zhudatuan.com/'));
+          return;
+        }
         setRegistrationContext(storefront);
         setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
         setRegistrationNotice(`验证本人手机号后，立即进入【${storefront.organizationName}】购物`);

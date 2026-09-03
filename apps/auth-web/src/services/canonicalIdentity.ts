@@ -50,6 +50,11 @@ const PasswordResetChallengeSchema = z.strictObject({
   expires_at: z.iso.datetime(),
 });
 
+const CurrentStorefrontSessionSchema = z.object({
+  target: z.literal('storefront'),
+  governance: z.object({ organization: z.string().min(1) }),
+});
+
 export type CanonicalConsoleLoginResult =
   | Readonly<{ kind: 'selection'; context: PreAuthContext }>
   | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
@@ -81,6 +86,25 @@ export interface CanonicalLoginChallenge {
 export interface CanonicalPasswordResetChallenge {
   readonly challengeId: string;
   readonly expiresAt: string;
+}
+
+export async function currentCanonicalStorefrontOrganization(signal?: AbortSignal): Promise<string | null> {
+  const response = await fetch(new URL('/api/v1/identity/session', apiOrigin()), {
+    method: 'GET',
+    credentials: 'include',
+    redirect: 'error',
+    headers: {
+      accept: 'application/json',
+      'x-client-version': clientVersion(),
+      'x-contract-version': CONTRACT_VERSION,
+      'x-device-id': deviceId(),
+      'x-request-id': crypto.randomUUID(),
+    },
+    signal,
+  });
+  if (!response.ok) return null;
+  const parsed = CurrentStorefrontSessionSchema.safeParse(await response.json().catch(() => null));
+  return parsed.success ? parsed.data.governance.organization : null;
 }
 
 type LoginCredential =
