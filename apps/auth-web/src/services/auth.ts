@@ -15,7 +15,8 @@ interface FailureRecord {
 const failureMap: Record<string, FailureRecord> = {};
 export const MAX_LOGIN_FAILURES = 10;
 const CANONICAL_ADMIN_ORIGIN = 'https://console.zhudatuan.com';
-const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
+const CANONICAL_STOREFRONT_ORIGIN = 'https://mall.hbbtzn.com';
+const LEGACY_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
 
 // 模拟审计日志
 const auditLogs: Array<{ timestamp: string; identifier: string; reason: string }> = [];

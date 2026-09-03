@@ -2,7 +2,8 @@ import { createFetchCommerce, createRequestContext } from '@shop/sdk';
 import type { CommerceClient, RequestContext, RequestScope } from '@shop/sdk';
 import { ProductionApiError, productionError } from './productionApi.error';
 
-export const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
+export const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
+const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const LOCAL_API_ORIGINS = new Set(['http://127.0.0.1:3001', 'http://localhost:3001']);
 
 export interface CanonicalSessionContext {
@@ -28,7 +29,9 @@ let cachedClient: Readonly<{ origin: string; value: CommerceClient }> | null = n
 export function resolveProductionApiOrigin(candidate: string | undefined, environment: string | undefined): string {
   const fallback = environment === 'production' ? CANONICAL_API_ORIGIN : 'http://127.0.0.1:3001';
   const parsed = new URL(candidate?.trim() || fallback);
-  const approved = parsed.origin === CANONICAL_API_ORIGIN || (environment !== 'production' && LOCAL_API_ORIGINS.has(parsed.origin));
+  const approved = parsed.origin === CANONICAL_API_ORIGIN
+    || parsed.origin === LEGACY_API_ORIGIN
+    || (environment !== 'production' && LOCAL_API_ORIGINS.has(parsed.origin));
   if (!approved || parsed.username || parsed.password || parsed.hash || (parsed.pathname !== '/' && parsed.pathname !== '')) {
     throw new ProductionApiError('平台 API 地址不在允许清单', 0, 'API_ORIGIN_DENIED');
   }

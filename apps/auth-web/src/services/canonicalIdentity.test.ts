@@ -5,6 +5,7 @@ import {
   currentCanonicalStorefrontOrganization,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
+  loginCanonicalStorefront,
   resetCanonicalPassword,
 } from './canonicalIdentity';
 
@@ -13,6 +14,7 @@ const CALLBACK_STATE = 's'.repeat(32);
 const VALID_CSRF = 'csrf-token-at-least-sixteen-characters';
 const VALID_PROOF = 'signed-return-target-proof';
 const CONSOLE_DESTINATION = 'http://127.0.0.1:4173/scopes/platform/platform%3Apreview/cockpit';
+const STOREFRONT_DESTINATION = 'http://127.0.0.1:3000/';
 
 beforeEach(() => {
   const values = new Map<string, string>();
@@ -199,6 +201,31 @@ describe('canonical console identity', () => {
     expect(exchangeBody.verifier).not.toBe(sessionBody.authorization.challenge);
   });
 
+  it('logs a newly registered consumer into its exact storefront membership before redirecting', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:storefront-one')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged(STOREFRONT_DESTINATION)));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalStorefront(
+      '+8613800138000',
+      'Generated!Password2',
+      'membership:storefront-one',
+    )).resolves.toEqual({
+      membership: 'membership:storefront-one',
+      redirectUrl: STOREFRONT_DESTINATION,
+    });
+
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
+      provider: 'password',
+      subject: '+8613800138000',
+      password: 'Generated!Password2',
+      membership: 'membership:storefront-one',
+      target: 'storefront',
+    });
+  });
+
   it('maps a canonical console membership selection to the approved admin UI model', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
       principal: 'principal-owner',
@@ -241,13 +268,13 @@ describe('canonical console identity', () => {
   });
 });
 
-function sessionCreated(): Readonly<Record<string, unknown>> {
+function sessionCreated(target: 'console' | 'storefront' = 'console', membership = 'membership-console-owner'): Readonly<Record<string, unknown>> {
   return {
     session: 'session-reference',
     csrf: VALID_CSRF,
     expiresIn: 3_600,
-    membership: 'membership-console-owner',
-    target: 'console',
+    membership,
+    target,
     callback: {
       ticket: SESSION_TICKET,
       state: CALLBACK_STATE,

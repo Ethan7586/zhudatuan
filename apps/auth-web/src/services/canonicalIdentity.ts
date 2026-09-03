@@ -1,9 +1,10 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { z } from 'zod';
 import type { Membership, PreAuthContext } from '../types';
-import { resolveAdminLoginOrigin } from './auth';
+import { resolveAdminLoginOrigin, resolveStorefrontLoginOrigin } from './auth';
 
-const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
+const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
+const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
 
 const MembershipSelectionSchema = z.strictObject({
@@ -58,6 +59,11 @@ export type CanonicalConsoleLoginResult =
   | Readonly<{ kind: 'selection'; context: PreAuthContext }>
   | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
 
+export type CanonicalStorefrontLoginResult = Readonly<{
+  membership: string;
+  redirectUrl: string;
+}>;
+
 export interface CanonicalLoginChallenge {
   readonly challengeId: string;
   readonly expiresAt: string;
@@ -108,6 +114,25 @@ export async function loginCanonicalConsole(
   return loginCanonicalConsoleWithCredential(
     { provider: 'password', subject: canonicalPasswordSubject(subject), password }, membership, signal,
   );
+}
+
+export async function loginCanonicalStorefront(
+  subject: string,
+  password: string,
+  membership: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontLoginResult> {
+  const result = await authorizeCanonicalCredential(
+    { provider: 'password', subject: canonicalPasswordSubject(subject), password },
+    'storefront',
+    membership,
+    signal,
+  );
+  if (result.kind === 'selection') throw new Error('新注册的消费者身份未能直接进入商城，请重新登录');
+  return Object.freeze({
+    membership: result.session.membership,
+    redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
+  });
 }
 
 export async function createCanonicalPasswordResetChallenge(
@@ -162,19 +187,12 @@ async function loginCanonicalConsoleWithCredential(
   membership?: string,
   signal?: AbortSignal,
 ): Promise<CanonicalConsoleLoginResult> {
-  const authorization = await beginAuthorization();
-  const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
-    ...credential,
-    target: 'console',
-    ...(membership === undefined ? {} : { membership }),
-    authorization: authorization.request,
-  }, signal));
-
-  if ('memberships' in output) {
+  const result = await authorizeCanonicalCredential(credential, 'console', membership, signal);
+  if (result.kind === 'selection') {
     const context: PreAuthContext = {
       identifier: credential.subject,
       loginMethod: credential.provider === 'phone_otp' ? 'otp' : 'password',
-      memberships: output.memberships.map(consoleMembership),
+      memberships: result.selection.memberships.map(consoleMembership),
     };
     return Object.freeze({
       kind: 'selection',
@@ -182,15 +200,44 @@ async function loginCanonicalConsoleWithCredential(
     });
   }
 
-  if (output.target !== 'console') throw new Error('登录身份不属于运营后台');
-  const exchanged = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
+  const redirectUrl = approvedConsoleDestination(result.exchange.returnTarget);
+  return Object.freeze({ kind: 'authenticated', membership: result.session.membership, redirectUrl });
+}
+
+type CanonicalTarget = z.infer<typeof SessionCreatedSchema>['target'];
+
+type AuthorizedCredential =
+  | Readonly<{ kind: 'selection'; selection: z.infer<typeof MembershipSelectionSchema> }>
+  | Readonly<{
+      kind: 'authenticated';
+      session: z.infer<typeof SessionCreatedSchema>;
+      exchange: z.infer<typeof TicketExchangeSchema>;
+    }>;
+
+async function authorizeCanonicalCredential(
+  credential: LoginCredential,
+  target: CanonicalTarget,
+  membership?: string,
+  signal?: AbortSignal,
+): Promise<AuthorizedCredential> {
+  const authorization = await beginAuthorization();
+  const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
+    ...credential,
+    target,
+    ...(membership === undefined ? {} : { membership }),
+    authorization: authorization.request,
+  }, signal));
+  if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
+  if (output.target !== target) {
+    throw new Error(target === 'console' ? '登录身份不属于运营后台' : '登录身份不属于消费者商城');
+  }
+  const exchange = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
     ticket: output.callback.ticket,
     state: output.callback.state,
     nonce: authorization.secret.nonce,
     verifier: authorization.secret.verifier,
   }, signal));
-  const redirectUrl = approvedConsoleDestination(exchanged.returnTarget);
-  return Object.freeze({ kind: 'authenticated', membership: output.membership, redirectUrl });
+  return Object.freeze({ kind: 'authenticated', session: output, exchange });
 }
 
 function canonicalMobile(value: string): string {
@@ -291,11 +338,29 @@ function approvedConsoleDestination(value: z.infer<typeof TicketExchangeSchema>[
   return destination.toString();
 }
 
+function approvedStorefrontDestination(value: z.infer<typeof TicketExchangeSchema>['returnTarget']): string {
+  const expiry = Date.parse(value.expiresAt);
+  if (!Number.isFinite(expiry) || expiry <= Date.now()) throw new Error('登录回跳授权已经过期');
+  let destination: URL;
+  try {
+    destination = new URL(value.url);
+  } catch {
+    throw new Error('登录回跳地址无效');
+  }
+  const configured = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+  const approvedOrigin = resolveStorefrontLoginOrigin(configured, import.meta.env.DEV);
+  if (destination.origin !== approvedOrigin || destination.username || destination.password || destination.hash) {
+    throw new Error('登录回跳地址不在商城允许清单');
+  }
+  return destination.toString();
+}
+
 function apiOrigin(): string {
   const configured = import.meta.env.VITE_API_BASE_URL?.trim() || (import.meta.env.DEV ? 'http://127.0.0.1:3001' : CANONICAL_API_ORIGIN);
   const parsed = new URL(configured);
   const local = import.meta.env.DEV && parsed.protocol === 'http:' && (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost');
-  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN) || parsed.username || parsed.password || parsed.hash) {
+  if ((!local && parsed.origin !== CANONICAL_API_ORIGIN && parsed.origin !== LEGACY_API_ORIGIN)
+    || parsed.username || parsed.password || parsed.hash) {
     throw new Error('统一身份 API 不在允许清单');
   }
   return parsed.origin;
