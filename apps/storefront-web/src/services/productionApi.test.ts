@@ -57,26 +57,6 @@ describe('canonical storefront production API', () => {
     expect(() => resolveProductionApiOrigin('https://api.hbbtzn.com', 'production')).toThrow('API 地址不在允许清单');
   });
 
-  it('uses the same origin when the H5 artifact is served by an L1 façade', async () => {
-    const { resolveProductionApiOrigin } = await import('./canonicalApiClient');
-
-    expect(resolveProductionApiOrigin('https://api.zhudatuan.com', 'production', {
-      hostname: 'merchant.example',
-      origin: 'https://merchant.example',
-    })).toBe('https://merchant.example');
-  });
-
-  it('resolves the public L1 storefront name before login', async () => {
-    const fetcher = apiFetch();
-    vi.stubGlobal('fetch', fetcher);
-    const { productionApi } = await import('./productionApi');
-
-    await expect(productionApi.getPublicStorefront()).resolves.toEqual({
-      id: 'mall:l1-hongtai',
-      name: '宏泰甄选',
-    });
-  });
-
   it('loads identity, profile, benefits, ledgers and orders from api.zhudatuan.com with cookie credentials', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);

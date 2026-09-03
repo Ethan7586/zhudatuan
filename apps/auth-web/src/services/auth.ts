@@ -8,8 +8,8 @@ import { Membership } from '../types';
 import { resolveBuildTimeOrigin } from './originPolicy';
 
 const CANONICAL_ADMIN_ORIGIN = 'https://console.zhudatuan.com';
-const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
-const CANONICAL_H5_ORIGIN = 'https://h5.zhudatuan.com';
+const CANONICAL_STOREFRONT_ORIGIN = 'https://hbbtzn.com';
+const LEGACY_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
 
 function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string,
   allowLocalDevelopment: boolean, stagingOrigin?: string): string {

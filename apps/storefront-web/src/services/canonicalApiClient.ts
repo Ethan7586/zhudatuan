@@ -39,7 +39,6 @@ export function resolveProductionApiOrigin(
   const fallback = environment === 'production' ? CANONICAL_API_ORIGIN : 'http://127.0.0.1:3001';
   const parsed = new URL(facadeOrigin ?? (candidate?.trim() || fallback));
   const approved = parsed.origin === CANONICAL_API_ORIGIN
-    || parsed.origin === facadeOrigin
     || (environment !== 'production' && LOCAL_API_ORIGINS.has(parsed.origin));
   if (!approved || parsed.username || parsed.password || parsed.hash || (parsed.pathname !== '/' && parsed.pathname !== '')) {
     throw new ProductionApiError('平台 API 地址不在允许清单', 0, 'API_ORIGIN_DENIED');
