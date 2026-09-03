@@ -38,11 +38,20 @@ describe('production storefront data boundary', () => {
   it.each([
     ['canonical storefront root', resolve(sourceRoot, 'StorefrontRoot.tsx')],
     ['production route', resolve(sourceRoot, '../app/page.tsx')],
+    ['forced H5 route', resolve(sourceRoot, '../app/h5/page.tsx')],
   ])('cannot reach retired or local-demo UI from the %s entry', (_label, entry) => {
     const graph = productionImportGraph(entry);
     const blocked = graph.filter((file) => blockedSegments.some((segment) => file.replaceAll('\\', '/').includes(segment)));
 
     expect(blocked).toEqual([]);
+  });
+
+  it('keeps the H5 route on the phone component tree only', () => {
+    const graph = productionImportGraph(resolve(sourceRoot, '../app/h5/page.tsx')).map((file) => file.replaceAll('\\', '/'));
+
+    expect(graph.some((file) => file.endsWith('/src/H5StorefrontRoot.tsx'))).toBe(true);
+    expect(graph.some((file) => file.endsWith('/src/components/mobile/ProductionMobileFrame.tsx'))).toBe(true);
+    expect(graph.some((file) => file.endsWith('/src/components/laptop/LaptopFrame.tsx'))).toBe(false);
   });
 
   it('routes production through the approved storefront component family', () => {
