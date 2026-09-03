@@ -59,6 +59,10 @@ export type CanonicalStorefrontLoginResult = Readonly<{
   redirectUrl: string;
 }>;
 
+export type CanonicalStorefrontEntryResult =
+  | Readonly<{ kind: 'selection'; context: PreAuthContext }>
+  | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
+
 export interface CanonicalAuthorization {
   readonly request: Readonly<{ state: string; nonce: string; challenge: string }>;
   readonly secret: Readonly<{ nonce: string; verifier: string }>;
@@ -119,6 +123,77 @@ export async function loginCanonicalStorefront(
     membership: result.session.membership,
     redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
   });
+}
+
+export async function loginCanonicalStorefrontEntry(
+  subject: string,
+  password: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontEntryResult> {
+  return loginCanonicalStorefrontEntryWithCredential(
+    { provider: 'password', subject: canonicalPasswordSubject(subject), password },
+    signal,
+  );
+}
+
+export async function loginCanonicalStorefrontEntryWithOtp(
+  phone: string,
+  challenge: string,
+  code: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontEntryResult> {
+  return loginCanonicalStorefrontEntryWithCredential(storefrontOtpCredential(phone, challenge, code), signal);
+}
+
+export async function loginCanonicalStorefrontWithOtp(
+  phone: string,
+  challenge: string,
+  code: string,
+  membership: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontLoginResult> {
+  const result = await authorizeCanonicalCredential(storefrontOtpCredential(phone, challenge, code), 'storefront', membership, signal);
+  if (result.kind === 'selection') throw new Error('消费者身份尚未确定，请重新登录');
+  return Object.freeze({
+    membership: result.session.membership,
+    redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
+  });
+}
+
+async function loginCanonicalStorefrontEntryWithCredential(
+  credential: LoginCredential,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontEntryResult> {
+  const result = await authorizeCanonicalCredential(credential, 'storefront', undefined, signal);
+  if (result.kind === 'selection') {
+    const context: PreAuthContext = {
+      identifier: credential.subject,
+      loginMethod: credential.provider === 'phone_otp' ? 'otp' : 'password',
+      memberships: result.selection.memberships.map(storefrontMembership),
+    };
+    return Object.freeze({
+      kind: 'selection',
+      context,
+    });
+  }
+  return Object.freeze({
+    kind: 'authenticated',
+    membership: result.session.membership,
+    redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
+  });
+}
+
+function storefrontOtpCredential(phone: string, challenge: string, code: string): LoginCredential {
+  const normalizedChallenge = challenge.trim();
+  const normalizedCode = code.trim();
+  if (!/^challenge:[A-Za-z0-9:-]{16,128}$/.test(normalizedChallenge)) throw new Error('请先获取短信验证码');
+  if (!/^\d{6}$/.test(normalizedCode)) throw new Error('请输入 6 位短信验证码');
+  return {
+    provider: 'phone_otp',
+    subject: canonicalMobile(phone),
+    challenge: normalizedChallenge,
+    code: normalizedCode,
+  };
 }
 
 export async function exchangeCanonicalStorefrontSession(
@@ -265,6 +340,20 @@ function consoleMembership(value: z.infer<typeof MembershipSelectionSchema>['mem
     dataScope: '按权限系统授权范围',
     subjectScope: '企业',
     requiresStepUp: false,
+  };
+}
+
+function storefrontMembership(value: z.infer<typeof MembershipSelectionSchema>['memberships'][number]): Membership {
+  if (value.client !== 'storefront') throw new Error('消费者登录返回了错误的会员入口');
+  return {
+    id: value.id,
+    target: 'storefront',
+    status: 'active',
+    enterpriseName: '已加入商城',
+    storeName: '消费者商城',
+    roleName: '消费者会员',
+    dataScope: '本人消费与订单',
+    accountTypeLabel: '消费账户',
   };
 }
 

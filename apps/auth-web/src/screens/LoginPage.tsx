@@ -15,13 +15,16 @@ import {
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
-  resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
   createCanonicalLoginChallenge,
   createCanonicalPasswordResetChallenge,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
+  loginCanonicalStorefront,
+  loginCanonicalStorefrontEntry,
+  loginCanonicalStorefrontEntryWithOtp,
+  loginCanonicalStorefrontWithOtp,
   resetCanonicalPassword,
 } from '../services/canonicalIdentity';
 import {
@@ -51,7 +54,7 @@ function maskMobile(value: string): string {
 export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
-  const isCanonicalConsoleRequest = true;
+  const isCanonicalConsoleRequest = typeof window === 'undefined' || new URLSearchParams(window.location.search).get('target') !== 'storefront';
   const [registrationDeepLink] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
@@ -59,7 +62,7 @@ export const LoginPage: React.FC = () => {
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
-  const [activeTab, setActiveTab] = useState<AuthMethod>('password');
+  const [activeTab, setActiveTab] = useState<AuthMethod>(() => isCanonicalConsoleRequest ? 'password' : 'otp');
   const [qrLoginChannel, setQrLoginChannel] = useState<'work_weixin' | 'wechat'>('work_weixin');
   const [ssoDomain, setSsoDomain] = useState('');
   const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
@@ -395,6 +398,16 @@ export const LoginPage: React.FC = () => {
         return;
       }
 
+      const result = activeTab === 'otp'
+        ? await loginCanonicalStorefrontEntryWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
+        : await loginCanonicalStorefrontEntry(identifier, password);
+      if (result.kind === 'authenticated') {
+        window.location.replace(result.redirectUrl);
+        return;
+      }
+      setPreAuthContext(result.context);
+      setStage(2);
+
     } catch (err: any) {
       setFormError(err.message || '认证失败');
     } finally {
@@ -427,50 +440,15 @@ export const LoginPage: React.FC = () => {
 
   // 处理 PreAuth 上下文并路由到第2段或自动跳转
   const completeStorefrontLogin = async (membershipId: string) => {
-    // Credential discovery never creates a cookie. The final login is the only
-    // place that establishes the tracked, revocable HttpOnly device session.
-    let storefrontOrigin: string;
-    try {
-      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-      storefrontOrigin = resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV);
-    } catch (error: any) {
-      setFormError(error.message || '商城登录目标配置无效');
-      return;
-    }
-
-    // When accounts.zhudatuan.com is the standalone shell, a relative fetch
-    // would set a host-only cookie on the wrong host and then loop back here.
-    // Transfer the browser to the storefront host before the final login.
-    if (isStorefrontEmbed && window.location.origin !== storefrontOrigin) {
-      setFormError('商城嵌入登录必须与商城同源，已停止提交账号凭证。');
-      return;
-    }
-
-    if (window.location.origin !== storefrontOrigin) {
-      submitCredentialForm(storefrontOrigin);
-      return;
-    }
-
-    const response = await fetch('/api/v1/auth/login', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: identifier, password }),
-    });
-
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      throw new Error(payload?.error?.message || '登录失败，请检查账号与密码');
-    }
+    const result = preAuthContext?.loginMethod === 'otp'
+      ? await loginCanonicalStorefrontWithOtp(identifier, loginOtp.challengeId, loginOtp.code, membershipId)
+      : await loginCanonicalStorefront(identifier, password, membershipId);
 
     if (isStorefrontEmbed) {
-      // iframe 与商城同源；只通知父窗口刷新已建立的 HttpOnly 会话，不传递密码或票据。
       window.parent.postMessage({ type: 'smart-wing:storefront-login-complete', membershipId }, window.location.origin);
       return;
     }
-
-    // 商城同源登录页必须离开认证壳，进入已经建立真实会话的商城首页。
-    window.location.replace('/');
+    window.location.replace(result.redirectUrl);
   };
 
   const completeAdminLogin = () => {

@@ -5,6 +5,8 @@ import {
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
   loginCanonicalStorefront,
+  loginCanonicalStorefrontEntry,
+  loginCanonicalStorefrontEntryWithOtp,
   resetCanonicalPassword,
 } from './canonicalIdentity';
 
@@ -200,6 +202,60 @@ describe('canonical console identity', () => {
       password: 'Generated!Password2',
       membership: 'membership:storefront-one',
       target: 'storefront',
+    });
+  });
+
+  it('opens a single storefront membership directly with a phone OTP', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:storefront-one')))
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged(STOREFRONT_DESTINATION)));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalStorefrontEntryWithOtp(
+      '13800138000',
+      'challenge:login:1234567890',
+      '123456',
+    )).resolves.toEqual({
+      kind: 'authenticated',
+      membership: 'membership:storefront-one',
+      redirectUrl: STOREFRONT_DESTINATION,
+    });
+
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body).toMatchObject({
+      provider: 'phone_otp',
+      subject: '+8613800138000',
+      challenge: 'challenge:login:1234567890',
+      code: '123456',
+      target: 'storefront',
+    });
+    expect(body).not.toHaveProperty('password');
+    expect(body).not.toHaveProperty('membership');
+  });
+
+  it('returns storefront membership choices without changing their IDs', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      principal: 'principal-consumer',
+      memberships: [
+        { id: 'membership:mall-a', client: 'storefront' },
+        { id: 'membership:mall-b', client: 'storefront' },
+      ],
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await loginCanonicalStorefrontEntry('13800138000', 'Original!Password1');
+
+    expect(result).toMatchObject({
+      kind: 'selection',
+      context: {
+        identifier: '+8613800138000',
+        loginMethod: 'password',
+        memberships: [
+          { id: 'membership:mall-a', target: 'storefront' },
+          { id: 'membership:mall-b', target: 'storefront' },
+        ],
+      },
     });
   });
 
