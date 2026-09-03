@@ -4,6 +4,24 @@ import { cockpit, consoleSession, controlHealth } from './Fixtures';
 import { OperationMock } from './OperationMock';
 import { API_ORIGIN, AUTH_ORIGIN, CONSOLE_ORIGIN, STOREFRONT_ORIGIN } from './Origins';
 
+test('Auth 普通登录与企业管理入口双向切换', async ({ page }) => {
+  await page.goto(`${AUTH_ORIGIN}/login?client=console`);
+
+  await expect(page.locator('[data-login-mode="consumer"]')).toBeVisible();
+  await expect(page.getByRole('tab', { name: '企微扫码' })).toHaveCount(0);
+  await expect(page.getByRole('tab', { name: '企业 SSO' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: '企业管理' }).click();
+  await expect(page.locator('[data-login-mode="enterprise"]')).toBeVisible();
+  await expect(page.getByRole('tab', { name: '企微扫码' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: '企业 SSO' })).toBeVisible();
+
+  await page.getByRole('button', { name: '福利商城' }).click();
+  await expect(page.locator('[data-login-mode="consumer"]')).toBeVisible();
+  await expect(page.getByRole('tab', { name: '企微扫码' })).toHaveCount(0);
+  await expect(page.getByRole('tab', { name: '企业 SSO' })).toHaveCount(0);
+});
+
 test('Auth 登录深链保留 PKCE 边界并满足 WCAG A/AA', async ({ page }) => {
   const api = new OperationMock(page).post('/api/v1/identity/sessions', (call) => {
     expect(call.headers['idempotency-key']).toBeTruthy();
