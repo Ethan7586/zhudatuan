@@ -3,7 +3,7 @@ import { checkoutWithCanonicalPayment } from './canonicalCheckout';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
 import { mapCanonicalAccounts, mapCanonicalCart, mapCanonicalLedgers, mapCanonicalOrders } from './canonicalCommerceMapper';
 import { mapCanonicalAddresses, mapCanonicalBootstrap, mapCanonicalSession } from './canonicalIdentityMapper';
-import { nextCursor, pageItems, record, text } from './canonicalShape';
+import { boolean, nextCursor, nonNegativeInteger, optionalText, pageItems, record, text } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
 import type { ApiAccount, ApiAccountLedger, ApiActor, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct } from './productionApi.types';
 
@@ -90,17 +90,6 @@ async function publicCatalog(options: CatalogOptions): Promise<{ items: ApiProdu
   return { items, pagination: { nextCursor: typeof pagination.nextCursor === 'string' && pagination.nextCursor ? pagination.nextCursor : null } };
 }
 
-async function publicStorefront(): Promise<{ id: string; name: string }> {
-  const value = await canonicalCall(() => canonicalClient().identity.storefrontsRead({
-    body: { application: DEFAULT_STOREFRONT_APPLICATION },
-  }, anonymousIdempotentContext()));
-  const payload = record(value, 'identity.storefront');
-  return {
-    id: text(payload.organization_id, 'identity.storefront.organization_id'),
-    name: text(payload.organization_name, 'identity.storefront.organization_name'),
-  };
-}
-
 function publicProduct(item: Record<string, unknown>): ApiProduct {
   const qualification = record(item.qualification, 'catalog.public.qualification');
   return {
@@ -170,15 +159,7 @@ export const productionApi = {
   },
 
   async listProducts(options: CatalogOptions = {}): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
-    const query = { limit: options.limit ?? 100, ...(options.cursor ? { cursor: options.cursor } : {}), ...(options.category ? { category: options.category } : {}) };
-    const listings = await canonicalCall(() => canonicalClient().catalog.listingsRead({ query }, sessionContext()));
-    const skus = pageItems(listings, 'catalog.listings').map((item) => text(item.sku_id, 'catalog.listing.sku_id'));
-    if (skus.length === 0) return { items: [], pagination: { nextCursor: nextCursor(listings) } };
-    const [offerValue, inventoryValue] = await Promise.all([
-      canonicalCall(() => canonicalClient().pricing.offersRead({ query: { sku: skus } }, sessionContext())),
-      inventory(skus),
-    ]);
-    return mapCanonicalProductPage(listings, offerValue, inventoryValue);
+    return publicCatalog(options);
   },
 
   async getPublicStorefront(): Promise<{ id: string; name: string }> {
@@ -186,7 +167,7 @@ export const productionApi = {
   },
 
   async listQualifiedProducts(options: CatalogOptions = {}) {
-    return productionApi.listProducts(options);
+    return qualifiedCatalog(options);
   },
 
   async listOrders(): Promise<{ items: ApiOrder[] }> {

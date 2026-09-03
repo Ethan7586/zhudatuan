@@ -298,6 +298,12 @@ objects:
     owner: benefit
     source: database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
     operationalOwner: benefit
+  - id: catalog.public_storefront_catalog
+    kind: function
+    owner: catalog
+    source: database/supabase/migrations/20260903111000_publish_canonical_guest_catalog.sql
+    callers:
+      - services/commerce/src/modules/webbusiness/PublicCatalogHttpHandler.ts
   - id: capability.membership_operations
     kind: function
     owner: capability

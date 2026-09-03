@@ -58,6 +58,7 @@ if (!caddyMatch) throw new Error('WEB_BUSINESS_CADDY_MATCHER_MISSING');
 assertExactSet(caddyMatch[1].trim().split(/\s+/), publicPaths, 'WEB_BUSINESS_CADDY_PATHS');
 
 const apiHost = slice(caddy, 'api.zhudatuan.com {', 'media.zhudatuan.com {');
+assertCaddyMatcher(apiHost, 'apiPublicCatalog', ['GET'], ['/api/v1/catalog/public/products']);
 assertCaddyMatcher(apiHost, 'registrationHealth', ['GET'], ['/health/live', '/health/ready', '/health/startup']);
 assertCaddyMatcher(apiHost, 'registrationPreflight', ['OPTIONS'], [
   '/api/v1/identity/sessions',
@@ -88,6 +89,15 @@ assertCaddyMatcher(apiHost, 'purchasePreflight', ['OPTIONS'], [
   '/api/v1/orders',
   '/api/v1/payments/intents',
 ]);
+assertCaddyMatcher(apiHost, 'mallProvisioningPreflight', ['OPTIONS'], [
+  '/api/v1/provisioning/malls',
+]);
+assertCaddyMatcher(apiHost, 'mallProvisioningApi', ['POST'], [
+  '/api/v1/provisioning/malls',
+]);
+assertCaddyMatcher(apiHost, 'mallProvisioningRead', ['GET'], [
+  '/api/v1/provisioning/malls/*',
+], true);
 const registrationOperations = [
   ['runtime.health.live', 'GET', '/health/live'],
   ['runtime.health.ready', 'GET', '/health/ready'],
@@ -110,20 +120,28 @@ for (const [id, method, path] of registrationOperations) {
 if (apiHost.includes('/api/v1/*')) throw new Error('GENERIC_CANONICAL_API_WILDCARD_FORBIDDEN');
 assertExactSet(
   [...apiHost.matchAll(/^\s*@(\w+)(?:\s+path\b|\s*\{)/gm)].map((match) => match[1]),
-  ['registrationHealth', 'registrationPreflight', 'registrationPost', 'registrationSessionRead', 'registrationSessionDelete', 'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi', 'webBusinessApi'],
+  ['registrationHealth', 'registrationPreflight', 'registrationPost', 'registrationSessionRead', 'registrationSessionDelete',
+    'registrationInvitationDelete', 'registrationOperatorRead', 'mallProvisioningPreflight', 'mallProvisioningApi', 'mallProvisioningRead',
+    'purchasePublicBlocked', 'purchasePreflight', 'purchaseApi',
+    'consoleSupportPreflight', 'consoleSupportRead', 'consoleSupportSend', 'apiPublicCatalog', 'webBusinessApi'],
   'CANONICAL_API_PATH_MATCHERS'
 );
 assertExactList(
   [...apiHost.matchAll(/reverse_proxy\s+127\.0\.0\.1:(\d+)/g)].map((match) => match[1]),
-  ['4321', '4321', '4321', '4321', '4321', '4322', '4323', '4323'],
+  ['4321', '4321', '4321', '4321', '4321', '4321', '4321', '4325', '4325', '4325',
+    '4323', '4323', '4324', '4324', '4324', '4322', '4322'],
   'CANONICAL_API_PROXY_TARGETS'
 );
 if (['@registrationHealth', '@registrationPreflight', '@registrationPost', '@registrationSessionRead', '@registrationSessionDelete']
   .some((matcher) => apiHost.indexOf(matcher) > apiHost.indexOf('@purchaseApi'))
+  || apiHost.indexOf('handle @mallProvisioningPreflight') > apiHost.indexOf('handle @mallProvisioningApi')
+  || apiHost.indexOf('handle @mallProvisioningApi') > apiHost.indexOf('handle @mallProvisioningRead')
+  || apiHost.indexOf('handle @mallProvisioningRead') > apiHost.indexOf('handle @purchasePublicBlocked')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchasePreflight')
   || apiHost.indexOf('handle @purchasePublicBlocked') > apiHost.indexOf('handle @purchaseApi')
   || apiHost.indexOf('handle @purchasePreflight') > apiHost.indexOf('handle @purchaseApi')
-  || apiHost.indexOf('handle @purchaseApi') > apiHost.indexOf('handle @webBusinessApi')
+  || apiHost.indexOf('handle @purchaseApi') > apiHost.indexOf('handle @apiPublicCatalog')
+  || apiHost.indexOf('handle @apiPublicCatalog') > apiHost.indexOf('handle @webBusinessApi')
   || apiHost.indexOf('handle @webBusinessApi') > apiHost.indexOf('respond "Not Found" 404')) {
   throw new Error('CANONICAL_API_HANDLER_ORDER_INVALID');
 }
@@ -132,6 +150,7 @@ if (!/handle\s*\{\s*respond "Not Found" 404\s*\}/s.test(apiHost)) {
 }
 
 const storefrontHost = slice(caddy, '\nzhudatuan.com {', '\naccounts.zhudatuan.com {');
+assertCaddyMatcher(storefrontHost, 'storefrontPublicCatalog', ['GET'], ['/api/v1/catalog/public/products']);
 const showcaseMatch = storefrontHost.match(/^\s*@productionShowcases path (.+)$/m);
 if (!showcaseMatch) throw new Error('PRODUCTION_SHOWCASE_CADDY_MATCHER_MISSING');
 assertExactSet(showcaseMatch[1].trim().split(/\s+/),
@@ -193,12 +212,13 @@ const environmentKeys = environment
   .map((line) => line.slice(0, line.indexOf('=')));
 assertExactSet(
   environmentKeys,
-  ['APP_ENV', 'AUTH_MODE', 'SERVICE_VERSION', 'API_ALLOWED_ORIGINS', 'DATABASE_API_CONNECTION_REF', 'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN', 'NODE_EXTRA_CA_CERTS'],
+  ['APP_ENV', 'AUTH_MODE', 'SERVICE_VERSION', 'API_ALLOWED_ORIGINS', 'PUBLIC_MALL_SLUG', 'DATABASE_API_CONNECTION_REF', 'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN', 'NODE_EXTRA_CA_CERTS'],
   'WEB_BUSINESS_ENVIRONMENT_KEYS'
 );
 if (!environment.includes('API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://zhudatuan.com')) {
   throw new Error('WEB_BUSINESS_ORIGIN_ALLOWLIST_INVALID');
 }
+if (!environment.includes('PUBLIC_MALL_SLUG=zdt-l1-verify')) throw new Error('WEB_BUSINESS_PUBLIC_MALL_SLUG_INVALID');
 if (!environment.includes('DATABASE_API_CONNECTION_REF=zhudatuan/web-business/database/api') || !environment.includes('NODE_EXTRA_CA_CERTS=/opt/zhudatuan/shared/tls/internal-ca.crt')) {
   throw new Error('WEB_BUSINESS_PRIVATE_DEPENDENCY_CONFIGURATION_INVALID');
 }

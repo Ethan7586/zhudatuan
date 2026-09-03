@@ -5,7 +5,9 @@ import type { HttpApp } from './HttpApp';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 
-export function listen(app: HttpApp, port: number, host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): Readonly<{ close: () => Promise<void> }> {
+type HttpRequestHandler = Pick<HttpApp, 'handle'>;
+
+export function listen(app: HttpRequestHandler, port: number, host: '127.0.0.1' | '0.0.0.0' = '127.0.0.1'): Readonly<{ close: () => Promise<void> }> {
   const server = createServer(async (request, response) => {
     const controller = new AbortController();
     request.once('aborted', () => controller.abort(new Error('REQUEST_ABORTED')));

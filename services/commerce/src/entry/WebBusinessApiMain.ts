@@ -2,6 +2,7 @@ import {
   webBusinessApiAllowedOrigins,
   webBusinessApiEnvironment,
   webBusinessApiPort,
+  webBusinessApiPublicMallSlug,
 } from '@shop/config/server';
 import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { createWebBusinessApiRuntime } from '../bootstrap/WebBusinessApiRuntime';
@@ -10,6 +11,7 @@ import { WebBusinessRuntimeModule } from '../modules/runtime/WebBusinessRuntimeM
 import { WEB_BUSINESS_RUNTIME_OPERATION_IDS } from '../modules/runtime/WebBusinessRuntimeOperations';
 import { WEB_BUSINESS_MODULES } from '../modules/webbusiness/WebBusinessModules';
 import { WEB_BUSINESS_OPERATION_IDS } from '../modules/webbusiness/WebBusinessOperationIds';
+import { PublicCatalogHttpHandler } from '../modules/webbusiness/PublicCatalogHttpHandler';
 
 const environment = webBusinessApiEnvironment();
 const runtime = await createWebBusinessApiRuntime(environment);
@@ -25,7 +27,12 @@ const bootstrapped = await bootstrapApi({
   allowedOrigins: webBusinessApiAllowedOrigins(environment),
   telemetry: runtime.telemetry,
 });
-const server = listen(bootstrapped.app, webBusinessApiPort(environment), '127.0.0.1');
+const server = listen(new PublicCatalogHttpHandler(
+  bootstrapped.app,
+  runtime.pool,
+  webBusinessApiPublicMallSlug(environment),
+  webBusinessApiAllowedOrigins(environment),
+), webBusinessApiPort(environment), '127.0.0.1');
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, async () => {
   await server.close();

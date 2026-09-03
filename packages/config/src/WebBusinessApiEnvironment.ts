@@ -19,6 +19,7 @@ export const WEB_BUSINESS_API_ENVIRONMENT_KEYS = Object.freeze([
   'AUTH_MODE',
   'SERVICE_VERSION',
   'API_ALLOWED_ORIGINS',
+  'PUBLIC_MALL_SLUG',
   'DATABASE_API_CONNECTION_REF',
   'KMS_ENDPOINT',
   'KMS_BEARER_TOKEN',
@@ -52,6 +53,7 @@ export function validateWebBusinessApiEnvironment(source: EnvironmentSource): vo
   for (const [key, code] of [
     ['SERVICE_VERSION', 'SERVICE_VERSION_MISSING'],
     ['API_ALLOWED_ORIGINS', 'API_ALLOWED_ORIGINS_MISSING'],
+    ['PUBLIC_MALL_SLUG', 'PUBLIC_MALL_SLUG_MISSING'],
     ['DATABASE_API_CONNECTION_REF', 'DATABASE_API_CONNECTION_REF_MISSING'],
     ['KMS_ENDPOINT', 'KMS_ENDPOINT_MISSING'],
     ['SECRET_STORE_ENDPOINT', 'SECRET_STORE_ENDPOINT_MISSING'],
@@ -68,6 +70,7 @@ export function validateWebBusinessApiEnvironment(source: EnvironmentSource): vo
     'https://zhudatuan.com',
   ].sort().join(',')) throw new Error('WEB_BUSINESS_API_ORIGINS_INVALID');
   if (webBusinessApiPort(source) !== 4322) throw new Error('WEB_BUSINESS_API_PORT_INVALID');
+  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(source.PUBLIC_MALL_SLUG!)) throw new Error('PUBLIC_MALL_SLUG_INVALID');
 }
 
 export function webBusinessApiPort(environment: WebBusinessApiEnvironment): number {
@@ -76,6 +79,10 @@ export function webBusinessApiPort(environment: WebBusinessApiEnvironment): numb
 
 export function webBusinessApiAllowedOrigins(environment: WebBusinessApiEnvironment): readonly string[] {
   return apiAllowedOrigins(environment);
+}
+
+export function webBusinessApiPublicMallSlug(environment: WebBusinessApiEnvironment): string {
+  return requiredValue(environment.PUBLIC_MALL_SLUG, 'PUBLIC_MALL_SLUG_MISSING');
 }
 
 function secureEndpoint(value: string | undefined, code: string): void {
