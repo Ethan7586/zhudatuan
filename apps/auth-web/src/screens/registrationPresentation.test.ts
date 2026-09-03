@@ -13,13 +13,13 @@ describe('invitation registration presentation', () => {
     expect(presentation.successNotice).toContain('等待 Owner 或高级管理员授权');
   });
 
-  it('uses ordinary employee language only for a storefront invitation', () => {
+  it('uses L6 consumer language only for a storefront invitation', () => {
     const pending = registrationPresentation();
     const storefront = registrationPresentation('storefront');
 
-    expect(pending.title).not.toContain('普通员工');
-    expect(storefront.title).toBe('注册普通员工');
-    expect(storefront.footer).toContain('只开通消费商城');
+    expect(pending.title).not.toContain('L6 消费者');
+    expect(storefront.title).toBe('注册 L6 消费者');
+    expect(storefront.footer).toContain('只开通 L6 消费者身份');
     expect(storefront.footer).toContain('不开通运营后台');
   });
 

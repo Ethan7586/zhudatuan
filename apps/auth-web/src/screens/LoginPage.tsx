@@ -32,6 +32,7 @@ import {
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
 import { SMS_CODE_RESEND_SECONDS } from '../services/otpPolicy';
+import { automaticL6DisplayName, automaticRegistrationPassword } from '../services/consumerRegistration';
 import { registrationPresentation } from './registrationPresentation';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
@@ -106,6 +107,15 @@ export const LoginPage: React.FC = () => {
   const [showForcePasswordModal, setShowForcePasswordModal] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>('');
   const registrationCopy = registrationPresentation(registrationInvite?.target, registrationInvite?.governanceLevel);
+  const isConsumerRegistration = registrationInvite?.target === 'storefront';
+  const isQrConsumerRegistration = registrationDeepLink.length > 0 && registrationInvite?.target !== 'console';
+
+  useEffect(() => {
+    if (!registrationOpen || !isConsumerRegistration || !registrationInvite?.organizationName) return;
+    const previousTitle = document.title;
+    document.title = `L6 消费者｜${registrationInvite.organizationName}`;
+    return () => { document.title = previousTitle; };
+  }, [isConsumerRegistration, registrationInvite?.organizationName, registrationOpen]);
 
   useEffect(() => {
     if (!registrationDeepLink) return;
@@ -117,7 +127,7 @@ export const LoginPage: React.FC = () => {
         if (!active) return;
         setRegistrationInvite(invitation);
         setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
-        setRegistrationNotice(`已进入【${invitation.organizationName}】手机注册通道`);
+      setRegistrationNotice(`已进入【${invitation.organizationName}】L6 消费者通道`);
       })
       .catch((error) => {
         if (!active) return;
@@ -266,7 +276,7 @@ export const LoginPage: React.FC = () => {
         challengeMobile: mobile,
       }));
       startRegistrationCodeCooldown(validitySeconds);
-      setRegistrationNotice(`验证码请求已提交至 ${maskMobile(registration.mobile)}。${SMS_CODE_RESEND_SECONDS} 秒后仍未收到可重新获取；多次请求请使用最后一条。`);
+      setRegistrationNotice(`验证码已发送至 ${maskMobile(registration.mobile)}。偶有运营商延迟；${SMS_CODE_RESEND_SECONDS} 秒后可重新获取，多次请求请使用最后一条。`);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '验证码发送失败');
     } finally {
@@ -286,21 +296,30 @@ export const LoginPage: React.FC = () => {
     if (!registration.challengeId || registration.challengeMobile !== mobile) return setFormError('请为当前手机号重新获取验证码');
     if (!/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
     if (!registrationTermsAccepted) return setFormError('请先阅读并同意本次邀请绑定的服务协议与隐私政策');
-    if (!isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
-    if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
+    if (!isConsumerRegistration && !isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
+    if (!isConsumerRegistration && registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
     setRegistrationBusy('submit');
     setFormError('');
     try {
-      await createCanonicalMember({
+      const generatedPassword = isConsumerRegistration ? automaticRegistrationPassword() : registration.password;
+      const displayName = isConsumerRegistration ? automaticL6DisplayName(mobile) : registration.displayName;
+      const storefrontOrigin = isConsumerRegistration
+        ? resolveStorefrontLoginOrigin(import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined), import.meta.env.DEV)
+        : null;
+      const created = await createCanonicalMember({
         subject: registration.mobile,
-        password: registration.password,
-        displayName: registration.displayName,
+        password: generatedPassword,
+        displayName,
         inviteCode: registration.inviteCode,
         challengeId: registration.challengeId,
         code: registration.code,
         termsAccepted: registrationTermsAccepted,
         termsHash: registrationInvite.termsHash,
       });
+      if (created.target === 'storefront' && storefrontOrigin !== null) {
+        submitCredentialForm(storefrontOrigin, { username: mobile, password: generatedPassword });
+        return;
+      }
       setIdentifier(registration.mobile.trim());
       setPassword('');
       setRegistrationOpen(false);
@@ -384,7 +403,10 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const submitCredentialForm = (targetOrigin: string) => {
+  const submitCredentialForm = (
+    targetOrigin: string,
+    credential: Readonly<{ username: string; password: string }> = { username: identifier, password },
+  ) => {
     // A top-level form lets the destination host create its own __Host-
     // HttpOnly cookie. Credentials remain in the POST body and never enter the
     // URL, browser history or referrer.
@@ -393,7 +415,7 @@ export const LoginPage: React.FC = () => {
     form.action = buildCredentialLoginAction(targetOrigin);
     form.target = '_top';
     form.style.display = 'none';
-    for (const [name, value] of Object.entries({ username: identifier, password })) {
+    for (const [name, value] of Object.entries(credential)) {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = name;
@@ -1102,7 +1124,7 @@ export const LoginPage: React.FC = () => {
                               新用户注册
                             </button>
                           </div>
-                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持企业邀请码创建员工商城账号</p>
+                          <p className="-mt-1 text-right text-[11px] leading-4 text-slate-400">持商城邀请码创建消费者账号</p>
 
                           <button
                             type="submit"
@@ -1263,10 +1285,16 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleRegistrationSubmit} className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl sm:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">Member Registration</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-950">{registrationCopy.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{registrationCopy.description}</p>
-                {registrationInvite?.organizationName && (
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">
+                  {isQrConsumerRegistration || isConsumerRegistration ? 'L6 Consumer' : 'Member Registration'}
+                </p>
+                <h3 className="mt-1 text-2xl font-bold text-slate-950">
+                  {isConsumerRegistration ? registrationInvite.organizationName : isQrConsumerRegistration ? '正在打开商城' : registrationCopy.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  {isConsumerRegistration ? `L6 消费者 · ${registrationCopy.description}` : registrationCopy.description}
+                </p>
+                {!isConsumerRegistration && registrationInvite?.organizationName && (
                   <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-[var(--sw-brand)]">
                     <Store className="h-3.5 w-3.5" />{registrationInvite.organizationName}
                   </p>
@@ -1278,42 +1306,46 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                姓名
-                <input
-                  value={registration.displayName}
-                  onChange={(e) => updateRegistration('displayName', e.target.value)}
-                  maxLength={60}
-                  required
-                  placeholder="请输入真实姓名"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                <span className="flex items-center justify-between gap-2">
-                  企业邀请码
-                  {registrationInvite && <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600"><CheckCircle2 className="h-3 w-3" />已验证</span>}
-                </span>
-                <div className="flex gap-2">
-                  <input
-                    value={registration.inviteCode}
-                    onChange={(event) => updateRegistration('inviteCode', event.target.value)}
-                    maxLength={255}
-                    required
-                    autoComplete="off"
-                    placeholder="由企业福利管理员提供"
-                    className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleResolveRegistrationInvite}
-                    disabled={registrationBusy !== null || !registration.inviteCode.trim()}
-                    className="rounded-xl border border-blue-200 bg-blue-50 px-3 text-[11px] font-bold text-[var(--sw-brand)] disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                  >
-                    {registrationBusy === 'invite' ? '验证中' : '验证'}
-                  </button>
-                </div>
-              </label>
+              {!isQrConsumerRegistration && !isConsumerRegistration && (
+                <>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    姓名
+                    <input
+                      value={registration.displayName}
+                      onChange={(e) => updateRegistration('displayName', e.target.value)}
+                      maxLength={60}
+                      required
+                      placeholder="请输入真实姓名"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    <span className="flex items-center justify-between gap-2">
+                      企业邀请码
+                      {registrationInvite && <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600"><CheckCircle2 className="h-3 w-3" />已验证</span>}
+                    </span>
+                    <div className="flex gap-2">
+                      <input
+                        value={registration.inviteCode}
+                        onChange={(event) => updateRegistration('inviteCode', event.target.value)}
+                        maxLength={255}
+                        required
+                        autoComplete="off"
+                        placeholder="由商城管理员提供"
+                        className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleResolveRegistrationInvite}
+                        disabled={registrationBusy !== null || !registration.inviteCode.trim()}
+                        className="rounded-xl border border-blue-200 bg-blue-50 px-3 text-[11px] font-bold text-[var(--sw-brand)] disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                      >
+                        {registrationBusy === 'invite' ? '验证中' : '验证'}
+                      </button>
+                    </div>
+                  </label>
+                </>
+              )}
               <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
                 登录手机号
                 <input
@@ -1350,38 +1382,42 @@ export const LoginPage: React.FC = () => {
                   </button>
                 </div>
               </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                设置密码
-                <input
-                  type="password"
-                  value={registration.password}
-                  onChange={(e) => updateRegistration('password', e.target.value)}
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
-                  placeholder="12位以上，含大小写、数字和符号"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                确认密码
-                <input
-                  type="password"
-                  value={registration.confirmPassword}
-                  onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
-                  placeholder="再次输入密码"
-                  aria-invalid={registration.confirmPassword.length > 0 && registration.password !== registration.confirmPassword}
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-                {registration.confirmPassword.length > 0
-                  && registration.password !== registration.confirmPassword
-                  ? <span role="alert" className="text-xs text-rose-500">两次输入的密码不一致</span> : null}
-              </label>
+              {!isQrConsumerRegistration && !isConsumerRegistration && (
+                <>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    设置密码
+                    <input
+                      type="password"
+                      value={registration.password}
+                      onChange={(e) => updateRegistration('password', e.target.value)}
+                      minLength={12}
+                      maxLength={128}
+                      required
+                      autoComplete="new-password"
+                      placeholder="12位以上，含大小写、数字和符号"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    确认密码
+                    <input
+                      type="password"
+                      value={registration.confirmPassword}
+                      onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
+                      minLength={12}
+                      maxLength={128}
+                      required
+                      autoComplete="new-password"
+                      placeholder="再次输入密码"
+                      aria-invalid={registration.confirmPassword.length > 0 && registration.password !== registration.confirmPassword}
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                    {registration.confirmPassword.length > 0
+                      && registration.password !== registration.confirmPassword
+                      ? <span role="alert" className="text-xs text-rose-500">两次输入的密码不一致</span> : null}
+                  </label>
+                </>
+              )}
             </div>
 
             {registrationNotice && <p className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">{registrationNotice}</p>}

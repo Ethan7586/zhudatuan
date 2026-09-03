@@ -37,12 +37,12 @@ const SENIOR_ADMIN_PRESENTATION: RegistrationPresentation = Object.freeze({
 });
 
 const STOREFRONT_PRESENTATION: RegistrationPresentation = Object.freeze({
-  title: '注册普通员工',
-  description: '手机号验证后建立普通员工会员，仅开通消费商城身份。',
-  resolvedNotice: '普通员工邀请已验证。请核对本次注册适用的服务协议与隐私政策。',
-  submitLabel: '创建普通员工会员账号',
-  footer: '密码、邀请码和验证码不会写入浏览器长期存储。普通员工邀请只开通消费商城，不开通运营后台。',
-  successNotice: '普通员工商城账号已创建。请使用手机号与刚才设置的密码登录。',
+  title: '注册 L6 消费者',
+  description: '验证本人手机号后，立即进入当前商城购物。',
+  resolvedNotice: '商城邀请已确认，请验证本人手机号。',
+  submitLabel: '验证并进入商城',
+  footer: '本次只开通 L6 消费者身份，不开通运营后台；以后可直接用手机号验证码登录。',
+  successNotice: 'L6 消费者身份已创建，正在进入商城。',
 });
 
 export function registrationPresentation(
