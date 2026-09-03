@@ -59,6 +59,16 @@ export type CanonicalStorefrontLoginResult = Readonly<{
   redirectUrl: string;
 }>;
 
+export interface CanonicalAuthorization {
+  readonly request: Readonly<{ state: string; nonce: string; challenge: string }>;
+  readonly secret: Readonly<{ nonce: string; verifier: string }>;
+}
+
+export interface CanonicalSessionCallback {
+  readonly ticket: string;
+  readonly state: string;
+}
+
 export interface CanonicalLoginChallenge {
   readonly challengeId: string;
   readonly expiresAt: string;
@@ -109,6 +119,20 @@ export async function loginCanonicalStorefront(
     membership: result.session.membership,
     redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
   });
+}
+
+export async function exchangeCanonicalStorefrontSession(
+  callback: CanonicalSessionCallback,
+  secret: CanonicalAuthorization['secret'],
+  signal?: AbortSignal,
+): Promise<string> {
+  const exchanged = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
+    ticket: callback.ticket,
+    state: callback.state,
+    nonce: secret.nonce,
+    verifier: secret.verifier,
+  }, signal));
+  return approvedStorefrontDestination(exchanged.returnTarget);
 }
 
 export async function createCanonicalPasswordResetChallenge(
@@ -196,7 +220,7 @@ async function authorizeCanonicalCredential(
   membership?: string,
   signal?: AbortSignal,
 ): Promise<AuthorizedCredential> {
-  const authorization = await beginAuthorization();
+  const authorization = await beginCanonicalAuthorization();
   const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
     ...credential,
     target,
@@ -283,10 +307,7 @@ function csrfToken(): string | null {
   }
 }
 
-async function beginAuthorization(): Promise<Readonly<{
-  request: Readonly<{ state: string; nonce: string; challenge: string }>;
-  secret: Readonly<{ nonce: string; verifier: string }>;
-}>> {
+export async function beginCanonicalAuthorization(): Promise<CanonicalAuthorization> {
   const state = randomToken(32);
   const nonce = randomToken(32);
   const verifier = randomToken(64);

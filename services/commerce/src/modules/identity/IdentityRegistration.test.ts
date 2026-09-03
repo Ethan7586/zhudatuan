@@ -310,6 +310,39 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
   });
 
+  it('reuses an existing phone identity, creates the invited storefront membership, and opens its session', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: true, inviteAccepted: true });
+
+    const response = await identityOperations(context(harness.pool))
+      .invoke(registrationRequest('registration:existing-direct-login', true));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: {
+        member_id: 'member:existing-phone',
+        organization_id: 'mall-zhudatuan',
+        client: 'storefront',
+        status: 'active',
+        authentication: {
+          membership: expect.stringMatching(/^membership:/),
+          target: 'storefront',
+          callback: { ticket: expect.any(String), state: 's'.repeat(32) },
+        },
+      },
+      headers: {
+        'set-cookie': expect.stringContaining('shop_session='),
+        'x-set-cookie': expect.stringContaining('shop_csrf='),
+      },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.credential'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.profile'))).toBe(false);
+    const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership(') && text.includes("'storefront'"));
+    expect(membership?.values).toContain('member:existing-phone');
+    const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
+    expect(session?.values).toContain('principal:existing-phone');
+  });
+
   it('persists phone proof and binds both consumer and self roles in the registration transaction', async () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, inviteAccepted: true });
     const encrypt = vi.fn(async (key: string, plaintext: string, context: Readonly<Record<string, string>>) => ({
@@ -374,7 +407,7 @@ describe('canonical member registration security boundary', () => {
   });
 });
 
-function registrationRequest(idempotency: string): OperationRequest {
+function registrationRequest(idempotency: string, directLogin = false): OperationRequest {
   return {
     type: 'identity.members.create',
     access: null,
@@ -391,6 +424,7 @@ function registrationRequest(idempotency: string): OperationRequest {
         invite: 'INVITE-CODE',
         termsAccepted: true,
         termsHash: 'f'.repeat(64),
+        ...(directLogin ? { authorization: authorizationRequest() } : {}),
       },
       rawBody: '',
       deadline: Date.now() + 5_000,
@@ -509,7 +543,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
   seniorInvite?: boolean;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
   challengePrincipal?: string | null; boundMobilePrincipal?: string | null;
-  credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean }>): Readonly<{
+  credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean; existingMembership?: boolean }>): Readonly<{
   pool: DatabasePool;
   queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
 }> {
@@ -522,8 +556,8 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }
-      if (text.includes("select 1 from identity.credential") && text.includes("provider='password'")) {
-        return result(input.subjectExists ? [{ exists: 1 }] : []);
+      if (text.includes('select credential.principal_id,principal.credential_version')) {
+        return result(input.subjectExists ? [{ principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
       }
       if (text.includes('select principal_id from identity.credential')) {
         return result([{ principal_id: input.challengePrincipal ?? 'principal:password-reset' }]);
@@ -588,8 +622,22 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result([{ id: 'session:stepup', assurance_level: 3 }]);
       }
       if (text.includes('select kind from organization.organization')) return result([{ kind: 'mall' }]);
+      if (text.includes("select id from member.profile where principal_id=$1 and status='active'")) {
+        return result([{ id: 'member:existing-phone' }]);
+      }
+      if (text.includes("select * from access.membership") && text.includes("client='storefront'")) {
+        return result(input.existingMembership ? [{
+          id: 'membership:existing-storefront', member_id: 'member:existing-phone', organization_id: 'mall-zhudatuan',
+          client: 'storefront', employee_no: null, status: 'active', access_version: 3,
+          joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
+        }] : []);
+      }
       if (text.includes('insert into access.membership(') && text.includes('returning *')) {
-        return result([{ id: String(values[0]), client: text.includes("'operator'") ? 'operator' : 'storefront' }]);
+        return result([{
+          id: String(values[0]), member_id: String(values[1]), organization_id: String(values[2]),
+          client: text.includes("'operator'") ? 'operator' : 'storefront', employee_no: null, status: 'active', access_version: 1,
+          joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
+        }]);
       }
       return result([]);
     },

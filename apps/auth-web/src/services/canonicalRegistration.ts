@@ -1,6 +1,7 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { transportInteger } from '@shop/contract/client';
 import { z } from 'zod';
+import { beginCanonicalAuthorization, exchangeCanonicalStorefrontSession } from './canonicalIdentity';
 
 const CANONICAL_API_ORIGIN = 'https://api.hbbtzn.com';
 const LEGACY_API_ORIGIN = 'https://api.zhudatuan.com';
@@ -26,6 +27,18 @@ const ChallengeSchema = z.strictObject({
   expires_at: z.iso.datetime(),
 });
 
+const RegistrationAuthenticationSchema = z.strictObject({
+  session: z.string().min(1),
+  csrf: z.string().min(16),
+  expiresIn: z.number().int().positive(),
+  membership: z.string().min(1),
+  target: z.literal('storefront'),
+  callback: z.strictObject({
+    ticket: z.string().min(64).max(128),
+    state: z.string().min(32).max(128),
+  }),
+});
+
 const MembershipSchema = z.strictObject({
   id: z.string().min(1),
   member_id: z.string().min(1),
@@ -37,6 +50,7 @@ const MembershipSchema = z.strictObject({
   access_version: transportInteger.pipe(z.number().positive()),
   joined_at: z.iso.datetime(),
   left_at: z.iso.datetime().nullable(),
+  authentication: RegistrationAuthenticationSchema.optional(),
 });
 
 export interface CanonicalInvitation {
@@ -68,6 +82,7 @@ export interface CanonicalMemberRegistrationInput {
   readonly code: string;
   readonly termsAccepted: boolean;
   readonly termsHash: string;
+  readonly directLogin?: boolean;
   readonly wechatToken?: string;
 }
 
@@ -81,6 +96,7 @@ export interface CanonicalRegisteredMember {
   readonly accessVersion: number;
   readonly employeeNo: string | null;
   readonly joinedAt: string;
+  readonly redirectUrl?: string;
 }
 
 export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortSignal): Promise<CanonicalInvitation> {
@@ -118,6 +134,7 @@ export async function createCanonicalRegistrationChallenge(destination: string, 
 
 export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
+  const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
   const output = MembershipSchema.parse(
     await identityRequest(
       '/api/v1/identity/members',
@@ -130,11 +147,20 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         code: requiredText(input.code, '请输入验证码'),
         termsAccepted: true,
         termsHash: requiredText(input.termsHash, '注册条款版本无效'),
+        ...(authorization === undefined ? {} : { authorization: authorization.request }),
         ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
       },
-      signal
+      signal,
+      { credentials: authorization === undefined ? 'omit' : 'include' },
     )
   );
+  let redirectUrl: string | undefined;
+  if (authorization !== undefined) {
+    if (!output.authentication || output.authentication.membership !== output.id) {
+      throw new Error('消费者登录会话未能建立，请重新获取验证码');
+    }
+    redirectUrl = await exchangeCanonicalStorefrontSession(output.authentication.callback, authorization.secret, signal);
+  }
   return Object.freeze({
     membership: output.id,
     member: output.member_id,
@@ -145,16 +171,22 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
     accessVersion: output.access_version,
     employeeNo: output.employee_no,
     joinedAt: output.joined_at,
+    ...(redirectUrl === undefined ? {} : { redirectUrl }),
   });
 }
 
-async function identityRequest(path: string, body: Readonly<Record<string, unknown>>, signal?: AbortSignal): Promise<unknown> {
+async function identityRequest(
+  path: string,
+  body: Readonly<Record<string, unknown>>,
+  signal?: AbortSignal,
+  options: Readonly<{ credentials?: RequestCredentials }> = {},
+): Promise<unknown> {
   const response = await fetch(new URL(path, apiOrigin()), {
     method: 'POST',
     // Public registration never consumes an existing authenticated session.
     // Omitting cookies prevents a stale API-host session from influencing the
     // anonymous invitation, OTP, or member-creation transaction.
-    credentials: 'omit',
+    credentials: options.credentials ?? 'omit',
     headers: {
       'content-type': 'application/json',
       'idempotency-key': crypto.randomUUID(),

@@ -22,7 +22,6 @@ import {
   createCanonicalPasswordResetChallenge,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
-  loginCanonicalStorefront,
   resetCanonicalPassword,
 } from '../services/canonicalIdentity';
 import {
@@ -313,10 +312,11 @@ export const LoginPage: React.FC = () => {
         code: registration.code,
         termsAccepted: registrationTermsAccepted,
         termsHash: registrationInvite.termsHash,
+        directLogin: isConsumerRegistration,
       });
       if (created.target === 'storefront' && isConsumerRegistration) {
-        const login = await loginCanonicalStorefront(mobile, generatedPassword, created.membership);
-        window.location.replace(login.redirectUrl);
+        if (!created.redirectUrl) throw new Error('消费者登录会话未能建立，请重新获取验证码');
+        window.location.replace(created.redirectUrl);
         return;
       }
       setIdentifier(registration.mobile.trim());
