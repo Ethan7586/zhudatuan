@@ -31,7 +31,7 @@ export const MPProfilePage: React.FC = () => {
             </div>
             <div className="text-[10px] text-emerald-200 flex items-center gap-1">
               <Smartphone className="w-3 h-3 text-emerald-300" />
-              <span>微信手机号已安全绑定 (138****8888)</span>
+              <span>{user.phone === '未绑定' ? '手机号未绑定' : `已绑定手机号（${user.phone}）${user.phoneVerified ? '' : ' · 支付前待验证'}`}</span>
             </div>
           </div>
         </div>
@@ -80,22 +80,21 @@ export const MPProfilePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            <button onClick={() => triggerPendingFeature('待付款订单', '查看待付款或待补额的企采订单。')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+            <button onClick={() => setMpPage('orders')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
               <div className="w-8 h-8 mx-auto rounded-full bg-blue-50 text-[var(--sw-brand)] flex items-center justify-center font-bold">
                 <Clock className="w-4 h-4" />
               </div>
               <div className="text-[10px] text-gray-600 mt-1 font-medium">待付款</div>
             </button>
 
-            <button onClick={() => triggerPendingFeature('待发货订单', '查看待供应商仓储理货发货的订单。')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer relative">
+            <button onClick={() => setMpPage('orders')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer relative">
               <div className="w-8 h-8 mx-auto rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                 <Truck className="w-4 h-4" />
-                <span className="absolute top-0 right-2 bg-red-500 text-white font-bold text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">2</span>
               </div>
               <div className="text-[10px] text-gray-600 mt-1 font-medium">待处理</div>
             </button>
 
-            <button onClick={() => triggerPendingFeature('待收货订单', '查看物流派件轨迹。')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+            <button onClick={() => setMpPage('orders')} className="p-1 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
               <div className="w-8 h-8 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                 <CheckCircle className="w-4 h-4" />
               </div>
@@ -125,12 +124,12 @@ export const MPProfilePage: React.FC = () => {
                 <span>我的卡券包</span>
               </div>
               <span className="text-[var(--sw-brand)] font-bold flex items-center text-[10px]">
-                <span>3 张可用</span>
+                <span>{user.couponCount} 张可用</span>
                 <ChevronRight className="w-3.5 h-3.5 text-gray-300 ml-0.5" />
               </span>
             </button>
 
-            <button onClick={() => triggerPendingFeature('常用企采收货地址', '管理员工宿舍与企业大楼配送地址。')} className="w-full py-2.5 flex items-center justify-between hover:bg-gray-50 px-1 rounded-lg transition-colors cursor-pointer">
+            <button onClick={() => setMpPage('address')} className="w-full py-2.5 flex items-center justify-between hover:bg-gray-50 px-1 rounded-lg transition-colors cursor-pointer">
               <div className="flex items-center gap-2 font-medium">
                 <MapPin className="w-4 h-4 text-blue-500" />
                 <span>收货地址管理</span>

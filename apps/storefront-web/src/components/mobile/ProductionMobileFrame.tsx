@@ -5,6 +5,7 @@ import { MPCategoryPage } from '../../features/miniprogram/MPCategoryPage';
 import { MPDetailPage } from '../../features/miniprogram/MPDetailPage';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
 import { MPProfilePage } from '../../features/miniprogram/MPProfilePage';
+import { MPAddressPage } from '../../features/miniprogram/MPAddressPage';
 import { ToastContainer } from '../common/ToastContainer';
 import { MobileOrdersPage } from './MobileOrdersPage';
 import { PendingInterfaceModal } from './PendingInterfaceModal';
@@ -25,6 +26,8 @@ export function ProductionMobileFrame() {
         return <MobileOrdersPage mode="mini-program" />;
       case 'profile':
         return <MPProfilePage />;
+      case 'address':
+        return <MPAddressPage />;
       default:
         return <MPHomePage />;
     }

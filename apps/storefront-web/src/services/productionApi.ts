@@ -236,5 +236,24 @@ export const productionApi = {
     return { removed: true };
   },
 
-  checkoutWithInternalBenefits: checkoutWithCanonicalBenefits,
+  async startPaymentPhoneVerification(): Promise<{ challengeId: string; expiresAt: string }> {
+    const value = record(await canonicalCall(() => canonicalClient().identity.stepupStart({ body: {} }, sessionContext({
+      write: true,
+      idempotencyKey: crypto.randomUUID(),
+    }))), 'identity.stepup.start');
+    return {
+      challengeId: text(value.id, 'identity.stepup.start.id'),
+      expiresAt: text(value.expires_at, 'identity.stepup.start.expires_at'),
+    };
+  },
+
+  async completePaymentPhoneVerification(challengeId: string, code: string): Promise<{ verified: true }> {
+    await canonicalCall(() => canonicalClient().identity.stepupComplete({ body: { challenge: challengeId, code } }, sessionContext({
+      write: true,
+      idempotencyKey: crypto.randomUUID(),
+    })));
+    return { verified: true };
+  },
+
+  checkout: checkoutWithCanonicalPayment,
 };

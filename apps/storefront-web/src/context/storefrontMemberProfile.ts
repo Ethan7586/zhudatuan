@@ -9,7 +9,7 @@ export function mergeAuthenticatedMemberProfile(previous: UserProfile, bootstrap
     name: bootstrap.actor.displayName,
     avatar: '',
     phone: bootstrap.actor.phoneMasked ?? '未绑定',
-    jobTitle: '员工会员',
+    jobTitle: 'L6 消费者',
     department: bootstrap.actor.departmentName ?? '未分配部门',
     enterpriseId: bootstrap.scope.enterpriseId,
     enterpriseName: bootstrap.scope.enterpriseName,
