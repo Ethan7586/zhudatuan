@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   acceptInvitation,
+  buildAccountLoginPath,
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
@@ -55,6 +56,18 @@ describe('public test authentication fixtures', () => {
     expect(action).toBe('https://zhudatuan.com/api/v1/auth/login?redirect=%2F');
     expect(action).not.toContain('username');
     expect(action).not.toContain('password');
+  });
+
+  it('builds explicit account entry paths without retaining the previous target', () => {
+    expect(buildAccountLoginPath('console')).toBe('/login?client=console');
+    expect(buildAccountLoginPath('storefront')).toBe('/login?target=storefront');
+  });
+
+  it('offers a real console escape from the empty storefront workspace state', () => {
+    const page = readFileSync(new URL('../screens/LoginPage.tsx', import.meta.url), 'utf8');
+
+    expect(page).toContain("href={buildAccountLoginPath('console')}");
+    expect(page).toContain('进入运营后台');
   });
 
   it('fails closed when more than one usable membership needs server-side selection', () => {
