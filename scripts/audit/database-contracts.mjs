@@ -167,6 +167,7 @@ const REPAIR_FILES = [
   '20260902024000_allow_self_role_api.sql',
   '20260903100000_enrich_identity_membership.sql',
   '20260903101000_publish_auth_contract.sql',
+  '20260903102000_publish_order_filters.sql',
 ];
 const HARD_CUT_CONTRACTS = [
   'contract_v4_catalog_contract.sql',

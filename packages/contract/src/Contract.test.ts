@@ -56,6 +56,17 @@ describe('contract truth', () => {
     }
   });
 
+  it('publishes bounded server-authoritative order list filters', () => {
+    const orders = OPERATION_SCHEMAS['order.orders.read'].input;
+    const aftersales = OPERATION_SCHEMAS['order.aftersales.read'].input;
+    const filters = { order: 'order:one', placed: '7days', lifecycle: 'paid', payment: 'paid', fulfillment: 'allocated', mall: 'mall:one' } as const;
+
+    expect(orders.parse({ query: { ...filters, view: 'unshipped', limit: 50 } })).toEqual({ query: { ...filters, view: 'unshipped', limit: 50 } });
+    expect(aftersales.parse({ query: filters })).toEqual({ query: filters });
+    expect(() => orders.parse({ query: { view: 'removed' } })).toThrow();
+    expect(() => aftersales.parse({ query: { payment: 'unknown' } })).toThrow();
+  });
+
   it('publishes one strict runtime payload schema for every event', () => {
     const eventTypes = COMMERCE_EVENTS.map(({ type }) => type).sort();
     expect(Object.keys(EVENT_PAYLOAD_SCHEMAS).sort()).toEqual(eventTypes);

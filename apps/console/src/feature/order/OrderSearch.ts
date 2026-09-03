@@ -1,15 +1,21 @@
-import { emptyOrderFilter } from './OrderFilter';
-import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
+import { EMPTY_ORDER_LIST_FILTER, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderListFilter, type OrderView } from './OrderFilters';
+import { OrderDetailTabSchema, type OrderDetailTab } from './OrderSchema';
 
 export function readFilter(search: URLSearchParams): OrderListFilter {
   const parsed = OrderListFilterSchema.safeParse({
     order: search.get('order') ?? '',
+    placed: search.get('placed') ?? '',
+    lifecycle: search.get('lifecycle') ?? '',
+    payment: search.get('payment') ?? '',
+    fulfillment: search.get('fulfillment') ?? '',
+    mall: search.get('mall') ?? '',
   });
-  return parsed.success ? parsed.data : emptyOrderFilter;
+  return parsed.success ? parsed.data : EMPTY_ORDER_LIST_FILTER;
 }
 
 export function readView(search: URLSearchParams): OrderView {
-  return search.get('view') === 'aftersale' ? 'aftersale' : 'all';
+  const parsed = OrderViewSchema.safeParse(search.get('view') ?? 'all');
+  return parsed.success ? parsed.data : 'all';
 }
 
 export function readSelected(search: URLSearchParams): string | undefined {

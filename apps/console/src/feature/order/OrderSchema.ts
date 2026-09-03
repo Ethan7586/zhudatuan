@@ -1,13 +1,6 @@
 import * as z from 'zod/mini';
 import { DatabaseIntegerSchema } from '../../shared/schema/DatabaseInteger';
 
-export const OrderFilterSchema = z.object({ order: z.string().check(z.trim(), z.maxLength(255)) });
-
-export const OrderListFilterSchema = z.object({
-  order: z.string().check(z.trim(), z.maxLength(255)),
-});
-
-export const OrderViewSchema = z.enum(['all', 'aftersale']);
 export const OrderDetailTabSchema = z.enum(['overview', 'products', 'payment', 'aftersale', 'operations']);
 
 export const OrderSchema = z.object({
@@ -54,9 +47,6 @@ export const OrderPageSchema = z
   })
   .check(z.refine((page) => page.count === page.items.length, { message: 'ORDER_PAGE_COUNT_MISMATCH' }));
 
-export type OrderFilter = z.infer<typeof OrderFilterSchema>;
-export type OrderListFilter = z.infer<typeof OrderListFilterSchema>;
-export type OrderView = z.infer<typeof OrderViewSchema>;
 export type OrderDetailTab = z.infer<typeof OrderDetailTabSchema>;
 export type OrderRecord = z.infer<typeof OrderSchema>;
 export type OrderLine = NonNullable<OrderRecord['lines']>[number];

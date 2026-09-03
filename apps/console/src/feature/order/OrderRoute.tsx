@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { lazy, Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { safeQueryError } from '@shop/presentation';
+import { chineseReference, safeQueryError } from '@shop/presentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { OrderFilterForm } from './OrderFilter';
@@ -10,7 +10,8 @@ import { OrderIcon } from './OrderIcon';
 import { OrderPageHeader } from './OrderPageHeader';
 import { orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
-import type { OrderDetailTab, OrderListFilter, OrderView } from './OrderSchema';
+import type { OrderListFilter, OrderView } from './OrderFilters';
+import type { OrderDetailTab } from './OrderSchema';
 import { OrderStatusTabs } from './OrderStatusTabs';
 import { aftersaleKey, readAftersales } from './AfterSaleQuery';
 import { AfterSalePanel } from './AfterSalePanel';
@@ -33,9 +34,10 @@ export function Component() {
   const selected = readSelected(search);
   const detailTab = readDetailTab(search);
   const cursor = search.get('cursor') ?? undefined;
-  const queryFilter: OrderQuery = { order: filter.order, ...(cursor === undefined ? {} : { cursor }) };
-  const query = useQuery({ queryKey: orderKey(context, queryFilter), queryFn: ({ signal }) => readOrders(context, queryFilter, signal), enabled: view === 'all' });
-  const aftersaleQuery = useQuery({ queryKey: aftersaleKey(context, queryFilter), queryFn: ({ signal }) => readAftersales(context, queryFilter, signal), enabled: view === 'aftersale' });
+  const queryFilter: OrderQuery = { ...filter, view: view === 'aftersale' ? 'all' : view, ...(cursor === undefined ? {} : { cursor }) };
+  const aftersaleFilter = { ...filter, ...(cursor === undefined ? {} : { cursor }) };
+  const query = useQuery({ queryKey: orderKey(context, queryFilter), queryFn: ({ signal }) => readOrders(context, queryFilter, signal), enabled: view !== 'aftersale' });
+  const aftersaleQuery = useQuery({ queryKey: aftersaleKey(context, aftersaleFilter), queryFn: ({ signal }) => readAftersales(context, aftersaleFilter, signal), enabled: view === 'aftersale' });
   const detailQuery = useQuery({
     queryKey: orderDetailKey(context, selected ?? ''),
     queryFn: ({ signal }) => (selected === undefined ? Promise.resolve(undefined) : readOrderDetail(context, selected, signal)),
@@ -45,6 +47,7 @@ export function Component() {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<OrderColumnKey>>(() => new Set(defaultOrderColumns));
   const error = safeQueryError(query.error);
+  const malls = context.scopes.filter((scope) => scope.kind === 'mall').map((scope) => Object.freeze({ id: scope.id, label: scope.name ?? chineseReference('商城', scope.id) }));
 
   const updateSearch = (mutate: (next: URLSearchParams) => void) => {
     const next = new URLSearchParams(search);
@@ -53,8 +56,10 @@ export function Component() {
   };
   const applyFilter = (value: OrderListFilter) =>
     updateSearch((next) => {
-      if (value.order === '') next.delete('order');
-      else next.set('order', value.order);
+      for (const key of ['order', 'placed', 'lifecycle', 'payment', 'fulfillment', 'mall'] as const) {
+        if (value[key] === '') next.delete(key);
+        else next.set(key, value[key]);
+      }
       next.delete('cursor');
     });
   const selectView = (nextView: OrderView) =>
@@ -101,15 +106,15 @@ export function Component() {
       <OrderPageHeader isFetching={view === 'aftersale' ? aftersaleQuery.isFetching : query.isFetching} onRefresh={refresh} />
 
       <p className="ordercontractnote" role="note">
-        商品订单与售后订单按当前数据范围安全隔离，可使用内部订单编号精确查询并查看完整快照。
+        状态、时间、支付、履约和商城条件均由服务端按当前数据范围权威筛选；订单编号支持精确查询。
       </p>
 
       <OrderStatusTabs active={view} onChange={selectView} />
       <div className="orderfilterarea">
-        <OrderFilterForm value={filter} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
+        <OrderFilterForm value={filter} malls={malls} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
         <OrderColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
         <div className="orderfiltermeta">
-          <span>按订单编号查询</span>
+          <span>当前条件由服务端实时筛选</span>
         </div>
       </div>
       <div id="orderlistpanel" className="orderlistpanel" aria-busy={view === 'aftersale' ? aftersaleQuery.isFetching : query.isFetching}>

@@ -7,6 +7,7 @@ import { readCockpit } from './cockpit/CockpitQuery';
 import { readControl } from './control/ControlQuery';
 import { readFinance } from './finance/FinanceQuery';
 import { readOrders } from './order/OrderQuery';
+import { EMPTY_ORDER_LIST_FILTER } from './order/OrderFilters';
 import { readProductDetail, readProducts } from './product/ProductQuery';
 
 const requests: URL[] = [];
@@ -78,7 +79,7 @@ describe('Console named read Operations', () => {
       readCockpit(context, '30days', signal),
       readControl(context, undefined, signal),
       readFinance(context, signal),
-      readOrders(context, { order: 'SW1' }, signal),
+      readOrders(context, { ...EMPTY_ORDER_LIST_FILTER, order: 'SW1', view: 'all' }, signal),
       readProducts(context, {}, signal),
       readProductDetail(context, 'product:1', signal),
     ]);

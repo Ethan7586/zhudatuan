@@ -16,13 +16,15 @@ import type { OrganizationReadPort } from '../../../organization/public';
 import type { ExportRepository } from '../../application/port/ExportRepository';
 import type { OrderRepository } from '../../application/port/OrderRepository';
 import type { ReminderRepository } from '../../application/port/ReminderRepository';
+import { OrderReadFilter } from '../../application/model/OrderReadFilter';
 import { ReceiveOrder } from './ReceiveOrder';
+import { ORDER_READ_FILTER_SQL, orderReadFilterValues } from './OrderReadSql';
 export class PgOrderRepository implements OrderRepository, ReminderRepository, ExportRepository {
   private readonly receiver: ReceiveOrder;
   constructor(
     private readonly transactions: PgTransactionAccess,
     outbox: OutboxWriter,
-    private readonly organizations: Pick<OrganizationReadPort, 'descendants'>
+    private readonly organizations: Pick<OrganizationReadPort, 'descendants' | 'scope'>
   ) {
     this.receiver = new ReceiveOrder(transactions, outbox, SystemClock);
   }
@@ -31,11 +33,11 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
     const owner = access.scope.kind === 'owner';
     const supplier = access.scope.kind === 'supplier';
     const store = access.scope.kind === 'store';
-    const selected = input.query?.order;
-    const order = (Array.isArray(selected) ? selected[0] : selected)?.trim().slice(0, 255) ?? '';
+    const filter = OrderReadFilter.from(input);
     const page = queryPage(input);
     const database = this.transactions.database(context);
     const scopes = owner || supplier || store ? [] : await this.organizations.descendants(context, organizationScope(access.scope));
+    const timezone = filter.placed === 'today' ? (await this.organizations.scope(context, access.organization)).timezone : 'UTC';
     const result = await database.query(
       `select orders.id,orders.order_number,orders.scope_id,orders.member_id,orders.mall_id,
       orders.checkout_id,orders.currency,orders.total_minor,orders.payment_state,orders.fulfillment_state,orders.aftersale_state,
@@ -48,9 +50,10 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
       from ordering.orderrecord orders left join ordering.line line on line.order_id=orders.id where (
       ($1::boolean and orders.member_id=$2) or (($3 or $4) and exists(select 1 from ordering.suborder where order_id=orders.id and partner_id=$2))
       or (not $1::boolean and not $3 and not $4 and orders.scope_id=any($5::text[]))
-      ) and ($6='' or orders.id=$6) and ($7::timestamptz is null or (orders.created_at,orders.id)<($7::timestamptz,$8))
-      group by orders.id order by orders.created_at desc,orders.id desc limit $9`,
-      [owner, access.scope.id, supplier, store, scopes, order, page.sort, page.id, page.fetch]
+      ) ${ORDER_READ_FILTER_SQL}
+      and ($14::timestamptz is null or (orders.created_at,orders.id)<($14::timestamptz,$15))
+      group by orders.id order by orders.created_at desc,orders.id desc limit $16`,
+      [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone), page.sort, page.id, page.fetch]
     );
     return keysetResult(result, page, 'created_at') as never;
   }

@@ -80,14 +80,20 @@ const context: ConsoleContext = {
     capabilities: ['order.write', 'fulfillment.write', 'payment.refund'],
     target: 'console',
     scope: { kind: 'enterprise', id: 'enterprise:1' },
-    scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
+    scopes: [
+      { kind: 'enterprise', id: 'enterprise:1' },
+      { kind: 'mall', id: 'mall:verified-1', name: '员工福利商城' },
+    ],
     assurance: { level: 2, verified: '2026-08-26T08:00:00.000Z' },
     security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
     syncedAt: '2026-08-26T08:00:00.000Z',
   },
   profile: { display_name: '测试订单运营', employee_no: null },
   scope: { kind: 'enterprise', id: 'enterprise:1' },
-  scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
+  scopes: [
+    { kind: 'enterprise', id: 'enterprise:1' },
+    { kind: 'mall', id: 'mall:verified-1', name: '员工福利商城' },
+  ],
 };
 
 const getRequests: URL[] = [];
@@ -125,8 +131,8 @@ describe('Order route', () => {
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '订单管理' })).toBeTruthy();
-    expect(screen.getByRole('note').textContent).toContain('商品订单与售后订单按当前数据范围安全隔离');
-    expect(screen.getByText('按订单编号查询')).toBeTruthy();
+    expect(screen.getByRole('note').textContent).toContain('由服务端按当前数据范围权威筛选');
+    expect(screen.getByText('当前条件由服务端实时筛选')).toBeTruthy();
     expect(screen.getByText('本页 1 条')).toBeTruthy();
     expect(screen.getByText(/^会员 \d{4} \d{4}$/)).toBeTruthy();
     expect(screen.getByText(/^组织范围 \d{4} \d{4}$/)).toBeTruthy();
@@ -138,8 +144,12 @@ describe('Order route', () => {
     expect(screen.queryByText('不应泄漏的演示支付方式')).toBeNull();
     expect(screen.getByRole('button', { name: '全部订单' }).textContent).toBe('全部订单');
 
-    expect(screen.queryByRole('button', { name: '待付款' })).toBeNull();
-    expect(screen.queryByRole('combobox', { name: '下单时间' })).toBeNull();
+    for (const label of ['全部订单', '待付款', '待发货', '履约中', '已完成', '售后与退款', '异常订单']) {
+      expect(screen.getByRole<HTMLButtonElement>('button', { name: label }).disabled).toBe(false);
+    }
+    for (const label of ['下单时间', '订单进度', '支付状态', '履约状态', '所属商城']) {
+      expect(screen.getByRole<HTMLSelectElement>('combobox', { name: label }).disabled).toBe(false);
+    }
     expect(screen.queryByRole('button', { name: '导出订单' })).toBeNull();
 
     await userEvent.setup().click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
@@ -147,6 +157,38 @@ describe('Order route', () => {
     expect(within(dialog).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
     expect(within(dialog).getByText(/当前读模型未提供审计时间线/)).toBeTruthy();
     expect(within(dialog).queryByText('不应泄漏的演示说明')).toBeNull();
+  });
+
+  it('sends status tabs and combined filters to the server instead of filtering the current page', async () => {
+    const user = userEvent.setup();
+    renderRoute('/orders?cursor=cursor%3Aold&campaign=keep');
+    await screen.findByRole('table', { name: '订单列表' });
+
+    await user.click(screen.getByRole('button', { name: '待付款' }));
+    await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('view') === 'unpaid')).toBe(true));
+    expect(currentParams().get('cursor')).toBeNull();
+    expect(currentParams().get('campaign')).toBe('keep');
+
+    await user.selectOptions(screen.getByRole('combobox', { name: '下单时间' }), '7days');
+    await user.selectOptions(screen.getByRole('combobox', { name: '订单进度' }), 'paid');
+    await user.selectOptions(screen.getByRole('combobox', { name: '支付状态' }), 'paid');
+    await user.selectOptions(screen.getByRole('combobox', { name: '履约状态' }), 'allocated');
+    await user.selectOptions(screen.getByRole('combobox', { name: '所属商城' }), 'mall:verified-1');
+    await user.click(screen.getByRole('button', { name: '筛选订单' }));
+
+    await waitFor(() =>
+      expect(
+        getRequests.some(
+          (url) =>
+            url.searchParams.get('view') === 'unpaid' &&
+            url.searchParams.get('placed') === '7days' &&
+            url.searchParams.get('lifecycle') === 'paid' &&
+            url.searchParams.get('payment') === 'paid' &&
+            url.searchParams.get('fulfillment') === 'allocated' &&
+            url.searchParams.get('mall') === 'mall:verified-1'
+        )
+      ).toBe(true)
+    );
   });
 
   it('reads the authoritative aftersale model for the console scope instead of filtering order rows in the browser', async () => {

@@ -16,7 +16,9 @@ import type { VerifiedAfterSaleAttachment } from '../../application/service/Afte
 import type { OrganizationReadPort } from '../../../organization/public';
 import { organizationScope } from '../../../../foundation/security/OrganizationScope';
 import { availableAfterSaleLines, type LineRow, type OrderRow } from './AfterSaleAvailability';
-import { queryValue, requestedLines, type RequestedLine } from './AfterSaleInput';
+import { requestedLines, type RequestedLine } from './AfterSaleInput';
+import { OrderReadFilter } from '../../application/model/OrderReadFilter';
+import { ORDER_READ_FILTER_SQL, orderReadFilterValues } from './OrderReadSql';
 export class AfterSalePersistence {
   private readonly refunds = new AfterSaleRefundPolicy();
   constructor(
@@ -26,12 +28,13 @@ export class AfterSalePersistence {
 
   async read(request: OperationRequest, database: SqlExecutor): Promise<OperationResult> {
     const access = requireAccess(request);
-    const orderId = queryValue(request.input.query.order);
+    const filter = OrderReadFilter.from(request.input);
     const member = access.scope.kind === 'owner' || access.scope.kind === 'self';
     const supplier = access.scope.kind === 'supplier';
     const store = access.scope.kind === 'store';
     const scopes = member || supplier || store ? [] : await this.organizations.descendants(database.transaction, organizationScope(access.scope));
     const page = queryPage(request.input);
+    const timezone = filter.placed === 'today' ? (await this.organizations.scope(database.transaction, access.organization)).timezone : 'UTC';
     const rows = await database.query(
       `select aftersale.id,aftersale.order_id "orderId",aftersale.state,aftersale.reason_code "reasonCode",
       aftersale.description,aftersale.currency,aftersale.expected_refund_minor::float8 "expectedRefundMinor",aftersale.expected_refund "expectedRefund",
@@ -54,12 +57,12 @@ export class AfterSalePersistence {
       where (($1::boolean and orders.member_id=$2)
         or (($3::boolean or $4::boolean) and exists(select 1 from ordering.suborder where order_id=orders.id and partner_id=$2))
         or (not $1::boolean and not $3::boolean and not $4::boolean and orders.scope_id=any($5::text[])))
-        and ($6='' or orders.id=$6)
-        and ($7::timestamptz is null or (aftersale.created_at,aftersale.id)<($7::timestamptz,$8))
-      order by aftersale.created_at desc,aftersale.id desc limit $9`,
-      [member, access.scope.id, supplier, store, scopes, orderId, page.sort, page.id, page.fetch]
+        ${ORDER_READ_FILTER_SQL}
+        and ($14::timestamptz is null or (aftersale.created_at,aftersale.id)<($14::timestamptz,$15))
+      order by aftersale.created_at desc,aftersale.id desc limit $16`,
+      [member, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone), page.sort, page.id, page.fetch]
     );
-    const availableOrder = member && orderId ? await this.order(database, orderId, access.scope.id, false) : null;
+    const availableOrder = member && filter.order ? await this.order(database, filter.order, access.scope.id, false) : null;
     const availableLines = availableOrder === null ? [] : await availableAfterSaleLines(database, availableOrder, await this.lines(database, availableOrder.id, [], false), this.policies);
     const result = keysetRows(rows.rows, page, 'createdAt');
     return { ...result, body: { ...(result.body as Record<string, unknown>), availableLines } };

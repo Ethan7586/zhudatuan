@@ -4,7 +4,8 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { readOrderDetail } from './OrderDetailQuery';
-import { ORDER_PAGE_LIMIT, orderKey, readOrders } from './OrderQuery';
+import { ORDER_PAGE_LIMIT, orderKey, readOrders, type OrderQuery } from './OrderQuery';
+import { EMPTY_ORDER_LIST_FILTER } from './OrderFilters';
 import { OrderPageSchema } from './OrderSchema';
 
 const requests: URL[] = [];
@@ -25,18 +26,30 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('Order query', () => {
-  it('sends only the bounded contract query with scope and access version', async () => {
-    await readOrders(context(), { order: 'order:internal:42', cursor: 'cursor:50' }, new AbortController().signal);
-    expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({ limit: String(ORDER_PAGE_LIMIT), order: 'order:internal:42', cursor: 'cursor:50' });
+  it('sends every bounded contract filter with scope and access version', async () => {
+    await readOrders(context(), query({ order: 'order:internal:42', view: 'active', placed: '7days', lifecycle: 'fulfilling', payment: 'paid', fulfillment: 'processing', mall: 'mall:1', cursor: 'cursor:50' }), new AbortController().signal);
+    expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({
+      limit: String(ORDER_PAGE_LIMIT),
+      order: 'order:internal:42',
+      placed: '7days',
+      lifecycle: 'fulfilling',
+      payment: 'paid',
+      fulfillment: 'processing',
+      mall: 'mall:1',
+      view: 'active',
+      cursor: 'cursor:50',
+    });
   });
 
   it('isolates query keys by scope, access version, order and cursor', () => {
     const keys = [
-      orderKey(context(), { order: 'order:1', cursor: 'cursor:1' }),
-      orderKey(context('enterprise:2'), { order: 'order:1', cursor: 'cursor:1' }),
-      orderKey(context('enterprise:1', 8), { order: 'order:1', cursor: 'cursor:1' }),
-      orderKey(context(), { order: 'order:2', cursor: 'cursor:1' }),
-      orderKey(context(), { order: 'order:1', cursor: 'cursor:2' }),
+      orderKey(context(), query({ order: 'order:1', cursor: 'cursor:1' })),
+      orderKey(context('enterprise:2'), query({ order: 'order:1', cursor: 'cursor:1' })),
+      orderKey(context('enterprise:1', 8), query({ order: 'order:1', cursor: 'cursor:1' })),
+      orderKey(context(), query({ order: 'order:2', cursor: 'cursor:1' })),
+      orderKey(context(), query({ order: 'order:1', cursor: 'cursor:2' })),
+      orderKey(context(), query({ order: 'order:1', view: 'unpaid', cursor: 'cursor:1' })),
+      orderKey(context(), query({ order: 'order:1', payment: 'paid', cursor: 'cursor:1' })),
     ];
     expect(new Set(keys.map((key) => JSON.stringify(key))).size).toBe(keys.length);
   });
@@ -49,7 +62,7 @@ describe('Order query', () => {
       })
     );
     const controller = new AbortController();
-    const pending = readOrders(context(), { order: '' }, controller.signal);
+    const pending = readOrders(context(), query(), controller.signal);
     controller.abort(new Error('SCOPE_CHANGED'));
     await expect(pending).rejects.toThrow();
   });
@@ -74,6 +87,10 @@ describe('Order query', () => {
     expect(OrderPageSchema.safeParse({ items: [order('order:1', 'SW-1')], count: 0 }).success).toBe(false);
   });
 });
+
+function query(overrides: Partial<OrderQuery> = {}): OrderQuery {
+  return { ...EMPTY_ORDER_LIST_FILTER, view: 'all', ...overrides };
+}
 
 function context(id = 'enterprise:1', accessVersion = 7): ConsoleContext {
   const scope = { kind: 'enterprise' as const, id };

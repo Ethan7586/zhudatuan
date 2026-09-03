@@ -20,6 +20,7 @@
     "./schema": "./src/schema/index.ts",
     "./version": "./src/ContractIdentity.ts",
     "./openapi.json": "./openapi.json",
+    "./order": "./src/OrderContract.ts",
     "./events.json": "./events.json",
     "./catalog-taxonomy.json": "./src/catalog-taxonomy.json"
   },

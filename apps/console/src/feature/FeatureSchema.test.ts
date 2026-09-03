@@ -5,6 +5,7 @@ import { ApiError } from '@shop/sdk';
 import { CockpitSchema } from './cockpit/CockpitSchema';
 import { DistributorPageSchema, LayerPageSchema } from './control/ControlSchema';
 import { FinanceOverviewSchema } from './finance/FinanceSchema';
+import { EMPTY_ORDER_LIST_FILTER } from './order/OrderFilters';
 import { OrderPageSchema } from './order/OrderSchema';
 import { orderKey } from './order/OrderQuery';
 import { ListingPageSchema } from './product/ProductSchema';
@@ -60,7 +61,7 @@ describe('Console feature-owned response schemas', () => {
     const first = context('mall:1', 3);
     const second = context('mall:2', 4);
     expect(productKey(first, { cursor: 'cursor:1' })).not.toEqual(productKey(second, { cursor: 'cursor:1' }));
-    expect(orderKey(first, { order: 'SW1' })).toContain('order.orders.read');
+    expect(orderKey(first, { ...EMPTY_ORDER_LIST_FILTER, order: 'SW1', view: 'all' })).toContain('order.orders.read');
   });
 
   it('preserves prior data only for transient failures, never for access denial', () => {

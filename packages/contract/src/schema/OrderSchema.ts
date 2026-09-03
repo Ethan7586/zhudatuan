@@ -1,6 +1,7 @@
 import { array, boolean, literal, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { currency, expectedVersion, id, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
+import { ORDER_FULFILLMENT_STATES, ORDER_LIFECYCLE_STATES, ORDER_LIST_VIEWS, ORDER_PAYMENT_STATES, ORDER_PLACED_FILTERS } from '../OrderContract';
 
 const line = strictObject({
   id: string(),
@@ -118,8 +119,25 @@ const exportResult = strictObject({
 });
 
 export const ORDER_QUERY_SCHEMAS = {
-  OrderOrdersReadInput: strictObject({ ...pageQuery, order: optional(string()) }),
-  OrderAftersalesReadInput: strictObject({ ...pageQuery, order: optional(string()) }),
+  OrderOrdersReadInput: strictObject({
+    ...pageQuery,
+    order: optional(string()),
+    view: optional(literal(ORDER_LIST_VIEWS)),
+    placed: optional(literal(ORDER_PLACED_FILTERS)),
+    lifecycle: optional(literal(ORDER_LIFECYCLE_STATES)),
+    payment: optional(literal(ORDER_PAYMENT_STATES)),
+    fulfillment: optional(literal(ORDER_FULFILLMENT_STATES)),
+    mall: optional(string()),
+  }),
+  OrderAftersalesReadInput: strictObject({
+    ...pageQuery,
+    order: optional(string()),
+    placed: optional(literal(ORDER_PLACED_FILTERS)),
+    lifecycle: optional(literal(ORDER_LIFECYCLE_STATES)),
+    payment: optional(literal(ORDER_PAYMENT_STATES)),
+    fulfillment: optional(literal(ORDER_FULFILLMENT_STATES)),
+    mall: optional(string()),
+  }),
 } as const;
 
 export const ORDER_BODY_SCHEMAS = {

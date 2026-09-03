@@ -25923,6 +25923,32 @@
               "cursor": {
                 "type": "string"
               },
+              "fulfillment": {
+                "enum": [
+                  "unallocated",
+                  "allocated",
+                  "processing",
+                  "shipped",
+                  "delivered",
+                  "received",
+                  "cancelled",
+                  "returned"
+                ],
+                "type": "string"
+              },
+              "lifecycle": {
+                "enum": [
+                  "created",
+                  "awaitingpayment",
+                  "paid",
+                  "fulfilling",
+                  "shipped",
+                  "received",
+                  "completed",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
               "limit": {
                 "anyOf": [
                   {
@@ -25936,7 +25962,29 @@
                   }
                 ]
               },
+              "mall": {
+                "type": "string"
+              },
               "order": {
+                "type": "string"
+              },
+              "payment": {
+                "enum": [
+                  "unpaid",
+                  "authorizing",
+                  "paid",
+                  "partially_refunded",
+                  "refunded",
+                  "failed"
+                ],
+                "type": "string"
+              },
+              "placed": {
+                "enum": [
+                  "today",
+                  "7days",
+                  "30days"
+                ],
                 "type": "string"
               }
             },
@@ -26958,6 +27006,32 @@
               "cursor": {
                 "type": "string"
               },
+              "fulfillment": {
+                "enum": [
+                  "unallocated",
+                  "allocated",
+                  "processing",
+                  "shipped",
+                  "delivered",
+                  "received",
+                  "cancelled",
+                  "returned"
+                ],
+                "type": "string"
+              },
+              "lifecycle": {
+                "enum": [
+                  "created",
+                  "awaitingpayment",
+                  "paid",
+                  "fulfilling",
+                  "shipped",
+                  "received",
+                  "completed",
+                  "cancelled"
+                ],
+                "type": "string"
+              },
               "limit": {
                 "anyOf": [
                   {
@@ -26971,7 +27045,40 @@
                   }
                 ]
               },
+              "mall": {
+                "type": "string"
+              },
               "order": {
+                "type": "string"
+              },
+              "payment": {
+                "enum": [
+                  "unpaid",
+                  "authorizing",
+                  "paid",
+                  "partially_refunded",
+                  "refunded",
+                  "failed"
+                ],
+                "type": "string"
+              },
+              "placed": {
+                "enum": [
+                  "today",
+                  "7days",
+                  "30days"
+                ],
+                "type": "string"
+              },
+              "view": {
+                "enum": [
+                  "all",
+                  "unpaid",
+                  "unshipped",
+                  "active",
+                  "completed",
+                  "exception"
+                ],
                 "type": "string"
               }
             },
@@ -76443,6 +76550,95 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "enum": [
+                "all",
+                "unpaid",
+                "unshipped",
+                "active",
+                "completed",
+                "exception"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "placed",
+            "required": false,
+            "schema": {
+              "enum": [
+                "today",
+                "7days",
+                "30days"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lifecycle",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created",
+                "awaitingpayment",
+                "paid",
+                "fulfilling",
+                "shipped",
+                "received",
+                "completed",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "payment",
+            "required": false,
+            "schema": {
+              "enum": [
+                "unpaid",
+                "authorizing",
+                "paid",
+                "partially_refunded",
+                "refunded",
+                "failed"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fulfillment",
+            "required": false,
+            "schema": {
+              "enum": [
+                "unallocated",
+                "allocated",
+                "processing",
+                "shipped",
+                "delivered",
+                "received",
+                "cancelled",
+                "returned"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mall",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -77556,6 +77752,79 @@
           {
             "in": "query",
             "name": "order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "placed",
+            "required": false,
+            "schema": {
+              "enum": [
+                "today",
+                "7days",
+                "30days"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lifecycle",
+            "required": false,
+            "schema": {
+              "enum": [
+                "created",
+                "awaitingpayment",
+                "paid",
+                "fulfilling",
+                "shipped",
+                "received",
+                "completed",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "payment",
+            "required": false,
+            "schema": {
+              "enum": [
+                "unpaid",
+                "authorizing",
+                "paid",
+                "partially_refunded",
+                "refunded",
+                "failed"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fulfillment",
+            "required": false,
+            "schema": {
+              "enum": [
+                "unallocated",
+                "allocated",
+                "processing",
+                "shipped",
+                "delivered",
+                "received",
+                "cancelled",
+                "returned"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mall",
             "required": false,
             "schema": {
               "type": "string"
