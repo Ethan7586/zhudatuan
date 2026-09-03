@@ -4,6 +4,7 @@ import { DomainError } from '../../../../foundation/domain/DomainError';
 import type { IdentityAction } from '../model/IdentityAction';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
 import type { RegistrationPolicyRepository } from '../port/RegistrationPolicyRepository';
+import { passwordPolicyView } from './PasswordPolicyView';
 import { registrationPolicyView } from './RegistrationPolicyView';
 
 const METHODS = Object.freeze(['password', 'otp', 'invitation', 'federation'] as const);
@@ -35,7 +36,7 @@ export class ReadIdentityBootstrap {
           csrf,
           methods: METHODS,
           preferredMethod: 'password' as const,
-          password: Object.freeze(policy.password),
+          password: passwordPolicyView(policy.password),
           otp: Object.freeze({ validSeconds: policy.otp.validMinutes * 60, resendSeconds: policy.otp.resendSeconds }),
           legal: registrationPolicyView(legal),
         }),
