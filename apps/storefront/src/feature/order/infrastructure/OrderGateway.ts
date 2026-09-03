@@ -1,25 +1,30 @@
 import type { OperationOutputFor } from '@shop/contract';
-import { storefrontClient } from '../../../shared/api/Client';
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontClient } from '../../../shared/api/Client';
+import type { StorefrontSession } from '../../../entity/session';
 
-export const OrderGateway = Object.freeze({
+export class OrderGateway {
+  constructor(
+    private readonly orderClient: StorefrontClient['commerce']['order'],
+    private readonly fulfillment: StorefrontClient['commerce']['fulfillment'],
+    private readonly context: StorefrontClient['context']
+  ) {}
   orders(session: StorefrontSession, signal?: AbortSignal): Promise<OperationOutputFor<'order.orders.read'>> {
-    return storefrontClient.commerce.order.ordersRead({ query: { limit: 50 } }, storefrontClient.context(session, { signal }));
-  },
+    return this.orderClient.ordersRead({ query: { limit: 50 } }, this.context(session, { signal }));
+  }
 
   order(session: StorefrontSession, orderId: string, signal?: AbortSignal): Promise<OperationOutputFor<'order.orders.read'>> {
-    return storefrontClient.commerce.order.ordersRead({ query: { order: orderId, limit: 1 } }, storefrontClient.context(session, { signal }));
-  },
+    return this.orderClient.ordersRead({ query: { order: orderId, limit: 1 } }, this.context(session, { signal }));
+  }
 
   tracking(session: StorefrontSession, orderId: string, signal?: AbortSignal): Promise<OperationOutputFor<'fulfillment.tracking.read'>> {
-    return storefrontClient.commerce.fulfillment.trackingRead({ query: { order: orderId } }, storefrontClient.context(session, { signal }));
-  },
+    return this.fulfillment.trackingRead({ query: { order: orderId } }, this.context(session, { signal }));
+  }
 
   receive(session: StorefrontSession, orderId: string, expectedVersion: number, idempotencyKey: string): Promise<OperationOutputFor<'order.orders.receive'>> {
-    return storefrontClient.commerce.order.ordersReceive({ path: { orderid: orderId }, body: { expectedVersion } }, storefrontClient.context(session, { write: true, expectedVersion, idempotencyKey }));
-  },
+    return this.orderClient.ordersReceive({ path: { orderid: orderId }, body: { expectedVersion } }, this.context(session, { write: true, expectedVersion, idempotencyKey }));
+  }
 
   remind(session: StorefrontSession, orderId: string, idempotencyKey: string): Promise<OperationOutputFor<'order.reminders.create'>> {
-    return storefrontClient.commerce.order.remindersCreate({ path: { orderid: orderId }, body: {} }, storefrontClient.context(session, { write: true, idempotencyKey }));
-  },
-});
+    return this.orderClient.remindersCreate({ path: { orderid: orderId }, body: {} }, this.context(session, { write: true, idempotencyKey }));
+  }
+}

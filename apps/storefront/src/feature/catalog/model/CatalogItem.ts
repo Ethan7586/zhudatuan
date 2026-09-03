@@ -1,6 +1,6 @@
-import type { ProductView } from '../../../shared/runtime/StorefrontPort';
+import type { Product } from '../../../entity/product';
 
 export interface CatalogItem {
-  readonly product: ProductView;
+  readonly product: Product;
   readonly listingVersion: string;
 }

@@ -1,4 +1,4 @@
-import type { Product } from '../src/feature/product/model/Product';
+import type { Product } from '../src/entity/product';
 import type { Address } from '../src/feature/account/model/Address';
 import type { Profile } from '../src/feature/account/model/Profile';
 

@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
 import { AssurancePrompt } from '../../../entity/session/AssurancePrompt';
 
-import type { DataColumn } from '../../../shared/ui/DataTable';
+import type { DataColumn } from '@shop/design';
 import { PagedResource } from '../../../shared/ui/PagedResource';
 import { pageCursor } from '../../../shared/url/PageCursor';
 import { accessKey, readAccess } from './AccessQuery';

@@ -11,7 +11,7 @@ describe('Console Route Registry', () => {
     const manifests = RouteRegistry.all();
     expect(manifests.map(({ component }) => component).sort()).toEqual([...COMPONENT_KEYS].sort());
     expect(manifests.flatMap(({ navigationids }) => navigationids).sort()).toEqual([...NAVIGATION_IDS].sort());
-    expect(new Set(RouteRegistry.routes().map(({ route }) => route.route)).size).toBe(RouteRegistry.routes().length);
+    expect(new Set(RouteRegistry.routes().map(({ route }) => route.routeid)).size).toBe(RouteRegistry.routes().length);
     for (const manifest of manifests) {
       expect(Object.keys(manifest).sort()).toEqual(['component', 'load', 'navigationids', 'routes']);
     }

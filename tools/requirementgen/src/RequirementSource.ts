@@ -32,7 +32,6 @@ export interface MvpDefinition {
   readonly directOperations: readonly string[];
   readonly transitiveOperations: readonly string[];
   readonly journeys: readonly string[];
-  readonly entryRoutes: readonly string[];
   readonly providers: readonly string[];
   readonly clarifications: readonly string[];
   readonly runbook: string;
@@ -117,6 +116,14 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
     'MVP_ID_DUPLICATE'
   );
   if (mvp.length !== 22) throw new Error('MVP_SOURCE_COUNT_INVALID:' + mvp.length);
+  const required = mvp.filter(({ release }) => release === 'required');
+  const nonblocking = mvp.filter(({ release }) => release === 'nonblocking');
+  if (required.length !== 18 || nonblocking.length !== 4) throw new Error(`MVP_RELEASE_COUNT_INVALID:${required.length}:${nonblocking.length}`);
+  assertExactKeys(
+    nonblocking.map(({ id }) => id),
+    ['MVPPLATFORM', 'MVPDISTRIBUTION', 'MVPGROUPFINANCE', 'MVPMALLFINANCE'],
+    'MVP_NONBLOCKING'
+  );
   if (mvp.some(({ id }) => !/^MVP[A-Z]+$/.test(id))) throw new Error('MVP_ID_INVALID');
   if (mvp.some(({ directOperations, transitiveOperations }) => directOperations.some((operation) => transitiveOperations.includes(operation)))) {
     throw new Error('MVP_OPERATION_CLASSIFICATION_OVERLAP');
@@ -137,15 +144,22 @@ export async function loadRequirementSource(root: string): Promise<RequirementSo
   if (providers.slice(0, 11).some(({ core }) => core === undefined) || providers.slice(11).some(({ core }) => core !== undefined)) {
     throw new Error('REQUIREMENT_PROVIDER_CORE_INVALID');
   }
+  assertExactKeys(
+    providers.slice(0, 11).map(({ id }) => id),
+    ['jdproduct', 'jdfresh', 'tmall', 'supplier', 'cake', 'flower', 'book', 'charge', 'foodvoucher', 'movie', 'meal'],
+    'REQUIREMENT_PRIORITY_ONE_PROVIDER'
+  );
   const clarificationIds = new Set(clarifications.map(({ id }) => id));
   if (
     mvp.some(({ journeys, providers: references }) => journeys.length === 0 || references.some((reference) => !providerIds.has(reference))) ||
-    mvp.some(({ entryRoutes }) => entryRoutes.some((route) => !route.startsWith('/'))) ||
     clarifications.some(({ id, requirements, status }) => id.length === 0 || requirements.length === 0 || requirements.some((requirement) => !mvpIds.has(requirement)) || (status !== 'open' && status !== 'resolved')) ||
     mvp.some(({ clarifications: references }) => references.some((reference) => !clarificationIds.has(reference)))
   ) {
     throw new Error('REQUIREMENT_CLARIFICATION_INVALID');
   }
+  assertExactKeys(clarifications.map(({ id }) => id), ['distributiondefinition', 'voucherarchive', 'grouprisk'], 'REQUIREMENT_CLARIFICATION');
+  const blocking = clarifications.filter(({ blocking, status }) => blocking && status === 'open');
+  assertExactKeys(blocking.map(({ id }) => id), ['voucherarchive', 'grouprisk'], 'REQUIREMENT_BLOCKING_CLARIFICATION');
   return Object.freeze({ version: document.version, sheets, bindings, providers, mvp, clarifications });
 }
 

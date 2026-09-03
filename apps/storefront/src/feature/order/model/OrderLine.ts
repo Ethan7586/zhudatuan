@@ -1,4 +1,4 @@
-import type { ProductItemType } from '../../../shared/runtime/StorefrontPort';
+import type { ProductKind } from '../../../entity/product';
 
 export interface OrderLine {
   readonly id: string;
@@ -13,7 +13,7 @@ export interface OrderLine {
   readonly payableMinor: number;
   readonly quantity: number;
   readonly categoryId: string;
-  readonly itemType: ProductItemType;
+  readonly itemType: ProductKind;
   readonly provider: string | null;
   readonly partner: string | null;
 }

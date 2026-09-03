@@ -1,0 +1,22 @@
+import { OperationCatalog, type OperationAssurance, type OperationId } from '@shop/contract';
+import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+
+export function canUseOperation(context: ConsoleContext, operation: OperationId): boolean {
+  const definition = OperationCatalog.get(operation);
+  return context.session.capabilities.includes(definition.capability) && (definition.permission === null || context.session.permissions.includes(definition.permission));
+}
+
+export function assertOperationAccess(context: ConsoleContext, operation: OperationId, proof?: string): void {
+  const definition = OperationCatalog.get(operation);
+  if (!canUseOperation(context, operation)) throw new Error('OPERATION_ACCESS_DENIED');
+  if (context.session.assurance.level < assuranceLevel(definition.assuranceLevel)) throw new Error('STEPUP_REQUIRED');
+  if (definition.assuranceLevel === 'stepup' && !/^[A-Za-z0-9_-]{43,4096}$/.test(proof ?? '')) throw new Error('ACTION_PROOF_REQUIRED');
+}
+
+export function requiredAssurance(operation: OperationId): number { return assuranceLevel(OperationCatalog.get(operation).assuranceLevel); }
+
+function assuranceLevel(value: OperationAssurance): number {
+  if (value === 'stepup') return 3;
+  if (value === 'mfa') return 2;
+  return value === 'session' ? 1 : 0;
+}

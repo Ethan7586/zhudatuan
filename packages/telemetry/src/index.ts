@@ -1,4 +1,8 @@
 export * from './Adapter';
+export * from './BrowserMutation';
+export * from './BrowserNavigation';
+export * from './BrowserQuery';
+export * from './BrowserStream';
 export * from './ClientErrors';
 export * from './Context';
 export * from './Logger';
@@ -6,6 +10,7 @@ export * from './Metrics';
 export * from './Redactor';
 export * from './Telemetry';
 export * from './Tracer';
+export * from './WebVitals';
 export * from './browser';
 export * from './miniapp';
 export * from './node';

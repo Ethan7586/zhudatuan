@@ -1,11 +1,12 @@
 import type { OperationOutputFor } from '@shop/contract';
 import type { CatalogPage } from '../model/CatalogPage';
-import { mapProduct, presentProduct } from '../../../shared/api/ProductMapper';
-import type { CategoryView, PresentedProduct, ProductView } from '../../../shared/runtime/StorefrontPort';
+import { mapProduct, presentProduct } from '../../../entity/product';
+import type { PresentedProduct, Product } from '../../../entity/product';
+import type { CatalogCategory } from '../model/CatalogCategory';
 import { CATEGORY_DISPLAY_NAMES } from '../model/Taxonomy';
 
 export type FrontendProduct = PresentedProduct;
-export type FrontendCategory = CategoryView;
+export type FrontendCategory = CatalogCategory;
 
 export function mapCatalog(value: OperationOutputFor<'storefront.catalog.read'>): CatalogPage {
   return Object.freeze({
@@ -18,7 +19,7 @@ export function mapCatalog(value: OperationOutputFor<'storefront.catalog.read'>)
 
 export const toFrontendProduct = presentProduct;
 
-export function toFrontendProducts(products: readonly ProductView[]): readonly FrontendProduct[] {
+export function toFrontendProducts(products: readonly Product[]): readonly FrontendProduct[] {
   return Object.freeze(products.map(toFrontendProduct));
 }
 
@@ -35,7 +36,7 @@ const CATEGORY_ICONS: Readonly<Record<string, string>> = Object.freeze({
   cat_welfare_zone: 'Gift',
 });
 
-export function toFrontendCategories(products: readonly ProductView[]): readonly FrontendCategory[] {
+export function toFrontendCategories(products: readonly Product[]): readonly FrontendCategory[] {
   const categories = new Map<string, { name: string; titles: Set<string>; keywords: Set<string> }>();
   for (const product of products) {
     const category = categories.get(product.categoryId) ?? { name: CATEGORY_DISPLAY_NAMES[product.categoryId] ?? product.categoryName, titles: new Set<string>(), keywords: new Set<string>() };

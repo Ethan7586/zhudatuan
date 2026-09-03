@@ -1,11 +1,13 @@
 import { lazy, Suspense } from 'react';
+import { useProductViewModel } from '../feature/product/viewmodel/ProductViewModel';
 
-const QuickViewModal = lazy(() => import('../feature/product/ui/QuickViewModal').then((module) => ({ default: module.QuickViewModal })));
+const QuickViewModal = lazy(() => import('../feature/product/view/QuickViewModal').then((module) => ({ default: module.QuickViewModal })));
 
 export function QuickView() {
+  const viewmodel = useProductViewModel();
   return (
     <Suspense fallback={null}>
-      <QuickViewModal />
+      <QuickViewModal viewmodel={viewmodel} />
     </Suspense>
   );
 }

@@ -1,18 +1,16 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
-import { readBenefits } from '../application/ReadBenefits';
+import type { StorefrontSession } from '../../../entity/session';
+import type { BenefitAccount } from '../model/BenefitAccount';
 
-export { readBenefits as readBenefitAccounts };
+export interface BenefitReader {
+  accounts(session: StorefrontSession, signal?: AbortSignal): Promise<readonly BenefitAccount[]>;
+}
 
 export interface BenefitBalances {
   readonly welfareMinor: number;
   readonly mealMinor: number;
 }
 
-export async function readBenefitBalances(session: StorefrontSession, signal?: AbortSignal): Promise<BenefitBalances> {
-  return benefitBalances(await readBenefits(session, signal));
-}
-
-export function benefitBalances(accounts: Awaited<ReturnType<typeof readBenefits>>): BenefitBalances {
+export function benefitBalances(accounts: readonly BenefitAccount[]): BenefitBalances {
   return accounts
     .filter(({ status }) => status === 'active')
     .reduce<BenefitBalances>(

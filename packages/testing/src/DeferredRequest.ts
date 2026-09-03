@@ -1,0 +1,25 @@
+export class DeferredRequest<T> {
+  readonly promise: Promise<T>;
+  private settled = false;
+  private resolvePromise!: (value: T | PromiseLike<T>) => void;
+  private rejectPromise!: (reason?: unknown) => void;
+
+  constructor() {
+    this.promise = new Promise<T>((resolve, reject) => {
+      this.resolvePromise = resolve;
+      this.rejectPromise = reject;
+    });
+  }
+
+  resolve(value: T): void {
+    if (this.settled) throw new Error('DEFERRED_REQUEST_ALREADY_SETTLED');
+    this.settled = true;
+    this.resolvePromise(value);
+  }
+
+  reject(reason: unknown): void {
+    if (this.settled) throw new Error('DEFERRED_REQUEST_ALREADY_SETTLED');
+    this.settled = true;
+    this.rejectPromise(reason);
+  }
+}

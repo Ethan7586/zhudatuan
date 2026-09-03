@@ -246,7 +246,6 @@ export class CheckoutConfirmationService {
         sku,
         product,
         category,
-        powderclass: category,
         provider,
         partner,
         totalMinor,

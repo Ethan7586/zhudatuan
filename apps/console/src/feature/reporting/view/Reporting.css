@@ -1,0 +1,15 @@
+.reportpage { display: grid; gap: var(--sw-space-2); }
+.reportcontext { margin: var(--sw-space-1) 0 0; color: var(--sw-text-secondary); font-size: var(--sw-font-size-body-sm); }
+.reportcontent { display: grid; overflow: hidden; border: 1px solid var(--sw-border); border-radius: var(--sw-radius-md); background: var(--sw-surface); box-shadow: var(--sw-shadow-sm); }
+.reportcontent > footer { display: flex; min-height: 3.5rem; align-items: center; justify-content: space-between; gap: var(--sw-space-2); border-top: 1px solid var(--sw-border); padding: var(--sw-space-1) var(--sw-space-2); color: var(--sw-text-secondary); }
+.reportexport { display: grid; gap: var(--sw-space-2); }
+.reportexport dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; overflow: hidden; border: 1px solid var(--sw-border); border-radius: var(--sw-radius-md); }
+.reportexport dl div { display: grid; gap: .25rem; padding: var(--sw-space-1-5); border-bottom: 1px solid var(--sw-border); }
+.reportexport dt { color: var(--sw-text-secondary); font-size: var(--sw-font-size-body-sm); }
+.reportexport dd { margin: 0; color: var(--sw-text); font-weight: 700; }
+.reportexport > p { margin: 0; color: var(--sw-text-secondary); line-height: 1.65; }
+.reportexport > footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--sw-space-1); }
+.reportdownload { display: inline-flex; width: max-content; min-height: 2.75rem; align-items: center; text-decoration: none; }
+.reporterror { border-radius: var(--sw-radius-sm); background: var(--sw-danger-surface); padding: var(--sw-space-1-5); color: var(--sw-danger); }
+.reportreceipt { position: fixed; right: var(--sw-space-3); bottom: var(--sw-space-3); z-index: 80; display: grid; width: min(28rem, calc(100vw - 2rem)); gap: var(--sw-space-1); border: 1px solid var(--sw-border); border-radius: var(--sw-radius-lg); background: var(--sw-surface); padding: var(--sw-space-2); box-shadow: var(--sw-shadow-lg); }
+@media (max-width: 48rem) { .reportexport dl { grid-template-columns: 1fr; } .reportcontent > footer { align-items: stretch; flex-direction: column; } .reportreceipt { right: 1rem; bottom: 1rem; } }

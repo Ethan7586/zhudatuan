@@ -1,14 +1,15 @@
-import { storefrontClient } from '../../../shared/api/Client';
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontClient } from '../../../shared/api/Client';
+import type { StorefrontSession } from '../../../entity/session';
 
-export const CartGateway = Object.freeze({
+export class CartGateway {
+  constructor(private readonly cart: StorefrontClient['commerce']['cart'], private readonly context: StorefrontClient['context']) {}
   read(session: StorefrontSession, signal?: AbortSignal) {
-    return storefrontClient.commerce.cart.currentRead({}, storefrontClient.context(session, { signal }));
-  },
+    return this.cart.currentRead({}, this.context(session, { signal }));
+  }
   put(session: StorefrontSession, input: Readonly<{ listingId: string; quantity: number; lineVersion: number | null; cartVersion: number; idempotencyKey: string }>) {
-    return storefrontClient.commerce.cart.itemsPut(
+    return this.cart.itemsPut(
       { path: { listingid: input.listingId }, body: { quantity: input.quantity, lineVersion: input.lineVersion } },
-      storefrontClient.context(session, { write: true, expectedVersion: input.cartVersion, idempotencyKey: input.idempotencyKey })
+      this.context(session, { write: true, expectedVersion: input.cartVersion, idempotencyKey: input.idempotencyKey })
     );
-  },
-});
+  }
+}

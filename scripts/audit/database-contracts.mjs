@@ -172,9 +172,13 @@ const REPAIR_FILES = [
   '20260903104000_publish_organization_labels.sql',
   '20260903105000_publish_invitation_accounts.sql',
   '20260903106000_publish_risk_actor_accounts.sql',
+  '20260903107000_remove_reporting_powderclass.sql',
+  '20260903108000_publish_shared_voucher_reads.sql',
+  '20260903109000_complete_cockpit_projection.sql',
+  '20260903110000_complete_order_read_projection.sql',
 ];
 const HARD_CUT_CONTRACTS = [
-  'contract_v4_catalog_contract.sql',
+  'contract_v5_catalog_contract.sql',
   'access_override_authorization_contract.sql',
   'invitation_security_contract.sql',
   'operation_idempotency_contract.sql',

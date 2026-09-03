@@ -1,0 +1,59 @@
+import type { StorefrontHandle } from '@shop/contract';
+import { StorefrontClient } from '../shared/api/Client';
+import { SessionGateway } from '../entity/session';
+import { AccountGateway } from '../feature/account/infrastructure/AccountGateway';
+import { AfterSaleGateway } from '../feature/aftersale/infrastructure/AfterSaleGateway';
+import { BenefitGateway } from '../feature/benefit/infrastructure/BenefitGateway';
+import { CartGateway } from '../feature/cart/infrastructure/CartGateway';
+import { CatalogGateway } from '../feature/catalog/infrastructure/CatalogGateway';
+import { CheckoutGateway } from '../feature/checkout/infrastructure/CheckoutGateway';
+import { HomeGateway } from '../feature/home/infrastructure/HomeGateway';
+import { NotificationGateway } from '../feature/notification/infrastructure/NotificationGateway';
+import { InvoiceGateway } from '../feature/order/infrastructure/InvoiceGateway';
+import { OrderGateway } from '../feature/order/infrastructure/OrderGateway';
+import { PaymentGateway } from '../feature/payment/infrastructure/PaymentGateway';
+import { ProductGateway } from '../feature/product/infrastructure/ProductGateway';
+import { ReferralGateway } from '../feature/referral/infrastructure/ReferralGateway';
+import { SecurityGateway } from '../feature/security/infrastructure/SecurityGateway';
+import { StepupGateway } from '../feature/security/infrastructure/StepupGateway';
+import { SupportGateway } from '../feature/support/infrastructure/SupportGateway';
+import { VoucherGateway } from '../feature/voucher/infrastructure/VoucherGateway';
+
+export interface Dependencies {
+  readonly session: SessionGateway;
+  readonly account: AccountGateway;
+  readonly aftersale: AfterSaleGateway;
+  readonly benefit: BenefitGateway;
+  readonly cart: CartGateway;
+  readonly catalog: CatalogGateway;
+  readonly checkout: CheckoutGateway;
+  readonly home: HomeGateway;
+  readonly notification: NotificationGateway;
+  readonly invoice: InvoiceGateway;
+  readonly order: OrderGateway;
+  readonly payment: PaymentGateway;
+  readonly product: ProductGateway;
+  readonly referral: ReferralGateway;
+  readonly security: SecurityGateway;
+  readonly stepup: StepupGateway;
+  readonly support: SupportGateway;
+  readonly voucher: VoucherGateway;
+}
+
+export function createDependencies(handle: StorefrontHandle): Dependencies {
+  const client = new StorefrontClient(handle);
+  const context = client.context.bind(client);
+  const api = client.commerce;
+  return Object.freeze({
+    session: new SessionGateway(api.identity, context),
+    account: new AccountGateway(api.member, api.identity, context),
+    aftersale: new AfterSaleGateway(api.order, context), benefit: new BenefitGateway(api.benefit, context),
+    cart: new CartGateway(api.cart, context), catalog: new CatalogGateway(api.storefront, context),
+    checkout: new CheckoutGateway(api.checkout, api.order, context), home: new HomeGateway(api.storefront, context),
+    notification: new NotificationGateway(api.notification, context), invoice: new InvoiceGateway(api.finance, context),
+    order: new OrderGateway(api.order, api.fulfillment, context), payment: new PaymentGateway(api.payment, context),
+    product: new ProductGateway(api.storefront, context), referral: new ReferralGateway(api.referral, context),
+    security: new SecurityGateway(api.identity, context), stepup: new StepupGateway(api.identity, context),
+    support: new SupportGateway(api.support, context), voucher: new VoucherGateway(api.voucher, context),
+  });
+}

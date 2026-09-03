@@ -1,0 +1,127 @@
+import { chineseReference } from '@shop/presentation';
+import { Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
+import { OrderDrawerPanel } from './OrderDrawerPanel';
+import { OrderIcon } from './OrderIcon';
+import { formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone } from './OrderPresentation';
+import type { OrderDetailTab } from '../model/Order';
+import type { DetailViewModel } from '../viewmodel/DetailViewModel';
+
+const tabs: readonly Readonly<{ key: OrderDetailTab; label: string }>[] = Object.freeze([
+  { key: 'overview', label: '订单概览' },
+  { key: 'products', label: '商品与履约' },
+  { key: 'payment', label: '支付与退款' },
+  { key: 'aftersale', label: '售后' },
+  { key: 'operations', label: '操作记录' },
+]);
+
+export function OrderDrawer({
+  orderId,
+  tab,
+  viewmodel,
+  onTab,
+  onClose,
+}: Readonly<{
+  orderId: string;
+  tab: OrderDetailTab;
+  viewmodel: DetailViewModel;
+  onTab: (tab: OrderDetailTab) => void;
+  onClose: () => void;
+}>) {
+  const order = viewmodel.data;
+
+  return (
+    <ModalOverlay
+      className="orderdraweroverlay"
+      isOpen
+      isDismissable
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <Modal className="orderdrawermodal">
+        <AriaDialog className="orderdrawer" aria-label={`订单详情 ${order?.order_number ?? chineseReference('内部订单', orderId)}`}>
+          <header className="orderdrawerheader">
+            <div>
+              <p>订单详情</p>
+              <div className="orderdrawertitleline">
+                <Heading slot="title" id="orderdrawertitle">
+                  {order?.order_number ?? '正在读取订单'}
+                </Heading>
+                <button type="button" onClick={viewmodel.copyNumber} disabled={order === undefined} aria-label={viewmodel.copied ? '订单号已复制' : '复制订单号'}>
+                  <OrderIcon name={viewmodel.copied ? 'check' : 'copy'} />
+                </button>
+              </div>
+              {order === undefined ? (
+                <span className="ordermutetext">{chineseReference('内部订单', orderId)}</span>
+              ) : (
+                <>
+                  <div className="orderdrawerbadges">
+                    <span className={`orderstatuspill tone-${paymentTone(order.payment_state)}`}>{paymentLabel(order.payment_state)}</span>
+                    <span className={`orderstatuspill tone-${fulfillmentTone(order.fulfillment_state)}`}>{fulfillmentLabel(order.fulfillment_state)}</span>
+                  </div>
+                  <span className="ordermutetext">
+                    {order.mall_id ? chineseReference('商城', order.mall_id) : '商城编号不可用'} · {formatOrderTime(order.created_at)}
+                  </span>
+                </>
+              )}
+            </div>
+            <button className="orderdrawerclose" type="button" onClick={onClose} aria-label="关闭订单详情">
+              <OrderIcon name="close" />
+            </button>
+          </header>
+
+          <Tabs
+            className="orderdrawertabsystem"
+            selectedKey={tab}
+            onSelectionChange={(key) => {
+              const selected = tabs.find((item) => item.key === key)?.key;
+              if (selected !== undefined) onTab(selected);
+            }}
+          >
+            <TabList className="orderdrawertabs" aria-label="订单详情分类">
+              {tabs.map((item) => (
+                <Tab key={item.key} id={item.key}>
+                  {item.label}
+                </Tab>
+              ))}
+            </TabList>
+            <TabPanel id={tab} className="orderdrawerbody">
+              {viewmodel.pending ? (
+                <p className="orderdrawerstate" role="status">
+                  正在读取订单权威快照…
+                </p>
+              ) : null}
+              {viewmodel.failed ? (
+                <section className="orderdrawererror" role="alert">
+                  <strong>订单详情读取失败</strong>
+                  <p>暂时无法读取订单详情，请稍后重试。</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      viewmodel.refresh();
+                    }}
+                  >
+                    重试
+                  </button>
+                </section>
+              ) : null}
+              {!viewmodel.pending && !viewmodel.failed && order === undefined ? (
+                <section className="orderdrawerempty" role="status">
+                  <strong>未找到订单</strong>
+                  <p>未找到与该内部编号或展示订单号精确匹配的订单。</p>
+                </section>
+              ) : null}
+              {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} />}
+            </TabPanel>
+          </Tabs>
+
+          <footer className="orderdrawerfooter">
+            <button type="button" onClick={onClose}>
+              关闭
+            </button>
+          </footer>
+        </AriaDialog>
+      </Modal>
+    </ModalOverlay>
+  );
+}

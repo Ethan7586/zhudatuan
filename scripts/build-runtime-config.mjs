@@ -17,6 +17,7 @@ validate(cache, capacity, telemetry, network, identity);
 const source =
   `// Generated from config/cache.yml and config/capacity.yml. Do not edit.\n` +
   `export const CONFIG_CHECKSUM = '${createHash('sha256').update(JSON.stringify({ cache, capacity })).digest('hex')}' as const;\n\n` +
+  `export const BROWSER_QUERY_POLICY = Object.freeze(${JSON.stringify(cache.browser, null, 2)} as const);\n\n` +
   `export const CACHE_CATALOG = Object.freeze(${JSON.stringify(cache.caches, null, 2)} as const);\n\n` +
   `export const CAPACITY_MODEL = Object.freeze(${JSON.stringify(capacity.model, null, 2)} as const);\n\n` +
   `export const PROVIDER_CAPACITY = Object.freeze(${JSON.stringify(capacity.provider, null, 2)} as const);\n\n` +
@@ -82,6 +83,20 @@ await emit(resolve(root, 'packages/config/src/IdentityProvider.ts'), providerSou
 
 function validate(cacheDocument, capacityDocument, telemetryDocument, networkDocument, identityDocument) {
   if (cacheDocument?.version !== 1 || cacheDocument.owner !== 'platform' || typeof cacheDocument.caches !== 'object') throw new Error('CACHE_CATALOG_INVALID');
+  const browser = cacheDocument.browser;
+  const query = browser?.query;
+  if (
+    typeof browser !== 'object' ||
+    !Number.isSafeInteger(query?.staleMilliseconds) ||
+    !Number.isSafeInteger(query?.garbageCollectionMilliseconds) ||
+    !Number.isSafeInteger(query?.retryCount) ||
+    typeof query?.refetchOnWindowFocus !== 'boolean' ||
+    typeof query?.refetchOnReconnect !== 'boolean' ||
+    !Array.isArray(browser.identity?.parts) ||
+    !Array.isArray(browser.storefrontIdentity?.parts) ||
+    browser.scopeChange?.cancelPending !== true ||
+    browser.scopeChange?.removePrevious !== true
+  ) throw new Error('BROWSER_CACHE_POLICY_INVALID');
   for (const [name, value] of Object.entries(cacheDocument.caches)) {
     if (
       !/^[a-z][a-z0-9]*$/.test(name) ||

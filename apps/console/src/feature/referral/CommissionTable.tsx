@@ -1,5 +1,5 @@
 import { chineseReference } from '@shop/presentation';
-import { DataTable, type DataColumn } from '../../shared/ui/DataTable';
+import { DataTable, type DataColumn } from '@shop/design';
 import { formatDate, formatMinor } from '../../shared/ui/Format';
 import type { ReferralCommission } from './ReferralSchema';
 import { State } from './SettingsPanel';

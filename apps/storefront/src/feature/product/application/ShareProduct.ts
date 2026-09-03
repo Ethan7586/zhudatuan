@@ -1,4 +1,4 @@
-import type { Product } from '../model/Product';
+import type { Product } from '../../../entity/product';
 
 export class ShareProduct {
   async execute(product: Product, url: string): Promise<'shared' | 'copied'> {

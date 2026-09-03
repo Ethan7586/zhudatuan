@@ -1,29 +1,40 @@
-import { AppBoundary, RouteFallback } from '@shop/design';
+import { AppBoundary, RouteLoading } from '@shop/design';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { lazy, Suspense } from 'react';
+import { BROWSER_QUERY_POLICY } from '@shop/config/runtime';
+import { lazy, Suspense, useState } from 'react';
+import { createConsoleDependencies, type ConsoleDependencies } from './Dependencies';
+import { DependencyProvider } from './DependencyContext';
 
 const ConsoleApp = lazy(() => import('./ConsoleApp').then((module) => ({ default: module.ConsoleApp })));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      staleTime: 30_000,
-      gcTime: 5 * 60_000,
-      refetchOnWindowFocus: false,
+export function createConsoleQueryClient(): QueryClient {
+  const policy = BROWSER_QUERY_POLICY.query;
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: policy.retryCount,
+        staleTime: policy.staleMilliseconds,
+        gcTime: policy.garbageCollectionMilliseconds,
+        refetchOnWindowFocus: policy.refetchOnWindowFocus,
+        refetchOnReconnect: policy.refetchOnReconnect,
+      },
+      mutations: { retry: false },
     },
-    mutations: { retry: false },
-  },
-});
+  });
+}
 
-export function Providers() {
+export function Providers({ client, dependencies }: Readonly<{ client?: QueryClient; dependencies?: ConsoleDependencies }>) {
+  const [fallbackClient] = useState(createConsoleQueryClient);
+  const [fallbackDependencies] = useState(createConsoleDependencies);
   return (
     <AppBoundary>
-      <QueryClientProvider client={queryClient}>
-        <Suspense fallback={<RouteFallback />}>
-          <ConsoleApp />
-        </Suspense>
-      </QueryClientProvider>
+      <DependencyProvider value={dependencies ?? fallbackDependencies}>
+        <QueryClientProvider client={client ?? fallbackClient}>
+          <Suspense fallback={<RouteLoading />}>
+            <ConsoleApp />
+          </Suspense>
+        </QueryClientProvider>
+      </DependencyProvider>
     </AppBoundary>
   );
 }

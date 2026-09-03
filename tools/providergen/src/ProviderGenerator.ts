@@ -4,6 +4,9 @@ import { parse } from 'yaml';
 
 interface ProviderRecord {
   readonly id: string;
+  readonly label: string;
+  readonly priority: 1;
+  readonly extension: string;
   readonly package: string;
   readonly factory: string;
   readonly core: string;
@@ -17,13 +20,13 @@ interface ProviderDocument {
 
 const root = resolve(import.meta.dirname, '../../..');
 const document = parse(await readFile(resolve(root, 'config/providers.yml'), 'utf8')) as ProviderDocument;
-if (document.generated !== true || document.source !== 'config/requirements.yml#providers') throw new Error('PROVIDER_CONFIG_AUTHORITY_INVALID');
+if (document.generated !== true || document.source !== 'docs/requirements/source.yml#providers') throw new Error('PROVIDER_CONFIG_AUTHORITY_INVALID');
 const providers = document.providers ?? [];
 if (providers.length !== 11) throw new Error('PROVIDER_CONFIG_COUNT_INVALID:' + providers.length);
 if (new Set(providers.map(({ id }) => id)).size !== providers.length) throw new Error('PROVIDER_CONFIG_ID_DUPLICATE');
 
 for (const provider of providers) {
-  if (!/^[a-z][a-z0-9]*$/.test(provider.id) || provider.package !== '@shop/provider' + provider.id || provider.factory !== provider.id[0]!.toUpperCase() + provider.id.slice(1) + 'Provider') {
+  if (!/^[a-z][a-z0-9]*$/.test(provider.id) || !provider.label || provider.priority !== 1 || provider.extension !== `extensions/channel/${provider.id}` || provider.package !== '@shop/provider' + provider.id || provider.factory !== provider.id[0]!.toUpperCase() + provider.id.slice(1) + 'Provider') {
     throw new Error('PROVIDER_CONFIG_RECORD_INVALID:' + provider.id);
   }
   const manifest = JSON.parse(await readFile(resolve(root, 'extensions/channel', provider.id, 'package.json'), 'utf8')) as {

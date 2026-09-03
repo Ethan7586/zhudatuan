@@ -1,7 +1,8 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { SecurityGateway } from '../infrastructure/SecurityGateway';
 import type { Security } from '../model/Security';
 
-export function readSecurity(session: StorefrontSession, signal?: AbortSignal): Promise<Security> {
-  return SecurityGateway.read(session, signal);
+export class ReadSecurity {
+  constructor(private readonly gateway: Pick<SecurityGateway, 'read'>) {}
+  execute(session: StorefrontSession, signal?: AbortSignal): Promise<Security> { return this.gateway.read(session, signal); }
 }

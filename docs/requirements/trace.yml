@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: b8343568dfbc696dca3f28be27cc8ca98e941ceee88799fc3975e2dbceb9b40d
-contractSha256: 2014f2b58ebfa2f3e15d047dd2b94705e9d32966979b9c3a9b8d3d6c9a624ca5
+navigationCatalogSha256: 5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5
+contractSha256: 3e4d5a0dad5ad2742b167cd1a30486a56969a4dc4d78ba4c6d7dff44229fa7bb
 generated: true
 chain:
   - WorkbookCell
@@ -52,17 +52,6 @@ clarifications:
     acceptance: null
     resolvedby: null
     reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限
-  - &a3
-    id: powderclass
-    requirements:
-      - MVPMALLREPORT
-    term: 粉类
-    status: open
-    blocking: true
-    owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿未定义业务口径，禁止开发阶段静默改义
 requirements:
   - workbookCell: MVP上线功能清单!A3:F3
     requirement: MVPPLATFORM
@@ -72,10 +61,17 @@ requirements:
       - platformvoucher
       - groupcontrol
       - mallcontrol
-    applicationRoutes: []
+    routeids:
+      - consolecontrol
+      - consoleproductdetail
+      - consoleproductimport
+      - consoleproducts
+      - consolevouchers
     routes:
       - /scopes/:scopeKind/:scopeId/control
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/products
+      - /scopes/:scopeKind/:scopeId/products/:productId
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
       - catalog.pools.read
@@ -289,7 +285,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/PlatformJourney.spec.ts
     runbook: docs/operations/catalogsync.md
-    signedEvidence: docs/evidence/releases/MVPPLATFORM.json
+    signedEvidence: evidence/releases/MVPPLATFORM.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A4:F4
     requirement: MVPDISTRIBUTION
@@ -297,10 +293,14 @@ requirements:
       - distributioncontrol
       - groupreferral
       - mallreferral
-    applicationRoutes: []
+    routeids:
+      - consolecontrol
+      - consolereferral
+      - consolereferralview
     routes:
       - /scopes/:scopeKind/:scopeId/control
       - /scopes/:scopeKind/:scopeId/referral
+      - /scopes/:scopeKind/:scopeId/referral/:view
     directOperations:
       - channel.distributors.read
     transitiveOperations:
@@ -565,13 +565,14 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/DistributionJourney.spec.ts
     runbook: docs/operations/catalogsync.md
-    signedEvidence: docs/evidence/releases/MVPDISTRIBUTION.json
+    signedEvidence: evidence/releases/MVPDISTRIBUTION.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A5:F5
     requirement: MVPGROUPDASHBOARD
     navigation:
       - groupdashboard
-    applicationRoutes: []
+    routeids:
+      - consolecockpit
     routes:
       - /scopes/:scopeKind/:scopeId/cockpit
     directOperations:
@@ -760,13 +761,14 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupDashboardJourney.spec.ts
     runbook: docs/operations/projection.md
-    signedEvidence: docs/evidence/releases/MVPGROUPDASHBOARD.json
+    signedEvidence: evidence/releases/MVPGROUPDASHBOARD.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A6:F6
     requirement: MVPGROUPAPPLICATION
     navigation:
       - groupapplication
-    applicationRoutes: []
+    routeids:
+      - consoleexperience
     routes:
       - /scopes/:scopeKind/:scopeId/experience
     directOperations:
@@ -985,15 +987,20 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallEntryJourney.spec.ts
     runbook: docs/operations/experiencepublish.md
-    signedEvidence: docs/evidence/releases/MVPGROUPAPPLICATION.json
+    signedEvidence: evidence/releases/MVPGROUPAPPLICATION.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A7:F7
     requirement: MVPGROUPPOOL
     navigation:
       - groupproduct
-    applicationRoutes: []
+    routeids:
+      - consoleproductdetail
+      - consoleproductimport
+      - consoleproducts
     routes:
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/products
+      - /scopes/:scopeKind/:scopeId/products/:productId
     directOperations:
       - catalog.pools.read
     transitiveOperations:
@@ -1225,15 +1232,18 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupProductJourney.spec.ts
     runbook: docs/operations/catalogsync.md
-    signedEvidence: docs/evidence/releases/MVPGROUPPOOL.json
+    signedEvidence: evidence/releases/MVPGROUPPOOL.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A8:F8
     requirement: MVPGROUPORDER
     navigation:
       - grouporder
-    applicationRoutes: []
+    routeids:
+      - consoleorderdetail
+      - consoleorders
     routes:
       - /scopes/:scopeKind/:scopeId/orders
+      - /scopes/:scopeKind/:scopeId/orders/:orderId
     directOperations:
       - order.orders.read
     transitiveOperations:
@@ -1456,13 +1466,14 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupOrderJourney.spec.ts
     runbook: docs/operations/fulfillment.md
-    signedEvidence: docs/evidence/releases/MVPGROUPORDER.json
+    signedEvidence: evidence/releases/MVPGROUPORDER.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A9:F9
     requirement: MVPGROUPVOUCHER
     navigation:
       - groupvoucher
-    applicationRoutes: []
+    routeids:
+      - consolevouchers
     routes:
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
@@ -1706,16 +1717,29 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupVoucherJourney.spec.ts
     runbook: docs/operations/benefitgrant.md
-    signedEvidence: docs/evidence/releases/MVPGROUPVOUCHER.json
+    signedEvidence: evidence/releases/MVPGROUPVOUCHER.json
     releaseBlockers:
       - *a1
   - workbookCell: MVP上线功能清单!A10:F10
     requirement: MVPGROUPFINANCE
     navigation:
       - groupfinance
-    applicationRoutes: []
+    routeids:
+      - consolefinance
+      - consolefinanceentry
+      - consolefinanceinvoice
+      - consolefinancereconciliation
+      - consolefinancesettlement
+      - consolefinancestatement
+      - consolefinancewithdrawal
     routes:
       - /scopes/:scopeKind/:scopeId/finance
+      - /scopes/:scopeKind/:scopeId/finance/entries
+      - /scopes/:scopeKind/:scopeId/finance/invoices
+      - /scopes/:scopeKind/:scopeId/finance/reconciliations
+      - /scopes/:scopeKind/:scopeId/finance/settlements
+      - /scopes/:scopeKind/:scopeId/finance/statements
+      - /scopes/:scopeKind/:scopeId/finance/withdrawals
     directOperations:
       - finance.overview.read
     transitiveOperations:
@@ -1999,13 +2023,14 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupFinanceJourney.spec.ts
     runbook: docs/operations/reconciliation.md
-    signedEvidence: docs/evidence/releases/MVPGROUPFINANCE.json
+    signedEvidence: evidence/releases/MVPGROUPFINANCE.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A11:F11
     requirement: MVPGROUPREPORT
     navigation:
       - groupreporting
-    applicationRoutes: []
+    routeids:
+      - consolereporting
     routes:
       - /scopes/:scopeKind/:scopeId/reporting
     directOperations:
@@ -2057,7 +2082,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.voucherconsumption.read
       - runtime.health.dependency
@@ -2117,7 +2141,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.sales.read
       - reporting.voucherconsumption.read
@@ -2178,7 +2201,6 @@ requirements:
       - packages/contract/definitions/operations.yml#reporting.exports.create
       - packages/contract/definitions/operations.yml#reporting.exports.read
       - packages/contract/definitions/operations.yml#reporting.malls.read
-      - packages/contract/definitions/operations.yml#reporting.powderclass.read
       - packages/contract/definitions/operations.yml#reporting.products.read
       - packages/contract/definitions/operations.yml#reporting.sales.read
       - packages/contract/definitions/operations.yml#reporting.voucherconsumption.read
@@ -2218,15 +2240,18 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupReportJourney.spec.ts
     runbook: docs/operations/export.md
-    signedEvidence: docs/evidence/releases/MVPGROUPREPORT.json
+    signedEvidence: evidence/releases/MVPGROUPREPORT.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A12:F12
     requirement: MVPGROUPSUPPORT
     navigation:
       - groupsupport
-    applicationRoutes: []
+    routeids:
+      - consolesupport
+      - consolesupportcase
     routes:
       - /scopes/:scopeKind/:scopeId/support
+      - /scopes/:scopeKind/:scopeId/support/:caseId
     directOperations:
       - support.cases.read
     transitiveOperations:
@@ -2478,7 +2503,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupSupportJourney.spec.ts
     runbook: docs/operations/supportsla.md
-    signedEvidence: docs/evidence/releases/MVPGROUPSUPPORT.json
+    signedEvidence: evidence/releases/MVPGROUPSUPPORT.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A13:F13
     requirement: MVPGROUPSETTING
@@ -2488,20 +2513,32 @@ requirements:
       - groupmemberdata
       - groupinvitation
       - grouppartner
+      - groupqualification
       - groupmessage
       - grouprisk
       - groupprovider
       - groupdirectory
-    applicationRoutes: []
+    routeids:
+      - consoleaccess
+      - consoledirectory
+      - consolefederation
+      - consoleinvitations
+      - consolemembers
+      - consolenotifications
+      - consolepartners
+      - consolequalification
+      - consolerisk
+      - consolesettings
     routes:
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/directory
+      - /scopes/:scopeKind/:scopeId/settings/federation
       - /scopes/:scopeKind/:scopeId/settings/invitations
-      - /scopes/:scopeKind/:scopeId/settings/login
       - /scopes/:scopeKind/:scopeId/settings/members
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/partners/qualifications
       - /scopes/:scopeKind/:scopeId/settings/risk
     directOperations:
       - access.center.read
@@ -2847,7 +2884,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/GroupSettingJourney.spec.ts
     runbook: docs/operations/riskscan.md
-    signedEvidence: docs/evidence/releases/MVPGROUPSETTING.json
+    signedEvidence: evidence/releases/MVPGROUPSETTING.json
     releaseBlockers:
       - *a2
   - workbookCell: MVP上线功能清单!A14:F14
@@ -2855,7 +2892,9 @@ requirements:
     navigation:
       - malldashboard
       - storehome
-    applicationRoutes: []
+    routeids:
+      - consolecockpit
+      - storehome
     routes:
       - /
       - /scopes/:scopeKind/:scopeId/cockpit
@@ -3045,14 +3084,16 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallDashboardJourney.spec.ts
     runbook: docs/operations/projection.md
-    signedEvidence: docs/evidence/releases/MVPMALLDASHBOARD.json
+    signedEvidence: evidence/releases/MVPMALLDASHBOARD.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A15:F15
     requirement: MVPMALLDESIGN
     navigation:
       - malldesign
       - storehome
-    applicationRoutes: []
+    routeids:
+      - consoleexperience
+      - storehome
     routes:
       - /
       - /scopes/:scopeKind/:scopeId/experience
@@ -3270,7 +3311,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallDesignJourney.spec.ts
     runbook: docs/operations/experiencepublish.md
-    signedEvidence: docs/evidence/releases/MVPMALLDESIGN.json
+    signedEvidence: evidence/releases/MVPMALLDESIGN.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A16:F16
     requirement: MVPMALLPOOL
@@ -3278,13 +3319,18 @@ requirements:
       - mallproduct
       - storecatalog
       - storeproduct
-      - storeprofile
-    applicationRoutes: []
+    routeids:
+      - consoleproductdetail
+      - consoleproductimport
+      - consoleproducts
+      - storecatalog
+      - storeproduct
     routes:
       - /products
       - /products/:productId
-      - /profile
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/products
+      - /scopes/:scopeKind/:scopeId/products/:productId
     directOperations:
       - catalog.pools.read
     transitiveOperations:
@@ -3530,7 +3576,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallProductJourney.spec.ts
     runbook: docs/operations/pricesync.md
-    signedEvidence: docs/evidence/releases/MVPMALLPOOL.json
+    signedEvidence: evidence/releases/MVPMALLPOOL.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A17:F17
     requirement: MVPMALLORDER
@@ -3542,8 +3588,15 @@ requirements:
       - storeorders
       - storeorder
       - storeaftersale
-      - storeprofile
-    applicationRoutes: []
+    routeids:
+      - consoleorderdetail
+      - consoleorders
+      - storeaftersale
+      - storecart
+      - storecheckout
+      - storeorder
+      - storeorders
+      - storepayment
     routes:
       - /cart
       - /checkout
@@ -3551,8 +3604,8 @@ requirements:
       - /orders/:orderId
       - /orders/:orderId/aftersales
       - /payments/:paymentId/result
-      - /profile
       - /scopes/:scopeKind/:scopeId/orders
+      - /scopes/:scopeKind/:scopeId/orders/:orderId
     directOperations:
       - order.orders.read
     transitiveOperations:
@@ -3601,6 +3654,7 @@ requirements:
       - notification.endpoints.manage
       - notification.preferences.manage
       - notification.preferences.read
+      - order.aftersaleattachments.create
       - order.aftersales.apply
       - order.aftersales.approve
       - order.aftersales.read
@@ -3670,6 +3724,7 @@ requirements:
       - notification.endpoints.manage
       - notification.preferences.manage
       - notification.preferences.read
+      - order.aftersaleattachments.create
       - order.aftersales.apply
       - order.aftersales.approve
       - order.aftersales.read
@@ -3740,6 +3795,7 @@ requirements:
       - packages/contract/definitions/operations.yml#notification.endpoints.manage
       - packages/contract/definitions/operations.yml#notification.preferences.manage
       - packages/contract/definitions/operations.yml#notification.preferences.read
+      - packages/contract/definitions/operations.yml#order.aftersaleattachments.create
       - packages/contract/definitions/operations.yml#order.aftersales.apply
       - packages/contract/definitions/operations.yml#order.aftersales.approve
       - packages/contract/definitions/operations.yml#order.aftersales.read
@@ -3791,17 +3847,17 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallOrderJourney.spec.ts
     runbook: docs/operations/paymentrefund.md
-    signedEvidence: docs/evidence/releases/MVPMALLORDER.json
+    signedEvidence: evidence/releases/MVPMALLORDER.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A18:F18
     requirement: MVPMALLVOUCHER
     navigation:
       - mallvoucher
       - storevouchers
-      - storeprofile
-    applicationRoutes: []
+    routeids:
+      - consolevouchers
+      - storevouchers
     routes:
-      - /profile
       - /scopes/:scopeKind/:scopeId/vouchers
       - /vouchers
     directOperations:
@@ -4044,7 +4100,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallVoucherJourney.spec.ts
     runbook: docs/operations/voucherexpiry.md
-    signedEvidence: docs/evidence/releases/MVPMALLVOUCHER.json
+    signedEvidence: evidence/releases/MVPMALLVOUCHER.json
     releaseBlockers:
       - *a1
   - workbookCell: MVP上线功能清单!A19:F19
@@ -4052,10 +4108,24 @@ requirements:
     navigation:
       - mallfinance
       - storebenefits
-    applicationRoutes: []
+    routeids:
+      - consolefinance
+      - consolefinanceentry
+      - consolefinanceinvoice
+      - consolefinancereconciliation
+      - consolefinancesettlement
+      - consolefinancestatement
+      - consolefinancewithdrawal
+      - storebenefits
     routes:
       - /benefits
       - /scopes/:scopeKind/:scopeId/finance
+      - /scopes/:scopeKind/:scopeId/finance/entries
+      - /scopes/:scopeKind/:scopeId/finance/invoices
+      - /scopes/:scopeKind/:scopeId/finance/reconciliations
+      - /scopes/:scopeKind/:scopeId/finance/settlements
+      - /scopes/:scopeKind/:scopeId/finance/statements
+      - /scopes/:scopeKind/:scopeId/finance/withdrawals
     directOperations:
       - finance.overview.read
     transitiveOperations:
@@ -4344,13 +4414,14 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallFinanceJourney.spec.ts
     runbook: docs/operations/reconciliation.md
-    signedEvidence: docs/evidence/releases/MVPMALLFINANCE.json
+    signedEvidence: evidence/releases/MVPMALLFINANCE.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A20:F20
     requirement: MVPMALLREPORT
     navigation:
       - mallreporting
-    applicationRoutes: []
+    routeids:
+      - consolereporting
     routes:
       - /scopes/:scopeKind/:scopeId/reporting
     directOperations:
@@ -4402,7 +4473,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.voucherconsumption.read
       - runtime.health.dependency
@@ -4462,7 +4532,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.sales.read
       - reporting.voucherconsumption.read
@@ -4523,7 +4592,6 @@ requirements:
       - packages/contract/definitions/operations.yml#reporting.exports.create
       - packages/contract/definitions/operations.yml#reporting.exports.read
       - packages/contract/definitions/operations.yml#reporting.malls.read
-      - packages/contract/definitions/operations.yml#reporting.powderclass.read
       - packages/contract/definitions/operations.yml#reporting.products.read
       - packages/contract/definitions/operations.yml#reporting.sales.read
       - packages/contract/definitions/operations.yml#reporting.voucherconsumption.read
@@ -4563,20 +4631,22 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallReportJourney.spec.ts
     runbook: docs/operations/export.md
-    signedEvidence: docs/evidence/releases/MVPMALLREPORT.json
-    releaseBlockers:
-      - *a3
+    signedEvidence: evidence/releases/MVPMALLREPORT.json
+    releaseBlockers: []
   - workbookCell: MVP上线功能清单!A21:F21
     requirement: MVPMALLSUPPORT
     navigation:
       - mallsupport
-      - storesecurity
       - storesupport
       - storesupportcase
-    applicationRoutes: []
+    routeids:
+      - consolesupport
+      - consolesupportcase
+      - storesupport
+      - storesupportcase
     routes:
-      - /profile/security
       - /scopes/:scopeKind/:scopeId/support
+      - /scopes/:scopeKind/:scopeId/support/:caseId
       - /support
       - /support/:caseId
     directOperations:
@@ -4839,7 +4909,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallSupportJourney.spec.ts
     runbook: docs/operations/supportsla.md
-    signedEvidence: docs/evidence/releases/MVPMALLSUPPORT.json
+    signedEvidence: evidence/releases/MVPMALLSUPPORT.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A22:F22
     requirement: MVPMALLSETTING
@@ -4849,22 +4919,41 @@ requirements:
       - mallmemberdata
       - mallinvitation
       - mallpartner
+      - mallqualification
       - mallmessage
       - mallrisk
       - mallprovider
       - malldirectory
+      - storeprofile
+      - storesecurity
       - storenotifications
-    applicationRoutes: []
+    routeids:
+      - consoleaccess
+      - consoledirectory
+      - consolefederation
+      - consoleinvitations
+      - consolemembers
+      - consolenotifications
+      - consolepartners
+      - consolequalification
+      - consolerisk
+      - consolesettings
+      - storenotifications
+      - storeprofile
+      - storesecurity
     routes:
       - /notifications
+      - /profile
+      - /profile/security
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/directory
+      - /scopes/:scopeKind/:scopeId/settings/federation
       - /scopes/:scopeKind/:scopeId/settings/invitations
-      - /scopes/:scopeKind/:scopeId/settings/login
       - /scopes/:scopeKind/:scopeId/settings/members
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/partners/qualifications
       - /scopes/:scopeKind/:scopeId/settings/risk
     directOperations:
       - access.center.read
@@ -4921,6 +5010,7 @@ requirements:
       - identity.session.read
       - identity.sessions.complete
       - identity.sessions.create
+      - identity.sessions.read
       - identity.stepup.complete
       - identity.stepup.disable
       - identity.stepup.start
@@ -5026,6 +5116,7 @@ requirements:
       - identity.session.read
       - identity.sessions.complete
       - identity.sessions.create
+      - identity.sessions.read
       - identity.stepup.complete
       - identity.stepup.disable
       - identity.stepup.start
@@ -5131,6 +5222,7 @@ requirements:
       - packages/contract/definitions/operations.yml#identity.session.read
       - packages/contract/definitions/operations.yml#identity.sessions.complete
       - packages/contract/definitions/operations.yml#identity.sessions.create
+      - packages/contract/definitions/operations.yml#identity.sessions.read
       - packages/contract/definitions/operations.yml#identity.stepup.complete
       - packages/contract/definitions/operations.yml#identity.stepup.disable
       - packages/contract/definitions/operations.yml#identity.stepup.start
@@ -5218,26 +5310,27 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/MallSettingJourney.spec.ts
     runbook: docs/operations/riskscan.md
-    signedEvidence: docs/evidence/releases/MVPMALLSETTING.json
+    signedEvidence: evidence/releases/MVPMALLSETTING.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A23:F23
     requirement: MVPIDENTITY
     navigation:
       - groupprovider
       - mallprovider
-    applicationRoutes:
-      - /
-      - /callback
-      - /invitation
-      - /link
-      - /membership
+    routeids:
+      - authcallback
+      - authinvitation
+      - authlink
+      - authlogin
+      - authmembership
+      - consolefederation
     routes:
       - /
       - /callback
       - /invitation
       - /link
       - /membership
-      - /scopes/:scopeKind/:scopeId/settings/login
+      - /scopes/:scopeKind/:scopeId/settings/federation
     directOperations:
       - identity.bootstrap.read
       - identity.challenges.create
@@ -5440,7 +5533,7 @@ requirements:
       - tests/integration/registry.spec.ts
       - tests/journey/IdentityJourney.spec.ts
     runbook: docs/operations/identityrecovery.md
-    signedEvidence: docs/evidence/releases/MVPIDENTITY.json
+    signedEvidence: evidence/releases/MVPIDENTITY.json
     releaseBlockers: []
   - workbookCell: MVP上线功能清单!A24:F24
     requirement: MVPPROVIDER
@@ -5448,7 +5541,8 @@ requirements:
       - groupchannel
       - mallchannel
       - platformchannel
-    applicationRoutes: []
+    routeids:
+      - consolechannels
     routes:
       - /scopes/:scopeKind/:scopeId/channels
     directOperations:
@@ -5684,5 +5778,5 @@ requirements:
       - tests/contract/providers.spec.ts
       - tests/journey/ProviderJourney.spec.ts
     runbook: docs/operations/catalogsync.md
-    signedEvidence: docs/evidence/releases/MVPPROVIDER.json
+    signedEvidence: evidence/releases/MVPPROVIDER.json
     releaseBlockers: []

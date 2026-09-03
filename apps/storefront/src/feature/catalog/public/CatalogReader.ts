@@ -1,1 +1,1 @@
-export { useCatalogState } from '../application/CatalogState';
+export { useCatalogState } from '../viewmodel/CatalogState';

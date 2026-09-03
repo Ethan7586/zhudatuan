@@ -1,6 +1,9 @@
-export type FrontendClient = 'console' | 'auth' | 'storefront';
+import type { RouteTrace } from './RouteTrace';
+
+export type FrontendClient = RouteTrace['surface'];
 
 export interface FrontendExecutionTrace {
+  readonly routeid: string;
   readonly client: FrontendClient;
   readonly route: string;
   readonly feature: string;
@@ -8,7 +11,8 @@ export interface FrontendExecutionTrace {
   readonly test: string;
   readonly files: Readonly<{
     route: string;
-    feature: string;
+    manifest: string;
+    viewmodel: string;
     sdk: string;
   }>;
   readonly callers: readonly string[];
@@ -17,40 +21,32 @@ export interface FrontendExecutionTrace {
   readonly status: 'Missing' | 'Designed' | 'Implemented' | 'Integrated' | 'Accepted' | 'Released';
 }
 
-export function clientFor(prefix: string): FrontendClient {
-  return 'console';
-}
-
-export function featureFor(prefix: string, module: string): string {
-  const area = prefix === 'STORE' ? 'store' : prefix === 'SUPPLY' ? 'supplier' : prefix === 'GROUP' ? 'enterprise' : prefix === 'MALL' ? 'mall' : prefix === 'DIST' ? 'distribution' : 'platform';
-  return area + '/' + module;
-}
-
-export function executionTrace(
-  input: Readonly<{
-    prefix: string;
-    module: string;
-    route: string;
-    operation: string;
-    test: string;
-  }>
-): FrontendExecutionTrace {
-  const client = clientFor(input.prefix);
-  const feature = featureFor(input.prefix, input.module);
-  return Object.freeze({
-    client,
-    route: input.route,
-    feature,
-    operation: input.operation,
-    test: input.test,
-    files: Object.freeze({
-      route: 'apps/console/src/route/Router.tsx',
-      feature: `apps/${client}/src/feature/${input.module}`,
-      sdk: 'packages/sdk/src/operations/CommerceClient.ts',
-    }),
-    callers: Object.freeze([`${client}:${input.route}`, feature]),
-    callees: Object.freeze([`sdk:${input.operation}`, `operation:${input.operation}`]),
-    evidence: Object.freeze([]),
-    status: 'Designed',
-  });
+export function executionTraces(
+  input: Readonly<{ route: string; operation: string; test: string }>,
+  routes: readonly RouteTrace[]
+): readonly FrontendExecutionTrace[] {
+  const matches = routes.filter(({ path }) => path === input.route);
+  if (matches.length === 0) throw new Error(`FRONTEND_ROUTE_TRACE_MISSING:${input.route}`);
+  return Object.freeze(
+    matches.map((route) =>
+      Object.freeze({
+        routeid: route.id,
+        client: route.surface,
+        route: route.path,
+        feature: route.feature,
+        operation: input.operation,
+        test: input.test,
+        files: Object.freeze({
+          route: `apps/${route.surface}/src/route/Router.tsx`,
+          manifest: route.manifest,
+          viewmodel: route.viewmodel,
+          sdk: 'packages/sdk/src/operations/CommerceClient.ts',
+        }),
+        callers: Object.freeze([`route:${route.id}`, `feature:${route.surface}/${route.feature}`]),
+        callees: Object.freeze([`viewmodel:${route.surface}/${route.feature}`, `sdk:${input.operation}`, `operation:${input.operation}`]),
+        evidence: Object.freeze([]),
+        status: 'Designed' as const,
+      })
+    )
+  );
 }

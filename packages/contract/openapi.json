@@ -7905,6 +7905,11 @@
             ],
             "type": "string"
           },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
           "watermark": {
             "anyOf": [
               {
@@ -7931,7 +7936,8 @@
           "accepted_count",
           "rejected_count",
           "started_at",
-          "completed_at"
+          "completed_at",
+          "version"
         ],
         "type": "object"
       },
@@ -8102,6 +8108,11 @@
                   ],
                   "type": "string"
                 },
+                "version": {
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
                 "watermark": {
                   "anyOf": [
                     {
@@ -8129,6 +8140,7 @@
                 "rejected_count",
                 "started_at",
                 "completed_at",
+                "version",
                 "cursor_sort"
               ],
               "type": "object"
@@ -8324,6 +8336,11 @@
             ],
             "type": "string"
           },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
           "watermark": {
             "anyOf": [
               {
@@ -8350,7 +8367,8 @@
           "accepted_count",
           "rejected_count",
           "started_at",
-          "completed_at"
+          "completed_at",
+          "version"
         ],
         "type": "object"
       },
@@ -25741,6 +25759,105 @@
         ],
         "type": "object"
       },
+      "OrderAftersaleattachmentsCreateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {
+              "contentType": {
+                "enum": [
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf"
+                ],
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              },
+              "sizeBytes": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "name",
+              "contentType",
+              "sizeBytes",
+              "sha256"
+            ],
+            "type": "object"
+          },
+          "path": {
+            "additionalProperties": false,
+            "properties": {
+              "orderid": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "orderid"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "path",
+          "body"
+        ],
+        "type": "object"
+      },
+      "OrderAftersaleattachmentsCreateOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "objectId": {
+            "type": "string"
+          },
+          "upload": {
+            "additionalProperties": false,
+            "properties": {
+              "expiresAt": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                "type": "string"
+              },
+              "headers": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "propertyNames": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              "method": {
+                "const": "PUT",
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url",
+              "method",
+              "headers",
+              "expiresAt"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "objectId",
+          "upload"
+        ],
+        "type": "object"
+      },
       "OrderAftersalesApplyInput": {
         "additionalProperties": false,
         "properties": {
@@ -25759,17 +25876,27 @@
                       ],
                       "type": "string"
                     },
-                    "data": {
-                      "type": "string"
-                    },
                     "name": {
                       "type": "string"
+                    },
+                    "objectId": {
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "type": "string"
+                    },
+                    "sizeBytes": {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
                     }
                   },
                   "required": [
+                    "objectId",
                     "name",
                     "contentType",
-                    "data"
+                    "sizeBytes",
+                    "sha256"
                   ],
                   "type": "object"
                 },
@@ -27163,39 +27290,6 @@
         "type": "object"
       },
       "OrderOrdersReadOutput": {
-        "$defs": {
-          "__schema0": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              },
-              {
-                "items": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "type": "array"
-              },
-              {
-                "additionalProperties": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "propertyNames": {
-                  "type": "string"
-                },
-                "type": "object"
-              }
-            ]
-          }
-        },
         "additionalProperties": false,
         "properties": {
           "count": {
@@ -27207,6 +27301,37 @@
             "items": {
               "additionalProperties": false,
               "properties": {
+                "address": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "addressMasked": {
+                          "type": "string"
+                        },
+                        "mobileMasked": {
+                          "type": "string"
+                        },
+                        "recipientMasked": {
+                          "type": "string"
+                        },
+                        "regionCode": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "recipientMasked",
+                        "mobileMasked",
+                        "addressMasked",
+                        "regionCode"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "aftersale_state": {
                   "type": "string"
                 },
@@ -27221,11 +27346,131 @@
                   "pattern": "^[A-Z]{3}$",
                   "type": "string"
                 },
-                "evidence": {
-                  "$ref": "#/$defs/__schema0"
-                },
                 "fulfillment_state": {
                   "type": "string"
+                },
+                "fulfillments": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "createdAt": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      "externalReferenceMasked": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "enum": [
+                          "shipment",
+                          "delivery",
+                          "pickup",
+                          "service",
+                          "digital"
+                        ],
+                        "type": "string"
+                      },
+                      "milestones": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string"
+                            },
+                            "occurredAt": {
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                              "type": "string"
+                            },
+                            "state": {
+                              "type": "string"
+                            },
+                            "trackingMasked": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "kind",
+                            "state",
+                            "trackingMasked",
+                            "occurredAt"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "partner": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "provider": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "state": {
+                        "enum": [
+                          "pending",
+                          "submitted",
+                          "accepted",
+                          "processing",
+                          "ready",
+                          "completed",
+                          "cancelled",
+                          "failed"
+                        ],
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "provider",
+                      "partner",
+                      "kind",
+                      "state",
+                      "externalReferenceMasked",
+                      "createdAt",
+                      "updatedAt",
+                      "milestones"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "id": {
                   "type": "string"
@@ -27329,11 +27574,297 @@
                 "order_number": {
                   "type": "string"
                 },
+                "payment": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "capturedMinor": {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "paymentId": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "refundableMinor": {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "refundedMinor": {
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "tenders": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "amountMinor": {
+                            "maximum": 9007199254740991,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "kind": {
+                            "enum": [
+                              "wechat",
+                              "benefit",
+                              "voucher"
+                            ],
+                            "type": "string"
+                          },
+                          "referenceMasked": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "sequence": {
+                            "maximum": 9007199254740991,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "state": {
+                            "enum": [
+                              "planned",
+                              "held",
+                              "captured",
+                              "released"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "sequence",
+                          "kind",
+                          "referenceMasked",
+                          "amountMinor",
+                          "state"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "updatedAt": {
+                      "anyOf": [
+                        {
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "paymentId",
+                    "capturedMinor",
+                    "refundedMinor",
+                    "refundableMinor",
+                    "updatedAt",
+                    "tenders"
+                  ],
+                  "type": "object"
+                },
                 "payment_state": {
                   "type": "string"
                 },
+                "receivedAt": {
+                  "anyOf": [
+                    {
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "refunds": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "aftersaleId": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "amountMinor": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "createdAt": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      "currency": {
+                        "pattern": "^[A-Z]{3}$",
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "provider": {
+                        "type": "string"
+                      },
+                      "providerReferenceMasked": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "enum": [
+                          "requested",
+                          "submitted",
+                          "processing",
+                          "succeeded",
+                          "failed",
+                          "cancelled"
+                        ],
+                        "type": "string"
+                      },
+                      "tenders": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "amountMinor": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "kind": {
+                              "enum": [
+                                "wechat",
+                                "benefit",
+                                "voucher"
+                              ],
+                              "type": "string"
+                            },
+                            "referenceMasked": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "sequence": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "state": {
+                              "enum": [
+                                "planned",
+                                "processing",
+                                "succeeded",
+                                "failed"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "sequence",
+                            "kind",
+                            "referenceMasked",
+                            "amountMinor",
+                            "state"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "updatedAt": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "aftersaleId",
+                      "provider",
+                      "providerReferenceMasked",
+                      "amountMinor",
+                      "currency",
+                      "state",
+                      "reason",
+                      "createdAt",
+                      "updatedAt",
+                      "tenders"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
                 "scope_id": {
                   "type": "string"
+                },
+                "timeline": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "type": "string"
+                      },
+                      "actorMasked": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "occurredAt": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      "resourceMasked": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "resourceType": {
+                        "type": "string"
+                      },
+                      "traceMasked": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "action",
+                      "resourceType",
+                      "resourceMasked",
+                      "actorMasked",
+                      "occurredAt",
+                      "traceMasked"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
                 },
                 "total_minor": {
                   "maximum": 9007199254740991,
@@ -27363,7 +27894,12 @@
                 "fulfillment_state",
                 "aftersale_state",
                 "lifecycle_state",
-                "evidence",
+                "address",
+                "payment",
+                "fulfillments",
+                "refunds",
+                "timeline",
+                "receivedAt",
                 "created_at",
                 "updated_at",
                 "version",
@@ -31717,11 +32253,205 @@
                     },
                     "type": "array"
                   },
+                  "conclusion": {
+                    "type": "string"
+                  },
                   "cumulativeSalesCents": {
                     "type": "number"
                   },
+                  "deltas": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "averageOrderRatio": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "netSalesRatio": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "paidOrdersRatio": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "refundRate": {
+                        "type": "number"
+                      },
+                      "refundRateDeltaPoints": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "netSalesRatio",
+                      "paidOrdersRatio",
+                      "averageOrderRatio",
+                      "refundRate",
+                      "refundRateDeltaPoints"
+                    ],
+                    "type": "object"
+                  },
+                  "events": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "date": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "enum": [
+                            "calendar",
+                            "warning",
+                            "sync"
+                          ],
+                          "type": "string"
+                        },
+                        "metric": {
+                          "type": "string"
+                        },
+                        "time": {
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "title",
+                        "metric",
+                        "time",
+                        "date"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "insights": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "action": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "target": {
+                          "enum": [
+                            "orders",
+                            "reports"
+                          ],
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "tone": {
+                          "enum": [
+                            "warning",
+                            "positive"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "tone",
+                        "title",
+                        "detail",
+                        "action",
+                        "target"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "malls": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "paidOrderCount": {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "refundRate": {
+                          "type": "number"
+                        },
+                        "salesCents": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "salesCents",
+                        "paidOrderCount",
+                        "refundRate"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
                   "paidOrderCount": {
                     "type": "number"
+                  },
+                  "period": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "from": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      "to": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to"
+                    ],
+                    "type": "object"
                   },
                   "periodPaidOrderCount": {
                     "type": "number"
@@ -31770,6 +32500,29 @@
                     "maximum": 9007199254740991,
                     "minimum": 0,
                     "type": "integer"
+                  },
+                  "weeklyTrend": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "date": {
+                          "type": "string"
+                        },
+                        "orderCount": {
+                          "type": "number"
+                        },
+                        "salesCents": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "salesCents",
+                        "orderCount"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
                   }
                 },
                 "required": [
@@ -31783,9 +32536,16 @@
                   "activeProductCount",
                   "soldProductCount",
                   "unsoldActiveProductCount",
+                  "period",
+                  "conclusion",
+                  "deltas",
                   "trend",
+                  "weeklyTrend",
                   "categories",
-                  "topProducts"
+                  "topProducts",
+                  "malls",
+                  "events",
+                  "insights"
                 ],
                 "type": "object"
               }
@@ -32330,147 +33090,6 @@
         "type": "object"
       },
       "ReportingMallsReadOutput": {
-        "additionalProperties": false,
-        "properties": {
-          "count": {
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "items": {
-            "items": {
-              "additionalProperties": false,
-              "properties": {
-                "code": {
-                  "type": "string"
-                },
-                "dimensions": {
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "type": "object"
-                },
-                "period": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "from": {
-                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-                      "type": "string"
-                    },
-                    "timezone": {
-                      "type": "string"
-                    },
-                    "to": {
-                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "from",
-                    "to",
-                    "timezone"
-                  ],
-                  "type": "object"
-                },
-                "projectionVersion": {
-                  "maximum": 9007199254740991,
-                  "minimum": 0,
-                  "type": "integer"
-                },
-                "scope": {
-                  "type": "string"
-                },
-                "unit": {
-                  "enum": [
-                    "minor",
-                    "count",
-                    "ratio"
-                  ],
-                  "type": "string"
-                },
-                "value": {
-                  "type": "number"
-                },
-                "version": {
-                  "maximum": 9007199254740991,
-                  "minimum": 0,
-                  "type": "integer"
-                },
-                "watermark": {
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "code",
-                "version",
-                "scope",
-                "period",
-                "dimensions",
-                "value",
-                "unit",
-                "watermark",
-                "projectionVersion"
-              ],
-              "type": "object"
-            },
-            "type": "array"
-          },
-          "nextCursor": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "items",
-          "count"
-        ],
-        "type": "object"
-      },
-      "ReportingPowderclassReadInput": {
-        "additionalProperties": false,
-        "properties": {
-          "query": {
-            "additionalProperties": false,
-            "properties": {
-              "applicationid": {
-                "type": "string"
-              },
-              "cursor": {
-                "type": "string"
-              },
-              "limit": {
-                "anyOf": [
-                  {
-                    "exclusiveMinimum": 0,
-                    "maximum": 9007199254740991,
-                    "type": "integer"
-                  },
-                  {
-                    "pattern": "^[1-9]\\d*$",
-                    "type": "string"
-                  }
-                ]
-              },
-              "period": {
-                "enum": [
-                  "realtime",
-                  "yesterday",
-                  "7days",
-                  "30days"
-                ],
-                "type": "string"
-              }
-            },
-            "type": "object"
-          }
-        },
-        "required": [],
-        "type": "object"
-      },
-      "ReportingPowderclassReadOutput": {
         "additionalProperties": false,
         "properties": {
           "count": {
@@ -41051,7 +41670,7 @@
   },
   "info": {
     "title": "Shop Commerce API",
-    "version": "4.0.0"
+    "version": "5.0.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -50745,6 +51364,8 @@
           "CONTRACT_VERSION_UNSUPPORTED",
           "CSRF_TOKEN_INVALID",
           "DEADLINE_EXCEEDED",
+          "EXPECTED_VERSION_INVALID",
+          "EXPECTED_VERSION_REQUIRED",
           "IDEMPOTENCY_CONFLICT",
           "IDEMPOTENCY_KEY_REQUIRED",
           "INTERNAL_ERROR",
@@ -50758,7 +51379,7 @@
           "URL_SENSITIVE_DATA_FORBIDDEN",
           "VALIDATION_FAILED"
         ],
-        "x-expected-version": "none",
+        "x-expected-version": "required",
         "x-idempotency-policy": "required",
         "x-idempotency-scope": "actor-operation-scope",
         "x-maker-checker": false,
@@ -68807,7 +69428,8 @@
         "x-permission": "identity.session.read",
         "x-rate-class": "identity",
         "x-requirements": [
-          "MVPMALLSUPPORT"
+          "MVPMALLSUPPORT",
+          "MVPMALLSETTING"
         ],
         "x-resource-parameter": null,
         "x-resource-resolver": "identity.resource",
@@ -77126,6 +77748,228 @@
         "x-timeout-ms": 800
       }
     },
+    "/api/v1/orders/{orderid}/aftersale-attachments": {
+      "post": {
+        "operationId": "order.aftersaleattachments.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "contentType": {
+                    "enum": [
+                      "image/jpeg",
+                      "image/png",
+                      "application/pdf"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "sha256": {
+                    "type": "string"
+                  },
+                  "sizeBytes": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "name",
+                  "contentType",
+                  "sizeBytes",
+                  "sha256"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderAftersaleattachmentsCreateOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "tags": [
+          "order"
+        ],
+        "x-assurance-level": "session",
+        "x-audience": "storefront",
+        "x-cache-policy": "none",
+        "x-capability": "order.aftersaleattachments.create",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTENT_TYPE_UNSUPPORTED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "CSRF_TOKEN_INVALID",
+          "DEADLINE_EXCEEDED",
+          "IDEMPOTENCY_CONFLICT",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "INTERNAL_ERROR",
+          "ORDER_AFTERSALE_NOT_ALLOWED",
+          "ORIGIN_REQUIRED",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "REQUEST_BODY_TOO_LARGE",
+          "REQUEST_JSON_INVALID",
+          "SCOPE_DENIED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-expected-version": "none",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-maker-checker": false,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "order.aftersale.apply",
+        "x-rate-class": "write",
+        "x-requirements": [
+          "MVPMALLORDER"
+        ],
+        "x-resource-parameter": "orderid",
+        "x-resource-resolver": "order.resource",
+        "x-response-mode": "json",
+        "x-risk": "elevated",
+        "x-scope-kinds": [
+          "owner"
+        ],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "storefront"
+        ],
+        "x-timeout-ms": 800
+      }
+    },
     "/api/v1/orders/{orderid}/aftersales": {
       "post": {
         "operationId": "order.aftersales.apply",
@@ -77158,17 +78002,27 @@
                           ],
                           "type": "string"
                         },
-                        "data": {
-                          "type": "string"
-                        },
                         "name": {
                           "type": "string"
+                        },
+                        "objectId": {
+                          "type": "string"
+                        },
+                        "sha256": {
+                          "type": "string"
+                        },
+                        "sizeBytes": {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer"
                         }
                       },
                       "required": [
+                        "objectId",
                         "name",
                         "contentType",
-                        "data"
+                        "sizeBytes",
+                        "sha256"
                       ],
                       "type": "object"
                     },
@@ -86776,197 +87630,6 @@
         "x-timeout-ms": 500
       }
     },
-    "/api/v1/reports/powderclass": {
-      "get": {
-        "operationId": "reporting.powderclass.read",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "cursor",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "exclusiveMinimum": 0,
-                  "maximum": 9007199254740991,
-                  "type": "integer"
-                },
-                {
-                  "pattern": "^[1-9]\\d*$",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          {
-            "in": "query",
-            "name": "period",
-            "required": false,
-            "schema": {
-              "enum": [
-                "realtime",
-                "yesterday",
-                "7days",
-                "30days"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "applicationid",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReportingPowderclassReadOutput"
-                }
-              }
-            },
-            "description": "Success"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Typed operation error"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Typed operation error"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Typed operation error"
-          },
-          "426": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Typed operation error"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Typed operation error"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Typed operation error"
-          },
-          "504": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Typed operation error"
-          }
-        },
-        "security": [
-          {
-            "session": []
-          }
-        ],
-        "tags": [
-          "reporting"
-        ],
-        "x-assurance-level": "session",
-        "x-audience": "console",
-        "x-cache-policy": "none",
-        "x-capability": "reporting.powderclass.read",
-        "x-csrf-policy": "none",
-        "x-error-union": [
-          "AUTHENTICATION_REQUIRED",
-          "AUTHORIZATION_DENIED",
-          "CAPABILITY_DENIED",
-          "CONTRACT_VERSION_UNSUPPORTED",
-          "DEADLINE_EXCEEDED",
-          "INTERNAL_ERROR",
-          "PERMISSION_DENIED",
-          "RATE_LIMITED",
-          "SCOPE_DENIED",
-          "URL_SENSITIVE_DATA_FORBIDDEN",
-          "VALIDATION_FAILED"
-        ],
-        "x-expected-version": "none",
-        "x-idempotency-policy": "none",
-        "x-idempotency-scope": "none",
-        "x-maker-checker": false,
-        "x-origin-policy": "none",
-        "x-permission": "reporting.powderclass.read",
-        "x-rate-class": "read",
-        "x-requirements": [
-          "MVPGROUPREPORT",
-          "MVPMALLREPORT"
-        ],
-        "x-resource-parameter": null,
-        "x-resource-resolver": "reporting.resource",
-        "x-response-mode": "json",
-        "x-risk": "low",
-        "x-scope-kinds": [
-          "platform",
-          "distributor",
-          "tenant",
-          "enterprise",
-          "mall",
-          "department"
-        ],
-        "x-target-policy": "exact",
-        "x-targets": [
-          "console"
-        ],
-        "x-timeout-ms": 500
-      }
-    },
     "/api/v1/reports/products": {
       "get": {
         "operationId": "reporting.products.read",
@@ -95668,7 +96331,7 @@
           "voucher"
         ],
         "x-assurance-level": "session",
-        "x-audience": "storefront",
+        "x-audience": "public",
         "x-cache-policy": "none",
         "x-capability": "voucher.bindings.read",
         "x-csrf-policy": "none",
@@ -95716,6 +96379,7 @@
         ],
         "x-target-policy": "exact",
         "x-targets": [
+          "console",
           "storefront"
         ],
         "x-timeout-ms": 500
@@ -97270,7 +97934,7 @@
           "voucher"
         ],
         "x-assurance-level": "mfa",
-        "x-audience": "storefront",
+        "x-audience": "public",
         "x-cache-policy": "none",
         "x-capability": "voucher.redemptions.read",
         "x-csrf-policy": "none",
@@ -97305,10 +97969,21 @@
         "x-response-mode": "json",
         "x-risk": "high",
         "x-scope-kinds": [
-          "owner"
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "supplier",
+          "brand",
+          "store",
+          "owner",
+          "self"
         ],
         "x-target-policy": "exact",
         "x-targets": [
+          "console",
           "storefront"
         ],
         "x-timeout-ms": 500

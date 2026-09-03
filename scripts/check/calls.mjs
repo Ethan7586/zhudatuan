@@ -61,6 +61,7 @@ function entrypoints(sources, packages) {
     if (parts.includes('miniprogram') && (parts.includes('page') || parts.includes('component') || parts.includes('custom-tab-bar'))) {
       entries.add(source);
     }
+    if (parts[0] === 'apps' && parts.includes('feature') && (name === 'Manifest.ts' || name === 'index.ts')) entries.add(source);
   }
   for (const directory of packages.values()) {
     for (const candidate of [path.join(directory, 'src/index.ts'), path.join(directory, 'src/index.tsx'), path.join(directory, 'worker/index.ts')]) {

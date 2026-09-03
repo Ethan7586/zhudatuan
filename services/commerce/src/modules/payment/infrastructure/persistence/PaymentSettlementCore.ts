@@ -27,6 +27,18 @@ export interface SettlementFulfillment {
 export interface SettlementOrders {
   paymentState(context: ReadTransactionContext, order: string): Promise<string>;
   markPaid(context: WriteTransactionContext, order: string): Promise<void>;
+  recordPayment(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      order: string;
+      payment: string;
+      currency: string;
+      capturedMinor: number;
+      refundedMinor: number;
+      state: string;
+      tenders: readonly Readonly<{ sequence: number; kind: 'wechat' | 'benefit' | 'voucher'; reference: string | null; amountMinor: number; state: string }>[];
+    }>
+  ): Promise<void>;
   fulfillment(context: ReadTransactionContext, order: string): Promise<readonly OrderFulfillmentPlan[]>;
 }
 
@@ -109,6 +121,15 @@ export class PaymentSettlementCore {
       );
     }
     await this.orders.markPaid(context, target.order);
+    await this.orders.recordPayment(context, {
+      order: target.order,
+      payment,
+      currency: target.currency,
+      capturedMinor: target.amountMinor,
+      refundedMinor: 0,
+      state: 'captured',
+      tenders: tenderPlans.map((plan) => Object.freeze({ sequence: plan.sequence, kind: plan.kind, reference: plan.reference_id, amountMinor: plan.amount_minor, state: 'captured' })),
+    });
     const fulfillmentPlans = await this.orders.fulfillment(context, target.order);
     const fulfillments = await this.fulfillment.create(context, { order: target.order, payment, plans: fulfillmentPlans });
     for (const fulfillment of fulfillments) await enqueue(database, target.scope, fulfillment);

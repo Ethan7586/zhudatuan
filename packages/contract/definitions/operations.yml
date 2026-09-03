@@ -623,6 +623,7 @@ operations:
     idempotent: true
     requirements:
       - MVPMALLSUPPORT
+      - MVPMALLSETTING
     controller: services/commerce/src/foundation/interface/OperationController.ts
     handler: services/commerce/src/modules/identity/application/handler/SessionsReadHandler.ts
     sdk: packages/sdk/src/operations/identity.ts
@@ -3890,48 +3891,6 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: none
-  - id: reporting.powderclass.read
-    owner: reporting
-    method: GET
-    path: /api/v1/reports/powderclass
-    audience: console
-    targets: [console]
-    permission: reporting.powderclass.read
-    capability: reporting.powderclass.read
-    scopeKinds: *a7
-    assuranceLevel: session
-    makerChecker: false
-    requestSchema: ReportingPowderclassReadInput
-    responseSchema: ReportingPowderclassReadOutput
-    errorUnion:
-      - AUTHENTICATION_REQUIRED
-      - AUTHORIZATION_DENIED
-      - CAPABILITY_DENIED
-      - CONTRACT_VERSION_UNSUPPORTED
-      - INTERNAL_ERROR
-      - RATE_LIMITED
-      - SCOPE_DENIED
-      - VALIDATION_FAILED
-    idempotencyScope: none
-    expectedVersion: none
-    timeout: 500
-    rateClass: read
-    risk: low
-    resourceResolver: reporting.resource
-    idempotent: true
-    requirements:
-      - MVPGROUPREPORT
-      - MVPMALLREPORT
-    controller: services/commerce/src/foundation/interface/OperationController.ts
-    handler: services/commerce/src/modules/reporting/application/handler/PowderClassReadHandler.ts
-    sdk: packages/sdk/src/operations/reporting.ts
-    resourceParameter: null
-    originPolicy: none
-    csrfPolicy: none
-    responseMode: json
-    cachePolicy: none
-    targetPolicy: exact
-    idempotencyPolicy: none
   - id: reporting.voucherconsumption.read
     owner: reporting
     method: GET
@@ -4853,6 +4812,50 @@ operations:
     cachePolicy: none
     targetPolicy: exact
     idempotencyPolicy: none
+  - id: order.aftersaleattachments.create
+    owner: order
+    method: POST
+    path: /api/v1/orders/{orderid}/aftersale-attachments
+    audience: storefront
+    targets: [storefront]
+    permission: order.aftersale.apply
+    capability: order.aftersaleattachments.create
+    scopeKinds:
+      - owner
+    assuranceLevel: session
+    makerChecker: false
+    requestSchema: OrderAftersaleattachmentsCreateInput
+    responseSchema: OrderAftersaleattachmentsCreateOutput
+    errorUnion:
+      - AUTHENTICATION_REQUIRED
+      - AUTHORIZATION_DENIED
+      - CAPABILITY_DENIED
+      - CONTRACT_VERSION_UNSUPPORTED
+      - IDEMPOTENCY_CONFLICT
+      - INTERNAL_ERROR
+      - ORDER_AFTERSALE_NOT_ALLOWED
+      - RATE_LIMITED
+      - SCOPE_DENIED
+      - VALIDATION_FAILED
+    idempotencyScope: actor-operation-scope
+    expectedVersion: none
+    timeout: 800
+    rateClass: write
+    risk: elevated
+    resourceResolver: order.resource
+    idempotent: false
+    requirements:
+      - MVPMALLORDER
+    controller: services/commerce/src/foundation/interface/OperationController.ts
+    handler: services/commerce/src/modules/order/application/handler/AfterSaleAttachmentsCreateHandler.ts
+    sdk: packages/sdk/src/operations/order.ts
+    resourceParameter: orderid
+    originPolicy: sameorigin
+    csrfPolicy: required
+    responseMode: json
+    cachePolicy: none
+    targetPolicy: exact
+    idempotencyPolicy: required
   - id: order.aftersales.apply
     owner: order
     method: POST
@@ -6296,8 +6299,8 @@ operations:
     owner: voucher
     method: GET
     path: /api/v1/vouchers/bindings
-    audience: storefront
-    targets: [storefront]
+    audience: public
+    targets: [console, storefront]
     permission: voucher.binding.read
     capability: voucher.bindings.read
     scopeKinds: *a9
@@ -6385,11 +6388,11 @@ operations:
     owner: voucher
     method: GET
     path: /api/v1/vouchers/redemptions
-    audience: storefront
-    targets: [storefront]
+    audience: public
+    targets: [console, storefront]
     permission: voucher.redemption.read
     capability: voucher.redemptions.read
-    scopeKinds: [owner]
+    scopeKinds: *a9
     assuranceLevel: mfa
     makerChecker: false
     requestSchema: VoucherRedemptionsReadInput
@@ -10132,7 +10135,7 @@ operations:
       - STEPUP_REQUIRED
       - VALIDATION_FAILED
     idempotencyScope: actor-operation-scope
-    expectedVersion: none
+    expectedVersion: required
     timeout: 800
     rateClass: critical
     risk: critical

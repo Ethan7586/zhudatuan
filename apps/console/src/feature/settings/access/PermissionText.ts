@@ -88,7 +88,6 @@ const words: Readonly<Record<string, string>> = Object.freeze({
   plan: '计划',
   policy: '规则',
   pool: '商品池',
-  powderclass: '粉类分类',
   preference: '偏好',
   preview: '预览',
   pricing: '定价',

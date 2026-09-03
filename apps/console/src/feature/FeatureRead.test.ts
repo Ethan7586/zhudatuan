@@ -3,12 +3,19 @@ import { HttpResponse, delay, http, type JsonBodyType } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
-import { readCockpit } from './cockpit/CockpitQuery';
+import { CockpitGateway } from './cockpit/infrastructure/CockpitGateway';
 import { readControl } from './control/ControlQuery';
-import { readFinance } from './finance/FinanceQuery';
-import { readOrders } from './order/OrderQuery';
-import { EMPTY_ORDER_LIST_FILTER } from './order/OrderFilters';
-import { readProductDetail, readProducts } from './product/ProductQuery';
+import { FinanceGateway } from './finance/infrastructure/FinanceGateway';
+import { OrderGateway } from './order/infrastructure/OrderGateway';
+import { EMPTY_ORDER_LIST_FILTER } from './order/model/OrderFilter';
+import { ProductGateway } from './product/infrastructure/ProductGateway';
+import { NAVIGATION_CATALOG_HASH } from '../generated/NavigationBinding';
+import { appConfig } from '../shared/config/AppConfig';
+
+const products = new ProductGateway({ apiBaseUrl: appConfig.apiBaseUrl, clientVersion: appConfig.clientVersion, catalogVersion: NAVIGATION_CATALOG_HASH });
+const cockpit = new CockpitGateway(appConfig.apiBaseUrl);
+const orders = new OrderGateway(appConfig.apiBaseUrl);
+const finance = new FinanceGateway(appConfig.apiBaseUrl);
 
 const requests: URL[] = [];
 const empty = { items: [], count: 0 };
@@ -56,9 +63,16 @@ const server = setupServer(
           activeProductCount: 0,
           soldProductCount: 0,
           unsoldActiveProductCount: 0,
+          period: { from: '2026-08-01T00:00:00Z', to: '2026-08-31T00:00:00Z' },
+          conclusion: '当前周期暂无成交。',
+          deltas: { netSalesRatio: null, paidOrdersRatio: null, averageOrderRatio: null, refundRate: 0, refundRateDeltaPoints: null },
           trend: [],
+          weeklyTrend: [],
           categories: [],
           topProducts: [],
+          malls: [],
+          events: [],
+          insights: [],
         },
       },
     })
@@ -76,12 +90,12 @@ describe('Console named read Operations', () => {
   it('sends explicit scope and access version through isolated list and detail readers', async () => {
     const signal = new AbortController().signal;
     await Promise.all([
-      readCockpit(context, '30days', signal),
+      cockpit.read(context, { period: '30days' }, signal),
       readControl(context, undefined, signal),
-      readFinance(context, signal),
-      readOrders(context, { ...EMPTY_ORDER_LIST_FILTER, order: 'SW1', view: 'all' }, signal),
-      readProducts(context, {}, signal),
-      readProductDetail(context, 'product:1', signal),
+      finance.overview(context, signal),
+      orders.orders(context, { ...EMPTY_ORDER_LIST_FILTER, order: 'SW1', view: 'all' }, signal),
+      products.readProducts(productRequest(), { q: '', category: '', limit: 50 }, signal),
+      products.readProduct(productRequest(), 'product:1', signal),
     ]);
     expect(requests).toHaveLength(6);
     expect(requests.map(({ pathname }) => pathname).sort()).toEqual([
@@ -104,7 +118,7 @@ describe('Console named read Operations', () => {
       })
     );
     const controller = new AbortController();
-    const pending = readProducts(context, {}, controller.signal);
+    const pending = products.readProducts(productRequest(), { q: '', category: '', limit: 50 }, controller.signal);
     controller.abort(new Error('SCOPE_CHANGED'));
     await expect(pending).rejects.toThrow();
   });
@@ -137,3 +151,7 @@ const context: ConsoleContext = {
   scope: { kind: 'platform', id: 'platform:1' },
   scopes: [{ kind: 'platform', id: 'platform:1' }],
 };
+
+function productRequest() {
+  return { scope: { kind: context.scope.kind, id: context.scope.id }, accessVersion: context.session.accessVersion } as const;
+}

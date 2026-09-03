@@ -5,14 +5,16 @@ import { strFromU8, unzipSync } from 'fflate';
 import { parse, stringify } from 'yaml';
 
 import { loadRequirementAuthority } from './Authority';
-import { executionTrace } from './FrontendTrace';
+import { executionTraces, type FrontendExecutionTrace } from './FrontendTrace';
 import { loadRequirementSource } from './RequirementSource';
 import { operationForBinding, priorityFrom, stepupFor, type OperationDefinition } from './RequirementTrace';
+import { loadRouteTraces } from './RouteTrace';
 import { sharedStrings, worksheet } from './WorkbookReader';
 
 const root = resolve(import.meta.dirname, '../../..');
 const { authority, bytes: workbookBytes } = await loadRequirementAuthority(root);
 const requirementSource = await loadRequirementSource(root);
+const routeTraces = await loadRouteTraces(root);
 const workbookHash = authority.sha256;
 const archive = unzipSync(workbookBytes);
 const shared = sharedStrings(xml('xl/sharedStrings.xml'));
@@ -20,6 +22,7 @@ const operationDocument = parse(await readFile(resolve(root, 'packages/contract/
   readonly operations: readonly OperationDefinition[];
 };
 const navigationDocument = parse(await readFile(resolve(root, 'config/navigation.yml'), 'utf8')) as {
+  readonly routes: readonly NavigationRouteDefinition[];
   readonly nodes: readonly NavigationDefinition[];
 };
 const navigationEvidence = JSON.parse(await readFile(resolve(root, 'evidence/navigation/catalog.json'), 'utf8')) as { readonly hash: string };
@@ -57,7 +60,7 @@ for (const sheet of requirementSource.sheets) {
     const excluded = sheet.prefix === 'GROUP' && [62, 66, 67].includes(row) && third === '不需要';
     const uiRoute = binding.route;
     const journeyTest = binding.journey;
-    const frontend = executionTrace({ prefix: sheet.prefix, module, route: uiRoute, operation: operation.id, test: journeyTest });
+    const frontend = executionTraces({ route: uiRoute, operation: operation.id, test: journeyTest }, routeTraces);
     requirements.push({
       id: requirementId,
       version: 1,
@@ -82,9 +85,9 @@ for (const sheet of requirementSource.sheets) {
       api: operation.method + ' ' + operation.path,
       commandOrQuery: operation.method === 'GET' ? 'query' : 'command',
       tableOrProjection: binding.table,
-      client: frontend.client,
-      feature: frontend.feature,
-      uiRoute,
+      clients: [...new Set(frontend.map(({ client }) => client))],
+      features: [...new Set(frontend.map(({ feature }) => feature))],
+      uiRoutes: frontend.map(({ routeid }) => routeid),
       tests: ['services/commerce/src/test/architecture/ModuleCatalog.test.ts', 'services/commerce/src/test/architecture/DomainPolicy.test.ts', 'tests/integration/registry.spec.ts', journeyTest],
       performance: operation.method === 'GET' ? 'p95<=300ms; bounded cursor page' : 'p95<=500ms; idempotent retry',
       externalDependencies: module === 'channel' || module === 'extension' ? ['signed provider contract'] : [],
@@ -109,6 +112,7 @@ const mvpRequirements = requirementSource.mvp.map((definition) => {
   const directOperations = [...new Set(definition.directOperations)].sort();
   const transitiveOperations = [...new Set([...definition.transitiveOperations, ...operations.map(({ id: operation }) => operation).filter((operation) => !directOperations.includes(operation))])].sort();
   const navigation = navigationDocument.nodes.filter((node) => node.requirements.includes(id));
+  const routes = navigationDocument.routes.filter((route) => route.requirements.includes(id));
   const releaseBlockers = requirementSource.clarifications.filter(({ requirements, blocking }) => blocking && requirements.includes(id));
   return {
     id,
@@ -121,8 +125,8 @@ const mvpRequirements = requirementSource.mvp.map((definition) => {
     providers: definition.providers,
     clarifications: definition.clarifications,
     navigation: navigation.map(({ id: navigationId }) => navigationId),
-    applicationRoutes: [...new Set(definition.entryRoutes)].sort(),
-    routes: [...new Set([...definition.entryRoutes, ...navigation.map(({ route }) => route)])].sort(),
+    routeids: routes.map(({ id: routeid }) => routeid).sort(),
+    routes: routes.map(({ path }) => path).sort(),
     directOperations,
     transitiveOperations,
     operations: [...new Set([...directOperations, ...transitiveOperations])].sort(),
@@ -134,7 +138,7 @@ const mvpRequirements = requirementSource.mvp.map((definition) => {
     journeyTest: definition.journeys[0]!,
     dashboard: 'docs/metrics/catalog.md',
     runbook: 'docs/operations/' + definition.runbook + '.md',
-    releaseEvidence: 'docs/evidence/releases/' + id + '.json',
+    releaseEvidence: 'evidence/releases/' + id + '.json',
     releaseBlockers,
     status: definition.status,
     evidence: [],
@@ -161,11 +165,12 @@ const providers = requirementSource.providers.map((provider, index) => {
   };
 });
 
-const frontendRequirements = requirements.map((requirement) => {
-  const frontend = requirement.frontend as ReturnType<typeof executionTrace>;
-  return {
+const frontendRequirements = requirements.flatMap((requirement) => {
+  const frontends = requirement.frontend as readonly FrontendExecutionTrace[];
+  return frontends.map((frontend) => ({
     requirement: requirement.id,
     disposition: requirement.disposition,
+    routeid: frontend.routeid,
     client: frontend.client,
     route: frontend.route,
     feature: frontend.feature,
@@ -176,7 +181,7 @@ const frontendRequirements = requirements.map((requirement) => {
     callees: frontend.callees,
     status: frontend.status,
     evidence: frontend.evidence,
-  };
+  }));
 });
 
 const outputs = new Map<string, string>([
@@ -208,7 +213,7 @@ const outputs = new Map<string, string>([
         navigationCatalogSha256: navigationEvidence.hash,
         contractSha256: contractHash,
         generated: true,
-        count: authority.sheets.requirements,
+        count: frontendRequirements.length,
         sheetCounts: Object.fromEntries(requirementSource.sheets.map((sheet) => [sheet.prefix, sheet.rows.length])),
         requirements,
       },
@@ -277,7 +282,7 @@ const outputs = new Map<string, string>([
           workbookCell: authority.sheet + '!A' + record.row + ':F' + record.row,
           requirement: record.id,
           navigation: record.navigation,
-          applicationRoutes: record.applicationRoutes,
+          routeids: record.routeids,
           routes: record.routes,
           directOperations: record.directOperations,
           transitiveOperations: record.transitiveOperations,
@@ -294,7 +299,6 @@ const outputs = new Map<string, string>([
       { lineWidth: 0 }
     ),
   ],
-  [resolve(root, 'config/providers.yml'), providerConfiguration(providers)],
   [
     resolve(root, 'packages/contract/src/RequirementCatalog.ts'),
     contractType(
@@ -311,19 +315,6 @@ for (const [path, content] of outputs) {
   } else {
     await writeFile(path, content, 'utf8');
   }
-}
-
-function providerConfiguration(records: readonly ProviderRecord[]): string {
-  const document = stringify(
-    {
-      generated: true,
-      source: 'config/requirements.yml#providers',
-      workbookSha256: workbookHash,
-      providers: records.filter(({ priority }) => priority === 1).map(({ id, core }) => ({ id, package: '@shop/provider' + id, factory: id[0]!.toUpperCase() + id.slice(1) + 'Provider', core })),
-    },
-    { lineWidth: 0 }
-  );
-  return document.replaceAll(/^(\s+package:) "([^"]+)"$/gm, "$1 '$2'");
 }
 
 function contractType(requirementIds: readonly string[], mvpIds: readonly string[], providerRecords: readonly ProviderRecord[]): string {
@@ -351,7 +342,13 @@ function contractType(requirementIds: readonly string[], mvpIds: readonly string
 
 interface NavigationDefinition {
   readonly id: string;
-  readonly route: string;
+  readonly routeid: string;
+  readonly requirements: readonly string[];
+}
+
+interface NavigationRouteDefinition {
+  readonly id: string;
+  readonly path: string;
   readonly requirements: readonly string[];
 }
 

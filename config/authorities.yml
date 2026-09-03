@@ -1,4 +1,4 @@
-version: 4
+version: 5
 requirements:
   logicalSource: RepositoryAuthority docs/福利商城功能清单.xlsx
   repositoryRelativePath: docs/福利商城功能清单.xlsx
@@ -6,44 +6,63 @@ requirements:
   sheet: MVP上线功能清单
   range: A1:F24
   parserVersion: 3
-  generatorVersion: 3
+  generatorVersion: 4
   generatedAt: 2026-08-31T12:35:48.000Z
   sheets:
     requirements: 296
     mvp: 22
     providers: 20
+  outputs:
+    - docs/requirements/source.yml
+    - docs/requirements/requirements.yml
+    - docs/requirements/mvp.yml
+    - docs/requirements/providers.yml
+    - docs/requirements/frontend.yml
+    - docs/requirements/trace.yml
+    - docs/requirements/mapping.json
+    - packages/contract/src/RequirementCatalog.ts
+    - config/providers.yml
+    - evidence/releases/index.json
 architecture:
-  - logicalSource: RepositoryAuthority docs/architecture/商城优化方案.md
-    repositoryRelativePath: docs/architecture/商城优化方案.md
-    sha256: 5f674cabfa5910be1c4c0e5c9cdc7e60c65defbbd145a019c823df5406f85108
-    version: 1
-  - logicalSource: RepositoryAuthority docs/architecture/Auth前端代码结构统一.md
-    repositoryRelativePath: docs/architecture/Auth前端代码结构统一.md
-    sha256: cc4c139f6469a249922f5208cc36118cd879ecb8c6721d528e9d33433b746ffb
-    version: 1
-  - logicalSource: RepositoryAuthority docs/architecture/Auth前端代码结构统一修改点清单.md
-    repositoryRelativePath: docs/architecture/Auth前端代码结构统一修改点清单.md
-    sha256: 3af0a2da3d833f507f458e6d7b20e3a6775263ea4fa13ae9c6074831b3fcee13
+  - logicalSource: RepositoryAuthority docs/architecture/前端整体重构方案.md
+    repositoryRelativePath: docs/architecture/前端整体重构方案.md
+    sha256: aad7b1fcfcf0afe8985af0a6614194d39ac7e93d6e1acc51fdd8b19cfe07827d
     version: 1
 visuals:
   logicalSource: RepositoryAuthority config/visuals.yml
   repositoryRelativePath: config/visuals.yml
-  sha256: 1f7ee94bf1fbb15c7e1729d68e34c6d8f300e96211a1c9ea66b25b1e021ef094
+  sha256: 1e9c81889858b89538286f119b0c5bdffc7ea7beaedefe862c97b4a2ed14099b
 navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml
+  version: 2
+  sha256: 34e186dc560bb7a88e310b21b20e38db3a899f4d893920b93833b2c8c1ce3f70
   generator: tools/navigationgen
   outputs:
     - services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts
+    - packages/config/src/RouteCatalog.ts
+    - apps/auth/src/generated/RouteBinding.ts
     - apps/console/src/generated/NavigationBinding.ts
+    - apps/console/src/generated/RouteBinding.ts
     - apps/storefront/src/generated/NavigationBinding.ts
+    - apps/storefront/src/generated/RouteBinding.ts
     - evidence/navigation/catalog.json
 contract:
   logicalSource: RepositoryAuthority packages/contract/definitions
   repositoryRelativePath: packages/contract/definitions
   generator: tools/contractgen
-  version: 4.0.0
+  version: 5.0.0
   outputs:
-    - packages/contract/src/generated
-    - packages/sdk/src/generated
+    - packages/contract/openapi.json
+    - packages/contract/events.json
+    - packages/contract/src/operations
+    - packages/contract/src/events
+    - packages/contract/src/EventSerializer.ts
+    - packages/contract/src/ContractIdentity.ts
+    - packages/contract/src/ErrorContract.ts
+    - packages/presentation/src/generated/ErrorPolicy.ts
+    - packages/authz/src/PermissionCatalog.ts
+    - packages/sdk/src/operations
     - services/commerce/src/generated
+    - services/commerce/src/foundation/interface/OperationController.ts
+    - database/contracts/current.sql

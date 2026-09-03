@@ -1,6 +1,5 @@
 import { Button } from '@shop/design';
-import type { DataColumn } from '../../shared/ui/DataTable';
-import { DataTable } from '../../shared/ui/DataTable';
+import { DataTable, type DataColumn } from '@shop/design';
 import { formatDate, formatMinor } from '../../shared/ui/Format';
 import type { ReferralAction, ReferralSetting } from './ReferralSchema';
 

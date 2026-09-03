@@ -1,9 +1,10 @@
 import type { OperationOutputFor } from '@shop/contract';
-import { readCatalog } from '../../../shared/api/CatalogClient';
+import type { StorefrontClient } from '../../../shared/api/Client';
 import type { CatalogFilter } from '../model/CatalogFilter';
 
-export const CatalogGateway = Object.freeze({
+export class CatalogGateway {
+  constructor(private readonly storefront: StorefrontClient['commerce']['storefront'], private readonly context: StorefrontClient['context']) {}
   read(filter: CatalogFilter, signal?: AbortSignal): Promise<OperationOutputFor<'storefront.catalog.read'>> {
-    return readCatalog(filter, signal);
-  },
-});
+    return this.storefront.catalogRead({ query: { ...filter } }, this.context(null, { signal }));
+  }
+}

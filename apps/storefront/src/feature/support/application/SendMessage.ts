@@ -1,10 +1,10 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { createIdempotencyKey } from '@shop/sdk';
-import { supportGateway, type SupportGateway } from '../infrastructure/SupportGateway';
+import type { SupportGateway } from '../infrastructure/SupportGateway';
 import type { MessageDraft } from '../model/Message';
 
 export class SendMessage {
-  constructor(private readonly gateway: SupportGateway = supportGateway) {}
+  constructor(private readonly gateway: SupportGateway) {}
   create(caseId: string, version: number, message: string, attachmentIds: readonly string[] = []): MessageDraft {
     const body = message.trim();
     if (body.length < 1 || body.length > 4000) throw new Error('消息内容须为 1–4000 个字符');

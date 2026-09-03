@@ -5,8 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "npm run typecheck",
-    "generate": "node --import tsx src/RequirementGenerator.ts",
-    "check": "node --import tsx src/RequirementGenerator.ts --check",
+    "generate": "npm run generate:source && npm run generate:trace && npm run generate:release",
+    "generate:source": "node --import tsx src/RequirementSourceGenerator.ts",
+    "generate:trace": "node --import tsx src/RequirementGenerator.ts",
+    "generate:release": "node --import tsx src/ReleaseIndex.ts",
+    "check": "npm run check:source && npm run check:trace && npm run check:release",
+    "check:source": "node --import tsx src/RequirementSourceGenerator.ts --check",
+    "check:trace": "node --import tsx src/RequirementGenerator.ts --check",
+    "check:release": "node --import tsx src/ReleaseIndex.ts --check",
     "lint": "npm run typecheck",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

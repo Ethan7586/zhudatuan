@@ -1,5 +1,46 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = 'f557147c88b631596b6d31e635484ed432b63c75f12c113702607d4a070e5809' as const;
+export const CONFIG_CHECKSUM = '05c47ecafd0e6159c879574b2010f6f2464c368f32688d020ed4ef69317689b1' as const;
+
+export const BROWSER_QUERY_POLICY = Object.freeze({
+  "query": {
+    "staleMilliseconds": 30000,
+    "garbageCollectionMilliseconds": 300000,
+    "retryCount": 1,
+    "refetchOnWindowFocus": false,
+    "refetchOnReconnect": true
+  },
+  "identity": {
+    "parts": [
+      "client",
+      "scopekind",
+      "scopeid",
+      "accessversion",
+      "resourceversion",
+      "resource",
+      "filter"
+    ]
+  },
+  "storefrontIdentity": {
+    "parts": [
+      "handle",
+      "mall",
+      "releaseversion",
+      "catalogversion",
+      "resource",
+      "filter"
+    ]
+  },
+  "scopeChange": {
+    "cancelPending": true,
+    "removePrevious": true,
+    "triggers": [
+      "scopekind",
+      "scopeid",
+      "membership",
+      "accessversion"
+    ]
+  }
+} as const);
 
 export const CACHE_CATALOG = Object.freeze({
   "experience": {

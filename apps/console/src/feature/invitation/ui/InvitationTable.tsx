@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import type { DataColumn } from '../../../shared/ui/DataTable';
+import type { DataColumn } from '@shop/design';
 import { invitationKind, invitationStatus, invitationTarget, invitationTime } from '../infrastructure/InvitationMapper';
 import type { Invitation } from '../model/Invitation';
 

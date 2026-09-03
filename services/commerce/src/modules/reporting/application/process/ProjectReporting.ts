@@ -38,7 +38,7 @@ export class ProjectReporting {
 }
 
 function cacheKeys(scope: string, projectionVersion: number): readonly string[] {
-  const metrics = ['dashboard', 'sales', 'product', 'mall', 'category', 'channel', 'powderclass', 'voucher'] as const;
+  const metrics = ['dashboard', 'sales', 'product', 'mall', 'category', 'channel', 'voucher'] as const;
   const periods = ['realtime', 'yesterday', '7days', '30days'] as const;
   return metrics.flatMap((metric) => periods.map((period) => VersionedKey.create('reporting', { scope, metric, period, projectionversion: projectionVersion })));
 }

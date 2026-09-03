@@ -1,9 +1,10 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { InvoiceGateway } from '../infrastructure/InvoiceGateway';
 import type { InvoiceDownload } from '../model/Invoice';
 
 export class DownloadInvoice {
+  constructor(private readonly gateway: Pick<InvoiceGateway, 'download'>) {}
   execute(session: StorefrontSession, invoiceId: string, signal?: AbortSignal): Promise<InvoiceDownload> {
-    return InvoiceGateway.download(session, invoiceId, signal);
+    return this.gateway.download(session, invoiceId, signal);
   }
 }

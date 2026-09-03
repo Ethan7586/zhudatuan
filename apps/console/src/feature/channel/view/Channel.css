@@ -1,0 +1,88 @@
+@import './ChannelDialog.css';
+
+.channelpage {
+  display: grid;
+  gap: 16px;
+}
+
+.channelcontext {
+  margin: 8px 0 0;
+  color: var(--sw-muted);
+  font-size: 13px;
+}
+
+.channelcontent {
+  display: grid;
+  gap: 12px;
+}
+
+.channelcontent > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--sw-muted);
+  font-size: 13px;
+}
+
+.channelcontent td strong,
+.channelcontent td small {
+  display: block;
+}
+
+.channelcontent td small {
+  margin-top: 3px;
+  color: var(--sw-muted);
+  font-size: 12px;
+}
+
+.channelstate {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.channelstate[data-state='enabled'],
+.channelstate[data-state='completed'],
+.channelstate[data-state='succeeded'] {
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+
+.channelstate[data-state='degraded'],
+.channelstate[data-state='failed'],
+.channelstate[data-state='unknown'] {
+  background: var(--sw-warning-surface);
+  color: var(--sw-warning-strong);
+}
+
+.channelrowactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.channelrowactions .shopbutton,
+.channelcontent td > .shopbutton {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.channelreceipt {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .channelcontent > footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

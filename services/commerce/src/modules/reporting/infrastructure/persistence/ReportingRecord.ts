@@ -62,7 +62,19 @@ export function metricRow(row: MetricRecord): MetricRow {
 export function cockpitSummary(summary: CockpitSummary): CockpitSummary {
   return Object.freeze({
     ...summary,
-    sales: Object.freeze({ ...summary.sales, asOf: utcTime(summary.sales.asOf) }),
+    sales: Object.freeze({
+      ...summary.sales,
+      asOf: utcTime(summary.sales.asOf),
+      period: Object.freeze({ from: utcTime(summary.sales.period.from), to: utcTime(summary.sales.period.to) }),
+      deltas: Object.freeze({ ...summary.sales.deltas }),
+      trend: Object.freeze(summary.sales.trend.map((row) => Object.freeze({ ...row }))),
+      weeklyTrend: Object.freeze(summary.sales.weeklyTrend.map((row) => Object.freeze({ ...row }))),
+      categories: Object.freeze(summary.sales.categories.map((row) => Object.freeze({ ...row }))),
+      topProducts: Object.freeze([...summary.sales.topProducts]),
+      malls: Object.freeze(summary.sales.malls.map((row) => Object.freeze({ ...row }))),
+      events: Object.freeze(summary.sales.events.map((event) => Object.freeze({ ...event, time: utcTime(event.time) }))),
+      insights: Object.freeze(summary.sales.insights.map((insight) => Object.freeze({ ...insight }))),
+    }),
   });
 }
 

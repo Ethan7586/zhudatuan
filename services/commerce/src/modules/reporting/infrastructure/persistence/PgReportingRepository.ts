@@ -1,14 +1,14 @@
 import type { ReportingPort } from '../../application/port/ReportingPort';
 import type { ExportJob, ExportReport } from '../../domain/model/ExportJob';
-import type { CockpitSummary, Metric, MetricQuery, MetricRow } from '../../domain/model/Metric';
+import type { CockpitSummary, Metric, MetricQuery, MetricRow, ReportPeriod } from '../../domain/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../../domain/model/Projection';
 import { PgReportingExportRepository } from './PgReportingExportRepository';
 import { cockpitSummary, exportJob, exportSelect, integer, metricRow, object, required, text, utcTime, type ExportRecord, type MetricRecord } from './ReportingRecord';
 import { PgRuntimeWriter } from '../../../../adapter/database/PgRuntimeWriter';
 
 export class PgReportingRepository extends PgReportingExportRepository implements ReportingPort {
-  async cockpit(scope: string): Promise<CockpitSummary> {
-    const result = await this.database.query<{ summary: CockpitSummary }>('select reporting.cockpit($1) summary', [scope]);
+  async cockpit(scope: string, period: ReportPeriod, application: string | null): Promise<CockpitSummary> {
+    const result = await this.database.query<{ summary: CockpitSummary }>('select reporting.cockpit($1,$2,$3) summary', [scope, period, application]);
     return cockpitSummary(required(result.rows[0], 'REPORT_COCKPIT_FAILED').summary);
   }
 
@@ -107,6 +107,15 @@ export class PgReportingRepository extends PgReportingExportRepository implement
     );
   }
 
+  async orderApplication(order: string): Promise<string> {
+    const result = await this.database.query<{ application: string | null }>(
+      `select snapshot->>'application' application from reporting.orderprojection
+      where order_id=$1 and snapshot->>'application' is not null order by scope_id limit 1`,
+      [order]
+    );
+    return text(required(result.rows[0], 'REPORT_ORDER_PROJECTION_MISSING').application, 'REPORT_APPLICATION_REQUIRED');
+  }
+
   async createOrder(value: OrderProjection): Promise<void> {
     await this.database.query(
       `insert into reporting.orderprojection(order_id,scope_id,order_number,payment_state,
@@ -169,9 +178,9 @@ export class PgReportingRepository extends PgReportingExportRepository implement
 
   async completeEvent(event: ProjectionEvent, scopes: readonly string[]): Promise<readonly Readonly<{ scope: string; version: number }>[]> {
     await this.database.query(
-      `insert into reporting.projectionevent(event_id,event_type,event_version,aggregate_id,scope_id,occurred_at,projected_at)
-      values($1,$2,$3,$4,$5,$6,clock_timestamp()) on conflict(event_id) do nothing`,
-      [event.id, event.type, event.version, event.aggregate, event.scope, event.occurredAt]
+      `insert into reporting.projectionevent(event_id,event_type,event_version,aggregate_id,scope_id,payload,occurred_at,projected_at)
+      values($1,$2,$3,$4,$5,$6::jsonb,$7,clock_timestamp()) on conflict(event_id) do nothing`,
+      [event.id, event.type, event.version, event.aggregate, event.scope, JSON.stringify(event.payload), event.occurredAt]
     );
     const offset = await new PgRuntimeWriter(this.database).completeProjection('job:projection', event, scopes);
     await this.database.query(

@@ -7,7 +7,9 @@ import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { Component } from './VoucherRoute';
+import { Component } from './route/VoucherRoute';
+import { DependencyProvider } from '../../app/DependencyContext';
+import { createConsoleDependencies } from '../../app/Dependencies';
 
 const requests: string[] = [];
 const writes: string[] = [];
@@ -73,8 +75,8 @@ describe('Voucher governance workspace', () => {
 
     await user.click(screen.getByRole('button', { name: '查看夏季高温关怀券摘要' }));
     const drawer = await screen.findByRole('dialog', { name: '夏季高温关怀券' });
-    expect(within(drawer).getByText(/不会直接提交写入/)).toBeTruthy();
-    await user.click(within(drawer).getByRole('button', { name: '关闭卡券摘要' }));
+    expect(within(drawer).getByText(/不推断未返回字段/)).toBeTruthy();
+    await user.click(within(drawer).getByRole('button', { name: '关闭' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
     await user.click(screen.getByRole('button', { name: '新建卡券' }));
@@ -83,9 +85,9 @@ describe('Voucher governance workspace', () => {
     await user.type(within(programCreator).getByRole('textbox', { name: '卡券名称' }), '中秋关怀券');
     await user.clear(within(programCreator).getByRole('textbox', { name: '面值（元）' }));
     await user.type(within(programCreator).getByRole('textbox', { name: '面值（元）' }), '88');
-    await user.clear(within(programCreator).getByRole('textbox', { name: '有效天数' }));
-    await user.type(within(programCreator).getByRole('textbox', { name: '有效天数' }), '180');
-    await user.click(within(programCreator).getByRole('button', { name: '创建草稿' }));
+    await user.clear(within(programCreator).getByRole('spinbutton', { name: '有效天数' }));
+    await user.type(within(programCreator).getByRole('spinbutton', { name: '有效天数' }), '180');
+    await user.click(within(programCreator).getByRole('button', { name: '保存方案' }));
     await waitFor(() => expect(writes[0]).toMatch(/^PUT:voucher-program:[0-9a-f-]+:{"name":"中秋关怀券","valueMinor":8800,"validityDays":180,"status":"draft","approvalRequired":true}$/));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡券' })).toBeNull());
     expect(new URLSearchParams(currentSearch).get('view')).toBe('programs');
@@ -117,8 +119,10 @@ function renderRoute(entry: string) {
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
         <ConsoleContextProvider value={context}>
-          <LocationProbe />
-          <Component />
+          <DependencyProvider value={createConsoleDependencies()}>
+            <LocationProbe />
+            <Component />
+          </DependencyProvider>
         </ConsoleContextProvider>
       </QueryClientProvider>
     </MemoryRouter>

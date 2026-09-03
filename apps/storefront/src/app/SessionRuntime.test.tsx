@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveStorefrontSession, isSessionScopeQuery, sessionFingerprint, shouldRefreshAfterRestore, visibleNavigation, type BootstrapView } from './SessionRuntime';
+import { deriveStorefrontSession, isSessionScopeQuery, sessionFingerprint, shouldRefreshAfterRestore, visibleNavigation, type BootstrapView } from '../entity/session/viewmodel/SessionViewModel';
 
 describe('storefront session runtime', () => {
   it('derives a scoped member session from the trusted bootstrap', () => {

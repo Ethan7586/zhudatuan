@@ -30,7 +30,7 @@ export class ExportReport {
     if (!selected) return;
     const upload = await this.objects.create(`reports/${id.replaceAll(':', '/')}.csv`, 'text/csv');
     try {
-      await upload.append(encode(`${exportHeader(selected.report).map(csv).join(',')}\n`));
+      await upload.append(encode(`${exportHeader(selected.report).map(exportCsvCell).join(',')}\n`));
       let cursor = selected.cursor;
       for (;;) {
         if (execution.signal.aborted) throw execution.signal.reason;
@@ -39,7 +39,7 @@ export class ExportReport {
         const lines: string[] = [];
         for (const row of page) {
           cursor = row.key;
-          lines.push(row.values.map(csv).join(','));
+          lines.push(row.values.map(exportCsvCell).join(','));
         }
         await upload.append(encode(`${lines.join('\n')}\n`));
         await this.transactions.write(options, (context) => this.repository.advanceExport(context, id, cursor!, page.length));
@@ -73,7 +73,7 @@ export class ExportReport {
   }
 }
 
-function csv(value: unknown): string {
+export function exportCsvCell(value: unknown): string {
   const raw = value === null || value === undefined ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value);
   const safe = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
   return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;

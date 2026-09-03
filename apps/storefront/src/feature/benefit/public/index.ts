@@ -1,2 +1,2 @@
-export { readBenefitBalances, readBenefitAccounts } from './BenefitReader';
-export type { BenefitBalances } from './BenefitReader';
+export { benefitBalances } from './BenefitReader';
+export type { BenefitBalances, BenefitReader } from './BenefitReader';

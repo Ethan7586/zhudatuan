@@ -4,7 +4,8 @@ import { CatalogGateway } from '../infrastructure/CatalogGateway';
 import { mapCatalog } from '../infrastructure/CatalogMapper';
 
 export class ReadCatalog {
+  constructor(private readonly gateway: Pick<CatalogGateway, 'read'>) {}
   async execute(filter: CatalogFilter = {}, signal?: AbortSignal): Promise<CatalogPage> {
-    return mapCatalog(await CatalogGateway.read(filter, signal));
+    return mapCatalog(await this.gateway.read(filter, signal));
   }
 }

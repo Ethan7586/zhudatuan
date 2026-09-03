@@ -3,6 +3,6 @@ import { defineComponent } from '../../shared/manifest/ComponentManifest';
 export const InvitationManifest = defineComponent({
   component: 'invitation',
   navigationids: ['groupinvitation', 'mallinvitation'],
-  routes: [{ route: 'settings/invitations' }],
+  routes: [{ routeid: 'consoleinvitations' }],
   load: () => import('./ui/InvitationRoute'),
 });

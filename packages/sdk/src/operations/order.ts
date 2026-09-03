@@ -12,6 +12,7 @@ export const ORDER_OPERATION_IDS = Object.freeze([
   "order.reminders.create",
   "order.orders.export",
   "order.aftersales.read",
+  "order.aftersaleattachments.create",
   "order.aftersales.apply",
   "order.aftersales.approve",
   "order.aftersales.reject",
@@ -24,6 +25,7 @@ export interface OrderOperations {
   readonly remindersCreate: OperationMethod<"order.reminders.create">;
   readonly ordersExport: OperationMethod<"order.orders.export">;
   readonly aftersalesRead: OperationMethod<"order.aftersales.read">;
+  readonly aftersaleattachmentsCreate: OperationMethod<"order.aftersaleattachments.create">;
   readonly aftersalesApply: OperationMethod<"order.aftersales.apply">;
   readonly aftersalesApprove: OperationMethod<"order.aftersales.approve">;
   readonly aftersalesReject: OperationMethod<"order.aftersales.reject">;
@@ -38,6 +40,7 @@ export function createOrderOperations(client: OperationExecutor): OrderOperation
     remindersCreate: bindRemindersCreate(client),
     ordersExport: bindOrdersExport(client),
     aftersalesRead: bindAftersalesRead(client),
+    aftersaleattachmentsCreate: bindAftersaleattachmentsCreate(client),
     aftersalesApply: bindAftersalesApply(client),
     aftersalesApprove: bindAftersalesApprove(client),
     aftersalesReject: bindAftersalesReject(client),
@@ -63,6 +66,10 @@ function bindOrdersExport(client: OperationExecutor): OperationMethod<"order.ord
 export function createFetchOrderAftersalesRead(baseUrl: string): OperationMethod<"order.aftersales.read"> { return bindAftersalesRead(new ApiClient(baseUrl, new FetchTransport())); }
 
 function bindAftersalesRead(client: OperationExecutor): OperationMethod<"order.aftersales.read"> { return bindOperation(client, defineOperation({ ...{"id":"order.aftersales.read","method":"GET","path":"/api/v1/orders/aftersales","audience":"public","targets":["console","storefront"],"responseMode":"json","idempotent":true,"timeout":500,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","ORDER_AFTERSALE_NOT_ALLOWED","ORDER_NOT_CANCELLABLE","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("OrderAftersalesReadInput", [] as const, false), output: exactOperationOutput("OrderAftersalesReadOutput") })); }
+
+export function createFetchOrderAftersaleattachmentsCreate(baseUrl: string): OperationMethod<"order.aftersaleattachments.create"> { return bindAftersaleattachmentsCreate(new ApiClient(baseUrl, new FetchTransport())); }
+
+function bindAftersaleattachmentsCreate(client: OperationExecutor): OperationMethod<"order.aftersaleattachments.create"> { return bindOperation(client, defineOperation({ ...{"id":"order.aftersaleattachments.create","method":"POST","path":"/api/v1/orders/{orderid}/aftersale-attachments","audience":"storefront","targets":["storefront"],"responseMode":"json","idempotent":false,"timeout":800,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTENT_TYPE_UNSUPPORTED","CONTRACT_VERSION_UNSUPPORTED","CSRF_TOKEN_INVALID","DEADLINE_EXCEEDED","IDEMPOTENCY_CONFLICT","IDEMPOTENCY_KEY_REQUIRED","INTERNAL_ERROR","ORDER_AFTERSALE_NOT_ALLOWED","ORIGIN_REQUIRED","PERMISSION_DENIED","RATE_LIMITED","REQUEST_BODY_TOO_LARGE","REQUEST_JSON_INVALID","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("OrderAftersaleattachmentsCreateInput", ["orderid"] as const, true), output: exactOperationOutput("OrderAftersaleattachmentsCreateOutput") })); }
 
 export function createFetchOrderAftersalesApply(baseUrl: string): OperationMethod<"order.aftersales.apply"> { return bindAftersalesApply(new ApiClient(baseUrl, new FetchTransport())); }
 

@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { ProviderList } from '../../src/feature/federation/ui/ProviderList';
+import { ProviderList } from '../../src/feature/federation/view/ProviderList';
 
 describe('federation journey', () => {
   it('distinguishes loading, missing and selectable provider states', async () => {

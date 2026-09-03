@@ -2,14 +2,14 @@ import { queryCondition } from '@shop/presentation';
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@shop/sdk';
-import { CockpitSchema } from './cockpit/CockpitSchema';
+import { CockpitSchema } from './cockpit/infrastructure/CockpitSchema';
 import { DistributorPageSchema, LayerPageSchema } from './control/ControlSchema';
-import { FinanceOverviewSchema } from './finance/FinanceSchema';
-import { EMPTY_ORDER_LIST_FILTER } from './order/OrderFilters';
-import { OrderPageSchema } from './order/OrderSchema';
-import { orderKey } from './order/OrderQuery';
-import { ListingPageSchema } from './product/ProductSchema';
-import { productKey } from './product/ProductQuery';
+import { FinanceOverviewSchema } from './finance/infrastructure/OverviewSchema';
+import { EMPTY_ORDER_LIST_FILTER } from './order/model/OrderFilter';
+import { OrderPageSchema } from './order/infrastructure/OrderSchema';
+import { orderKey } from './order/viewmodel/OrderQueryKey';
+import { ListingPageSchema } from './product/infrastructure/ProductDto';
+import { productKey } from './product/viewmodel/ProductQueryKey';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
 
 describe('Console feature-owned response schemas', () => {
@@ -39,9 +39,16 @@ describe('Console feature-owned response schemas', () => {
           fulfillment_state: 'allocated',
           aftersale_state: 'none',
           lifecycle_state: 'paid',
+          address: null,
+          payment: { paymentId: 'payment:1', capturedMinor: '31500', refundedMinor: '0', refundableMinor: '31500', updatedAt: '2026-08-26T00:00:00Z', tenders: [] },
+          fulfillments: [],
+          refunds: [],
+          timeline: [],
+          receivedAt: null,
           created_at: '2026-08-26T00:00:00Z',
           updated_at: '2026-08-26T00:00:00Z',
           version: '2',
+          lines: [],
         },
       ],
     });
@@ -60,7 +67,7 @@ describe('Console feature-owned response schemas', () => {
   it('isolates every server page by explicit scope, access version and URL filter', () => {
     const first = context('mall:1', 3);
     const second = context('mall:2', 4);
-    expect(productKey(first, { cursor: 'cursor:1' })).not.toEqual(productKey(second, { cursor: 'cursor:1' }));
+    expect(productKey(first, { q: '', category: '', limit: 50, cursor: 'cursor:1' })).not.toEqual(productKey(second, { q: '', category: '', limit: 50, cursor: 'cursor:1' }));
     expect(orderKey(first, { ...EMPTY_ORDER_LIST_FILTER, order: 'SW1', view: 'all' })).toContain('order.orders.read');
   });
 

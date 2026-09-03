@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loginMachine } from '../../src/feature/login/application/LoginMachine';
+import { loginMachine } from '../../src/feature/login/model/LoginMachine';
 import { initialLoginState } from '../../src/feature/login/model/LoginState';
 import { bootstrap } from '../TestData';
 

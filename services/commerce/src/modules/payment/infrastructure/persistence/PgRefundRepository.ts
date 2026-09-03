@@ -12,7 +12,7 @@ export class PgRefundRepository implements RefundRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
     private readonly organizations: Pick<OrganizationReadPort, 'descendants'>,
-    orders: Pick<PaymentOrderPort, 'payment'>
+    orders: Pick<PaymentOrderPort, 'payment' | 'recordRefund'>
   ) {
     this.planner = new RefundPlanner(orders);
   }

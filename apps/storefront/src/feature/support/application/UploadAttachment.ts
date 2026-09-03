@@ -1,12 +1,12 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { createIdempotencyKey, uploadObject } from '@shop/sdk';
-import { supportGateway, type SupportGateway } from '../infrastructure/SupportGateway';
+import type { SupportGateway } from '../infrastructure/SupportGateway';
 import type { PendingAttachment, SupportAttachmentType } from '../model/Attachment';
 
 const allowed = new Set<SupportAttachmentType>(['image/jpeg', 'image/png', 'application/pdf', 'text/plain']);
 
 export class UploadAttachment {
-  constructor(private readonly gateway: SupportGateway = supportGateway) {}
+  constructor(private readonly gateway: SupportGateway) {}
   async execute(session: StorefrontSession, caseId: string, file: File): Promise<PendingAttachment> {
     if (!allowed.has(file.type as SupportAttachmentType) || file.size < 1 || file.size > 10 * 1024 * 1024) throw new Error('附件仅支持 10MB 内的 JPG、PNG、PDF 或 TXT 文件');
     const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());

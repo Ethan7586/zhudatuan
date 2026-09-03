@@ -518,11 +518,6 @@ capabilities:
     owner: reporting
     permission: reporting.channel.read
     audience: console
-  - code: reporting.powderclass.read
-    kind: operation
-    owner: reporting
-    permission: reporting.powderclass.read
-    audience: console
   - code: reporting.voucherconsumption.read
     kind: operation
     owner: reporting
@@ -629,6 +624,11 @@ capabilities:
     permission: order.aftersale.read
     audience: public
   - code: order.aftersales.apply
+    kind: operation
+    owner: order
+    permission: order.aftersale.apply
+    audience: storefront
+  - code: order.aftersaleattachments.create
     kind: operation
     owner: order
     permission: order.aftersale.apply
@@ -792,7 +792,7 @@ capabilities:
     kind: operation
     owner: voucher
     permission: voucher.binding.read
-    audience: storefront
+    audience: public
   - code: voucher.bindings.manage
     kind: operation
     owner: voucher
@@ -802,7 +802,7 @@ capabilities:
     kind: operation
     owner: voucher
     permission: voucher.redemption.read
-    audience: storefront
+    audience: public
   - code: voucher.history.read
     kind: operation
     owner: voucher

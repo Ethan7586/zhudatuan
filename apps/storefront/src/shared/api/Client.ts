@@ -14,16 +14,18 @@ import { createFetchReferral } from '@shop/sdk/referral';
 import { createFetchStorefront } from '@shop/sdk/storefront';
 import { createFetchSupport } from '@shop/sdk/support';
 import { createFetchVoucher } from '@shop/sdk/voucher';
-import { requestContext, type RequestOptions, type StorefrontSession } from './Session';
-import { currentStorefrontHandle } from '../../route/EntryPath';
+import type { StorefrontSession } from '../../entity/session';
+import { createStorefrontContext, type RequestOptions } from './RequestContext';
+import type { StorefrontHandle } from '@shop/contract';
 
 type StorefrontCommerce = Pick<CommerceClient, 'benefit' | 'cart' | 'checkout' | 'finance' | 'fulfillment' | 'identity' | 'member' | 'notification' | 'order' | 'payment' | 'referral' | 'storefront' | 'support' | 'voucher'>;
 
 export class StorefrontClient {
   readonly commerce: StorefrontCommerce;
   readonly clientVersion: string;
+  private readonly request;
 
-  constructor(environment = storefrontClientEnvironment()) {
+  constructor(handle: StorefrontHandle, environment = storefrontClientEnvironment()) {
     const origin = environment.apiOrigin;
     this.commerce = Object.freeze({
       benefit: createFetchBenefit(origin),
@@ -42,11 +44,10 @@ export class StorefrontClient {
       voucher: createFetchVoucher(origin),
     });
     this.clientVersion = environment.clientVersion;
+    this.request = createStorefrontContext(this.clientVersion, handle);
   }
 
   context(session: StorefrontSession | null, options: RequestOptions = {}) {
-    return requestContext(this.clientVersion, currentStorefrontHandle(), session, options);
+    return this.request(session, options);
   }
 }
-
-export const storefrontClient = new StorefrontClient();

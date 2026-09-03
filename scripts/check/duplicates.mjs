@@ -143,6 +143,10 @@ function declarationName(node, sourceFile) {
   return ts.isIdentifier(node.name) || ts.isStringLiteralLike(node.name) ? node.name.text : node.name.getText(sourceFile);
 }
 
+function propertyNameText(name) {
+  return ts.isIdentifier(name) || ts.isStringLiteralLike(name) ? name.text : '';
+}
+
 function declaresBusinessIdentifier(node, sourceFile) {
   if (ts.isEnumMember(node)) return true;
   if (ts.isPropertyAssignment(node)) return false;
@@ -232,9 +236,14 @@ export function audit() {
         ((ts.isIdentifier(node.name) && node.name.text === 'path') || (ts.isStringLiteralLike(node.name) && node.name.text === 'path')) &&
         ts.isStringLiteralLike(node.initializer) &&
         node.initializer.text.startsWith('/') &&
-        /(?:route|router|navigation)/i.test(path.basename(source))
+        /(?:route|router|navigation)/i.test(path.basename(source)) &&
+        sourceName !== 'packages/config/src/RouteCatalog.ts'
       ) {
-        const owner = sourceName.startsWith('apps/') ? sourceName.split('/').slice(0, 2).join('/') : 'global';
+        const surface = node.parent && ts.isObjectLiteralExpression(node.parent)
+          ? node.parent.properties.find((property) => ts.isPropertyAssignment(property) && propertyNameText(property.name) === 'surface')?.initializer
+          : undefined;
+        const surfaceName = surface && ts.isStringLiteralLike(surface) ? surface.text : undefined;
+        const owner = sourceName.startsWith('apps/') ? sourceName.split('/').slice(0, 2).join('/') : surfaceName ? `global:${surfaceName}` : 'global';
         pushMap(routes, `${owner} PAGE ${node.initializer.text}`, location(sourceFile, node));
       }
       if (ts.isVariableDeclaration(node) && node.initializer && ts.isIdentifier(node.name) && /querykeys?$/i.test(node.name.text)) {

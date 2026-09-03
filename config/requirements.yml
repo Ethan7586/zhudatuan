@@ -39,7 +39,6 @@ mvp:
     directOperations: [organization.layers.read, catalog.pools.read, voucher.cardlibraries.read, voucher.cardlibraries.create]
     transitiveOperations: []
     journeys: [tests/journey/PlatformJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: catalogsync
@@ -53,7 +52,6 @@ mvp:
     directOperations: [channel.distributors.read]
     transitiveOperations: []
     journeys: [tests/journey/DistributionJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: [distributiondefinition]
     runbook: catalogsync
@@ -67,7 +65,6 @@ mvp:
     directOperations: [reporting.dashboard.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupDashboardJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: projection
@@ -81,7 +78,6 @@ mvp:
     directOperations: [experience.applications.read, storefront.bootstrap.read]
     transitiveOperations: []
     journeys: [tests/journey/MallEntryJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: experiencepublish
@@ -95,7 +91,6 @@ mvp:
     directOperations: [catalog.pools.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupProductJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: catalogsync
@@ -109,7 +104,6 @@ mvp:
     directOperations: [order.orders.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupOrderJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: fulfillment
@@ -123,7 +117,6 @@ mvp:
     directOperations: [voucher.cardlibraries.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupVoucherJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: [voucherarchive]
     runbook: benefitgrant
@@ -137,7 +130,6 @@ mvp:
     directOperations: [finance.overview.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupFinanceJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: reconciliation
@@ -151,7 +143,6 @@ mvp:
     directOperations: [reporting.sales.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupReportJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: export
@@ -165,7 +156,6 @@ mvp:
     directOperations: [support.cases.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupSupportJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: supportsla
@@ -179,7 +169,6 @@ mvp:
     directOperations: [access.center.read]
     transitiveOperations: []
     journeys: [tests/journey/GroupSettingJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: [grouprisk]
     runbook: riskscan
@@ -193,7 +182,6 @@ mvp:
     directOperations: [reporting.dashboard.read]
     transitiveOperations: []
     journeys: [tests/journey/MallDashboardJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: projection
@@ -207,7 +195,6 @@ mvp:
     directOperations: [experience.applications.read, storefront.bootstrap.read]
     transitiveOperations: []
     journeys: [tests/journey/MallDesignJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: experiencepublish
@@ -221,7 +208,6 @@ mvp:
     directOperations: [catalog.pools.read]
     transitiveOperations: []
     journeys: [tests/journey/MallProductJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: pricesync
@@ -235,7 +221,6 @@ mvp:
     directOperations: [order.orders.read]
     transitiveOperations: []
     journeys: [tests/journey/MallOrderJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: paymentrefund
@@ -249,7 +234,6 @@ mvp:
     directOperations: [voucher.cardlibraries.read]
     transitiveOperations: []
     journeys: [tests/journey/MallVoucherJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: [voucherarchive]
     runbook: voucherexpiry
@@ -263,7 +247,6 @@ mvp:
     directOperations: [finance.overview.read]
     transitiveOperations: []
     journeys: [tests/journey/MallFinanceJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: reconciliation
@@ -277,9 +260,8 @@ mvp:
     directOperations: [reporting.sales.read]
     transitiveOperations: []
     journeys: [tests/journey/MallReportJourney.spec.ts]
-    entryRoutes: []
     providers: []
-    clarifications: [powderclass]
+    clarifications: []
     runbook: export
     tables: [reporting.metric, reporting.fact, reporting.export]
   - id: MVPMALLSUPPORT
@@ -291,7 +273,6 @@ mvp:
     directOperations: [support.cases.read]
     transitiveOperations: []
     journeys: [tests/journey/MallSupportJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: supportsla
@@ -305,7 +286,6 @@ mvp:
     directOperations: [access.center.read]
     transitiveOperations: []
     journeys: [tests/journey/MallSettingJourney.spec.ts]
-    entryRoutes: []
     providers: []
     clarifications: []
     runbook: riskscan
@@ -319,7 +299,6 @@ mvp:
     directOperations: [identity.bootstrap.read, identity.sessions.create, identity.sessions.complete, identity.tickets.exchange, identity.challenges.create, identity.invitations.resolve, identity.enrollments.read, identity.enrollments.complete]
     transitiveOperations: [identity.providers.read, identity.federations.start, identity.federations.selection.read, identity.federations.complete, identity.password.reset]
     journeys: [tests/journey/IdentityJourney.spec.ts]
-    entryRoutes: ['/', /invitation, /membership, /callback, /link]
     providers: []
     clarifications: []
     runbook: identityrecovery
@@ -333,7 +312,6 @@ mvp:
     directOperations: [channel.connections.read]
     transitiveOperations: []
     journeys: [tests/journey/ProviderJourney.spec.ts]
-    entryRoutes: []
     providers: [jdproduct, jdfresh, tmall, supplier, cake, flower, book, charge, foodvoucher, movie, meal]
     clarifications: []
     runbook: catalogsync
@@ -366,15 +344,6 @@ clarifications:
     acceptance: null
     resolvedby: null
     reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限
-  - id: powderclass
-    requirements: [MVPMALLREPORT]
-    term: 粉类
-    status: open
-    blocking: true
-    owner: product
-    acceptance: null
-    resolvedby: null
-    reason: 工作簿未定义业务口径，禁止开发阶段静默改义
 bindings:
   PLAT001: { 'module': 'reporting', 'operation': 'reporting.dashboard.read', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
   PLAT002: { 'module': 'reporting', 'operation': 'reporting.exports.create', 'route': '/scopes/:scopeKind/:scopeId/reporting', 'journey': 'tests/journey/PlatformJourney.spec.ts', 'table': 'reporting.metric' }
@@ -672,3 +641,4 @@ bindings:
   INTEG018: { 'module': 'channel', 'operation': 'channel.distributors.create', 'route': '/scopes/:scopeKind/:scopeId/channels', 'journey': 'tests/journey/ProviderJourney.spec.ts', 'table': 'channel.connection' }
   INTEG019: { 'module': 'channel', 'operation': 'channel.distributors.create', 'route': '/scopes/:scopeKind/:scopeId/channels', 'journey': 'tests/journey/ProviderJourney.spec.ts', 'table': 'channel.connection' }
   INTEG020: { 'module': 'channel', 'operation': 'channel.distributors.create', 'route': '/scopes/:scopeKind/:scopeId/channels', 'journey': 'tests/journey/ProviderJourney.spec.ts', 'table': 'channel.connection' }
+

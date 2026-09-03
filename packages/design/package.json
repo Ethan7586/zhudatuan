@@ -11,8 +11,8 @@
     "lint": "npm run typecheck",
     "storybook": "storybook dev --config-dir .storybook --port 6006",
     "storybook:build": "storybook build --config-dir .storybook",
-    "test": "vitest run --exclude src/ResourceState.component.test.tsx --exclude src/Dialog.component.test.tsx --exclude src/RouteFallback.component.test.tsx --passWithNoTests",
-    "test:component": "vitest run src/ResourceState.component.test.tsx src/Dialog.component.test.tsx src/RouteFallback.component.test.tsx",
+    "test": "vitest run --exclude src/ResourceState.component.test.tsx --exclude src/Dialog.component.test.tsx --exclude src/RouteLoading.component.test.tsx --passWithNoTests",
+    "test:component": "vitest run src/ResourceState.component.test.tsx src/Dialog.component.test.tsx src/RouteLoading.component.test.tsx",
     "typecheck": "tsc --noEmit"
   },
   "exports": {

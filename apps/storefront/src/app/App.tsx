@@ -2,6 +2,9 @@ import { SessionRuntime } from './SessionRuntime';
 import { Router } from '../route/Router';
 import { BrowserRouter } from 'react-router';
 import { readEntryPath } from '../route/EntryPath';
+import { useMemo } from 'react';
+import { createDependencies } from './Dependencies';
+import { DependencyProvider } from './DependencyContext';
 
 export function App() {
   let entry;
@@ -10,12 +13,17 @@ export function App() {
   } catch {
     return <EntryFailure />;
   }
+  return <StorefrontRuntime entry={entry} />;
+}
+
+function StorefrontRuntime({ entry }: Readonly<{ entry: ReturnType<typeof readEntryPath> }>) {
+  const dependencies = useMemo(() => createDependencies(entry.handle), [entry.handle]);
   return (
-    <BrowserRouter basename={entry.basePath}>
-      <SessionRuntime entry={entry}>
-        <Router />
-      </SessionRuntime>
-    </BrowserRouter>
+    <DependencyProvider value={dependencies}>
+      <BrowserRouter basename={entry.basePath}>
+        <SessionRuntime entry={entry}><Router /></SessionRuntime>
+      </BrowserRouter>
+    </DependencyProvider>
   );
 }
 

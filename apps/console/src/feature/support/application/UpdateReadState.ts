@@ -1,7 +1,7 @@
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import type { SupportGateway } from '../infrastructure/SupportGateway';
+import type { SupportPort } from '../public';
 
 export class UpdateReadState {
-  constructor(private readonly gateway: SupportGateway) {}
-  execute(context: ConsoleContext, conversation: string, sequence: number) { return this.gateway.read(context, conversation, sequence); }
+  constructor(private readonly gateway: SupportPort) {}
+  execute(context: ConsoleContext, conversation: string, sequence: number) { return this.gateway.updateRead(context, conversation, sequence); }
 }

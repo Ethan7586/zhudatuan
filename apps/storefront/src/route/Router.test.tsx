@@ -1,19 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { pathToPage, routeForPage, routePath, ROUTES } from './Routes';
+import { RouteRegistry } from '../app/RouteRegistry';
+import { ROUTES } from '../generated/RouteBinding';
+import { routePath } from '../shared/navigation/Route';
 
 describe('storefront router', () => {
-  it('maps every deep-link family to its canonical presentation', () => {
-    expect(pathToPage('/')).toBe('home-1366');
-    expect(pathToPage('/products')).toBe('category');
-    expect(pathToPage('/products/listing:one')).toBe('detail');
-    expect(pathToPage('/checkout')).toBe('cart');
-    expect(pathToPage('/orders/order:one')).toBe('orders');
-    expect(routeForPage('orders')).toBe(ROUTES.orders);
+  it('registers every generated route exactly once through feature manifests', () => {
+    const ids = RouteRegistry.routes().map(({ routeid }) => routeid);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect([...ids].sort()).toEqual(Object.keys(ROUTES).sort());
   });
 
-  it('encodes valid route parameters and rejects unsafe values', () => {
-    expect(routePath('product', 'listing:one')).toBe('/products/listing%3Aone');
-    expect(() => routePath('product', '../')).toThrow('ROUTE_PARAMETER_INVALID');
-    expect(() => routePath('order')).toThrow('ROUTE_PARAMETER_INVALID');
+  it('encodes valid route parameters and rejects missing values', () => {
+    expect(routePath('storeproduct', { productId: 'listing:one' })).toBe('/products/listing%3Aone');
+    expect(routePath('storeorder', { orderId: 'order:one' })).toBe('/orders/order%3Aone');
+    expect(() => routePath('storeproduct', {})).toThrow('ROUTE_PARAMETER_INVALID');
   });
 });

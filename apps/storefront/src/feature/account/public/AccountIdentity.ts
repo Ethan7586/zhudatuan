@@ -1,1 +1,1 @@
-export { useAccountIdentity } from '../application/AccountIdentity';
+export { useAccountIdentity } from '../viewmodel/AccountIdentityViewModel';

@@ -1,0 +1,277 @@
+generated: true
+source: RepositoryAuthority docs/福利商城功能清单.xlsx
+workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
+counts:
+  mvp: 22
+  required: 18
+  nonblocking: 4
+  providerRequired: 11
+mvp:
+  - id: MVPPLATFORM
+    title: 平台基础
+    source:
+      sheet: MVP上线功能清单
+      row: 3
+      range: A3:F3
+    release: nonblocking
+    clarifications: []
+  - id: MVPDISTRIBUTION
+    title: 分销层
+    source:
+      sheet: MVP上线功能清单
+      row: 4
+      range: A4:F4
+    release: nonblocking
+    clarifications:
+      - distributiondefinition
+  - id: MVPGROUPDASHBOARD
+    title: 集团数据大屏
+    source:
+      sheet: MVP上线功能清单
+      row: 5
+      range: A5:F5
+    release: required
+    clarifications: []
+  - id: MVPGROUPAPPLICATION
+    title: 集团应用管理
+    source:
+      sheet: MVP上线功能清单
+      row: 6
+      range: A6:F6
+    release: required
+    clarifications: []
+  - id: MVPGROUPPOOL
+    title: 集团商品池
+    source:
+      sheet: MVP上线功能清单
+      row: 7
+      range: A7:F7
+    release: required
+    clarifications: []
+  - id: MVPGROUPORDER
+    title: 集团订单管理
+    source:
+      sheet: MVP上线功能清单
+      row: 8
+      range: A8:F8
+    release: required
+    clarifications: []
+  - id: MVPGROUPVOUCHER
+    title: 集团卡券中心
+    source:
+      sheet: MVP上线功能清单
+      row: 9
+      range: A9:F9
+    release: required
+    clarifications:
+      - voucherarchive
+  - id: MVPGROUPFINANCE
+    title: 集团财务
+    source:
+      sheet: MVP上线功能清单
+      row: 10
+      range: A10:F10
+    release: nonblocking
+    clarifications: []
+  - id: MVPGROUPREPORT
+    title: 集团数据统计
+    source:
+      sheet: MVP上线功能清单
+      row: 11
+      range: A11:F11
+    release: required
+    clarifications: []
+  - id: MVPGROUPSUPPORT
+    title: 集团客服中心
+    source:
+      sheet: MVP上线功能清单
+      row: 12
+      range: A12:F12
+    release: required
+    clarifications: []
+  - id: MVPGROUPSETTING
+    title: 集团设置
+    source:
+      sheet: MVP上线功能清单
+      row: 13
+      range: A13:F13
+    release: required
+    clarifications:
+      - grouprisk
+  - id: MVPMALLDASHBOARD
+    title: 商城数据大屏
+    source:
+      sheet: MVP上线功能清单
+      row: 14
+      range: A14:F14
+    release: required
+    clarifications: []
+  - id: MVPMALLDESIGN
+    title: 商城装修
+    source:
+      sheet: MVP上线功能清单
+      row: 15
+      range: A15:F15
+    release: required
+    clarifications: []
+  - id: MVPMALLPOOL
+    title: 商城商品池
+    source:
+      sheet: MVP上线功能清单
+      row: 16
+      range: A16:F16
+    release: required
+    clarifications: []
+  - id: MVPMALLORDER
+    title: 商城订单管理
+    source:
+      sheet: MVP上线功能清单
+      row: 17
+      range: A17:F17
+    release: required
+    clarifications: []
+  - id: MVPMALLVOUCHER
+    title: 商城卡券中心
+    source:
+      sheet: MVP上线功能清单
+      row: 18
+      range: A18:F18
+    release: required
+    clarifications:
+      - voucherarchive
+  - id: MVPMALLFINANCE
+    title: 商城财务
+    source:
+      sheet: MVP上线功能清单
+      row: 19
+      range: A19:F19
+    release: nonblocking
+    clarifications: []
+  - id: MVPMALLREPORT
+    title: 商城数据统计
+    source:
+      sheet: MVP上线功能清单
+      row: 20
+      range: A20:F20
+    release: required
+    clarifications: []
+  - id: MVPMALLSUPPORT
+    title: 商城客服中心
+    source:
+      sheet: MVP上线功能清单
+      row: 21
+      range: A21:F21
+    release: required
+    clarifications: []
+  - id: MVPMALLSETTING
+    title: 商城设置
+    source:
+      sheet: MVP上线功能清单
+      row: 22
+      range: A22:F22
+    release: required
+    clarifications: []
+  - id: MVPIDENTITY
+    title: 用户注册与登录
+    source:
+      sheet: MVP上线功能清单
+      row: 23
+      range: A23:F23
+    release: required
+    clarifications: []
+  - id: MVPPROVIDER
+    title: 优先级一接口接入
+    source:
+      sheet: MVP上线功能清单
+      row: 24
+      range: A24:F24
+    release: required
+    clarifications: []
+providers:
+  - id: jdproduct
+    row: 2
+    label: 京东
+    priority: 1
+    core: jdcore
+  - id: jdfresh
+    row: 3
+    label: 京东生鲜
+    priority: 1
+    core: jdcore
+  - id: tmall
+    row: 4
+    label: 天猫超市
+    priority: 1
+    core: tmallcore
+  - id: supplier
+    row: 5
+    label: 自有供应商
+    priority: 1
+    core: local
+  - id: cake
+    row: 6
+    label: 蛋糕（元祖、幸福西饼、家有熊猫、帕瑞斯、窝夫小子、甜风集、味多美、味之初、维尔纳斯、窝家甜品、星期六、蜜时cake、诺心、米卡米卡、榴芒一刻、积慕cake、映悦、香缇蜜语、爱在此客、喜芙来、皇冠幸福里、焙福谷……）
+    priority: 1
+    core: cakecore
+  - id: flower
+    row: 7
+    label: 鲜花（花千束、花映里、花礼甄选、爱在此刻鲜花）
+    priority: 1
+    core: cakecore
+  - id: book
+    row: 8
+    label: 图书
+    priority: 1
+    core: bookcore
+  - id: charge
+    row: 9
+    label: 虚拟卡券/直充
+    priority: 1
+    core: wanliancore
+  - id: foodvoucher
+    row: 10
+    label: 虚拟食品提货券(元祖、仟吉、BONCAKE、蛋糕王国、囍甜、一鸣真鲜奶……）
+    priority: 1
+    core: cakecore
+  - id: movie
+    row: 11
+    label: 电影
+    priority: 1
+    core: wanliancore
+  - id: meal
+    row: 12
+    label: 在线点餐(肯德基、麦当劳、瑞幸、星巴克。 新增：库迪)
+    priority: 1
+    core: cakecore
+clarifications:
+  - id: distributiondefinition
+    requirements:
+      - MVPDISTRIBUTION
+    term: 分销层
+    status: open
+    blocking: false
+    owner: product
+    acceptance: null
+    resolvedby: null
+    reason: 工作簿功能说明为空且备注为忽略，只记录定义缺口，不阻塞本次MVP发布
+  - id: voucherarchive
+    requirements:
+      - MVPGROUPVOUCHER
+      - MVPMALLVOUCHER
+    term: 客户管理与产品档案
+    status: open
+    blocking: true
+    owner: product
+    acceptance: null
+    resolvedby: null
+    reason: 工作簿明确标记第1点待确认，签字前不能标记Released
+  - id: grouprisk
+    requirements:
+      - MVPGROUPSETTING
+    term: 集团风控设置
+    status: open
+    blocking: true
+    owner: product
+    acceptance: null
+    resolvedby: null
+    reason: 工作簿明确标记风控设置待确认，需定义策略对象和审批权限

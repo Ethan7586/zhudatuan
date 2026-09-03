@@ -1,6 +1,6 @@
 import { Button } from '@shop/design';
 import { chineseReference } from '@shop/presentation';
-import { DataTable, type DataColumn } from '../../shared/ui/DataTable';
+import { DataTable, type DataColumn } from '@shop/design';
 import { formatDate } from '../../shared/ui/Format';
 import type { ReferralAction, ReferralProduct } from './ReferralSchema';
 import { State } from './SettingsPanel';

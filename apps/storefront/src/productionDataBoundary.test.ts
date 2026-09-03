@@ -49,7 +49,8 @@ describe('production storefront data boundary', () => {
     const graph = productionImportGraph(resolve(sourceRoot, 'main.tsx')).map((file) => file.replaceAll('\\', '/'));
 
     expect(graph.some((file) => file.endsWith('/src/app/App.tsx'))).toBe(true);
-    expect(graph.some((file) => file.endsWith('/src/shell/ChannelChrome.tsx'))).toBe(true);
+    expect(graph.some((file) => file.endsWith('/src/shell/StorefrontShell.tsx'))).toBe(true);
+    expect(graph.some((file) => /\/src\/shell\/(?:Desktop|Tablet|Mobile)Shell\.tsx$/.test(file))).toBe(false);
     expect(graph.some((file) => file.endsWith('/src/App.tsx'))).toBe(false);
   });
 });

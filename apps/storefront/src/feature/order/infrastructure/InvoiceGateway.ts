@@ -1,12 +1,13 @@
 import type { OperationOutputFor } from '@shop/contract';
-import { storefrontClient } from '../../../shared/api/Client';
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontClient } from '../../../shared/api/Client';
+import type { StorefrontSession } from '../../../entity/session';
 
-export const InvoiceGateway = Object.freeze({
+export class InvoiceGateway {
+  constructor(private readonly finance: StorefrontClient['commerce']['finance'], private readonly context: StorefrontClient['context']) {}
   read(session: StorefrontSession, signal?: AbortSignal): Promise<OperationOutputFor<'finance.invoices.read'>> {
-    return storefrontClient.commerce.finance.invoicesRead({ query: { limit: 50 } }, storefrontClient.context(session, { signal }));
-  },
+    return this.finance.invoicesRead({ query: { limit: 50 } }, this.context(session, { signal }));
+  }
   download(session: StorefrontSession, invoiceId: string, signal?: AbortSignal): Promise<OperationOutputFor<'finance.invoices.download'>> {
-    return storefrontClient.commerce.finance.invoicesDownload({ path: { invoiceid: invoiceId } }, storefrontClient.context(session, { signal }));
-  },
-});
+    return this.finance.invoicesDownload({ path: { invoiceid: invoiceId } }, this.context(session, { signal }));
+  }
+}

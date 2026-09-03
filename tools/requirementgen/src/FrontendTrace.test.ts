@@ -1,29 +1,23 @@
 import { describe, expect, it } from 'vitest';
-
-import { executionTrace } from './FrontendTrace';
+import { executionTraces } from './FrontendTrace';
 
 describe('frontend execution trace', () => {
-  it.each([
-    ['GROUP', 'reporting', 'enterprise/reporting'],
-    ['STORE', 'verification', 'store/verification'],
-    ['SUPPLY', 'catalog', 'supplier/catalog'],
-  ] as const)('maps %s ownership into the canonical console without claiming evidence', (prefix, module, feature) => {
-    const trace = executionTrace({
-      prefix,
-      module,
-      route: '/target',
-      operation: 'domain.operation.read',
-      test: 'tests/journey/target.spec.ts',
-    });
+  it('maps one operation to every explicit matching route without guessing a client', () => {
+    const traces = executionTraces(
+      { route: '/target', operation: 'domain.operation.read', test: 'tests/journey/target.spec.ts' },
+      [
+        { id: 'consolefeature', surface: 'console', path: '/target', feature: 'reporting', requirements: ['MVPGROUPREPORT'], manifest: 'apps/console/src/feature/reporting/Manifest.ts', viewmodel: 'apps/console/src/feature/reporting/viewmodel', test: 'ReportingViewModel.test.ts' },
+        { id: 'storefeature', surface: 'storefront', path: '/target', feature: 'reporting', requirements: ['MVPMALLREPORT'], manifest: 'apps/storefront/src/feature/reporting/Manifest.ts', viewmodel: 'apps/storefront/src/feature/reporting/viewmodel', test: 'ReportingViewModel.test.ts' },
+      ]
+    );
+    expect(traces.map(({ routeid, client }) => [routeid, client])).toEqual([
+      ['consolefeature', 'console'],
+      ['storefeature', 'storefront'],
+    ]);
+    expect(traces[0]).toMatchObject({ feature: 'reporting', operation: 'domain.operation.read', status: 'Designed', evidence: [] });
+  });
 
-    expect(trace).toMatchObject({
-      client: 'console',
-      feature,
-      route: '/target',
-      operation: 'domain.operation.read',
-      status: 'Designed',
-      evidence: [],
-      files: { route: 'apps/console/src/route/Router.tsx', feature: `apps/console/src/feature/${module}` },
-    });
+  it('rejects a binding that is absent from the route catalog', () => {
+    expect(() => executionTraces({ route: '/missing', operation: 'domain.operation.read', test: 'tests/journey/target.spec.ts' }, [])).toThrow('FRONTEND_ROUTE_TRACE_MISSING');
   });
 });

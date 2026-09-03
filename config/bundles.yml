@@ -5,3 +5,6 @@ budgets:
   storefrontInitialGzipKb: 110
   authInitialGzipKb: 90
   lazyFeatureGzipKb: 100
+  sharedChunkGzipKb: 80
+  featureChunkGzipKb: 100
+  duplicateDependencyKb: 0

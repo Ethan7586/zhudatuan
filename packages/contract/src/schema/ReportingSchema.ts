@@ -16,6 +16,16 @@ const metric = strictObject({
   projectionVersion: version,
 });
 const metricPage = pageOutput(metric);
+const trend = strictObject({ date: string(), salesCents: number(), orderCount: number() });
+const nullableNumber = union([number(), nullSchema()]);
+const businessEvent = strictObject({
+  id: string(),
+  kind: literal(['calendar', 'warning', 'sync']),
+  title: string(),
+  metric: string(),
+  time: isoUtc,
+  date: string(),
+});
 const summary = strictObject({
   catalogCount: unsigned,
   availableStock: number(),
@@ -32,9 +42,29 @@ const summary = strictObject({
     activeProductCount: unsigned,
     soldProductCount: unsigned,
     unsoldActiveProductCount: unsigned,
-    trend: array(strictObject({ date: string(), salesCents: number(), orderCount: number() })),
+    period: strictObject({ from: isoUtc, to: isoUtc }),
+    conclusion: string(),
+    deltas: strictObject({
+      netSalesRatio: nullableNumber,
+      paidOrdersRatio: nullableNumber,
+      averageOrderRatio: nullableNumber,
+      refundRate: number(),
+      refundRateDeltaPoints: nullableNumber,
+    }),
+    trend: array(trend),
+    weeklyTrend: array(trend),
     categories: array(strictObject({ name: string(), salesCents: number(), share: number() })),
     topProducts: array(ContractJsonValueSchema),
+    malls: array(strictObject({ id: string(), name: string(), salesCents: number(), paidOrderCount: unsigned, refundRate: number() })),
+    events: array(businessEvent),
+    insights: array(strictObject({
+      id: string(),
+      tone: literal(['warning', 'positive']),
+      title: string(),
+      detail: string(),
+      action: string(),
+      target: literal(['orders', 'reports']),
+    })),
   }),
 });
 const nullableText = union([string(), nullSchema()]);
@@ -68,7 +98,6 @@ export const REPORTING_QUERY_SCHEMAS = {
   ReportingMallsReadInput: reportQuery,
   ReportingCategoriesReadInput: reportQuery,
   ReportingChannelsReadInput: reportQuery,
-  ReportingPowderclassReadInput: reportQuery,
   ReportingVoucherconsumptionReadInput: reportQuery,
   ReportingExportsReadInput: strictObject({}),
 } as const;
@@ -80,7 +109,6 @@ export const REPORTING_OUTPUT_SCHEMAS = {
   ReportingMallsReadOutput: metricPage,
   ReportingCategoriesReadOutput: metricPage,
   ReportingChannelsReadOutput: metricPage,
-  ReportingPowderclassReadOutput: metricPage,
   ReportingVoucherconsumptionReadOutput: metricPage,
   ReportingExportsCreateOutput: job,
   ReportingExportsReadOutput: job,

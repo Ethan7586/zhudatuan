@@ -1,7 +1,7 @@
 import type { OrderReadFilter } from '../../application/model/OrderReadFilter';
 
 export const ORDER_READ_FILTER_SQL = `
-  and ($6='' or orders.id=$6)
+  and ($6='' or orders.id=$6 or orders.order_number=$6)
   and (
     $7='all'
     or ($7='unpaid' and orders.payment_state in ('unpaid','authorizing'))

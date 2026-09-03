@@ -46,12 +46,22 @@ describe('reporting persistence records', () => {
         activeProductCount: 0,
         soldProductCount: 0,
         unsoldActiveProductCount: 0,
+        period: { from: '2026-08-01T00:00:00+00:00', to: '2026-09-01T00:00:00+00:00' },
+        conclusion: '经营稳定',
+        deltas: { netSalesRatio: null, paidOrdersRatio: null, averageOrderRatio: null, refundRate: 0, refundRateDeltaPoints: null },
         trend: [],
+        weeklyTrend: [],
         categories: [],
         topProducts: [],
+        malls: [],
+        events: [{ id: 'event:1', kind: 'calendar', title: '订单支付', metric: '¥10.00', time: '2026-08-31T04:21:09.857981+00:00', date: '2026-08-31' }],
+        insights: [],
       },
     };
-    expect(cockpitSummary(summary).sales.asOf).toBe('2026-08-31T04:21:09.857Z');
+    const normalized = cockpitSummary(summary);
+    expect(normalized.sales.asOf).toBe('2026-08-31T04:21:09.857Z');
+    expect(normalized.sales.period.from).toBe('2026-08-01T00:00:00.000Z');
+    expect(normalized.sales.events[0]?.time).toBe('2026-08-31T04:21:09.857Z');
     expect(
       exportJob({
         id: 'export:1',

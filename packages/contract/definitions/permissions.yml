@@ -2576,21 +2576,6 @@ permissions:
       - department
     makerChecker: false
     description: reporting.mall.read
-  - code: reporting.powderclass.read
-    module: reporting
-    category: reporting
-    risk: low
-    minimumAssurance: 1
-    delegatable: true
-    allowedScopeKinds:
-      - platform
-      - distributor
-      - tenant
-      - enterprise
-      - mall
-      - department
-    makerChecker: false
-    description: reporting.powderclass.read
   - code: reporting.product.read
     module: reporting
     category: reporting
@@ -3173,7 +3158,17 @@ permissions:
     minimumAssurance: 2
     delegatable: true
     allowedScopeKinds:
+      - platform
+      - distributor
+      - tenant
+      - enterprise
+      - mall
+      - department
+      - supplier
+      - brand
+      - store
       - owner
+      - self
     makerChecker: false
     description: voucher.redemption.read
   - code: voucher.redemption.reverse

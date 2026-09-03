@@ -39,11 +39,32 @@ export class PgFulfillmentRepository implements FulfillmentRepository, ReturnRep
         where id=$2 and state=$6 and version=$7 returning *)
       select changed.id,changed.order_id,changed.suborder_id,changed.provider,changed.partner_id,changed.store_id,changed.kind,
       changed.state,changed.external_reference,changed.payment_id,changed.source_effect_id,changed.amount_minor,changed.idempotency_key,
-      changed.created_at,changed.updated_at,changed.version,milestone.external_id tracking from changed join milestone on true`,
+      changed.created_at,changed.updated_at,changed.version,milestone.id milestone_id,milestone.external_id tracking,
+      milestone.occurred_at from changed join milestone on true`,
       [`milestone:${randomUUID()}`, input.id, input.tracking, JSON.stringify({ carrier: input.carrier ?? null, actor: input.actor }), next, loaded.state, loaded.version]
     );
-    if (!result.rows[0]) throw new DomainError('VERSION_CONFLICT');
-    return Object.freeze({ ...result.rows[0] });
+    const changed = result.rows[0] as
+      | Readonly<{
+          id: string;
+          order_id: string;
+          provider: string | null;
+          partner_id: string | null;
+          kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
+          state: string;
+          external_reference: string | null;
+          milestone_id: string;
+          tracking: string | null;
+          occurred_at: string;
+        }>
+      | undefined;
+    if (!changed) throw new DomainError('VERSION_CONFLICT');
+    await this.scopes.orders.recordFulfillments(context, changed.order_id, [
+      { id: changed.id, provider: changed.provider, partner: changed.partner_id, kind: changed.kind, state: changed.state, externalReference: changed.external_reference },
+    ]);
+    await this.scopes.orders.recordFulfillmentMilestones(context, changed.order_id, changed.id, [
+      { id: changed.milestone_id, kind: 'shipment', state: 'shipped', tracking: changed.tracking, occurredAt: String(changed.occurred_at) },
+    ]);
+    return Object.freeze({ ...changed });
   }
   async receive(context: WriteTransactionContext, input: Parameters<ReturnRepository['receive']>[1]) {
     const database = this.transactions.database(context);

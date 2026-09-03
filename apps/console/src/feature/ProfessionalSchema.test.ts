@@ -1,15 +1,15 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { AccessPageSchema } from './settings/access/AccessSchema';
-import { ExperiencePageSchema } from './experience/ExperienceSchema';
-import { ChannelConnectionPageSchema, ChannelOperationPageSchema, ChannelSyncPageSchema } from './channel/ChannelSchema';
-import { EntryPageSchema, InvoicePageSchema, ReconciliationPageSchema, SettlementPageSchema, StatementPageSchema, WithdrawalPageSchema } from './finance/FinanceProfessionalSchema';
+import { ExperiencePageSchema } from './experience/infrastructure/ExperienceSchema';
+import { ChannelConnectionPageSchema, ChannelOperationPageSchema, ChannelSyncPageSchema } from './channel/infrastructure/ChannelSchema';
+import { EntryPageSchema, InvoicePageSchema, ReconciliationPageSchema, SettlementPageSchema, StatementPageSchema, WithdrawalPageSchema } from './finance/infrastructure/SectionSchema';
 import { ImportJobSchema } from './product/importing/ImportSchema';
 import { MemberPageSchema } from './settings/member/MemberSchema';
 import { AnnouncementPageSchema, NotificationTemplatePageSchema } from './settings/notification/NotificationSchema';
 import { QualificationPageSchema } from './settings/qualification/QualificationSchema';
-import { ReportPageSchema } from './reporting/ReportingSchema';
-import { CardLibraryPageSchema, IssueBatchPageSchema, ReservePageSchema, VoucherProgramPageSchema } from './voucher/VoucherSchema';
+import { ReportPageSchema } from './reporting/infrastructure/ReportingSchema';
+import { CardLibraryPageSchema, IssueBatchPageSchema, ReservePageSchema, VoucherProgramPageSchema } from './voucher/infrastructure/VoucherSchema';
 
 const pageSchemas = [
   AccessPageSchema,

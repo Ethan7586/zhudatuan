@@ -1,11 +1,9 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
-import { supportGateway } from '../infrastructure/SupportGateway';
+import type { StorefrontSession } from '../../../entity/session';
+import type { SupportGateway } from '../infrastructure/SupportGateway';
 import type { SupportPage } from '../model/SupportCase';
 
-export function readCases(session: StorefrontSession, signal?: AbortSignal): Promise<SupportPage> {
-  return supportGateway.cases(session, undefined, signal);
-}
-
-export async function readCase(session: StorefrontSession, caseId: string, signal?: AbortSignal) {
-  return supportGateway.case(session, caseId, signal);
+export class ReadCases {
+  constructor(private readonly gateway: Pick<SupportGateway, 'cases' | 'case'>) {}
+  list(session: StorefrontSession, signal?: AbortSignal): Promise<SupportPage> { return this.gateway.cases(session, undefined, signal); }
+  detail(session: StorefrontSession, caseId: string, signal?: AbortSignal) { return this.gateway.case(session, caseId, signal); }
 }

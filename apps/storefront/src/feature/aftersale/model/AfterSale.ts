@@ -12,10 +12,21 @@ export interface AfterSaleAttachment {
 }
 
 export type AfterSaleAttachmentInput = Readonly<{
+  readonly objectId: string;
   readonly name: string;
   readonly contentType: 'image/jpeg' | 'image/png' | 'application/pdf';
-  readonly data: string;
+  readonly sizeBytes: number;
+  readonly sha256: string;
 }>;
+
+export interface AfterSaleAttachmentDraft {
+  readonly id: string;
+  readonly name: string;
+  readonly sizeBytes: number;
+  readonly state: 'uploading' | 'ready' | 'failed';
+  readonly receipt?: AfterSaleAttachmentInput;
+  readonly error?: string;
+}
 
 export interface AfterSaleTimelineItem {
   readonly sequence: number;

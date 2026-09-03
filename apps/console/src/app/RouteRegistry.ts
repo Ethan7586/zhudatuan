@@ -1,53 +1,14 @@
 import { matchPath } from 'react-router';
 import { COMPONENT_KEYS, NAVIGATION_IDS } from '../generated/NavigationBinding';
-import { ChannelManifest } from '../feature/channel/Manifest';
-import { CockpitManifest } from '../feature/cockpit/Manifest';
-import { ControlManifest } from '../feature/control/Manifest';
-import { ExperienceManifest } from '../feature/experience/Manifest';
-import { FinanceManifest } from '../feature/finance/Manifest';
-import { OrderManifest } from '../feature/order/Manifest';
-import { ProductManifest } from '../feature/product/Manifest';
-import { ReferralManifest } from '../feature/referral/Manifest';
-import { ReportingManifest } from '../feature/reporting/Manifest';
-import { SettingsManifest } from '../feature/settings/Manifest';
-import { AccessManifest } from '../feature/settings/access/Manifest';
-import { DirectoryManifest } from '../feature/settings/directory/Manifest';
-import { MemberManifest } from '../feature/settings/member/Manifest';
-import { NotificationManifest } from '../feature/settings/notification/Manifest';
-import { PartnerManifest } from '../feature/settings/partner/Manifest';
-import { ProviderManifest } from '../feature/settings/provider/Manifest';
-import { RiskManifest } from '../feature/settings/risk/Manifest';
-import { SupportManifest } from '../feature/support/Manifest';
-import { InvitationManifest } from '../feature/invitation/Manifest';
-import { VoucherManifest } from '../feature/voucher/Manifest';
+import { ROUTES, ROUTE_FEATURES, type RouteId } from '../generated/RouteBinding';
 import type { ComponentManifest, ComponentRoute } from '../shared/manifest/ComponentManifest';
 
-const manifests: readonly ComponentManifest[] = Object.freeze([
-  CockpitManifest,
-  ControlManifest,
-  ExperienceManifest,
-  ProductManifest,
-  ReferralManifest,
-  OrderManifest,
-  VoucherManifest,
-  ChannelManifest,
-  FinanceManifest,
-  ReportingManifest,
-  SupportManifest,
-  InvitationManifest,
-  SettingsManifest,
-  AccessManifest,
-  MemberManifest,
-  PartnerManifest,
-  NotificationManifest,
-  RiskManifest,
-  ProviderManifest,
-  DirectoryManifest,
-]);
-
+const modules = import.meta.glob<Readonly<Record<string, unknown>>>('../feature/**/Manifest.ts', { eager: true });
+const manifests = Object.freeze(Object.values(modules).flatMap((module) => Object.values(module).filter(isManifest)));
 const components = new Set<string>();
 const navigationids = new Set<string>();
-const routes = new Set<string>();
+const routeids = new Set<RouteId>();
+
 for (const manifest of manifests) {
   if (components.has(manifest.component)) throw new Error(`COMPONENT_DUPLICATE:${manifest.component}`);
   components.add(manifest.component);
@@ -55,46 +16,39 @@ for (const manifest of manifests) {
     if (navigationids.has(id)) throw new Error(`NAVIGATION_BINDING_DUPLICATE:${id}`);
     navigationids.add(id);
   }
-  for (const { route } of manifest.routes) {
-    if (routes.has(route)) throw new Error(`COMPONENT_ROUTE_DUPLICATE:${route}`);
-    routes.add(route);
+  for (const route of manifest.routes) {
+    if (routeids.has(route.routeid)) throw new Error(`COMPONENT_ROUTE_DUPLICATE:${route.routeid}`);
+    if (ROUTE_FEATURES[route.routeid] !== manifest.component) throw new Error(`COMPONENT_ROUTE_FEATURE_MISMATCH:${route.routeid}:${manifest.component}`);
+    routeids.add(route.routeid);
   }
 }
-for (const component of COMPONENT_KEYS) {
-  if (!components.has(component)) throw new Error(`COMPONENT_BINDING_MISSING:${component}`);
-}
-for (const id of NAVIGATION_IDS) {
-  if (!navigationids.has(id)) throw new Error(`NAVIGATION_BINDING_MISSING:${id}`);
-}
+for (const component of COMPONENT_KEYS) if (!components.has(component)) throw new Error(`COMPONENT_BINDING_MISSING:${component}`);
+for (const id of NAVIGATION_IDS) if (!navigationids.has(id)) throw new Error(`NAVIGATION_BINDING_MISSING:${id}`);
+for (const routeid of Object.keys(ROUTES) as RouteId[]) if (!routeids.has(routeid)) throw new Error(`COMPONENT_ROUTE_MISSING:${routeid}`);
 
-const routeBindings: readonly Readonly<{
-  manifest: ComponentManifest;
-  route: ComponentRoute;
-  load: ComponentManifest['load'];
-}>[] = Object.freeze(
-  manifests.flatMap((manifest) =>
-    manifest.routes.map((route) =>
-      Object.freeze({
-        manifest,
-        route,
-        load: route.load ?? manifest.load,
-      })
-    )
-  )
-);
+const routeBindings = Object.freeze(manifests.flatMap((manifest) => manifest.routes.map((route) => Object.freeze({ manifest, route, load: route.load ?? manifest.load }))));
 
 export const RouteRegistry = Object.freeze({
   all: (): readonly ComponentManifest[] => manifests,
   routes: () => routeBindings,
   match(pathname: string): ComponentManifest | undefined {
-    const suffix = `/${scopeSuffix(pathname)}`;
-    return routeBindings.find(({ route }) => matchPath({ path: `/${route.route}`, end: true }, suffix))?.manifest;
+    return routeBindings.find(({ route }) => matchPath({ path: relativeRoute(route.routeid), end: true }, `/${scopeSuffix(pathname)}`))?.manifest;
   },
-  hasComponent(component: string): component is (typeof COMPONENT_KEYS)[number] {
-    return components.has(component);
-  },
+  hasComponent(component: string): component is (typeof COMPONENT_KEYS)[number] { return components.has(component); },
 });
 
-export function scopeSuffix(pathname: string): string {
-  return pathname.split('/').filter(Boolean).slice(3).join('/');
+export function relativeRoute(routeid: RouteId): string {
+  const prefix = '/scopes/:scopeKind/:scopeId/';
+  const path = ROUTES[routeid];
+  if (!path.startsWith(prefix)) throw new Error(`CONSOLE_ROUTE_SCOPE_INVALID:${routeid}`);
+  return path.slice(prefix.length);
 }
+
+export function scopeSuffix(pathname: string): string { return pathname.split('/').filter(Boolean).slice(3).join('/'); }
+function isManifest(value: unknown): value is ComponentManifest {
+  if (!value || typeof value !== 'object') return false;
+  const item = value as Partial<ComponentManifest>;
+  return typeof item.component === 'string' && Array.isArray(item.navigationids) && Array.isArray(item.routes) && typeof item.load === 'function';
+}
+
+export type ConsoleRouteBinding = Readonly<{ manifest: ComponentManifest; route: ComponentRoute; load: ComponentManifest['load'] }>;

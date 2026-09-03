@@ -2,7 +2,7 @@ import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionA
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { ReportRepository } from '../../application/port/ReportRepository';
 import type { ExportJob } from '../../domain/model/ExportJob';
-import type { CockpitSummary, MetricQuery, MetricRow } from '../../domain/model/Metric';
+import type { CockpitSummary, MetricQuery, MetricRow, ReportPeriod } from '../../domain/model/Metric';
 import { cockpitSummary, exportJob, exportSelect, metricRow, required, type ExportRecord, type MetricRecord } from './ReportingRecord';
 export class PgReportRepository implements ReportRepository {
   constructor(private readonly transactions: PgTransactionAccess) {}
@@ -27,13 +27,13 @@ export class PgReportRepository implements ReportRepository {
     );
     return Object.freeze(result.rows.map(metricRow));
   }
-  async cockpit(context: ReadTransactionContext, scope: string): Promise<CockpitSummary> {
+  async cockpit(context: ReadTransactionContext, scope: string, period: ReportPeriod, application: string | null): Promise<CockpitSummary> {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query<
       {
         summary: CockpitSummary;
       } & Record<string, unknown>
-    >('select reporting.cockpit($1) summary', [scope]);
+    >('select reporting.cockpit($1,$2,$3) summary', [scope, period, application]);
     return cockpitSummary(required(result.rows[0], 'REPORT_COCKPIT_FAILED').summary);
   }
   async export(context: ReadTransactionContext, id: string, scope: string): Promise<ExportJob | null> {

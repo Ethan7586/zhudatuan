@@ -23,15 +23,15 @@ export const FulfillmentModule = defineModule(Manifest, {
     return [new TrackingReadHandler(repository), new ShipmentsCreateHandler(repository), new ReturnsReceiveHandler(repository), new ReturnsInspectHandler(repository)];
   },
   ports: (context) => {
-    const fulfillment = new FulfillmentPort();
+    const fulfillment = new FulfillmentPort(context.ports.get(FULFILLMENT_ORDER_PORT));
     return [
       { token: PAYMENT_FULFILLMENT_PORT, value: fulfillment },
       { token: FINANCE_FULFILLMENT_PORT, value: fulfillment },
       { token: INVENTORY_RETURN_PORT, value: new PgInventoryReturnPort(context.ports.get(FULFILLMENT_ORDER_PORT)) },
     ];
   },
-  jobPorts: () => {
-    const fulfillment = new FulfillmentPort();
+  jobPorts: (context) => {
+    const fulfillment = new FulfillmentPort(context.ports.get(FULFILLMENT_ORDER_PORT));
     return [
       { token: PAYMENT_FULFILLMENT_PORT, value: fulfillment },
       { token: FINANCE_FULFILLMENT_PORT, value: fulfillment },

@@ -1,8 +1,9 @@
 import type { OperationOutputFor } from '@shop/contract';
-import type { MallView, PresentedProduct, ProductView } from '../../../shared/runtime/StorefrontPort';
+import type { PresentedProduct, Product } from '../../../entity/product';
+import type { EnterpriseMall } from '../../account/model/Profile';
 import type { Order, OrderStatus } from '../model/Order';
 import type { Timeline } from '../model/Timeline';
-import { mapProductKind, presentProduct } from '../../../shared/api/ProductMapper';
+import { mapProductKind, presentProduct } from '../../../entity/product';
 import { orderStatusText } from '../model/OrderText';
 
 type OrderDto = OperationOutputFor<'order.orders.read'>['items'][number];
@@ -18,7 +19,7 @@ export type FrontendOrder = Order & {
   readonly items: readonly FrontendOrderLine[];
 };
 
-export function mapOrder(item: OrderDto, mall: MallView, timeline: readonly Timeline[] = []): Order {
+export function mapOrder(item: OrderDto, mall: EnterpriseMall, timeline: readonly Timeline[] = []): Order {
   return Object.freeze({
     id: item.id,
     orderNo: item.order_number,
@@ -61,7 +62,7 @@ export function mapOrder(item: OrderDto, mall: MallView, timeline: readonly Time
   });
 }
 
-export function mapOrders(value: OperationOutputFor<'order.orders.read'>, mall: MallView): readonly Order[] {
+export function mapOrders(value: OperationOutputFor<'order.orders.read'>, mall: EnterpriseMall): readonly Order[] {
   return Object.freeze(value.items.map((item) => mapOrder(item, mall)));
 }
 
@@ -118,7 +119,7 @@ export function toFrontendOrders(orders: readonly Order[], products: readonly Pr
 function orderSnapshot(order: Order, line: Order['lines'][number]): PresentedProduct {
   const fulfillmentParty = line.partner ?? line.provider ?? '';
   const category = line.categoryId === 'unknown' ? '未记录分类' : line.categoryId;
-  const product: ProductView = Object.freeze({
+  const product: Product = Object.freeze({
     id: line.productId,
     skuId: line.skuId,
     title: line.title,

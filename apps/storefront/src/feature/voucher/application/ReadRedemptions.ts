@@ -1,7 +1,8 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { VoucherGateway } from '../infrastructure/VoucherGateway';
 import type { Redemption } from '../model/Redemption';
 
-export function readRedemptions(session: StorefrontSession, signal?: AbortSignal): Promise<readonly Redemption[]> {
-  return VoucherGateway.redemptions(session, signal);
+export class ReadRedemptions {
+  constructor(private readonly gateway: Pick<VoucherGateway, 'redemptions'>) {}
+  execute(session: StorefrontSession, signal?: AbortSignal): Promise<readonly Redemption[]> { return this.gateway.redemptions(session, signal); }
 }

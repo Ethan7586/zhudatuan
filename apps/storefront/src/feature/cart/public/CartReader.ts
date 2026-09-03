@@ -1,1 +1,1 @@
-export { useCartRuntime } from '../application/CartRuntime';
+export { useCartViewModel } from '../viewmodel/CartViewModel';

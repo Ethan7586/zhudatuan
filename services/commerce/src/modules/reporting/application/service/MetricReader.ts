@@ -27,7 +27,7 @@ export class MetricReader {
     const last = visible.at(-1);
     const items = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => metric);
     const nextCursor = more && last ? encodeCursor({ sort: last.cursorTime, id: last.cursorId }) : undefined;
-    const summary = dimension === null ? await this.reports.cockpit(context.transaction, scope) : undefined;
+    const summary = dimension === null ? await this.reports.cockpit(context.transaction, scope, selectedPeriod, application) : undefined;
     const body = { items, count: items.length, ...(nextCursor ? { nextCursor } : {}), ...(summary === undefined ? {} : { summary }) };
     return { status: 200, body: body as OperationOutputFor<TKey> };
   }
@@ -40,7 +40,6 @@ export type MetricOperation =
   | 'reporting.malls.read'
   | 'reporting.categories.read'
   | 'reporting.channels.read'
-  | 'reporting.powderclass.read'
   | 'reporting.voucherconsumption.read';
 
 function period(value: string | null): ReportPeriod {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FailureView } from '@shop/presentation';
 import type { Bootstrap } from '../../src/feature/bootstrap/model/Bootstrap';
-import { loginMachine } from '../../src/feature/login/application/LoginMachine';
+import { loginMachine } from '../../src/feature/login/model/LoginMachine';
 import { initialLoginState, type LoginEvent, type LoginState } from '../../src/feature/login/model/LoginState';
 
 const bootstrap: Bootstrap = Object.freeze({

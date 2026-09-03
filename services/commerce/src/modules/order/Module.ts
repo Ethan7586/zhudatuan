@@ -10,6 +10,7 @@ import { defineModule } from '../../bootstrap/DefinedModule';
 import { OBJECT_STORE } from '../../foundation/infrastructure/ObjectStore';
 import { Manifest } from './Manifest';
 import { AfterSalesApplyHandler } from './application/handler/AfterSalesApplyHandler';
+import { AfterSaleAttachmentsCreateHandler } from './application/handler/AfterSaleAttachmentsCreateHandler';
 import { AfterSalesApproveHandler } from './application/handler/AfterSalesApproveHandler';
 import { AfterSalesReadHandler } from './application/handler/AfterSalesReadHandler';
 import { AfterSalesRejectHandler } from './application/handler/AfterSalesRejectHandler';
@@ -29,19 +30,22 @@ import { ORGANIZATION_READ_PORT } from '../organization/public';
 import { AFTERSALE_POLICY_PORT } from '../qualification/public';
 import { PgAfterSaleRepository } from './infrastructure/persistence/PgAfterSaleRepository';
 import { PgOrderRepository } from './infrastructure/persistence/PgOrderRepository';
+import { ORDER_AUDIT_READ_PORT } from '../audit/public';
 
 export const OrderModule = defineModule(Manifest, {
   handlers: (context) => {
     const transactions = new PgTransactionAccess();
     const repository = new PgOrderRepository(transactions, new PgOutbox(new PgTransactionManager(context.service(DATABASE_POOL))), context.ports.get(ORGANIZATION_READ_PORT));
     const aftersales = new PgAfterSaleRepository(transactions, context.ports.get(AFTERSALE_POLICY_PORT), context.ports.get(ORGANIZATION_READ_PORT));
+    const attachmentService = new AfterSaleAttachmentService(context.service(OBJECT_STORE));
     return [
-      new OrdersReadHandler(repository),
+      new OrdersReadHandler(repository, context.ports.get(ORDER_AUDIT_READ_PORT)),
       new RemindersCreateHandler(repository),
       new OrdersExportHandler(repository),
       new OrdersReceiveHandler(repository),
       new AfterSalesReadHandler(aftersales),
-      new AfterSalesApplyHandler(aftersales, new AfterSaleAttachmentService(context.service(OBJECT_STORE))),
+      new AfterSaleAttachmentsCreateHandler(attachmentService),
+      new AfterSalesApplyHandler(aftersales, attachmentService),
       new AfterSalesApproveHandler(aftersales),
       new AfterSalesRejectHandler(aftersales),
     ];

@@ -1,6 +1,7 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { BenefitGateway } from '../infrastructure/BenefitGateway';
 import type { BenefitEntry } from '../model/BenefitEntry';
-export function readLedger(session: StorefrontSession, signal?: AbortSignal): Promise<readonly BenefitEntry[]> {
-  return BenefitGateway.ledger(session, signal);
+export class ReadLedger {
+  constructor(private readonly gateway: Pick<BenefitGateway, 'ledger'>) {}
+  execute(session: StorefrontSession, signal?: AbortSignal): Promise<readonly BenefitEntry[]> { return this.gateway.ledger(session, signal); }
 }

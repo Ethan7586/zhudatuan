@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { PasswordForm } from '../../src/feature/login/ui/PasswordForm';
+import { PasswordForm } from '../../src/feature/login/view/PasswordForm';
 
 describe('password journey', () => {
   it('submits the account and short-lived password, then clears the secret field', async () => {

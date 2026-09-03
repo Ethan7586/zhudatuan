@@ -1,1 +1,1 @@
-export { StorefrontStepup } from '../ui/StorefrontStepup';
+export { StorefrontStepup } from '../route/StepupDialog';

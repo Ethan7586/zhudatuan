@@ -1,8 +1,13 @@
 import { DomainError } from '../../../../foundation/domain/DomainError';
 import { createHash, randomUUID } from 'node:crypto';
-import { bodyRecord, type OperationWireInput } from '../../../../foundation/interface/Validation';
-import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
+import { bodyRecord, integerField, textField, type OperationWireInput } from '../../../../foundation/interface/Validation';
+import type { ObjectStore, UploadAuthorization } from '../../../../foundation/infrastructure/ObjectStore';
 import { mapParallel } from '../../../../foundation/performance/Parallel';
+
+export interface PreparedAfterSaleAttachment {
+  readonly objectId: string;
+  readonly upload: UploadAuthorization;
+}
 
 export interface VerifiedAfterSaleAttachment {
   readonly objectId: string;
@@ -12,63 +17,81 @@ export interface VerifiedAfterSaleAttachment {
   readonly contentHash: string;
 }
 
+type AttachmentType = 'image/jpeg' | 'image/png' | 'application/pdf';
+
 export class AfterSaleAttachmentService {
-  constructor(private readonly objects: Pick<ObjectStore, 'create'>) {}
+  constructor(private readonly objects: Pick<ObjectStore, 'authorizeUpload' | 'inspect'>) {}
+
+  async authorize(input: OperationWireInput, membership: string): Promise<PreparedAfterSaleAttachment> {
+    const body = bodyRecord(input);
+    const name = nameField(body);
+    const contentType = contentTypeField(body);
+    const size = integerField(body, 'sizeBytes', 1);
+    const sha256 = textField(body, 'sha256', 64).toLowerCase();
+    if (size > 1_000_000 || !/^[a-f0-9]{64}$/.test(sha256)) throw new DomainError('VALIDATION_FAILED', { field: 'attachment' });
+    const extension = extensionFor(name, contentType);
+    const owner = ownerFor(membership);
+    const upload = await this.objects.authorizeUpload({ path: `aftersale/${owner}/${randomUUID()}${extension}`, contentType, size, sha256, expiresIn: 300 });
+    return Object.freeze({ objectId: upload.reference, upload });
+  }
 
   async verify(input: OperationWireInput, membership: string): Promise<readonly VerifiedAfterSaleAttachment[]> {
     const raw = bodyRecord(input).attachments;
     if (raw === undefined) return Object.freeze([]);
     if (!Array.isArray(raw) || raw.length > 6) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-    const owner = createHash('sha256').update(membership).digest('hex').slice(0, 32);
-    const declaredBytes = raw.reduce((total, value) => total + encodedSize(value), 0);
+    const owner = ownerFor(membership);
+    const declaredBytes = raw.reduce((total, value) => total + declaredSize(value), 0);
     if (declaredBytes > 1_250_000) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-    const verified = await mapParallel(raw, 3, (value) => this.upload(value, owner));
+    const verified = await mapParallel(raw, 2, (value) => this.inspect(value, owner));
     if (new Set(verified.map(({ objectId }) => objectId)).size !== verified.length) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
     return Object.freeze(verified);
   }
 
-  private async upload(value: unknown, owner: string): Promise<VerifiedAfterSaleAttachment> {
+  private async inspect(value: unknown, owner: string): Promise<VerifiedAfterSaleAttachment> {
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
     const item = value as Record<string, unknown>;
-    if (typeof item.data !== 'string' || typeof item.contentType !== 'string' || typeof item.name !== 'string' || item.name.trim().length === 0 || item.name.length > 255) {
-      throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-    }
-    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(item.data) || item.data.length % 4 !== 0) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-    const bytes = new Uint8Array(Buffer.from(item.data, 'base64'));
-    if (bytes.byteLength < 1 || bytes.byteLength > 1_000_000) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-    const extension = item.name
-      .trim()
-      .toLowerCase()
-      .match(/\.[a-z0-9]+$/)?.[0];
-    const expected = item.contentType === 'image/jpeg' ? ['.jpg', '.jpeg'] : item.contentType === 'image/png' ? ['.png'] : item.contentType === 'application/pdf' ? ['.pdf'] : [];
-    if (!extension || !expected.includes(extension) || !signatureMatches(bytes, item.contentType)) {
-      throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-    }
-    const upload = await this.objects.create(`aftersale/${owner}/${randomUUID()}${extension}`, item.contentType);
-    try {
-      await upload.append(bytes);
-      const stored = await upload.complete();
-      if (stored.scan !== 'clean' || stored.size !== bytes.byteLength || stored.sha256 !== createHash('sha256').update(bytes).digest('hex')) {
-        throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-      }
-      return Object.freeze({ objectId: stored.reference, name: item.name.trim(), mediaType: item.contentType, sizeBytes: stored.size, contentHash: stored.sha256 });
-    } catch (cause) {
-      await upload.abort().catch(() => undefined);
-      if (cause instanceof DomainError) throw cause;
-      throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
-    }
+    const name = nameField(item);
+    const contentType = contentTypeField(item);
+    const objectId = textField(item, 'objectId', 2048);
+    const size = integerField(item, 'sizeBytes', 1);
+    const sha256 = textField(item, 'sha256', 64).toLowerCase();
+    const extension = extensionFor(name, contentType);
+    if (size > 1_000_000 || !/^[a-f0-9]{64}$/.test(sha256)) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
+    let stored;
+    try { stored = await this.objects.inspect(objectId); }
+    catch { throw new DomainError('VALIDATION_FAILED', { field: 'attachments' }); }
+    if (
+      stored.reference !== objectId ||
+      stored.sha256 !== sha256 ||
+      stored.size !== size ||
+      stored.contentType !== contentType ||
+      stored.scan !== 'clean' ||
+      !stored.path.startsWith(`aftersale/${owner}/`) ||
+      !stored.path.endsWith(extension)
+    ) throw new DomainError('VALIDATION_FAILED', { field: 'attachments' });
+    return Object.freeze({ objectId, name, mediaType: contentType, sizeBytes: size, contentHash: sha256 });
   }
 }
 
-function encodedSize(value: unknown): number {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return Number.MAX_SAFE_INTEGER;
-  const data = Reflect.get(value, 'data');
-  return typeof data === 'string' ? Math.floor(data.length * 0.75) : Number.MAX_SAFE_INTEGER;
+function ownerFor(membership: string): string { return createHash('sha256').update(membership).digest('hex').slice(0, 32); }
+function nameField(value: Record<string, unknown>): string {
+  const name = textField(value, 'name', 255).normalize('NFKC').replace(/[\u0000-\u001f\u007f/\\]/g, '').trim();
+  if (!name) throw new DomainError('VALIDATION_FAILED', { field: 'name' });
+  return name;
 }
-
-function signatureMatches(bytes: Uint8Array, contentType: string): boolean {
-  if (contentType === 'image/jpeg') return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes.at(-2) === 0xff && bytes.at(-1) === 0xd9;
-  if (contentType === 'image/png') return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((value, index) => bytes[index] === value);
-  if (contentType === 'application/pdf') return new TextDecoder().decode(bytes.slice(0, 5)) === '%PDF-';
-  return false;
+function contentTypeField(value: Record<string, unknown>): AttachmentType {
+  const contentType = textField(value, 'contentType') as AttachmentType;
+  if (!['image/jpeg', 'image/png', 'application/pdf'].includes(contentType)) throw new DomainError('VALIDATION_FAILED', { field: 'contentType' });
+  return contentType;
+}
+function extensionFor(name: string, contentType: AttachmentType): string {
+  const extension = name.toLowerCase().match(/\.[a-z0-9]+$/)?.[0];
+  const allowed = contentType === 'image/jpeg' ? ['.jpg', '.jpeg'] : contentType === 'image/png' ? ['.png'] : ['.pdf'];
+  if (!extension || !allowed.includes(extension)) throw new DomainError('VALIDATION_FAILED', { field: 'name' });
+  return extension;
+}
+function declaredSize(value: unknown): number {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return Number.MAX_SAFE_INTEGER;
+  const size = Reflect.get(value, 'sizeBytes');
+  return Number.isSafeInteger(size) && size > 0 ? size : Number.MAX_SAFE_INTEGER;
 }

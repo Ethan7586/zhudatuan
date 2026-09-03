@@ -1,8 +1,9 @@
 import type { OperationOutputFor } from '@shop/contract';
-import { storefrontClient } from '../../../shared/api/Client';
+import type { StorefrontClient } from '../../../shared/api/Client';
 
-export const HomeGateway = Object.freeze({
+export class HomeGateway {
+  constructor(private readonly storefront: StorefrontClient['commerce']['storefront'], private readonly context: StorefrontClient['context']) {}
   read(signal?: AbortSignal): Promise<OperationOutputFor<'storefront.bootstrap.read'>> {
-    return storefrontClient.commerce.storefront.bootstrapRead({}, storefrontClient.context(null, { signal }));
-  },
-});
+    return this.storefront.bootstrapRead({}, this.context(null, { signal }));
+  }
+}

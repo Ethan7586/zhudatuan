@@ -4,9 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
 
-import { DataTable, type DataColumn } from '../../../shared/ui/DataTable';
+import { DataTable, MetricGrid, type DataColumn } from '@shop/design';
 import { formatCount, formatDate } from '../../../shared/ui/Format';
-import { MetricCards } from '../../../shared/ui/MetricCards';
 import { useRouteTitle } from '../../../shared/ui/RouteTitle';
 import { importKey, importKinds, readImport } from './ImportQuery';
 import type { ImportError, ImportKind } from './ImportSchema';
@@ -61,7 +60,7 @@ function ImportJobRoute({ kind, jobId }: Readonly<{ kind: ImportKind; jobId: str
         <span />
       ) : (
         <div className="featurestack">
-          <MetricCards
+          <MetricGrid
             items={[
               { label: '任务状态', value: chineseDomainLabel(data.state) },
               { label: '总行数', value: formatCount(data.total_count ?? 0) },

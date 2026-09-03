@@ -4,8 +4,8 @@ export const ReferralManifest = defineComponent({
   component: 'referral',
   navigationids: ['groupreferral', 'mallreferral'],
   routes: [
-    { route: 'referral', load: () => import('./ReferralRoute') },
-    { route: 'referral/:view', load: () => import('./ReferralRoute') },
+    { routeid: 'consolereferral', load: () => import('./ReferralRoute') },
+    { routeid: 'consolereferralview', load: () => import('./ReferralRoute') },
   ],
   load: () => import('./ReferralRoute'),
 });

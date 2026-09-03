@@ -1,23 +1,5 @@
 version: 1
 objects:
-  - id: access.identity_memberships
-    kind: function
-    owner: access
-    source: database/migrations/20260903100000_enrich_identity_membership.sql
-    callers:
-      - services/commerce/src/modules/access/infrastructure/persistence/PgAccessMembershipRepository.ts
-  - id: access.membership_visible_to
-    kind: function
-    owner: access
-    source: database/migrations/20260903100000_enrich_identity_membership.sql
-    callers:
-      - services/commerce/src/modules/access/infrastructure/persistence/PgAccessRepository.ts
-  - id: member.profile_summary
-    kind: function
-    owner: member
-    source: database/migrations/20260903100000_enrich_identity_membership.sql
-    callers:
-      - services/commerce/src/modules/member/infrastructure/persistence/PgMemberReadPort.ts
   - id: access.assert_owner_integrity
     kind: function
     owner: access
@@ -45,6 +27,11 @@ objects:
     owner: access
     source: database/migrations/20260830101000_unify_access_policy.sql
     operationalOwner: access
+  - id: access.identity_memberships
+    kind: function
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    operationalOwner: access
   - id: access.issue_action_proof
     kind: function
     owner: access
@@ -54,6 +41,11 @@ objects:
     kind: function
     owner: access
     source: database/migrations/20260831017000_publish_storefront_contract.sql
+    operationalOwner: access
+  - id: access.membership_visible_to
+    kind: function
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
     operationalOwner: access
   - id: access.navigation_access
     kind: function
@@ -422,7 +414,7 @@ objects:
   - id: identity.resolve_preauth
     kind: function
     owner: identity
-    source: database/migrations/20260830102000_add_security_context.sql
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
     callers:
       - services/commerce/src/modules/identity/infrastructure/security/PgPreauthResolver.ts
   - id: identity.resolve_session
@@ -436,6 +428,11 @@ objects:
     owner: identity
     source: database/migrations/20260830130000_bind_federation_link_transaction.sql
     operationalOwner: identity
+  - id: member.profile_summary
+    kind: function
+    owner: member
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    operationalOwner: member
   - id: notification.resource_scope
     kind: function
     owner: notification
@@ -502,8 +499,9 @@ objects:
   - id: reporting.cockpit
     kind: function
     owner: reporting
-    source: database/migrations/20260821077000_add_reporting_cockpit.sql
+    source: database/migrations/20260903109000_complete_cockpit_projection.sql
     callers:
+      - services/commerce/src/modules/reporting/infrastructure/persistence/PgReportRepository.ts
       - services/commerce/src/modules/reporting/infrastructure/persistence/PgReportingRepository.ts
   - id: reporting.enforce_watermark
     kind: function
@@ -572,11 +570,6 @@ objects:
     owner: runtime
     source: database/migrations/20260821029000_publish_domain_contract.sql
     operationalOwner: runtime
-  - id: support.reject_mutation
-    kind: function
-    owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
-    operationalOwner: support
   - id: support.can_access_conversation
     kind: function
     owner: support
@@ -602,6 +595,11 @@ objects:
     owner: support
     source: database/migrations/20260902018000_complete_support_message.sql
     operationalOwner: support
+  - id: support.reject_mutation
+    kind: function
+    owner: support
+    source: database/migrations/20260821046000_support_lifecycle.sql
+    operationalOwner: support
   - id: support.resolve_sla
     kind: function
     owner: support
@@ -611,32 +609,8 @@ objects:
   - id: support.resource_scope
     kind: function
     owner: support
-    source: database/migrations/20260902019000_complete_support_realtime.sql
+    source: database/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
-  - id: shopapp:function:access.identity_memberships(text,text,text[]):execute
-    kind: grant
-    owner: access
-    source: database/migrations/20260903100000_enrich_identity_membership.sql
-    role: shopapp
-    objectType: function
-    target: access.identity_memberships(text,text,text[])
-    privilege: execute
-  - id: shopapp:function:access.membership_visible_to(text,text):execute
-    kind: grant
-    owner: access
-    source: database/migrations/20260903100000_enrich_identity_membership.sql
-    role: shopapp
-    objectType: function
-    target: access.membership_visible_to(text,text)
-    privilege: execute
-  - id: shopapp:function:member.profile_summary(text,text):execute
-    kind: grant
-    owner: member
-    source: database/migrations/20260903100000_enrich_identity_membership.sql
-    role: shopapp
-    objectType: function
-    target: member.profile_summary(text,text)
-    privilege: execute
   - id: shopapp:function:access.authorization_snapshot(text,text,text,text):execute
     kind: grant
     owner: access
@@ -669,6 +643,14 @@ objects:
     objectType: function
     target: access.effective_scopes(text)
     privilege: execute
+  - id: shopapp:function:access.identity_memberships(text,text,text[]):execute
+    kind: grant
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.identity_memberships(text,text,text[])
+    privilege: execute
   - id: shopapp:function:access.issue_action_proof(uuid,bytea,text,text,text,bigint,text,text,text,text,text):execute
     kind: grant
     owner: access
@@ -684,6 +666,14 @@ objects:
     role: shopapp
     objectType: function
     target: access.member_allowed(text)
+    privilege: execute
+  - id: shopapp:function:access.membership_visible_to(text,text):execute
+    kind: grant
+    owner: access
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.membership_visible_to(text,text)
     privilege: execute
   - id: shopapp:function:access.navigation_access(text[]):execute
     kind: grant
@@ -944,7 +934,7 @@ objects:
   - id: shopapp:function:identity.resolve_preauth(bytea,bytea,bytea,text,text):execute
     kind: grant
     owner: identity
-    source: database/migrations/20260830102000_add_security_context.sql
+    source: database/migrations/20260902017000_prepare_employee_invitation.sql
     role: shopapp
     objectType: function
     target: identity.resolve_preauth(bytea,bytea,bytea,text,text)
@@ -956,6 +946,14 @@ objects:
     role: shopapp
     objectType: function
     target: identity.resolve_session(text)
+    privilege: execute
+  - id: shopapp:function:member.profile_summary(text,text):execute
+    kind: grant
+    owner: member
+    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    role: shopapp
+    objectType: function
+    target: member.profile_summary(text,text)
     privilege: execute
   - id: shopapp:function:notification.visible_notifications(text,boolean):execute
     kind: grant
@@ -997,13 +995,13 @@ objects:
     objectType: function
     target: organization.webhook_directory(uuid)
     privilege: execute
-  - id: shopapp:function:reporting.cockpit(text):execute
+  - id: shopapp:function:reporting.cockpit(text,text,text):execute
     kind: grant
     owner: reporting
-    source: database/migrations/20260821077000_add_reporting_cockpit.sql
+    source: database/migrations/20260903109000_complete_cockpit_projection.sql
     role: shopapp
     objectType: function
-    target: reporting.cockpit(text)
+    target: reporting.cockpit(text,text,text)
     privilege: execute
   - id: shopapp:function:risk.scope_allowed(text):execute
     kind: grant
@@ -1020,14 +1018,6 @@ objects:
     role: shopapp
     objectType: function
     target: runtime.accept_provider_webhook(text,text,text,jsonb,text,text,text,integer,jsonb)
-    privilege: execute
-  - id: shopapp:function:support.resolve_sla(text,text):execute
-    kind: grant
-    owner: support
-    source: database/migrations/20260902016000_resolve_inherited_support_sla.sql
-    role: shopapp
-    objectType: function
-    target: support.resolve_sla(text,text)
     privilege: execute
   - id: shopapp:function:support.can_access_conversation(text):execute
     kind: grant
@@ -1060,6 +1050,14 @@ objects:
     role: shopapp
     objectType: function
     target: support.current_member()
+    privilege: execute
+  - id: shopapp:function:support.resolve_sla(text,text):execute
+    kind: grant
+    owner: support
+    source: database/migrations/20260902016000_resolve_inherited_support_sla.sql
+    role: shopapp
+    objectType: function
+    target: support.resolve_sla(text,text)
     privilege: execute
   - id: shopapp:schema:access:usage
     kind: grant
@@ -5997,6 +5995,70 @@ objects:
     objectType: table
     target: ordering.aftersaletimeline
     privilege: update
+  - id: shopapp:table:ordering.fulfillmentmilestoneread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: delete
+  - id: shopapp:table:ordering.fulfillmentmilestoneread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: insert
+  - id: shopapp:table:ordering.fulfillmentmilestoneread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: select
+  - id: shopapp:table:ordering.fulfillmentmilestoneread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: update
+  - id: shopapp:table:ordering.fulfillmentread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: delete
+  - id: shopapp:table:ordering.fulfillmentread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: insert
+  - id: shopapp:table:ordering.fulfillmentread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: select
+  - id: shopapp:table:ordering.fulfillmentread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: update
   - id: shopapp:table:ordering.line:delete
     kind: grant
     owner: order
@@ -6061,6 +6123,70 @@ objects:
     objectType: table
     target: ordering.orderrecord
     privilege: update
+  - id: shopapp:table:ordering.paymentread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymentread
+    privilege: delete
+  - id: shopapp:table:ordering.paymentread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymentread
+    privilege: insert
+  - id: shopapp:table:ordering.paymentread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymentread
+    privilege: select
+  - id: shopapp:table:ordering.paymentread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymentread
+    privilege: update
+  - id: shopapp:table:ordering.paymenttenderread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: delete
+  - id: shopapp:table:ordering.paymenttenderread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: insert
+  - id: shopapp:table:ordering.paymenttenderread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: select
+  - id: shopapp:table:ordering.paymenttenderread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: update
   - id: shopapp:table:ordering.receipt:insert
     kind: grant
     owner: order
@@ -6077,6 +6203,70 @@ objects:
     objectType: table
     target: ordering.receipt
     privilege: select
+  - id: shopapp:table:ordering.refundread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundread
+    privilege: delete
+  - id: shopapp:table:ordering.refundread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundread
+    privilege: insert
+  - id: shopapp:table:ordering.refundread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundread
+    privilege: select
+  - id: shopapp:table:ordering.refundread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundread
+    privilege: update
+  - id: shopapp:table:ordering.refundtenderread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: delete
+  - id: shopapp:table:ordering.refundtenderread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: insert
+  - id: shopapp:table:ordering.refundtenderread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: select
+  - id: shopapp:table:ordering.refundtenderread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopapp
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: update
   - id: shopapp:table:ordering.reminder:delete
     kind: grant
     owner: order
@@ -9941,13 +10131,13 @@ objects:
     objectType: function
     target: notification.visible_notifications(text,boolean)
     privilege: execute
-  - id: shopjob:function:reporting.cockpit(text):execute
+  - id: shopjob:function:reporting.cockpit(text,text,text):execute
     kind: grant
     owner: reporting
-    source: database/migrations/20260821077000_add_reporting_cockpit.sql
+    source: database/migrations/20260903109000_complete_cockpit_projection.sql
     role: shopjob
     objectType: function
-    target: reporting.cockpit(text)
+    target: reporting.cockpit(text,text,text)
     privilege: execute
   - id: shopjob:function:runtime.accept_inbox(text,text,text,text,integer,text,jsonb):execute
     kind: grant
@@ -14981,6 +15171,70 @@ objects:
     objectType: table
     target: ordering.aftersaletimeline
     privilege: update
+  - id: shopjob:table:ordering.fulfillmentmilestoneread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: delete
+  - id: shopjob:table:ordering.fulfillmentmilestoneread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: insert
+  - id: shopjob:table:ordering.fulfillmentmilestoneread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: select
+  - id: shopjob:table:ordering.fulfillmentmilestoneread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentmilestoneread
+    privilege: update
+  - id: shopjob:table:ordering.fulfillmentread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: delete
+  - id: shopjob:table:ordering.fulfillmentread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: insert
+  - id: shopjob:table:ordering.fulfillmentread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: select
+  - id: shopjob:table:ordering.fulfillmentread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.fulfillmentread
+    privilege: update
   - id: shopjob:table:ordering.line:delete
     kind: grant
     owner: order
@@ -15045,6 +15299,70 @@ objects:
     objectType: table
     target: ordering.orderrecord
     privilege: update
+  - id: shopjob:table:ordering.paymentread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymentread
+    privilege: delete
+  - id: shopjob:table:ordering.paymentread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymentread
+    privilege: insert
+  - id: shopjob:table:ordering.paymentread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymentread
+    privilege: select
+  - id: shopjob:table:ordering.paymentread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymentread
+    privilege: update
+  - id: shopjob:table:ordering.paymenttenderread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: delete
+  - id: shopjob:table:ordering.paymenttenderread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: insert
+  - id: shopjob:table:ordering.paymenttenderread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: select
+  - id: shopjob:table:ordering.paymenttenderread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.paymenttenderread
+    privilege: update
   - id: shopjob:table:ordering.receipt:insert
     kind: grant
     owner: order
@@ -15061,6 +15379,70 @@ objects:
     objectType: table
     target: ordering.receipt
     privilege: select
+  - id: shopjob:table:ordering.refundread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundread
+    privilege: delete
+  - id: shopjob:table:ordering.refundread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundread
+    privilege: insert
+  - id: shopjob:table:ordering.refundread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundread
+    privilege: select
+  - id: shopjob:table:ordering.refundread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundread
+    privilege: update
+  - id: shopjob:table:ordering.refundtenderread:delete
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: delete
+  - id: shopjob:table:ordering.refundtenderread:insert
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: insert
+  - id: shopjob:table:ordering.refundtenderread:select
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: select
+  - id: shopjob:table:ordering.refundtenderread:update
+    kind: grant
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    role: shopjob
+    objectType: table
+    target: ordering.refundtenderread
+    privilege: update
   - id: shopjob:table:ordering.reminder:delete
     kind: grant
     owner: order
@@ -19020,7 +19402,7 @@ objects:
   - id: access.role.appscope
     kind: policy
     owner: access
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260902024000_allow_self_role_api.sql
   - id: access.role.jobscope
     kind: policy
     owner: access
@@ -20140,11 +20522,11 @@ objects:
   - id: identity.invitationreceipt.invitationreceiptapiwrite
     kind: policy
     owner: identity
-    source: database/migrations/20260902017000_prepare_employee_invitation.sql
+    source: database/migrations/20260902023000_allow_invitation_resolve_receipt.sql
   - id: identity.invitationreceipt.invitationreceiptapiwriteview
     kind: policy
     owner: identity
-    source: database/migrations/20260902017000_prepare_employee_invitation.sql
+    source: database/migrations/20260902023000_allow_invitation_resolve_receipt.sql
   - id: identity.linkcase.linkcaseapp
     kind: policy
     owner: identity
@@ -20597,6 +20979,30 @@ objects:
     kind: policy
     owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
+  - id: ordering.fulfillmentmilestoneread.appscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.fulfillmentmilestoneread.jobscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.fulfillmentmilestoneread.providerscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.fulfillmentread.appscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.fulfillmentread.jobscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.fulfillmentread.providerscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
   - id: ordering.line.appscope
     kind: policy
     owner: order
@@ -20621,6 +21027,30 @@ objects:
     kind: policy
     owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
+  - id: ordering.paymentread.appscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.paymentread.jobscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.paymentread.providerscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.paymenttenderread.appscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.paymenttenderread.jobscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.paymenttenderread.providerscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
   - id: ordering.receipt.appscope
     kind: policy
     owner: order
@@ -20633,6 +21063,30 @@ objects:
     kind: policy
     owner: order
     source: database/migrations/20260831016000_isolate_provider_workload.sql
+  - id: ordering.refundread.appscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.refundread.jobscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.refundread.providerscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.refundtenderread.appscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.refundtenderread.jobscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+  - id: ordering.refundtenderread.providerscope
+    kind: policy
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
   - id: ordering.reminder.appscope
     kind: policy
     owner: order
@@ -21553,15 +22007,11 @@ objects:
     kind: policy
     owner: runtime
     source: database/migrations/20260831016000_isolate_provider_workload.sql
-  - id: support.account.supportaccountapi
-    kind: policy
-    owner: support
-    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.account.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.agent.supportagentapi
+  - id: support.account.supportaccountapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21569,7 +22019,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.assignment.supportassignmentapi
+  - id: support.agent.supportagentapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21577,7 +22027,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.assignmentrule.supportruleapi
+  - id: support.assignment.supportassignmentapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21585,7 +22035,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821046000_support_lifecycle.sql
-  - id: support.conversation.supportconversationapi
+  - id: support.assignmentrule.supportruleapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21593,7 +22043,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821046000_support_lifecycle.sql
-  - id: support.escalation.supportescalationapi
+  - id: support.conversation.supportconversationapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21601,7 +22051,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.evidence.supportevidenceapi
+  - id: support.escalation.supportescalationapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21609,7 +22059,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.history.supporthistoryapi
+  - id: support.evidence.supportevidenceapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21617,7 +22067,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.message.supportmessageapi
+  - id: support.history.supporthistoryapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21625,15 +22075,7 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.sla.supportslaapi
-    kind: policy
-    owner: support
-    source: database/migrations/20260902019000_complete_support_realtime.sql
-  - id: support.sla.jobscope
-    kind: policy
-    owner: support
-    source: database/migrations/20260821030000_revoke_public_access.sql
-  - id: support.ticket.supportticketapi
+  - id: support.message.supportmessageapi
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
@@ -21653,10 +22095,22 @@ objects:
     kind: policy
     owner: support
     source: database/migrations/20260902019000_complete_support_realtime.sql
+  - id: support.sla.jobscope
+    kind: policy
+    owner: support
+    source: database/migrations/20260821030000_revoke_public_access.sql
+  - id: support.sla.supportslaapi
+    kind: policy
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: support.ticket.jobscope
     kind: policy
     owner: support
     source: database/migrations/20260821030000_revoke_public_access.sql
+  - id: support.ticket.supportticketapi
+    kind: policy
+    owner: support
+    source: database/migrations/20260902019000_complete_support_realtime.sql
   - id: verification.attempt.appscope
     kind: policy
     owner: verification
@@ -22764,6 +23218,16 @@ objects:
     owner: order
     source: database/migrations/20260831014000_complete_aftersale_lifecycle.sql
     rls: true
+  - id: ordering.fulfillmentmilestoneread
+    kind: table
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    rls: true
+  - id: ordering.fulfillmentread
+    kind: table
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    rls: true
   - id: ordering.line
     kind: table
     owner: order
@@ -22774,10 +23238,30 @@ objects:
     owner: order
     source: database/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
+  - id: ordering.paymentread
+    kind: table
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    rls: true
+  - id: ordering.paymenttenderread
+    kind: table
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    rls: true
   - id: ordering.receipt
     kind: table
     owner: order
     source: database/migrations/20260830149000_publish_order_receipt.sql
+    rls: true
+  - id: ordering.refundread
+    kind: table
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
+    rls: true
+  - id: ordering.refundtenderread
+    kind: table
+    owner: order
+    source: database/migrations/20260903110000_complete_order_read_projection.sql
     rls: true
   - id: ordering.reminder
     kind: table
@@ -23644,15 +24128,15 @@ objects:
     owner: runtime
     source: database/migrations/20260830145000_secure_referral_domain.sql
     operationalOwner: runtime
-  - id: support.history.support_history_immutable
-    kind: trigger
-    owner: support
-    source: database/migrations/20260821046000_support_lifecycle.sql
-    operationalOwner: support
   - id: support.evidence.support_evidence_transition
     kind: trigger
     owner: support
     source: database/migrations/20260902018000_complete_support_message.sql
+    operationalOwner: support
+  - id: support.history.support_history_immutable
+    kind: trigger
+    owner: support
+    source: database/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
   - id: support.message.support_message_immutable
     kind: trigger

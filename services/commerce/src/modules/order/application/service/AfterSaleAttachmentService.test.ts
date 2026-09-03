@@ -1,59 +1,40 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationRequest } from '../../../../foundation/application/OperationRequest';
-import type { ObjectUpload } from '../../../../foundation/infrastructure/ObjectStore';
+import type { ObjectMetadata, UploadAuthorization } from '../../../../foundation/infrastructure/ObjectStore';
 import { AfterSaleAttachmentService } from './AfterSaleAttachmentService';
 
 const membership = 'membership:one';
 const owner = createHash('sha256').update(membership).digest('hex').slice(0, 32);
 const reference = `object:aftersale/${owner}/damage.png`;
-const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
-const pngHash = createHash('sha256').update(png).digest('hex');
+const sha256 = 'a'.repeat(64);
 
 describe('AfterSaleAttachmentService', () => {
-  it('uploads verified bytes into the member-scoped private path', async () => {
-    const create = vi.fn(async () => upload(png));
-    await expect(new AfterSaleAttachmentService({ create }).verify(request([{ data: Buffer.from(png).toString('base64'), contentType: 'image/png', name: 'damage.png' }]).input, membership)).resolves.toEqual([
-      { objectId: reference, name: 'damage.png', mediaType: 'image/png', sizeBytes: png.byteLength, contentHash: pngHash },
-    ]);
-    expect(create).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`^aftersale/${owner}/[0-9a-f-]+\\.png$`)), 'image/png');
+  it('authorizes direct upload under the member-scoped private path', async () => {
+    const authorizeUpload = vi.fn(async (input): Promise<UploadAuthorization> => ({ reference, url: 'https://object.test/upload', method: 'PUT', headers: { 'x-checksum': input.sha256 }, expiresAt: '2033-01-01T00:00:00.000Z' }));
+    const service = new AfterSaleAttachmentService({ authorizeUpload, inspect: vi.fn() });
+    await expect(service.authorize(request({ name: 'damage.png', contentType: 'image/png', sizeBytes: 100, sha256 }).input, membership)).resolves.toMatchObject({ objectId: reference });
+    expect(authorizeUpload).toHaveBeenCalledWith(expect.objectContaining({ path: expect.stringMatching(new RegExp(`^aftersale/${owner}/[0-9a-f-]+\\.png$`)), contentType: 'image/png', size: 100, sha256, expiresIn: 300 }));
   });
 
-  it('rejects spoofed MIME, invalid base64 and failed integrity checks', async () => {
-    const create = vi.fn(async () => upload(png));
-    await expect(new AfterSaleAttachmentService({ create }).verify(request([{ data: Buffer.from('javascript').toString('base64'), contentType: 'image/png', name: 'damage.png' }]).input, membership)).rejects.toThrow('VALIDATION_FAILED');
-    await expect(new AfterSaleAttachmentService({ create }).verify(request([{ data: '***', contentType: 'image/png', name: 'damage.png' }]).input, membership)).rejects.toThrow('VALIDATION_FAILED');
-    await expect(
-      new AfterSaleAttachmentService({ create: vi.fn(async () => upload(png, 'b'.repeat(64))) }).verify(request([{ data: Buffer.from(png).toString('base64'), contentType: 'image/png', name: 'damage.png' }]).input, membership)
-    ).rejects.toThrow('VALIDATION_FAILED');
+  it('accepts only a clean uploaded object with matching owner and checksum receipt', async () => {
+    const inspect = vi.fn(async (): Promise<ObjectMetadata> => metadata());
+    const service = new AfterSaleAttachmentService({ authorizeUpload: vi.fn(), inspect });
+    await expect(service.verify(request({ attachments: [{ objectId: reference, name: 'damage.png', contentType: 'image/png', sizeBytes: 100, sha256 }] }).input, membership)).resolves.toEqual([
+      { objectId: reference, name: 'damage.png', mediaType: 'image/png', sizeBytes: 100, contentHash: sha256 },
+    ]);
+    await expect(new AfterSaleAttachmentService({ authorizeUpload: vi.fn(), inspect: vi.fn(async () => metadata({ sha256: 'b'.repeat(64) })) }).verify(request({ attachments: [{ objectId: reference, name: 'damage.png', contentType: 'image/png', sizeBytes: 100, sha256 }] }).input, membership)).rejects.toThrow('VALIDATION_FAILED');
   });
 });
 
-function upload(bytes: Uint8Array, sha256 = pngHash): ObjectUpload {
-  return {
-    append: vi.fn(async () => undefined),
-    complete: vi.fn(async () => ({ reference, sha256, size: bytes.byteLength, scan: 'clean' as const })),
-    abort: vi.fn(async () => undefined),
-  };
+function metadata(overrides: Partial<ObjectMetadata> = {}): ObjectMetadata {
+  return { reference, sha256, size: 100, scan: 'clean', contentType: 'image/png', path: `aftersale/${owner}/damage.png`, ...overrides };
 }
 
-function request(attachments: readonly unknown[]): OperationRequest {
+function request(body: Record<string, unknown>): OperationRequest {
   return {
     type: 'order.aftersales.apply',
-    input: { path: { orderid: 'order:one' }, query: {}, headers: {}, body: { attachments }, rawBody: '', deadline: Date.now() + 1000, signal: new AbortController().signal },
-    security: {
-      kind: 'session',
-      access: {
-        actor: { id: 'principal:one', session: 'session:one', membership, credentialVersion: 1, accessVersion: 1, target: 'storefront', assurance: { level: 2 } },
-        membership: { id: membership, active: true, accessVersion: 1, permissions: { allows: new Set(['order.aftersales.apply']), denies: new Set() }, scopes: [] },
-        organization: 'mall:one',
-        scope: { id: 'mall:one', kind: 'owner', path: [] },
-        accessVersion: 1,
-        capabilities: new Set(['order.aftersales.apply']),
-        capabilityVersion: 1,
-        assurance: { level: 2 },
-        trace: 'trace:one',
-      },
-    },
+    input: { path: { orderid: 'order:one' }, query: {}, headers: {}, body, rawBody: '', deadline: Date.now() + 1000, signal: new AbortController().signal },
+    security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:one' },
   };
 }

@@ -41,18 +41,54 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
     const result = await database.query(
       `select orders.id,orders.order_number,orders.scope_id,orders.member_id,orders.mall_id,
       orders.checkout_id,orders.currency,orders.total_minor,orders.payment_state,orders.fulfillment_state,orders.aftersale_state,
-      orders.lifecycle_state,orders.evidence,orders.created_at,orders.updated_at,orders.version,
+      orders.lifecycle_state,
+      case when jsonb_typeof(orders.address_snapshot)='object' and orders.address_snapshot?'recipientMasked'
+        then jsonb_build_object('recipientMasked',coalesce(orders.address_snapshot->>'recipientMasked',''),
+          'mobileMasked',coalesce(orders.address_snapshot->>'mobileMasked',''),
+          'addressMasked',coalesce(orders.address_snapshot->>'addressMasked',''),
+          'regionCode',coalesce(orders.address_snapshot->>'regionCode','')) else null end address,
+      jsonb_build_object('paymentId',payment.payment_id,'capturedMinor',coalesce(payment.captured_minor,0),
+        'refundedMinor',coalesce(payment.refunded_minor,0),
+        'refundableMinor',greatest(coalesce(payment.captured_minor,0)-coalesce(payment.refunded_minor,0),0),
+        'updatedAt',payment.updated_at,
+        'tenders',coalesce(payment.tenders,'[]'::jsonb)) payment,
+      coalesce((select jsonb_agg(jsonb_build_object('id',fulfillment.id,'provider',fulfillment.provider,
+        'partner',fulfillment.partner_id,'kind',fulfillment.kind,'state',fulfillment.state,
+        'externalReferenceMasked',case when fulfillment.external_reference is null then null else '尾号 '||right(fulfillment.external_reference,4) end,
+        'createdAt',fulfillment.created_at,'updatedAt',fulfillment.updated_at,
+        'milestones',coalesce((select jsonb_agg(jsonb_build_object('id',milestone.id,'kind',milestone.kind,
+          'state',milestone.state,'trackingMasked',case when milestone.tracking is null then null else '尾号 '||right(milestone.tracking,4) end,
+          'occurredAt',milestone.occurred_at) order by milestone.occurred_at,milestone.id)
+          from ordering.fulfillmentmilestoneread milestone where milestone.fulfillment_id=fulfillment.id),'[]'::jsonb))
+        order by fulfillment.created_at,fulfillment.id) from ordering.fulfillmentread fulfillment where fulfillment.order_id=orders.id),'[]'::jsonb) fulfillments,
+      coalesce((select jsonb_agg(jsonb_build_object('id',refund.id,'aftersaleId',refund.aftersale_id,
+        'provider',refund.provider,'providerReferenceMasked','尾号 '||right(refund.provider_reference,4),
+        'amountMinor',refund.amount_minor,'currency',refund.currency,'state',refund.state,'reason',refund.reason,
+        'createdAt',refund.created_at,'updatedAt',refund.updated_at,
+        'tenders',coalesce((select jsonb_agg(jsonb_build_object('sequence',tender.sequence,'kind',tender.kind,
+          'referenceMasked',case when tender.reference_id is null then null else '尾号 '||right(tender.reference_id,4) end,
+          'amountMinor',tender.amount_minor,'state',tender.state) order by tender.sequence)
+          from ordering.refundtenderread tender where tender.refund_id=refund.id),'[]'::jsonb))
+        order by refund.created_at,refund.id) from ordering.refundread refund where refund.order_id=orders.id),'[]'::jsonb) refunds,
+      '[]'::jsonb timeline,orders.received_at "receivedAt",orders.created_at,orders.updated_at,orders.version,
       coalesce(jsonb_agg(jsonb_build_object('id',line.id,'sku',line.sku_id,'listing',line.listing_id,'title',line.title_snapshot,
       'quantity',line.quantity,'unitMinor',line.unit_minor,'totalMinor',line.total_minor,'discountMinor',line.discount_minor,
       'payableMinor',line.payable_minor,'productType',coalesce(nullif(line.evidence->>'productType',''),'unknown'),
       'category',coalesce(nullif(line.evidence->>'category',''),'unknown'),'provider',line.provider,'partner',line.partner_id))
       filter(where line.id is not null),'[]') lines
-      from ordering.orderrecord orders left join ordering.line line on line.order_id=orders.id where (
+      from ordering.orderrecord orders left join ordering.line line on line.order_id=orders.id
+      left join lateral(select detail.payment_id,detail.captured_minor,detail.refunded_minor,detail.updated_at,
+        coalesce((select jsonb_agg(jsonb_build_object('sequence',tender.sequence,'kind',tender.kind,
+          'referenceMasked',case when tender.reference_id is null then null else '尾号 '||right(tender.reference_id,4) end,
+          'amountMinor',tender.amount_minor,'state',tender.state) order by tender.sequence)
+          from ordering.paymenttenderread tender where tender.order_id=orders.id),'[]'::jsonb) tenders
+        from ordering.paymentread detail where detail.order_id=orders.id) payment on true where (
       ($1::boolean and orders.member_id=$2) or (($3 or $4) and exists(select 1 from ordering.suborder where order_id=orders.id and partner_id=$2))
       or (not $1::boolean and not $3 and not $4 and orders.scope_id=any($5::text[]))
       ) ${ORDER_READ_FILTER_SQL}
       and ($14::timestamptz is null or (orders.created_at,orders.id)<($14::timestamptz,$15))
-      group by orders.id order by orders.created_at desc,orders.id desc limit $16`,
+      group by orders.id,payment.payment_id,payment.captured_minor,payment.refunded_minor,payment.updated_at,payment.tenders
+      order by orders.created_at desc,orders.id desc limit $16`,
       [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone), page.sort, page.id, page.fetch]
     );
     return keysetResult(result, page, 'created_at') as never;

@@ -1,7 +1,7 @@
 import { Component, lazy, StrictMode, Suspense, type ErrorInfo, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ClientError } from '@shop/sdk';
-import './style/Auth.css';
+import './app/Auth.css';
 
 const App = lazy(() => import('./app/App'));
 

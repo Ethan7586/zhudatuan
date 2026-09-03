@@ -20,6 +20,12 @@ import { RecoveryGateway } from '../feature/recovery/infrastructure/RecoveryGate
 import { createClient } from '../shared/api/Client';
 import { AuthorizationFactory } from '../shared/security/Authorization';
 import { deviceId } from '../shared/security/Device';
+import { BrowserNavigation } from '../shared/navigation/BrowserNavigation';
+import type { NavigationPort } from '../shared/navigation/NavigationPort';
+import { ReadLink } from '../feature/link/application/ReadLink';
+import { LinkGateway } from '../feature/link/infrastructure/LinkGateway';
+import { FederationViewModel } from '../feature/federation/viewmodel/FederationViewModel';
+import { InvitationViewModel } from '../feature/invitation/viewmodel/InvitationViewModel';
 
 export interface Dependencies {
   readonly bootstrap: ReadBootstrap;
@@ -34,6 +40,10 @@ export interface Dependencies {
   readonly selectMembership: SelectMembership;
   readonly recovery: ResetPassword;
   readonly clearBootstrap: BootstrapGateway['clear'];
+  readonly navigation: NavigationPort;
+  readonly link: ReadLink;
+  readonly federationView: FederationViewModel;
+  readonly invitationView: InvitationViewModel;
 }
 
 export function createDependencies(environment: AuthEnvironment): Dependencies {
@@ -48,18 +58,28 @@ export function createDependencies(environment: AuthEnvironment): Dependencies {
   const federationGateway = new FederationGateway(sdk, environment, bootstrapGateway, authorizations);
   const membershipGateway = new MembershipGateway(sdk, environment, bootstrapGateway);
   const recoveryGateway = new RecoveryGateway(sdk, environment, bootstrapGateway);
+  const linkGateway = new LinkGateway(sdk, environment);
+  const providers = new ReadProviders(federationGateway);
+  const federation = new StartFederation(federationGateway);
+  const resolveInvitation = new ResolveInvitation(invitationGateway);
+  const readEnrollment = new ReadEnrollment(invitationGateway);
+  const completeEnrollment = new CompleteEnrollment(invitationGateway);
   return Object.freeze({
     bootstrap: new ReadBootstrap(bootstrapGateway),
     authenticate: new Authenticate(loginGateway),
     challenge: new CreateChallenge(challengeGateway),
-    resolveInvitation: new ResolveInvitation(invitationGateway),
-    readEnrollment: new ReadEnrollment(invitationGateway),
-    completeEnrollment: new CompleteEnrollment(invitationGateway),
-    providers: new ReadProviders(federationGateway),
-    federation: new StartFederation(federationGateway),
+    resolveInvitation,
+    readEnrollment,
+    completeEnrollment,
+    providers,
+    federation,
     memberships: new ReadMemberships(membershipGateway),
     selectMembership: new SelectMembership(membershipGateway),
     recovery: new ResetPassword(recoveryGateway),
     clearBootstrap: bootstrapGateway.clear.bind(bootstrapGateway),
+    navigation: new BrowserNavigation([new URL(environment.consoleOrigin).origin, new URL(environment.storefrontOrigin).origin]),
+    link: new ReadLink(linkGateway),
+    federationView: new FederationViewModel(providers, federation),
+    invitationView: new InvitationViewModel(resolveInvitation, readEnrollment, completeEnrollment),
   });
 }

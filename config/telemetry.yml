@@ -24,6 +24,15 @@ slo:
   availabilityPercent: 99.95
   rpoMinutes: 0
   rtoMinutes: 15
+browser:
+  webVitals: [lcp, inp, cls, fcp, ttfb]
+  navigation: [routeid, durationms, outcome]
+  query: [resource, durationms, cache, outcome, aborted]
+  mutation: [operation, durationms, outcome, conflict, stepup]
+  stream: [channel, reconnects, cursorage, outcome]
+  payment: [intent, confirmationms, outcome]
+  upload: [kind, bytes, durationms, checksum, outcome]
+  forbiddenFields: [query, payload, secret, token, password, otp, proof, pii]
 alerts:
   entryFailure:
     windowSeconds: 300

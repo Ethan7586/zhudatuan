@@ -1,7 +1,7 @@
 import { Button, ResourcePanel, type ResourceCondition } from '@shop/design';
 import type { RowData } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
-import { DataTable, type DataColumn } from './DataTable';
+import { DataTable, type DataColumn } from '@shop/design';
 import { useRouteTitle } from './RouteTitle';
 
 export interface PagedResourceProps<T extends RowData> {

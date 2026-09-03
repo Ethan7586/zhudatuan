@@ -12,7 +12,7 @@ interface RefundBenefit {
 interface RefundVoucher {
   refund(context: WriteTransactionContext, input: Readonly<{ refund: string; order: string; member: string; voucher: string; amountMinor: number }>): Promise<void>;
 }
-type RefundOrders = Pick<PaymentOrderPort, 'lockPayment' | 'aftersale' | 'markRefunded'>;
+type RefundOrders = Pick<PaymentOrderPort, 'lockPayment' | 'aftersale' | 'markRefunded' | 'recordPaymentRefund' | 'recordRefund'>;
 
 interface RefundRow {
   readonly id: string;
@@ -20,6 +20,9 @@ interface RefundRow {
   readonly amount_minor: number;
   readonly currency: string;
   readonly state: string;
+  readonly provider: string;
+  readonly provider_reference: string;
+  readonly reason: string;
   readonly aftersale_id: string | null;
   readonly order_id: string;
   readonly scope_id: string;
@@ -59,7 +62,7 @@ export class RefundSettlement {
     const paymentRefund = (
       await database.query<Omit<RefundRow, 'scope_id' | 'mall_id' | 'member_id' | 'line_id'>>(
         `select refund.id,refund.payment_id,refund.amount_minor::float8 amount_minor,refund.currency,
-      refund.state,refund.aftersale_id,intent.order_id from payment.refund refund
+      refund.state,refund.provider,refund.provider_reference,refund.reason,refund.aftersale_id,intent.order_id from payment.refund refund
       join payment.payment payment on payment.id=refund.payment_id join payment.intent intent on intent.id=payment.intent_id
       where refund.id=$1 for update of refund,payment`,
         [refundid]
@@ -107,6 +110,19 @@ export class RefundSettlement {
       [refundid]
     );
     await this.orders.markRefunded(context, { order: refund.order_id, refundedMinor: totals.refunded_minor, capturedMinor: totals.captured_minor, aftersale: refund.aftersale_id });
+    await this.orders.recordPaymentRefund(context, refund.order_id, totals.refunded_minor, totals.captured_minor);
+    await this.orders.recordRefund(context, {
+      id: refund.id,
+      order: refund.order_id,
+      aftersale: refund.aftersale_id,
+      provider: refund.provider,
+      providerReference: providerReference ?? refund.provider_reference,
+      amountMinor: refund.amount_minor,
+      currency: refund.currency,
+      state: 'succeeded',
+      reason: refund.reason,
+      tenders: legs.map((leg) => Object.freeze({ sequence: leg.sequence, kind: leg.kind, reference: leg.reference_id, amountMinor: leg.amount_minor, state: 'succeeded' })),
+    });
     const scope = await this.organizations.scope(context, refund.scope_id);
     await new PgRuntimeWriter(database).append({
       id: `event:${randomUUID()}`,

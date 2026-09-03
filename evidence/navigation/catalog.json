@@ -1,6 +1,520 @@
 {
-  "version": 1,
-  "hash": "b8343568dfbc696dca3f28be27cc8ca98e941ceee88799fc3975e2dbceb9b40d",
+  "version": 2,
+  "hash": "5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5",
+  "routes": [
+    {
+      "id": "authlogin",
+      "surface": "auth",
+      "path": "/",
+      "feature": "login",
+      "requirements": [
+        "MVPIDENTITY"
+      ]
+    },
+    {
+      "id": "authcallback",
+      "surface": "auth",
+      "path": "/callback",
+      "feature": "federation",
+      "requirements": [
+        "MVPIDENTITY"
+      ]
+    },
+    {
+      "id": "authinvitation",
+      "surface": "auth",
+      "path": "/invitation",
+      "feature": "invitation",
+      "requirements": [
+        "MVPIDENTITY"
+      ]
+    },
+    {
+      "id": "authlink",
+      "surface": "auth",
+      "path": "/link",
+      "feature": "link",
+      "requirements": [
+        "MVPIDENTITY"
+      ]
+    },
+    {
+      "id": "authmembership",
+      "surface": "auth",
+      "path": "/membership",
+      "feature": "membership",
+      "requirements": [
+        "MVPIDENTITY"
+      ]
+    },
+    {
+      "id": "consolechannels",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/channels",
+      "feature": "channel",
+      "requirements": [
+        "MVPPROVIDER"
+      ]
+    },
+    {
+      "id": "consolecockpit",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/cockpit",
+      "feature": "cockpit",
+      "requirements": [
+        "MVPGROUPDASHBOARD",
+        "MVPMALLDASHBOARD"
+      ]
+    },
+    {
+      "id": "consolecontrol",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/control",
+      "feature": "control",
+      "requirements": [
+        "MVPPLATFORM",
+        "MVPDISTRIBUTION"
+      ]
+    },
+    {
+      "id": "consoleexperience",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/experience",
+      "feature": "experience",
+      "requirements": [
+        "MVPGROUPAPPLICATION",
+        "MVPMALLDESIGN"
+      ]
+    },
+    {
+      "id": "consolefinance",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/finance",
+      "feature": "finance",
+      "requirements": [
+        "MVPGROUPFINANCE",
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "consolefinanceentry",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/finance/entries",
+      "feature": "finance",
+      "requirements": [
+        "MVPGROUPFINANCE",
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "consolefinanceinvoice",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/finance/invoices",
+      "feature": "finance",
+      "requirements": [
+        "MVPGROUPFINANCE",
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "consolefinancereconciliation",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/finance/reconciliations",
+      "feature": "finance",
+      "requirements": [
+        "MVPGROUPFINANCE",
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "consolefinancesettlement",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/finance/settlements",
+      "feature": "finance",
+      "requirements": [
+        "MVPGROUPFINANCE",
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "consolefinancestatement",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/finance/statements",
+      "feature": "finance",
+      "requirements": [
+        "MVPGROUPFINANCE",
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "consolefinancewithdrawal",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/finance/withdrawals",
+      "feature": "finance",
+      "requirements": [
+        "MVPGROUPFINANCE",
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "consoleproductimport",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/imports/:kind/:jobId",
+      "feature": "product",
+      "requirements": [
+        "MVPPLATFORM",
+        "MVPGROUPPOOL",
+        "MVPMALLPOOL"
+      ]
+    },
+    {
+      "id": "consoleorders",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/orders",
+      "feature": "order",
+      "requirements": [
+        "MVPGROUPORDER",
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "consoleorderdetail",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/orders/:orderId",
+      "feature": "order",
+      "requirements": [
+        "MVPGROUPORDER",
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "consoleproducts",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/products",
+      "feature": "product",
+      "requirements": [
+        "MVPPLATFORM",
+        "MVPGROUPPOOL",
+        "MVPMALLPOOL"
+      ]
+    },
+    {
+      "id": "consoleproductdetail",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/products/:productId",
+      "feature": "product",
+      "requirements": [
+        "MVPPLATFORM",
+        "MVPGROUPPOOL",
+        "MVPMALLPOOL"
+      ]
+    },
+    {
+      "id": "consolereferral",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/referral",
+      "feature": "referral",
+      "requirements": [
+        "MVPDISTRIBUTION"
+      ]
+    },
+    {
+      "id": "consolereferralview",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/referral/:view",
+      "feature": "referral",
+      "requirements": [
+        "MVPDISTRIBUTION"
+      ]
+    },
+    {
+      "id": "consolereporting",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/reporting",
+      "feature": "reporting",
+      "requirements": [
+        "MVPGROUPREPORT",
+        "MVPMALLREPORT"
+      ]
+    },
+    {
+      "id": "consolesettings",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings",
+      "feature": "settings",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consoleaccess",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/access",
+      "feature": "access",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consoledirectory",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/directory",
+      "feature": "directory",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consolefederation",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/federation",
+      "feature": "federation",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING",
+        "MVPIDENTITY"
+      ]
+    },
+    {
+      "id": "consoleinvitations",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/invitations",
+      "feature": "invitation",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consolemembers",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/members",
+      "feature": "member",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consolenotifications",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/messages",
+      "feature": "notification",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consolepartners",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/partners",
+      "feature": "partner",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consolequalification",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/partners/qualifications",
+      "feature": "qualification",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consolerisk",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/settings/risk",
+      "feature": "risk",
+      "requirements": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "consolesupport",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/support",
+      "feature": "support",
+      "requirements": [
+        "MVPGROUPSUPPORT",
+        "MVPMALLSUPPORT"
+      ]
+    },
+    {
+      "id": "consolesupportcase",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/support/:caseId",
+      "feature": "support",
+      "requirements": [
+        "MVPGROUPSUPPORT",
+        "MVPMALLSUPPORT"
+      ]
+    },
+    {
+      "id": "consolevouchers",
+      "surface": "console",
+      "path": "/scopes/:scopeKind/:scopeId/vouchers",
+      "feature": "voucher",
+      "requirements": [
+        "MVPPLATFORM",
+        "MVPGROUPVOUCHER",
+        "MVPMALLVOUCHER"
+      ]
+    },
+    {
+      "id": "storehome",
+      "surface": "storefront",
+      "path": "/",
+      "feature": "home",
+      "requirements": [
+        "MVPMALLDASHBOARD",
+        "MVPMALLDESIGN"
+      ]
+    },
+    {
+      "id": "storebenefits",
+      "surface": "storefront",
+      "path": "/benefits",
+      "feature": "benefit",
+      "requirements": [
+        "MVPMALLFINANCE"
+      ]
+    },
+    {
+      "id": "storecart",
+      "surface": "storefront",
+      "path": "/cart",
+      "feature": "cart",
+      "requirements": [
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "storecheckout",
+      "surface": "storefront",
+      "path": "/checkout",
+      "feature": "checkout",
+      "requirements": [
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "storenotifications",
+      "surface": "storefront",
+      "path": "/notifications",
+      "feature": "notification",
+      "requirements": [
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "storeorders",
+      "surface": "storefront",
+      "path": "/orders",
+      "feature": "order",
+      "requirements": [
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "storeorder",
+      "surface": "storefront",
+      "path": "/orders/:orderId",
+      "feature": "order",
+      "requirements": [
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "storeaftersale",
+      "surface": "storefront",
+      "path": "/orders/:orderId/aftersales",
+      "feature": "aftersale",
+      "requirements": [
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "storepayment",
+      "surface": "storefront",
+      "path": "/payments/:paymentId/result",
+      "feature": "payment",
+      "requirements": [
+        "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "storecatalog",
+      "surface": "storefront",
+      "path": "/products",
+      "feature": "catalog",
+      "requirements": [
+        "MVPMALLPOOL"
+      ]
+    },
+    {
+      "id": "storeproduct",
+      "surface": "storefront",
+      "path": "/products/:productId",
+      "feature": "product",
+      "requirements": [
+        "MVPMALLPOOL"
+      ]
+    },
+    {
+      "id": "storeprofile",
+      "surface": "storefront",
+      "path": "/profile",
+      "feature": "account",
+      "requirements": [
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "storesecurity",
+      "surface": "storefront",
+      "path": "/profile/security",
+      "feature": "security",
+      "requirements": [
+        "MVPMALLSETTING"
+      ]
+    },
+    {
+      "id": "storesupport",
+      "surface": "storefront",
+      "path": "/support",
+      "feature": "support",
+      "requirements": [
+        "MVPMALLSUPPORT"
+      ]
+    },
+    {
+      "id": "storesupportcase",
+      "surface": "storefront",
+      "path": "/support/:caseId",
+      "feature": "support",
+      "requirements": [
+        "MVPMALLSUPPORT"
+      ]
+    },
+    {
+      "id": "storevouchers",
+      "surface": "storefront",
+      "path": "/vouchers",
+      "feature": "voucher",
+      "requirements": [
+        "MVPMALLVOUCHER"
+      ]
+    }
+  ],
   "nodes": [
     {
       "id": "distributioncontrol",
@@ -9,8 +523,7 @@
       "parent": null,
       "title": "智慧翼中控台",
       "icon": "control",
-      "route": "/scopes/:scopeKind/:scopeId/control",
-      "component": "control",
+      "routeid": "consolecontrol",
       "order": 10,
       "entry": "channel.distributors.read",
       "permissions": [
@@ -22,7 +535,9 @@
       "requirements": [
         "MVPDISTRIBUTION"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/control",
+      "component": "control"
     },
     {
       "id": "groupdashboard",
@@ -31,8 +546,7 @@
       "parent": null,
       "title": "经营驾驶舱",
       "icon": "dashboard",
-      "route": "/scopes/:scopeKind/:scopeId/cockpit",
-      "component": "cockpit",
+      "routeid": "consolecockpit",
       "order": 10,
       "entry": "reporting.dashboard.read",
       "permissions": [
@@ -44,7 +558,9 @@
       "requirements": [
         "MVPGROUPDASHBOARD"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/cockpit",
+      "component": "cockpit"
     },
     {
       "id": "groupcontrol",
@@ -53,8 +569,7 @@
       "parent": null,
       "title": "智慧翼中控台",
       "icon": "control",
-      "route": "/scopes/:scopeKind/:scopeId/control",
-      "component": "control",
+      "routeid": "consolecontrol",
       "order": 15,
       "entry": "runtime.health.dependency",
       "permissions": [
@@ -66,7 +581,9 @@
       "requirements": [
         "MVPPLATFORM"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/control",
+      "component": "control"
     },
     {
       "id": "groupapplication",
@@ -75,8 +592,7 @@
       "parent": null,
       "title": "築店 · 商城管理",
       "icon": "application",
-      "route": "/scopes/:scopeKind/:scopeId/experience",
-      "component": "experience",
+      "routeid": "consoleexperience",
       "order": 20,
       "entry": "experience.applications.read",
       "permissions": [
@@ -88,7 +604,9 @@
       "requirements": [
         "MVPGROUPAPPLICATION"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/experience",
+      "component": "experience"
     },
     {
       "id": "groupproduct",
@@ -97,8 +615,7 @@
       "parent": null,
       "title": "商品治理台",
       "icon": "product",
-      "route": "/scopes/:scopeKind/:scopeId/products",
-      "component": "product",
+      "routeid": "consoleproducts",
       "order": 30,
       "entry": "catalog.pools.read",
       "permissions": [
@@ -110,7 +627,9 @@
       "requirements": [
         "MVPGROUPPOOL"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/products",
+      "component": "product"
     },
     {
       "id": "grouporder",
@@ -119,8 +638,7 @@
       "parent": null,
       "title": "订单管理系统",
       "icon": "order",
-      "route": "/scopes/:scopeKind/:scopeId/orders",
-      "component": "order",
+      "routeid": "consoleorders",
       "order": 40,
       "entry": "order.orders.read",
       "permissions": [
@@ -132,7 +650,9 @@
       "requirements": [
         "MVPGROUPORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/orders",
+      "component": "order"
     },
     {
       "id": "groupreferral",
@@ -141,8 +661,7 @@
       "parent": null,
       "title": "分销返佣系统",
       "icon": "referral",
-      "route": "/scopes/:scopeKind/:scopeId/referral",
-      "component": "referral",
+      "routeid": "consolereferral",
       "order": 45,
       "entry": "referral.settings.read",
       "permissions": [
@@ -154,7 +673,9 @@
       "requirements": [
         "MVPDISTRIBUTION"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/referral",
+      "component": "referral"
     },
     {
       "id": "groupchannel",
@@ -163,8 +684,7 @@
       "parent": null,
       "title": "渠道接入系统",
       "icon": "channel",
-      "route": "/scopes/:scopeKind/:scopeId/channels",
-      "component": "channel",
+      "routeid": "consolechannels",
       "order": 47,
       "entry": "channel.connections.read",
       "permissions": [
@@ -176,7 +696,9 @@
       "requirements": [
         "MVPPROVIDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/channels",
+      "component": "channel"
     },
     {
       "id": "groupvoucher",
@@ -185,8 +707,7 @@
       "parent": null,
       "title": "卡券治理台",
       "icon": "voucher",
-      "route": "/scopes/:scopeKind/:scopeId/vouchers",
-      "component": "voucher",
+      "routeid": "consolevouchers",
       "order": 50,
       "entry": "voucher.cardlibraries.read",
       "permissions": [
@@ -198,7 +719,9 @@
       "requirements": [
         "MVPGROUPVOUCHER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/vouchers",
+      "component": "voucher"
     },
     {
       "id": "groupfinance",
@@ -207,8 +730,7 @@
       "parent": null,
       "title": "财务与对账台",
       "icon": "finance",
-      "route": "/scopes/:scopeKind/:scopeId/finance",
-      "component": "finance",
+      "routeid": "consolefinance",
       "order": 60,
       "entry": "finance.overview.read",
       "permissions": [
@@ -220,7 +742,9 @@
       "requirements": [
         "MVPGROUPFINANCE"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/finance",
+      "component": "finance"
     },
     {
       "id": "groupreporting",
@@ -229,8 +753,7 @@
       "parent": null,
       "title": "数据报表",
       "icon": "reporting",
-      "route": "/scopes/:scopeKind/:scopeId/reporting",
-      "component": "reporting",
+      "routeid": "consolereporting",
       "order": 70,
       "entry": "reporting.sales.read",
       "permissions": [
@@ -242,7 +765,9 @@
       "requirements": [
         "MVPGROUPREPORT"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/reporting",
+      "component": "reporting"
     },
     {
       "id": "groupsupport",
@@ -251,8 +776,7 @@
       "parent": null,
       "title": "客服系统",
       "icon": "support",
-      "route": "/scopes/:scopeKind/:scopeId/support",
-      "component": "support",
+      "routeid": "consolesupport",
       "order": 80,
       "entry": "support.cases.read",
       "permissions": [
@@ -264,7 +788,9 @@
       "requirements": [
         "MVPGROUPSUPPORT"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/support",
+      "component": "support"
     },
     {
       "id": "groupsettings",
@@ -273,8 +799,7 @@
       "parent": null,
       "title": "会员与权限",
       "icon": "settings",
-      "route": "/scopes/:scopeKind/:scopeId/settings",
-      "component": "settings",
+      "routeid": "consolesettings",
       "order": 90,
       "entry": "access.center.read",
       "permissions": [
@@ -286,7 +811,9 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings",
+      "component": "settings"
     },
     {
       "id": "grouprisk",
@@ -295,8 +822,7 @@
       "parent": null,
       "title": "系统治理台",
       "icon": "risk",
-      "route": "/scopes/:scopeKind/:scopeId/settings/risk",
-      "component": "risk",
+      "routeid": "consolerisk",
       "order": 100,
       "entry": "risk.center.read",
       "permissions": [
@@ -308,7 +834,32 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/risk",
+      "component": "risk"
+    },
+    {
+      "id": "groupqualification",
+      "surface": "console",
+      "scope": "enterprise",
+      "parent": "grouppartner",
+      "title": "资格管理",
+      "icon": "qualification",
+      "routeid": "consolequalification",
+      "order": 35,
+      "entry": "qualification.center.read",
+      "permissions": [
+        "qualification.read"
+      ],
+      "capabilities": [
+        "qualification.center.read"
+      ],
+      "requirements": [
+        "MVPGROUPSETTING"
+      ],
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/partners/qualifications",
+      "component": "qualification"
     },
     {
       "id": "groupmessage",
@@ -317,8 +868,7 @@
       "parent": "grouprisk",
       "title": "通知管理",
       "icon": "notification",
-      "route": "/scopes/:scopeKind/:scopeId/settings/messages",
-      "component": "notification",
+      "routeid": "consolenotifications",
       "order": 40,
       "entry": "notification.templates.read",
       "permissions": [
@@ -330,7 +880,9 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/messages",
+      "component": "notification"
     },
     {
       "id": "groupprovider",
@@ -339,8 +891,7 @@
       "parent": "grouprisk",
       "title": "登录方式",
       "icon": "identity",
-      "route": "/scopes/:scopeKind/:scopeId/settings/login",
-      "component": "identityprovider",
+      "routeid": "consolefederation",
       "order": 60,
       "entry": "identity.providers.read",
       "permissions": [
@@ -354,7 +905,9 @@
         "MVPGROUPSETTING",
         "MVPIDENTITY"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/federation",
+      "component": "federation"
     },
     {
       "id": "groupdirectory",
@@ -363,8 +916,7 @@
       "parent": "grouprisk",
       "title": "通讯录同步",
       "icon": "directory",
-      "route": "/scopes/:scopeKind/:scopeId/settings/directory",
-      "component": "directory",
+      "routeid": "consoledirectory",
       "order": 70,
       "entry": "organization.directories.read",
       "permissions": [
@@ -377,7 +929,9 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/directory",
+      "component": "directory"
     },
     {
       "id": "groupadmin",
@@ -386,8 +940,7 @@
       "parent": "groupsettings",
       "title": "权限中心",
       "icon": "access",
-      "route": "/scopes/:scopeKind/:scopeId/settings/access",
-      "component": "access",
+      "routeid": "consoleaccess",
       "order": 10,
       "entry": "access.center.read",
       "permissions": [
@@ -399,7 +952,9 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/access",
+      "component": "access"
     },
     {
       "id": "groupinvitation",
@@ -408,8 +963,7 @@
       "parent": "groupsettings",
       "title": "员工邀请",
       "icon": "member",
-      "route": "/scopes/:scopeKind/:scopeId/settings/invitations",
-      "component": "invitation",
+      "routeid": "consoleinvitations",
       "order": 15,
       "entry": "identity.invitations.read",
       "permissions": [
@@ -421,7 +975,9 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/invitations",
+      "component": "invitation"
     },
     {
       "id": "groupmemberdata",
@@ -430,8 +986,7 @@
       "parent": "groupsettings",
       "title": "成员管理",
       "icon": "member",
-      "route": "/scopes/:scopeKind/:scopeId/settings/members",
-      "component": "member",
+      "routeid": "consolemembers",
       "order": 20,
       "entry": "member.members.read",
       "permissions": [
@@ -443,7 +998,9 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/members",
+      "component": "member"
     },
     {
       "id": "grouppartner",
@@ -452,8 +1009,7 @@
       "parent": "groupsettings",
       "title": "供应商与门店",
       "icon": "partner",
-      "route": "/scopes/:scopeKind/:scopeId/settings/partners",
-      "component": "partner",
+      "routeid": "consolepartners",
       "order": 30,
       "entry": "partner.partners.read",
       "permissions": [
@@ -465,7 +1021,9 @@
       "requirements": [
         "MVPGROUPSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/partners",
+      "component": "partner"
     },
     {
       "id": "malldashboard",
@@ -474,8 +1032,7 @@
       "parent": null,
       "title": "经营驾驶舱",
       "icon": "dashboard",
-      "route": "/scopes/:scopeKind/:scopeId/cockpit",
-      "component": "cockpit",
+      "routeid": "consolecockpit",
       "order": 10,
       "entry": "reporting.dashboard.read",
       "permissions": [
@@ -487,7 +1044,9 @@
       "requirements": [
         "MVPMALLDASHBOARD"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/cockpit",
+      "component": "cockpit"
     },
     {
       "id": "mallcontrol",
@@ -496,8 +1055,7 @@
       "parent": null,
       "title": "智慧翼中控台",
       "icon": "control",
-      "route": "/scopes/:scopeKind/:scopeId/control",
-      "component": "control",
+      "routeid": "consolecontrol",
       "order": 15,
       "entry": "runtime.health.dependency",
       "permissions": [
@@ -509,7 +1067,9 @@
       "requirements": [
         "MVPPLATFORM"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/control",
+      "component": "control"
     },
     {
       "id": "malldesign",
@@ -518,8 +1078,7 @@
       "parent": null,
       "title": "築店 · 店铺装修",
       "icon": "application",
-      "route": "/scopes/:scopeKind/:scopeId/experience",
-      "component": "experience",
+      "routeid": "consoleexperience",
       "order": 20,
       "entry": "experience.applications.read",
       "permissions": [
@@ -531,7 +1090,9 @@
       "requirements": [
         "MVPMALLDESIGN"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/experience",
+      "component": "experience"
     },
     {
       "id": "mallproduct",
@@ -540,8 +1101,7 @@
       "parent": null,
       "title": "商品治理台",
       "icon": "product",
-      "route": "/scopes/:scopeKind/:scopeId/products",
-      "component": "product",
+      "routeid": "consoleproducts",
       "order": 30,
       "entry": "catalog.pools.read",
       "permissions": [
@@ -553,7 +1113,9 @@
       "requirements": [
         "MVPMALLPOOL"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/products",
+      "component": "product"
     },
     {
       "id": "mallorder",
@@ -562,8 +1124,7 @@
       "parent": null,
       "title": "订单管理系统",
       "icon": "order",
-      "route": "/scopes/:scopeKind/:scopeId/orders",
-      "component": "order",
+      "routeid": "consoleorders",
       "order": 40,
       "entry": "order.orders.read",
       "permissions": [
@@ -575,7 +1136,9 @@
       "requirements": [
         "MVPMALLORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/orders",
+      "component": "order"
     },
     {
       "id": "mallreferral",
@@ -584,8 +1147,7 @@
       "parent": null,
       "title": "分销返佣系统",
       "icon": "referral",
-      "route": "/scopes/:scopeKind/:scopeId/referral",
-      "component": "referral",
+      "routeid": "consolereferral",
       "order": 45,
       "entry": "referral.settings.read",
       "permissions": [
@@ -597,7 +1159,9 @@
       "requirements": [
         "MVPDISTRIBUTION"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/referral",
+      "component": "referral"
     },
     {
       "id": "mallchannel",
@@ -606,8 +1170,7 @@
       "parent": null,
       "title": "渠道接入系统",
       "icon": "channel",
-      "route": "/scopes/:scopeKind/:scopeId/channels",
-      "component": "channel",
+      "routeid": "consolechannels",
       "order": 47,
       "entry": "channel.connections.read",
       "permissions": [
@@ -619,7 +1182,9 @@
       "requirements": [
         "MVPPROVIDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/channels",
+      "component": "channel"
     },
     {
       "id": "mallvoucher",
@@ -628,8 +1193,7 @@
       "parent": null,
       "title": "卡券治理台",
       "icon": "voucher",
-      "route": "/scopes/:scopeKind/:scopeId/vouchers",
-      "component": "voucher",
+      "routeid": "consolevouchers",
       "order": 50,
       "entry": "voucher.cardlibraries.read",
       "permissions": [
@@ -641,7 +1205,9 @@
       "requirements": [
         "MVPMALLVOUCHER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/vouchers",
+      "component": "voucher"
     },
     {
       "id": "mallfinance",
@@ -650,8 +1216,7 @@
       "parent": null,
       "title": "财务与对账台",
       "icon": "finance",
-      "route": "/scopes/:scopeKind/:scopeId/finance",
-      "component": "finance",
+      "routeid": "consolefinance",
       "order": 60,
       "entry": "finance.overview.read",
       "permissions": [
@@ -663,7 +1228,9 @@
       "requirements": [
         "MVPMALLFINANCE"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/finance",
+      "component": "finance"
     },
     {
       "id": "mallreporting",
@@ -672,8 +1239,7 @@
       "parent": null,
       "title": "数据报表",
       "icon": "reporting",
-      "route": "/scopes/:scopeKind/:scopeId/reporting",
-      "component": "reporting",
+      "routeid": "consolereporting",
       "order": 70,
       "entry": "reporting.sales.read",
       "permissions": [
@@ -685,7 +1251,9 @@
       "requirements": [
         "MVPMALLREPORT"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/reporting",
+      "component": "reporting"
     },
     {
       "id": "mallsupport",
@@ -694,8 +1262,7 @@
       "parent": null,
       "title": "客服系统",
       "icon": "support",
-      "route": "/scopes/:scopeKind/:scopeId/support",
-      "component": "support",
+      "routeid": "consolesupport",
       "order": 80,
       "entry": "support.cases.read",
       "permissions": [
@@ -707,7 +1274,9 @@
       "requirements": [
         "MVPMALLSUPPORT"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/support",
+      "component": "support"
     },
     {
       "id": "mallsettings",
@@ -716,8 +1285,7 @@
       "parent": null,
       "title": "会员与权限",
       "icon": "settings",
-      "route": "/scopes/:scopeKind/:scopeId/settings",
-      "component": "settings",
+      "routeid": "consolesettings",
       "order": 90,
       "entry": "access.center.read",
       "permissions": [
@@ -729,7 +1297,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings",
+      "component": "settings"
     },
     {
       "id": "mallrisk",
@@ -738,8 +1308,7 @@
       "parent": null,
       "title": "系统治理台",
       "icon": "risk",
-      "route": "/scopes/:scopeKind/:scopeId/settings/risk",
-      "component": "risk",
+      "routeid": "consolerisk",
       "order": 100,
       "entry": "risk.center.read",
       "permissions": [
@@ -751,7 +1320,32 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/risk",
+      "component": "risk"
+    },
+    {
+      "id": "mallqualification",
+      "surface": "console",
+      "scope": "mall",
+      "parent": "mallpartner",
+      "title": "资格管理",
+      "icon": "qualification",
+      "routeid": "consolequalification",
+      "order": 35,
+      "entry": "qualification.center.read",
+      "permissions": [
+        "qualification.read"
+      ],
+      "capabilities": [
+        "qualification.center.read"
+      ],
+      "requirements": [
+        "MVPMALLSETTING"
+      ],
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/partners/qualifications",
+      "component": "qualification"
     },
     {
       "id": "mallmessage",
@@ -760,8 +1354,7 @@
       "parent": "mallrisk",
       "title": "通知管理",
       "icon": "notification",
-      "route": "/scopes/:scopeKind/:scopeId/settings/messages",
-      "component": "notification",
+      "routeid": "consolenotifications",
       "order": 40,
       "entry": "notification.templates.read",
       "permissions": [
@@ -773,7 +1366,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/messages",
+      "component": "notification"
     },
     {
       "id": "mallprovider",
@@ -782,8 +1377,7 @@
       "parent": "mallrisk",
       "title": "登录方式",
       "icon": "identity",
-      "route": "/scopes/:scopeKind/:scopeId/settings/login",
-      "component": "identityprovider",
+      "routeid": "consolefederation",
       "order": 60,
       "entry": "identity.providers.read",
       "permissions": [
@@ -797,7 +1391,9 @@
         "MVPMALLSETTING",
         "MVPIDENTITY"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/federation",
+      "component": "federation"
     },
     {
       "id": "malldirectory",
@@ -806,8 +1402,7 @@
       "parent": "mallrisk",
       "title": "通讯录同步",
       "icon": "directory",
-      "route": "/scopes/:scopeKind/:scopeId/settings/directory",
-      "component": "directory",
+      "routeid": "consoledirectory",
       "order": 70,
       "entry": "organization.directories.read",
       "permissions": [
@@ -820,7 +1415,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/directory",
+      "component": "directory"
     },
     {
       "id": "malladmin",
@@ -829,8 +1426,7 @@
       "parent": "mallsettings",
       "title": "权限中心",
       "icon": "access",
-      "route": "/scopes/:scopeKind/:scopeId/settings/access",
-      "component": "access",
+      "routeid": "consoleaccess",
       "order": 10,
       "entry": "access.center.read",
       "permissions": [
@@ -842,7 +1438,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/access",
+      "component": "access"
     },
     {
       "id": "mallinvitation",
@@ -851,8 +1449,7 @@
       "parent": "mallsettings",
       "title": "员工邀请",
       "icon": "member",
-      "route": "/scopes/:scopeKind/:scopeId/settings/invitations",
-      "component": "invitation",
+      "routeid": "consoleinvitations",
       "order": 15,
       "entry": "identity.invitations.read",
       "permissions": [
@@ -864,7 +1461,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/invitations",
+      "component": "invitation"
     },
     {
       "id": "mallmemberdata",
@@ -873,8 +1472,7 @@
       "parent": "mallsettings",
       "title": "成员管理",
       "icon": "member",
-      "route": "/scopes/:scopeKind/:scopeId/settings/members",
-      "component": "member",
+      "routeid": "consolemembers",
       "order": 20,
       "entry": "member.members.read",
       "permissions": [
@@ -886,7 +1484,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/members",
+      "component": "member"
     },
     {
       "id": "mallpartner",
@@ -895,8 +1495,7 @@
       "parent": "mallsettings",
       "title": "供应商与门店",
       "icon": "partner",
-      "route": "/scopes/:scopeKind/:scopeId/settings/partners",
-      "component": "partner",
+      "routeid": "consolepartners",
       "order": 30,
       "entry": "partner.partners.read",
       "permissions": [
@@ -908,7 +1507,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/settings/partners",
+      "component": "partner"
     },
     {
       "id": "platformcontrol",
@@ -917,8 +1518,7 @@
       "parent": null,
       "title": "智慧翼中控台",
       "icon": "control",
-      "route": "/scopes/:scopeKind/:scopeId/control",
-      "component": "control",
+      "routeid": "consolecontrol",
       "order": 10,
       "entry": "organization.layers.read",
       "permissions": [
@@ -930,7 +1530,9 @@
       "requirements": [
         "MVPPLATFORM"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/control",
+      "component": "control"
     },
     {
       "id": "platformcatalog",
@@ -939,8 +1541,7 @@
       "parent": null,
       "title": "商品治理台",
       "icon": "product",
-      "route": "/scopes/:scopeKind/:scopeId/products",
-      "component": "product",
+      "routeid": "consoleproducts",
       "order": 20,
       "entry": "catalog.pools.read",
       "permissions": [
@@ -952,7 +1553,9 @@
       "requirements": [
         "MVPPLATFORM"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/products",
+      "component": "product"
     },
     {
       "id": "platformvoucher",
@@ -961,8 +1564,7 @@
       "parent": null,
       "title": "卡券治理台",
       "icon": "voucher",
-      "route": "/scopes/:scopeKind/:scopeId/vouchers",
-      "component": "voucher",
+      "routeid": "consolevouchers",
       "order": 30,
       "entry": "voucher.cardlibraries.read",
       "permissions": [
@@ -974,7 +1576,9 @@
       "requirements": [
         "MVPPLATFORM"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/vouchers",
+      "component": "voucher"
     },
     {
       "id": "platformchannel",
@@ -983,8 +1587,7 @@
       "parent": null,
       "title": "渠道接入系统",
       "icon": "channel",
-      "route": "/scopes/:scopeKind/:scopeId/channels",
-      "component": "channel",
+      "routeid": "consolechannels",
       "order": 40,
       "entry": "channel.connections.read",
       "permissions": [
@@ -996,7 +1599,9 @@
       "requirements": [
         "MVPPROVIDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/scopes/:scopeKind/:scopeId/channels",
+      "component": "channel"
     },
     {
       "id": "storehome",
@@ -1005,8 +1610,7 @@
       "parent": null,
       "title": "首页",
       "icon": "home",
-      "route": "/",
-      "component": "home",
+      "routeid": "storehome",
       "order": 10,
       "entry": "storefront.bootstrap.read",
       "permissions": [],
@@ -1017,7 +1621,9 @@
         "MVPMALLDASHBOARD",
         "MVPMALLDESIGN"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/",
+      "component": "home"
     },
     {
       "id": "storecatalog",
@@ -1026,8 +1632,7 @@
       "parent": null,
       "title": "企业福利专区",
       "icon": "product",
-      "route": "/products",
-      "component": "catalog",
+      "routeid": "storecatalog",
       "order": 20,
       "entry": "storefront.catalog.read",
       "permissions": [],
@@ -1037,7 +1642,9 @@
       "requirements": [
         "MVPMALLPOOL"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/products",
+      "component": "catalog"
     },
     {
       "id": "storeproduct",
@@ -1046,8 +1653,7 @@
       "parent": null,
       "title": "商品详情",
       "icon": "product",
-      "route": "/products/:productId",
-      "component": "product",
+      "routeid": "storeproduct",
       "order": 30,
       "entry": "storefront.catalog.read",
       "permissions": [],
@@ -1057,7 +1663,9 @@
       "requirements": [
         "MVPMALLPOOL"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/products/:productId",
+      "component": "product"
     },
     {
       "id": "storecart",
@@ -1066,8 +1674,7 @@
       "parent": null,
       "title": "购物车",
       "icon": "cart",
-      "route": "/cart",
-      "component": "cart",
+      "routeid": "storecart",
       "order": 40,
       "entry": "cart.current.read",
       "permissions": [
@@ -1079,7 +1686,9 @@
       "requirements": [
         "MVPMALLORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/cart",
+      "component": "cart"
     },
     {
       "id": "storecheckout",
@@ -1088,8 +1697,7 @@
       "parent": null,
       "title": "确认结算",
       "icon": "cart",
-      "route": "/checkout",
-      "component": "checkout",
+      "routeid": "storecheckout",
       "order": 50,
       "entry": "checkout.quotes.current.read",
       "permissions": [
@@ -1101,7 +1709,9 @@
       "requirements": [
         "MVPMALLORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/checkout",
+      "component": "checkout"
     },
     {
       "id": "storepayment",
@@ -1110,8 +1720,7 @@
       "parent": null,
       "title": "支付结果",
       "icon": "finance",
-      "route": "/payments/:paymentId/result",
-      "component": "payment",
+      "routeid": "storepayment",
       "order": 60,
       "entry": "payment.intents.read",
       "permissions": [
@@ -1123,7 +1732,9 @@
       "requirements": [
         "MVPMALLORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/payments/:paymentId/result",
+      "component": "payment"
     },
     {
       "id": "storeorders",
@@ -1132,8 +1743,7 @@
       "parent": null,
       "title": "我的订单",
       "icon": "order",
-      "route": "/orders",
-      "component": "orders",
+      "routeid": "storeorders",
       "order": 70,
       "entry": "order.orders.read",
       "permissions": [
@@ -1145,7 +1755,9 @@
       "requirements": [
         "MVPMALLORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/orders",
+      "component": "order"
     },
     {
       "id": "storeorder",
@@ -1154,8 +1766,7 @@
       "parent": null,
       "title": "订单详情",
       "icon": "order",
-      "route": "/orders/:orderId",
-      "component": "order",
+      "routeid": "storeorder",
       "order": 80,
       "entry": "order.orders.read",
       "permissions": [
@@ -1167,7 +1778,9 @@
       "requirements": [
         "MVPMALLORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/orders/:orderId",
+      "component": "order"
     },
     {
       "id": "storeaftersale",
@@ -1176,8 +1789,7 @@
       "parent": null,
       "title": "申请售后",
       "icon": "aftersale",
-      "route": "/orders/:orderId/aftersales",
-      "component": "aftersale",
+      "routeid": "storeaftersale",
       "order": 90,
       "entry": "order.aftersales.read",
       "permissions": [
@@ -1189,7 +1801,9 @@
       "requirements": [
         "MVPMALLORDER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/orders/:orderId/aftersales",
+      "component": "aftersale"
     },
     {
       "id": "storevouchers",
@@ -1198,8 +1812,7 @@
       "parent": null,
       "title": "我的卡券",
       "icon": "voucher",
-      "route": "/vouchers",
-      "component": "vouchers",
+      "routeid": "storevouchers",
       "order": 100,
       "entry": "voucher.bindings.read",
       "permissions": [
@@ -1211,7 +1824,9 @@
       "requirements": [
         "MVPMALLVOUCHER"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/vouchers",
+      "component": "voucher"
     },
     {
       "id": "storebenefits",
@@ -1220,8 +1835,7 @@
       "parent": null,
       "title": "福利账户",
       "icon": "finance",
-      "route": "/benefits",
-      "component": "benefits",
+      "routeid": "storebenefits",
       "order": 110,
       "entry": "benefit.accounts.read",
       "permissions": [
@@ -1233,7 +1847,9 @@
       "requirements": [
         "MVPMALLFINANCE"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/benefits",
+      "component": "benefit"
     },
     {
       "id": "storeprofile",
@@ -1242,8 +1858,7 @@
       "parent": null,
       "title": "我的",
       "icon": "member",
-      "route": "/profile",
-      "component": "profile",
+      "routeid": "storeprofile",
       "order": 120,
       "entry": "member.profile.read",
       "permissions": [
@@ -1253,11 +1868,11 @@
         "member.profile.read"
       ],
       "requirements": [
-        "MVPMALLPOOL",
-        "MVPMALLORDER",
-        "MVPMALLVOUCHER"
+        "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/profile",
+      "component": "account"
     },
     {
       "id": "storesecurity",
@@ -1266,8 +1881,7 @@
       "parent": null,
       "title": "安全中心",
       "icon": "security",
-      "route": "/profile/security",
-      "component": "security",
+      "routeid": "storesecurity",
       "order": 130,
       "entry": "identity.sessions.read",
       "permissions": [
@@ -1277,9 +1891,11 @@
         "identity.sessions.read"
       ],
       "requirements": [
-        "MVPMALLSUPPORT"
+        "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/profile/security",
+      "component": "security"
     },
     {
       "id": "storesupport",
@@ -1288,8 +1904,7 @@
       "parent": null,
       "title": "客服中心",
       "icon": "support",
-      "route": "/support",
-      "component": "support",
+      "routeid": "storesupport",
       "order": 140,
       "entry": "support.cases.read",
       "permissions": [
@@ -1301,7 +1916,9 @@
       "requirements": [
         "MVPMALLSUPPORT"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/support",
+      "component": "support"
     },
     {
       "id": "storesupportcase",
@@ -1310,8 +1927,7 @@
       "parent": null,
       "title": "客服会话",
       "icon": "support",
-      "route": "/support/:caseId",
-      "component": "supportcase",
+      "routeid": "storesupportcase",
       "order": 150,
       "entry": "support.messages.read",
       "permissions": [
@@ -1323,7 +1939,9 @@
       "requirements": [
         "MVPMALLSUPPORT"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/support/:caseId",
+      "component": "support"
     },
     {
       "id": "storenotifications",
@@ -1332,8 +1950,7 @@
       "parent": null,
       "title": "消息通知",
       "icon": "notification",
-      "route": "/notifications",
-      "component": "notifications",
+      "routeid": "storenotifications",
       "order": 160,
       "entry": "notification.notifications.read",
       "permissions": [
@@ -1345,7 +1962,9 @@
       "requirements": [
         "MVPMALLSETTING"
       ],
-      "empty": "hide"
+      "empty": "hide",
+      "route": "/notifications",
+      "component": "notification"
     }
   ]
 }

@@ -1,0 +1,108 @@
+.channeldialog {
+  display: grid;
+  gap: 16px;
+}
+
+.channeldialog > label,
+.channelgrid label,
+.channelreview label:not(.channelconfirm) {
+  display: grid;
+  gap: 7px;
+  color: var(--sw-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.channeldialog input,
+.channeldialog select,
+.channeldialog textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 8px;
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  font: inherit;
+}
+
+.channeldialog textarea {
+  min-height: 140px;
+  resize: vertical;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.channeldialog input:focus-visible,
+.channeldialog select:focus-visible,
+.channeldialog textarea:focus-visible {
+  outline: 2px solid var(--sw-focus);
+  outline-offset: 2px;
+  border-color: var(--sw-brand);
+}
+
+.channeldialog small {
+  color: var(--sw-muted);
+  font-weight: 400;
+}
+
+.channelgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.channelnotice {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  line-height: 1.6;
+}
+
+.channelreview {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--sw-border);
+  border-radius: 9px;
+  background: var(--sw-surface-subtle);
+}
+
+.channelreview h3,
+.channelreview p {
+  margin: 0;
+}
+
+.channelreview h3 {
+  font-size: 15px;
+}
+
+.channelconfirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-height: 44px;
+  color: var(--sw-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.channelconfirm input {
+  width: 18px;
+  min-height: 18px;
+  margin-top: 2px;
+}
+
+.channeldialogfooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+@media (max-width: 560px) {
+  .channelgrid { grid-template-columns: 1fr; }
+  .channeldialogfooter { align-items: stretch; flex-direction: column-reverse; }
+}

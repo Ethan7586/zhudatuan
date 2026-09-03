@@ -1,8 +1,10 @@
 import { PgTransactionAccess } from '../../../../adapter/database/PgTransactionAccess';
 import type { ReadTransactionContext, WriteTransactionContext } from '../../../../foundation/persistence/TransactionContext';
 import type { PaidFulfillment } from '../../public/PaidFulfillment';
+import type { FulfillmentOrderPort } from '../../../order/public';
 export class FulfillmentPort {
   private readonly transactions = new PgTransactionAccess();
+  constructor(private readonly orders: Pick<FulfillmentOrderPort, 'recordFulfillments'>) {}
   async reconciliation(context: ReadTransactionContext, references: readonly string[]) {
     const database = this.transactions.database(context);
     if (references.length === 0) return Object.freeze([]);
@@ -39,6 +41,19 @@ export class FulfillmentPort {
       on conflict do nothing`,
       [JSON.stringify(input.plans)]
     );
+    const current = await database.query<{
+      id: string;
+      provider: string | null;
+      partner: string | null;
+      kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
+      state: string;
+      externalReference: string | null;
+    }>(
+      `select id,provider,partner_id partner,kind,state,external_reference "externalReference"
+      from fulfillment.fulfillmentorder where order_id=$1 order by id`,
+      [input.order]
+    );
+    await this.orders.recordFulfillments(context, input.order, current.rows);
     return fulfillments.rows.map(({ id }) => id);
   }
 }

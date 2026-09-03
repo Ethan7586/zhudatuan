@@ -13,7 +13,6 @@ export const REPORTING_OPERATION_IDS = Object.freeze([
   "reporting.malls.read",
   "reporting.categories.read",
   "reporting.channels.read",
-  "reporting.powderclass.read",
   "reporting.voucherconsumption.read",
   "reporting.exports.create",
   "reporting.exports.read",
@@ -26,7 +25,6 @@ export interface ReportingOperations {
   readonly mallsRead: OperationMethod<"reporting.malls.read">;
   readonly categoriesRead: OperationMethod<"reporting.categories.read">;
   readonly channelsRead: OperationMethod<"reporting.channels.read">;
-  readonly powderclassRead: OperationMethod<"reporting.powderclass.read">;
   readonly voucherconsumptionRead: OperationMethod<"reporting.voucherconsumption.read">;
   readonly exportsCreate: OperationMethod<"reporting.exports.create">;
   readonly exportsRead: OperationMethod<"reporting.exports.read">;
@@ -41,7 +39,6 @@ export function createReportingOperations(client: OperationExecutor): ReportingO
     mallsRead: bindMallsRead(client),
     categoriesRead: bindCategoriesRead(client),
     channelsRead: bindChannelsRead(client),
-    powderclassRead: bindPowderclassRead(client),
     voucherconsumptionRead: bindVoucherconsumptionRead(client),
     exportsCreate: bindExportsCreate(client),
     exportsRead: bindExportsRead(client),
@@ -70,10 +67,6 @@ function bindCategoriesRead(client: OperationExecutor): OperationMethod<"reporti
 export function createFetchReportingChannelsRead(baseUrl: string): OperationMethod<"reporting.channels.read"> { return bindChannelsRead(new ApiClient(baseUrl, new FetchTransport())); }
 
 function bindChannelsRead(client: OperationExecutor): OperationMethod<"reporting.channels.read"> { return bindOperation(client, defineOperation({ ...{"id":"reporting.channels.read","method":"GET","path":"/api/v1/reports/channels","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("ReportingChannelsReadInput", [] as const, false), output: exactOperationOutput("ReportingChannelsReadOutput") })); }
-
-export function createFetchReportingPowderclassRead(baseUrl: string): OperationMethod<"reporting.powderclass.read"> { return bindPowderclassRead(new ApiClient(baseUrl, new FetchTransport())); }
-
-function bindPowderclassRead(client: OperationExecutor): OperationMethod<"reporting.powderclass.read"> { return bindOperation(client, defineOperation({ ...{"id":"reporting.powderclass.read","method":"GET","path":"/api/v1/reports/powderclass","audience":"console","targets":["console"],"responseMode":"json","idempotent":true,"timeout":500,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("ReportingPowderclassReadInput", [] as const, false), output: exactOperationOutput("ReportingPowderclassReadOutput") })); }
 
 export function createFetchReportingVoucherconsumptionRead(baseUrl: string): OperationMethod<"reporting.voucherconsumption.read"> { return bindVoucherconsumptionRead(new ApiClient(baseUrl, new FetchTransport())); }
 

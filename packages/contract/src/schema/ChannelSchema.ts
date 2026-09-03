@@ -64,6 +64,7 @@ const sync = strictObject({
   rejected_count: unsigned,
   started_at: nullableTime,
   completed_at: nullableTime,
+  version,
 });
 const providerOperation = strictObject({
   id: string(),

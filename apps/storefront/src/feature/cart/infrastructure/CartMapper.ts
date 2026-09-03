@@ -1,4 +1,4 @@
-import type { ProductView } from '../../../shared/runtime/StorefrontPort';
+import type { Product } from '../../../entity/product';
 import type { Cart } from '../model/Cart';
 
 interface CartValue {
@@ -6,7 +6,7 @@ interface CartValue {
   readonly items: readonly Readonly<{ listing: string; sku: string; quantity: number; version: number }>[];
 }
 
-export function mapCart(value: CartValue | undefined, products: readonly ProductView[], selection: ReadonlySet<string>): Cart {
+export function mapCart(value: CartValue | undefined, products: readonly Product[], selection: ReadonlySet<string>): Cart {
   const lines = (value?.items ?? []).flatMap((line) => {
     const product = products.find((item) => item.id === line.listing && item.skuId === line.sku);
     return product

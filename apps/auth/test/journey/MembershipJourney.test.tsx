@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { MembershipList } from '../../src/feature/membership/ui/MembershipList';
+import { MembershipList } from '../../src/feature/membership/view/MembershipList';
 import { membership } from '../TestData';
 
 describe('membership journey', () => {

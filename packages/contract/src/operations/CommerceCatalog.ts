@@ -698,7 +698,8 @@ const definitions = [
     "resourceParameter": null,
     "idempotent": true,
     "requirements": [
-      "MVPMALLSUPPORT"
+      "MVPMALLSUPPORT",
+      "MVPMALLSETTING"
     ]
   },
   {
@@ -5487,61 +5488,6 @@ const definitions = [
     ]
   },
   {
-    "id": "reporting.powderclass.read",
-    "method": "GET",
-    "path": "/api/v1/reports/powderclass",
-    "module": "reporting",
-    "audience": "console",
-    "targets": [
-      "console"
-    ],
-    "permission": "reporting.powderclass.read",
-    "capability": "reporting.powderclass.read",
-    "scopeKinds": [
-      "platform",
-      "distributor",
-      "tenant",
-      "enterprise",
-      "mall",
-      "department"
-    ],
-    "assuranceLevel": "session",
-    "makerChecker": false,
-    "originPolicy": "none",
-    "csrfPolicy": "none",
-    "responseMode": "json",
-    "cachePolicy": "none",
-    "targetPolicy": "exact",
-    "idempotencyPolicy": "none",
-    "requestSchema": "ReportingPowderclassReadInput",
-    "responseSchema": "ReportingPowderclassReadOutput",
-    "errorUnion": [
-      "AUTHENTICATION_REQUIRED",
-      "AUTHORIZATION_DENIED",
-      "CAPABILITY_DENIED",
-      "CONTRACT_VERSION_UNSUPPORTED",
-      "DEADLINE_EXCEEDED",
-      "INTERNAL_ERROR",
-      "PERMISSION_DENIED",
-      "RATE_LIMITED",
-      "SCOPE_DENIED",
-      "URL_SENSITIVE_DATA_FORBIDDEN",
-      "VALIDATION_FAILED"
-    ],
-    "idempotencyScope": "none",
-    "expectedVersion": "none",
-    "timeout": 500,
-    "rateClass": "read",
-    "risk": "low",
-    "resourceResolver": "reporting.resource",
-    "resourceParameter": null,
-    "idempotent": true,
-    "requirements": [
-      "MVPGROUPREPORT",
-      "MVPMALLREPORT"
-    ]
-  },
-  {
     "id": "reporting.voucherconsumption.read",
     "method": "GET",
     "path": "/api/v1/reports/voucherconsumption",
@@ -6944,6 +6890,63 @@ const definitions = [
     "idempotent": true,
     "requirements": [
       "MVPGROUPORDER",
+      "MVPMALLORDER"
+    ]
+  },
+  {
+    "id": "order.aftersaleattachments.create",
+    "method": "POST",
+    "path": "/api/v1/orders/{orderid}/aftersale-attachments",
+    "module": "order",
+    "audience": "storefront",
+    "targets": [
+      "storefront"
+    ],
+    "permission": "order.aftersale.apply",
+    "capability": "order.aftersaleattachments.create",
+    "scopeKinds": [
+      "owner"
+    ],
+    "assuranceLevel": "session",
+    "makerChecker": false,
+    "originPolicy": "sameorigin",
+    "csrfPolicy": "required",
+    "responseMode": "json",
+    "cachePolicy": "none",
+    "targetPolicy": "exact",
+    "idempotencyPolicy": "required",
+    "requestSchema": "OrderAftersaleattachmentsCreateInput",
+    "responseSchema": "OrderAftersaleattachmentsCreateOutput",
+    "errorUnion": [
+      "AUTHENTICATION_REQUIRED",
+      "AUTHORIZATION_DENIED",
+      "CAPABILITY_DENIED",
+      "CONTENT_TYPE_UNSUPPORTED",
+      "CONTRACT_VERSION_UNSUPPORTED",
+      "CSRF_TOKEN_INVALID",
+      "DEADLINE_EXCEEDED",
+      "IDEMPOTENCY_CONFLICT",
+      "IDEMPOTENCY_KEY_REQUIRED",
+      "INTERNAL_ERROR",
+      "ORDER_AFTERSALE_NOT_ALLOWED",
+      "ORIGIN_REQUIRED",
+      "PERMISSION_DENIED",
+      "RATE_LIMITED",
+      "REQUEST_BODY_TOO_LARGE",
+      "REQUEST_JSON_INVALID",
+      "SCOPE_DENIED",
+      "URL_SENSITIVE_DATA_FORBIDDEN",
+      "VALIDATION_FAILED"
+    ],
+    "idempotencyScope": "actor-operation-scope",
+    "expectedVersion": "none",
+    "timeout": 800,
+    "rateClass": "write",
+    "risk": "elevated",
+    "resourceResolver": "order.resource",
+    "resourceParameter": "orderid",
+    "idempotent": false,
+    "requirements": [
       "MVPMALLORDER"
     ]
   },
@@ -9103,8 +9106,9 @@ const definitions = [
     "method": "GET",
     "path": "/api/v1/vouchers/bindings",
     "module": "voucher",
-    "audience": "storefront",
+    "audience": "public",
     "targets": [
+      "console",
       "storefront"
     ],
     "permission": "voucher.binding.read",
@@ -9231,14 +9235,25 @@ const definitions = [
     "method": "GET",
     "path": "/api/v1/vouchers/redemptions",
     "module": "voucher",
-    "audience": "storefront",
+    "audience": "public",
     "targets": [
+      "console",
       "storefront"
     ],
     "permission": "voucher.redemption.read",
     "capability": "voucher.redemptions.read",
     "scopeKinds": [
-      "owner"
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "supplier",
+      "brand",
+      "store",
+      "owner",
+      "self"
     ],
     "assuranceLevel": "mfa",
     "makerChecker": false,
@@ -14810,6 +14825,8 @@ const definitions = [
       "CONTRACT_VERSION_UNSUPPORTED",
       "CSRF_TOKEN_INVALID",
       "DEADLINE_EXCEEDED",
+      "EXPECTED_VERSION_INVALID",
+      "EXPECTED_VERSION_REQUIRED",
       "IDEMPOTENCY_CONFLICT",
       "IDEMPOTENCY_KEY_REQUIRED",
       "INTERNAL_ERROR",
@@ -14824,7 +14841,7 @@ const definitions = [
       "VALIDATION_FAILED"
     ],
     "idempotencyScope": "actor-operation-scope",
-    "expectedVersion": "none",
+    "expectedVersion": "required",
     "timeout": 800,
     "rateClass": "critical",
     "risk": "critical",

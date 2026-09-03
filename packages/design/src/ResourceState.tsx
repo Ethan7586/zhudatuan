@@ -10,6 +10,8 @@ export interface ResourceStateProps {
   readonly condition: ResourceCondition;
   readonly error?: string;
   readonly retry?: () => void;
+  readonly emptyTitle?: string;
+  readonly emptyMessage?: string;
   readonly children: ReactNode;
 }
 
@@ -19,7 +21,7 @@ export function resourceCondition(data: unknown, rowCount: number, error?: strin
   return rowCount === 0 ? 'empty' : 'ready';
 }
 
-export function ResourceState({ condition, error, retry, children }: ResourceStateProps) {
+export function ResourceState({ condition, error, retry, emptyTitle = '暂无数据', emptyMessage = '当前范围内没有符合条件的记录。', children }: ResourceStateProps) {
   if (condition === 'ready') return children;
   if (condition === 'loading')
     return (
@@ -27,7 +29,7 @@ export function ResourceState({ condition, error, retry, children }: ResourceSta
         正在加载…
       </p>
     );
-  if (condition === 'empty') return <Empty title="暂无数据" description="当前范围内没有符合条件的记录。" />;
+  if (condition === 'empty') return <Empty title={emptyTitle} description={emptyMessage} />;
   if (condition === 'refreshing') return <BusyState label="正在刷新最新数据…">{children}</BusyState>;
   if (condition === 'retry') return <BusyState label="正在重试…">{children}</BusyState>;
   if (condition === 'stale') {

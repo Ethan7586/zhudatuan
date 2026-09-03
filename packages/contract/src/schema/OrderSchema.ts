@@ -18,6 +18,74 @@ const line = strictObject({
   provider: union([string(), nullSchema()]),
   partner: union([string(), nullSchema()]),
 });
+const address = strictObject({
+  recipientMasked: string(),
+  mobileMasked: string(),
+  addressMasked: string(),
+  regionCode: string(),
+});
+const paymentTender = strictObject({
+  sequence: unsigned,
+  kind: literal(['wechat', 'benefit', 'voucher']),
+  referenceMasked: union([string(), nullSchema()]),
+  amountMinor: unsigned,
+  state: literal(['planned', 'held', 'captured', 'released']),
+});
+const paymentDetail = strictObject({
+  paymentId: union([string(), nullSchema()]),
+  capturedMinor: unsigned,
+  refundedMinor: unsigned,
+  refundableMinor: unsigned,
+  updatedAt: union([isoUtc, nullSchema()]),
+  tenders: array(paymentTender),
+});
+const fulfillmentMilestone = strictObject({
+  id: string(),
+  kind: string(),
+  state: string(),
+  trackingMasked: union([string(), nullSchema()]),
+  occurredAt: isoUtc,
+});
+const fulfillmentDetail = strictObject({
+  id: string(),
+  provider: union([string(), nullSchema()]),
+  partner: union([string(), nullSchema()]),
+  kind: literal(['shipment', 'delivery', 'pickup', 'service', 'digital']),
+  state: literal(['pending', 'submitted', 'accepted', 'processing', 'ready', 'completed', 'cancelled', 'failed']),
+  externalReferenceMasked: union([string(), nullSchema()]),
+  createdAt: isoUtc,
+  updatedAt: isoUtc,
+  milestones: array(fulfillmentMilestone),
+});
+const refundTender = strictObject({
+  sequence: unsigned,
+  kind: literal(['wechat', 'benefit', 'voucher']),
+  referenceMasked: union([string(), nullSchema()]),
+  amountMinor: unsigned,
+  state: literal(['planned', 'processing', 'succeeded', 'failed']),
+});
+const refundDetail = strictObject({
+  id: string(),
+  aftersaleId: union([string(), nullSchema()]),
+  provider: string(),
+  providerReferenceMasked: string(),
+  amountMinor: unsigned,
+  currency,
+  state: literal(['requested', 'submitted', 'processing', 'succeeded', 'failed', 'cancelled']),
+  reason: string(),
+  createdAt: isoUtc,
+  updatedAt: isoUtc,
+  tenders: array(refundTender),
+});
+const auditTimeline = strictObject({
+  id: string(),
+  action: string(),
+  resourceType: string(),
+  resourceMasked: union([string(), nullSchema()]),
+  actorMasked: string(),
+  occurredAt: isoUtc,
+  traceMasked: string(),
+});
 const order = strictObject({
   id: string(),
   order_number: string(),
@@ -31,7 +99,12 @@ const order = strictObject({
   fulfillment_state: string(),
   aftersale_state: string(),
   lifecycle_state: string(),
-  evidence: ContractJsonValueSchema,
+  address: union([address, nullSchema()]),
+  payment: paymentDetail,
+  fulfillments: array(fulfillmentDetail),
+  refunds: array(refundDetail),
+  timeline: array(auditTimeline),
+  receivedAt: union([isoUtc, nullSchema()]),
   created_at: isoUtc,
   updated_at: isoUtc,
   version,
@@ -144,17 +217,19 @@ export const ORDER_BODY_SCHEMAS = {
   OrderOrdersCreateInput: strictObject({ quoteId: string(), paymentScene: literal(['miniapp', 'jsapi']) }),
   OrderRemindersCreateInput: strictObject({}),
   OrderOrdersExportInput: strictObject({ order: optional(string()), placed: optional(string()), lifecycle: optional(string()), payment: optional(string()), fulfillment: optional(string()), mall: optional(string()) }),
+  OrderAftersaleattachmentsCreateInput: strictObject({
+    name: string(),
+    contentType: literal(['image/jpeg', 'image/png', 'application/pdf']),
+    sizeBytes: unsigned,
+    sha256: string(),
+  }),
   OrderAftersalesApplyInput: strictObject({
     lines: array(strictObject({ lineId: string(), quantity: unsigned })),
     reason: string(),
     description: string(),
     attachments: optional(
       array(
-        strictObject({
-          name: string(),
-          contentType: literal(['image/jpeg', 'image/png', 'application/pdf']),
-          data: string(),
-        })
+        strictObject({ objectId: string(), name: string(), contentType: literal(['image/jpeg', 'image/png', 'application/pdf']), sizeBytes: unsigned, sha256: string() })
       )
     ),
   }),
@@ -197,6 +272,10 @@ export const ORDER_OUTPUT_SCHEMAS = {
   OrderRemindersCreateOutput: strictObject({ id: string(), order_id: string(), member_id: string(), kind: literal('fulfillment'), state: literal('queued'), created_at: isoUtc }),
   OrderOrdersExportOutput: exportResult,
   OrderAftersalesReadOutput: strictObject({ items: array(aftersale), count: unsigned, nextCursor: optional(string()), availableLines: array(availableLine) }),
+  OrderAftersaleattachmentsCreateOutput: strictObject({
+    objectId: string(),
+    upload: strictObject({ url: string(), method: literal('PUT'), headers: record(string(), string()), expiresAt: isoUtc }),
+  }),
   OrderAftersalesApplyOutput: strictObject({ id: string(), orderId: string(), state: literal('reviewing'), expectedRefundMinor: unsigned, currency, requiresReturn: boolean(), createdAt: isoUtc, updatedAt: isoUtc, version }),
   OrderAftersalesApproveOutput: strictObject({ id: string(), orderId: string(), state: literal(['approved', 'refunding']), version, updatedAt: isoUtc }),
   OrderAftersalesRejectOutput: strictObject({ id: string(), orderId: string(), state: literal('rejected'), version, updatedAt: isoUtc }),

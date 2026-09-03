@@ -4,20 +4,27 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { readAccess } from './settings/access/AccessQuery';
-import { readExperiences } from './experience/ExperienceQuery';
-import { readChannels } from './channel/ChannelQuery';
-import { readFinanceProfessional } from './finance/FinanceProfessionalQuery';
+import { ExperienceGateway } from './experience/infrastructure/ExperienceGateway';
+import { ChannelGateway } from './channel/infrastructure/ChannelGateway';
+import { FinanceGateway } from './finance/infrastructure/FinanceGateway';
 import { readImport } from './product/importing/ImportQuery';
 import { readMembers } from './settings/member/MemberQuery';
 import { readNotificationRecords } from './settings/notification/NotificationQuery';
-import { readOrderDetail } from './order/OrderDetailQuery';
+import { OrderGateway } from './order/infrastructure/OrderGateway';
 import { readQualifications } from './settings/qualification/QualificationQuery';
-import { readReport } from './reporting/ReportingQuery';
+import { ReportingGateway } from './reporting/infrastructure/ReportingGateway';
 import { SupportGateway } from './support/infrastructure/SupportGateway';
-import { readVouchers } from './voucher/VoucherQuery';
+import { appConfig } from '../shared/config/AppConfig';
+import { VoucherGateway } from './voucher/infrastructure/VoucherGateway';
 
 const requests: string[] = [];
-const support = new SupportGateway();
+const support = new SupportGateway({ apiBaseUrl: appConfig.apiBaseUrl });
+const voucher = new VoucherGateway(appConfig.apiBaseUrl);
+const reporting = new ReportingGateway(appConfig.apiBaseUrl);
+const channel = new ChannelGateway(appConfig.apiBaseUrl);
+const orders = new OrderGateway(appConfig.apiBaseUrl);
+const experience = new ExperienceGateway(appConfig.apiBaseUrl);
+const finance = new FinanceGateway(appConfig.apiBaseUrl);
 const empty = { items: [], count: 0 };
 const importJob = {
   id: 'job:1',
@@ -65,9 +72,9 @@ describe('Console professional named reads', () => {
   it('closes every professional read through an explicit scoped SDK method', async () => {
     const signal = new AbortController().signal;
     await Promise.all([
-      readExperiences(context, undefined, signal),
-      ...(['libraries', 'programs', 'reserves', 'batches'] as const).map((view) => readVouchers(context, view, undefined, signal)),
-      ...(['sales', 'products', 'malls', 'categories', 'channels', 'powderclass', 'voucher'] as const).map((view) => readReport(context, view, '30days', undefined, signal)),
+      experience.applications(context, undefined, signal),
+      ...(['libraries', 'programs', 'reserves', 'batches'] as const).map((view) => voucher.read(context, view, undefined, signal)),
+      ...(['sales', 'products', 'malls', 'categories', 'channels', 'voucher'] as const).map((view) => reporting.read(context, { view, period: '30days' }, signal)),
       support.queue(context, { limit: 50 }, signal),
       support.conversation(context, 'case:1', undefined, signal),
       readAccess(context, undefined, signal),
@@ -75,12 +82,12 @@ describe('Console professional named reads', () => {
       readQualifications(context, undefined, signal),
       readNotificationRecords(context, 'templates', undefined, signal),
       readNotificationRecords(context, 'announcements', undefined, signal),
-      ...(['connections', 'syncs', 'operations'] as const).map((view) => readChannels(context, view, undefined, signal)),
-      ...(['entries', 'statements', 'reconciliations', 'settlements', 'withdrawals', 'invoices'] as const).map((section) => readFinanceProfessional(context, section, undefined, signal)),
+      ...(['connections', 'syncs', 'operations'] as const).map((view) => channel.read(context, view, undefined, signal)),
+      ...(['entries', 'statements', 'reconciliations', 'settlements', 'withdrawals', 'invoices'] as const).map((section) => finance.section(context, section, undefined, signal)),
       readImport(context, 'member', 'job:1', signal),
       readImport(context, 'catalog', 'job:1', signal),
       readImport(context, 'voucher', 'job:1', signal),
-      readOrderDetail(context, 'order:1', signal),
+      orders.order(context, 'order:1', signal),
     ]);
     expect([...requests].sort()).toEqual([...expectedPaths].sort());
   });
@@ -93,7 +100,7 @@ describe('Console professional named reads', () => {
       })
     );
     const controller = new AbortController();
-    const pending = readReport(context, 'channels', '30days', undefined, controller.signal);
+    const pending = reporting.read(context, { view: 'channels', period: '30days' }, controller.signal);
     controller.abort(new Error('SCOPE_CHANGED'));
     await expect(pending).rejects.toThrow();
   });
@@ -110,7 +117,6 @@ const expectedPaths = [
   '/api/v1/reports/malls',
   '/api/v1/reports/categories',
   '/api/v1/reports/channels',
-  '/api/v1/reports/powderclass',
   '/api/v1/reports/voucherconsumption',
   '/api/v1/support/cases',
   '/api/v1/support/cases/case%3A1/messages',

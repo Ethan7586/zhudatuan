@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useSession } from '../shared/runtime/SessionContext';
+import { useSession } from '../entity/session/viewmodel/SessionContext';
 import { storefrontAuthHref } from '../config/storefrontAuth';
 
 export function Guard({ children }: { readonly children: ReactNode }) {

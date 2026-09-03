@@ -1,8 +1,9 @@
 import type { ComponentType } from 'react';
 import { COMPONENT_KEYS, NAVIGATION_IDS, type ComponentKey, type NavigationId } from '../../generated/NavigationBinding';
+import { ROUTES, type RouteId } from '../../generated/RouteBinding';
 
 export interface ComponentRoute {
-  readonly route: string;
+  readonly routeid: RouteId;
   readonly load?: () => Promise<{ Component: ComponentType }>;
 }
 
@@ -35,10 +36,8 @@ export function defineComponent(definition: ComponentManifest): ComponentManifes
     if (!NAVIGATION_IDS.includes(id)) throw new Error(`COMPONENT_NAVIGATION_INVALID:${id}`);
   }
   if (definition.routes.length === 0) throw new Error(`COMPONENT_ROUTE_MISSING:${definition.component}`);
-  for (const { route } of definition.routes) {
-    if (!/^[a-z][a-z0-9]*(?:\/:?[a-z][A-Za-z0-9]*)*$/.test(route)) {
-      throw new Error(`COMPONENT_ROUTE_INVALID:${definition.component}:${route}`);
-    }
+  for (const { routeid } of definition.routes) {
+    if (!(routeid in ROUTES)) throw new Error(`COMPONENT_ROUTE_INVALID:${definition.component}:${routeid}`);
   }
   return Object.freeze({
     component: definition.component,

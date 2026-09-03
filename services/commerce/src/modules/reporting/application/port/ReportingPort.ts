@@ -1,16 +1,17 @@
 import type { ExportJob, ExportReport, ExportRow } from '../../domain/model/ExportJob';
-import type { CockpitSummary, Metric, MetricQuery, MetricRow } from '../../domain/model/Metric';
+import type { CockpitSummary, Metric, MetricQuery, MetricRow, ReportPeriod } from '../../domain/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../../domain/model/Projection';
 
 export interface ReportingPort {
   metrics(query: MetricQuery): Promise<readonly MetricRow[]>;
-  cockpit(scope: string): Promise<CockpitSummary>;
+  cockpit(scope: string, period: ReportPeriod, application: string | null): Promise<CockpitSummary>;
   export(id: string, scope: string): Promise<ExportJob | null>;
   createExport(input: Readonly<{ id: string; scope: string; report: ExportReport; filter: Readonly<Record<string, unknown>>; actor: string; membership: string; trace: string }>): Promise<ExportJob>;
   createRequestedExport(event: ProjectionEvent): Promise<void>;
   claimEvent(event: string): Promise<ProjectionEvent | null>;
   period(occurredAt: string, timezone: string): Promise<Readonly<{ from: string; to: string }>>;
   addMetrics(metrics: readonly Metric[]): Promise<void>;
+  orderApplication(order: string): Promise<string>;
   createOrder(projection: OrderProjection): Promise<void>;
   payOrder(order: string, amountMinor: number, currency: string, snapshot: Readonly<Record<string, unknown>>, watermark: string): Promise<void>;
   cancelOrder(order: string, watermark: string): Promise<void>;

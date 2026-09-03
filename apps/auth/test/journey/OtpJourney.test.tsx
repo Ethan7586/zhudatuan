@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { OtpForm } from '../../src/feature/login/ui/OtpForm';
+import { OtpForm } from '../../src/feature/login/view/OtpForm';
 import { actionFailure, actionSuccess } from '../../src/shared/ui/ActionResult';
 
 describe('OTP journey', () => {

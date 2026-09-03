@@ -1,9 +1,10 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { CheckoutGateway } from '../infrastructure/CheckoutGateway';
 import { mapQuote } from '../infrastructure/CheckoutMapper';
 import type { Quote } from '../model/Quote';
 
 export class CreateQuote {
+  constructor(private readonly gateway: Pick<CheckoutGateway, 'quote'>) {}
   async execute(
     session: StorefrontSession,
     input: Readonly<{
@@ -14,7 +15,7 @@ export class CreateQuote {
       paymentScene: 'miniapp' | 'jsapi';
     }>
   ): Promise<Quote> {
-    const value = await CheckoutGateway.quote(
+    const value = await this.gateway.quote(
       session,
       {
         cartVersion: input.cartVersion,

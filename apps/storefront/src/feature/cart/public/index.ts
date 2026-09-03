@@ -1,2 +1,2 @@
-export { useCartCommand } from './CartCommand';
-export { useCartRuntime } from './CartReader';
+export { useCartCommand } from '../viewmodel/CartCommandViewModel';
+export { useCartViewModel } from './CartReader';

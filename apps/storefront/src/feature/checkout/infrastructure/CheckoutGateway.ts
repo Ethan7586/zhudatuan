@@ -1,8 +1,13 @@
-import { storefrontClient } from '../../../shared/api/Client';
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontClient } from '../../../shared/api/Client';
+import type { StorefrontSession } from '../../../entity/session';
 import type { ContractJsonValue } from '@shop/contract';
 
-export const CheckoutGateway = Object.freeze({
+export class CheckoutGateway {
+  constructor(
+    private readonly checkout: StorefrontClient['commerce']['checkout'],
+    private readonly order: StorefrontClient['commerce']['order'],
+    private readonly context: StorefrontClient['context']
+  ) {}
   quote(
     session: StorefrontSession,
     body: Readonly<{
@@ -17,12 +22,12 @@ export const CheckoutGateway = Object.freeze({
     }>,
     idempotencyKey: string
   ) {
-    return storefrontClient.commerce.checkout.quoteCreate({ body }, storefrontClient.context(session, { write: true, idempotencyKey }));
-  },
+    return this.checkout.quoteCreate({ body }, this.context(session, { write: true, idempotencyKey }));
+  }
   current(session: StorefrontSession, signal?: AbortSignal) {
-    return storefrontClient.commerce.checkout.quotesCurrentRead({}, storefrontClient.context(session, { signal }));
-  },
+    return this.checkout.quotesCurrentRead({}, this.context(session, { signal }));
+  }
   commit(session: StorefrontSession, quoteId: string, paymentScene: 'miniapp' | 'jsapi', idempotencyKey: string) {
-    return storefrontClient.commerce.order.ordersCreate({ body: { quoteId, paymentScene } }, storefrontClient.context(session, { write: true, idempotencyKey }));
-  },
-});
+    return this.order.ordersCreate({ body: { quoteId, paymentScene } }, this.context(session, { write: true, idempotencyKey }));
+  }
+}

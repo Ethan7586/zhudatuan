@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { InvitationForm } from '../../src/feature/invitation/ui/InvitationForm';
+import { InvitationForm } from '../../src/feature/invitation/view/InvitationForm';
 
 describe('invitation journey', () => {
   it('submits an invitation outside URL and persistent storage and clears it immediately', async () => {

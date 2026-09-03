@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
 
-import type { DataColumn } from '../../../shared/ui/DataTable';
+import type { DataColumn } from '@shop/design';
 import { formatDate } from '../../../shared/ui/Format';
 import { PagedResource } from '../../../shared/ui/PagedResource';
 import { pageCursor } from '../../../shared/url/PageCursor';

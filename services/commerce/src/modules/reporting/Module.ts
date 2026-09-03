@@ -8,7 +8,6 @@ import { ProductsReadHandler } from './application/handler/ProductsReadHandler';
 import { MallsReadHandler } from './application/handler/MallsReadHandler';
 import { CategoriesReadHandler } from './application/handler/CategoriesReadHandler';
 import { ChannelsReadHandler } from './application/handler/ChannelsReadHandler';
-import { PowderClassReadHandler } from './application/handler/PowderClassReadHandler';
 import { VoucherConsumptionReadHandler } from './application/handler/VoucherConsumptionReadHandler';
 import { ExportsCreateHandler } from './application/handler/ExportsCreateHandler';
 import { ExportsReadHandler } from './application/handler/ExportsReadHandler';
@@ -32,7 +31,6 @@ export const ReportingModule = defineModule(Manifest, {
       new MallsReadHandler(metrics),
       new CategoriesReadHandler(metrics),
       new ChannelsReadHandler(metrics),
-      new PowderClassReadHandler(metrics),
       new VoucherConsumptionReadHandler(metrics),
       new ExportsCreateHandler(reports, new PgJobScheduler(transactions)),
       new ExportsReadHandler(reports, context.service(OBJECT_STORE)),

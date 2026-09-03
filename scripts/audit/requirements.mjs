@@ -157,7 +157,7 @@ function checkMvp() {
     if (record.status === 'Released') checkSignedEvidence(record.releaseEvidence, location);
   });
   const blockers = records.flatMap((record) => (record.releaseBlockers ?? []).map((blocker) => ({ requirement: record.id, ...blocker })));
-  const expected = ['MVPGROUPSETTING', 'MVPGROUPVOUCHER', 'MVPMALLREPORT', 'MVPMALLVOUCHER'];
+  const expected = ['MVPGROUPSETTING', 'MVPGROUPVOUCHER', 'MVPMALLVOUCHER'];
   if (
     blockers
       .map(({ requirement }) => requirement)

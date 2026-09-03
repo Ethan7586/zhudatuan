@@ -1,4 +1,4 @@
-import type { AddressView } from '../../../shared/runtime/StorefrontPort';
+import type { Address } from '../../account/model/Address';
 import type { OrderLine } from './OrderLine';
 import type { Timeline } from './Timeline';
 
@@ -22,6 +22,6 @@ export interface Order {
   readonly lifecycleState: string;
   readonly lines: readonly OrderLine[];
   readonly timeline: readonly Timeline[];
-  readonly address?: AddressView;
+  readonly address?: Address;
   readonly version: number;
 }

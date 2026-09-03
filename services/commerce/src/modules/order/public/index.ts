@@ -31,7 +31,40 @@ export interface PaymentOrderPort {
   markAuthorizing(context: WriteTransactionContext, order: string): Promise<void>;
   resetPayment(context: WriteTransactionContext, order: string): Promise<void>;
   markRefunded(context: WriteTransactionContext, input: Readonly<{ order: string; refundedMinor: number; capturedMinor: number; aftersale: string | null }>): Promise<void>;
+  recordPayment(
+    context: WriteTransactionContext,
+    input: Readonly<{
+      order: string;
+      payment: string;
+      currency: string;
+      capturedMinor: number;
+      refundedMinor: number;
+      state: string;
+      tenders: readonly OrderPaymentTender[];
+    }>
+  ): Promise<void>;
+  recordPaymentRefund(context: WriteTransactionContext, order: string, refundedMinor: number, capturedMinor: number): Promise<void>;
+  recordRefund(context: WriteTransactionContext, input: OrderRefundProjection): Promise<void>;
   fulfillment(context: ReadTransactionContext, order: string): Promise<readonly OrderFulfillmentPlan[]>;
+}
+export interface OrderPaymentTender {
+  readonly sequence: number;
+  readonly kind: 'wechat' | 'benefit' | 'voucher';
+  readonly reference: string | null;
+  readonly amountMinor: number;
+  readonly state: string;
+}
+export interface OrderRefundProjection {
+  readonly id: string;
+  readonly order: string;
+  readonly aftersale: string | null;
+  readonly provider: string;
+  readonly providerReference: string;
+  readonly amountMinor: number;
+  readonly currency: string;
+  readonly state: string;
+  readonly reason: string;
+  readonly tenders: readonly OrderPaymentTender[];
 }
 export interface PaymentJobOrderPort {
   markLatePaid(context: WriteTransactionContext, order: string): Promise<void>;
@@ -70,6 +103,23 @@ export interface FulfillmentOrderPort {
   markReceived(context: WriteTransactionContext, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
   markRefunding(context: WriteTransactionContext, aftersale: string, returns: readonly AfterSaleReturnEvidence[], actor: string): Promise<void>;
   recordInspection(context: WriteTransactionContext, aftersale: string, returned: string, accepted: boolean, actor: string): Promise<void>;
+  recordFulfillments(context: WriteTransactionContext, order: string, items: readonly OrderFulfillmentProjection[]): Promise<void>;
+  recordFulfillmentMilestones(context: WriteTransactionContext, order: string, fulfillment: string, items: readonly OrderFulfillmentMilestone[]): Promise<void>;
+}
+export interface OrderFulfillmentProjection {
+  readonly id: string;
+  readonly provider: string | null;
+  readonly partner: string | null;
+  readonly kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
+  readonly state: string;
+  readonly externalReference: string | null;
+}
+export interface OrderFulfillmentMilestone {
+  readonly id: string;
+  readonly kind: string;
+  readonly state: string;
+  readonly tracking: string | null;
+  readonly occurredAt: string;
 }
 export interface OrderFulfillmentLine {
   readonly line: string;

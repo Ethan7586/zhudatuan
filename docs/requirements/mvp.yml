@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: b8343568dfbc696dca3f28be27cc8ca98e941ceee88799fc3975e2dbceb9b40d
-contractSha256: 2014f2b58ebfa2f3e15d047dd2b94705e9d32966979b9c3a9b8d3d6c9a624ca5
+navigationCatalogSha256: 5191a956ebfa896847411843c07115759b1e36c5b1943272798008172ea3f6d5
+contractSha256: 3e4d5a0dad5ad2742b167cd1a30486a56969a4dc4d78ba4c6d7dff44229fa7bb
 generated: true
 count: 22
 requirements:
@@ -35,10 +35,17 @@ requirements:
       - platformvoucher
       - groupcontrol
       - mallcontrol
-    applicationRoutes: []
+    routeids:
+      - consolecontrol
+      - consoleproductdetail
+      - consoleproductimport
+      - consoleproducts
+      - consolevouchers
     routes:
       - /scopes/:scopeKind/:scopeId/control
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/products
+      - /scopes/:scopeKind/:scopeId/products/:productId
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
       - catalog.pools.read
@@ -210,7 +217,7 @@ requirements:
     journeyTest: tests/journey/PlatformJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: docs/evidence/releases/MVPPLATFORM.json
+    releaseEvidence: evidence/releases/MVPPLATFORM.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -237,10 +244,14 @@ requirements:
       - distributioncontrol
       - groupreferral
       - mallreferral
-    applicationRoutes: []
+    routeids:
+      - consolecontrol
+      - consolereferral
+      - consolereferralview
     routes:
       - /scopes/:scopeKind/:scopeId/control
       - /scopes/:scopeKind/:scopeId/referral
+      - /scopes/:scopeKind/:scopeId/referral/:view
     directOperations:
       - channel.distributors.read
     transitiveOperations:
@@ -449,7 +460,7 @@ requirements:
     journeyTest: tests/journey/DistributionJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: docs/evidence/releases/MVPDISTRIBUTION.json
+    releaseEvidence: evidence/releases/MVPDISTRIBUTION.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -476,7 +487,8 @@ requirements:
     clarifications: []
     navigation:
       - groupdashboard
-    applicationRoutes: []
+    routeids:
+      - consolecockpit
     routes:
       - /scopes/:scopeKind/:scopeId/cockpit
     directOperations:
@@ -629,7 +641,7 @@ requirements:
     journeyTest: tests/journey/GroupDashboardJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/projection.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPDASHBOARD.json
+    releaseEvidence: evidence/releases/MVPGROUPDASHBOARD.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -653,7 +665,8 @@ requirements:
     clarifications: []
     navigation:
       - groupapplication
-    applicationRoutes: []
+    routeids:
+      - consoleexperience
     routes:
       - /scopes/:scopeKind/:scopeId/experience
     directOperations:
@@ -827,7 +840,7 @@ requirements:
     journeyTest: tests/journey/MallEntryJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/experiencepublish.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPAPPLICATION.json
+    releaseEvidence: evidence/releases/MVPGROUPAPPLICATION.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -857,9 +870,14 @@ requirements:
     clarifications: []
     navigation:
       - groupproduct
-    applicationRoutes: []
+    routeids:
+      - consoleproductdetail
+      - consoleproductimport
+      - consoleproducts
     routes:
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/products
+      - /scopes/:scopeKind/:scopeId/products/:productId
     directOperations:
       - catalog.pools.read
     transitiveOperations:
@@ -1043,7 +1061,7 @@ requirements:
     journeyTest: tests/journey/GroupProductJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPPOOL.json
+    releaseEvidence: evidence/releases/MVPGROUPPOOL.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -1067,9 +1085,12 @@ requirements:
     clarifications: []
     navigation:
       - grouporder
-    applicationRoutes: []
+    routeids:
+      - consoleorderdetail
+      - consoleorders
     routes:
       - /scopes/:scopeKind/:scopeId/orders
+      - /scopes/:scopeKind/:scopeId/orders/:orderId
     directOperations:
       - order.orders.read
     transitiveOperations:
@@ -1243,7 +1264,7 @@ requirements:
     journeyTest: tests/journey/GroupOrderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/fulfillment.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPORDER.json
+    releaseEvidence: evidence/releases/MVPGROUPORDER.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -1273,7 +1294,8 @@ requirements:
       - voucherarchive
     navigation:
       - groupvoucher
-    applicationRoutes: []
+    routeids:
+      - consolevouchers
     routes:
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
@@ -1463,7 +1485,7 @@ requirements:
     journeyTest: tests/journey/GroupVoucherJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/benefitgrant.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPVOUCHER.json
+    releaseEvidence: evidence/releases/MVPGROUPVOUCHER.json
     releaseBlockers:
       - &a1
         id: voucherarchive
@@ -1504,9 +1526,22 @@ requirements:
     clarifications: []
     navigation:
       - groupfinance
-    applicationRoutes: []
+    routeids:
+      - consolefinance
+      - consolefinanceentry
+      - consolefinanceinvoice
+      - consolefinancereconciliation
+      - consolefinancesettlement
+      - consolefinancestatement
+      - consolefinancewithdrawal
     routes:
       - /scopes/:scopeKind/:scopeId/finance
+      - /scopes/:scopeKind/:scopeId/finance/entries
+      - /scopes/:scopeKind/:scopeId/finance/invoices
+      - /scopes/:scopeKind/:scopeId/finance/reconciliations
+      - /scopes/:scopeKind/:scopeId/finance/settlements
+      - /scopes/:scopeKind/:scopeId/finance/statements
+      - /scopes/:scopeKind/:scopeId/finance/withdrawals
     directOperations:
       - finance.overview.read
     transitiveOperations:
@@ -1722,7 +1757,7 @@ requirements:
     journeyTest: tests/journey/GroupFinanceJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/reconciliation.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPFINANCE.json
+    releaseEvidence: evidence/releases/MVPGROUPFINANCE.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -1749,7 +1784,8 @@ requirements:
     clarifications: []
     navigation:
       - groupreporting
-    applicationRoutes: []
+    routeids:
+      - consolereporting
     routes:
       - /scopes/:scopeKind/:scopeId/reporting
     directOperations:
@@ -1801,7 +1837,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.voucherconsumption.read
       - runtime.health.dependency
@@ -1861,7 +1896,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.sales.read
       - reporting.voucherconsumption.read
@@ -1918,7 +1952,7 @@ requirements:
     journeyTest: tests/journey/GroupReportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/export.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPREPORT.json
+    releaseEvidence: evidence/releases/MVPGROUPREPORT.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -1945,9 +1979,12 @@ requirements:
     clarifications: []
     navigation:
       - groupsupport
-    applicationRoutes: []
+    routeids:
+      - consolesupport
+      - consolesupportcase
     routes:
       - /scopes/:scopeKind/:scopeId/support
+      - /scopes/:scopeKind/:scopeId/support/:caseId
     directOperations:
       - support.cases.read
     transitiveOperations:
@@ -2143,7 +2180,7 @@ requirements:
     journeyTest: tests/journey/GroupSupportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/supportsla.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPSUPPORT.json
+    releaseEvidence: evidence/releases/MVPGROUPSUPPORT.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -2177,20 +2214,32 @@ requirements:
       - groupmemberdata
       - groupinvitation
       - grouppartner
+      - groupqualification
       - groupmessage
       - grouprisk
       - groupprovider
       - groupdirectory
-    applicationRoutes: []
+    routeids:
+      - consoleaccess
+      - consoledirectory
+      - consolefederation
+      - consoleinvitations
+      - consolemembers
+      - consolenotifications
+      - consolepartners
+      - consolequalification
+      - consolerisk
+      - consolesettings
     routes:
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/directory
+      - /scopes/:scopeKind/:scopeId/settings/federation
       - /scopes/:scopeKind/:scopeId/settings/invitations
-      - /scopes/:scopeKind/:scopeId/settings/login
       - /scopes/:scopeKind/:scopeId/settings/members
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/partners/qualifications
       - /scopes/:scopeKind/:scopeId/settings/risk
     directOperations:
       - access.center.read
@@ -2455,7 +2504,7 @@ requirements:
     journeyTest: tests/journey/GroupSettingJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/riskscan.md
-    releaseEvidence: docs/evidence/releases/MVPGROUPSETTING.json
+    releaseEvidence: evidence/releases/MVPGROUPSETTING.json
     releaseBlockers:
       - id: grouprisk
         requirements:
@@ -2492,7 +2541,9 @@ requirements:
     navigation:
       - malldashboard
       - storehome
-    applicationRoutes: []
+    routeids:
+      - consolecockpit
+      - storehome
     routes:
       - /
       - /scopes/:scopeKind/:scopeId/cockpit
@@ -2646,7 +2697,7 @@ requirements:
     journeyTest: tests/journey/MallDashboardJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/projection.md
-    releaseEvidence: docs/evidence/releases/MVPMALLDASHBOARD.json
+    releaseEvidence: evidence/releases/MVPMALLDASHBOARD.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -2671,7 +2722,9 @@ requirements:
     navigation:
       - malldesign
       - storehome
-    applicationRoutes: []
+    routeids:
+      - consoleexperience
+      - storehome
     routes:
       - /
       - /scopes/:scopeKind/:scopeId/experience
@@ -2844,7 +2897,7 @@ requirements:
     journeyTest: tests/journey/MallDesignJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/experiencepublish.md
-    releaseEvidence: docs/evidence/releases/MVPMALLDESIGN.json
+    releaseEvidence: evidence/releases/MVPMALLDESIGN.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -2874,13 +2927,18 @@ requirements:
       - mallproduct
       - storecatalog
       - storeproduct
-      - storeprofile
-    applicationRoutes: []
+    routeids:
+      - consoleproductdetail
+      - consoleproductimport
+      - consoleproducts
+      - storecatalog
+      - storeproduct
     routes:
       - /products
       - /products/:productId
-      - /profile
+      - /scopes/:scopeKind/:scopeId/imports/:kind/:jobId
       - /scopes/:scopeKind/:scopeId/products
+      - /scopes/:scopeKind/:scopeId/products/:productId
     directOperations:
       - catalog.pools.read
     transitiveOperations:
@@ -3073,7 +3131,7 @@ requirements:
     journeyTest: tests/journey/MallProductJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/pricesync.md
-    releaseEvidence: docs/evidence/releases/MVPMALLPOOL.json
+    releaseEvidence: evidence/releases/MVPMALLPOOL.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -3103,8 +3161,15 @@ requirements:
       - storeorders
       - storeorder
       - storeaftersale
-      - storeprofile
-    applicationRoutes: []
+    routeids:
+      - consoleorderdetail
+      - consoleorders
+      - storeaftersale
+      - storecart
+      - storecheckout
+      - storeorder
+      - storeorders
+      - storepayment
     routes:
       - /cart
       - /checkout
@@ -3112,8 +3177,8 @@ requirements:
       - /orders/:orderId
       - /orders/:orderId/aftersales
       - /payments/:paymentId/result
-      - /profile
       - /scopes/:scopeKind/:scopeId/orders
+      - /scopes/:scopeKind/:scopeId/orders/:orderId
     directOperations:
       - order.orders.read
     transitiveOperations:
@@ -3162,6 +3227,7 @@ requirements:
       - notification.endpoints.manage
       - notification.preferences.manage
       - notification.preferences.read
+      - order.aftersaleattachments.create
       - order.aftersales.apply
       - order.aftersales.approve
       - order.aftersales.read
@@ -3231,6 +3297,7 @@ requirements:
       - notification.endpoints.manage
       - notification.preferences.manage
       - notification.preferences.read
+      - order.aftersaleattachments.create
       - order.aftersales.apply
       - order.aftersales.approve
       - order.aftersales.read
@@ -3299,7 +3366,7 @@ requirements:
     journeyTest: tests/journey/MallOrderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/paymentrefund.md
-    releaseEvidence: docs/evidence/releases/MVPMALLORDER.json
+    releaseEvidence: evidence/releases/MVPMALLORDER.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -3330,10 +3397,10 @@ requirements:
     navigation:
       - mallvoucher
       - storevouchers
-      - storeprofile
-    applicationRoutes: []
+    routeids:
+      - consolevouchers
+      - storevouchers
     routes:
-      - /profile
       - /scopes/:scopeKind/:scopeId/vouchers
       - /vouchers
     directOperations:
@@ -3522,7 +3589,7 @@ requirements:
     journeyTest: tests/journey/MallVoucherJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/voucherexpiry.md
-    releaseEvidence: docs/evidence/releases/MVPMALLVOUCHER.json
+    releaseEvidence: evidence/releases/MVPMALLVOUCHER.json
     releaseBlockers:
       - *a1
     status: Designed
@@ -3553,10 +3620,24 @@ requirements:
     navigation:
       - mallfinance
       - storebenefits
-    applicationRoutes: []
+    routeids:
+      - consolefinance
+      - consolefinanceentry
+      - consolefinanceinvoice
+      - consolefinancereconciliation
+      - consolefinancesettlement
+      - consolefinancestatement
+      - consolefinancewithdrawal
+      - storebenefits
     routes:
       - /benefits
       - /scopes/:scopeKind/:scopeId/finance
+      - /scopes/:scopeKind/:scopeId/finance/entries
+      - /scopes/:scopeKind/:scopeId/finance/invoices
+      - /scopes/:scopeKind/:scopeId/finance/reconciliations
+      - /scopes/:scopeKind/:scopeId/finance/settlements
+      - /scopes/:scopeKind/:scopeId/finance/statements
+      - /scopes/:scopeKind/:scopeId/finance/withdrawals
     directOperations:
       - finance.overview.read
     transitiveOperations:
@@ -3775,7 +3856,7 @@ requirements:
     journeyTest: tests/journey/MallFinanceJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/reconciliation.md
-    releaseEvidence: docs/evidence/releases/MVPMALLFINANCE.json
+    releaseEvidence: evidence/releases/MVPMALLFINANCE.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -3799,11 +3880,11 @@ requirements:
       - OK
     release: required
     providers: []
-    clarifications:
-      - powderclass
+    clarifications: []
     navigation:
       - mallreporting
-    applicationRoutes: []
+    routeids:
+      - consolereporting
     routes:
       - /scopes/:scopeKind/:scopeId/reporting
     directOperations:
@@ -3855,7 +3936,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.voucherconsumption.read
       - runtime.health.dependency
@@ -3915,7 +3995,6 @@ requirements:
       - reporting.exports.create
       - reporting.exports.read
       - reporting.malls.read
-      - reporting.powderclass.read
       - reporting.products.read
       - reporting.sales.read
       - reporting.voucherconsumption.read
@@ -3972,18 +4051,8 @@ requirements:
     journeyTest: tests/journey/MallReportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/export.md
-    releaseEvidence: docs/evidence/releases/MVPMALLREPORT.json
-    releaseBlockers:
-      - id: powderclass
-        requirements:
-          - MVPMALLREPORT
-        term: 粉类
-        status: open
-        blocking: true
-        owner: product
-        acceptance: null
-        resolvedby: null
-        reason: 工作簿未定义业务口径，禁止开发阶段静默改义
+    releaseEvidence: evidence/releases/MVPMALLREPORT.json
+    releaseBlockers: []
     status: Designed
     evidence: []
   - id: MVPMALLSUPPORT
@@ -4009,13 +4078,16 @@ requirements:
     clarifications: []
     navigation:
       - mallsupport
-      - storesecurity
       - storesupport
       - storesupportcase
-    applicationRoutes: []
+    routeids:
+      - consolesupport
+      - consolesupportcase
+      - storesupport
+      - storesupportcase
     routes:
-      - /profile/security
       - /scopes/:scopeKind/:scopeId/support
+      - /scopes/:scopeKind/:scopeId/support/:caseId
       - /support
       - /support/:caseId
     directOperations:
@@ -4219,7 +4291,7 @@ requirements:
     journeyTest: tests/journey/MallSupportJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/supportsla.md
-    releaseEvidence: docs/evidence/releases/MVPMALLSUPPORT.json
+    releaseEvidence: evidence/releases/MVPMALLSUPPORT.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -4252,22 +4324,41 @@ requirements:
       - mallmemberdata
       - mallinvitation
       - mallpartner
+      - mallqualification
       - mallmessage
       - mallrisk
       - mallprovider
       - malldirectory
+      - storeprofile
+      - storesecurity
       - storenotifications
-    applicationRoutes: []
+    routeids:
+      - consoleaccess
+      - consoledirectory
+      - consolefederation
+      - consoleinvitations
+      - consolemembers
+      - consolenotifications
+      - consolepartners
+      - consolequalification
+      - consolerisk
+      - consolesettings
+      - storenotifications
+      - storeprofile
+      - storesecurity
     routes:
       - /notifications
+      - /profile
+      - /profile/security
       - /scopes/:scopeKind/:scopeId/settings
       - /scopes/:scopeKind/:scopeId/settings/access
       - /scopes/:scopeKind/:scopeId/settings/directory
+      - /scopes/:scopeKind/:scopeId/settings/federation
       - /scopes/:scopeKind/:scopeId/settings/invitations
-      - /scopes/:scopeKind/:scopeId/settings/login
       - /scopes/:scopeKind/:scopeId/settings/members
       - /scopes/:scopeKind/:scopeId/settings/messages
       - /scopes/:scopeKind/:scopeId/settings/partners
+      - /scopes/:scopeKind/:scopeId/settings/partners/qualifications
       - /scopes/:scopeKind/:scopeId/settings/risk
     directOperations:
       - access.center.read
@@ -4324,6 +4415,7 @@ requirements:
       - identity.session.read
       - identity.sessions.complete
       - identity.sessions.create
+      - identity.sessions.read
       - identity.stepup.complete
       - identity.stepup.disable
       - identity.stepup.start
@@ -4429,6 +4521,7 @@ requirements:
       - identity.session.read
       - identity.sessions.complete
       - identity.sessions.create
+      - identity.sessions.read
       - identity.stepup.complete
       - identity.stepup.disable
       - identity.stepup.start
@@ -4539,7 +4632,7 @@ requirements:
     journeyTest: tests/journey/MallSettingJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/riskscan.md
-    releaseEvidence: docs/evidence/releases/MVPMALLSETTING.json
+    releaseEvidence: evidence/releases/MVPMALLSETTING.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -4564,19 +4657,20 @@ requirements:
     navigation:
       - groupprovider
       - mallprovider
-    applicationRoutes:
-      - /
-      - /callback
-      - /invitation
-      - /link
-      - /membership
+    routeids:
+      - authcallback
+      - authinvitation
+      - authlink
+      - authlogin
+      - authmembership
+      - consolefederation
     routes:
       - /
       - /callback
       - /invitation
       - /link
       - /membership
-      - /scopes/:scopeKind/:scopeId/settings/login
+      - /scopes/:scopeKind/:scopeId/settings/federation
     directOperations:
       - identity.bootstrap.read
       - identity.challenges.create
@@ -4736,7 +4830,7 @@ requirements:
     journeyTest: tests/journey/IdentityJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/identityrecovery.md
-    releaseEvidence: docs/evidence/releases/MVPIDENTITY.json
+    releaseEvidence: evidence/releases/MVPIDENTITY.json
     releaseBlockers: []
     status: Designed
     evidence: []
@@ -4773,7 +4867,8 @@ requirements:
       - groupchannel
       - mallchannel
       - platformchannel
-    applicationRoutes: []
+    routeids:
+      - consolechannels
     routes:
       - /scopes/:scopeKind/:scopeId/channels
     directOperations:
@@ -4959,7 +5054,7 @@ requirements:
     journeyTest: tests/journey/ProviderJourney.spec.ts
     dashboard: docs/metrics/catalog.md
     runbook: docs/operations/catalogsync.md
-    releaseEvidence: docs/evidence/releases/MVPPROVIDER.json
+    releaseEvidence: evidence/releases/MVPPROVIDER.json
     releaseBlockers: []
     status: Designed
     evidence: []

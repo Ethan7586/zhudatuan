@@ -1,8 +1,10 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { PaymentGateway } from '../infrastructure/PaymentGateway';
 import { mapPayment } from '../infrastructure/PaymentMapper';
 
-export async function readPayment(session: StorefrontSession, paymentId: string, signal?: AbortSignal) {
-  const value = await PaymentGateway.read(session, paymentId, signal);
-  return mapPayment(value);
+export class ReadPayment {
+  constructor(private readonly gateway: Pick<PaymentGateway, 'read'>) {}
+  async execute(session: StorefrontSession, paymentId: string, signal?: AbortSignal) {
+    return mapPayment(await this.gateway.read(session, paymentId, signal));
+  }
 }

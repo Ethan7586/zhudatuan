@@ -35,6 +35,9 @@ class MemoryReporting implements ReportingPort {
     this.projected.push(...metrics);
     return Promise.resolve();
   }
+  orderApplication(): Promise<string> {
+    return Promise.resolve('application:1');
+  }
   createOrder(_projection: OrderProjection): Promise<void> {
     return Promise.resolve();
   }
@@ -91,13 +94,13 @@ describe('reporting event projection', () => {
           application: 'application:1',
           scopes: ['group:1', 'mall:1'],
           timezone: 'Asia/Shanghai',
-          lines: [{ product: 'product:1', category: 'category:1', powderclass: 'category:1', provider: 'provider:1', partner: 'partner:1', payableMinor: 900 }],
+          lines: [{ product: 'product:1', category: 'category:1', provider: 'provider:1', partner: 'partner:1', payableMinor: 900 }],
         },
       },
     };
     await new ProjectEvent(repository).execute(event);
-    expect(repository.projected).toHaveLength(18);
-    expect(repository.projected.filter(({ code }) => code === 'powderclass.amount')).toHaveLength(3);
+    expect(repository.projected).toHaveLength(15);
+    expect(repository.projected.filter(({ code }) => code === 'category.amount')).toHaveLength(3);
     expect(repository.projected.some(({ scope }) => scope === 'partner:1')).toBe(true);
     expect(repository.paid).toEqual({ order: 'order:1', amount: 900 });
     expect(repository.completed).toEqual([event]);

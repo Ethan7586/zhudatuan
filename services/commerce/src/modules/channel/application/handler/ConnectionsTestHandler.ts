@@ -10,7 +10,7 @@ export class ConnectionsTestHandler implements OperationHandler<'channel.connect
   constructor(private readonly connections: ConnectionRepository) {}
   async execute(input: OperationInputFor<'channel.connections.test'>, context: WriteHandlerContext<'channel.connections.test'>): Promise<OperationReply<OperationOutputFor<'channel.connections.test'>>> {
     const access = requireSession(context.security);
-    const result = await this.connections.transition(context.transaction, { id: input.path.connectionid, scope: access.scope.id, actor: access.actor.id, trace: access.trace, state: 'testing', expectedVersion: null });
+    const result = await this.connections.transition(context.transaction, { id: input.path.connectionid, scope: access.scope.id, actor: access.actor.id, trace: access.trace, state: 'testing', expectedVersion: context.expectedVersion ?? null });
     return { status: 202, body: result as OperationOutputFor<'channel.connections.test'> };
   }
 }

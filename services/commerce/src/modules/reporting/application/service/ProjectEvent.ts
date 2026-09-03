@@ -75,7 +75,6 @@ export class ProjectEvent {
       projectedMetric('product.amount', scope, period, { ...common, product: text(line.product, 'REPORT_PRODUCT_REQUIRED') }, amount, 'minor', watermark),
       projectedMetric('category.amount', scope, period, { ...common, category: text(line.category, 'REPORT_CATEGORY_REQUIRED') }, amount, 'minor', watermark),
       projectedMetric('channel.amount', scope, period, { ...common, channel: typeof line.provider === 'string' && line.provider ? line.provider : 'internal' }, amount, 'minor', watermark),
-      projectedMetric('powderclass.amount', scope, period, { ...common, powderclass: text(line.powderclass, 'REPORT_POWDERCLASS_REQUIRED') }, amount, 'minor', watermark),
     ]);
   }
 
@@ -94,10 +93,11 @@ export class ProjectEvent {
     const period = await this.repository.period(event.occurredAt, timezone);
     const range = { ...period, timezone };
     const amount = integer(payload.amountMinor, 'REPORT_REFUND_AMOUNT_INVALID');
+    const application = await this.repository.orderApplication(text(payload.order, 'REPORT_ORDER_REQUIRED'));
     const metrics: Metric[] = [];
     for (const scope of scopes(payload.scopes, mall)) {
       affected.add(scope);
-      metrics.push(projectedMetric('refund.amount', scope, range, { mall }, amount, 'minor', event.occurredAt), projectedMetric('refund.orders', scope, range, { mall }, 1, 'count', event.occurredAt));
+      metrics.push(projectedMetric('refund.amount', scope, range, { mall, application }, amount, 'minor', event.occurredAt), projectedMetric('refund.orders', scope, range, { mall, application }, 1, 'count', event.occurredAt));
     }
     await this.repository.addMetrics(metrics);
   }

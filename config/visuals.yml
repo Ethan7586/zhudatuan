@@ -1,8 +1,8 @@
-version: 1
+version: 2
 authority:
   owner: Ethan
   approvedAt: 2026-08-28T15:59:46+08:00
-  source: /Users/changshengwang/Workspace/zhudatuan-li
+  source: evidence/visuals/baseline
   policy:
     preserveLayout: true
     preserveInteraction: true
@@ -19,16 +19,45 @@ defaults:
   data: deterministic
   motion: reduced
 viewports:
-  desktop1920: { width: 1920, height: 1080 }
-  desktop1440: { width: 1440, height: 900 }
-  desktop1366: { width: 1366, height: 768 }
-  tabletlandscape: { width: 1024, height: 768 }
-  tabletportrait: { width: 768, height: 1024 }
-  mobile390: { width: 390, height: 844 }
-  mobile375: { width: 375, height: 812 }
-  mobile360: { width: 360, height: 800 }
-states: [loading, empty, error, denied, expired, partial, success]
-interactions: [hover, focus, selected, disabled, submitting, success]
+  desktop1920:
+    width: 1920
+    height: 1080
+  desktop1440:
+    width: 1440
+    height: 900
+  desktop1366:
+    width: 1366
+    height: 768
+  tabletlandscape:
+    width: 1024
+    height: 768
+  tabletportrait:
+    width: 768
+    height: 1024
+  mobile390:
+    width: 390
+    height: 844
+  mobile375:
+    width: 375
+    height: 812
+  mobile360:
+    width: 360
+    height: 800
+states: &a1
+  - loading
+  - empty
+  - error
+  - denied
+  - expired
+  - partial
+  - success
+interactions:
+  - hover
+  - focus
+  - selected
+  - disabled
+  - submitting
+  - success
 accessibility:
   keyboard: complete
   focusVisible: required
@@ -71,56 +100,18 @@ navigationTitles:
       promotion: 推广详情
     membership: 会员与权限
   storefront:
-    primary: [首页, 企业福利专区, 生活缴费, 电影票务, 虚拟卡券, 附近门店核销]
-    utility: [我的订单, 客服中心, 登录 / 注册, 购物车]
-surfaces:
-  auth:
-    source: apps/auth/src/route/Router.tsx
-    routes:
-      - { route: /, baseline: authlogin, states: [loading, empty, error, denied, expired, partial, success] }
-      - { route: /invitation, baseline: authinvitation, states: [loading, error, expired, success] }
-      - { route: /membership, baseline: authmembership, states: [loading, empty, error, expired, success] }
-      - { route: /callback, baseline: authcallback, states: [loading, error, success] }
-      - { route: /link, baseline: authlink, states: [error, success] }
-  console:
-    source: apps/console/src
-    routes:
-      - { route: /scopes/:scopeKind/:scopeId/cockpit, baseline: consolecockpit }
-      - { route: /scopes/:scopeKind/:scopeId/control, baseline: consolecontrol }
-      - { route: /scopes/:scopeKind/:scopeId/products, baseline: consoleproducts }
-      - { route: /scopes/:scopeKind/:scopeId/orders, baseline: consoleorders }
-      - { route: /scopes/:scopeKind/:scopeId/finance, baseline: consolefinance }
-      - { route: /scopes/:scopeKind/:scopeId/experience, baseline: consoleapplications }
-      - { route: /scopes/:scopeKind/:scopeId/vouchers, baseline: consolevouchers }
-      - { route: /scopes/:scopeKind/:scopeId/reporting, baseline: consolereports }
-      - { route: /scopes/:scopeKind/:scopeId/support, baseline: consolesupport }
-      - { route: /scopes/:scopeKind/:scopeId/referral/settings, baseline: referralsettings }
-      - { route: /scopes/:scopeKind/:scopeId/referral/products, baseline: referralproducts }
-      - { route: /scopes/:scopeKind/:scopeId/referral/review, baseline: referralreview }
-      - { route: /scopes/:scopeKind/:scopeId/referral/bindings, baseline: referralbindings }
-      - { route: /scopes/:scopeKind/:scopeId/referral/withdrawals, baseline: referralwithdrawals }
-      - { route: /scopes/:scopeKind/:scopeId/referral/promotion, baseline: referralpromotion }
-      - { route: /scopes/:scopeKind/:scopeId/settings/access, baseline: consoleaccess }
-      - { route: /scopes/:scopeKind/:scopeId/settings/members, baseline: consolemembers }
-  storefront:
-    source: apps/storefront/src
-    routes:
-      - { route: /, baseline: storefrontdesktop, responsive: true }
-      - { route: /products, baseline: storefrontcatalog, responsive: true }
-      - { route: /products/:productId, baseline: storefrontproduct, responsive: true }
-      - { route: /cart, baseline: storefrontcart, responsive: true }
-      - { route: /checkout, baseline: storefrontcheckout, responsive: true }
-      - { route: /payments/:paymentId/result, baseline: storefrontpayment, responsive: true }
-      - { route: /orders, baseline: storefrontorders, responsive: true }
-      - { route: /orders/:orderId, baseline: storefrontorder, responsive: true }
-      - { route: /orders/:orderId/aftersales, baseline: storefrontaftersale, responsive: true }
-      - { route: /vouchers, baseline: storefrontvouchers, responsive: true }
-      - { route: /benefits, baseline: storefrontbenefits, responsive: true }
-      - { route: /profile, baseline: storefrontaccount, responsive: true }
-      - { route: /profile/security, baseline: storefrontsecurity, responsive: true }
-      - { route: /support, baseline: storefrontsupport, responsive: true }
-      - { route: /support/:caseId, baseline: storefrontcase, responsive: true }
-      - { route: /notifications, baseline: storefrontnotifications, responsive: true }
+    primary:
+      - 首页
+      - 企业福利专区
+      - 生活缴费
+      - 电影票务
+      - 虚拟卡券
+      - 附近门店核销
+    utility:
+      - 我的订单
+      - 客服中心
+      - 登录 / 注册
+      - 购物车
 masks:
   - currenttime
   - generatedidentifier
@@ -129,3 +120,210 @@ masks:
 tolerance:
   pixelRatio: 0.001
   textShiftPixels: 1
+surfaces:
+  auth:
+    source: apps/auth/src/generated/RouteBinding.ts
+    routes:
+      - routeid: authlogin
+        baseline: authlogin
+        states:
+          - loading
+          - empty
+          - error
+          - denied
+          - expired
+          - partial
+          - success
+      - routeid: authinvitation
+        baseline: authinvitation
+        states:
+          - loading
+          - error
+          - expired
+          - success
+      - routeid: authmembership
+        baseline: authmembership
+        states:
+          - loading
+          - empty
+          - error
+          - expired
+          - success
+      - routeid: authcallback
+        baseline: authcallback
+        states:
+          - loading
+          - error
+          - success
+      - routeid: authlink
+        baseline: authlink
+        states:
+          - error
+          - success
+  console:
+    source: apps/console/src/generated/RouteBinding.ts
+    routes:
+      - routeid: consolecockpit
+        baseline: consolecockpit
+        states: *a1
+      - routeid: consolecontrol
+        baseline: consolecontrol
+        states: *a1
+      - routeid: consoleexperience
+        baseline: consoleapplications
+        states: *a1
+      - routeid: consoleproducts
+        baseline: consoleproducts
+        states: *a1
+      - routeid: consoleproductdetail
+        baseline: consoleproductdetail
+        states: *a1
+      - routeid: consoleproductimport
+        baseline: consoleproductimport
+        states: *a1
+      - routeid: consoleorders
+        baseline: consoleorders
+        states: *a1
+      - routeid: consoleorderdetail
+        baseline: consoleorderdetail
+        states: *a1
+      - routeid: consolereferral
+        baseline: consolereferral
+        states: *a1
+      - routeid: consolereferralview
+        baseline: consolereferralview
+        states: *a1
+      - routeid: consolevouchers
+        baseline: consolevouchers
+        states: *a1
+      - routeid: consolechannels
+        baseline: consolechannels
+        states: *a1
+      - routeid: consolefinance
+        baseline: consolefinance
+        states: *a1
+      - routeid: consolefinanceentry
+        baseline: consolefinanceentry
+        states: *a1
+      - routeid: consolefinancestatement
+        baseline: consolefinancestatement
+        states: *a1
+      - routeid: consolefinancereconciliation
+        baseline: consolefinancereconciliation
+        states: *a1
+      - routeid: consolefinancesettlement
+        baseline: consolefinancesettlement
+        states: *a1
+      - routeid: consolefinancewithdrawal
+        baseline: consolefinancewithdrawal
+        states: *a1
+      - routeid: consolefinanceinvoice
+        baseline: consolefinanceinvoice
+        states: *a1
+      - routeid: consolereporting
+        baseline: consolereports
+        states: *a1
+      - routeid: consolesupport
+        baseline: consolesupport
+        states: *a1
+      - routeid: consolesupportcase
+        baseline: consolesupportcase
+        states: *a1
+      - routeid: consolesettings
+        baseline: consolesettings
+        states: *a1
+      - routeid: consoleaccess
+        baseline: consoleaccess
+        states: *a1
+      - routeid: consolemembers
+        baseline: consolemembers
+        states: *a1
+      - routeid: consoleinvitations
+        baseline: consoleinvitations
+        states: *a1
+      - routeid: consolepartners
+        baseline: consolepartners
+        states: *a1
+      - routeid: consolequalification
+        baseline: consolequalification
+        states: *a1
+      - routeid: consolenotifications
+        baseline: consolenotifications
+        states: *a1
+      - routeid: consolerisk
+        baseline: consolerisk
+        states: *a1
+      - routeid: consolefederation
+        baseline: consolefederation
+        states: *a1
+      - routeid: consoledirectory
+        baseline: consoledirectory
+        states: *a1
+  storefront:
+    source: apps/storefront/src/generated/RouteBinding.ts
+    routes:
+      - routeid: storehome
+        baseline: storefrontdesktop
+        responsive: true
+        states: *a1
+      - routeid: storecatalog
+        baseline: storefrontcatalog
+        responsive: true
+        states: *a1
+      - routeid: storeproduct
+        baseline: storefrontproduct
+        responsive: true
+        states: *a1
+      - routeid: storecart
+        baseline: storefrontcart
+        responsive: true
+        states: *a1
+      - routeid: storecheckout
+        baseline: storefrontcheckout
+        responsive: true
+        states: *a1
+      - routeid: storepayment
+        baseline: storefrontpayment
+        responsive: true
+        states: *a1
+      - routeid: storeorders
+        baseline: storefrontorders
+        responsive: true
+        states: *a1
+      - routeid: storeorder
+        baseline: storefrontorder
+        responsive: true
+        states: *a1
+      - routeid: storeaftersale
+        baseline: storefrontaftersale
+        responsive: true
+        states: *a1
+      - routeid: storevouchers
+        baseline: storefrontvouchers
+        responsive: true
+        states: *a1
+      - routeid: storebenefits
+        baseline: storefrontbenefits
+        responsive: true
+        states: *a1
+      - routeid: storeprofile
+        baseline: storefrontaccount
+        responsive: true
+        states: *a1
+      - routeid: storesecurity
+        baseline: storefrontsecurity
+        responsive: true
+        states: *a1
+      - routeid: storesupport
+        baseline: storefrontsupport
+        responsive: true
+        states: *a1
+      - routeid: storesupportcase
+        baseline: storefrontcase
+        responsive: true
+        states: *a1
+      - routeid: storenotifications
+        baseline: storefrontnotifications
+        responsive: true
+        states: *a1
+

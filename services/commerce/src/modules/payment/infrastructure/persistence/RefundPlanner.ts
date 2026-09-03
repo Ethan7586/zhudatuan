@@ -46,7 +46,7 @@ interface RefundedRow {
 export class RefundPlanner {
   private readonly transactions = new PgTransactionAccess();
   constructor(
-    private readonly orders: Pick<PaymentOrderPort, 'payment'>,
+    private readonly orders: Pick<PaymentOrderPort, 'payment' | 'recordRefund'>,
     private readonly allocation = new AllocationPolicy()
   ) {}
   async create(context: WriteTransactionContext, request: RefundRequest): Promise<PlannedRefund> {
@@ -122,7 +122,20 @@ export class RefundPlanner {
       values($1,$2,$3,$4,$5,'planned')`,
         [request.id, leg.sequence, leg.kind, leg.reference, leg.amount]
       );
-    return inserted.rows[0]!;
+    const created = inserted.rows[0]!;
+    await this.orders.recordRefund(context, {
+      id: created.id,
+      order: payment.order_id,
+      aftersale: created.aftersale_id,
+      provider: created.provider,
+      providerReference: created.provider_reference,
+      amountMinor: created.amount_minor,
+      currency: created.currency,
+      state: created.state,
+      reason: created.reason,
+      tenders: legs.map((leg) => Object.freeze({ sequence: leg.sequence, kind: leg.kind, reference: leg.reference, amountMinor: leg.amount, state: 'planned' })),
+    });
+    return created;
   }
 }
 function key(kind: string, reference: string | null): string {

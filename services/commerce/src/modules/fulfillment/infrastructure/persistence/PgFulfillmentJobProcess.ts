@@ -172,6 +172,7 @@ export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
         requestHash: digest(serialized),
         response: receipt,
       });
+      await this.project(context, id, loaded.order_id);
       await enqueue(database, 'tracking', loaded.scope_id, { fulfillment: id }, 60);
     });
   }
@@ -205,6 +206,7 @@ export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
         [id, next, loaded.state, loaded.version]
       );
       if (!changed.rows[0]) throw new Error('FULFILLMENT_STATE_CONFLICT');
+      await this.project(context, id, loaded.order_id);
       if (shipped) {
         await new PgRuntimeWriter(database).append({
           id: `event:fulfillment:shipped:${digest(id)}`,
@@ -224,6 +226,31 @@ export class PgFulfillmentJobProcess implements FulfillmentJobProcess {
         );
       else await enqueue(database, 'tracking', loaded.scope_id, { fulfillment: id }, 300);
     });
+  }
+
+  private async project(context: import('../../../../foundation/persistence/TransactionContext').WriteTransactionContext, id: string, order: string): Promise<void> {
+    const database = this.transactions.database(context);
+    const fulfillment = await database.query<{
+      id: string;
+      provider: string | null;
+      partner: string | null;
+      kind: 'shipment' | 'delivery' | 'pickup' | 'service' | 'digital';
+      state: string;
+      externalReference: string | null;
+    }>(
+      `select id,provider,partner_id partner,kind,state,external_reference "externalReference"
+      from fulfillment.fulfillmentorder where id=$1 and order_id=$2`,
+      [id, order]
+    );
+    const selected = fulfillment.rows[0];
+    if (!selected) throw new Error('FULFILLMENT_PROJECTION_SOURCE_MISSING');
+    await this.dependencies.orders.recordFulfillments(context, order, [selected]);
+    const milestones = await database.query<{ id: string; kind: string; state: string; tracking: string | null; occurredAt: string }>(
+      `select id,kind,state,external_id tracking,occurred_at "occurredAt"
+      from fulfillment.milestone where fulfillment_id=$1 order by occurred_at,id`,
+      [id]
+    );
+    await this.dependencies.orders.recordFulfillmentMilestones(context, order, id, milestones.rows);
   }
 
   private load(id: string, states: readonly string[], execution: FulfillmentJobExecution): Promise<FulfillmentRow> {

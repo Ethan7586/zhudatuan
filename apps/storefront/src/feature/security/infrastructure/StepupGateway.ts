@@ -1,15 +1,16 @@
-import { storefrontClient } from '../../../shared/api/Client';
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontClient } from '../../../shared/api/Client';
+import type { StorefrontSession } from '../../../entity/session';
 
-export const StepupGateway = Object.freeze({
+export class StepupGateway {
+  constructor(private readonly identity: StorefrontClient['commerce']['identity'], private readonly context: StorefrontClient['context']) {}
   async phoneMasked(session: StorefrontSession, signal?: AbortSignal) {
-    const value = await storefrontClient.commerce.identity.sessionRead({}, storefrontClient.context(session, { signal, includeScope: false }));
+    const value = await this.identity.sessionRead({}, this.context(session, { signal, includeScope: false }));
     return value.security.phoneMasked;
-  },
+  }
   start(session: StorefrontSession) {
-    return storefrontClient.commerce.identity.stepupStart({ body: {} }, storefrontClient.context(session, { write: true, includeScope: false, idempotencyKey: crypto.randomUUID() }));
-  },
+    return this.identity.stepupStart({ body: {} }, this.context(session, { write: true, includeScope: false, idempotencyKey: crypto.randomUUID() }));
+  }
   complete(session: StorefrontSession, challenge: string, code: string) {
-    return storefrontClient.commerce.identity.stepupComplete({ body: { challenge, code } }, storefrontClient.context(session, { write: true, includeScope: false, idempotencyKey: crypto.randomUUID() }));
-  },
-});
+    return this.identity.stepupComplete({ body: { challenge, code } }, this.context(session, { write: true, includeScope: false, idempotencyKey: crypto.randomUUID() }));
+  }
+}

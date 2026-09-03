@@ -1,10 +1,20 @@
 {
-  "schema": "zhudatuan.releaseeligibility.v1",
+  "schema": "zhudatuan.releaseeligibility.v2",
   "derived": true,
   "releaseEligible": false,
   "requirements": {
     "released": 0,
-    "required": 21
+    "required": 18,
+    "nonblocking": 4
   },
-  "blockers": ["MVP04_ACCEPTANCE_REQUIRED", "MVP11_POWDERCLASS_DEFINITION_REQUIRED", "MVP20_POWDERCLASS_DEFINITION_REQUIRED", "SIGNED_RELEASE_EVIDENCE_REQUIRED"]
+  "providers": {
+    "released": 0,
+    "required": 11
+  },
+  "blockers": [
+    "MVPGROUPSETTING:grouprisk",
+    "MVPGROUPVOUCHER:voucherarchive",
+    "MVPMALLVOUCHER:voucherarchive",
+    "SIGNED_RELEASE_EVIDENCE_REQUIRED"
+  ]
 }

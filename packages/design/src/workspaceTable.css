@@ -1,0 +1,90 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 0.0625rem solid var(--sw-border);
+  padding: var(--sw-space-1-5);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  background: var(--sw-surface-subtle);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.actions,
+.pagination {
+  display: flex;
+  gap: var(--sw-space-1);
+  flex-wrap: wrap;
+}
+
+.pagination {
+  justify-content: flex-end;
+  margin-top: var(--sw-space-2);
+}
+
+.actions button,
+.pagination button,
+.sectionhead button,
+.command button {
+  border: 0.0625rem solid var(--sw-brand);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-brand-dark);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
+}
+
+.actions button:hover,
+.actions button.active,
+.command .primary {
+  background: var(--sw-brand);
+  color: var(--sw-surface);
+}
+
+@media (max-width: 48rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .layout > aside {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    gap: var(--sw-space-1-5);
+    padding: var(--sw-space-1-5) var(--sw-space-2);
+  }
+
+  .layout > aside nav {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .layout > aside button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .layout > main {
+    padding: var(--sw-space-2);
+  }
+
+  .resourceheading,
+  .sectionhead {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .datasource {
+    align-self: flex-start;
+  }
+
+  .resourceactions {
+    justify-content: flex-start;
+  }
+}

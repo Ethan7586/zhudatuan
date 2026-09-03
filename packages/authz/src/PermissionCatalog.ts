@@ -3080,24 +3080,6 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "reporting.mall.read"
   },
   {
-    "code": "reporting.powderclass.read",
-    "module": "reporting",
-    "category": "reporting",
-    "risk": "low",
-    "minimumAssurance": 1,
-    "delegatable": true,
-    "allowedScopeKinds": [
-      "platform",
-      "distributor",
-      "tenant",
-      "enterprise",
-      "mall",
-      "department"
-    ],
-    "makerChecker": false,
-    "description": "reporting.powderclass.read"
-  },
-  {
     "code": "reporting.product.read",
     "module": "reporting",
     "category": "reporting",
@@ -3788,7 +3770,17 @@ export const PERMISSION_CATALOG = Object.freeze([
     "minimumAssurance": 2,
     "delegatable": true,
     "allowedScopeKinds": [
-      "owner"
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department",
+      "supplier",
+      "brand",
+      "store",
+      "owner",
+      "self"
     ],
     "makerChecker": false,
     "description": "voucher.redemption.read"

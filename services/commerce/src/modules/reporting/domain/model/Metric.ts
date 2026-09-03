@@ -14,7 +14,7 @@ export type MetricUnit = Metric['unit'];
 
 export type ReportPeriod = 'realtime' | 'yesterday' | '7days' | '30days';
 
-export type ReportDimension = 'sales' | 'product' | 'mall' | 'category' | 'channel' | 'powderclass' | 'voucher';
+export type ReportDimension = 'sales' | 'product' | 'mall' | 'category' | 'channel' | 'voucher';
 
 export interface MetricQuery {
   readonly scope: string;
@@ -47,8 +47,53 @@ export interface CockpitSummary {
     activeProductCount: number;
     soldProductCount: number;
     unsoldActiveProductCount: number;
-    trend: readonly Readonly<{ date: string; salesCents: number; orderCount: number }>[];
+    period: Readonly<{ from: string; to: string }>;
+    conclusion: string;
+    deltas: Readonly<{
+      netSalesRatio: number | null;
+      paidOrdersRatio: number | null;
+      averageOrderRatio: number | null;
+      refundRate: number;
+      refundRateDeltaPoints: number | null;
+    }>;
+    trend: readonly CockpitTrend[];
+    weeklyTrend: readonly CockpitTrend[];
     categories: readonly Readonly<{ name: string; salesCents: number; share: number }>[];
     topProducts: readonly never[];
+    malls: readonly CockpitMall[];
+    events: readonly CockpitEvent[];
+    insights: readonly CockpitInsight[];
   }>;
+}
+
+export interface CockpitTrend {
+  readonly date: string;
+  readonly salesCents: number;
+  readonly orderCount: number;
+}
+
+export interface CockpitMall {
+  readonly id: string;
+  readonly name: string;
+  readonly salesCents: number;
+  readonly paidOrderCount: number;
+  readonly refundRate: number;
+}
+
+export interface CockpitEvent {
+  readonly id: string;
+  readonly kind: 'calendar' | 'warning' | 'sync';
+  readonly title: string;
+  readonly metric: string;
+  readonly time: string;
+  readonly date: string;
+}
+
+export interface CockpitInsight {
+  readonly id: string;
+  readonly tone: 'warning' | 'positive';
+  readonly title: string;
+  readonly detail: string;
+  readonly action: string;
+  readonly target: 'orders' | 'reports';
 }

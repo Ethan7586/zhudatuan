@@ -1,6 +1,7 @@
-import type { StorefrontSession } from '../../../shared/api/Session';
+import type { StorefrontSession } from '../../../entity/session';
 import { CartGateway } from '../infrastructure/CartGateway';
 
-export function readCart(session: StorefrontSession, signal?: AbortSignal) {
-  return CartGateway.read(session, signal);
+export class ReadCart {
+  constructor(private readonly gateway: Pick<CartGateway, 'read'>) {}
+  execute(session: StorefrontSession, signal?: AbortSignal) { return this.gateway.read(session, signal); }
 }

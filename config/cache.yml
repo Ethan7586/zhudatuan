@@ -1,5 +1,20 @@
 version: 1
 owner: platform
+browser:
+  query:
+    staleMilliseconds: 30000
+    garbageCollectionMilliseconds: 300000
+    retryCount: 1
+    refetchOnWindowFocus: false
+    refetchOnReconnect: true
+  identity:
+    parts: [client, scopekind, scopeid, accessversion, resourceversion, resource, filter]
+  storefrontIdentity:
+    parts: [handle, mall, releaseversion, catalogversion, resource, filter]
+  scopeChange:
+    cancelPending: true
+    removePrevious: true
+    triggers: [scopekind, scopeid, membership, accessversion]
 caches:
   experience:
     key: mall:version
