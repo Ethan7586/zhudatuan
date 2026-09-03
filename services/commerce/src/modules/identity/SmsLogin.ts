@@ -1,4 +1,4 @@
-import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
+import { reject, type OperationDatabase } from '../../foundation/application/ModuleOperations';
 
 export interface SmsLoginPrincipal {
   readonly principal_id: string;
@@ -12,12 +12,18 @@ export interface PasswordLoginCredential extends SmsLoginPrincipal {
 export async function resolveBoundMobilePrincipal(database: OperationDatabase, mobileTokens: readonly string[]): Promise<string | null> {
   const matches = await database.query<{ principal_id: string }>(
     `select principal.id principal_id from identity.principal principal
-      join member.profile profile on profile.principal_id=principal.id and profile.status='active'
-      where principal.status='active' and profile.mobile_token=any($1::text[])
-      order by principal.id for update of principal,profile`,
+      where principal.status='active' and (
+        exists (select 1 from member.profile profile where profile.principal_id=principal.id
+          and profile.status='active' and profile.mobile_token=any($1::text[]))
+        or exists (select 1 from identity.credential credential where credential.principal_id=principal.id
+          and credential.provider='password' and credential.status='active'
+          and credential.subject_hash=any($1::text[]))
+      )
+      order by principal.id limit 2 for update of principal`,
     [mobileTokens]
   );
-  return matches.rows.length === 1 ? matches.rows[0]!.principal_id : null;
+  if (matches.rows.length > 1) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+  return matches.rows[0]?.principal_id ?? null;
 }
 
 export async function resolvePasswordLoginCredential(
