@@ -527,7 +527,7 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             if (!profile.rows[0]) throw new Error('MEMBER_PROFILE_NOT_FOUND');
             resolvedMember = profile.rows[0].id;
             const current = await database.query<Record<string, unknown>>(
-              `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront' for update`,
+              `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'`,
               [resolvedMember, organization]
             );
             if (current.rows[0] && current.rows[0].status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');

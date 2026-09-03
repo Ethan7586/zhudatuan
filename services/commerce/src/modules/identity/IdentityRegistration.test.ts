@@ -337,6 +337,10 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.credential'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes('insert into member.profile'))).toBe(false);
+    const existingMembership = harness.queries.find(({ text }) => text.includes('select * from access.membership')
+      && text.includes("client='storefront'"));
+    expect(existingMembership?.text).toBeDefined();
+    expect(existingMembership?.text).not.toContain('for update');
     const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership(') && text.includes("'storefront'"));
     expect(membership?.values).toContain('member:existing-phone');
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
