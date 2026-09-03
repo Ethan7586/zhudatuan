@@ -12,10 +12,20 @@ runtime:
   webBusinessApiProfile: web-business-only
   purchaseApiPort: 4323
   purchaseApiProfile: purchase-only
+  paymentWebhookApiPort: 4326
+  paymentWebhookApiProfile: payment-webhook-only
   mallProvisioningApiPort: 4325
   mallProvisioningApiProfile: mall-provisioning-only
   identityNotificationProfile: identity-notification-only
 oneShots:
+  paymentWebhookRole:
+    artifact: infrastructure/zhudatuan/aliyun/postgres-provision-payment-webhook-role.sh
+    environment: infrastructure/zhudatuan/aliyun/payment-webhook-role.env.example
+    invocation: cluster-authority-psql
+    databaseRole: cluster-owner
+    before:
+      - registrationMigration
+    createsRuntimeRole: zhudatuanpaymentwebhookapi
   mallProvisioningRole:
     artifact: infrastructure/zhudatuan/aliyun/postgres-provision-mall-role.sh
     environment: infrastructure/zhudatuan/aliyun/mall-provisioning-role.env.example
@@ -122,6 +132,27 @@ routes:
     forbiddenOperations:
       - payment.refunds.request
       - payment.webhooks.wechat
+      - payment.recoveries.read
+      - payment.recoveries.resolve
+  paymentWebhookApi:
+    host: api.zhudatuan.com
+    workspace: services/commerce
+    artifact: services/commerce/dist/PaymentWebhookApiMain.js
+    readinessArtifact: services/commerce/dist/PaymentWebhookApiReadyMain.js
+    process: zhudatuan-payment-webhook-api
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-payment-webhook-api.service
+    environment: infrastructure/zhudatuan/aliyun/payment-webhook-api.env.example
+    profile: payment-webhook-only
+    databaseRole: zhudatuanpaymentwebhookapi
+    roleProvisioner: infrastructure/zhudatuan/aliyun/postgres-provision-payment-webhook-role.sh
+    port: 4326
+    allowedMethods:
+      - POST
+    allowedPaths:
+      - /api/v1/webhooks/wechat/payment
+    forbiddenOperations:
+      - payment.intents.create
+      - payment.refunds.request
       - payment.recoveries.read
       - payment.recoveries.resolve
   mallProvisioningApi:
