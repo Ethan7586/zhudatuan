@@ -27,7 +27,7 @@ export const MPProfilePage: React.FC = () => {
             </div>
             <div className="text-[11px] text-blue-100 flex items-center gap-1">
               <Building2 className="w-3 h-3 text-yellow-300" />
-              <span className="truncate">{user.enterpriseName}</span>
+              <span className="truncate">{currentMall.mallName}</span>
             </div>
             <div className="text-[10px] text-emerald-200 flex items-center gap-1">
               <Smartphone className="w-3 h-3 text-emerald-300" />
@@ -113,7 +113,7 @@ export const MPProfilePage: React.FC = () => {
 
         {/* Welfare Tools & Cards */}
         <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100 space-y-2 text-xs">
-          <div className="text-[11px] text-gray-400 font-bold px-1 uppercase tracking-wider">企采资产与常用工具</div>
+          <div className="text-[11px] text-gray-400 font-bold px-1 uppercase tracking-wider">消费账户与常用工具</div>
 
           <div className="divide-y divide-gray-100 text-gray-700">
             <button
@@ -167,21 +167,21 @@ export const MPProfilePage: React.FC = () => {
               <span className="text-xs text-amber-600 bg-amber-50 font-bold px-1.5 py-0.2 rounded border border-amber-200">接口待接入</span>
             </button>
 
-            <button onClick={() => triggerPendingFeature('微信企微客服', '调起企业微信客服小助手。')} className="w-full py-2.5 flex items-center justify-between hover:bg-gray-50 px-1 rounded-lg transition-colors cursor-pointer">
+            <button onClick={() => triggerPendingFeature('商城客服', '联系当前商城客服。')} className="w-full py-2.5 flex items-center justify-between hover:bg-gray-50 px-1 rounded-lg transition-colors cursor-pointer">
               <div className="flex items-center gap-2 font-medium">
                 <Headphones className="w-4 h-4 text-indigo-500" />
-                <span>企采专属客服专线</span>
+                <span>商城客服</span>
               </div>
               <span className="text-gray-400 text-[10px]">工作日 09:00-18:00 &gt;</span>
             </button>
 
             <button
-              onClick={() => triggerPendingFeature('企业员工身份验证状态', '核验当前微信账号与集团 HR 系统的绑定状态。')}
+              onClick={() => triggerPendingFeature('账号与支付验证状态', '查看当前手机号与微信账号的绑定状态。')}
               className="w-full py-2.5 flex items-center justify-between hover:bg-gray-50 px-1 rounded-lg transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2 font-medium">
                 <ShieldCheck className="w-4 h-4 text-blue-600" />
-                <span>企业安全认证凭证</span>
+                <span>账号安全与支付验证</span>
               </div>
               <span className={`${user.phoneVerified ? 'text-emerald-600' : 'text-amber-600'} font-bold text-[10px]`}>{user.phoneVerified ? '手机已验证' : '手机待验证'} &gt;</span>
             </button>
@@ -189,7 +189,11 @@ export const MPProfilePage: React.FC = () => {
         </div>
 
         <div className="text-center py-2 text-[10px] text-gray-400">
+<<<<<<< HEAD
           <div>智慧翼企业福利商城 v2.8.0</div>
+=======
+          <div>{currentMall.mallName} 消费商城 v2.8.0</div>
+>>>>>>> 08941c83 (fix(storefront): label L6 consumer experience)
           <div>技术服务方：雍彻科技（SGSYEN TECH）</div>
         </div>
       </div>
