@@ -161,7 +161,6 @@ const REPAIR_FILES = [
   '20260903110000_zhudatuan_payment_webhook_access.sql',
   '20260903111000_publish_canonical_guest_catalog.sql',
   '20260903112000_enable_l6_storefront_self_registration.sql',
-  '20260904010000_allow_platform_owner_l6_registration.sql',
 ];
 
 const mode = process.argv[2];

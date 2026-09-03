@@ -1,5 +1,6 @@
 export const CANONICAL_STOREFRONT_AUTH_ORIGIN = 'https://accounts.zhudatuan.com';
 export const LOCAL_STOREFRONT_AUTH_ORIGIN = 'http://127.0.0.1:3002';
+export const DEFAULT_STOREFRONT_APPLICATION = 'zdt-l1-verify';
 
 const LOCAL_AUTH_ORIGINS = new Set([LOCAL_STOREFRONT_AUTH_ORIGIN, 'http://localhost:3002']);
 
@@ -19,14 +20,8 @@ export function resolveStorefrontAuthOrigin(candidate: string | undefined, envir
 export function storefrontAuthHref(
   surface: StorefrontSurface = runtimeStorefrontSurface(),
   application: string = DEFAULT_STOREFRONT_APPLICATION,
-  runtimeLocation: RuntimeStorefrontLocation | undefined = browserLocation(),
 ): string {
-  const facadeOrigin = surface === 'h5' && runtimeLocation && !CANONICAL_STOREFRONT_HOSTS.has(runtimeLocation.hostname)
-    ? runtimeLocation.origin
-    : undefined;
-  const target = facadeOrigin
-    ? new URL('/accounts/', facadeOrigin)
-    : new URL('/', resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV));
+  const target = new URL('/', resolveStorefrontAuthOrigin(process.env.NEXT_PUBLIC_AUTH_ORIGIN, process.env.NODE_ENV));
   target.searchParams.set('target', 'storefront');
   target.searchParams.set('surface', surface);
   target.searchParams.set('application', application);

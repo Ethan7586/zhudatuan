@@ -4,6 +4,37 @@ import type { OperationDatabase } from '../../foundation/application/ModuleOpera
 import { MemberPort } from './MemberPort';
 
 describe('MemberPort invitation constraints', () => {
+  it('resolves a published storefront and its active registration policy without an invite', async () => {
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{
+      application_id: 'application:one', application_slug: 'mall-one', organization_id: 'mall:one',
+      organization_name: '一号商城', role_id: 'role-zhudatuan-storefront-member:mall:one',
+      terms_title: '协议', terms_body: '正文', privacy_title: '隐私', privacy_body: '正文', terms_hash: 'a'.repeat(64),
+    }]));
+    const port = new MemberPort();
+
+    await expect(port.storefrontRegistration({ query } as unknown as OperationDatabase, 'mall-one'))
+      .resolves.toMatchObject({ application_slug: 'mall-one', organization_id: 'mall:one' });
+    const [sql, values = []] = query.mock.calls[0]!;
+    expect(sql).toContain('from experience.application application');
+    expect(sql).toContain("organization.kind='mall'");
+    expect(sql).toContain("release.state='active'");
+    expect(values).toEqual(['mall-one']);
+  });
+
+  it('projects the active profile name through the existing session security read', async () => {
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) =>
+      result([{ display_name: '张三', mobile_ciphertext: 'ciphertext:mobile' }]));
+    const port = new MemberPort();
+
+    await expect(port.securityProfile({ query } as unknown as OperationDatabase, 'principal:one')).resolves.toEqual({
+      displayName: '张三', mobileCiphertext: 'ciphertext:mobile',
+    });
+
+    const [sql, values = []] = query.mock.calls[0]!;
+    expect(sql).toContain('select display_name,mobile_ciphertext from member.profile');
+    expect(values).toEqual(['principal:one']);
+  });
+
   it('resolves only invitations that are effective, active, unexpired and not exhausted', async () => {
     const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{ terms_hash: 'f'.repeat(64) }]));
     const port = new MemberPort();

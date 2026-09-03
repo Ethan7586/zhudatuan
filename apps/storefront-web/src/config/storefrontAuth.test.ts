@@ -23,17 +23,4 @@ describe('storefront auth origin boundary', () => {
     expect(Object.fromEntries(h5.searchParams)).toEqual({ target: 'storefront', surface: 'h5', application: 'zdt-l1-verify' });
     expect(Object.fromEntries(mini.searchParams)).toEqual({ target: 'storefront', surface: 'mini', application: 'zdt-l1-verify' });
   });
-
-  it('keeps a custom L1 H5 storefront on its same-origin account mount', () => {
-    const target = new URL(storefrontAuthHref('h5', 'zdt-l1-verify', {
-      hostname: 'merchant.example',
-      origin: 'https://merchant.example',
-    }));
-
-    expect(target.origin).toBe('https://merchant.example');
-    expect(target.pathname).toBe('/accounts/');
-    expect(Object.fromEntries(target.searchParams)).toEqual({
-      target: 'storefront', surface: 'h5', application: 'zdt-l1-verify',
-    });
-  });
 });

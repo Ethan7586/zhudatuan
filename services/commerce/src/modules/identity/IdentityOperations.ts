@@ -17,7 +17,7 @@ import { RETURN_TARGETS } from './infrastructure/ReturnTargetCatalog';
 import { ReturnTargetSigner } from './infrastructure/ReturnTargetSigner';
 import { assertLoginAllowed, assertPublicRisk, authTarget, consumeChallenge, consumeChallengeRate, recordLoginFailure, requestCookie, sessionCookies } from './IdentitySecurity';
 import { accessPort } from '../access/AccessPort';
-import { memberPort } from '../member/MemberPort';
+import { memberPort, type MemberInvite } from '../member/MemberPort';
 import { organizationPort } from '../organization/OrganizationPort';
 import { canonicalIdentitySubject, canonicalMobile, identitySubjectVariants } from './IdentitySubject';
 
@@ -30,6 +30,7 @@ const CORE_OPERATIONS = [
   'identity.sessions.revoke',
   'identity.challenges.create',
   'identity.invitations.read',
+  'identity.storefronts.read',
   'identity.invitations.create',
   'identity.invitations.revoke',
   'identity.members.create',
@@ -276,19 +277,28 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           if (!['registration', 'password_reset', 'phone_change', 'stepup', 'wechat_bind'].includes(purpose)) throw new Error('CHALLENGE_PURPOSE_INVALID');
           if (purpose === 'registration' && !/^\+?[1-9][0-9]{7,14}$/.test(destination)) throw new Error('MOBILE_INVALID');
           const destinationHash = digest(destination);
-          const device = digest(request.input.headers['x-device-id'] ?? 'unknown');
-          const peer = digest(request.input.headers['x-peer-address'] ?? 'unknown');
-          await assertPublicRisk(risk, request, destinationHash, device);
-          const [envelope, recipient] = await Promise.all([kms.encrypt('identity/challenge', code, { challenge: id, purpose }), kms.encrypt('identity/destination', destination, { challenge: id, purpose })]);
-          return { body, id, code, purpose, destinationHash, device, peer, envelope, recipient };
+          const registration = purpose === 'registration' ? registrationReference(body) : undefined;
+          const registrationHash = registration === undefined ? undefined
+            : digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
+          const resolvesBoundMobile = purpose === 'login' || purpose === 'password_reset';
+          const legacyMobileToken = resolvesBoundMobile ? createHash('sha256').update(destination).digest('hex') : undefined;
+          const [envelope, recipient, mobileLookup] = await Promise.all([
+            kms.encrypt('identity/challenge', code, { challenge: id, purpose }),
+            kms.encrypt('identity/destination', destination, { challenge: id, purpose }),
+            resolvesBoundMobile ? kms.encrypt('identity/mobile', destination, { challenge: id, purpose }) : Promise.resolve(undefined),
+          ]);
+          return { body, id, code, purpose, destinationHash, registration, registrationHash, legacyMobileToken, envelope, recipient, mobileLookup };
         },
         execute: async (request, database, prepared) => {
-          const { body, id, code, purpose, destinationHash, device, peer, envelope, recipient } = prepared;
-          await consumeChallengeRate(database, [
-            [destinationHash, purpose],
-            [peer, `network:${purpose}`],
-            [device, `device:${purpose}`],
-          ]);
+          const { body, id, code, purpose, destinationHash, registration, registrationHash, legacyMobileToken, envelope, recipient, mobileLookup } = prepared;
+          if (purpose === 'registration') {
+            if (!registration || !registrationHash) throw new Error('REGISTRATION_CONTEXT_INVALID');
+            if (registration.kind === 'invite') {
+              await requireValidInvite(memberPort.assertRegistrationInvite(database, registrationHash, destinationHash));
+            } else {
+              await requireValidStorefront(memberPort.storefrontRegistration(database, registration.value));
+            }
+          }
           let principal = typeof body.principal === 'string' ? body.principal : null;
           if (purpose === 'password_reset') {
             const credential = await database.query<{ principal_id: string }>(
@@ -304,7 +314,7 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           values($1,$2,$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp()) returning id,purpose,expires_at
         ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
-            [id, principal, purpose, destinationHash, codeDigest(id, code), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
+            [id, principal, purpose, destinationHash, codeDigest(id, registrationHash === undefined ? code : `${code}:${registrationHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
@@ -319,6 +329,25 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
         const body = bodyRecord(request);
         const result = await memberPort.invite(database, digest(textField(body, 'invite')));
         return rowResult(result);
+      },
+      'identity.storefronts.read': async (request, database) => {
+        const body = bodyRecord(request);
+        const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, storefrontSlug(body)));
+        return {
+          status: 200,
+          body: {
+            terms_title: storefront.terms_title,
+            terms_body: storefront.terms_body,
+            privacy_title: storefront.privacy_title,
+            privacy_body: storefront.privacy_body,
+            terms_hash: storefront.terms_hash,
+            application_id: storefront.application_id,
+            application_slug: storefront.application_slug,
+            organization_id: storefront.organization_id,
+            organization_name: storefront.organization_name,
+            target_client: 'storefront',
+          },
+        };
       },
       'identity.invitations.create': async (request, database) => {
         const access = requireAccess(request);
@@ -414,12 +443,9 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
           if (existing.rows[0] && authorization === null) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           const registration = registrationReference(body);
           const registrationHash = digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
-          const deferredPhoneVerification = registration.kind === 'storefront' && body.phoneVerification === 'checkout';
-          if (!deferredPhoneVerification) {
-            await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
-              (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
-              { purpose: 'registration', destinationHash: subjectHash });
-          }
+          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
+            (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
+            { purpose: 'registration', destinationHash: subjectHash });
           let registrationTarget: MemberInvite;
           if (registration.kind === 'invite') {
             registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
@@ -436,9 +462,6 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
               governance_level: null,
             };
             await database.query(`select set_config('app.registration_mall_id',$1,true)`, [storefront.organization_id]);
-            if (deferredPhoneVerification) {
-              await database.query(`select set_config('app.registration_phone_verification','checkout',true)`);
-            }
           }
           if (authorization !== null && registrationTarget.target_client !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
           const organization = registrationTarget.organization_id;
@@ -487,13 +510,11 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
               mobileFingerprint: subjectHash,
               mobileMasked: `${subject.slice(0, 3)}****${subject.slice(-4)}`,
             });
-            if (!deferredPhoneVerification) {
-              await database.query(
-                `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-                values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-                [assurance, principal, subjectHash]
-              );
-            }
+            await database.query(
+              `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+              values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
+              [assurance, principal, subjectHash]
+            );
             result = registrationTarget.target_client === 'operator'
               ? await accessPort.createOperatorRegistration(database, {
                   storefrontMembership: membership,
@@ -787,6 +808,28 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
     CORE_OPERATIONS
   );
   return new WechatOperations(core, pool.workload('command'), context.container.get(WECHAT_IDENTITY), kms, audit, keys.identity, keys.session, tickets);
+}
+
+type RegistrationReference = Readonly<{ kind: 'invite' | 'storefront'; value: string }>;
+
+function registrationReference(body: Readonly<Record<string, unknown>>): RegistrationReference {
+  const hasInvite = typeof body.invite === 'string' && body.invite.trim().length > 0;
+  const hasStorefront = typeof body.application === 'string' && body.application.trim().length > 0;
+  if (hasInvite === hasStorefront) throw new Error('REGISTRATION_CONTEXT_INVALID');
+  if (hasInvite) return Object.freeze({ kind: 'invite', value: textField(body, 'invite') });
+  return Object.freeze({ kind: 'storefront', value: storefrontSlug(body) });
+}
+
+function storefrontSlug(body: Readonly<Record<string, unknown>>): string {
+  const value = textField(body, 'application', 48).trim();
+  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(value)) throw new Error('STOREFRONT_NOT_FOUND');
+  return value;
+}
+
+async function requireValidStorefront<T>(operation: Promise<T | undefined>): Promise<T> {
+  const storefront = await operation;
+  if (storefront === undefined) reject(404, 'STOREFRONT_NOT_FOUND');
+  return storefront;
 }
 
 function maskMobile(value: string): string {

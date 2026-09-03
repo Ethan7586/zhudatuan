@@ -65,6 +65,7 @@ assertCaddyMatcher(apiHost, 'registrationPreflight', ['OPTIONS'], [
   '/api/v1/identity/session',
   '/api/v1/identity/challenges',
   '/api/v1/identity/invitations/resolve',
+  '/api/v1/identity/storefronts/resolve',
   '/api/v1/identity/members',
 ]);
 assertCaddyMatcher(apiHost, 'registrationPost', ['POST'], [
@@ -72,6 +73,7 @@ assertCaddyMatcher(apiHost, 'registrationPost', ['POST'], [
   '/api/v1/identity/tickets/exchange',
   '/api/v1/identity/challenges',
   '/api/v1/identity/invitations/resolve',
+  '/api/v1/identity/storefronts/resolve',
   '/api/v1/identity/members',
 ]);
 assertCaddyMatcher(apiHost, 'registrationSessionRead', ['GET'], ['/api/v1/identity/session']);
@@ -96,6 +98,9 @@ const registrationOperations = [
   ['identity.session.delete', 'DELETE', '/api/v1/identity/session'],
   ['identity.challenges.create', 'POST', '/api/v1/identity/challenges'],
   ['identity.invitations.read', 'POST', '/api/v1/identity/invitations/resolve'],
+  ['identity.storefronts.read', 'POST', '/api/v1/identity/storefronts/resolve'],
+  ['identity.invitations.create', 'POST', '/api/v1/identity/invitations'],
+  ['identity.invitations.revoke', 'DELETE', '/api/v1/identity/invitations/{invitationid}'],
   ['identity.members.create', 'POST', '/api/v1/identity/members'],
 ];
 for (const [id, method, path] of registrationOperations) {

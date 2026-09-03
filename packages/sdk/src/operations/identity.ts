@@ -13,6 +13,7 @@ export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.sessions.revoke",
   "identity.challenges.create",
   "identity.invitations.read",
+  "identity.storefronts.read",
   "identity.invitations.create",
   "identity.invitations.revoke",
   "identity.members.create",
@@ -38,6 +39,7 @@ export interface IdentityOperations {
   readonly sessionsRevoke: OperationMethod<"identity.sessions.revoke">;
   readonly challengesCreate: OperationMethod<"identity.challenges.create">;
   readonly invitationsRead: OperationMethod<"identity.invitations.read">;
+  readonly storefrontsRead: OperationMethod<"identity.storefronts.read">;
   readonly invitationsCreate: OperationMethod<"identity.invitations.create">;
   readonly invitationsRevoke: OperationMethod<"identity.invitations.revoke">;
   readonly membersCreate: OperationMethod<"identity.members.create">;
@@ -68,6 +70,7 @@ export function createIdentityOperations(client: OperationExecutor): IdentityOpe
     sessionsRevoke: bindSessionsRevoke(client),
     challengesCreate: bindChallengesCreate(client),
     invitationsRead: bindInvitationsRead(client),
+    storefrontsRead: bindStorefrontsRead(client),
     invitationsCreate: bindInvitationsCreate(client),
     invitationsRevoke: bindInvitationsRevoke(client),
     membersCreate: bindMembersCreate(client),
@@ -147,6 +150,14 @@ export function createFetchIdentityInvitationsRead(baseUrl: string): OperationMe
 
 function bindInvitationsRead(client: OperationExecutor): OperationMethod<"identity.invitations.read"> {
   return bindOperation(client, defineStructuralOperation({"id":"identity.invitations.read","method":"POST","path":"/api/v1/identity/invitations/resolve","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchIdentityStorefrontsRead(baseUrl: string): OperationMethod<"identity.storefronts.read"> {
+  return bindStorefrontsRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindStorefrontsRead(client: OperationExecutor): OperationMethod<"identity.storefronts.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"identity.storefronts.read","method":"POST","path":"/api/v1/identity/storefronts/resolve","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchIdentityInvitationsCreate(baseUrl: string): OperationMethod<"identity.invitations.create"> {

@@ -8,6 +8,19 @@ export interface MemberInvite {
   readonly storefront_organization_id: string | null;
 }
 
+export interface StorefrontRegistrationContext {
+  readonly application_id: string;
+  readonly application_slug: string;
+  readonly organization_id: string;
+  readonly organization_name: string;
+  readonly role_id: string;
+  readonly terms_title: string;
+  readonly terms_body: string;
+  readonly privacy_title: string;
+  readonly privacy_body: string;
+  readonly terms_hash: string;
+}
+
 export interface MemberProfile {
   readonly member: string;
   readonly principal: string;
@@ -19,9 +32,33 @@ export interface MemberProfile {
 }
 
 export class MemberPort {
-  async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ mobileCiphertext: string | null }>> {
-    const result = await database.query<{ mobile_ciphertext: string | null }>(
-      `select mobile_ciphertext from member.profile
+  async storefrontRegistration(database: OperationDatabase, applicationSlug: string): Promise<StorefrontRegistrationContext | undefined> {
+    const result = await database.query<StorefrontRegistrationContext>(`select application.id application_id,
+      application.public_slug application_slug,binding.mall_id organization_id,organization.name organization_name,
+      role.id role_id,policy.terms_title,policy.terms_body,policy.privacy_title,policy.privacy_body,policy.terms_hash
+      from experience.application application
+      join experience.binding binding on binding.application_id=application.id and binding.domain=application.public_slug
+      join organization.organization organization on organization.id=binding.mall_id
+        and organization.kind='mall' and organization.status='active'
+      join access.role role on role.id=case when binding.mall_id='mall-zhudatuan'
+        then 'role-zhudatuan-storefront-member' else 'role-zhudatuan-storefront-member:'||binding.mall_id end
+        and role.scope_id=binding.mall_id and role.status='active'
+      cross join lateral(select registration.terms_title,registration.terms_body,registration.privacy_title,
+        registration.privacy_body,registration.terms_hash from identity.registrationpolicy registration
+        where registration.effective_at<=clock_timestamp()
+          and (registration.retired_at is null or registration.retired_at>clock_timestamp())
+        order by registration.version desc limit 1) policy
+      where application.public_slug=$1 and application.status='active'
+        and exists(select 1 from experience.release release where release.application_id=application.id
+          and release.state='active' and release.effective_at<=clock_timestamp()
+          and (release.retired_at is null or release.retired_at>clock_timestamp()))
+      order by application.updated_at desc,application.id limit 1`, [applicationSlug]);
+    return result.rows[0];
+  }
+
+  async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ displayName: string | null; mobileCiphertext: string | null }>> {
+    const result = await database.query<{ display_name: string; mobile_ciphertext: string | null }>(
+      `select display_name,mobile_ciphertext from member.profile
       where principal_id=$1 and status='active'`,
       [principal]
     );

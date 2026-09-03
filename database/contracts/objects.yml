@@ -109,7 +109,7 @@ objects:
   - id: access.protect_zhudatuan_registration_access_write
     kind: function
     owner: access
-    source: database/supabase/migrations/20260904010000_allow_platform_owner_l6_registration.sql
+    source: database/supabase/migrations/20260903112000_enable_l6_storefront_self_registration.sql
     operationalOwner: access
   - id: access.purchase_application_allowed
     kind: function

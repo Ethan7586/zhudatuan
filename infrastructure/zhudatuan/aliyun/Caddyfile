@@ -125,7 +125,7 @@ api.zhudatuan.com {
 
 	@registrationPreflight {
 		method OPTIONS
-		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/session /api/v1/identity/challenges /api/v1/identity/invitations /api/v1/identity/invitations/* /api/v1/identity/invitations/resolve /api/v1/identity/storefronts/resolve /api/v1/identity/members /api/v1/members /api/v1/access/center
 	}
 	handle @registrationPreflight {
 		reverse_proxy 127.0.0.1:4321 {
@@ -135,7 +135,7 @@ api.zhudatuan.com {
 
 	@registrationPost {
 		method POST
-		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/challenges /api/v1/identity/invitations/resolve /api/v1/identity/members
+		path /api/v1/identity/sessions /api/v1/identity/tickets/exchange /api/v1/identity/challenges /api/v1/identity/invitations /api/v1/identity/invitations/resolve /api/v1/identity/storefronts/resolve /api/v1/identity/members
 	}
 	handle @registrationPost {
 		reverse_proxy 127.0.0.1:4321 {
