@@ -207,6 +207,49 @@ api.zhudatuan.com {
 		}
 	}
 
+	# WeChat Pay callbacks have a single provider-only runtime and exact route.
+	@paymentWebhookApi {
+		method POST
+		path /api/v1/webhooks/wechat/payment
+	}
+	handle @paymentWebhookApi {
+		reverse_proxy 127.0.0.1:4326 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	# Console Support is an independent least-privilege runtime. Keep method and
+	# path matching explicit so no other Commerce operation becomes public.
+	@consoleSupportPreflight {
+		method OPTIONS
+		path /api/v1/support/cases /api/v1/support/cases/*/messages
+	}
+	handle @consoleSupportPreflight {
+		reverse_proxy 127.0.0.1:4324 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@consoleSupportRead {
+		method GET
+		path /api/v1/support/cases /api/v1/support/cases/*/messages
+	}
+	handle @consoleSupportRead {
+		reverse_proxy 127.0.0.1:4324 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	@consoleSupportSend {
+		method POST
+		path /api/v1/support/cases/*/messages
+	}
+	handle @consoleSupportSend {
+		reverse_proxy 127.0.0.1:4324 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	# The WebBusiness process is deliberately narrower than the Canonical API
 	# contract. Keep every public path explicit so an added operation cannot
 	# become reachable merely because it shares an /api/v1 prefix.

@@ -5,6 +5,8 @@ export * from './JobsEnvironment';
 export * from './IdentityRegistrationApiEnvironment';
 export * from './WebBusinessApiEnvironment';
 export * from './PurchaseApiEnvironment';
+export * from './PaymentWebhookApiEnvironment';
+export * from './MallProvisioningApiEnvironment';
 export * from './LocalEnvironment';
 export * from './MigrationEnvironment';
 export * from './RegistrationMigrationEnvironment';
