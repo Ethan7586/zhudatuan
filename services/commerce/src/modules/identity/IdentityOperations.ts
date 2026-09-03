@@ -535,9 +535,12 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (existing.rows[0] && authorization === null) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           const registration = registrationReference(body);
           const registrationHash = digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
-          await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
-            (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
-            { purpose: 'registration', destinationHash: subjectHash });
+          const deferredPhoneVerification = registration.kind === 'storefront' && body.phoneVerification === 'checkout';
+          if (!deferredPhoneVerification) {
+            await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
+              (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
+              { purpose: 'registration', destinationHash: subjectHash });
+          }
           let registrationTarget: MemberInvite;
           if (registration.kind === 'invite') {
             registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
@@ -602,11 +605,13 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               mobileFingerprint: subjectHash,
               mobileMasked: `${subject.slice(0, 3)}****${subject.slice(-4)}`,
             });
-            await database.query(
-              `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
-              values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
-              [assurance, principal, subjectHash]
-            );
+            if (!deferredPhoneVerification) {
+              await database.query(
+                `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+                values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
+                [assurance, principal, subjectHash]
+              );
+            }
             result = registrationTarget.target_client === 'operator'
               ? await accessPort.createOperatorRegistration(database, {
                   storefrontMembership: membership,
@@ -650,23 +655,26 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const csrf = randomBytes(32).toString('base64url');
           const accessVersion = Number(result.access_version);
           if (!Number.isSafeInteger(accessVersion) || accessVersion < 1 || result.client !== 'storefront') throw new Error('MEMBERSHIP_INACTIVE');
+          const sessionAssurance = deferredPhoneVerification ? 1 : 2;
           await database.query(
             `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
-            values($1,$2,$3,$4,$5,$6,'storefront',$7,$8,$9,2,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
+            values($1,$2,$3,$4,$5,$6,'storefront',$7,$8,$9,$10,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
             [session, resolvedPrincipal, registeredMembership, tokenHash(token), credentialVersion, accessVersion,
               digest(request.input.headers['x-peer-address'] ?? 'unknown'), String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
-              String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128)]
+              String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128), sessionAssurance]
           );
-          await database.query(
-            `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
-            values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours')`,
-            [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex')]
-          );
+          if (!deferredPhoneVerification) {
+            await database.query(
+              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
+              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours')`,
+              [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex')]
+            );
+          }
           await publishIdentityEvent(database, 'identity.session.created', session, registeredMembership, request.input.idempotency!, {
             principal: resolvedPrincipal,
             membership: registeredMembership,
-            assurance: 2,
-            loginMethod: 'registration_otp',
+            assurance: sessionAssurance,
+            loginMethod: deferredPhoneVerification ? 'registration_password' : 'registration_otp',
           });
           const callback = await tickets.issue(database, session, 'storefront', authorization);
           return {

@@ -250,6 +250,29 @@ describe('canonical registration', () => {
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ credentials: 'include' });
   });
 
+  it('defers L6 phone verification to checkout while creating a password account', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(membership(), 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember({
+      subject: '13800138000',
+      password: 'Generated!Password2',
+      displayName: 'L6消费者8000',
+      applicationSlug: 'zdt-l1-verify',
+      deferPhoneVerification: true,
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    })).resolves.toMatchObject({ target: 'storefront' });
+
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+      subject: '+8613800138000',
+      application: 'zdt-l1-verify',
+      phoneVerification: 'checkout',
+    });
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).not.toHaveProperty('challenge');
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).not.toHaveProperty('code');
+  });
+
   it('normalizes a PostgreSQL bigint access version in the registration receipt', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...membership(), access_version: '7' }, 201));
     vi.stubGlobal('fetch', fetchMock);

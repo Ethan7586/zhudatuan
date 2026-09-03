@@ -106,8 +106,9 @@ export interface CanonicalMemberRegistrationInput {
   readonly displayName: string;
   readonly inviteCode?: string;
   readonly applicationSlug?: string;
-  readonly challengeId: string;
-  readonly code: string;
+  readonly challengeId?: string;
+  readonly code?: string;
+  readonly deferPhoneVerification?: boolean;
   readonly termsAccepted: boolean;
   readonly termsHash: string;
   readonly directLogin?: boolean;
@@ -200,6 +201,12 @@ async function createRegistrationChallenge(
 export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
   const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
+  const verification = input.deferPhoneVerification === true
+    ? { phoneVerification: 'checkout' }
+    : {
+        challenge: requiredText(input.challengeId, '请先获取验证码'),
+        code: requiredText(input.code, '请输入验证码'),
+      };
   const output = MembershipSchema.parse(
     await identityRequest(
       '/api/v1/identity/members',
@@ -208,8 +215,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         password: requiredPassword(input.password),
         displayName: requiredText(input.displayName, '请输入姓名'),
         ...memberRegistrationReference(input),
-        challenge: requiredText(input.challengeId, '请先获取验证码'),
-        code: requiredText(input.code, '请输入验证码'),
+        ...verification,
         termsAccepted: true,
         termsHash: requiredText(input.termsHash, '注册条款版本无效'),
         ...(authorization === undefined ? {} : { authorization: authorization.request }),

@@ -404,6 +404,26 @@ describe('canonical member registration security boundary', () => {
     expect(roles?.values).toContain('role-zhudatuan-storefront-member:mall:l1-hongtai');
   });
 
+  it('creates an L6 password account and defers phone verification until checkout', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: false,
+      subjectExists: false,
+      storefrontAvailable: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(storefrontPasswordRegistrationRequest('registration:storefront-password'));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: { organization_id: 'mall:l1-hongtai', client: 'storefront', authentication: { target: 'storefront' } },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes("'phone_otp',2"))).toBe(false);
+    const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
+    expect(session?.values.at(-1)).toBe(1);
+  });
+
   it('reuses one phone identity while creating an independent membership in another storefront', async () => {
     const harness = registrationHarness({
       challengeAccepted: true,
@@ -580,6 +600,32 @@ function storefrontRegistrationRequest(idempotency: string): OperationRequest {
       signal: new AbortController().signal,
       idempotency,
     },
+  };
+}
+
+function storefrontPasswordRegistrationRequest(idempotency: string): OperationRequest {
+  return {
+    input: {
+      path: {},
+      query: {},
+      headers: { 'x-device-id': 'device:storefront-registration-test' },
+      body: {
+        subject: SUBJECT,
+        password: 'Automatic!Password1',
+        displayName: 'L6消费者8000',
+        application: 'zdt-l1-verify',
+        termsAccepted: true,
+        termsHash: 'f'.repeat(64),
+        authorization: authorizationRequest(),
+        phoneVerification: 'checkout',
+      },
+      rawBody: '',
+      deadline: Date.now() + 5_000,
+      signal: new AbortController().signal,
+      idempotency,
+    },
+    type: 'identity.members.create',
+    access: null,
   };
 }
 
