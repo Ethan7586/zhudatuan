@@ -13,7 +13,8 @@ describe('SMS login database boundary', () => {
   it('only resolves a mobile when exactly one active principal owns it', async () => {
     await expect(resolveBoundMobilePrincipal(database([{ principal_id: 'principal:one' }]), ['token'])).resolves.toBe('principal:one');
     await expect(resolveBoundMobilePrincipal(database([]), ['token'])).resolves.toBeNull();
-    await expect(resolveBoundMobilePrincipal(database([{ principal_id: 'one' }, { principal_id: 'two' }]), ['token'])).resolves.toBeNull();
+    await expect(resolveBoundMobilePrincipal(database([{ principal_id: 'one' }, { principal_id: 'two' }]), ['token']))
+      .rejects.toThrow('IDENTITY_SUBJECT_EXISTS');
   });
 
   it('keeps the original account subject as the password credential lookup', async () => {
@@ -41,6 +42,15 @@ describe('SMS login database boundary', () => {
     expect(db.calls[0]?.text).toContain('profile.mobile_token=any');
     expect(db.calls[1]?.values).toEqual(['mobile-hash', 'principal:owner']);
     expect(db.calls[1]?.text).toContain('credential.principal_id=$2');
+  });
+
+  it('never falls back to a password credential when a mobile resolves to multiple principals', async () => {
+    const db = databaseSequence([{ principal_id: 'principal:owner' }, { principal_id: 'principal:invitee' }]);
+
+    await expect(resolvePasswordLoginCredential(db, {
+      subjectHash: 'mobile-hash', mobileTokens: ['mobile-hash', 'mobile-fingerprint'],
+    })).rejects.toThrow('IDENTITY_SUBJECT_EXISTS');
+    expect(db.calls).toHaveLength(1);
   });
 
   it('binds verification to login purpose, destination, expiry and an unconsumed locked row', async () => {

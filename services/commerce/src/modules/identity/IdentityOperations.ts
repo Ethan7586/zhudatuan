@@ -336,14 +336,6 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           if (purpose === 'login' || purpose === 'password_reset') {
             principal = await resolveBoundMobilePrincipal(database, [destinationHash, mobileLookup!.fingerprint, legacyMobileToken!]);
           }
-          if (purpose === 'password_reset' && principal === null) {
-            const credential = await database.query<{ principal_id: string }>(
-              `select principal_id from identity.credential
-            where provider='password' and subject_hash=$1 and status='active'`,
-              [destinationHash]
-            );
-            principal = credential.rows[0]?.principal_id ?? null;
-          }
           const result = await database.query(
             `with challenge as (
           insert into identity.challenge(id,principal_id,purpose,destination_hash,code_hash,attempts,expires_at,created_at)
@@ -495,7 +487,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           const { body, subject, password, principal, mobile, authorization, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
           const subjectHash = digest(subject);
           await database.query('select pg_advisory_xact_lock(hashtext($1))', [subjectHash]);
-          const existing = await database.query<{ principal_id: string; credential_version: number }>(
+          const mobileTokens = [subjectHash, mobile.fingerprint, createHash('sha256').update(subject).digest('hex')];
+          const boundPrincipal = await resolveBoundMobilePrincipal(database, mobileTokens);
+          let existing = await database.query<{ principal_id: string; credential_version: number }>(
             `select credential.principal_id,principal.credential_version
             from identity.credential credential join identity.principal principal on principal.id=credential.principal_id
             where credential.provider='password' and credential.subject_hash=$1 and credential.status='active'
@@ -503,6 +497,17 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
             for update of credential,principal`,
             [subjectHash]
           );
+          if (boundPrincipal !== null && existing.rows[0]?.principal_id !== boundPrincipal) {
+            existing = await database.query<{ principal_id: string; credential_version: number }>(
+              `select principal.id principal_id,principal.credential_version from identity.principal principal
+              where principal.id=$1 and principal.status='active'
+                and exists (select 1 from identity.credential credential where credential.principal_id=principal.id
+                  and credential.provider='password' and credential.status='active')
+              for update of principal`,
+              [boundPrincipal]
+            );
+            if (!existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+          }
           if (existing.rows[0] && authorization === null) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           const inviteHash = digest(textField(body, 'invite'));
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
@@ -935,6 +940,8 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
         execute: async (_request, database, { access, body, mobile, envelope }) => {
           const governance = requireGovernanceContext(access);
           await database.query("select pg_advisory_xact_lock(hashtext('zhudatuan:platform-owner-transfer:v1'))");
+          const destinationHash = digest(mobile);
+          await database.query('select pg_advisory_xact_lock(hashtext($1))', [destinationHash]);
           const profile = await database.query<{ mobile_ciphertext: string | null }>(
             `select mobile_ciphertext from member.profile where principal_id=$1 and status='active' for update`, [access.actor.id]);
           const current = profile.rows[0];
@@ -945,13 +952,16 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
               and expires_at>clock_timestamp() limit 1`, [access.actor.id, sessionDigest(access.actor.session)]);
             if (!passwordEvidence.rows[0]) reject(403, 'MOBILE_ENROLLMENT_PASSWORD_REQUIRED');
           } else if (!stepup.accepts(true, access.assurance, new Date())) reject(403, 'MOBILE_CHANGE_STEP_UP_REQUIRED');
+          const boundPrincipal = await resolveBoundMobilePrincipal(database,
+            [destinationHash, envelope.fingerprint, createHash('sha256').update(mobile).digest('hex')]);
+          if (boundPrincipal !== null && boundPrincipal !== access.actor.id) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'), codeDigest, access.actor.id,
-            { purpose: 'phone_change', destinationHash: digest(mobile), sessionHash: sessionDigest(access.actor.session) });
+            { purpose: 'phone_change', destinationHash, sessionHash: sessionDigest(access.actor.session) });
           if (governance.isExactOwner) {
             const changed = await database.query<{ profile: Readonly<Record<string, unknown>> }>(
               `select access.change_zhudatuan_owner_mobile($1,$2,$3,$4,$5,$6,$7,$8,$9) profile`,
               [access.actor.id, access.actor.session, textField(body, 'challenge'), envelope.ciphertext,
-                digest(mobile), envelope.fingerprint, maskMobile(mobile), sessionDigest(access.actor.session), sessionDigest(access.actor.session)]);
+                destinationHash, envelope.fingerprint, maskMobile(mobile), sessionDigest(access.actor.session), sessionDigest(access.actor.session)]);
             const result = changed.rows[0]?.profile;
             if (!result) throw new Error('MEMBER_PROFILE_NOT_FOUND');
             return { status: 200, body: result, headers: { ...sessionCookies('', '', 0), etag: `\"${String(result.version)}\"` } };

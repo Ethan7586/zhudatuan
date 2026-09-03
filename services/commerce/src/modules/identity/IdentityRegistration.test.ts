@@ -105,6 +105,16 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
   });
 
+  it('rejects a mobile already owned by another principal before consuming the change challenge', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
+      boundMobilePrincipal: 'principal:other-mobile-owner', mobileCiphertext: null, passwordEvidence: true });
+
+    await expect(identityOperations(context(harness.pool)).invoke(mobileManageRequest()))
+      .resolves.toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('update member.profile set mobile_ciphertext'))).toBe(false);
+  });
+
   it('revokes every session after password-proven first mobile enrollment', async () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
       mobileCiphertext: null, passwordEvidence: true });
@@ -281,6 +291,16 @@ describe('canonical member registration security boundary', () => {
     expect(credential?.values).toEqual([subjectDigest(SUBJECT), 'principal:mobile-login']);
   });
 
+  it('rejects mobile password login when the profile and credential belong to different principals', async () => {
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: true,
+      boundMobilePrincipal: 'principal:owner', credentialSecret: await new PasswordPolicy().hash('Current!Password1') });
+
+    await expect(identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, 'Current!Password1')))
+      .resolves.toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
+    expect(harness.queries.some(({ text }) => text.includes('select credential.principal_id,credential.secret_hash'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.session'))).toBe(false);
+  });
+
   it('rejects an invalid invitation before creating a challenge or queuing an SMS job', async () => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false });
     const kms = {
@@ -310,8 +330,21 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
   });
 
+  it('returns 409 when an invited mobile is already bound to an account-name identity', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
+      boundMobilePrincipal: 'principal:owner-mobile' });
+
+    const result = await identityOperations(context(harness.pool)).invoke(registrationRequest('registration:bound-mobile'));
+
+    expect(result).toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+  });
+
   it('reuses an existing phone identity, creates the invited storefront membership, and opens its session', async () => {
-    const harness = registrationHarness({ challengeAccepted: true, subjectExists: true, inviteAccepted: true });
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, inviteAccepted: true,
+      boundMobilePrincipal: 'principal:existing-phone' });
 
     const response = await identityOperations(context(harness.pool))
       .invoke(registrationRequest('registration:existing-direct-login', true));
@@ -563,11 +596,20 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.includes('select credential.principal_id,principal.credential_version')) {
         return result(input.subjectExists ? [{ principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
       }
+      if (text.includes('select principal.id principal_id,principal.credential_version')) {
+        return result([{ principal_id: String(values[0]), credential_version: 4 }]);
+      }
       if (text.includes('select principal_id from identity.credential')) {
         return result([{ principal_id: input.challengePrincipal ?? 'principal:password-reset' }]);
       }
       if (text.includes('profile.mobile_token=any')) {
-        return result(input.boundMobilePrincipal ? [{ principal_id: input.boundMobilePrincipal }] : []);
+        const principals = [
+          input.boundMobilePrincipal,
+          input.subjectExists ? 'principal:existing-phone' : null,
+          input.challengePrincipal,
+        ].filter((principal, index, all): principal is string => principal !== null && principal !== undefined
+          && all.indexOf(principal) === index);
+        return result(principals.map((principal_id) => ({ principal_id })));
       }
       if (text.includes('select credential.principal_id,credential.secret_hash')) {
         return result(input.credentialSecret ? [{ principal_id: input.boundMobilePrincipal ?? 'principal:password-login',
