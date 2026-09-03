@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { BrowserRequestHeaders, BrowserResponseHeaders, CONTRACT_VERSION, OperationCatalog, errorStatus } from '@shop/contract';
+import { BrowserRequestHeaders, BrowserResponseHeaders, CONTRACT_VERSION, OperationCatalog } from '@shop/contract';
+import { errorStatus } from '@shop/contract/errors';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { Deadline } from '../performance/Deadline';

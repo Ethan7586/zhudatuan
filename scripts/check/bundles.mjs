@@ -46,12 +46,22 @@ for (const [name, path, budget, lazyBudget] of artifacts) {
   }
 }
 assertQrSplit();
+assertCommerceErrorContract();
 if (findings.length > 0) {
   console.error(`bundle policy failed: ${findings.length}`);
   for (const finding of findings) console.error(finding);
   process.exit(1);
 }
 console.log('bundle policy: three clients and one commerce artifact present, retired and substitute code absent, budgets satisfied');
+
+function assertCommerceErrorContract() {
+  const artifact = join(root, 'services/commerce/dist/ApiMain.js');
+  if (!existsSync(artifact)) return;
+  const source = readFileSync(artifact, 'utf8');
+  const initialization = source.indexOf('init_ErrorContract();');
+  const consumer = source.indexOf('var ErrorMapper');
+  if (initialization < 0 || consumer < 0 || initialization > consumer) findings.push('BUNDLE_ERROR_CONTRACT_UNINITIALIZED commerce');
+}
 
 function assertQrSplit() {
   const directory = join(root, 'apps/console/dist');

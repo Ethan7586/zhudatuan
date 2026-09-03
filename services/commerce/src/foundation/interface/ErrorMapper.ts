@@ -1,4 +1,5 @@
-import { OperationCatalog, errorDefinition, type OperationId } from '@shop/contract';
+import { OperationCatalog, type OperationId } from '@shop/contract';
+import { errorDefinition } from '@shop/contract/errors';
 import { ApplicationError } from '../domain/ApplicationError';
 import { OperationRejection } from '../application/OperationRejection';
 import { json, type HttpResponse } from './HttpResponse';

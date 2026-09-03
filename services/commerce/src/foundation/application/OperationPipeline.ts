@@ -1,4 +1,5 @@
-import { errorStatus, operationSchema, OperationCatalog, type ApiErrorCode, type OperationId, type OperationInputFor } from '@shop/contract';
+import { operationSchema, OperationCatalog, type ApiErrorCode, type OperationId, type OperationInputFor } from '@shop/contract';
+import { errorStatus } from '@shop/contract/errors';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Bulkhead } from '../performance/Bulkhead';
 import { ApplicationError } from '../domain/ApplicationError';

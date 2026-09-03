@@ -1,4 +1,5 @@
-import { errorStatus, type ApiErrorCode } from '@shop/contract';
+import type { ApiErrorCode } from '@shop/contract';
+import { errorStatus } from '@shop/contract/errors';
 import type { ErrorDetail } from '../domain/ApplicationError';
 import type { OperationResult } from './OperationRequest';
 
