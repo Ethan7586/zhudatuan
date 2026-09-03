@@ -138,8 +138,8 @@ describe('canonical storefront production API', () => {
     }
   });
 
-  it('creates the external-payment order, invokes WeChat once, and reports authorizing without claiming paid', async () => {
-    const fetcher = apiFetch({ personalMinor: 100 });
+  it('creates the external-payment order, invokes WeChat once, and reports paid only after the server confirms it', async () => {
+    const fetcher = apiFetch({ personalMinor: 100, confirmedOrderPaymentState: 'paid' });
     const invoke = wechatBridge('get_brand_wcpay_request:ok');
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
@@ -149,7 +149,7 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:external',
-    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'authorizing' });
+    })).resolves.toEqual({ orderId: 'order:one', paymentState: 'captured' });
     const postOrder = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === '/api/v1/orders' && init?.method === 'POST');
     expect(postOrder).toBeTruthy();
     expect(invoke).toHaveBeenCalledOnce();
@@ -171,6 +171,21 @@ describe('canonical storefront production API', () => {
     })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
   });
 
+  it('reports reconciling when WeChat returns success but the canonical order is not paid yet', async () => {
+    const fetcher = apiFetch({ personalMinor: 100 });
+    wechatBridge('get_brand_wcpay_request:ok');
+    vi.stubGlobal('fetch', fetcher);
+    const { checkoutWithCanonicalPayment } = await import('./canonicalCheckout');
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(checkoutWithCanonicalPayment({
+      addressId: 'address:one',
+      items: [{ listingId: 'listing:one', quantity: 1 }],
+      idempotencyKey: 'checkout:reconcile-after-wechat',
+    }, { attempts: 1, wait: async () => undefined })).resolves.toEqual({ orderId: 'order:one', paymentState: 'reconciling' });
+  });
+
   it('preserves the created order and reports an explicit cancellation when the user closes WeChat Pay', async () => {
     const fetcher = apiFetch({ personalMinor: 100 });
     wechatBridge('get_brand_wcpay_request:cancel');
@@ -187,7 +202,8 @@ describe('canonical storefront production API', () => {
   });
 });
 
-function apiFetch(options: { personalMinor?: number; paymentState?: string } = {}) {
+function apiFetch(options: { personalMinor?: number; paymentState?: string; confirmedOrderPaymentState?: string } = {}) {
+  let orderReads = 0;
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const path = new URL(String(input)).pathname;
     const method = init?.method ?? 'GET';
@@ -195,7 +211,13 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
     if (path === '/api/v1/members/me') return json(PROFILE);
     if (path === '/api/v1/benefits/accounts') return json(ACCOUNTS);
     if (path === '/api/v1/benefits/ledgers') return json({ items: [] });
-    if (path === '/api/v1/orders' && method === 'GET') return json({ items: [] });
+    if (path === '/api/v1/orders' && method === 'GET') {
+      orderReads += 1;
+      if (orderReads > 1 && options.confirmedOrderPaymentState) {
+        return json({ items: [{ id: 'order:one', payment_state: options.confirmedOrderPaymentState }] });
+      }
+      return json({ items: [] });
+    }
     if (path === '/api/v1/catalog/listings') return json({ items: [{ id: 'listing:one', sku_id: 'sku:one', title: '空气炸锅', status: 'published', product_type: 'physical', cover_url: null, subtitle: '企业严选' }] });
     if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: 21900, compare_minor: 25900, currency: 'CNY' }] });
     if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: 6 }] });

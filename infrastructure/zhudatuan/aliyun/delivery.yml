@@ -17,6 +17,7 @@ runtime:
   mallProvisioningApiPort: 4325
   mallProvisioningApiProfile: mall-provisioning-only
   identityNotificationProfile: identity-notification-only
+  paymentJobsProfile: payment-only
 oneShots:
   paymentWebhookRole:
     artifact: infrastructure/zhudatuan/aliyun/postgres-provision-payment-webhook-role.sh
@@ -181,6 +182,20 @@ routes:
     artifact: services/commerce/dist
     process: zhudatuan-identity-notification-jobs
     profile: identity-notification-only
+  paymentJobs:
+    workspace: services/commerce
+    artifacts:
+      - services/commerce/dist/PaymentJobsOnlyMain.js
+      - services/commerce/dist/PaymentJobsReadyMain.js
+    process: zhudatuan-payment-jobs
+    service: infrastructure/zhudatuan/aliyun/systemd/zhudatuan-payment-jobs.service
+    environment: infrastructure/zhudatuan/aliyun/payment-jobs.env.example
+    profile: payment-only
+    databaseRole: shopjob
+    databaseConnectionRef: zhudatuan/payment/database/jobs
+    allowedJobs:
+      - paymentquery
+      - paymentrefund
   media:
     host: media.zhudatuan.com
     root: /opt/zhudatuan/media

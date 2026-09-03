@@ -251,6 +251,28 @@ describe('runtime configuration schema', () => {
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   });
 
+  it('accepts only payment dependencies for the payment-only Jobs profile', () => {
+    const payment = {
+      APP_ENV: 'production',
+      SERVICE_VERSION: '1.0.0',
+      JOB_RUNTIME_PROFILE: 'payment-only',
+      DATABASE_JOB_CONNECTION_REF: 'zhudatuan/payment/database/jobs',
+      SECRET_STORE_ENDPOINT: 'https://secrets.internal',
+      SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
+      WECHAT_APPLICATION_CONFIG_REF: 'zhudatuan/purchase/wechat/applications',
+      WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/purchase/payment/wechat',
+      JOB_WORKER_ID: 'zhudatuan-payment-1',
+    };
+    expect(jobRuntimeProfile(payment)).toBe('payment-only');
+    expect(() => validateJobsEnvironment(payment)).not.toThrow();
+    expect(() => validateJobsEnvironment({ ...payment, WECHAT_PAYMENT_CONFIG_REF: '' }))
+      .toThrow('WECHAT_PAYMENT_CONFIG_REF_MISSING');
+    expect(() => validateJobsEnvironment({ ...payment, REDIS_CONNECTION_REF: 'zhudatuan/redis/jobs' }))
+      .toThrow('JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:REDIS_CONNECTION_REF');
+    expect(() => validateJobsEnvironment({ ...payment, IDENTITY_NOTIFICATION_CONFIG_REF: 'zhudatuan/identity/notification' }))
+      .toThrow('JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:IDENTITY_NOTIFICATION_CONFIG_REF');
+  });
+
   it('fails closed for incomplete browser, storefront, and miniapp deployment identity', () => {
     const client = { VITE_API_BASE_URL: 'https://api.example.com', VITE_AUTH_BASE_URL: 'https://auth.example.com', VITE_CLIENT_VERSION: '2.4.1' };
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
