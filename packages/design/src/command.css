@@ -12,8 +12,8 @@
 
 .dialogpanel {
   width: min(52rem, 100%);
-  max-height: calc(100vh - var(--sw-space-8));
-  overflow: auto;
+  max-height: calc(100dvh - var(--sw-space-8));
+  overflow: hidden;
   border: 0.0625rem solid var(--sw-border);
   border-radius: var(--sw-radius-lg);
   background: var(--sw-surface);
@@ -21,6 +21,9 @@
 }
 
 .dialogcontent {
+  display: grid;
+  max-height: inherit;
+  grid-template-rows: auto minmax(0, 1fr);
   outline: none;
 }
 
@@ -68,7 +71,22 @@
 }
 
 .dialogbody {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--sw-space-3);
+  scrollbar-gutter: stable;
+}
+
+.dialogbody > form > footer {
+  position: sticky;
+  z-index: 1;
+  bottom: calc(-1 * var(--sw-space-3));
+  margin-right: calc(-1 * var(--sw-space-3));
+  margin-left: calc(-1 * var(--sw-space-3));
+  background: color-mix(in srgb, var(--sw-surface) 96%, transparent);
+  padding: var(--sw-space-2) var(--sw-space-3) var(--sw-space-3);
+  backdrop-filter: blur(0.75rem);
 }
 
 .commandhint {
@@ -149,7 +167,7 @@
 
   .dialogpanel {
     width: 100%;
-    max-height: 92vh;
+    max-height: 92dvh;
     border-radius: var(--sw-radius-lg) var(--sw-radius-lg) 0 0;
   }
 }
