@@ -75,7 +75,7 @@ export function VoucherRecordDrawer({
   );
 }
 
-export function VoucherCreatorPreview({ open, busy, error, onCreate, onClose }: Readonly<{ open: boolean; busy: boolean; error?: string; onCreate: (prefix: string) => void; onClose: () => void }>) {
+export function CardLibraryCreator({ open, busy, error, onCreate, onClose }: Readonly<{ open: boolean; busy: boolean; error?: string; onCreate: (prefix: string) => void; onClose: () => void }>) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [prefix, setPrefix] = useState('SW');
   useDialogKeyboard(open, onClose, closeRef);
@@ -123,6 +123,102 @@ export function VoucherCreatorPreview({ open, busy, error, onCreate, onClose }: 
       </section>
     </div>
   );
+}
+
+export type VoucherProgramDraft = Readonly<{
+  name: string;
+  valueMinor: number;
+  validityDays: number;
+  approvalRequired: boolean;
+}>;
+
+export function VoucherProgramCreator({
+  open,
+  busy,
+  error,
+  onCreate,
+  onClose,
+}: Readonly<{ open: boolean; busy: boolean; error?: string; onCreate: (draft: VoucherProgramDraft) => void; onClose: () => void }>) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const [name, setName] = useState('员工福利券');
+  const [value, setValue] = useState('100');
+  const [validityDays, setValidityDays] = useState('365');
+  const [approvalRequired, setApprovalRequired] = useState(true);
+  useDialogKeyboard(open, onClose, closeRef);
+  if (!open) return null;
+  const valueMinor = parseMinor(value);
+  const days = parseDays(validityDays);
+  const valid = name.trim().length > 0 && valueMinor !== null && days !== null;
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!valid || valueMinor === null || days === null) return;
+    onCreate({ name: name.trim(), valueMinor, validityDays: days, approvalRequired });
+  };
+  return (
+    <div className="voucheroverlay">
+      <button className="voucherdialogbackdrop" type="button" onClick={onClose} aria-label="关闭新建卡券" />
+      <section className="vouchercreatordialog" role="dialog" aria-modal="true" aria-labelledby="voucherprogramcreatortitle">
+        <header>
+          <div>
+            <p>CREATE VOUCHER PROGRAM</p>
+            <h2 id="voucherprogramcreatortitle">新建卡券</h2>
+          </div>
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="关闭新建卡券">
+            ×
+          </button>
+        </header>
+        <form onSubmit={submit}>
+          <div className="vouchercreatorbody">
+            <p className="vouchercreatornotice">先创建安全的卡券草稿；审批、备券和发行仍在各自独立流程中完成。</p>
+            <label>
+              <span>卡券名称</span>
+              <input aria-label="卡券名称" value={name} onChange={(event) => setName(event.target.value)} maxLength={80} autoComplete="off" />
+            </label>
+            <label>
+              <span>面值（元）</span>
+              <input aria-label="面值（元）" value={value} onChange={(event) => setValue(event.target.value)} inputMode="decimal" autoComplete="off" />
+            </label>
+            <p>支持最多两位小数，金额必须大于零。</p>
+            <label>
+              <span>有效天数</span>
+              <input aria-label="有效天数" value={validityDays} onChange={(event) => setValidityDays(event.target.value)} inputMode="numeric" autoComplete="off" />
+            </label>
+            <p>请输入 1–3650 天。</p>
+            <label>
+              <input aria-label="发行前需要审批" type="checkbox" checked={approvalRequired} onChange={(event) => setApprovalRequired(event.target.checked)} />
+              <span>发行前需要审批</span>
+            </label>
+            {error === undefined ? null : <p role="alert">{error}</p>}
+            <section className="voucherwriteboundary" role="note">
+              <strong>安全校验</strong>
+              <p>提交会校验当前权限版本、双因素登录状态、数据范围、幂等键与审计记录。</p>
+            </section>
+          </div>
+          <footer>
+            <button type="button" onClick={onClose}>
+              取消
+            </button>
+            <button type="submit" disabled={busy || !valid}>
+              {busy ? '正在创建…' : '创建草稿'}
+            </button>
+          </footer>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function parseMinor(value: string): number | null {
+  const match = /^(0|[1-9]\d{0,7})(?:\.(\d{1,2}))?$/.exec(value.trim());
+  if (match === null) return null;
+  const minor = Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+  return minor > 0 ? minor : null;
+}
+
+function parseDays(value: string): number | null {
+  if (!/^\d{1,4}$/.test(value.trim())) return null;
+  const days = Number(value);
+  return days >= 1 && days <= 3650 ? days : null;
 }
 
 function useDialogKeyboard(open: boolean, onClose: () => void, focusRef: RefObject<HTMLButtonElement | null>) {

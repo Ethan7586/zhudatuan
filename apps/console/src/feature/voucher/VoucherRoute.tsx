@@ -6,9 +6,9 @@ import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 
 import { pageCursor } from '../../shared/url/PageCursor';
-import { VoucherCreatorPreview, VoucherRecordDrawer } from './VoucherDialogs';
+import { CardLibraryCreator, VoucherProgramCreator, VoucherRecordDrawer, type VoucherProgramDraft } from './VoucherDialogs';
 import { voucherLifecycle, voucherStateLabel, voucherSummary, voucherViewMeta } from './VoucherPresentation';
-import { createCardLibrary, readVouchers, voucherKey, voucherViews } from './VoucherQuery';
+import { createCardLibrary, createVoucherProgram, readVouchers, voucherKey, voucherViews } from './VoucherQuery';
 import type { VoucherRecord, VoucherView } from './VoucherSchema';
 import { VoucherTable } from './VoucherTable';
 import { useRouteTitle } from '../../shared/ui/RouteTitle';
@@ -21,7 +21,7 @@ export function Component() {
   const context = useConsoleContext();
   const routeTitle = useRouteTitle('卡券中心');
   const [search, setSearch] = useSearchParams();
-  const [creatorOpen, setCreatorOpen] = useState(false);
+  const [creator, setCreator] = useState<'program' | 'library' | null>(null);
   const view = readView(search, context.session.capabilities);
   const cursor = search.get('cursor') ?? undefined;
   const query = useQuery({
@@ -29,15 +29,24 @@ export function Component() {
     queryFn: ({ signal }) => readVouchers(context, view, cursor, signal),
     staleTime: 60_000,
   });
-  const creator = useMutation({
+  const libraryCreator = useMutation({
     mutationFn: (prefix: string) => createCardLibrary(context, prefix),
-    onSuccess: async () => {
-      setCreatorOpen(false);
+    onSuccess: () => {
+      setCreator(null);
       const next = new URLSearchParams(search);
       next.set('view', 'libraries');
       next.delete('cursor');
       setSearch(next);
-      await query.refetch();
+    },
+  });
+  const programCreator = useMutation({
+    mutationFn: (draft: VoucherProgramDraft) => createVoucherProgram(context, draft),
+    onSuccess: () => {
+      setCreator(null);
+      const next = new URLSearchParams(search);
+      next.set('view', 'programs');
+      next.delete('cursor');
+      setSearch(next);
     },
   });
   const data = query.data;
@@ -53,6 +62,8 @@ export function Component() {
   const status = search.get('status') ?? 'all';
   const selectedId = search.get('selected') ?? undefined;
   const selected = data?.items.find((record) => record.id === selectedId);
+  const canManagePrograms = context.session.capabilities.includes('voucher.programs.manage');
+  const canCreateLibraries = context.session.capabilities.includes('voucher.cardlibraries.create');
   const states = useMemo(() => uniqueStates(data?.items ?? []), [data?.items]);
   const rows = useMemo(
     () =>
@@ -90,7 +101,7 @@ export function Component() {
     });
   const openRecord = useCallback(
     (record: VoucherRecord) => {
-      setCreatorOpen(false);
+      setCreator(null);
       updateSearch((next) => next.set('selected', record.id));
     },
     [updateSearch]
@@ -120,9 +131,12 @@ export function Component() {
             </Button>
             <Button
               tone="primary"
+              isDisabled={!canManagePrograms}
               onPress={() => {
                 closeRecord();
-                setCreatorOpen(true);
+                libraryCreator.reset();
+                programCreator.reset();
+                setCreator('program');
               }}
             >
               新建卡券
@@ -155,7 +169,15 @@ export function Component() {
               <strong>卡号库创建已启用</strong>
               <p>创建会经过双因素认证、范围校验、幂等和审计；审批、发行、暂停、作废与冲正仍按各自独立权限控制。</p>
             </div>
-            <button type="button" onClick={() => setCreatorOpen(true)}>
+            <button
+              type="button"
+              disabled={!canCreateLibraries}
+              onClick={() => {
+                libraryCreator.reset();
+                programCreator.reset();
+                setCreator('library');
+              }}
+            >
               新建卡号库
             </button>
           </section>
@@ -236,7 +258,20 @@ export function Component() {
         </div>
       </ResourcePanel>
       <VoucherRecordDrawer record={selected} view={view} onClose={closeRecord} />
-      <VoucherCreatorPreview open={creatorOpen} busy={creator.isPending} {...(creator.error === null ? {} : { error: presentError(creator.error).message })} onCreate={(prefix) => creator.mutate(prefix)} onClose={() => setCreatorOpen(false)} />
+      <VoucherProgramCreator
+        open={creator === 'program'}
+        busy={programCreator.isPending}
+        {...(programCreator.error === null ? {} : { error: presentError(programCreator.error).message })}
+        onCreate={(draft) => programCreator.mutate(draft)}
+        onClose={() => setCreator(null)}
+      />
+      <CardLibraryCreator
+        open={creator === 'library'}
+        busy={libraryCreator.isPending}
+        {...(libraryCreator.error === null ? {} : { error: presentError(libraryCreator.error).message })}
+        onCreate={(prefix) => libraryCreator.mutate(prefix)}
+        onClose={() => setCreator(null)}
+      />
     </div>
   );
 }

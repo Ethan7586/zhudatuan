@@ -1,4 +1,11 @@
-import { createFetchVoucherBatchesRead, createFetchVoucherCardlibrariesCreate, createFetchVoucherCardlibrariesRead, createFetchVoucherProgramsRead, createFetchVoucherReservesRead } from '@shop/sdk/voucher';
+import {
+  createFetchVoucherBatchesRead,
+  createFetchVoucherCardlibrariesCreate,
+  createFetchVoucherCardlibrariesRead,
+  createFetchVoucherProgramsManage,
+  createFetchVoucherProgramsRead,
+  createFetchVoucherReservesRead,
+} from '@shop/sdk/voucher';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consoleCommand, consoleRequest } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
@@ -7,6 +14,7 @@ import { CardLibraryPageSchema, IssueBatchPageSchema, ReservePageSchema, Voucher
 const cardlibrariesRead = createFetchVoucherCardlibrariesRead(appConfig.apiBaseUrl);
 const cardlibrariesCreate = createFetchVoucherCardlibrariesCreate(appConfig.apiBaseUrl);
 const programsRead = createFetchVoucherProgramsRead(appConfig.apiBaseUrl);
+const programsManage = createFetchVoucherProgramsManage(appConfig.apiBaseUrl);
 const reservesRead = createFetchVoucherReservesRead(appConfig.apiBaseUrl);
 const batchesRead = createFetchVoucherBatchesRead(appConfig.apiBaseUrl);
 
@@ -66,6 +74,24 @@ export async function createCardLibrary(context: ConsoleContext, prefix: string,
   return cardlibrariesCreate(
     { body: { mode: 'generated', prefix: prefix.trim(), provider: null } },
     consoleCommand(context.scope, { ...(signal === undefined ? {} : { signal }), accessVersion: context.session.accessVersion, ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }) })
+  );
+}
+
+export async function createVoucherProgram(
+  context: ConsoleContext,
+  input: Readonly<{ name: string; valueMinor: number; validityDays: number; approvalRequired: boolean }>,
+  signal?: AbortSignal
+) {
+  return programsManage(
+    {
+      path: { programid: `voucher-program:${crypto.randomUUID()}` },
+      body: { ...input, status: 'draft' },
+    },
+    consoleCommand(context.scope, {
+      ...(signal === undefined ? {} : { signal }),
+      accessVersion: context.session.accessVersion,
+      ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+    })
   );
 }
 

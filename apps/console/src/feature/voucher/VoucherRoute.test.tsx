@@ -26,6 +26,10 @@ const server = setupServer(
     writes.push(`${request.method}:${JSON.stringify(await request.json())}`);
     return HttpResponse.json({ id: 'cardpool:test', scope_id: 'platform:commerce', code_prefix: 'MVP2026', next_sequence: 1, provider: null, mode: 'generated', status: 'ready', version: 0 }, { status: 201 });
   }),
+  http.put('*/api/v1/vouchers/programs/:programid', async ({ request, params }) => {
+    writes.push(`${request.method}:${String(params.programid)}:${JSON.stringify(await request.json())}`);
+    return HttpResponse.json({ id: String(params.programid), scope_id: 'platform:commerce', name: '中秋关怀券', value_minor: 8_800, default_valid_days: 180, currency: 'CNY', status: 'draft', approval_required: true, version: 1 });
+  }),
   http.all('*/api/v1/vouchers/**', ({ request }) => {
     writes.push(request.method);
     return HttpResponse.json({ code: 'UNEXPECTED_VOUCHER_WRITE' }, { status: 500 });
@@ -57,7 +61,7 @@ describe('Voucher governance workspace', () => {
     expect(requests).toContain('/api/v1/vouchers/cardlibraries');
   });
 
-  it('filters the current page, opens a read-only summary and creates a card library through the canonical command', async () => {
+  it('filters the current page, opens a read-only summary and keeps both creation commands distinct', async () => {
     const user = userEvent.setup();
     renderRoute('/vouchers?view=programs&campaign=keep');
     await screen.findByRole('table', { name: '卡券方案' });
@@ -74,11 +78,24 @@ describe('Voucher governance workspace', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
     await user.click(screen.getByRole('button', { name: '新建卡券' }));
-    const creator = await screen.findByRole('dialog', { name: '新建卡号库' });
-    await user.clear(within(creator).getByRole('textbox', { name: '卡号前缀' }));
-    await user.type(within(creator).getByRole('textbox', { name: '卡号前缀' }), 'MVP2026');
-    await user.click(within(creator).getByRole('button', { name: '确认创建' }));
-    await waitFor(() => expect(writes).toEqual(['POST:{"mode":"generated","prefix":"MVP2026","provider":null}']));
+    const programCreator = await screen.findByRole('dialog', { name: '新建卡券' });
+    await user.clear(within(programCreator).getByRole('textbox', { name: '卡券名称' }));
+    await user.type(within(programCreator).getByRole('textbox', { name: '卡券名称' }), '中秋关怀券');
+    await user.clear(within(programCreator).getByRole('textbox', { name: '面值（元）' }));
+    await user.type(within(programCreator).getByRole('textbox', { name: '面值（元）' }), '88');
+    await user.clear(within(programCreator).getByRole('textbox', { name: '有效天数' }));
+    await user.type(within(programCreator).getByRole('textbox', { name: '有效天数' }), '180');
+    await user.click(within(programCreator).getByRole('button', { name: '创建草稿' }));
+    await waitFor(() => expect(writes[0]).toMatch(/^PUT:voucher-program:[0-9a-f-]+:{"name":"中秋关怀券","valueMinor":8800,"validityDays":180,"status":"draft","approvalRequired":true}$/));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡券' })).toBeNull());
+    expect(new URLSearchParams(currentSearch).get('view')).toBe('programs');
+
+    await user.click(screen.getByRole('button', { name: '新建卡号库' }));
+    const libraryCreator = await screen.findByRole('dialog', { name: '新建卡号库' });
+    await user.clear(within(libraryCreator).getByRole('textbox', { name: '卡号前缀' }));
+    await user.type(within(libraryCreator).getByRole('textbox', { name: '卡号前缀' }), 'MVP2026');
+    await user.click(within(libraryCreator).getByRole('button', { name: '确认创建' }));
+    await waitFor(() => expect(writes[1]).toBe('POST:{"mode":"generated","prefix":"MVP2026","provider":null}'));
     await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建卡号库' })).toBeNull());
     expect(new URLSearchParams(currentSearch).get('view')).toBe('libraries');
   });
@@ -110,8 +127,8 @@ const context: ConsoleContext = {
     actor: 'actor:voucher',
     membership: 'membership:voucher',
     accessVersion: 7,
-    permissions: ['voucher.program.read', 'voucher.cardlibrary.read', 'voucher.cardlibrary.create'],
-    capabilities: ['voucher.programs.read', 'voucher.cardlibraries.read', 'voucher.cardlibraries.create'],
+    permissions: ['voucher.program.read', 'voucher.program.manage', 'voucher.cardlibrary.read', 'voucher.cardlibrary.create'],
+    capabilities: ['voucher.programs.read', 'voucher.programs.manage', 'voucher.cardlibraries.read', 'voucher.cardlibraries.create'],
     target: 'console',
     scope: { kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' },
     scopes: [{ kind: 'platform', id: 'platform:commerce', name: '鸿泰集团' }],
