@@ -436,6 +436,9 @@ export function identityCoreOperations(context: ModuleContext, ownedOperations: 
               governance_level: null,
             };
             await database.query(`select set_config('app.registration_mall_id',$1,true)`, [storefront.organization_id]);
+            if (deferredPhoneVerification) {
+              await database.query(`select set_config('app.registration_phone_verification','checkout',true)`);
+            }
           }
           if (authorization !== null && registrationTarget.target_client !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
           const organization = registrationTarget.organization_id;

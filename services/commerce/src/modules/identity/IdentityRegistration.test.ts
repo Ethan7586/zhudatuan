@@ -97,6 +97,7 @@ describe('canonical member registration security boundary', () => {
     });
     expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes("'phone_otp',2"))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes("set_config('app.registration_phone_verification','checkout',true)"))).toBe(true);
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
     expect(session?.values.at(-1)).toBe(1);
   });

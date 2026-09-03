@@ -99,7 +99,7 @@ objects:
   - id: access.protect_zhudatuan_owner
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260904010000_allow_platform_owner_l6_registration.sql
     operationalOwner: access
   - id: access.protect_zhudatuan_pending_operator_role
     kind: function
@@ -109,7 +109,7 @@ objects:
   - id: access.protect_zhudatuan_registration_access_write
     kind: function
     owner: access
-    source: database/supabase/migrations/20260829211000_platform_owner_transfer.sql
+    source: database/supabase/migrations/20260904010000_allow_platform_owner_l6_registration.sql
     operationalOwner: access
   - id: access.purchase_application_allowed
     kind: function
