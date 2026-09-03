@@ -125,14 +125,111 @@ export async function loginCanonicalConsole(
   membership?: string,
   signal?: AbortSignal,
 ): Promise<CanonicalConsoleLoginResult> {
-  const authorization = await beginAuthorization();
-  const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
-    provider: 'password',
-    subject: subject.trim(),
-    password,
-    target: 'console',
-    ...(membership === undefined ? {} : { membership }),
-    authorization: authorization.request,
+  return loginCanonicalConsoleWithCredential(
+    { provider: 'password', subject: canonicalPasswordSubject(subject), password }, membership, signal,
+  );
+}
+
+export async function loginCanonicalStorefront(
+  subject: string,
+  password: string,
+  membership: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontLoginResult> {
+  const result = await authorizeCanonicalCredential(
+    { provider: 'password', subject: canonicalPasswordSubject(subject), password },
+    'storefront',
+    membership,
+    signal,
+  );
+  if (result.kind === 'selection') throw new Error('新注册的消费者身份未能直接进入商城，请重新登录');
+  return Object.freeze({
+    membership: result.session.membership,
+    redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
+  });
+}
+
+export async function loginCanonicalStorefrontEntry(
+  subject: string,
+  password: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontEntryResult> {
+  return loginCanonicalStorefrontEntryWithCredential(
+    { provider: 'password', subject: canonicalPasswordSubject(subject), password },
+    signal,
+  );
+}
+
+export async function loginCanonicalStorefrontEntryWithOtp(
+  phone: string,
+  challenge: string,
+  code: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontEntryResult> {
+  return loginCanonicalStorefrontEntryWithCredential(storefrontOtpCredential(phone, challenge, code), signal);
+}
+
+export async function loginCanonicalStorefrontWithOtp(
+  phone: string,
+  challenge: string,
+  code: string,
+  membership: string,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontLoginResult> {
+  const result = await authorizeCanonicalCredential(storefrontOtpCredential(phone, challenge, code), 'storefront', membership, signal);
+  if (result.kind === 'selection') throw new Error('消费者身份尚未确定，请重新登录');
+  return Object.freeze({
+    membership: result.session.membership,
+    redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
+  });
+}
+
+async function loginCanonicalStorefrontEntryWithCredential(
+  credential: LoginCredential,
+  signal?: AbortSignal,
+): Promise<CanonicalStorefrontEntryResult> {
+  const result = await authorizeCanonicalCredential(credential, 'storefront', undefined, signal);
+  if (result.kind === 'selection') {
+    const context: PreAuthContext = {
+      identifier: credential.subject,
+      loginMethod: credential.provider === 'phone_otp' ? 'otp' : 'password',
+      memberships: result.selection.memberships.map(storefrontMembership),
+    };
+    return Object.freeze({
+      kind: 'selection',
+      context,
+    });
+  }
+  return Object.freeze({
+    kind: 'authenticated',
+    membership: result.session.membership,
+    redirectUrl: approvedStorefrontDestination(result.exchange.returnTarget),
+  });
+}
+
+function storefrontOtpCredential(phone: string, challenge: string, code: string): LoginCredential {
+  const normalizedChallenge = challenge.trim();
+  const normalizedCode = code.trim();
+  if (!/^challenge:[A-Za-z0-9:-]{16,128}$/.test(normalizedChallenge)) throw new Error('请先获取短信验证码');
+  if (!/^\d{6}$/.test(normalizedCode)) throw new Error('请输入 6 位短信验证码');
+  return {
+    provider: 'phone_otp',
+    subject: canonicalMobile(phone),
+    challenge: normalizedChallenge,
+    code: normalizedCode,
+  };
+}
+
+export async function exchangeCanonicalStorefrontSession(
+  callback: CanonicalSessionCallback,
+  secret: CanonicalAuthorization['secret'],
+  signal?: AbortSignal,
+): Promise<string> {
+  const exchanged = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
+    ticket: callback.ticket,
+    state: callback.state,
+    nonce: secret.nonce,
+    verifier: secret.verifier,
   }, signal));
 
   if ('memberships' in output) {
@@ -173,7 +270,28 @@ function consoleMembership(value: z.infer<typeof MembershipSelectionSchema>['mem
   };
 }
 
-async function identityRequest(path: string, body: Readonly<Record<string, unknown>>, signal?: AbortSignal): Promise<unknown> {
+function storefrontMembership(value: z.infer<typeof MembershipSelectionSchema>['memberships'][number]): Membership {
+  if (value.client !== 'storefront') throw new Error('消费者登录返回了错误的会员入口');
+  return {
+    id: value.id,
+    target: 'storefront',
+    status: 'active',
+    enterpriseName: '已加入商城',
+    storeName: '消费者商城',
+    roleName: '消费者会员',
+    dataScope: '本人消费与订单',
+    accountTypeLabel: '消费账户',
+  };
+}
+
+async function identityRequest(
+  path: string,
+  body: Readonly<Record<string, unknown>>,
+  signal?: AbortSignal,
+  options: Readonly<{ credentials?: RequestCredentials; action?: string }> = {},
+): Promise<unknown> {
+  const credentials = options.credentials ?? 'include';
+  const csrf = credentials === 'include' ? csrfToken() : null;
   const response = await fetch(new URL(path, apiOrigin()), {
     method: 'POST',
     credentials: 'include',

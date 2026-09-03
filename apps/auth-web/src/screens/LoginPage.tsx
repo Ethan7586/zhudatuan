@@ -15,8 +15,6 @@ import {
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
-  resolveH5LoginOrigin,
-  resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
   createCanonicalLoginChallenge,
@@ -62,7 +60,6 @@ export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
   const isCanonicalConsoleRequest = typeof window === 'undefined' || new URLSearchParams(window.location.search).get('target') !== 'storefront';
-  const storefrontSurface = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('surface') === 'h5' ? 'h5' : 'web';
   const [registrationDeepLink] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
@@ -74,8 +71,7 @@ export const LoginPage: React.FC = () => {
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
-  // 消费者只走账号密码；手机号验证码保留给付款前核验，不能与登录入口混在一起。
-  const [activeTab, setActiveTab] = useState<AuthMethod>('password');
+  const [activeTab, setActiveTab] = useState<AuthMethod>(() => isCanonicalConsoleRequest ? 'password' : 'otp');
   const [qrLoginChannel, setQrLoginChannel] = useState<'work_weixin' | 'wechat'>('work_weixin');
   const [ssoDomain, setSsoDomain] = useState('');
   const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
@@ -419,23 +415,16 @@ export const LoginPage: React.FC = () => {
         return;
       }
 
-      const context: PreAuthContext = await loginWithPassword(identifier, password);
-
-      // 如果需要重置密码
-      if (context.requiresPasswordReset) {
-        setPreAuthContext(context);
-        setShowForcePasswordModal(true);
-        setLoading(false);
-        return;
-      }
-
-      const result = await loginCanonicalStorefront(identifier, password);
+      const result = activeTab === 'otp'
+        ? await loginCanonicalStorefrontEntryWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
+        : await loginCanonicalStorefrontEntry(identifier, password);
       if (result.kind === 'authenticated') {
-        window.location.replace(storefrontDestination(result.redirectUrl));
+        window.location.replace(result.redirectUrl);
         return;
       }
       setPreAuthContext(result.context);
-      await processPreAuthContext(result.context);
+      setStage(2);
+
     } catch (err: any) {
       setFormError(err.message || '认证失败');
     } finally {
@@ -445,15 +434,31 @@ export const LoginPage: React.FC = () => {
 
   // 处理 PreAuth 上下文并路由到第2段或自动跳转
   const completeStorefrontLogin = async (membershipId: string) => {
-    const result = await loginCanonicalStorefront(identifier, password, membershipId);
-    if (result.kind !== 'authenticated') throw new Error('服务端未确认所选商城身份');
+    const result = preAuthContext?.loginMethod === 'otp'
+      ? await loginCanonicalStorefrontWithOtp(identifier, loginOtp.challengeId, loginOtp.code, membershipId)
+      : await loginCanonicalStorefront(identifier, password, membershipId);
 
     if (isStorefrontEmbed) {
-      // iframe 与商城同源；只通知父窗口刷新已建立的 HttpOnly 会话，不传递密码或票据。
       window.parent.postMessage({ type: 'smart-wing:storefront-login-complete', membershipId }, window.location.origin);
       return;
     }
-    window.location.replace(storefrontDestination(result.redirectUrl));
+    window.location.replace(result.redirectUrl);
+  };
+
+  const completeAdminLogin = () => {
+    // The browser performs a top-level POST on the target host, allowing the
+    // admin domain to create its own __Host- cookie before loading the app.
+    // Credentials are deliberately submitted in the request body, never URL.
+    let adminOrigin: string;
+    try {
+      const configuredOrigin = import.meta.env.VITE_ADMIN_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:4173' : undefined);
+      adminOrigin = resolveAdminLoginOrigin(configuredOrigin, import.meta.env.DEV);
+    } catch (error: any) {
+      setFormError(error.message || '后台登录目标配置无效');
+      return;
+    }
+
+    submitCredentialForm(adminOrigin);
   };
 
   const processPreAuthContext = async (context: PreAuthContext) => {
