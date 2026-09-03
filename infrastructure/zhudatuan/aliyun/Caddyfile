@@ -21,6 +21,16 @@ zhudatuan.com {
 		X-Frame-Options "SAMEORIGIN"
 	}
 
+	@storefrontPublicCatalog {
+		method GET
+		path /api/v1/catalog/public/products
+	}
+	handle @storefrontPublicCatalog {
+		reverse_proxy 127.0.0.1:4322 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	@productionShowcases path /desktop-1920 /laptop-web /mini-program /android-app /tablet-app
 	handle @productionShowcases {
 		header Cache-Control "no-store"
@@ -298,6 +308,16 @@ api.zhudatuan.com {
 	# The WebBusiness process is deliberately narrower than the Canonical API
 	# contract. Keep every public path explicit so an added operation cannot
 	# become reachable merely because it shares an /api/v1 prefix.
+	@apiPublicCatalog {
+		method GET
+		path /api/v1/catalog/public/products
+	}
+	handle @apiPublicCatalog {
+		reverse_proxy 127.0.0.1:4322 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
 	@webBusinessApi path /api/v1/members/me /api/v1/members/me/addresses /api/v1/members/me/addresses/* /api/v1/organizations/layers /api/v1/reports/dashboard /api/v1/catalog/listings /api/v1/pricing/offers /api/v1/inventory/availability /api/v1/carts/current /api/v1/carts/current/* /api/v1/benefits/accounts /api/v1/benefits/ledgers /api/v1/orders
 	handle @webBusinessApi {
 		reverse_proxy 127.0.0.1:4322 {

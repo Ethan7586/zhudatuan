@@ -4,6 +4,7 @@ import {
   webBusinessApiAllowedOrigins,
   webBusinessApiEnvironment,
   webBusinessApiPort,
+  webBusinessApiPublicMallSlug,
 } from './WebBusinessApiEnvironment';
 
 const secretStoreBearerToken = 's'.repeat(43);
@@ -18,6 +19,7 @@ function valid() {
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
     API_ALLOWED_ORIGINS: 'https://console.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com',
+    PUBLIC_MALL_SLUG: 'zdt-l1-verify',
     DATABASE_API_CONNECTION_REF: 'zhudatuan/web-business/database/api',
     KMS_ENDPOINT: 'https://127.0.0.1:8544',
     KMS_BEARER_TOKEN: kmsBearerToken,
@@ -31,6 +33,7 @@ describe('web business API environment', () => {
     const environment = webBusinessApiEnvironment(valid());
     expect(environment.WEB_BUSINESS_API_PROFILE).toBe('web-business-only');
     expect(webBusinessApiPort(environment)).toBe(4322);
+    expect(webBusinessApiPublicMallSlug(environment)).toBe('zdt-l1-verify');
     expect(webBusinessApiAllowedOrigins(environment)).toEqual([
       'https://console.zhudatuan.com',
       'https://hbbtzn.com',
@@ -54,6 +57,8 @@ describe('web business API environment', () => {
       .toThrow('WEB_BUSINESS_API_PORT_INVALID');
     expect(() => webBusinessApiEnvironment({ ...valid(), API_ALLOWED_ORIGINS: 'https://evil.example.com' }))
       .toThrow('WEB_BUSINESS_API_ORIGINS_INVALID');
+    expect(() => webBusinessApiEnvironment({ ...valid(), PUBLIC_MALL_SLUG: 'INVALID' }))
+      .toThrow('PUBLIC_MALL_SLUG_INVALID');
     expect(() => webBusinessApiEnvironment({ ...valid(), KMS_BEARER_TOKEN: secretStoreBearerToken }))
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   });

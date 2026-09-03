@@ -77,13 +77,26 @@ describe('canonical storefront production API', () => {
     expect(new Headers(logout.headers).get('x-csrf-token')).toBe('csrf-token-for-storefront');
   });
 
-  it('aggregates canonical listings with authoritative offers and inventory', async () => {
+  it('loads the public catalog before login without sending browser credentials', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+
+    const page = await productionApi.listProducts();
+
+    expect(page.items).toMatchObject([{ id: 'listing:one', skuId: 'sku:one', priceCents: 21900, availableStock: 6,
+      purchasable: false, qualification: { purchaseReason: 'LOGIN_REQUIRED' } }]);
+    expect(requestInit(fetcher, '/api/v1/catalog/public/products')).toMatchObject({ credentials: 'omit' });
+    expect(requestPaths(fetcher)).not.toContain('/api/v1/identity/session');
+  });
+
+  it('aggregates authenticated listings with authoritative offers and inventory', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
 
-    const page = await productionApi.listProducts();
+    const page = await productionApi.listQualifiedProducts();
 
     expect(page.items).toMatchObject([{ id: 'listing:one', skuId: 'sku:one', priceCents: 21900, availableStock: 6, purchasable: true }]);
     expect(requestPaths(fetcher)).toEqual(expect.arrayContaining(['/api/v1/catalog/listings', '/api/v1/pricing/offers', '/api/v1/inventory/availability']));
@@ -182,13 +195,21 @@ describe('canonical storefront production API', () => {
 
 function apiFetch(options: { personalMinor?: number; paymentState?: string } = {}) {
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
-    const path = new URL(String(input)).pathname;
+    const path = new URL(String(input), 'https://hbbtzn.com').pathname;
     const method = init?.method ?? 'GET';
     if (path === '/api/v1/identity/session') return json(SESSION);
     if (path === '/api/v1/members/me') return json(PROFILE);
     if (path === '/api/v1/benefits/accounts') return json(ACCOUNTS);
     if (path === '/api/v1/benefits/ledgers') return json({ items: [] });
     if (path === '/api/v1/orders' && method === 'GET') return json({ items: [] });
+    if (path === '/api/v1/catalog/public/products') return json({
+      items: [{
+        id: 'listing:one', skuId: 'sku:one', name: '空气炸锅', subtitle: '企业严选', categoryCode: 'welfare', coverUrl: null,
+        priceCents: 21900, marketPriceCents: 25900, availableStock: 6, supplierName: '平台自营', isTest: false,
+        purchasable: false, qualification: { visible: true, purchasable: false, visibilityReason: 'PUBLIC_CATALOG', purchaseReason: 'LOGIN_REQUIRED' },
+      }],
+      pagination: { nextCursor: null },
+    });
     if (path === '/api/v1/catalog/listings') return json({ items: [{ id: 'listing:one', sku_id: 'sku:one', title: '空气炸锅', status: 'published', product_type: 'physical', cover_url: null, subtitle: '企业严选' }] });
     if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: 21900, compare_minor: 25900, currency: 'CNY' }] });
     if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: 6 }] });
@@ -225,7 +246,7 @@ function json(value: unknown, status = 200) {
 }
 
 function requestPaths(fetcher: ReturnType<typeof apiFetch>): string[] {
-  return fetcher.mock.calls.map(([url]) => new URL(String(url)).pathname);
+  return fetcher.mock.calls.map(([url]) => new URL(String(url), 'https://hbbtzn.com').pathname);
 }
 
 function requestHeaders(fetcher: ReturnType<typeof apiFetch>, path: string): Record<string, string> {
@@ -233,7 +254,7 @@ function requestHeaders(fetcher: ReturnType<typeof apiFetch>, path: string): Rec
 }
 
 function requestInit(fetcher: ReturnType<typeof apiFetch>, path: string, method = 'GET'): RequestInit {
-  const call = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === path && (init?.method ?? 'GET') === method);
+  const call = fetcher.mock.calls.find(([url, init]) => new URL(String(url), 'https://hbbtzn.com').pathname === path && (init?.method ?? 'GET') === method);
   if (!call) throw new Error(`REQUEST_NOT_FOUND:${method}:${path}`);
   return call[1] ?? {};
 }

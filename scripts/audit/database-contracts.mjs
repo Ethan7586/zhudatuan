@@ -172,6 +172,7 @@ const REPAIR_FILES = [
   '20260903106000_governance_invitation_tree_visibility.sql',
   '20260903107000_merge_storefront_and_governance_invitation_visibility.sql',
   '20260903108000_allow_existing_consumer_identity_registration.sql',
+  '20260903111000_publish_canonical_guest_catalog.sql',
 ];
 
 const mode = process.argv[2];
