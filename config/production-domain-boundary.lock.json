@@ -1,6 +1,6 @@
 {
   "schema": "zhudatuan.production-domain-boundary-lock.v1",
-  "contractSha256": "248b73e59522e2ce70e702f13b5687116563770baecb7048f18c1ae31aff6ffa",
+  "contractSha256": "e78c00b93bf85fd0848d7a7bbfdc55065c1de885fe2ea74af2da4c406d337a93",
   "approvedBy": "Ethan",
   "approvedAt": "2026-09-03",
   "changePolicy": "explicit-owner-approval-required"

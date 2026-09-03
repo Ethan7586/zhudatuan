@@ -47,6 +47,8 @@ function clientBuildEnvironment(source: Readonly<Record<string, string | undefin
   const apiBaseUrl = required(source.VITE_API_BASE_URL, 'CLIENT_API_BASE_URL_MISSING');
   const authBaseUrl = required(source.VITE_AUTH_BASE_URL, 'CLIENT_AUTH_BASE_URL_MISSING');
   const clientVersion = required(source.VITE_CLIENT_VERSION, 'CLIENT_VERSION_MISSING');
+  if (source.APP_ENV === 'production' && apiBaseUrl !== 'https://api.zhudatuan.com') throw new Error('CLIENT_API_BASE_URL_INVALID');
+  if (source.APP_ENV === 'production' && authBaseUrl !== 'https://accounts.zhudatuan.com') throw new Error('CLIENT_AUTH_BASE_URL_INVALID');
   if (!/^https:\/\//.test(apiBaseUrl) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(apiBaseUrl)) {
     throw new Error('CLIENT_API_BASE_URL_INVALID');
   }

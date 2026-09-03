@@ -1,14 +1,14 @@
 {
   "schema": "zhudatuan.production-domain-boundary.v1",
-  "decision": "2026-09-03-owner-approved-zhudatuan-domain-family",
+  "decision": "2026-09-03-owner-approved",
   "frontends": {
     "h5": {
-      "publicOrigin": "https://h5.zhudatuan.com",
+      "publicOrigin": "https://hbbtzn.com",
       "apiOrigin": "https://api.zhudatuan.com",
       "authOrigin": "https://accounts.zhudatuan.com"
     },
     "miniProgram": {
-      "publicDomain": "h5.zhudatuan.com",
+      "publicDomain": "hbbtzn.com",
       "apiOrigin": "https://api.zhudatuan.com",
       "authOrigin": "https://accounts.zhudatuan.com"
     }
@@ -30,28 +30,14 @@
     "allowedOrigins": [
       "https://accounts.zhudatuan.com",
       "https://console.zhudatuan.com",
-      "https://h5.zhudatuan.com",
+      "https://hbbtzn.com",
       "https://zhudatuan.com"
     ],
     "returnTargets": {
       "console": "https://console.zhudatuan.com",
-      "storefront": "https://zhudatuan.com",
+      "storefront": "https://hbbtzn.com",
       "store": "https://console.zhudatuan.com/entrances/store",
       "supplier": "https://console.zhudatuan.com/entrances/supplier"
-    }
-  },
-  "edge": {
-    "h5": {
-      "workerName": "zhudatuan-h5",
-      "publicOrigin": "https://h5.zhudatuan.com",
-      "canonicalWebOrigin": "https://zhudatuan.com",
-      "deploymentArtifact": "apps/storefront-web/dist/server/index.js",
-      "documentRoute": "/h5"
-    },
-    "legacyHbbtzn": {
-      "workerName": "zhudatuan-hbbtzn-alias",
-      "publicOrigin": "https://hbbtzn.com",
-      "preserveOnly": true
     }
   },
   "changePolicy": {

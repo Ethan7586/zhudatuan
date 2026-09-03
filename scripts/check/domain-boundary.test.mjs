@@ -25,11 +25,8 @@ test('accepts the owner-approved production domain contract and lock', () => {
   );
 });
 
-test('rejects every hbbtzn hostname in active runtime code', () => {
-  assert.throws(
-    () => assertNoHbbtznSubdomain('h5.ts', "const origin = 'https://hbbtzn.com'"),
-    /HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN:h5\.ts:hbbtzn\.com/,
-  );
+test('allows the H5 root but rejects every hbbtzn subdomain in runtime code', () => {
+  assert.doesNotThrow(() => assertNoHbbtznSubdomain('h5.ts', "const origin = 'https://hbbtzn.com'"));
   assert.throws(
     () => assertNoHbbtznSubdomain('identity.ts', "const api = 'https://api.hbbtzn.com'"),
     /HBBTZN_SUBDOMAIN_RUNTIME_FORBIDDEN:identity\.ts:api\.hbbtzn\.com/,
@@ -44,7 +41,7 @@ test('rejects production identity environment pollution', () => {
   assert.doesNotThrow(() => validateIdentityEnvironmentText(valid, contract));
   assert.throws(
     () => validateIdentityEnvironmentText(valid.replace(
-      '"storefront":"https://zhudatuan.com"',
+      '"storefront":"https://hbbtzn.com"',
       '"storefront":"https://mall.hbbtzn.com"',
     ), contract),
     /PRODUCTION_DOMAIN_ENV_RETURN_TARGETS_DRIFT/,

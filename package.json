@@ -81,6 +81,9 @@
     "check:tests": "node scripts/check/tests.mjs",
     "check:lines": "node scripts/check-line-budget.mjs",
     "check:deployment": "node scripts/check/deployment.mjs",
+    "check:domains": "node --test scripts/check/domain-boundary.test.mjs && node scripts/check/domain-boundary.mjs",
+    "check:domain-bundles": "node scripts/check/domain-boundary.mjs --built",
+    "check:registration-deployment": "node scripts/check/registration-deployment.mjs",
     "check:web-business-deployment": "node scripts/check/web-business-deployment.mjs",
     "check:purchase-deployment": "node scripts/check/purchase-deployment.mjs",
     "check:payment-webhook-deployment": "node scripts/check/payment-webhook-deployment.mjs",
@@ -111,8 +114,8 @@
     "test:environment-bootstrap": "node scripts/audit/database-contracts.mjs --environment-bootstrap",
     "replay:fresh": "npm run replay:schema-fresh && npm run test:inventory-cutover-unsafe && npm run test:environment-bootstrap",
     "quality": "npm run quality:baseline",
-    "quality:baseline": "npm run check:cleaninstall && npm run check:artifacts && npm run check:approved-ui && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run typecheck && npm run test:unit && npm run test:contract && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run audit:prod",
-    "quality:canonical-hard-cut": "npm run check:cleaninstall && npm run check:supplychain && npm run check:generated && npm run check:errors && npm run check:requirements && npm run audit:architecture && npm run check:lines && npm run check:deployment && npm run check:approved-ui && npm run typecheck && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run test:unit && npm run test:contract && npm run test:integration && npm run test:adapters && npm run test:component && npm run test:e2e && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run check:bundles && npm run audit:prod",
+    "quality:baseline": "npm run check:cleaninstall && npm run check:artifacts && npm run check:domains && npm run check:approved-ui && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run typecheck && npm run test:unit && npm run test:contract && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run check:domain-bundles && npm run audit:prod",
+    "quality:canonical-hard-cut": "npm run check:cleaninstall && npm run check:supplychain && npm run check:generated && npm run check:errors && npm run check:requirements && npm run audit:architecture && npm run check:lines && npm run check:deployment && npm run check:domains && npm run check:approved-ui && npm run typecheck && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run test:unit && npm run test:contract && npm run test:integration && npm run test:adapters && npm run test:component && npm run test:e2e && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run check:bundles && npm run check:domain-bundles && npm run audit:prod",
     "audit:prod": "npm audit --omit=dev"
   },
   "devDependencies": {
