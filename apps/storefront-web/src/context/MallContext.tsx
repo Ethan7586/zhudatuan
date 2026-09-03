@@ -229,7 +229,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       return;
     }
     if (sessionStatus !== 'authenticated' && !showcaseService) {
-      showToast('商品可以直接浏览；登录后才能确认会员价与加入购物车', 'warning');
+      window.location.assign(storefrontAuthHref());
       return;
     }
     if (product.purchasable === false) {
