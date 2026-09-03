@@ -55,9 +55,17 @@ export interface CanonicalMemberRegistrationInput {
   readonly subject: string;
   readonly password: string;
   readonly displayName: string;
+<<<<<<< HEAD
   readonly inviteCode: string;
   readonly challengeId: string;
   readonly code: string;
+=======
+  readonly inviteCode?: string;
+  readonly applicationSlug?: string;
+  readonly challengeId?: string;
+  readonly code?: string;
+  readonly deferPhoneVerification?: boolean;
+>>>>>>> 2881cecd (feat(storefront): defer L6 phone verification to checkout)
   readonly termsAccepted: boolean;
   readonly termsHash: string;
   readonly wechatToken?: string;
@@ -106,6 +114,16 @@ export async function createCanonicalRegistrationChallenge(destination: string, 
 
 export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
+<<<<<<< HEAD
+=======
+  const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
+  const verification = input.deferPhoneVerification === true
+    ? { phoneVerification: 'checkout' }
+    : {
+        challenge: requiredText(input.challengeId, '请先获取验证码'),
+        code: requiredText(input.code, '请输入验证码'),
+      };
+>>>>>>> 2881cecd (feat(storefront): defer L6 phone verification to checkout)
   const output = MembershipSchema.parse(
     await identityRequest(
       '/api/v1/identity/members',
@@ -113,9 +131,14 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         subject: requiredMobile(input.subject),
         password: requiredPassword(input.password),
         displayName: requiredText(input.displayName, '请输入姓名'),
+<<<<<<< HEAD
         invite: requiredText(input.inviteCode, '请输入有效的邀请码'),
         challenge: requiredText(input.challengeId, '请先获取验证码'),
         code: requiredText(input.code, '请输入验证码'),
+=======
+        ...memberRegistrationReference(input),
+        ...verification,
+>>>>>>> 2881cecd (feat(storefront): defer L6 phone verification to checkout)
         termsAccepted: true,
         termsHash: requiredText(input.termsHash, '注册条款版本无效'),
         ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),

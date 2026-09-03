@@ -313,7 +313,10 @@ describe('canonical member registration security boundary', () => {
     });
     expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes("'phone_otp',2"))).toBe(false);
+<<<<<<< HEAD
     expect(harness.queries.some(({ text }) => text.includes("set_config('app.registration_phone_verification','checkout',true)"))).toBe(true);
+=======
+>>>>>>> 2881cecd (feat(storefront): defer L6 phone verification to checkout)
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
     expect(session?.values.at(-1)).toBe(1);
   });
@@ -449,6 +452,74 @@ function registrationRequest(idempotency: string): OperationRequest {
   };
 }
 
+<<<<<<< HEAD
+=======
+function storefrontRegistrationRequest(idempotency: string): OperationRequest {
+  return {
+    type: 'identity.members.create',
+    access: null,
+    input: {
+      path: {},
+      query: {},
+      headers: { 'x-device-id': 'device:storefront-registration-test' },
+      body: {
+        subject: SUBJECT,
+        password: 'Automatic!Password1',
+        displayName: 'L6消费者8000',
+        challenge: 'challenge:registration',
+        code: '123456',
+        application: 'zdt-l1-verify',
+        termsAccepted: true,
+        termsHash: 'f'.repeat(64),
+        authorization: authorizationRequest(),
+      },
+      rawBody: '',
+      deadline: Date.now() + 5_000,
+      signal: new AbortController().signal,
+      idempotency,
+    },
+  };
+}
+
+function storefrontPasswordRegistrationRequest(idempotency: string): OperationRequest {
+  return {
+    input: {
+      path: {},
+      query: {},
+      headers: { 'x-device-id': 'device:storefront-registration-test' },
+      body: {
+        subject: SUBJECT,
+        password: 'Automatic!Password1',
+        displayName: 'L6消费者8000',
+        application: 'zdt-l1-verify',
+        termsAccepted: true,
+        termsHash: 'f'.repeat(64),
+        authorization: authorizationRequest(),
+        phoneVerification: 'checkout',
+      },
+      rawBody: '',
+      deadline: Date.now() + 5_000,
+      signal: new AbortController().signal,
+      idempotency,
+    },
+    type: 'identity.members.create',
+    access: null,
+  };
+}
+
+function storefrontContextRequest(): OperationRequest {
+  return {
+    type: 'identity.storefronts.read',
+    access: null,
+    input: {
+      path: {}, query: {}, headers: { 'x-device-id': 'device:storefront-context-test' },
+      body: { application: 'zdt-l1-verify' }, rawBody: '', deadline: Date.now() + 5_000,
+      signal: new AbortController().signal, idempotency: 'registration:storefront-context',
+    },
+  };
+}
+
+>>>>>>> 2881cecd (feat(storefront): defer L6 phone verification to checkout)
 function challengeRequest(body: Readonly<Record<string, unknown>>): OperationRequest {
   return {
     type: 'identity.challenges.create',

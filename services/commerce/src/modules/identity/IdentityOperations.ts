@@ -1068,8 +1068,58 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
           let result: Readonly<Record<string, unknown>>;
 >>>>>>> b763b7a1 (fix(identity): allow owner L6 registration)
           const scopeKind = await organizationPort.kind(database, organization);
+<<<<<<< HEAD
           const result =
             invitation.target_client === 'operator'
+=======
+          if (existing.rows[0]) {
+            resolvedPrincipal = existing.rows[0].principal_id;
+            credentialVersion = existing.rows[0].credential_version;
+            const profile = await database.query<{ id: string }>(
+              `select id from member.profile where principal_id=$1 and status='active' for update`,
+              [resolvedPrincipal]
+            );
+            if (!profile.rows[0]) throw new Error('MEMBER_PROFILE_NOT_FOUND');
+            resolvedMember = profile.rows[0].id;
+            const current = await database.query<Record<string, unknown>>(
+              `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'`,
+              [resolvedMember, organization]
+            );
+            if (current.rows[0] && current.rows[0].status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');
+            result = current.rows[0] ?? await accessPort.createRegistration(database, {
+              membership,
+              member: resolvedMember,
+              principal: resolvedPrincipal,
+              organization,
+              role: registrationTarget.role_id,
+              scopeKind,
+              scopes: [scopes[0], scopes[1], scopes[2]],
+            });
+          } else {
+            await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
+            await database.query(
+              `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at)
+            values($1,$2,'password',$3,$4,'active',clock_timestamp())`,
+              [credential, principal, subjectHash, password]
+            );
+            await memberPort.create(database, {
+              member,
+              principal,
+              display: textField(body, 'displayName'),
+              status: 'active',
+              mobileCiphertext: mobile.ciphertext,
+              mobileFingerprint: subjectHash,
+              mobileMasked: `${subject.slice(0, 3)}****${subject.slice(-4)}`,
+            });
+            if (!deferredPhoneVerification) {
+              await database.query(
+                `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at)
+                values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
+                [assurance, principal, subjectHash]
+              );
+            }
+            result = registrationTarget.target_client === 'operator'
+>>>>>>> 2881cecd (feat(storefront): defer L6 phone verification to checkout)
               ? await accessPort.createOperatorRegistration(database, {
                   storefrontMembership: membership,
                   operatorMembership,
@@ -1098,7 +1148,47 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
             membership,
             ...(invitation.target_client === 'operator' ? { operatorMembership } : {}),
           });
+<<<<<<< HEAD
           return { status: 201, body: result };
+=======
+          const responseBody = {
+            ...result,
+            ...(registrationTarget.governance_level === null ? {} : { governanceLevel: registrationTarget.governance_level }),
+          };
+          if (authorization === null) return { status: 201, body: responseBody };
+          const session = `session:${randomUUID()}`;
+          const token = randomBytes(48).toString('base64url');
+          const csrf = randomBytes(32).toString('base64url');
+          const accessVersion = Number(result.access_version);
+          if (!Number.isSafeInteger(accessVersion) || accessVersion < 1 || result.client !== 'storefront') throw new Error('MEMBERSHIP_INACTIVE');
+          const sessionAssurance = deferredPhoneVerification ? 1 : 2;
+          await database.query(
+            `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,assurance_level,expires_at,last_seen_at,created_at)
+            values($1,$2,$3,$4,$5,$6,'storefront',$7,$8,$9,$10,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
+            [session, resolvedPrincipal, registeredMembership, tokenHash(token), credentialVersion, accessVersion,
+              digest(request.input.headers['x-peer-address'] ?? 'unknown'), String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
+              String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128), sessionAssurance]
+          );
+          if (!deferredPhoneVerification) {
+            await database.query(
+              `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at)
+              values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours')`,
+              [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex')]
+            );
+          }
+          await publishIdentityEvent(database, 'identity.session.created', session, registeredMembership, request.input.idempotency!, {
+            principal: resolvedPrincipal,
+            membership: registeredMembership,
+            assurance: sessionAssurance,
+            loginMethod: deferredPhoneVerification ? 'registration_password' : 'registration_otp',
+          });
+          const callback = await tickets.issue(database, session, 'storefront', authorization);
+          return {
+            status: 201,
+            body: { ...responseBody, authentication: { session, csrf, expiresIn: 43_200, membership: registeredMembership, target: 'storefront', callback } },
+            headers: sessionCookies(token, csrf, 43_200),
+          };
+>>>>>>> 2881cecd (feat(storefront): defer L6 phone verification to checkout)
         },
       }),
       'identity.members.manage': async (request, database) => {
