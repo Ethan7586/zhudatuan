@@ -255,6 +255,131 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
   });
 
+<<<<<<< HEAD
+=======
+  it('returns 409 when an invited mobile is already bound to an account-name identity', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
+      boundMobilePrincipal: 'principal:owner-mobile' });
+
+    const result = await identityOperations(context(harness.pool)).invoke(registrationRequest('registration:bound-mobile'));
+
+    expect(result).toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+  });
+
+  it('self-registers an L6 membership in the selected storefront without consuming an invitation', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true,
+      subjectExists: false,
+      storefrontAvailable: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(storefrontRegistrationRequest('registration:storefront-self'));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: {
+        organization_id: 'mall:l1-hongtai',
+        client: 'storefront',
+        authentication: { target: 'storefront' },
+      },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
+    const registrationMall = harness.queries.find(({ text }) => text.includes("set_config('app.registration_mall_id'"));
+    expect(registrationMall?.values).toEqual(['mall:l1-hongtai']);
+    const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership(')
+      && text.includes("'storefront'"));
+    expect(membership?.values).toContain('mall:l1-hongtai');
+    const roles = harness.queries.find(({ text }) => text.includes('insert into access.membershiprole'));
+    expect(roles?.values).toContain('role-zhudatuan-storefront-member:mall:l1-hongtai');
+  });
+
+  it('creates an L6 password account and defers phone verification until checkout', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: false,
+      subjectExists: false,
+      storefrontAvailable: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(storefrontPasswordRegistrationRequest('registration:storefront-password'));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: { organization_id: 'mall:l1-hongtai', client: 'storefront', authentication: { target: 'storefront' } },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes("'phone_otp',2"))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes("set_config('app.registration_phone_verification','checkout',true)"))).toBe(true);
+    const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
+    expect(session?.values.at(-1)).toBe(1);
+  });
+
+  it('reuses one phone identity while creating an independent membership in another storefront', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true,
+      subjectExists: false,
+      boundMobilePrincipal: 'principal:existing-phone',
+      storefrontAvailable: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(storefrontRegistrationRequest('registration:second-storefront'));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: { member_id: 'member:existing-phone', organization_id: 'mall:l1-hongtai', client: 'storefront' },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.credential'))).toBe(false);
+    const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership(')
+      && text.includes("'storefront'"));
+    expect(membership?.values).toContain('member:existing-phone');
+    expect(membership?.values).toContain('mall:l1-hongtai');
+  });
+
+  it('reuses an existing phone identity, creates the invited storefront membership, and opens its session', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, inviteAccepted: true,
+      boundMobilePrincipal: 'principal:existing-phone' });
+
+    const response = await identityOperations(context(harness.pool))
+      .invoke(registrationRequest('registration:existing-direct-login', true));
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: {
+        member_id: 'member:existing-phone',
+        organization_id: 'mall-zhudatuan',
+        client: 'storefront',
+        status: 'active',
+        authentication: {
+          membership: expect.stringMatching(/^membership:/),
+          target: 'storefront',
+          callback: { ticket: expect.any(String), state: 's'.repeat(32) },
+        },
+      },
+      headers: {
+        'set-cookie': expect.stringContaining('shop_session='),
+        'x-set-cookie': expect.stringContaining('shop_csrf='),
+      },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.credential'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.profile'))).toBe(false);
+    const existingMembership = harness.queries.find(({ text }) => text.includes('select * from access.membership')
+      && text.includes("client='storefront'"));
+    expect(existingMembership?.text).toBeDefined();
+    expect(existingMembership?.text).not.toContain('for update');
+    const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership(') && text.includes("'storefront'"));
+    expect(membership?.values).toContain('member:existing-phone');
+    const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
+    expect(session?.values).toContain('principal:existing-phone');
+  });
+
+>>>>>>> b763b7a1 (fix(identity): allow owner L6 registration)
   it('persists phone proof and binds both consumer and self roles in the registration transaction', async () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, inviteAccepted: true });
     const encrypt = vi.fn(async (key: string, plaintext: string, context: Readonly<Record<string, string>>) => ({

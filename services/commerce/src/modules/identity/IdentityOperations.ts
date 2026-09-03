@@ -983,6 +983,7 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
             where provider='password' and subject_hash=$1 and status='active'`,
             [subjectHash]
           );
+<<<<<<< HEAD
           if (existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           const inviteHash = digest(textField(body, 'invite'));
           await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
@@ -1011,6 +1012,55 @@ export function identityOperations(context: ModuleContext): OperationUsecase {
             values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days')`,
             [assurance, principal, subjectHash]
           );
+=======
+          if (boundPrincipal !== null && existing.rows[0]?.principal_id !== boundPrincipal) {
+            existing = await database.query<{ principal_id: string; credential_version: number }>(
+              `select principal.id principal_id,principal.credential_version from identity.principal principal
+              where principal.id=$1 and principal.status='active'
+                and exists (select 1 from identity.credential credential where credential.principal_id=principal.id
+                  and credential.provider='password' and credential.status='active')
+              for update of principal`,
+              [boundPrincipal]
+            );
+            if (!existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+          }
+          if (existing.rows[0] && authorization === null) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+          const registration = registrationReference(body);
+          const registrationHash = digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
+          const deferredPhoneVerification = registration.kind === 'storefront' && body.phoneVerification === 'checkout';
+          if (!deferredPhoneVerification) {
+            await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
+              (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
+              { purpose: 'registration', destinationHash: subjectHash });
+          }
+          let registrationTarget: MemberInvite;
+          if (registration.kind === 'invite') {
+            registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
+          } else {
+            const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, registration.value));
+            registrationTarget = {
+              id: `storefront:${storefront.application_id}`,
+              organization_id: storefront.organization_id,
+              created_by: '',
+              role_id: storefront.role_id,
+              target_client: 'storefront',
+              terms_hash: storefront.terms_hash,
+              storefront_organization_id: null,
+              governance_level: null,
+            };
+            await database.query(`select set_config('app.registration_mall_id',$1,true)`, [storefront.organization_id]);
+            if (deferredPhoneVerification) {
+              await database.query(`select set_config('app.registration_phone_verification','checkout',true)`);
+            }
+          }
+          if (authorization !== null && registrationTarget.target_client !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
+          const organization = registrationTarget.organization_id;
+          if (body.termsAccepted !== true || body.termsHash !== registrationTarget.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
+          let resolvedPrincipal = principal;
+          let resolvedMember = member;
+          let credentialVersion = 1;
+          let result: Readonly<Record<string, unknown>>;
+>>>>>>> b763b7a1 (fix(identity): allow owner L6 registration)
           const scopeKind = await organizationPort.kind(database, organization);
           const result =
             invitation.target_client === 'operator'

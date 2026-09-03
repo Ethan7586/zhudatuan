@@ -174,6 +174,43 @@ const REPAIR_FILES = [
   '20260831130000_identity_console_tail_read_boundary.sql',
   '20260831140000_identity_registration_profile_acl_repair.sql',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+  '20260831150000_identity_experience_application_commands.sql',
+  '20260901060000_zhudatuan_brand_display_names.sql',
+  '20260901070000_identity_notification_challenge_jobs.sql',
+  '20260901100000_access_identity_scope_assignments.sql',
+  '20260901210000_restore_platform_owner_personal_scope_projection.sql',
+  '20260901220000_add_payment_mall_identity.sql',
+  '20260901221000_add_fulfillment_mall_identity.sql',
+  '20260901222000_add_inventory_mall_identity.sql',
+  '20260901223000_publish_mall_provisioning.sql',
+  '20260902010000_restore_public_mall_role_contracts.sql',
+  '20260902011000_enable_public_mall_external_payment.sql',
+  '20260902012000_zhudatuan_mall_provisioning_access.sql',
+  '20260902132000_canonical_governance_context.sql',
+  '20260902133000_repair_console_support_scope_contract.sql',
+  '20260902134000_senior_administrator_role.sql',
+  '20260902135000_owner_identity_runtime_boundary.sql',
+  '20260902136000_administrator_invitation_runtime_alignment.sql',
+  '20260902137000_separate_login_account_from_mobile.sql',
+  '20260902138000_fix_administrator_registration_role_boundary.sql',
+  '20260902139000_add_member_invitation_records_read.sql',
+  '20260902140000_align_senior_administrator_business_permissions.sql',
+  '20260903100000_separate_operator_business_scope.sql',
+  '20260903101000_allow_platform_owner_invitation_history.sql',
+  '20260903102000_invitation_record_target_and_creator_scope.sql',
+  '20260903103000_provision_l1_mall_owner.sql',
+  '20260903104000_enable_provisioned_mall_registration.sql',
+  '20260903105000_initialize_storefront_qualification.sql',
+  '20260903106000_governance_invitation_tree_visibility.sql',
+  '20260903107000_merge_storefront_and_governance_invitation_visibility.sql',
+  '20260903108000_allow_existing_consumer_identity_registration.sql',
+  '20260903110000_zhudatuan_payment_webhook_access.sql',
+  '20260903111000_publish_canonical_guest_catalog.sql',
+  '20260903112000_enable_l6_storefront_self_registration.sql',
+  '20260904010000_allow_platform_owner_l6_registration.sql',
+>>>>>>> b763b7a1 (fix(identity): allow owner L6 registration)
 ];
 
 const mode = process.argv[2];
