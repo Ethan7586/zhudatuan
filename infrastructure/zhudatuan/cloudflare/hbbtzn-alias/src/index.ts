@@ -1,23 +1,21 @@
 const ROOT_STOREFRONT_HOST = 'hbbtzn.com';
-const LEGACY_STOREFRONT_HOST = 'mall.hbbtzn.com';
 
 const UPSTREAM_ORIGINS = Object.freeze({
   [ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com',
-  'accounts.hbbtzn.com': 'https://accounts.zhudatuan.com',
-  'api.hbbtzn.com': 'https://api.zhudatuan.com',
+} as const);
+
+const CANONICAL_REDIRECT_HOSTS = Object.freeze({
+  'accounts.hbbtzn.com': 'accounts.zhudatuan.com',
+  'api.hbbtzn.com': 'api.zhudatuan.com',
+  'mall.hbbtzn.com': ROOT_STOREFRONT_HOST,
 } as const);
 
 const PUBLIC_ORIGINS = Object.freeze({
-  'https://accounts.zhudatuan.com': 'https://accounts.hbbtzn.com',
-  'https://api.zhudatuan.com': 'https://api.hbbtzn.com',
   'https://zhudatuan.com': 'https://hbbtzn.com',
-  'https://mall.hbbtzn.com': 'https://hbbtzn.com',
 } as const);
 
 const UPSTREAM_REQUEST_ORIGINS = Object.freeze({
-  'https://accounts.hbbtzn.com': 'https://accounts.zhudatuan.com',
   'https://hbbtzn.com': 'https://zhudatuan.com',
-  'https://mall.hbbtzn.com': 'https://zhudatuan.com',
 } as const);
 
 function rewriteOrigins(value: string, origins: Readonly<Record<string, string>>): string {
@@ -77,8 +75,11 @@ const worker = {
   async fetch(request: Request): Promise<Response> {
     const incoming = new URL(request.url);
 
-    if (incoming.hostname === LEGACY_STOREFRONT_HOST) {
-      incoming.hostname = ROOT_STOREFRONT_HOST;
+    const canonicalHost = CANONICAL_REDIRECT_HOSTS[
+      incoming.hostname as keyof typeof CANONICAL_REDIRECT_HOSTS
+    ];
+    if (canonicalHost) {
+      incoming.hostname = canonicalHost;
       incoming.protocol = 'https:';
       return Response.redirect(incoming, request.method === 'GET' || request.method === 'HEAD' ? 308 : 307);
     }
