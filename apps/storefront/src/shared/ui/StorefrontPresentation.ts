@@ -20,7 +20,7 @@ export const STOREFRONT_WEB_PRESETS = Object.freeze({
   'standard-1366': {
     id: 'standard-1366',
     surface: 'standard',
-    label: '标准 Web',
+    label: '标准电脑页面',
     width: 1366,
     height: 768,
     defaultPage: 'home-1366',
@@ -28,7 +28,7 @@ export const STOREFRONT_WEB_PRESETS = Object.freeze({
   'wide-1440': {
     id: 'wide-1440',
     surface: 'wide',
-    label: '宽屏 Web',
+    label: '宽屏电脑页面',
     width: 1440,
     height: 900,
     defaultPage: 'home-1440',
@@ -37,7 +37,7 @@ export const STOREFRONT_WEB_PRESETS = Object.freeze({
 
 export const STOREFRONT_WEB_SURFACE_COPY = Object.freeze({
   standard: {
-    frameBadge: 'Web 标准版',
+    frameBadge: '电脑标准版',
     headerBadge: '企业福利商城',
     pageSwitcherLabel: '商城页面：',
     wideHomeBadge: '标准商品首页',
@@ -49,7 +49,7 @@ export const STOREFRONT_WEB_SURFACE_COPY = Object.freeze({
     ordersLayoutLabel: '订单中心',
   },
   wide: {
-    frameBadge: 'Web 宽屏版',
+    frameBadge: '电脑宽屏版',
     headerBadge: '企业福利商城',
     pageSwitcherLabel: '商城页面：',
     wideHomeBadge: '宽屏商品首页',
