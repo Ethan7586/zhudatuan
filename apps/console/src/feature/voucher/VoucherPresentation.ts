@@ -54,7 +54,7 @@ const dangerStates = new Set(['failed', 'rejected']);
 const infoStates = new Set(['draft']);
 
 export function voucherStateLabel(value: string): string {
-  return stateLabels[value.toLowerCase()] ?? value;
+  return stateLabels[value.toLowerCase()] ?? '待识别状态';
 }
 
 export function voucherStateTone(value: string): VoucherTone {

@@ -134,9 +134,11 @@ describe('Order route', () => {
     expect(screen.getByRole('note').textContent).toContain('商品订单与售后订单都由服务端按当前组织树或会员本人范围隔离');
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
-    expect(screen.getByText('member:verified-1')).toBeTruthy();
-    expect(screen.getByText('enterprise:1')).toBeTruthy();
-    expect(screen.getByTitle('当前读模型未返回 SLA').textContent).toBe('未提供');
+    expect(screen.getByText(/^会员 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.getByText(/^组织范围 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.queryByText('member:verified-1')).toBeNull();
+    expect(screen.queryByText('enterprise:1')).toBeNull();
+    expect(screen.getByTitle('当前读模型未返回服务时限').textContent).toBe('未提供');
     expect(screen.queryByText('不应泄漏的演示会员')).toBeNull();
     expect(screen.queryByText('不应泄漏的演示支付方式')).toBeNull();
     expect(screen.getByRole('button', { name: '全部订单' }).textContent).toBe('全部订单');
@@ -237,7 +239,7 @@ describe('Order route', () => {
     await user.click(aftersale);
     expect(within(dialog).getByRole('heading', { name: '售后状态' })).toBeTruthy();
     await user.click(operations);
-    expect(within(dialog).getByRole('heading', { name: '最近 Operation' })).toBeTruthy();
+    expect(within(dialog).getByRole('heading', { name: '最近操作记录' })).toBeTruthy();
     await user.click(overview);
     expect(within(dialog).getByRole('heading', { name: '金额与支付' })).toBeTruthy();
 
@@ -399,7 +401,7 @@ describe('Order route', () => {
     const fulfill = within(dialog).getByRole<HTMLButtonElement>('button', { name: '确认发货' });
     expect(more.disabled).toBe(true);
     expect(fulfill.disabled).toBe(true);
-    expect(within(dialog).getByText(/action-bound proof 与 Operation 回执/)).toBeTruthy();
+    expect(within(dialog).getByText(/操作绑定凭证与执行回执/)).toBeTruthy();
     await user.click(more);
     await user.click(fulfill);
     expect(postRequests).toHaveLength(0);

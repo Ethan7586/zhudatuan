@@ -1,4 +1,4 @@
-import { queryCondition, presentError, safeQueryError } from '@shop/presentation';
+import { chineseReference, chineseSectionLabel, queryCondition, presentError, safeQueryError } from '@shop/presentation';
 import { Button, ResourcePanel } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
@@ -116,13 +116,13 @@ export function Component() {
     [updateSearch]
   );
   const closeRecord = useCallback(() => updateSearch((next) => next.delete('selected')), [updateSearch]);
-  const scopeName = context.scope.name ?? context.scope.id;
+  const scopeName = context.scope.name ?? chineseReference('组织范围', context.scope.id);
 
   return (
     <div className="voucherworkspace" data-view={view}>
       <ResourcePanel
         title={routeTitle}
-        eyebrow="VOUCHER OPERATIONS"
+        eyebrow={chineseSectionLabel('卡券治理')}
         description="统一管理网站所有方的卡券方案、卡号资产、备券申请与发行批次。"
         condition={condition}
         {...(error === undefined ? {} : { error })}
@@ -158,7 +158,7 @@ export function Component() {
             <span aria-hidden="true">域</span>
             <div>
               <strong>当前网站归属：{scopeName}</strong>
-              <p>卡券定义、卡号与发行记录按当前 Scope 隔离；网站会员仅领取和使用，不进入本治理台。</p>
+              <p>卡券定义、卡号与发行记录按当前管理范围隔离；网站会员仅领取和使用，不进入本治理台。</p>
             </div>
           </section>
 

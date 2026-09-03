@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { chineseDomainLabel, chineseReference } from '@shop/presentation';
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay } from 'react-aria-components';
 import { formatMinor } from '../../shared/ui/Format';
 import { FinanceIcon } from './FinanceIcon';
@@ -49,8 +50,8 @@ function ReconciliationDrawerContent({ row, onClose }: Readonly<{ row: FinanceRe
         <div className="financedrawertitle">
           <Heading slot="title">差异处理 · 复核预览</Heading>
           <div>
-            <strong>{item?.id ?? row.id}</strong>
-            <button type="button" onClick={copyId} disabled={item === undefined} aria-label={copied ? '差异 ID 已复制' : '复制差异 ID'}>
+            <strong>{chineseReference('差异记录', item?.id ?? row.id)}</strong>
+            <button type="button" onClick={copyId} disabled={item === undefined} aria-label={copied ? '差异编号已复制' : '复制差异编号'}>
               <FinanceIcon name={copied ? 'check' : 'copy'} />
             </button>
           </div>
@@ -58,7 +59,7 @@ function ReconciliationDrawerContent({ row, onClose }: Readonly<{ row: FinanceRe
             <i>权威对账事实</i>
             <i>只读</i>
           </span>
-          <small>版本 v{row.version} · 修复预览未接入</small>
+          <small>第 {row.version} 版 · 修复预览未接入</small>
         </div>
         <section className="financeimmutablealert">
           <FinanceIcon name="alert" />
@@ -71,17 +72,17 @@ function ReconciliationDrawerContent({ row, onClose }: Readonly<{ row: FinanceRe
           <h3>最终动作未接入</h3>
           <p>当前仅展示通过契约校验的服务端对账事实，不伪造修复方案、预览哈希、拟生成分录或校验结果。</p>
           <dl>
-            <Detail label="对账状态" value={row.state} />
+            <Detail label="对账状态" value={chineseDomainLabel(row.state)} />
             <Detail label="差异金额" value={formatMinor(row.difference_minor)} />
-            <Detail label="差异原因" value={item?.reasonCode ?? '服务端未提供'} />
-            <Detail label="sourceHash" value={row.statement_hash ?? '服务端未提供'} />
+            <Detail label="差异原因" value={item?.reasonCode ? chineseDomainLabel(item.reasonCode, '其他差异原因') : '服务端未提供'} />
+            <Detail label="来源校验摘要" value={row.statement_hash ? chineseReference('校验摘要', row.statement_hash) : '服务端未提供'} />
           </dl>
         </section>
       </div>
       <footer className="financedrawerfooter">
         <p id="financereviewboundary">
           <FinanceIcon name="info" />
-          修复需调用独立的服务端 Preview，再经 Level 3、action-bound proof、版本重读与 Operation 回执。
+          修复需调用独立的服务端操作预览，再经过三级身份验证、操作绑定凭证、版本重读与执行回执。
         </p>
         <div>
           <button type="button" onClick={onClose}>

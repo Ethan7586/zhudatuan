@@ -1,4 +1,5 @@
 import { CheckCircle2, CreditCard, Heart, Minus, Plus, Share2, ShieldCheck, ShoppingCart, Truck } from 'lucide-react';
+import { chineseDomainList } from '@shop/presentation';
 import { useState } from 'react';
 import { useProductRuntime } from '../application/ProductRuntime';
 import { formatMinor } from '../../../shared/format/Money';
@@ -42,7 +43,7 @@ export function TabletProductPage() {
             </span>
             <span className="flex items-center gap-1 rounded-xl bg-amber-50 p-2 text-amber-700">
               <CreditCard size={15} />
-              {product.allowedAccounts.length > 0 ? product.allowedAccounts.join(' / ') : '报价确认账户'}
+              {product.allowedAccounts.length > 0 ? chineseDomainList(product.allowedAccounts) : '报价确认账户'}
             </span>
           </div>
           <div className="mt-5 flex items-center justify-between rounded-2xl bg-slate-50 p-4">

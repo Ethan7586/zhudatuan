@@ -188,14 +188,14 @@ export function Component() {
 function UnavailableTab({ tab }: Readonly<{ tab: Exclude<FinanceTab, 'payments'> }>) {
   const detail =
     tab === 'refunds'
-      ? ['退款对账', '现有 reconciliation read 没有退款类型筛选或退款专用权威读模型。']
+      ? ['退款对账', '现有对账读取能力没有退款类型筛选或退款专用权威读模型。']
       : tab === 'rules'
-        ? ['对账规则', '当前只有高风险策略写 Operation，没有可验证的规则读取合同。']
-        : ['审计记录', '当前没有财务审计记录的独立 read Operation。'];
+        ? ['对账规则', '当前只有高风险策略写入能力，没有可验证的规则读取合同。']
+        : ['审计记录', '当前没有独立的财务审计记录读取能力。'];
   return (
     <section className="financeunavailabletab" role="status">
       <FinanceIcon name="shield" />
-      <p>CAPABILITY UNAVAILABLE</p>
+      <p>功能暂未开放</p>
       <h2>{detail[0]}</h2>
       <span>{detail[1]} 本页不会推断服务端未返回的事实。</span>
     </section>

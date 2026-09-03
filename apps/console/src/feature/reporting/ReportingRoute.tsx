@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseReference, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -12,13 +12,13 @@ import type { ReportMetric, ReportPeriod, ReportView } from './ReportingSchema';
 import { reportMetricKey } from './ReportingKey';
 
 const columns: readonly DataColumn<ReportMetric>[] = [
-  { key: 'code', label: '指标', render: (row) => row.code },
+  { key: 'code', label: '指标', render: (row) => chineseDomainLabel(row.code, '待识别指标') },
   {
     key: 'dimensions',
     label: '维度',
     render: (row) =>
       Object.entries(row.dimensions)
-        .map(([key, value]) => `${key}: ${value}`)
+        .map(([key, value]) => `${chineseDomainLabel(key, '数据维度')}：${dimensionValue(value)}`)
         .join(' · ') || '全部',
   },
   { key: 'value', label: '服务端值', render: (row) => (row.unit === 'minor' ? formatMinor(row.value) : row.unit === 'ratio' ? ratioFormatter.format(row.value) : row.value) },
@@ -50,8 +50,8 @@ export function Component() {
   return (
     <PagedResource
       title="数据报表"
-      eyebrow="SMART WING REPORTING"
-      description="指标、口径、范围、截至时间和投影版本全部由 reporting 读模型返回。"
+      eyebrow={chineseSectionLabel('数据报表')}
+      description="指标、口径、范围、截至时间和投影版本全部由权威报表服务返回。"
       condition={condition}
       {...(error === undefined ? {} : { error })}
       rows={data?.items ?? []}
@@ -84,11 +84,15 @@ export function Component() {
           </label>
         </>
       }
-      boundary={{ title: '导出保持关闭', message: '冻结查询、Scope 证据、下载到期和 CSV 注入防护未完成前，不创建报表导出任务。' }}
+      boundary={{ title: '导出保持关闭', message: '冻结查询、数据范围证据、下载有效期和表格公式注入防护未完成前，不创建报表导出任务。' }}
       retry={() => {
         void query.refetch();
       }}
       next={(next) => setSearch(pageCursor(search, next))}
     />
   );
+}
+
+function dimensionValue(value: string): string {
+  return /[\u3400-\u9fff]/.test(value) ? value : chineseDomainLabel(value, chineseReference('数据项', value));
 }

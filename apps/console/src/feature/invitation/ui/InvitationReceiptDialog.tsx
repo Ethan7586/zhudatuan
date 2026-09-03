@@ -11,7 +11,14 @@ export function InvitationReceiptDialog({ receipt, organization, onDiscard }: Re
     setConfirming(false);
   }, [receipt]);
   const code = receipt?.code ?? '';
-  const displayCode = useMemo(() => code.replaceAll(/\s/g, '').match(/.{1,4}/g)?.join(' ') ?? code, [code]);
+  const displayCode = useMemo(
+    () =>
+      code
+        .replaceAll(/\s/g, '')
+        .match(/.{1,4}/g)
+        ?.join(' ') ?? code,
+    [code]
+  );
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(code);
@@ -25,24 +32,68 @@ export function InvitationReceiptDialog({ receipt, organization, onDiscard }: Re
       {receipt === undefined ? null : confirming ? (
         <div className="invitationreceiptconfirm">
           <p role="alert">关闭后无法再次查看或恢复此邀请码。请确认已经安全传递给员工。</p>
-          <div className="invitationactions"><Button onPress={() => setConfirming(false)}>继续查看</Button><Button tone="danger" onPress={onDiscard}>关闭并清除</Button></div>
+          <div className="invitationactions">
+            <Button onPress={() => setConfirming(false)}>继续查看</Button>
+            <Button tone="danger" onPress={onDiscard}>
+              关闭并清除
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="invitationreceipt">
-          <div className="invitationsecure"><strong>请立即安全保存</strong><span>邀请码不会进入列表、URL、缓存或浏览器存储。</span></div>
+          <div className="invitationsecure">
+            <strong>请立即安全保存</strong>
+            <span>邀请码不会进入列表、网页地址、缓存或浏览器存储。</span>
+          </div>
           <code aria-label="一次性邀请码">{displayCode}</code>
-          <Button tone="primary" onPress={() => void copy()}>{copyState === 'copied' ? '已复制邀请码' : '复制邀请码'}</Button>
-          {copyState === 'failed' ? <p className="invitationerror" role="alert">复制失败，请选中邀请码手动复制。</p> : null}
+          <Button tone="primary" onPress={() => void copy()}>
+            {copyState === 'copied' ? '已复制邀请码' : '复制邀请码'}
+          </Button>
+          {copyState === 'failed' ? (
+            <p className="invitationerror" role="alert">
+              复制失败，请选中邀请码手动复制。
+            </p>
+          ) : null}
           <dl className="invitationreceiptmeta">
-            <div><dt>邀请类型</dt><dd>{invitationKind(receipt.kind)}</dd></div>
-            <div><dt>使用位置</dt><dd>{invitationTarget(receipt.target)}</dd></div>
-            <div><dt>组织</dt><dd>{organization}</dd></div>
-            {receipt.employee ? <div><dt>员工</dt><dd>{receipt.employee.displayName}{receipt.employee.employeeNo ? ` · ${receipt.employee.employeeNo}` : ''}</dd></div> : null}
-            {receipt.recipientMasked ? <div><dt>接收人</dt><dd>{receipt.recipientMasked}</dd></div> : null}
-            <div><dt>到期时间</dt><dd>{invitationTime(receipt.expiresAt)}</dd></div>
-            <div><dt>可用次数</dt><dd>{receipt.maxUses}</dd></div>
+            <div>
+              <dt>邀请类型</dt>
+              <dd>{invitationKind(receipt.kind)}</dd>
+            </div>
+            <div>
+              <dt>使用位置</dt>
+              <dd>{invitationTarget(receipt.target)}</dd>
+            </div>
+            <div>
+              <dt>组织</dt>
+              <dd>{organization}</dd>
+            </div>
+            {receipt.employee ? (
+              <div>
+                <dt>员工</dt>
+                <dd>
+                  {receipt.employee.displayName}
+                  {receipt.employee.employeeNo ? ` · ${receipt.employee.employeeNo}` : ''}
+                </dd>
+              </div>
+            ) : null}
+            {receipt.recipientMasked ? (
+              <div>
+                <dt>接收人</dt>
+                <dd>{receipt.recipientMasked}</dd>
+              </div>
+            ) : null}
+            <div>
+              <dt>到期时间</dt>
+              <dd>{invitationTime(receipt.expiresAt)}</dd>
+            </div>
+            <div>
+              <dt>可用次数</dt>
+              <dd>{receipt.maxUses}</dd>
+            </div>
           </dl>
-          <div className="invitationactions"><Button onPress={() => setConfirming(true)}>完成并关闭</Button></div>
+          <div className="invitationactions">
+            <Button onPress={() => setConfirming(true)}>完成并关闭</Button>
+          </div>
         </div>
       )}
     </Dialog>

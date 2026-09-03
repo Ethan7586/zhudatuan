@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseProviderLabel, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -11,9 +11,9 @@ import { channelKey, channelViews, readChannels } from './ChannelQuery';
 import type { ChannelRecord, ChannelView } from './ChannelSchema';
 
 const columns: readonly DataColumn<ChannelRecord>[] = [
-  { key: 'provider', label: 'Provider/连接', render: (row) => row.provider },
-  { key: 'kind', label: '类型', render: (row) => row.kind },
-  { key: 'state', label: '服务端状态', render: (row) => row.state },
+  { key: 'provider', label: '服务商 / 连接', render: (row) => chineseProviderLabel(row.provider) },
+  { key: 'kind', label: '类型', render: (row) => chineseDomainLabel(row.kind) },
+  { key: 'state', label: '服务状态', render: (row) => chineseDomainLabel(row.state) },
   { key: 'progress', label: '进度/配置', render: (row) => row.progress },
   { key: 'reference', label: '水位/回执', render: (row) => row.reference },
   { key: 'time', label: '更新时间', render: (row) => formatDate(row.occurredAt) },
@@ -38,8 +38,8 @@ export function Component() {
   return (
     <PagedResource
       title="渠道管理"
-      eyebrow="SMART WING CHANNEL"
-      description="连接、同步和外部操作一次读取一个服务端读模型；只展示凭据状态，不暴露 Secret。"
+      eyebrow={chineseSectionLabel('渠道管理')}
+      description="连接、同步和外部操作分别读取权威服务数据；只展示凭据状态，不暴露密钥。"
       condition={state}
       {...(error === undefined ? {} : { error })}
       rows={data?.items ?? []}
@@ -57,7 +57,7 @@ export function Component() {
           </select>
         </label>
       }
-      boundary={{ title: '渠道写操作保持关闭', message: '创建、测试、启停、同步与重放缺 Provider 合同、Preview 和 action-bound proof 时不执行。' }}
+      boundary={{ title: '渠道写操作保持关闭', message: '创建、测试、启停、同步与重放缺少服务商协议、操作预览和操作绑定凭证时不执行。' }}
       retry={() => {
         void query.refetch();
       }}

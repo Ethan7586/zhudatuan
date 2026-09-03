@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { chineseReference } from '@shop/presentation';
 import type { DataColumn } from '../../shared/ui/DataTable';
 import { DataTable } from '../../shared/ui/DataTable';
 import { formatDate } from '../../shared/ui/Format';
@@ -41,7 +42,7 @@ function applicationColumns(
             <button type="button" onClick={() => onOpen(row)} aria-label={`查看${row.name}详情`}>
               {row.name}
             </button>
-            <code>{row.code}</code>
+            <code>{chineseReference('应用', row.code)}</code>
           </span>
         </div>
       ),
@@ -61,7 +62,7 @@ function applicationColumns(
       label: '装修版本',
       render: (row) => (
         <div className="commerceversion">
-          <strong>{row.headSequence === null ? '无草稿' : `草稿 v${row.headSequence}`}</strong>
+          <strong>{row.headSequence === null ? '无草稿' : `草稿第 ${row.headSequence} 版`}</strong>
           <span>{publicationLabel(row)}</span>
         </div>
       ),

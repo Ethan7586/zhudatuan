@@ -29,7 +29,7 @@ export function ProductFilterForm({ value, onApply, onColumns }: ProductFilterPr
       <TextField className="productsearchfield">
         <Label className="sr-only">商品搜索</Label>
         <ProductIcon name="search" />
-        <Input {...form.register('q')} placeholder="搜索商品名称或 SKU" />
+        <Input {...form.register('q')} placeholder="搜索商品名称或规格编码" />
         <button className="productsearchsubmit" type="submit" aria-label="筛选">
           <ProductIcon name="arrowRight" />
         </button>

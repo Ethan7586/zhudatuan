@@ -1,6 +1,6 @@
 /**
  * 智慧翼企业福利商城 - 页脚 Footer 组件
- * 彰显 B2B2C 企业福利架构与平台公信力
+ * 呈现企业福利架构与平台公信力
  * 标注技术服务方：雍彻科技
  */
 
@@ -54,7 +54,7 @@ export const Footer: React.FC = () => {
             </div>
             <div>
               <div className="font-bold text-white text-sm">客服工单持续跟踪</div>
-              <div className="text-gray-400 text-[11px] mt-0.5">响应与解决时限以工单 SLA 为准</div>
+              <div className="text-gray-400 text-[11px] mt-0.5">响应与解决时间以工单服务时限为准</div>
             </div>
           </div>
         </div>
@@ -68,7 +68,7 @@ export const Footer: React.FC = () => {
             <FooterLink onPress={() => void navigate('/')}>商城简介</FooterLink>
             <FooterLink onPress={() => void navigate('/support?topic=welfare')}>企业福利解决方案</FooterLink>
             <FooterLink onPress={() => void navigate('/support?topic=supplier')}>供应商入驻标准</FooterLink>
-            <FooterLink onPress={() => void navigate('/support?topic=distributor')}>分销服务商政策 (distributorId)</FooterLink>
+            <FooterLink onPress={() => void navigate('/support?topic=distributor')}>分销服务商政策</FooterLink>
           </ul>
         </div>
 
@@ -136,11 +136,11 @@ export const Footer: React.FC = () => {
             <span>·</span>
             <span className="font-bold text-white bg-blue-900/60 border border-blue-500/30 px-2 py-0.5 rounded flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-yellow-300" />
-              技术服务方：雍彻科技 (SGSYEN TECH)
+              技术服务方：雍彻科技
             </span>
           </div>
 
-          <div>© 2026 智慧翼 Enterprise Welfare Mall. All Rights Reserved. 技术服务：雍彻科技</div>
+          <div>© 2026 智慧翼企业福利商城 · 保留所有权利 · 技术服务：雍彻科技</div>
 
           <div className="text-gray-400 text-[10px]">商品、库存、企业权益与订单状态以登录账户的实时数据为准。</div>
         </div>

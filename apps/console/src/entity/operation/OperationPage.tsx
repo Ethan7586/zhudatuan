@@ -1,4 +1,4 @@
-import { queryCondition, hasFailureCode, safeQueryError } from '@shop/presentation';
+import { chineseSectionLabel, queryCondition, hasFailureCode, safeQueryError } from '@shop/presentation';
 import { ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import type { OperationId } from '@shop/contract';
@@ -32,7 +32,7 @@ export function OperationPage({
   const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data === undefined });
   return (
     <ResourcePanel
-      eyebrow={operation}
+      eyebrow={chineseSectionLabel(title)}
       title={routeTitle}
       description={description}
       condition={condition}
@@ -51,7 +51,7 @@ function PayloadSummary({ value }: Readonly<{ value: unknown }>) {
   return (
     <section className="featurestack">
       <h2>权威服务响应</h2>
-      <p>{Array.isArray(count) ? `当前页 ${count.length} 条记录` : '数据已通过Contract v2校验并加载。'}</p>
+      <p>{Array.isArray(count) ? `当前页 ${count.length} 条记录` : '数据已通过接口协议校验并加载。'}</p>
     </section>
   );
 }

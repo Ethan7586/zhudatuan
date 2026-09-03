@@ -48,7 +48,7 @@ export function applicationSummary(rows: readonly Experience[]): readonly Commer
   const drafts = rows.filter((row) => row.headSequence !== null && row.headSequence !== row.publishedSequence).length;
   const attention = rows.filter(needsAttention).length;
   return Object.freeze([
-    { label: '当前页应用', value: String(rows.length), hint: '来自当前 Scope 的读模型', tone: 'info' },
+    { label: '当前页应用', value: String(rows.length), hint: '来自当前数据范围的读模型', tone: 'info' },
     { label: '已有发布', value: String(published), hint: '返回有效发布版本', tone: 'success' },
     { label: '待继续草稿', value: String(drafts), hint: '草稿领先于发布版本', tone: drafts > 0 ? 'warning' : 'neutral' },
     { label: '需要处理', value: String(attention), hint: '入口停用或发布制品异常', tone: attention > 0 ? 'danger' : 'success' },
@@ -60,7 +60,7 @@ export function applicationStatusLabel(value: string): string {
   if (['active', 'enabled', 'published'].includes(normalized)) return '运营中';
   if (['draft', 'pending'].includes(normalized)) return '筹备中';
   if (['disabled', 'inactive', 'closed'].includes(normalized)) return '已停用';
-  return value;
+  return '待识别状态';
 }
 
 export function applicationStatusTone(value: string): CommerceTone {
@@ -76,7 +76,7 @@ export function validationLabel(value: string | null | undefined): string {
   if (value === 'valid') return '校验通过';
   if (value === 'invalid') return '校验失败';
   if (value === 'pending') return '等待校验';
-  return value;
+  return '待识别状态';
 }
 
 export function validationTone(value: string | null | undefined): CommerceTone {
@@ -88,7 +88,7 @@ export function validationTone(value: string | null | undefined): CommerceTone {
 
 export function publicationLabel(row: Experience): string {
   if (row.publishedSequence === null) return '未发布';
-  return `已发布 v${row.publishedSequence}`;
+  return `已发布第 ${row.publishedSequence} 版`;
 }
 
 export function needsAttention(row: Experience): boolean {

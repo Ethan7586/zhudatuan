@@ -25,7 +25,7 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
               <Brand variant="mark" product="企业福利商城" inverse />
               <span className="text-[10px] bg-blue-500/30 text-blue-200 border border-blue-400/40 font-bold px-1.5 py-0.5 rounded">{surfaceCopy.frameBadge}</span>
             </div>
-            <div className="text-[10px] text-blue-200">SMART WING B2B2C · 技术服务：雍彻科技（SGSYEN TECH）</div>
+            <div className="text-[10px] text-blue-200">智慧翼企业福利商城 · 技术服务：雍彻科技</div>
           </div>
         </div>
 
@@ -114,7 +114,7 @@ export function TabletNavigation() {
           </span>
           <div>
             <div className="truncate text-sm font-black">{currentMall.mallName}</div>
-            <div className="text-[10px] text-blue-600">Tablet 企业福利商城</div>
+            <div className="text-[10px] text-blue-600">平板版企业福利商城</div>
           </div>
         </div>
         <div className="ml-auto text-right">

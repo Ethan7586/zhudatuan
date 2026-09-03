@@ -1,4 +1,5 @@
 import { CheckSquare, CreditCard, Minus, Plus, ShieldCheck, Square, Trash2 } from 'lucide-react';
+import { chineseReference } from '@shop/presentation';
 import { useCartRuntime } from '../application/CartRuntime';
 import { formatMinor } from '../../../shared/format/Money';
 
@@ -32,7 +33,7 @@ export function TabletCartPage() {
                 )}
                 <div className="min-w-0 flex-1">
                   <h2 className="line-clamp-2 text-sm font-bold">{item.product.title}</h2>
-                  <p className="mt-1 text-xs text-slate-400">SKU：{item.skuId}</p>
+                  <p className="mt-1 text-xs text-slate-400">{chineseReference('商品规格', item.skuId)}</p>
                   <div className="mt-4 flex items-center justify-between">
                     <b className="text-red-500">¥{formatMinor(item.product.priceWelfareMinor)}</b>
                     <div className="flex overflow-hidden rounded-lg border">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { chineseProviderLabel, chineseReference } from '@shop/presentation';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useOrderRuntime } from '../application/OrderRuntime';
 import { ProductMedia } from '../../../shared/ui/ProductMedia';
@@ -81,8 +82,8 @@ export const LaptopOrdersPage: React.FC<LaptopOrdersPageProps> = ({ onSelectTab:
                 {/* 订单头部信息 */}
                 <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 flex items-center justify-between text-[11px] text-gray-600 flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-gray-900">订单号: {order.orderNo}</span>
-                    <span>下单时间: {order.createdAt}</span>
+                    <span className="font-bold text-gray-900">订单号：{order.orderNo}</span>
+                    <span>下单时间：{order.createdAt}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -101,15 +102,15 @@ export const LaptopOrdersPage: React.FC<LaptopOrdersPageProps> = ({ onSelectTab:
                         <div className="min-w-0">
                           <div className="font-bold text-gray-800 truncate text-xs">{item.product.title}</div>
                           <div className="text-[10px] text-gray-400 mt-0.5">
-                            SKU：{item.skuId} × {item.quantity}
+                            {chineseReference('商品规格', item.skuId)} × {item.quantity}
                           </div>
-                          {item.partner || item.provider ? <div className="text-[10px] text-gray-400 mt-0.5">履约方：{item.partner ?? item.provider}</div> : null}
+                          {item.partner || item.provider ? <div className="text-[10px] text-gray-400 mt-0.5">履约方：{item.provider ? chineseProviderLabel(item.provider) : chineseReference('合作方', item.partner)}</div> : null}
                         </div>
                       </div>
 
                       <div className="text-right flex-shrink-0">
                         <div className="font-bold text-gray-900">¥{item.priceAtPurchase.toFixed(2)}</div>
-                        <div className="text-[10px] text-gray-400">SKU：{item.skuId}</div>
+                        <div className="text-[10px] text-gray-400">{chineseReference('商品规格', item.skuId)}</div>
                       </div>
                     </div>
                   ))}

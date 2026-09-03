@@ -1,4 +1,5 @@
 import { ResourcePanel } from '@shop/design';
+import { chineseDomainLabel, chineseSectionLabel } from '@shop/presentation';
 import { Link, useOutletContext } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import type { ConsoleNavigationNode, ConsoleScope } from '../../entity/session/ConsoleSession';
@@ -18,7 +19,7 @@ export function Component() {
   const title = useRouteTitle('会员与权限');
   const enabled = nodes.filter((node) => !node.disabled).length;
   return (
-    <ResourcePanel eyebrow="SMART WING · MEMBER AND ACCESS" title={title} description="一个入口完成成员、管理员权限、项目范围以及供应商与门店治理。" condition="ready" retry={() => undefined}>
+    <ResourcePanel eyebrow={chineseSectionLabel('会员与权限')} title={title} description="一个入口完成成员、管理员权限、项目范围以及供应商与门店治理。" condition="ready" retry={() => undefined}>
       <div className="settingsworkspace">
         <section className="settingshero" aria-labelledby="settingsherotitle">
           <div>
@@ -39,7 +40,7 @@ export function Component() {
             </div>
             <div>
               <dt>当前范围</dt>
-              <dd>{scope.name ?? scope.kind}</dd>
+              <dd>{scope.name ?? chineseDomainLabel(scope.kind)}</dd>
             </div>
             <div>
               <dt>授权策略</dt>
@@ -71,7 +72,7 @@ export function Component() {
         <section className="settingssecurity" aria-label="安全边界">
           <div>
             <strong>角色与范围分离</strong>
-            <span>Role、Scope、Override 各自建模，拒绝规则始终优先。</span>
+            <span>角色、数据范围、成员覆盖权限各自建模，拒绝规则始终优先。</span>
           </div>
           <div>
             <strong>关键操作双人复核</strong>

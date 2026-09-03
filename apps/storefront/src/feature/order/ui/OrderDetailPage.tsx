@@ -1,4 +1,5 @@
 import { ArrowLeft, BellRing, CheckCircle2, Clock3, PackageCheck, Truck } from 'lucide-react';
+import { chineseProviderLabel, chineseReference } from '@shop/presentation';
 import { useNavigate, useParams } from 'react-router';
 import { useState } from 'react';
 import { useOrderRuntime } from '../application/OrderRuntime';
@@ -52,9 +53,9 @@ export function OrderDetailPage() {
               <div className="min-w-0 flex-1">
                 <h2 className="truncate text-sm font-bold">{line.title}</h2>
                 <p className="mt-1 text-xs text-slate-500">
-                  SKU：{line.skuId} × {line.quantity}
+                  {chineseReference('商品规格', line.skuId)} × {line.quantity}
                 </p>
-                {line.partner || line.provider ? <p className="mt-1 text-xs text-slate-500">履约方：{line.partner ?? line.provider}</p> : null}
+                {line.partner || line.provider ? <p className="mt-1 text-xs text-slate-500">履约方：{line.provider ? chineseProviderLabel(line.provider) : chineseReference('合作方', line.partner)}</p> : null}
               </div>
               <b className="text-sm">¥{formatMinor(line.payableMinor)}</b>
             </article>

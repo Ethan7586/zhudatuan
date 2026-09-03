@@ -1,13 +1,14 @@
+import { chineseDomainLabel, chineseReference } from '@shop/presentation';
 import { DataTable, type DataColumn } from '../../shared/ui/DataTable';
 import { formatDate } from '../../shared/ui/Format';
 import type { ReferralBinding } from './ReferralSchema';
 
 const columns: readonly DataColumn<ReferralBinding>[] = Object.freeze([
-  { key: 'member', label: '客户会员', render: (row) => row.memberId },
-  { key: 'promoter', label: '推广会员', render: (row) => row.promoterId },
-  { key: 'source', label: '归因来源', render: (row) => row.source },
+  { key: 'member', label: '客户会员', render: (row) => chineseReference('会员', row.memberId) },
+  { key: 'promoter', label: '推广会员', render: (row) => chineseReference('推广会员', row.promoterId) },
+  { key: 'source', label: '归因来源', render: (row) => chineseDomainLabel(row.source, '其他来源') },
   { key: 'bound', label: '绑定时间', render: (row) => formatDate(row.boundAt) },
-  { key: 'version', label: '版本', render: (row) => `v${row.version}` },
+  { key: 'version', label: '版本', render: (row) => `第 ${row.version} 版` },
 ]);
 
 export function BindingTable({ rows }: Readonly<{ rows: readonly ReferralBinding[] }>) {

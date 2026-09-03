@@ -1,4 +1,4 @@
-import { hasFailureCode, queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseReference, chineseSectionLabel, hasFailureCode, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { AssurancePrompt } from '../../entity/session/AssurancePrompt';
@@ -13,18 +13,18 @@ import type { Distributor, Layer, RuntimeControl } from './ControlSchema';
 
 const layerColumns: readonly DataColumn<Layer>[] = [
   { key: 'name', label: '组织', render: (row) => row.name },
-  { key: 'kind', label: '层级', render: (row) => row.kind },
-  { key: 'parent', label: '上级', render: (row) => row.parent_id ?? '—' },
-  { key: 'timezone', label: '时区', render: (row) => row.timezone ?? '—' },
-  { key: 'status', label: '状态', render: (row) => row.status },
+  { key: 'kind', label: '层级', render: (row) => chineseDomainLabel(row.kind) },
+  { key: 'parent', label: '上级', render: (row) => chineseReference('上级组织', row.parent_id) },
+  { key: 'timezone', label: '时区', render: (row) => chineseDomainLabel(row.timezone, '其他时区') },
+  { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },
   { key: 'version', label: '版本', render: (row) => row.version ?? '—' },
 ];
 const distributorColumns: readonly DataColumn<Distributor>[] = [
   { key: 'name', label: '分销商', render: (row) => row.name },
-  { key: 'code', label: '编码', render: (row) => row.code },
-  { key: 'settlement', label: '结算模式', render: (row) => row.settlement_mode },
+  { key: 'code', label: '编码', render: (row) => chineseReference('分销编码', row.code) },
+  { key: 'settlement', label: '结算模式', render: (row) => chineseDomainLabel(row.settlement_mode) },
   { key: 'tenants', label: '租户数', render: (row) => row.tenant_count },
-  { key: 'status', label: '状态', render: (row) => row.status },
+  { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },
   { key: 'updated', label: '更新时间', render: (row) => formatDate(row.updated_at) },
 ];
 
@@ -57,8 +57,8 @@ export function Component() {
     return (
       <PagedResource
         title="智慧翼中控台"
-        eyebrow="SMART WING CONTROL"
-        description="缓存、任务队列、数据库、合同与扩展状态来自 runtime.health.dependency。"
+        eyebrow={chineseSectionLabel('系统运行状态')}
+        description="缓存、任务队列、数据库、接口协议与扩展状态均来自权威运行服务。"
         condition={condition}
         {...(error === undefined ? {} : { error })}
         rows={rows}
@@ -76,8 +76,8 @@ export function Component() {
     return (
       <PagedResource
         title="分销层"
-        eyebrow="SMART WING DISTRIBUTION"
-        description="分销商、结算模式与租户绑定统计来自 channel.distributors.read。"
+        eyebrow={chineseSectionLabel('分销层')}
+        description="分销商、结算模式与租户绑定统计均来自权威渠道服务。"
         condition={condition}
         {...(error === undefined ? {} : { error })}
         rows={data.page.items}
@@ -96,8 +96,8 @@ export function Component() {
   return (
     <PagedResource
       title="平台层"
-      eyebrow="SMART WING PLATFORM"
-      description="平台组织层级与可见范围来自 organization.layers.read。"
+      eyebrow={chineseSectionLabel('平台层')}
+      description="平台组织层级与可见范围均来自权威组织服务。"
       condition={condition}
       {...(error === undefined ? {} : { error })}
       rows={page?.items ?? []}
@@ -120,9 +120,9 @@ function runtimeRows(health: RuntimeControl): readonly RuntimeRow[] {
       id: 'queue',
       subsystem: '任务队列',
       status: health.queue.deadletters === 0 ? '正常' : '需关注',
-      detail: `排队 ${health.queue.queued} · 运行 ${health.queue.running} · 死信 ${health.queue.deadletters} · 最老 ${health.queue.oldest_seconds}s`,
+      detail: `排队 ${health.queue.queued} · 运行 ${health.queue.running} · 异常任务 ${health.queue.deadletters} · 最久等待 ${health.queue.oldest_seconds} 秒`,
     },
-    { id: 'cache', subsystem: '缓存', status: health.cache.available ? '可用' : '降级', detail: health.cache.reason ?? '连接与读写正常' },
+    { id: 'cache', subsystem: '缓存', status: health.cache.available ? '可用' : '降级', detail: health.cache.reason ? '连接异常，请检查服务状态' : '连接与读写正常' },
     {
       id: 'database',
       subsystem: '数据库',
@@ -133,7 +133,7 @@ function runtimeRows(health: RuntimeControl): readonly RuntimeRow[] {
       id: 'contract',
       subsystem: '合同与迁移',
       status: readiness.contract.matches && readiness.configuration.matches && readiness.migration.matches ? '一致' : '漂移',
-      detail: `迁移 ${readiness.migration.head} · 合同 ${readiness.contract.checksum.slice(0, 12)}`,
+      detail: readiness.contract.matches && readiness.configuration.matches && readiness.migration.matches ? '数据库迁移、运行配置与接口协议一致' : '数据库迁移、运行配置或接口协议需要复核',
     },
     {
       id: 'extensions',

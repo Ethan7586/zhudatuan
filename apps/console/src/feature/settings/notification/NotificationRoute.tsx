@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../../entity/session/ConsoleContext';
@@ -12,8 +12,8 @@ import type { NotificationRecord, NotificationView } from './NotificationSchema'
 
 const columns: readonly DataColumn<NotificationRecord>[] = [
   { key: 'title', label: '名称', render: (row) => row.title },
-  { key: 'channel', label: '渠道', render: (row) => row.channel },
-  { key: 'state', label: '状态', render: (row) => row.state },
+  { key: 'channel', label: '渠道', render: (row) => chineseDomainLabel(row.channel) },
+  { key: 'state', label: '状态', render: (row) => chineseDomainLabel(row.state) },
   { key: 'start', label: '开始/创建', render: (row) => formatDate(row.startsAt) },
   { key: 'end', label: '结束', render: (row) => formatDate(row.endsAt) },
   { key: 'version', label: '版本', render: (row) => row.version },
@@ -37,8 +37,8 @@ export function Component() {
   return (
     <PagedResource
       title="通知管理"
-      eyebrow="SMART WING NOTIFICATION"
-      description="模板和公告按 URL 选择独立读模型，不在浏览器合并发送状态。"
+      eyebrow={chineseSectionLabel('通知管理')}
+      description="模板和公告按页面筛选条件读取独立权威数据，不在浏览器合并发送状态。"
       condition={state}
       {...(error === undefined ? {} : { error })}
       rows={data?.items ?? []}
@@ -55,7 +55,7 @@ export function Component() {
           </select>
         </label>
       }
-      boundary={{ title: '通知发布保持关闭', message: '模板变量校验、Preview、Step-up、发送回执和受众重读未闭合前不写入。' }}
+      boundary={{ title: '通知发布保持关闭', message: '模板变量校验、发布预览、二次验证、发送回执和受众重读未闭合前不写入。' }}
       retry={() => {
         void query.refetch();
       }}

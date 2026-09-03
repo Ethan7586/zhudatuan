@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { Button } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
@@ -18,8 +18,8 @@ import './Member.css';
 const baseColumns: readonly DataColumn<Member>[] = [
   { key: 'name', label: '成员', render: (row) => row.display_name },
   { key: 'employee', label: '员工号', render: (row) => row.employee_no ?? '—' },
-  { key: 'profile', label: '档案状态', render: (row) => row.status },
-  { key: 'membership', label: '成员状态', render: (row) => row.membership_status },
+  { key: 'profile', label: '档案状态', render: (row) => chineseDomainLabel(row.status) },
+  { key: 'membership', label: '成员状态', render: (row) => chineseDomainLabel(row.membership_status) },
   { key: 'joined', label: '加入时间', render: (row) => formatDate(row.joined_at) },
   { key: 'version', label: '权限版本', render: (row) => `第 ${row.access_version} 版` },
 ];
@@ -64,8 +64,8 @@ export function Component() {
     <>
       <PagedResource
         title="成员管理"
-        eyebrow="SMART WING MEMBER"
-        description="成员档案与组织成员关系均来自 member.members.read。"
+        eyebrow={chineseSectionLabel('成员管理')}
+        description="成员档案与组织成员关系均来自权威成员服务。"
         condition={state}
         {...(error === undefined ? {} : { error })}
         rows={data?.items ?? []}

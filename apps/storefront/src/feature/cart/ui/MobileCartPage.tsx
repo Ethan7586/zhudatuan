@@ -1,4 +1,5 @@
 import { CheckSquare, CreditCard, Minus, Plus, ShieldCheck, ShoppingBag, Square, Trash2 } from 'lucide-react';
+import { chineseReference } from '@shop/presentation';
 import { useCartRuntime } from '../application/CartRuntime';
 import type { MobileChannel } from '../../../shared/manifest/StorefrontChannel';
 import { formatMinor } from '../../../shared/format/Money';
@@ -42,7 +43,7 @@ export function MobileCartPage({ channel }: { readonly channel: MobileChannel })
               )}
               <div className="min-w-0 flex-1">
                 <div className="line-clamp-2 text-xs font-bold leading-5">{item.product.title}</div>
-                <div className="mt-1 text-[10px] text-slate-400">SKU：{item.skuId}</div>
+                <div className="mt-1 text-[10px] text-slate-400">{chineseReference('商品规格', item.skuId)}</div>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="font-black text-red-500">¥{formatMinor(item.product.priceWelfareMinor)}</span>
                   <div className="flex items-center rounded-lg border">

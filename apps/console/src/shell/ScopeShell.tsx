@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ConsoleScopeKind } from '@shop/authz';
-import { presentError } from '@shop/presentation';
+import { chineseReference, presentError } from '@shop/presentation';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useNavigate, useNavigation } from 'react-router';
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
@@ -35,7 +35,7 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
   const currentNode = allNodes.find((node) => node.component === manifest?.component);
   const activeNode = navigationFeatures.find((node) => node.component === currentNode?.component || flattenNavigation(node.children).some((child) => child.component === currentNode?.component));
   const routeTitle = currentNode?.title ?? '页面不存在';
-  const routeSummary = currentNode === undefined ? '该地址没有已授权组件' : `${context.scope.name ?? context.scope.id} · 已授权工作区`;
+  const routeSummary = currentNode === undefined ? '该地址没有已授权组件' : `${context.scope.name ?? chineseReference('组织范围', context.scope.id)} · 已授权工作区`;
   const activeRoute = activeNode?.component;
   const routeFeatures = currentNode?.children ?? [];
   const logout = useMutation({
@@ -101,7 +101,7 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, scopeSuffix(location.pathname) || 'cockpit')}${location.search}`);
   };
-  const scopeLabel = `${scopeTypeLabel(context.scope.kind)} · ${context.scope.name ?? context.scope.id}`;
+  const scopeLabel = `${scopeTypeLabel(context.scope.kind)} · ${context.scope.name ?? chineseReference('组织范围', context.scope.id)}`;
   const selectedPeriod = new URLSearchParams(location.search).get('period') ?? '30days';
   const selectPeriod = (period: string) => {
     const search = new URLSearchParams(location.search);
@@ -143,7 +143,7 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
                 <select id="consolescope" value={`${context.scope.kind}:${context.scope.id}`} onChange={(event) => selectScope(event.target.value)}>
                   {context.scopes.map((scope) => (
                     <option key={`${scope.kind}:${scope.id}`} value={`${scope.kind}:${scope.id}`}>
-                      {scope.name ?? scope.id} / 全部商城
+                      {scope.name ?? chineseReference('组织范围', scope.id)} / 全部商城
                     </option>
                   ))}
                 </select>
@@ -191,12 +191,12 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
               </Suspense>
             ) : null}
             <footer className="consolefooter">
-              <span>© 2026 Smart Wing 运营系统 · Scope: {context.scope.id}</span>
+              <span>© 2026 智慧翼运营系统 · 当前数据范围：{context.scope.name ?? scopeTypeLabel(context.scope.kind)}</span>
               <span className="consolefooterstatus">
                 <i aria-hidden="true" />
                 服务运行正常
               </span>
-              <code>AI 调用需服务端授权</code>
+              <code>智能助手调用需服务端授权</code>
             </footer>
           </div>
         </div>

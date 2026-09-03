@@ -44,9 +44,9 @@ export function SupportPage() {
   return (
     <section className="sw-web-container mx-auto max-w-[1240px] px-3 py-5 text-xs">
       <header className="mb-4">
-        <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">SMART WING SERVICE</p>
+        <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">智慧翼 · 客户服务</p>
         <h1 className="mt-1 text-xl font-black">客服中心</h1>
-        <p className="mt-1 text-gray-500">发起真实服务工单，并持续跟踪客服回复与 SLA。</p>
+        <p className="mt-1 text-gray-500">发起真实服务工单，并持续跟踪客服回复与服务时限。</p>
       </header>
       {error || query.isError ? (
         <div role="alert" className="mb-3 flex items-center gap-2 rounded-lg bg-red-50 p-3 font-bold text-red-700">
@@ -128,10 +128,10 @@ function State({ text: value }: { readonly text: string }) {
   );
 }
 function stateLabel(value: string) {
-  return ({ open: '待处理', assigned: '已分配', waiting: '待您回复', resolved: '已解决', closed: '已关闭' } as Record<string, string>)[value] ?? value;
+  return ({ open: '待处理', assigned: '已分配', waiting: '待您回复', resolved: '已解决', closed: '已关闭' } as Record<string, string>)[value] ?? '待识别状态';
 }
 function priorityLabel(value: string) {
-  return ({ low: '低优先级', normal: '普通', high: '高优先级', urgent: '紧急' } as Record<string, string>)[value] ?? value;
+  return ({ low: '低优先级', normal: '普通', high: '高优先级', urgent: '紧急' } as Record<string, string>)[value] ?? '普通';
 }
 function format(value: string) {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });

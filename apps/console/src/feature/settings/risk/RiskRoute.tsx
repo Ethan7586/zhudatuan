@@ -1,4 +1,4 @@
-import { queryCondition, hasFailureCode, safeQueryError } from '@shop/presentation';
+import { chineseSectionLabel, queryCondition, hasFailureCode, safeQueryError } from '@shop/presentation';
 import type { OperationOutputFor } from '@shop/contract';
 import { Button, ResourcePanel } from '@shop/design';
 import { createFetchRiskCenterRead } from '@shop/sdk/risk';
@@ -36,7 +36,7 @@ export function Component() {
   const notification = nodes.find((node) => node.component === 'notification' || node.title === '通知管理');
   return (
     <ResourcePanel
-      eyebrow="SMART WING GOVERNANCE"
+      eyebrow={chineseSectionLabel('系统治理')}
       title={title}
       description="集中观察风险策略、策略回放与待复核事件；所有数据均来自当前组织范围的权威风险中心。"
       condition={condition}

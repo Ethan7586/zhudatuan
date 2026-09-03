@@ -135,7 +135,7 @@ export const LaptopHeader: React.FC<LaptopHeaderProps> = ({ activeTab, onSelectT
                 <Brand variant="mark" product="企业福利商城" />
                 <span className="text-[9px] bg-red-100 text-[var(--sw-danger)] font-bold px-1 py-0.2 rounded">{surfaceCopy.headerBadge}</span>
               </div>
-              <div className="text-[9px] text-gray-400 font-medium tracking-tight mt-0.5">SMART WING ENTERPRISE BENEFITS</div>
+              <div className="text-[9px] text-gray-400 font-medium tracking-tight mt-0.5">智慧翼企业福利</div>
             </div>
           </button>
 

@@ -45,10 +45,10 @@ const lifecycleLabels: Readonly<Record<string, string>> = Object.freeze({
   cancelled: '已取消',
 });
 
-export const paymentLabel = (value: string): string => paymentLabels[value] ?? value;
-export const fulfillmentLabel = (value: string): string => fulfillmentLabels[value] ?? value;
-export const aftersaleLabel = (value: string): string => aftersaleLabels[value] ?? value;
-export const lifecycleLabel = (value: string): string => lifecycleLabels[value] ?? value;
+export const paymentLabel = (value: string): string => paymentLabels[value] ?? '待识别状态';
+export const fulfillmentLabel = (value: string): string => fulfillmentLabels[value] ?? '待识别状态';
+export const aftersaleLabel = (value: string): string => aftersaleLabels[value] ?? '待识别状态';
+export const lifecycleLabel = (value: string): string => lifecycleLabels[value] ?? '待识别状态';
 
 export function paymentTone(value: string): OrderTone {
   if (value === 'paid') return 'brand';

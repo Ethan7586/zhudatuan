@@ -1,4 +1,5 @@
 import { CheckCircle2, Heart, Minus, Plus, Share2, ShieldCheck, ShoppingCart, Truck } from 'lucide-react';
+import { chineseReference } from '@shop/presentation';
 import { useMemo, useState } from 'react';
 import { useProductRuntime } from '../application/ProductRuntime';
 import type { MobileChannel } from '../../../shared/manifest/StorefrontChannel';
@@ -70,7 +71,7 @@ export function MobileProductPage({ channel }: { readonly channel: MobileChannel
         <div className="flex w-full items-center justify-between py-4">
           <span>
             <b>规格</b>
-            <span className="ml-3 text-slate-500">{product.specs?.flatMap(({ name, options }) => options.map((option) => `${name}：${option}`)).join('；') || `SKU：${product.skuId}`}</span>
+            <span className="ml-3 text-slate-500">{product.specs?.flatMap(({ name, options }) => options.map((option) => `${name}：${option}`)).join('；') || chineseReference('商品规格', product.skuId)}</span>
           </span>
         </div>
         <div className="flex items-center justify-between py-4">

@@ -152,7 +152,7 @@ export function Component() {
       <OrderPageHeader isFetching={view === 'aftersale' ? aftersaleQuery.isFetching : query.isFetching} onRefresh={refresh} />
 
       <p id="orderwriteboundary" className="ordercontractnote" role="note">
-        商品订单与售后订单都由服务端按当前组织树或会员本人范围隔离，并使用内部订单 ID 精确筛选与游标分页；最终写操作保持关闭。
+        商品订单与售后订单都由服务端按当前组织树或会员本人范围隔离，并使用内部订单编号精确筛选与游标分页；最终写操作保持关闭。
       </p>
 
       <OrderStatusTabs active={view} onChange={selectView} />
@@ -166,7 +166,7 @@ export function Component() {
 
       {checked.size === 0 ? null : (
         <p className="orderselectionnote" role="status">
-          已选择 {checked.size} 条当前页订单；跨页动作等待 Filter Snapshot 与 Preview 证明。
+          已选择 {checked.size} 条当前页订单；跨页动作等待筛选快照与操作预览证明。
         </p>
       )}
       <div id="orderlistpanel" className="orderlistpanel" aria-busy={view === 'aftersale' ? aftersaleQuery.isFetching : query.isFetching}>

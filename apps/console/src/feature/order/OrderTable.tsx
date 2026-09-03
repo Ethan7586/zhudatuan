@@ -1,4 +1,5 @@
 import { formatMinor } from '../../shared/ui/Format';
+import { chineseReference } from '@shop/presentation';
 import { OrderIcon } from './OrderIcon';
 import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone, productSummary } from './OrderPresentation';
 import type { OrderRecord } from './OrderSchema';
@@ -40,7 +41,7 @@ export function OrderTable({
             {visible.has('payment') ? <th scope="col">金额 / 支付</th> : null}
             {visible.has('fulfillment') ? <th scope="col">履约状态</th> : null}
             {visible.has('aftersale') ? <th scope="col">售后</th> : null}
-            {visible.has('sla') ? <th scope="col">SLA</th> : null}
+            {visible.has('sla') ? <th scope="col">服务时限</th> : null}
             <th scope="col">操作</th>
           </tr>
         </thead>
@@ -95,8 +96,8 @@ function OrderRow({
       {visible.has('member') ? (
         <td>
           <div className="orderprimarycell">
-            <strong>{order.member_id ?? '会员 ID 不可用'}</strong>
-            <span>{order.scope_id ?? '组织范围不可用'}</span>
+            <strong>{order.member_id ? chineseReference('会员', order.member_id) : '会员编号不可用'}</strong>
+            <span>{order.scope_id ? chineseReference('组织范围', order.scope_id) : '组织范围不可用'}</span>
           </div>
         </td>
       ) : null}
@@ -134,7 +135,7 @@ function OrderRow({
       ) : null}
       {visible.has('sla') ? (
         <td>
-          <span className="ordermutetext" title="当前读模型未返回 SLA">
+          <span className="ordermutetext" title="当前读模型未返回服务时限">
             未提供
           </span>
         </td>

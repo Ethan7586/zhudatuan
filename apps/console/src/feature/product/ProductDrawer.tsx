@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { chineseReference } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay } from 'react-aria-components';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -12,7 +13,7 @@ import { canChangeListingPublication, isPublishedListing, productStatus } from '
 
 const tabs: readonly Readonly<{ key: ProductDrawerTab; label: string }>[] = Object.freeze([
   { key: 'overview', label: '概览' },
-  { key: 'sku', label: 'SKU与库存' },
+  { key: 'sku', label: '规格与库存' },
   { key: 'malls', label: '商城与售价' },
   { key: 'source', label: '来源与供货' },
   { key: 'changes', label: '变更记录' },
@@ -66,10 +67,10 @@ function ProductDrawerContent({
           </span>
           <div>
             <Heading slot="title">{listing.title}</Heading>
-            <p>{listing.product_id}</p>
+            <p>{chineseReference('商品', listing.product_id)}</p>
             <span className="productdrawermeta">
               <StatusBadge status={listing.status} />
-              <small>v{listing.version}</small>
+              <small>第 {listing.version} 版</small>
               <small>列表快照</small>
             </span>
           </div>

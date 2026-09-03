@@ -50,7 +50,7 @@ export function EntryDialog({ record, onClose }: Readonly<{ record: Experience |
         <p className={`commerceentrystate is-${view.tone}`}>
           <i aria-hidden="true" />
           {view.title}
-          {record.publishedSequence === null ? '' : ` · v${record.publishedSequence}`}
+          {record.publishedSequence === null ? '' : ` · 第 ${record.publishedSequence} 版`}
         </p>
         {view.qr ? (
           <div className="commerceqrframe" ref={container}>

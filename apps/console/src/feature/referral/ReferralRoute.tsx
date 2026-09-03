@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { Button, Dialog, ResourcePanel } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -62,7 +62,7 @@ export function Component() {
     <div className="referralworkspace">
       <ResourcePanel
         title={title}
-        eyebrow="REFERRAL OPERATIONS"
+        eyebrow={chineseSectionLabel('分销返佣')}
         description={viewMeta.description}
         condition={condition}
         {...(resourceError === undefined ? {} : { error: resourceError })}
@@ -175,7 +175,7 @@ function ActionDialog({
     }
   };
   return (
-    <Dialog open={action !== undefined} title={action?.label ?? '分销管理'} eyebrow="STEP-UP · ACTION PROOF · VERSION" onClose={onClose} dismissable={!busy}>
+    <Dialog open={action !== undefined} title={action?.label ?? '分销管理'} eyebrow="二次验证 · 操作凭证 · 版本校验" onClose={onClose} dismissable={!busy}>
       <form
         className="referralactionform"
         onSubmit={(event) => {
@@ -221,7 +221,7 @@ function ActionDialog({
           一次性复核凭证
           <input value={proof} autoComplete="off" spellCheck={false} onChange={(event) => setProof(event.target.value.trim())} required />
         </label>
-        <p>目标版本 v{action?.version ?? 0}；版本冲突、证明不匹配或已消费时不会重试写入。</p>
+        <p>目标版本第 {action?.version ?? 0} 版；版本冲突、证明不匹配或已消费时不会重试写入。</p>
         {error === undefined ? null : (
           <p className="referralnotice iserror" role="alert">
             {error}

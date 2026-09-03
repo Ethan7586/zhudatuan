@@ -1,5 +1,5 @@
 import { Bell, Check, CircleAlert, LoaderCircle, Mail, MessageCircle, RefreshCw } from 'lucide-react';
-import { presentError } from '@shop/presentation';
+import { chineseDomainLabel, presentError } from '@shop/presentation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useSession } from '../../../shared/runtime/SessionContext';
@@ -60,7 +60,7 @@ export function NotificationPage() {
     <section className="sw-web-container mx-auto max-w-[1240px] px-3 py-5 text-xs">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">SMART WING MESSAGE</p>
+          <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">智慧翼 · 消息中心</p>
           <h1 className="mt-1 text-xl font-black text-gray-900">通知中心</h1>
           <p className="mt-1 text-gray-500">订单、卡券、售后和企业公告均来自服务端真实投递记录。</p>
         </div>
@@ -92,7 +92,7 @@ export function NotificationPage() {
                   <p className="mt-2 whitespace-pre-wrap break-words leading-5 text-gray-600">{item.body}</p>
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-gray-400">
-                      {channelLabel(item.channel)} · {item.state}
+                      {channelLabel(item.channel)} · {chineseDomainLabel(item.state)}
                     </span>
                     {item.readAt ? (
                       <span className="inline-flex items-center gap-1 text-gray-400">
@@ -173,7 +173,7 @@ function eventLabel(value: string): string {
     'voucher.issued': '卡券已发放',
     'aftersale.updated': '售后进度更新',
   };
-  return labels[value] ?? value;
+  return labels[value] ?? '账户通知';
 }
 function format(value: string): string {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });

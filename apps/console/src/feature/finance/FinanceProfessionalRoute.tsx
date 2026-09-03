@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseReference, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -14,9 +14,9 @@ import './FinanceWorkspace.css';
 
 const columns: readonly DataColumn<FinanceRecord>[] = [
   { key: 'label', label: '记录', render: (row) => row.label },
-  { key: 'reference', label: '业务引用', render: (row) => row.reference },
+  { key: 'reference', label: '业务编号', render: (row) => chineseReference('业务', row.reference) },
   { key: 'amount', label: '服务端金额', render: (row) => formatMinor(row.amountMinor, row.currency) },
-  { key: 'state', label: '服务端状态', render: (row) => row.state },
+  { key: 'state', label: '服务状态', render: (row) => chineseDomainLabel(row.state) },
   { key: 'time', label: '业务时间', render: (row) => formatDate(row.occurredAt) },
   { key: 'version', label: '版本', render: (row) => row.version ?? '—' },
 ];
@@ -42,7 +42,7 @@ export function FinanceProfessionalRoute({ section }: Readonly<{ section: Financ
       <FinanceTabs context={context} active={activeTab(section)} />
       <PagedResource
         title={metadata[section].title}
-        eyebrow="SMART WING FINANCE OPERATIONS"
+        eyebrow={chineseSectionLabel('财务管理')}
         description={metadata[section].description}
         condition={state}
         {...errorProps(safeQueryError(query.error))}
@@ -51,7 +51,7 @@ export function FinanceProfessionalRoute({ section }: Readonly<{ section: Financ
         rowKey={(row) => row.id}
         count={data?.count ?? 0}
         {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
-        boundary={{ title: '资金写操作保持关闭', message: '未闭合 Preview→Confirm→Step-up→Execute→Reread→Receipt 与 action-bound proof 前，本页只读。' }}
+        boundary={{ title: '资金写操作保持关闭', message: '操作预览、确认、二次验证、执行、权威回读、回执与操作绑定凭证未完整闭合前，本页只读。' }}
         retry={() => {
           void query.refetch();
         }}

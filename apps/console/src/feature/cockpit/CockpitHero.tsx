@@ -11,7 +11,7 @@ export function CockpitHero({ sales }: CockpitHeroProps) {
   return (
     <section className="cockpithero" aria-labelledby="cockpittitle">
       <div>
-        <p className="cockpiteyebrow">BUSINESS PERFORMANCE</p>
+        <p className="cockpiteyebrow">经营表现</p>
         <h1 id="cockpittitle">{title}</h1>
         <p className="cockpitconclusion">{sales.conclusion ?? '经营结论等待服务端权威读模型。'}</p>
         <p className="cockpitperiod">{period === undefined ? '统计周期未返回' : `${period.from}—${period.to}`}</p>

@@ -165,5 +165,5 @@ export function permissionText(code: string): string {
 }
 
 export function scopeText(kind: string): string {
-  return scopes[kind] ?? kind;
+  return scopes[kind] ?? '其他范围';
 }

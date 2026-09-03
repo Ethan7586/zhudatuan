@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { chineseReference } from '@shop/presentation';
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
@@ -63,7 +64,7 @@ export function OrderDrawer({
                 </button>
               </div>
               {order === undefined ? (
-                <span className="ordermutetext">内部订单 ID：{orderId}</span>
+                <span className="ordermutetext">{chineseReference('内部订单', orderId)}</span>
               ) : (
                 <>
                   <div className="orderdrawerbadges">
@@ -71,7 +72,7 @@ export function OrderDrawer({
                     <span className={`orderstatuspill tone-${fulfillmentTone(order.fulfillment_state)}`}>{fulfillmentLabel(order.fulfillment_state)}</span>
                   </div>
                   <span className="ordermutetext">
-                    {order.mall_id ?? '商城 ID 不可用'} · {formatOrderTime(order.created_at)}
+                    {order.mall_id ? chineseReference('商城', order.mall_id) : '商城编号不可用'} · {formatOrderTime(order.created_at)}
                   </span>
                 </>
               )}
@@ -105,7 +106,7 @@ export function OrderDrawer({
               {query.isError ? (
                 <section className="orderdrawererror" role="alert">
                   <strong>订单详情读取失败</strong>
-                  <p>{query.error ?? 'REQUEST_FAILED'}</p>
+                  <p>暂时无法读取订单详情，请稍后重试。</p>
                   <button
                     type="button"
                     onClick={() => {
@@ -119,7 +120,7 @@ export function OrderDrawer({
               {!query.isPending && !query.isError && order === undefined ? (
                 <section className="orderdrawerempty" role="status">
                   <strong>未找到订单</strong>
-                  <p>当前详情读取只支持内部订单 ID 精确匹配，不支持使用展示订单号反查。</p>
+                  <p>当前详情读取只支持内部订单编号精确匹配，不支持使用展示订单号反查。</p>
                 </section>
               ) : null}
               {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} />}
@@ -128,7 +129,7 @@ export function OrderDrawer({
 
           <footer className="orderdrawerfooter">
             <p id="orderactionboundary" className="sr-only">
-              最终动作缺少权限版本重读、服务端预览、Step-up、action-bound proof 与 Operation 回执，当前保持关闭。
+              最终动作缺少权限版本重读、服务端预览、二次验证、操作绑定凭证与执行回执，当前保持关闭。
             </p>
             <button type="button" onClick={onClose}>
               关闭

@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseReference, queryCondition, safeQueryError } from '@shop/presentation';
 import { Button, ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -99,7 +99,7 @@ export function Component() {
     setEntry(null);
     requestAnimationFrame(() => restoreEntryFocus(trigger));
   }, []);
-  const scopeName = context.scope.name ?? context.scope.id;
+  const scopeName = context.scope.name ?? chineseReference('组织范围', context.scope.id);
 
   return (
     <div className="commerceworkspace" data-mode={presentation.mode}>
@@ -272,7 +272,7 @@ function searchable(row: Experience): string {
 
 function boundaryMessage(mode: CommerceWorkspaceMode): string {
   if (mode === 'management') return '服务端在一个事务中建立独立商城、应用、初始草稿与专属商品池，失败时整体回滚。';
-  if (mode === 'design') return '保存、校验、发布与恢复均使用独立 Operation 和 expectedVersion，失败版本不会污染已发布版本。';
+  if (mode === 'design') return '保存、校验、发布与恢复均使用独立受控操作和版本校验，失败版本不会污染已发布版本。';
   return '平台可查看准入与异常，但正式审批必须进入系统治理并与商户权限隔离。';
 }
 

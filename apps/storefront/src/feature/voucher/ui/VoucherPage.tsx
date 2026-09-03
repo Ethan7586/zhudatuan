@@ -1,5 +1,5 @@
 import { CircleAlert, History, LoaderCircle, TicketCheck } from 'lucide-react';
-import { hasFailureCode, presentError } from '@shop/presentation';
+import { chineseReference, hasFailureCode, presentError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSession } from '../../../shared/runtime/SessionContext';
@@ -38,7 +38,7 @@ export function VoucherPage() {
         }}
       />
       <header className="mb-4">
-        <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">SMART WING VOUCHER</p>
+        <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">智慧翼 · 卡券中心</p>
         <h1 className="mt-1 text-xl font-black">卡券中心</h1>
         <p className="mt-1 text-gray-500">展示服务端绑定卡券、剩余金额、有效期及真实核销记录。</p>
       </header>
@@ -76,7 +76,7 @@ function VoucherContent({ vouchers, redemptions }: Readonly<{ vouchers: Awaited<
               <p className="relative mt-1 text-blue-100">
                 初始 {money(item.initialMinor)} · 有效期至 {date(item.expiresAt)}
               </p>
-              <p className="relative mt-3 truncate text-[10px] text-blue-200">{item.id}</p>
+              <p className="relative mt-3 truncate text-[10px] text-blue-200">{chineseReference('卡券', item.id)}</p>
             </article>
           ))}
           {vouchers.length === 0 ? <State text="暂无可用卡券" /> : null}
@@ -93,7 +93,7 @@ function VoucherContent({ vouchers, redemptions }: Readonly<{ vouchers: Awaited<
               <div>
                 <b>{money(item.amountMinor)}</b>
                 <p className="mt-1 text-gray-400">
-                  {dateTime(item.redeemedAt)} · {item.orderId ?? '线下核销'}
+                  {dateTime(item.redeemedAt)} · {item.orderId ? chineseReference('订单', item.orderId) : '线下核销'}
                 </p>
               </div>
               <div className="text-right">
@@ -130,8 +130,8 @@ function dateTime(value: string) {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 }
 function stateLabel(value: string) {
-  return ({ inactive: '待激活', active: '可使用', held: '使用中', redeemed: '已核销', reversed: '已冲正', disabled: '已停用', expired: '已过期', void: '已作废' } as Record<string, string>)[value] ?? value;
+  return ({ inactive: '待激活', active: '可使用', held: '使用中', redeemed: '已核销', reversed: '已冲正', disabled: '已停用', expired: '已过期', void: '已作废' } as Record<string, string>)[value] ?? '待识别状态';
 }
 function receiptLabel(value: string) {
-  return ({ redeemed: '已核销', partially_reversed: '部分冲正', reversed: '已冲正' } as Record<string, string>)[value] ?? value;
+  return ({ redeemed: '已核销', partially_reversed: '部分冲正', reversed: '已冲正' } as Record<string, string>)[value] ?? '待识别状态';
 }

@@ -92,7 +92,7 @@ export const LaptopAccountPane1366: React.FC<{
             <span>企业采购合规保障</span>
           </div>
           <p className="text-[10px] text-gray-300 leading-relaxed">商品来源、账户资格、履约承诺和开票结果均以平台权威记录为准，可在订单中心追溯。</p>
-          <div className="text-[9px] text-gray-400 pt-1 border-t border-gray-700">技术服务：雍彻科技（SGSYEN TECH）</div>
+          <div className="text-[9px] text-gray-400 pt-1 border-t border-gray-700">技术服务：雍彻科技</div>
         </div>
       </div>
     </>

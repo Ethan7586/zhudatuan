@@ -32,7 +32,8 @@ describe('EntryDialog', () => {
 
   it('fails closed and exposes the low-cardinality request identifier', () => {
     render(<EntryDialog record={experience('invalid')} onClose={() => undefined} />);
-    expect(screen.getAllByText(/trace:entry-invalid/)).toHaveLength(2);
+    expect(screen.getAllByText(/请求 \d{4} \d{4}/)).toHaveLength(2);
+    expect(screen.queryByText(/trace:entry-invalid/)).toBeNull();
     expect(screen.queryByRole('img')).toBeNull();
   });
 

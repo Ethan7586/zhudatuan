@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { chineseReference } from '@shop/presentation';
 import type { DataColumn } from '../../shared/ui/DataTable';
 import { DataTable } from '../../shared/ui/DataTable';
 import { formatDate, formatMinor } from '../../shared/ui/Format';
@@ -29,7 +30,7 @@ function columnsFor(view: VoucherView, onOpen: (record: VoucherRecord) => void):
           <button type="button" onClick={() => onOpen(row)} aria-label={`查看${row.name}摘要`}>
             {row.name}
           </button>
-          <code>{row.id}</code>
+          <code>{chineseReference(voucherViewMeta[view].short, row.id)}</code>
         </span>
       </div>
     ),
@@ -60,7 +61,7 @@ function columnsFor(view: VoucherView, onOpen: (record: VoucherRecord) => void):
       { key: 'amount', label: '面值', render: (row) => formatRecordAmount(row) },
       { key: 'detail', label: '审批机制', render: (row) => row.detail },
       state,
-      { key: 'version', label: '版本', render: (row) => (row.version === null ? '—' : `v${row.version}`) },
+      { key: 'version', label: '版本', render: (row) => (row.version === null ? '—' : `第 ${row.version} 版`) },
       action,
     ]);
   if (view === 'libraries')
@@ -69,7 +70,7 @@ function columnsFor(view: VoucherView, onOpen: (record: VoucherRecord) => void):
       { key: 'detail', label: '生成 / 导入方式', render: (row) => row.detail },
       { key: 'quantity', label: '成功数量', render: (row) => formatQuantity(row.quantity) },
       state,
-      { key: 'version', label: '版本', render: (row) => (row.version === null ? '—' : `v${row.version}`) },
+      { key: 'version', label: '版本', render: (row) => (row.version === null ? '—' : `第 ${row.version} 版`) },
       action,
     ]);
   if (view === 'reserves')

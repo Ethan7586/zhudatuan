@@ -1,4 +1,5 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
+import { chineseReference } from '@shop/presentation';
 import { ProductIcon } from './ProductIcon';
 import type { Listing } from './ProductSchema';
 
@@ -45,7 +46,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
               </th>
               <th>商品信息</th>
               {visibleColumns.has('category') ? <th>分类 / 供应商</th> : null}
-              {visibleColumns.has('sku') ? <th>SKU 数</th> : null}
+              {visibleColumns.has('sku') ? <th>规格数</th> : null}
               {visibleColumns.has('malls') ? <th>商城覆盖</th> : null}
               {visibleColumns.has('price') ? <th>售价</th> : null}
               {visibleColumns.has('stock') ? <th>库存</th> : null}
@@ -71,7 +72,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                       }}
                     >
                       <strong>{row.title}</strong>
-                      <span>{row.product_id}</span>
+                      <span>{chineseReference('商品', row.product_id)}</span>
                     </button>
                   </div>
                 </td>

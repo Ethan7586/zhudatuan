@@ -3,7 +3,7 @@ import type { ProductColumnKey } from './ProductTable';
 
 const columns: readonly Readonly<{ key: ProductColumnKey; label: string }>[] = Object.freeze([
   { key: 'category', label: '分类 / 供应商' },
-  { key: 'sku', label: 'SKU 数' },
+  { key: 'sku', label: '规格数' },
   { key: 'malls', label: '商城覆盖' },
   { key: 'price', label: '售价' },
   { key: 'stock', label: '库存' },
@@ -20,7 +20,7 @@ interface ProductColumnSettingsProps {
 
 export function ProductColumnSettings({ open, visible, onChange, onClose }: ProductColumnSettingsProps) {
   return (
-    <Dialog open={open} title="列设置" eyebrow="TABLE PREFERENCES" onClose={onClose}>
+    <Dialog open={open} title="列设置" eyebrow="表格显示偏好" onClose={onClose}>
       <div className="productcolumnpanel">
         <p>仅调整本次浏览中的显示列，不改变服务端查询或业务数据。</p>
         <div className="productcolumnchoices">

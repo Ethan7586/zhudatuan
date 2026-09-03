@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { chineseDomainList } from '@shop/presentation';
 import { LaptopBreadcrumb } from '../../../shared/ui/Breadcrumb';
 import { useProductRuntime } from '../application/ProductRuntime';
 import type { LaptopPage } from '../../../shared/manifest/StorefrontRoute';
@@ -106,7 +107,7 @@ export const LaptopDetailPage: React.FC<LaptopDetailPageProps> = ({ onSelectTab,
             <div>
               <div className="flex items-center gap-2 mb-1">
                 {product.supplierName ? <span className="bg-[var(--sw-brand-dark)] text-white font-bold text-[10px] px-1.5 py-0.2 rounded">{product.supplierName}</span> : null}
-                <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded">{product.allowedAccounts.length > 0 ? `可用账户：${product.allowedAccounts.join(' / ')}` : '账户资格以结算报价为准'}</span>
+                <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded">{product.allowedAccounts.length > 0 ? `可用账户：${chineseDomainList(product.allowedAccounts)}` : '账户资格以结算报价为准'}</span>
               </div>
 
               <h1 className="text-base sm:text-lg font-black text-gray-900 leading-snug">{product.title}</h1>
@@ -114,7 +115,7 @@ export const LaptopDetailPage: React.FC<LaptopDetailPageProps> = ({ onSelectTab,
 
               <div className="bg-gradient-to-r from-red-50 via-orange-50 to-blue-50 border border-red-200/80 rounded-lg p-3 mt-3 space-y-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-bold text-[var(--sw-promotion)]">企采福利价:</span>
+                  <span className="text-xs font-bold text-[var(--sw-promotion)]">企采福利价：</span>
                   <span className="text-2xl font-black text-[var(--sw-promotion)]">¥{product.welfarePrice.toFixed(2)}</span>
                   <span className="text-xs text-gray-400 line-through">官网原价 ¥{product.marketPrice.toFixed(2)}</span>
                 </div>
@@ -125,7 +126,7 @@ export const LaptopDetailPage: React.FC<LaptopDetailPageProps> = ({ onSelectTab,
                     <span>
                       {product.allowedAccounts.includes('welfare') ? (
                         <>
-                          福利卡可用余额: <strong className="text-[var(--sw-brand-dark)]">¥{formatMinor(user.welfareBalanceMinor)}</strong>
+                          福利卡可用余额：<strong className="text-[var(--sw-brand-dark)]">¥{formatMinor(user.welfareBalanceMinor)}</strong>
                         </>
                       ) : (
                         '实际支付方式以服务端报价为准'
@@ -165,7 +166,7 @@ export const LaptopDetailPage: React.FC<LaptopDetailPageProps> = ({ onSelectTab,
               </div>
 
               <div className="mt-3 flex items-center gap-3 text-xs">
-                <span className="font-bold text-gray-800">购买数量:</span>
+                <span className="font-bold text-gray-800">购买数量：</span>
                 <div className="flex items-center border border-gray-300 rounded overflow-hidden">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-2 py-1 bg-gray-100 hover:bg-gray-200 cursor-pointer">
                     <Minus className="w-3 h-3" />
@@ -235,7 +236,7 @@ export const LaptopDetailPage: React.FC<LaptopDetailPageProps> = ({ onSelectTab,
                   </div>
                   <div>
                     <strong>支付：</strong>
-                    {product.allowedAccounts.length > 0 ? product.allowedAccounts.join(' / ') : '以服务端报价为准'}
+                    {product.allowedAccounts.length > 0 ? chineseDomainList(product.allowedAccounts) : '以服务端报价为准'}
                   </div>
                 </div>
               </div>
@@ -254,7 +255,7 @@ export const LaptopDetailPage: React.FC<LaptopDetailPageProps> = ({ onSelectTab,
                   </tbody>
                 </table>
               ) : (
-                <p>该商品暂未发布额外规格参数，SKU 与价格版本以当前页面数据为准。</p>
+                <p>该商品暂未发布额外规格参数，商品规格与价格版本以当前页面数据为准。</p>
               ))}
 
             {activeTab === 'aftersale' && (

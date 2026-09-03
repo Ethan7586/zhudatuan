@@ -1,4 +1,5 @@
 import { formatMinor } from '../../shared/ui/Format';
+import { chineseDomainLabel, chineseProviderLabel, chineseReference } from '@shop/presentation';
 import type { ReactNode } from 'react';
 import { FinanceIcon } from './FinanceIcon';
 import type { FinanceReconciliation, FinanceReconciliationPage } from './FinanceWorkspaceSchema';
@@ -73,23 +74,23 @@ function ReconciliationRow({
   return (
     <tr className={row.state === 'difference' || row.state === 'resolutionpending' ? 'hasdifference' : undefined} onClick={canOpen ? onOpen : undefined}>
       <td className="financecheckcell" onClick={(event) => event.stopPropagation()}>
-        <input type="checkbox" aria-label={`选择对账批次 ${row.id}`} checked={checked} onChange={onToggle} />
+        <input type="checkbox" aria-label={`选择${chineseReference('对账批次', row.id)}`} checked={checked} onChange={onToggle} />
       </td>
       <td>
         <span className="financecellpair">
-          <strong>{row.id}</strong>
+          <strong>{chineseReference('对账批次', row.id)}</strong>
           <small>{row.period}</small>
         </span>
       </td>
       {visible.has('channel') ? (
         <td>
           <span className="financecellpair">
-            <strong>{row.provider}</strong>
-            <small>{row.statement_ref ?? '数据源未提供'}</small>
+            <strong>{chineseProviderLabel(row.provider)}</strong>
+            <small>{row.statement_ref ? chineseReference('渠道账单', row.statement_ref) : '数据源未提供'}</small>
           </span>
         </td>
       ) : null}
-      {visible.has('scope') ? <td>{row.partner_id}</td> : null}
+      {visible.has('scope') ? <td>{chineseReference('合作方', row.partner_id)}</td> : null}
       {visible.has('expected') ? <td>—</td> : null}
       {visible.has('matched') ? <td>{count(row.item_counts.matched)}</td> : null}
       {visible.has('differences') ? <td>{count(row.item_counts.difference, true)}</td> : null}
@@ -120,7 +121,7 @@ function ReconciliationRow({
 }
 
 export function FinanceState({ state }: Readonly<{ state: string }>) {
-  const label = state === 'difference' ? '有差异' : state === 'balanced' ? '已对平' : state === 'pending-review' || state === 'resolutionpending' ? '待复核' : state === 'approved' ? '已批准' : state;
+  const label = state === 'difference' ? '有差异' : state === 'balanced' ? '已对平' : state === 'pending-review' || state === 'resolutionpending' ? '待复核' : chineseDomainLabel(state, '待识别状态');
   const tone = state === 'difference' ? 'warning' : state === 'balanced' || state === 'approved' ? 'success' : state === 'pending-review' || state === 'resolutionpending' ? 'info' : 'neutral';
   return (
     <span className="financestate" data-tone={tone}>

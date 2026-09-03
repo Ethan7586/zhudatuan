@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseReference, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { Button, ResourcePanel } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
@@ -13,8 +13,8 @@ import type { ImportError, ImportKind } from './ImportSchema';
 
 const columns: readonly DataColumn<ImportError>[] = [
   { key: 'row', label: '行号', render: (row) => row.row_number },
-  { key: 'reason', label: '错误代码', render: (row) => row.reason_code },
-  { key: 'field', label: '字段', render: (row) => row.field ?? '—' },
+  { key: 'reason', label: '错误原因', render: (row) => importIssue(row.reason_code) },
+  { key: 'field', label: '字段', render: (row) => chineseDomainLabel(row.field, row.field ? '导入字段' : '—') },
   { key: 'detail', label: '说明', render: (row) => row.detail ?? '—' },
 ];
 
@@ -40,8 +40,8 @@ function ImportJobRoute({ kind, jobId }: Readonly<{ kind: ImportKind; jobId: str
   return (
     <ResourcePanel
       title={routeTitle}
-      eyebrow="SMART WING IMPORT"
-      description={`${kind} · ${jobId}；进度、错误行和报告均由服务端任务返回。`}
+      eyebrow={chineseSectionLabel('商品导入')}
+      description={`${chineseDomainLabel(kind, '商品数据')} · ${chineseReference('导入任务', jobId)}；进度、错误行和报告均由服务端任务返回。`}
       condition={state}
       {...(error === undefined ? {} : { error })}
       retry={() => {
@@ -63,7 +63,7 @@ function ImportJobRoute({ kind, jobId }: Readonly<{ kind: ImportKind; jobId: str
         <div className="featurestack">
           <MetricCards
             items={[
-              { label: '任务状态', value: data.state },
+              { label: '任务状态', value: chineseDomainLabel(data.state) },
               { label: '总行数', value: formatCount(data.total_count ?? 0) },
               { label: '成功', value: formatCount(data.success_count ?? 0), tone: 'success' },
               { label: '失败', value: formatCount(data.failure_count ?? 0), tone: (data.failure_count ?? 0) > 0 ? 'danger' : 'success' },
@@ -73,7 +73,7 @@ function ImportJobRoute({ kind, jobId }: Readonly<{ kind: ImportKind; jobId: str
           {data.last_error === undefined || data.last_error === null ? null : (
             <section className="capabilitynote" aria-labelledby="importfailure">
               <h2 id="importfailure">任务错误</h2>
-              <p>{data.last_error}</p>
+              <p>{importIssue(data.last_error)}</p>
             </section>
           )}
           <DataTable caption="导入错误行" columns={columns} rows={data.errors} rowKey={(row) => `${row.row_number}:${row.reason_code}:${row.field ?? ''}`} />
@@ -81,4 +81,12 @@ function ImportJobRoute({ kind, jobId }: Readonly<{ kind: ImportKind; jobId: str
       )}
     </ResourcePanel>
   );
+}
+
+function importIssue(value: string): string {
+  const normalized = value.toLowerCase();
+  if (normalized.includes('required')) return '缺少必填内容';
+  if (normalized.includes('format') || normalized.includes('invalid')) return '内容格式不正确';
+  if (normalized.includes('duplicate') || normalized.includes('conflict')) return '内容重复或已存在';
+  return '导入内容需要人工检查';
 }

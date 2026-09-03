@@ -86,8 +86,10 @@ describe('Finance reconciliation workspace', () => {
     renderRoute('/finance');
     expect(await screen.findByRole('table', { name: '支付对账批次' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '财务' })).toBeTruthy();
-    expect(screen.getByText(row.id)).toBeTruthy();
-    expect(screen.getByText('wechat_pay')).toBeTruthy();
+    expect(screen.getByText(/^对账批次 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.getByText('微信支付')).toBeTruthy();
+    expect(screen.queryByText(row.id)).toBeNull();
+    expect(screen.queryByText('wechat_pay')).toBeNull();
     expect(screen.getByText('¥119.00')).toBeTruthy();
     expect(screen.getByText('本页 1 笔')).toBeTruthy();
     expect(requests[0]?.searchParams.get('limit')).toBe('50');
@@ -99,7 +101,7 @@ describe('Finance reconciliation workspace', () => {
     renderRoute('/finance?campaign=keep');
     await screen.findByRole('table', { name: '支付对账批次' });
 
-    await user.click(screen.getByRole('checkbox', { name: `选择对账批次 ${row.id}` }));
+    await user.click(screen.getByRole('checkbox', { name: /^选择对账批次 \d{4} \d{4}$/ }));
     expect(currentParams().get('selected')).toBeNull();
     await user.click(screen.getByRole('button', { name: '查看差异' }));
 
@@ -107,7 +109,7 @@ describe('Finance reconciliation workspace', () => {
     expect(currentParams().get('selected')).toBe(row.id);
     expect(currentParams().get('campaign')).toBe('keep');
     expect(within(drawer).getByText('最终动作未接入')).toBeTruthy();
-    expect(within(drawer).getByText('INTERNAL_REFERENCE_MISSING')).toBeTruthy();
+    expect(within(drawer).getByText('内部引用缺失')).toBeTruthy();
     expect(within(drawer).getByRole('button', { name: '保存草稿' }).hasAttribute('disabled')).toBe(true);
     expect(within(drawer).getByRole('button', { name: '提交财务复核' }).hasAttribute('disabled')).toBe(true);
     await user.click(within(drawer).getByRole('button', { name: '关闭复核预览' }));

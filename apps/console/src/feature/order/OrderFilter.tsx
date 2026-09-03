@@ -36,7 +36,7 @@ export function OrderFilterForm({ value, onApply, onColumns, columnsOpen }: Orde
       <TextField className="ordersearchfield">
         <Label className="sr-only">订单搜索</Label>
         <OrderIcon name="search" />
-        <Input {...form.register('order')} aria-describedby="orderfilterboundary" placeholder="精确输入内部订单 ID" />
+        <Input {...form.register('order')} aria-describedby="orderfilterboundary" placeholder="精确输入内部订单编号" />
         <button className="ordersearchsubmit" type="submit" aria-label="筛选订单">
           <OrderIcon name="arrowRight" />
         </button>
@@ -112,7 +112,7 @@ export function OrderFilterForm({ value, onApply, onColumns, columnsOpen }: Orde
         列设置
       </button>
       <p id="orderfilterboundary" className="sr-only">
-        当前生产订单合同只支持内部订单 ID 精确筛选；时间、状态、支付、履约和商城筛选尚未接入服务端，当前保持不可用。
+        当前生产订单协议只支持内部订单编号精确筛选；时间、状态、支付、履约和商城筛选尚未接入服务端，当前保持不可用。
       </p>
     </Form>
   );

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { chineseProviderLabel, chineseReference } from '@shop/presentation';
 import { formatMinor } from '../../shared/ui/Format';
 import { OrderIcon } from './OrderIcon';
 import { aftersaleLabel, formatOrderTime, fulfillmentLabel, lifecycleLabel, paymentLabel } from './OrderPresentation';
@@ -41,7 +42,7 @@ function OverviewPanel({ order }: Readonly<{ order: OrderRecord }>) {
                 <span>
                   <strong>{line.title}</strong>
                   <small>
-                    {line.sku} ×{line.quantity}
+                    {chineseReference('商品规格', line.sku)} ×{line.quantity}
                   </small>
                 </span>
                 <b>{formatMinor(line.payableMinor, order.currency)}</b>
@@ -63,13 +64,13 @@ function OverviewPanel({ order }: Readonly<{ order: OrderRecord }>) {
       <DetailSection title="履约">
         <div className="orderdetailgrid">
           <Info label="履约状态" value={fulfillmentLabel(order.fulfillment_state)} />
-          <Info label="履约 ID" value="当前读模型未提供" />
-          <Info label="供应方" value={order.lines?.[0]?.provider ?? order.lines?.[0]?.partner ?? '当前读模型未提供'} />
+          <Info label="履约编号" value="当前读模型未提供" />
+          <Info label="供应方" value={order.lines?.[0]?.provider ? chineseProviderLabel(order.lines[0].provider) : order.lines?.[0]?.partner ? chineseReference('合作方', order.lines[0].partner) : '当前读模型未提供'} />
           <Info label="收货信息" value="当前读模型未提供" />
         </div>
       </DetailSection>
 
-      <p className="orderrecentoperation">最近 Operation： 当前读模型未提供审计时间线</p>
+      <p className="orderrecentoperation">最近操作记录：当前读模型未提供审计时间线</p>
     </div>
   );
 }
@@ -116,12 +117,12 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
                 <div>
                   <strong>{line.title}</strong>
                   <small>
-                    SKU {line.sku} · Listing {line.listing}
+                    {chineseReference('商品规格', line.sku)} · {chineseReference('上架记录', line.listing)}
                   </small>
                   <small>
                     数量 {line.quantity} · 单价 {formatMinor(line.unitMinor, order.currency)}
                   </small>
-                  <small>履约来源 {line.provider ?? line.partner ?? '当前未提供'}</small>
+                  <small>履约来源 {line.provider ? chineseProviderLabel(line.provider) : line.partner ? chineseReference('合作方', line.partner) : '当前未提供'}</small>
                 </div>
                 <b>{formatMinor(line.payableMinor, order.currency)}</b>
               </article>
@@ -129,7 +130,7 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
           </div>
         )}
       </DetailSection>
-      <Unavailable text="履约 ID、运单、里程碑时间与收货信息未包含在统一订单读模型中。" />
+      <Unavailable text="履约编号、运单、里程碑时间与收货信息未包含在统一订单读模型中。" />
     </div>
   );
 }
@@ -147,7 +148,7 @@ function PaymentPanel({ order }: Readonly<{ order: OrderRecord }>) {
           <Info label="微信支付" value="当前读模型未提供" />
         </div>
       </DetailSection>
-      <Unavailable text="支付 ID、可退余额与退款明细未由当前订单读合同提供；退款动作保持关闭。" />
+      <Unavailable text="支付编号、可退余额与退款明细未由当前订单读取协议提供；退款动作保持关闭。" />
     </div>
   );
 }
@@ -169,10 +170,10 @@ function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {
 function OperationsPanel() {
   return (
     <div className="orderdrawerstack">
-      <DetailSection title="最近 Operation">
-        <Unavailable text="当前订单读模型没有 Operation 或审计时间线。" />
+      <DetailSection title="最近操作记录">
+        <Unavailable text="当前订单读模型没有操作记录或审计时间线。" />
       </DetailSection>
-      <Unavailable text="生产最终动作必须完成 Preview → Confirm → Step-up → Execute → Reread → Receipt 后才能写入这里。" />
+      <Unavailable text="生产最终动作必须完成操作预览、确认、二次验证、执行、权威回读和回执后才能写入这里。" />
     </div>
   );
 }

@@ -115,5 +115,5 @@ function format(value: string) {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 }
 function stateLabel(value: string) {
-  return ({ submitted: '已申请', approved: '待开具', issuing: '开具中', issued: '已开具', rejected: '已拒绝', cancelled: '已取消', failed: '开具失败', red: '已红冲' } as Record<string, string>)[value] ?? value;
+  return ({ submitted: '已申请', approved: '待开具', issuing: '开具中', issued: '已开具', rejected: '已拒绝', cancelled: '已取消', failed: '开具失败', red: '已红冲' } as Record<string, string>)[value] ?? '待识别状态';
 }

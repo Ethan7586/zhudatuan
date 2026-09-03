@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { presentError } from '@shop/presentation';
+import { chineseReference, presentError } from '@shop/presentation';
 import { useMemo, useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { allocatePool, archiveProduct, createProduct, publishPrice, setListingPublication, setPoolBinding, updateProduct } from './ProductCommand';
@@ -41,7 +41,7 @@ function ProductActionForm({ action, context, onClose, onDone }: Readonly<{ acti
       <form className="productflowdialog" aria-label={actionTitle(action.kind)} onSubmit={submit}>
         <header>
           <div>
-            <p>CATALOG COMMAND</p>
+            <p>商品操作</p>
             <h2>{actionTitle(action.kind)}</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="关闭商品操作窗口">
@@ -95,7 +95,7 @@ function ProductActionForm({ action, context, onClose, onDone }: Readonly<{ acti
               确认{action.kind === 'publish' ? '上架' : '下架'}“{action.listing.title}”？该操作使用当前列表版本进行并发校验。
             </p>
           ) : null}
-          {action.kind === 'create' ? <p className="productflownote">商品先以草稿创建；SKU 与商品池投放由后续独立流程完成。</p> : null}
+          {action.kind === 'create' ? <p className="productflownote">商品先以草稿创建；商品规格与商品池投放由后续独立流程完成。</p> : null}
           {mutation.error === null ? null : (
             <p role="alert" className="productflowerror">
               {presentError(mutation.error).message}
@@ -151,7 +151,7 @@ export function PoolDialog({ open, context, onClose, onDone }: Readonly<{ open: 
       >
         <header>
           <div>
-            <p>POOL GOVERNANCE</p>
+            <p>商品池治理</p>
             <h2>商品池管理</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="关闭商品池窗口">
@@ -175,10 +175,10 @@ export function PoolDialog({ open, context, onClose, onDone }: Readonly<{ open: 
             <select value={target} onChange={(event) => setTargetScope(event.target.value)}>
               {malls.map((scope) => (
                 <option key={scope.id} value={scope.id}>
-                  {scope.name ?? scope.id}
+                  {scope.name ?? chineseReference('组织范围', scope.id)}
                 </option>
               ))}
-              {malls.length === 0 ? <option value={context.scope.id}>{context.scope.name ?? context.scope.id}</option> : null}
+              {malls.length === 0 ? <option value={context.scope.id}>{context.scope.name ?? chineseReference('组织范围', context.scope.id)}</option> : null}
             </select>
           </label>
           {operation === 'allocate' ? (
@@ -221,14 +221,14 @@ function PoolCard({ pool, selected, onSelect }: Readonly<{ pool: Pool; selected:
     <button type="button" aria-pressed={selected} onClick={() => onSelect(pool.id)}>
       <strong>{pool.name}</strong>
       <span>
-        {poolKind(pool.kind)} · {pool.item_count} 件 · v{pool.version}
+        {poolKind(pool.kind)} · {pool.item_count} 件 · 第 {pool.version} 版
       </span>
     </button>
   );
 }
 
 function poolKind(kind: string): string {
-  return { global: '全局池', channel: '渠道池', private: '私有池', markup: '加价池' }[kind] ?? kind;
+  return { global: '全局池', channel: '渠道池', private: '私有池', markup: '加价池' }[kind] ?? '其他商品池';
 }
 
 function isVisibleMall(context: ConsoleContext, scope: ConsoleContext['scopes'][number]): boolean {

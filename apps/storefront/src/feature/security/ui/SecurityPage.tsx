@@ -92,7 +92,7 @@ export function SecurityPage() {
     <>
       <section className="sw-web-container mx-auto max-w-[1100px] px-3 py-5 text-xs">
         <header className="mb-4">
-          <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">SMART WING SECURITY</p>
+          <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">智慧翼 · 账号安全</p>
           <h1 className="mt-1 text-xl font-black">安全中心</h1>
           <p className="mt-1 text-gray-500">密码、手机号和设备会话均由身份服务实时管理。</p>
         </header>

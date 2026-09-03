@@ -1,5 +1,5 @@
 import { ArrowLeft, Clock3, RefreshCw, ShieldAlert, type LucideIcon } from 'lucide-react';
-import { presentError } from '@shop/presentation';
+import { chineseProviderLabel, presentError } from '@shop/presentation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApplyAfterSale } from '../application/ApplyAfterSale';
 import { readAfterSale } from '../application/ReadAfterSale';
@@ -169,7 +169,7 @@ export function AfterSalePage({ orderId, onBack }: AfterSalePageProps) {
               </div>
               {sale.returns.map((returned) => (
                 <div key={returned.id} className="mt-3 rounded-lg border border-blue-100 p-2">
-                  <b>退货指引 · {returned.provider ?? '平台自营'}</b>
+                  <b>退货指引 · {returned.provider ? chineseProviderLabel(returned.provider) : '平台自营'}</b>
                   <p className="mt-1 text-gray-500">
                     {returned.providerReference ? `外部退货单 ${returned.providerReference}` : '平台退货单'}
                     {returned.trackingNumber ? ` · 运单 ${returned.trackingNumber}` : ''}
@@ -218,7 +218,7 @@ function AttachmentFiles({ value, onChange, onError }: { readonly value: readonl
   return (
     <div>
       <b>图片/附件</b>
-      <p className="mt-1 text-gray-400">文件会上传至私有对象存储，并由服务端复核 MIME、文件头、大小、SHA-256 与恶意文件扫描结果。</p>
+      <p className="mt-1 text-gray-400">文件会上传至私有对象存储，并由服务端复核文件类型、文件内容、大小、文件指纹与恶意文件扫描结果。</p>
       <label className="mt-2 inline-flex cursor-pointer rounded-lg border px-3 py-2 font-bold focus-within:ring-2 focus-within:ring-[var(--sw-brand)]">
         选择文件
         <input
@@ -273,7 +273,7 @@ function unavailable(reason: string | null): string {
   );
 }
 function tenderLabel(kind: string): string {
-  return ({ wechat: '微信支付', benefit: '福利账户', voucher: '卡券' } as Record<string, string>)[kind] ?? kind;
+  return ({ wechat: '微信支付', benefit: '福利账户', voucher: '卡券' } as Record<string, string>)[kind] ?? '其他支付方式';
 }
 function evidenceText(value: unknown): string {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return '';

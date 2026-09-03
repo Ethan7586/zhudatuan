@@ -80,7 +80,7 @@ function ExperienceActionForm({ action, detail, context, onClose, onDone }: Read
       <form className="commerceflowdialog" aria-label={actionTitle(action.kind)} onSubmit={submit}>
         <header>
           <div>
-            <p>COMMERCE APPLICATION</p>
+            <p>商城应用</p>
             <h2>{actionTitle(action.kind)}</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="关闭操作窗口">
@@ -184,7 +184,7 @@ function ExperienceLoading({ failed, onClose }: Readonly<{ failed: boolean; onCl
       <section className="commerceflowdialog" role="dialog" aria-modal="true">
         <header>
           <div>
-            <p>COMMERCE APPLICATION</p>
+            <p>商城应用</p>
             <h2>商城装修</h2>
           </div>
           <button type="button" onClick={onClose}>

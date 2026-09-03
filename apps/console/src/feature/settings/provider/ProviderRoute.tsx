@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { ResourcePanel } from '@shop/design';
 import { createFetchIdentityProvidersRead, createFetchIdentityProvidersTest } from '@shop/sdk/identity';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -31,9 +31,9 @@ export function Component() {
   const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0 });
   return (
     <ResourcePanel
-      eyebrow="IDENTITY PROVIDER"
+      eyebrow={chineseSectionLabel('登录方式')}
       title={title}
-      description="这里只显示服务端启用并允许当前租户使用的登录连接；Secret 永不回显。"
+      description="这里只显示服务端启用并允许当前租户使用的登录连接；密钥永不回显。"
       condition={condition}
       {...(error === undefined ? {} : { error })}
       retry={() => void query.refetch()}
@@ -42,18 +42,18 @@ export function Component() {
         {query.data?.items.map((item) => (
           <article key={item.id}>
             <h2>{providerName(item.type)}</h2>
-            <p>状态：{item.status}</p>
+            <p>状态：{chineseDomainLabel(item.status)}</p>
             <button type="button" disabled={verify.isPending} onClick={() => verify.mutate(item.id)}>
               健康检查
             </button>
           </article>
         ))}
       </div>
-      {verify.isSuccess ? <p role="status">健康检查：{verify.data.status}</p> : null}
+      {verify.isSuccess ? <p role="status">健康检查：{chineseDomainLabel(verify.data.status)}</p> : null}
       {verify.isError ? <p role="alert">{safeQueryError(verify.error) ?? '服务连接验证失败，请检查配置后重试。'}</p> : null}
     </ResourcePanel>
   );
 }
 function providerName(type: 'wechat' | 'wecomcorp' | 'wecomsuite' | 'oidc'): string {
-  return ({ wechat: '微信', wecomcorp: '企业微信自建应用', wecomsuite: '企业微信第三方应用', oidc: 'OIDC' } as const)[type];
+  return ({ wechat: '微信', wecomcorp: '企业微信自建应用', wecomsuite: '企业微信第三方应用', oidc: '统一身份登录' } as const)[type];
 }

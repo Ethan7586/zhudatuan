@@ -69,21 +69,23 @@ describe('Control route', () => {
     renderRoute({ kind: 'platform', id: 'platform:one' });
     expect(await screen.findByRole('heading', { level: 1, name: '平台层' })).toBeTruthy();
     expect(await screen.findByText('鸿泰集团')).toBeTruthy();
-    expect(screen.getByText('enterprise')).toBeTruthy();
+    expect(screen.getByText('企业')).toBeTruthy();
+    expect(screen.queryByText('enterprise')).toBeNull();
   });
 
   it('reads distributors for the distribution scope', async () => {
     renderRoute({ kind: 'distributor', id: 'distributor:root' });
     expect(await screen.findByRole('heading', { level: 1, name: '分销层' })).toBeTruthy();
     expect(await screen.findByText('华东分销')).toBeTruthy();
-    expect(screen.getByText('monthly')).toBeTruthy();
+    expect(screen.getByText('按月')).toBeTruthy();
+    expect(screen.queryByText('monthly')).toBeNull();
   });
 
   it('preserves the enterprise Smart Wing control workstation with authoritative dependency data', async () => {
     renderRoute({ kind: 'enterprise', id: 'enterprise:one' });
     expect(await screen.findByRole('heading', { level: 1, name: '智慧翼中控台' })).toBeTruthy();
     expect(await screen.findByText('任务队列')).toBeTruthy();
-    expect(screen.getByText('迁移 20260831045000 · 合同 contract-che')).toBeTruthy();
+    expect(screen.getByText('数据库迁移、运行配置与接口协议一致')).toBeTruthy();
   });
 
   it('turns protected runtime health into a visible verification action', async () => {

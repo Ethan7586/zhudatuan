@@ -6,7 +6,7 @@ const configurableColumns: readonly Readonly<{ key: OrderColumnKey; label: strin
   { key: 'payment', label: '金额 / 支付' },
   { key: 'fulfillment', label: '履约状态' },
   { key: 'aftersale', label: '售后' },
-  { key: 'sla', label: 'SLA' },
+  { key: 'sla', label: '服务时限' },
 ]);
 
 export function OrderColumnSettings({

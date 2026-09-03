@@ -1,4 +1,4 @@
-import { presentError } from '@shop/presentation';
+import { chineseDomainLabel, chineseReference, presentError } from '@shop/presentation';
 import type { ProductDetail } from './ProductQuery';
 import type { Listing } from './ProductSchema';
 
@@ -8,7 +8,7 @@ export function ProductDrawerPanels({ tab, listing, detail, pending, error }: Re
   if (pending)
     return (
       <p role="status" className="productdetailstate">
-        正在读取商品、SKU、库存与价格权威详情…
+        正在读取商品规格、库存与价格权威详情…
       </p>
     );
   if (error !== null)
@@ -35,14 +35,14 @@ function Overview({ detail }: Readonly<{ detail: ProductDetail }>) {
     <section className="productdetailpanel" aria-label="商品概览">
       <h3>商品概览</h3>
       <dl>
-        <Entry label="商品编号" value={detail.id} />
+        <Entry label="商品编号" value={chineseReference('商品', detail.id)} />
         <Entry label="商品名称" value={detail.title} />
         <Entry label="商品类型" value={typeLabel(detail.product_type)} />
-        <Entry label="分类编号" value={detail.category_id} />
-        <Entry label="品牌编号" value={detail.brand_id ?? '未绑定'} />
-        <Entry label="状态" value={detail.status} />
-        <Entry label="商品版本" value={`v${detail.version}`} />
-        <Entry label="SKU 数" value={String(detail.skus.length)} />
+        <Entry label="分类" value={chineseReference('分类', detail.category_id)} />
+        <Entry label="品牌" value={detail.brand_id ? chineseReference('品牌', detail.brand_id) : '未绑定'} />
+        <Entry label="状态" value={chineseDomainLabel(detail.status)} />
+        <Entry label="商品版本" value={`第 ${detail.version} 版`} />
+        <Entry label="规格数" value={String(detail.skus.length)} />
       </dl>
     </section>
   );
@@ -50,17 +50,17 @@ function Overview({ detail }: Readonly<{ detail: ProductDetail }>) {
 
 function SkuPanel({ detail }: Readonly<{ detail: ProductDetail }>) {
   return (
-    <section className="productdetailpanel" aria-label="SKU 与库存">
-      <h3>SKU 与库存</h3>
+    <section className="productdetailpanel" aria-label="商品规格与库存">
+      <h3>商品规格与库存</h3>
       {detail.skus.length === 0 ? (
-        <p>该商品尚未建立 SKU。</p>
+        <p>该商品尚未建立规格。</p>
       ) : (
         detail.skus.map((sku) => (
           <article key={sku.id} className="productdetailcard">
             <header>
               <strong>{sku.code}</strong>
               <span>
-                {sku.status} · v{sku.version}
+                {chineseDomainLabel(sku.status)} · 第 {sku.version} 版
               </span>
             </header>
             <p>{sku.specifications.length === 0 ? '标准规格' : sku.specifications.map((item) => `${item.name}：${item.value}`).join(' · ')}</p>
@@ -70,7 +70,7 @@ function SkuPanel({ detail }: Readonly<{ detail: ProductDetail }>) {
                 .map((stock) => (
                   <li key={`${stock.scope}:${stock.location}`}>
                     <span>
-                      {stock.scope} / {stock.location}
+                      {chineseReference('库存范围', stock.scope)} · {chineseReference('库位', stock.location)}
                     </span>
                     <strong>
                       可用基数 {stock.onhand} · 安全库存 {stock.safety}
@@ -94,20 +94,18 @@ function MallPanel({ detail }: Readonly<{ detail: ProductDetail }>) {
           <header>
             <strong>{listing.title}</strong>
             <span>
-              {listing.status} · v{listing.version}
+              {chineseDomainLabel(listing.status)} · 第 {listing.version} 版
             </span>
           </header>
           <p>
-            商城：{listing.scope} · 商品池：{listing.pool ?? '未绑定'}
+            商城：{chineseReference('商城', listing.scope)} · 商品池：{listing.pool ? chineseReference('商品池', listing.pool) : '未绑定'}
           </p>
           <ul>
             {detail.prices
               .filter((price) => price.sku === listing.sku && price.scope === listing.scope)
               .map((price) => (
                 <li key={`${price.scope}:${price.bookVersion}`}>
-                  <span>
-                    {price.currency} · {price.bookStatus}
-                  </span>
+                  <span>人民币 · {chineseDomainLabel(price.bookStatus)}</span>
                   <strong>{money(price.amountMinor, price.currency)}</strong>
                 </li>
               ))}
@@ -124,10 +122,10 @@ function SourcePanel({ detail, listing }: Readonly<{ detail: ProductDetail; list
     <section className="productdetailpanel" aria-label="来源与供货">
       <h3>来源与供货</h3>
       <dl>
-        <Entry label="商品所有方" value={detail.owner_partner_id ?? '平台自营'} />
-        <Entry label="当前商品池" value={listing.pool_id ?? '未绑定'} />
-        <Entry label="当前 SKU" value={listing.sku_id} />
-        <Entry label="Listing" value={listing.id} />
+        <Entry label="商品所有方" value={detail.owner_partner_id ? chineseReference('合作方', detail.owner_partner_id) : '平台自营'} />
+        <Entry label="当前商品池" value={listing.pool_id ? chineseReference('商品池', listing.pool_id) : '未绑定'} />
+        <Entry label="当前商品规格" value={chineseReference('规格', listing.sku_id)} />
+        <Entry label="商城上架记录" value={chineseReference('上架记录', listing.id)} />
       </dl>
       <p className="productboundarynote">供应商合同与供货结算属于合作方域；本页仅展示商品域已授权的所有方引用。</p>
     </section>
@@ -139,8 +137,8 @@ function ChangePanel({ detail, listing }: Readonly<{ detail: ProductDetail; list
     <section className="productdetailpanel" aria-label="变更记录">
       <h3>当前版本证据</h3>
       <dl>
-        <Entry label="商品版本" value={`v${detail.version}`} />
-        <Entry label="列表版本" value={`v${listing.version}`} />
+        <Entry label="商品版本" value={`第 ${detail.version} 版`} />
+        <Entry label="列表版本" value={`第 ${listing.version} 版`} />
         <Entry label="列表更新时间" value={formatTime(listing.cursor_sort)} />
         <Entry label="生效时间" value={formatTime(listing.effective_at)} />
         <Entry label="失效时间" value={formatTime(listing.expires_at)} />
@@ -171,5 +169,5 @@ function formatTime(value: string | null | undefined): string {
 }
 
 function typeLabel(value: string): string {
-  return { physical: '实物商品', virtual: '虚拟商品', service: '服务商品', voucher: '卡券商品' }[value] ?? value;
+  return { physical: '实物商品', virtual: '虚拟商品', service: '服务商品', voucher: '卡券商品' }[value] ?? '其他商品';
 }

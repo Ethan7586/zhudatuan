@@ -22,7 +22,7 @@ export function ProductCatalogHeader({ status, onStatus, onCreate, onPools }: Pr
     <>
       <header className="producthero">
         <div>
-          <p className="producteyebrow">CATALOG OPERATIONS</p>
+          <p className="producteyebrow">商品运营</p>
           <h1>{title}</h1>
           <p>当前范围商品按服务端过滤与游标分页读取；总量尚未由列表合同返回。</p>
         </div>
@@ -38,7 +38,7 @@ export function ProductCatalogHeader({ status, onStatus, onCreate, onPools }: Pr
           </button>
         </div>
         <p id="productcontractnotice" className="sr-only">
-          商品池和商品写操作使用服务端 Operation、权限、版本校验与回执合同。
+          商品池和商品写操作使用服务端受控操作、权限、版本校验与回执合同。
         </p>
       </header>
       <nav className="producttabs" aria-label="商品状态">

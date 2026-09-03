@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 
 export function Component() {
   return (
-    <ResourcePanel title="页面不存在" description="该地址不属于当前 Console 路由清单。" condition="notfound" error="ROUTE_NOT_FOUND" actions={<Link to="/">返回经营驾驶舱</Link>}>
+    <ResourcePanel title="页面不存在" description="该地址不属于当前管理控制台页面清单。" condition="notfound" error="页面地址不受支持" actions={<Link to="/">返回经营驾驶舱</Link>}>
       <span />
     </ResourcePanel>
   );

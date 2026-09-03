@@ -36,7 +36,7 @@ export const LaptopHomePage1366: React.FC<LaptopHomePage1366Props> = ({ onSelect
           </div>
           <div className="flex items-center gap-2 text-[10px] text-yellow-300 font-bold">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>标准 Web 视口 · 自适应内容布局</span>
+            <span>标准电脑页面 · 自适应内容布局</span>
           </div>
         </div>
 

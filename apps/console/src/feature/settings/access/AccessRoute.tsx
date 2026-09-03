@@ -1,4 +1,4 @@
-import { queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseReference, chineseSectionLabel, queryCondition, safeQueryError } from '@shop/presentation';
 import { Button } from '@shop/design';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { lazy, Suspense, useMemo, useState } from 'react';
@@ -39,8 +39,8 @@ export function Component() {
   const mutationError = safeQueryError(mutation.error);
   const columns = useMemo<readonly DataColumn<AccessMembership>[]>(
     () => [
-      { key: 'membership', label: '成员关系', render: (row) => row.id },
-      { key: 'status', label: '状态', render: (row) => row.status },
+      { key: 'membership', label: '成员', render: (row) => chineseReference('成员', row.id) },
+      { key: 'status', label: '状态', render: (row) => chineseDomainLabel(row.status) },
       { key: 'roles', label: '角色', render: (row) => <div className="accessroles">{row.roles.length ? row.roles.map((role) => <span key={role.role}>{role.name}</span>) : '未分配'}</div> },
       { key: 'scopes', label: '项目范围', render: (row) => `${row.scopes.length} 项` },
       { key: 'overrides', label: '覆盖权限', render: (row) => `${row.overrides.length} 项` },
@@ -72,7 +72,7 @@ export function Component() {
     <>
       <PagedResource
         title="权限中心"
-        eyebrow="SMART WING ACCESS"
+        eyebrow={chineseSectionLabel('权限中心')}
         description="统一维护管理员角色、成员覆盖权限和项目范围；默认拒绝与显式拒绝始终优先。"
         condition={state}
         {...(error === undefined ? {} : { error })}

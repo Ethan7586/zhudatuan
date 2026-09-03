@@ -39,7 +39,7 @@ export function RiskWorkspace({ data }: Readonly<{ data: RiskPage }>) {
         <section className="risksection" aria-labelledby="riskpolicy-title">
           <header>
             <div>
-              <p className="eyebrow">POLICY</p>
+              <p className="eyebrow">风险策略</p>
               <h2 id="riskpolicy-title">策略运行态</h2>
             </div>
             <span>{policies.length} 项</span>
@@ -58,7 +58,7 @@ export function RiskWorkspace({ data }: Readonly<{ data: RiskPage }>) {
         <section className="risksection" aria-labelledby="riskcase-title">
           <header>
             <div>
-              <p className="eyebrow">REVIEW QUEUE</p>
+              <p className="eyebrow">复核队列</p>
               <h2 id="riskcase-title">事件复核队列</h2>
             </div>
             <span>{cases.length} 项</span>
@@ -77,7 +77,7 @@ export function RiskWorkspace({ data }: Readonly<{ data: RiskPage }>) {
 
       <section className="riskguardrails" aria-labelledby="riskguardrails-title">
         <header>
-          <p className="eyebrow">GOVERNANCE GUARDRAILS</p>
+          <p className="eyebrow">治理保障</p>
           <h2 id="riskguardrails-title">治理安全边界</h2>
         </header>
         <div>
@@ -101,8 +101,8 @@ function RiskMetric({ label, value, detail, tone = 'neutral' }: Readonly<{ label
 }
 
 function PolicyCard({ item }: Readonly<{ item: RiskItem }>) {
-  const status = item.status === null ? '状态未知' : (policyStatus[item.status] ?? item.status);
-  const replay = item.replay_state === null ? '尚无候选版本' : (replayStatus[item.replay_state] ?? item.replay_state);
+  const status = item.status === null ? '状态未知' : (policyStatus[item.status] ?? '待识别状态');
+  const replay = item.replay_state === null ? '尚无候选版本' : (replayStatus[item.replay_state] ?? '待识别状态');
   return (
     <article className="riskitem">
       <header>
@@ -144,7 +144,7 @@ function CaseCard({ item }: Readonly<{ item: RiskItem }>) {
     <article className="riskitem riskcase">
       <header>
         <div>
-          <strong>{item.outcome === null ? '风险事件' : (outcomeLabel[item.outcome] ?? item.outcome)}</strong>
+          <strong>{item.outcome === null ? '风险事件' : (outcomeLabel[item.outcome] ?? '待识别结果')}</strong>
           <small>{compactId(item.id)}</small>
         </div>
         <span data-tone={item.outcome === 'deny' ? 'danger' : 'warning'}>风险分 {item.score ?? 0}</span>
@@ -152,7 +152,7 @@ function CaseCard({ item }: Readonly<{ item: RiskItem }>) {
       <dl>
         <div>
           <dt>原因</dt>
-          <dd>{item.safe_reason === null ? '待补充' : (reasonLabel[item.safe_reason] ?? item.safe_reason)}</dd>
+          <dd>{item.safe_reason === null ? '待补充' : (reasonLabel[item.safe_reason] ?? '待补充说明')}</dd>
         </div>
         <div>
           <dt>操作人</dt>

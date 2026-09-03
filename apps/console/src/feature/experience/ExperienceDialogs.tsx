@@ -1,4 +1,5 @@
 import { Dialog } from '@shop/design';
+import { chineseReference } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { formatDate } from '../../shared/ui/Format';
@@ -29,11 +30,11 @@ export function ExperienceRecordDrawer({ record, context, onClose }: Readonly<{ 
             <p>列表保持轻量；装修文档和有限历史仅在打开详情时读取。</p>
           </section>
           <dl className="commercefacts">
-            <Fact label="应用代码" value={detail.code} />
-            <Fact label="商城归属" value={detail.mallId} />
+            <Fact label="应用代码" value={chineseReference('应用', detail.code)} />
+            <Fact label="商城归属" value={chineseReference('商城', detail.mallId)} />
             <Fact label="公开入口" value={detail.entry.url} />
             <Fact label="入口状态" value={entryLabel(detail.entry.state)} />
-            <Fact label="当前草稿" value={detail.headSequence === null ? '尚未建立' : `v${detail.headSequence}`} />
+            <Fact label="当前草稿" value={detail.headSequence === null ? '尚未建立' : `第 ${detail.headSequence} 版`} />
             <Fact label="发布版本" value={publicationLabel(detail)} />
             <Fact label="历史摘要" value={`${detail.history.length} 条（最多 20 条）`} />
             <Fact label="更新时间" value={formatDate(detail.updatedAt)} />

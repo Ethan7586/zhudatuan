@@ -9,7 +9,7 @@ export function Component() {
     <OperationPage
       operation="partner.partners.read"
       title="供应商与门店"
-      description="合作方、供应商、品牌与门店状态来自 Partner 模块；资质审批仍由 Qualification 独立治理。"
+      description="合作方、供应商、品牌与门店状态来自合作方模块；资质审批仍由资质模块独立治理。"
       load={(context, signal) => read({ query: { limit: 50 } }, consoleRequest(context.scope, signal, context.session.accessVersion))}
     />
   );

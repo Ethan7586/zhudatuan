@@ -10,7 +10,7 @@ const columns: readonly DataColumn<ReferralSetting>[] = Object.freeze([
   { key: 'rate', label: '默认返佣', render: (row) => `${(row.rateBasisPoints / 100).toFixed(2)}%` },
   { key: 'minimum', label: '最低提现', render: (row) => formatMinor(row.minimumWithdrawalMinor, row.currency) },
   { key: 'updated', label: '更新时间', render: (row) => formatDate(row.updatedAt) },
-  { key: 'version', label: '版本', render: (row) => `v${row.version}` },
+  { key: 'version', label: '版本', render: (row) => `第 ${row.version} 版` },
 ]);
 
 export function SettingsPanel({ rows, canManage, onManage }: Readonly<{ rows: readonly ReferralSetting[]; canManage: boolean; onManage: (action: ReferralAction) => void }>) {
@@ -53,6 +53,6 @@ function stateLabel(value: string): string {
         paid: '已付款',
         failed: '失败',
       } as Readonly<Record<string, string>>
-    )[value] ?? value
+    )[value] ?? '待识别状态'
   );
 }

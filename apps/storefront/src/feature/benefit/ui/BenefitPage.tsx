@@ -1,4 +1,5 @@
 import { CircleAlert, Clock3, LoaderCircle, WalletCards } from 'lucide-react';
+import { chineseDomainLabel, chineseReference } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from '../../../shared/runtime/SessionContext';
 import { benefitQuery } from '../application/BenefitQuery';
@@ -20,7 +21,7 @@ export function BenefitPage() {
   return (
     <section className="sw-web-container mx-auto max-w-[1200px] px-3 py-5 text-xs">
       <header className="mb-4">
-        <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">SMART WING BENEFIT</p>
+        <p className="font-bold tracking-[.18em] text-[var(--sw-brand)]">智慧翼 · 福利账户</p>
         <h1 className="mt-1 text-xl font-black">福利账户</h1>
         <p className="mt-1 text-gray-500">余额、冻结金额、批次有效期和台账均取自权威福利账本。</p>
       </header>
@@ -53,7 +54,7 @@ export function BenefitPage() {
                 <div className="mt-4 space-y-2 border-t pt-3">
                   {item.lots.map((lot) => (
                     <div key={lot.id} className="flex items-center justify-between gap-2">
-                      <span className="truncate text-gray-500">{lot.batch}</span>
+                      <span className="truncate text-gray-500">{chineseReference('批次', lot.batch)}</span>
                       <span className="font-bold">{money(lot.remainingMinor, item.currency)}</span>
                     </div>
                   ))}
@@ -73,7 +74,7 @@ export function BenefitPage() {
                   <div>
                     <b>{item.description}</b>
                     <p className="mt-1 text-gray-400">
-                      {dateTime(item.occurredAt)} · {item.referenceType} / {item.referenceId}
+                      {dateTime(item.occurredAt)} · {chineseDomainLabel(item.referenceType, '福利业务')} · {chineseReference('业务', item.referenceId)}
                     </p>
                   </div>
                   <span className={`text-sm font-black ${item.amountMinor >= 0 ? 'text-emerald-600' : 'text-gray-900'}`}>
@@ -109,8 +110,8 @@ function dateTime(value: string) {
   return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
 }
 function kind(value: string) {
-  return ({ welfare: '福利账户', meal: '餐补账户', allowance: '津贴账户' } as Record<string, string>)[value] ?? value;
+  return chineseDomainLabel(value, '其他福利账户');
 }
 function status(value: string) {
-  return ({ active: '可用', frozen: '已冻结', closed: '已关闭' } as Record<string, string>)[value] ?? value;
+  return value === 'active' ? '可用' : chineseDomainLabel(value);
 }

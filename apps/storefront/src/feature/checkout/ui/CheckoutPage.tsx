@@ -1,5 +1,5 @@
 import { CheckSquare, Minus, Plus, ShoppingCart, Square, Trash2 } from 'lucide-react';
-import { hasFailureCode, presentError } from '@shop/presentation';
+import { chineseDomainList, hasFailureCode, presentError } from '@shop/presentation';
 import { useQuery } from '@tanstack/react-query';
 import { useCheckoutRuntime } from '../application/CheckoutRuntime';
 import { ProductMedia } from '../../../shared/ui/ProductMedia';
@@ -94,7 +94,7 @@ export function CheckoutPage({ onSelectTab, surface = 'standard' }: { readonly o
                       <div className="min-w-0 flex-1">
                         <h2 className="truncate font-bold text-gray-800">{item.product.title}</h2>
                         <span className="mt-1 inline-block rounded bg-blue-50 px-1 text-[10px] text-[var(--sw-brand)]">
-                          {item.product.allowedAccounts.length > 0 ? `已发布支付账户：${item.product.allowedAccounts.join(' / ')}` : '最终支付资格以服务端报价为准'}
+                          {item.product.allowedAccounts.length > 0 ? `已发布支付账户：${chineseDomainList(item.product.allowedAccounts)}` : '最终支付资格以服务端报价为准'}
                         </span>
                       </div>
                       <div className="min-w-[70px] text-right">

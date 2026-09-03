@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { chineseReference } from '@shop/presentation';
 import { formatDate } from '../../shared/ui/Format';
 import { formatRecordAmount } from './VoucherTable';
 import { voucherStateLabel, voucherStateTone, voucherViewMeta } from './VoucherPresentation';
@@ -24,7 +25,7 @@ export function VoucherRecordDrawer({
           <div>
             <p>{voucherViewMeta[view].label} · 只读摘要</p>
             <h2 id="voucherdrawertitle">{record.name}</h2>
-            <code>{record.id}</code>
+            <code>{chineseReference(voucherViewMeta[view].short, record.id)}</code>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="关闭卡券摘要">
             ×
@@ -57,12 +58,12 @@ export function VoucherRecordDrawer({
             </div>
             <div>
               <dt>版本</dt>
-              <dd>{record.version === null ? '—' : `v${record.version}`}</dd>
+              <dd>{record.version === null ? '—' : `第 ${record.version} 版`}</dd>
             </div>
           </dl>
           <section className="voucherwriteboundary" role="note">
             <strong>操作边界</strong>
-            <p>编辑、审批、发行、暂停和冲正必须等待完整 Preview / proof 流程，本页不会直接提交写入。</p>
+            <p>编辑、审批、发行、暂停和冲正必须等待完整的操作预览与凭证流程，本页不会直接提交写入。</p>
           </section>
         </div>
         <footer>
@@ -90,7 +91,7 @@ export function CardLibraryCreator({ open, busy, error, onCreate, onClose }: Rea
       <section className="vouchercreatordialog" role="dialog" aria-modal="true" aria-labelledby="vouchercreatortitle">
         <header>
           <div>
-            <p>CREATE CARD LIBRARY</p>
+            <p>创建卡号库</p>
             <h2 id="vouchercreatortitle">新建卡号库</h2>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="关闭新建卡号库">
@@ -132,13 +133,7 @@ export type VoucherProgramDraft = Readonly<{
   approvalRequired: boolean;
 }>;
 
-export function VoucherProgramCreator({
-  open,
-  busy,
-  error,
-  onCreate,
-  onClose,
-}: Readonly<{ open: boolean; busy: boolean; error?: string; onCreate: (draft: VoucherProgramDraft) => void; onClose: () => void }>) {
+export function VoucherProgramCreator({ open, busy, error, onCreate, onClose }: Readonly<{ open: boolean; busy: boolean; error?: string; onCreate: (draft: VoucherProgramDraft) => void; onClose: () => void }>) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [name, setName] = useState('员工福利券');
   const [value, setValue] = useState('100');
@@ -160,7 +155,7 @@ export function VoucherProgramCreator({
       <section className="vouchercreatordialog" role="dialog" aria-modal="true" aria-labelledby="voucherprogramcreatortitle">
         <header>
           <div>
-            <p>CREATE VOUCHER PROGRAM</p>
+            <p>创建卡券方案</p>
             <h2 id="voucherprogramcreatortitle">新建卡券</h2>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="关闭新建卡券">

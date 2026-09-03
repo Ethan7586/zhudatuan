@@ -20,7 +20,7 @@ export function NavigationTree({ active, collapsed, displayName, roleLabel, node
       <div className="sidebarbrand">
         <Brand variant="mark" inverse />
         <span className="sidebarbrandcopy">
-          <strong>智慧翼 Smart Wing</strong>
+          <strong>智慧翼</strong>
           <small>福利平台治理系统</small>
         </span>
         <button className="sidebartoggle" type="button" onClick={onToggle} aria-label={collapsed ? '展开导航' : '收起导航'} aria-expanded={!collapsed}>

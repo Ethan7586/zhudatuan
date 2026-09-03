@@ -7,7 +7,7 @@ export function FinanceHeader({ fetching, onRefresh }: Readonly<{ fetching: bool
     <>
       <header className="financepageheader">
         <div>
-          <p>FINANCE CONTROL</p>
+          <p>财务管控</p>
           <h1>{title}</h1>
           <span>核对支付、退款、渠道账单与账本记录，确保每笔账款可追溯、可复核</span>
         </div>
@@ -16,7 +16,7 @@ export function FinanceHeader({ fetching, onRefresh }: Readonly<{ fetching: bool
             <FinanceIcon name="download" />
             导出对账单
           </button>
-          <button className="financeprimarybutton" type="button" disabled title="缺少受控创建 Operation">
+          <button className="financeprimarybutton" type="button" disabled title="缺少受控创建能力">
             <FinanceIcon name="plus" />
             发起对账
           </button>
