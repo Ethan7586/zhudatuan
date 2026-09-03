@@ -4,6 +4,9 @@ import { ProductionApiError, productionError } from './productionApi.error';
 
 export const CANONICAL_API_ORIGIN = 'https://api.zhudatuan.com';
 const LOCAL_API_ORIGINS = new Set(['http://127.0.0.1:3001', 'http://localhost:3001']);
+const CANONICAL_STOREFRONT_HOSTS = new Set(['zhudatuan.com', 'h5.zhudatuan.com', 'mini.zhudatuan.com', 'localhost', '127.0.0.1']);
+
+type RuntimeStorefrontLocation = Readonly<Pick<Location, 'hostname' | 'origin'>>;
 
 export interface CanonicalSessionContext {
   readonly actor: string;
@@ -25,10 +28,19 @@ interface ContextOptions {
 let activeSession: CanonicalSessionContext | null = null;
 let cachedClient: Readonly<{ origin: string; value: CommerceClient }> | null = null;
 
-export function resolveProductionApiOrigin(candidate: string | undefined, environment: string | undefined): string {
+export function resolveProductionApiOrigin(
+  candidate: string | undefined,
+  environment: string | undefined,
+  runtimeLocation: RuntimeStorefrontLocation | undefined = undefined,
+): string {
+  const facadeOrigin = environment === 'production' && runtimeLocation && !CANONICAL_STOREFRONT_HOSTS.has(runtimeLocation.hostname)
+    ? runtimeLocation.origin
+    : undefined;
   const fallback = environment === 'production' ? CANONICAL_API_ORIGIN : 'http://127.0.0.1:3001';
-  const parsed = new URL(candidate?.trim() || fallback);
-  const approved = parsed.origin === CANONICAL_API_ORIGIN || (environment !== 'production' && LOCAL_API_ORIGINS.has(parsed.origin));
+  const parsed = new URL(facadeOrigin ?? (candidate?.trim() || fallback));
+  const approved = parsed.origin === CANONICAL_API_ORIGIN
+    || parsed.origin === facadeOrigin
+    || (environment !== 'production' && LOCAL_API_ORIGINS.has(parsed.origin));
   if (!approved || parsed.username || parsed.password || parsed.hash || (parsed.pathname !== '/' && parsed.pathname !== '')) {
     throw new ProductionApiError('平台 API 地址不在允许清单', 0, 'API_ORIGIN_DENIED');
   }
@@ -37,7 +49,8 @@ export function resolveProductionApiOrigin(candidate: string | undefined, enviro
 
 export function canonicalClient(): CommerceClient {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_ORIGIN;
-  const origin = resolveProductionApiOrigin(configured, process.env.NODE_ENV);
+  const runtimeLocation = typeof window === 'undefined' ? undefined : window.location;
+  const origin = resolveProductionApiOrigin(configured, process.env.NODE_ENV, runtimeLocation);
   if (cachedClient?.origin !== origin) cachedClient = Object.freeze({ origin, value: createFetchCommerce(origin) });
   return cachedClient.value;
 }

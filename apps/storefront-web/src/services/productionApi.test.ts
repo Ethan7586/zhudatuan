@@ -50,6 +50,22 @@ afterEach(() => {
 });
 
 describe('canonical storefront production API', () => {
+  it('never accepts hbbtzn as the backend API origin', async () => {
+    const { resolveProductionApiOrigin } = await import('./canonicalApiClient');
+
+    expect(resolveProductionApiOrigin(undefined, 'production')).toBe('https://api.zhudatuan.com');
+    expect(() => resolveProductionApiOrigin('https://api.hbbtzn.com', 'production')).toThrow('API 地址不在允许清单');
+  });
+
+  it('uses the same origin when the H5 artifact is served by an L1 façade', async () => {
+    const { resolveProductionApiOrigin } = await import('./canonicalApiClient');
+
+    expect(resolveProductionApiOrigin('https://api.zhudatuan.com', 'production', {
+      hostname: 'merchant.example',
+      origin: 'https://merchant.example',
+    })).toBe('https://merchant.example');
+  });
+
   it('loads identity, profile, benefits, ledgers and orders from api.zhudatuan.com with cookie credentials', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);

@@ -23,6 +23,10 @@ import {
   resolveCanonicalInvite,
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
+import { SMS_CODE_RESEND_SECONDS } from '../services/otpPolicy';
+import { automaticL6DisplayName, automaticRegistrationPassword } from '../services/consumerRegistration';
+import { registrationPresentation } from './registrationPresentation';
+import { runtimeConsumerFacadeOrigin } from '../services/consumerFacade';
 
 type AuthMethod = 'otp' | 'password' | 'work_weixin' | 'sso';
 
@@ -143,6 +147,26 @@ export const LoginPage: React.FC = () => {
     setFormError('');
     setFormNotice('');
     setFieldErrors({});
+  };
+
+  const storefrontDestination = (webDestination: string): string => {
+    if (storefrontSurface === 'web') return webDestination;
+    const consumerFacadeOrigin = runtimeConsumerFacadeOrigin();
+    if (storefrontSurface === 'h5' && consumerFacadeOrigin) return `${consumerFacadeOrigin}/`;
+    const localOrigin = import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined;
+    if (storefrontSurface === 'mini') {
+      return `${resolveMiniProgramLoginOrigin(import.meta.env.VITE_MINI_PROGRAM_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
+    }
+    return `${resolveH5LoginOrigin(import.meta.env.VITE_H5_ORIGIN || localOrigin, import.meta.env.DEV)}/`;
+  };
+
+  const handleLoginModeToggle = () => {
+    if (isEnterpriseLogin) {
+      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+      window.location.assign(storefrontDestination(resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV)));
+      return;
+    }
+    setIsEnterpriseLogin(true);
   };
 
   const fillDevelopmentAccount = (account: string) => {

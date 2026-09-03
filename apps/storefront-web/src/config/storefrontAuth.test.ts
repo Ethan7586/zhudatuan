@@ -13,4 +13,27 @@ describe('storefront auth origin boundary', () => {
     expect(resolveStorefrontAuthOrigin('http://localhost:3002', 'development')).toBe('http://localhost:3002');
     expect(resolveStorefrontAuthOrigin('https://attacker.example', 'development')).toBe(LOCAL_STOREFRONT_AUTH_ORIGIN);
   });
+
+  it('opens the account center in consumer mode', () => {
+    const web = new URL(storefrontAuthHref('web'));
+    const h5 = new URL(storefrontAuthHref('h5'));
+    const mini = new URL(storefrontAuthHref('mini'));
+
+    expect(Object.fromEntries(web.searchParams)).toEqual({ target: 'storefront', surface: 'web', application: 'zdt-l1-verify' });
+    expect(Object.fromEntries(h5.searchParams)).toEqual({ target: 'storefront', surface: 'h5', application: 'zdt-l1-verify' });
+    expect(Object.fromEntries(mini.searchParams)).toEqual({ target: 'storefront', surface: 'mini', application: 'zdt-l1-verify' });
+  });
+
+  it('keeps a custom L1 H5 storefront on its same-origin account mount', () => {
+    const target = new URL(storefrontAuthHref('h5', 'zdt-l1-verify', {
+      hostname: 'merchant.example',
+      origin: 'https://merchant.example',
+    }));
+
+    expect(target.origin).toBe('https://merchant.example');
+    expect(target.pathname).toBe('/accounts/');
+    expect(Object.fromEntries(target.searchParams)).toEqual({
+      target: 'storefront', surface: 'h5', application: 'zdt-l1-verify',
+    });
+  });
 });
