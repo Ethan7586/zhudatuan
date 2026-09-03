@@ -7,6 +7,18 @@ afterEach(() => {
 });
 
 describe('hbbtzn H5 alias worker', () => {
+  it('serves the WeChat authorization verification file byte-for-byte from the storefront root', async () => {
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://hbbtzn.com/MP_verify_5ebC4TM1ep4hKgu3.txt'));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(await response.text()).toBe('5ebC4TM1ep4hKgu3');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('forces every storefront document route through the dedicated H5 page', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('<html>H5</html>'));
     vi.stubGlobal('fetch', fetchMock);

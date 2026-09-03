@@ -2,6 +2,9 @@ const ROOT_STOREFRONT_HOST = 'hbbtzn.com';
 const API_UPSTREAM_ORIGIN = 'https://api.zhudatuan.com';
 const ACCOUNTS_UPSTREAM_ORIGIN = 'https://accounts.zhudatuan.com';
 const CONSUMER_ACCOUNT_PATH = '/accounts';
+const WECHAT_VERIFICATION_FILES = Object.freeze({
+  '/MP_verify_5ebC4TM1ep4hKgu3.txt': '5ebC4TM1ep4hKgu3',
+} as const);
 
 const UPSTREAM_ORIGINS = Object.freeze({
   [ROOT_STOREFRONT_HOST]: 'https://zhudatuan.com',
@@ -35,6 +38,23 @@ function isApiPath(pathname: string): boolean {
 
 function isConsumerAccountPath(pathname: string): boolean {
   return pathname === CONSUMER_ACCOUNT_PATH || pathname.startsWith(`${CONSUMER_ACCOUNT_PATH}/`);
+}
+
+function wechatVerificationResponse(request: Request, incoming: URL): Response | null {
+  if (incoming.hostname !== ROOT_STOREFRONT_HOST || (request.method !== 'GET' && request.method !== 'HEAD')) {
+    return null;
+  }
+  const content = WECHAT_VERIFICATION_FILES[
+    incoming.pathname as keyof typeof WECHAT_VERIFICATION_FILES
+  ];
+  if (!content) return null;
+  return new Response(request.method === 'HEAD' ? null : content, {
+    headers: {
+      'cache-control': 'no-store',
+      'content-type': 'text/plain; charset=utf-8',
+      'x-content-type-options': 'nosniff',
+    },
+  });
 }
 
 function consumerAccountUpstreamPath(pathname: string): string {
@@ -91,6 +111,9 @@ function publicResponse(request: Request, upstream: Response): Response {
 const worker = {
   async fetch(request: Request): Promise<Response> {
     const incoming = new URL(request.url);
+
+    const verification = wechatVerificationResponse(request, incoming);
+    if (verification) return verification;
 
     const canonicalHost = CANONICAL_REDIRECT_HOSTS[
       incoming.hostname as keyof typeof CANONICAL_REDIRECT_HOSTS
