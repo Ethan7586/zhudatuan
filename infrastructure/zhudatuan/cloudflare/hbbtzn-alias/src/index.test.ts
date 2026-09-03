@@ -62,6 +62,36 @@ describe('hbbtzn H5 alias worker', () => {
     expect(response.headers.get('location')).toBe(destination);
   });
 
+  it('preserves the canonical account origin when it calls the aliased API', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (request) => {
+      expect((request as Request).headers.get('origin')).toBe('https://accounts.zhudatuan.com');
+      return new Response(null, { status: 204,
+        headers: { 'access-control-allow-origin': 'https://accounts.zhudatuan.com' } });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+      method: 'OPTIONS', headers: { origin: 'https://accounts.zhudatuan.com' },
+    }));
+
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://accounts.zhudatuan.com');
+  });
+
+  it('restores the aliased account origin after canonical upstream approval', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (request) => {
+      expect((request as Request).headers.get('origin')).toBe('https://accounts.zhudatuan.com');
+      return new Response(null, { status: 204,
+        headers: { 'access-control-allow-origin': 'https://accounts.zhudatuan.com' } });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await worker.fetch(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+      method: 'OPTIONS', headers: { origin: 'https://accounts.hbbtzn.com' },
+    }));
+
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://accounts.hbbtzn.com');
+  });
+
   it('moves the old mall hostname to the one H5 storefront hostname', async () => {
     const response = await worker.fetch(new Request('https://mall.hbbtzn.com/orders?from=qr'));
 

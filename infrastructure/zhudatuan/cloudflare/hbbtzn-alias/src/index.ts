@@ -91,8 +91,7 @@ const worker = {
     const upstreamOrigin = UPSTREAM_ORIGINS[incoming.hostname as keyof typeof UPSTREAM_ORIGINS];
     if (!upstreamOrigin) return new Response('Not Found', { status: 404 });
 
-    const path = storefrontPath(request, incoming);
-    const target = new URL(`${path}${incoming.search}`, isApiPath(path) ? API_UPSTREAM_ORIGIN : upstreamOrigin);
+    const target = new URL(`${storefrontPath(request, incoming)}${incoming.search}`, upstreamOrigin);
     return publicResponse(request, await fetch(upstreamRequest(request, target), { redirect: 'manual' }));
   },
 };
