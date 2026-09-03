@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { loginCanonicalConsole } from './canonicalIdentity';
+import {
+  createCanonicalLoginChallenge,
+  createCanonicalPasswordResetChallenge,
+  currentCanonicalStorefrontOrganization,
+  loginCanonicalConsole,
+  loginCanonicalConsoleWithOtp,
+  loginCanonicalStorefront,
+  loginCanonicalStorefrontEntry,
+  loginCanonicalStorefrontEntryWithOtp,
+  resetCanonicalPassword,
+} from './canonicalIdentity';
 
 const SESSION_TICKET = 't'.repeat(64);
 const CALLBACK_STATE = 's'.repeat(32);
@@ -14,6 +24,28 @@ beforeEach(() => {
       getItem: (key: string) => values.get(key) ?? null,
       setItem: (key: string, value: string) => values.set(key, value),
     },
+  });
+});
+
+describe('canonical storefront session', () => {
+  it('recognizes the already signed-in L1 before reopening consumer registration', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      target: 'storefront',
+      governance: { organization: 'mall:l1-hongtai' },
+      actor: 'principal:one',
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(currentCanonicalStorefrontOrganization()).resolves.toBe('mall:l1-hongtai');
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/session');
+    expect(init).toMatchObject({ method: 'GET', credentials: 'include', redirect: 'error' });
+  });
+
+  it('treats an absent storefront session as unauthenticated', async () => {
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ code: 'AUTHENTICATION_REQUIRED' }, 401)));
+    await expect(currentCanonicalStorefrontOrganization()).resolves.toBeNull();
   });
 });
 

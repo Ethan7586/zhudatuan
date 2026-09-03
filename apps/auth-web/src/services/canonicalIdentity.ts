@@ -38,9 +38,86 @@ const TicketExchangeSchema = z.strictObject({
   expiresIn: z.number().int().positive(),
 });
 
+const LoginChallengeSchema = z.strictObject({
+  id: z.string().min(1),
+  purpose: z.literal('login'),
+  expires_at: z.iso.datetime(),
+});
+
+const PasswordResetChallengeSchema = z.strictObject({
+  id: z.string().min(1),
+  purpose: z.literal('password_reset'),
+  expires_at: z.iso.datetime(),
+});
+
+const CurrentStorefrontSessionSchema = z.object({
+  target: z.literal('storefront'),
+  governance: z.object({ organization: z.string().min(1) }),
+});
+
 export type CanonicalConsoleLoginResult =
   | Readonly<{ kind: 'selection'; context: PreAuthContext }>
   | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
+
+export type CanonicalStorefrontLoginResult = Readonly<{
+  membership: string;
+  redirectUrl: string;
+}>;
+
+export type CanonicalStorefrontEntryResult =
+  | Readonly<{ kind: 'selection'; context: PreAuthContext }>
+  | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
+
+export interface CanonicalAuthorization {
+  readonly request: Readonly<{ state: string; nonce: string; challenge: string }>;
+  readonly secret: Readonly<{ nonce: string; verifier: string }>;
+}
+
+export interface CanonicalSessionCallback {
+  readonly ticket: string;
+  readonly state: string;
+}
+
+export interface CanonicalLoginChallenge {
+  readonly challengeId: string;
+  readonly expiresAt: string;
+}
+
+export interface CanonicalPasswordResetChallenge {
+  readonly challengeId: string;
+  readonly expiresAt: string;
+}
+
+export async function currentCanonicalStorefrontOrganization(signal?: AbortSignal): Promise<string | null> {
+  const response = await fetch(new URL('/api/v1/identity/session', apiOrigin()), {
+    method: 'GET',
+    credentials: 'include',
+    redirect: 'error',
+    headers: {
+      accept: 'application/json',
+      'x-client-version': clientVersion(),
+      'x-contract-version': CONTRACT_VERSION,
+      'x-device-id': deviceId(),
+      'x-request-id': crypto.randomUUID(),
+    },
+    signal,
+  });
+  if (!response.ok) return null;
+  const parsed = CurrentStorefrontSessionSchema.safeParse(await response.json().catch(() => null));
+  return parsed.success ? parsed.data.governance.organization : null;
+}
+
+type LoginCredential =
+  | Readonly<{ provider: 'password'; subject: string; password: string }>
+  | Readonly<{ provider: 'phone_otp'; subject: string; challenge: string; code: string }>;
+
+export async function createCanonicalLoginChallenge(phone: string, signal?: AbortSignal): Promise<CanonicalLoginChallenge> {
+  const output = LoginChallengeSchema.parse(await identityRequest('/api/v1/identity/challenges', {
+    purpose: 'login',
+    destination: canonicalMobile(phone),
+  }, signal));
+  return Object.freeze({ challengeId: output.id, expiresAt: output.expires_at });
+}
 
 export async function loginCanonicalConsole(
   subject: string,

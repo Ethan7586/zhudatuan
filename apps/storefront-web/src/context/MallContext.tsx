@@ -185,6 +185,10 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       showToast('测试商品仅用于系统验证，不能加入购物车', 'warning');
       return;
     }
+    if (sessionStatus === 'checking' && !showcaseService) {
+      showToast('正在确认登录状态，请稍候', 'info');
+      return;
+    }
     if (sessionStatus !== 'authenticated' && !showcaseService) {
       window.location.assign(storefrontAuthHref());
       return;

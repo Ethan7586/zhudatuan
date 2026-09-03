@@ -16,7 +16,18 @@ import {
   resolveAdminLoginOrigin,
   resolveStorefrontLoginOrigin,
 } from '../services/auth';
-import { loginCanonicalConsole } from '../services/canonicalIdentity';
+import {
+  createCanonicalLoginChallenge,
+  createCanonicalPasswordResetChallenge,
+  currentCanonicalStorefrontOrganization,
+  loginCanonicalConsole,
+  loginCanonicalConsoleWithOtp,
+  loginCanonicalStorefront,
+  loginCanonicalStorefrontEntry,
+  loginCanonicalStorefrontEntryWithOtp,
+  loginCanonicalStorefrontWithOtp,
+  resetCanonicalPassword,
+} from '../services/canonicalIdentity';
 import {
   createCanonicalMember,
   createCanonicalRegistrationChallenge,
@@ -113,20 +124,35 @@ export const LoginPage: React.FC = () => {
   }, [loginOtpSeconds]);
 
   useEffect(() => {
-    if (registrationCodeSeconds <= 0) return;
-    const timer = window.setInterval(() => {
-      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [registrationCodeSeconds]);
-
-  useEffect(() => {
-    if (registrationCodeSeconds <= 0) return;
-    const timer = window.setInterval(() => {
-      setRegistrationCodeSeconds((seconds) => Math.max(0, seconds - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [registrationCodeSeconds]);
+    if (!storefrontRegistrationDeepLink || registrationDeepLink) return;
+    let active = true;
+    setRegistrationBusy('context');
+    setFormError('');
+    void resolveCanonicalStorefrontRegistration(storefrontRegistrationDeepLink)
+      .then(async (storefront) => {
+        if (!active) return;
+        const activeOrganization = await currentCanonicalStorefrontOrganization().catch(() => null);
+        if (!active) return;
+        if (activeOrganization === storefront.organizationId) {
+          setRegistrationOpen(false);
+          window.location.replace(storefrontDestination('https://zhudatuan.com/'));
+          return;
+        }
+        setRegistrationContext(storefront);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-resolved'));
+        setRegistrationNotice(`验证本人手机号后，立即进入【${storefront.organizationName}】购物`);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRegistrationContext(null);
+        setRegistrationTermsAccepted(defaultTermsAccepted('invitation-unresolved'));
+        setFormError(error instanceof Error ? error.message : '商城注册入口无效');
+      })
+      .finally(() => {
+        if (active) setRegistrationBusy(null);
+      });
+    return () => { active = false; };
+  }, [registrationDeepLink, storefrontRegistrationDeepLink]);
 
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
