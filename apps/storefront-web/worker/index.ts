@@ -1,6 +1,7 @@
 import handler from 'vinext/server/app-router-entry';
 import { routeApi } from '../../../services/commerce-api/src/api/router';
 import type { WorkerEnv } from '../../../services/commerce-api/src/api/types';
+import { resolveH5RuntimeRequest } from '../src/config/h5Runtime';
 import { isLabsApiPathBlocked, isShowcaseHostAllowed, isShowcasePath, isStorefrontRuntimeConfigurationAllowed } from '../src/config/showcaseAccess';
 
 type Env = Parameters<typeof handler.fetch>[1] & WorkerEnv;
@@ -18,7 +19,8 @@ function resolveEnv(env: Env | undefined): Env {
 const worker = {
   async fetch(request: Request, env: Env, ctx: Parameters<typeof handler.fetch>[2]): Promise<Response> {
     const resolvedEnv = resolveEnv(env);
-    const requestUrl = new URL(request.url);
+    const runtimeRequest = resolveH5RuntimeRequest(request);
+    const requestUrl = new URL(runtimeRequest.url);
     if (isLabsApiPathBlocked(requestUrl.hostname, requestUrl.pathname)) {
       return new Response('Not Found', {
         status: 404,
@@ -49,11 +51,11 @@ const worker = {
         },
       });
     }
-    const apiResponse = await routeApi(request, resolvedEnv);
+    const apiResponse = await routeApi(runtimeRequest, resolvedEnv);
     if (apiResponse) {
       return apiResponse;
     }
-    return handler.fetch(request, resolvedEnv, ctx);
+    return handler.fetch(runtimeRequest, resolvedEnv, ctx);
   },
 };
 

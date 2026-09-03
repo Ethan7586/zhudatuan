@@ -17,6 +17,10 @@ describe('storefront auth origin boundary', () => {
   });
 
   it('opens the account center in consumer mode', () => {
-    expect(storefrontAuthHref()).toContain('?target=storefront');
+    const web = new URL(storefrontAuthHref('web'));
+    const h5 = new URL(storefrontAuthHref('h5'));
+
+    expect(Object.fromEntries(web.searchParams)).toEqual({ target: 'storefront', surface: 'web' });
+    expect(Object.fromEntries(h5.searchParams)).toEqual({ target: 'storefront', surface: 'h5' });
   });
 });

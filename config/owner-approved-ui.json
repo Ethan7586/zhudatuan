@@ -14,7 +14,7 @@
     "deliveryConfig": "infrastructure/zhudatuan/aliyun/delivery.yml",
     "processConfig": "infrastructure/zhudatuan/aliyun/ecosystem.config.cjs",
     "forbiddenInputs": ["infrastructure/storefront-compatibility/aliyun/Caddyfile", "../archives"],
-    "requiredHosts": ["zhudatuan.com", "accounts.zhudatuan.com", "console.zhudatuan.com", "api.zhudatuan.com", "media.zhudatuan.com", "labs.zhudatuan.com", "chat.zhudatuan.com"],
+    "requiredHosts": ["zhudatuan.com", "h5.zhudatuan.com", "accounts.zhudatuan.com", "console.zhudatuan.com", "api.zhudatuan.com", "media.zhudatuan.com", "labs.zhudatuan.com", "chat.zhudatuan.com"],
     "forbiddenRuntimeTokens": ["hbbtzn.com", "/opt/smart-wing", "apps/auth/dist", "apps/storefront/dist", "admin-server.cjs"],
     "requiredRuntimeEnvironment": [
       "APP_ENV=production",
@@ -22,8 +22,8 @@
       "PUBLIC_MALL_SLUG=<owner-approved-mall>",
       "PUBLIC_MEDIA_BASE_URL=https://media.zhudatuan.com",
       "WECHAT_PAY_NOTIFY_URL=https://zhudatuan.com/api/v1/payments/wechat/notify",
-      "API_ALLOWED_ORIGINS=https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://hbbtzn.com,https://zhudatuan.com",
-      "AUTH_RETURN_TARGETS={\"console\":\"https://console.zhudatuan.com\",\"storefront\":\"https://hbbtzn.com\",\"store\":\"https://console.zhudatuan.com/entrances/store\",\"supplier\":\"https://console.zhudatuan.com/entrances/supplier\"}"
+      "API_ALLOWED_ORIGINS=https://accounts.zhudatuan.com,https://console.zhudatuan.com,https://h5.zhudatuan.com,https://zhudatuan.com",
+      "AUTH_RETURN_TARGETS={\"console\":\"https://console.zhudatuan.com\",\"storefront\":\"https://zhudatuan.com\",\"store\":\"https://console.zhudatuan.com/entrances/store\",\"supplier\":\"https://console.zhudatuan.com/entrances/supplier\"}"
     ],
     "requiredAppliedMigrations": [
       "database/storefront-compatibility/supabase/migrations/20260828060000_auth_membership_selection_boundary.sql",
@@ -58,7 +58,7 @@
         "apps/storefront-web/src/components/laptop/LaptopHeader.tsx": "bb9a24c7719497edb33fecaa3e413ade5b9feb8a2d8ab7648e629da5827a5246",
         "apps/storefront-web/src/components/laptop/LaptopTopSwitcher.tsx": "5946950c8227bfa18eea305755e50b8b508084f6a9ced9dfcea16ddda058b4a1",
         "apps/storefront-web/src/components/laptop/StorefrontWebStandard.ts": "e2c3aa873ecc9c25b4981b65ef4d8ddf7c4e4e4c97fb526fbcac7baa6c4496af",
-        "apps/storefront-web/src/config/storefrontAuth.ts": "24e56a5439a6ac280d16db197ed1e33a5e8250174daba198a79133eab15dd450",
+        "apps/storefront-web/src/config/storefrontAuth.ts": "65d437a3f560ae1d32d5a2aedf99fa7bc6c4a765b189a98c3fb9c7baf917a0a5",
         "apps/storefront-web/src/config/showcaseAccess.ts": "fad0ce5a6a8467310fa5e764c5cdb90b3f7909805ec04d97cbdbd514d6085000",
         "apps/storefront-web/src/config/productionDemoAuth.ts": "747e568a05c39a4eac24e3e46c272f874181875a69ffd9171bb603218593782e",
         "apps/storefront-web/worker/index.ts": "5457479e43e47fdec080207b1eeed6611995306715c2c0e7be6679a25e42c006",
@@ -74,7 +74,7 @@
       "approvedReference": "../archives/smart-wing-20260826/Shop1/apps/auth-web/src/screens/LoginPage.tsx",
       "buildCommand": "npm run build:auth",
       "output": "apps/auth-web/dist",
-      "requiredBuildEnvironment": ["VITE_API_BASE_URL=https://api.zhudatuan.com", "VITE_CLIENT_VERSION=<release-version>", "VITE_STOREFRONT_ORIGIN=https://hbbtzn.com", "VITE_ADMIN_ORIGIN=https://console.zhudatuan.com"],
+      "requiredBuildEnvironment": ["VITE_API_BASE_URL=https://api.zhudatuan.com", "VITE_CLIENT_VERSION=<release-version>", "VITE_STOREFRONT_ORIGIN=https://zhudatuan.com", "VITE_H5_ORIGIN=https://h5.zhudatuan.com", "VITE_ADMIN_ORIGIN=https://console.zhudatuan.com"],
       "acceptance": "visual-approved-canonical-login-registration",
       "sessionEndpoint": "https://api.zhudatuan.com/api/v1/identity/sessions",
       "ticketExchangeEndpoint": "https://api.zhudatuan.com/api/v1/identity/tickets/exchange",
@@ -92,9 +92,9 @@
       },
       "lockedFiles": {
         "apps/auth-web/src/App.tsx": "cfe8488ad44c59f517e2238d2e674cdc766eb0b8d96d9da1ae06237f54014459",
-        "apps/auth-web/src/screens/LoginPage.tsx": "87b4d873fde1bb6837cd691726abc5f8a7169d82dc3781860b90ab6107765cdb",
+        "apps/auth-web/src/screens/LoginPage.tsx": "f1cf753faf6a05c8080abec6f792e03a80424388b6f8e5bcbcc84dbfd4d6aa30",
         "apps/auth-web/src/context/MallContext.tsx": "1c4b4c81be39d142171ef7f6c02008bdcf05b13e2e11971c7f45bb74a34b5cc0",
-        "apps/auth-web/src/services/auth.ts": "6c776b1e2c34c294a898a9d2fffb746f28c0a2d91a7bfacf7726ebc569ef30c9",
+        "apps/auth-web/src/services/auth.ts": "ce7da3aa7f78f7e82b91ab38a20c5083b592e141c51e67c5e04128542ef816bf",
         "apps/auth-web/src/services/canonicalIdentity.ts": "e7b8cfb122361f165c06b6204d218694b63db51be45aba48bf14b40c2713fefa",
         "apps/auth-web/src/services/canonicalRegistration.ts": "39cbb173ed75f734d077466e8e02b1958436156bc14a0164c9b3acc6a7add176",
         "apps/auth-web/vite.config.ts": "28f6e252b9823baef3b1ea18c8a56a4f28e18129f098eb11250bc43a48640882",

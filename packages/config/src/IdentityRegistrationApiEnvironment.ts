@@ -6,13 +6,13 @@ export const IDENTITY_REGISTRATION_API_PROFILE = 'registration-only' as const;
 const PRODUCTION_ALLOWED_ORIGINS = Object.freeze([
   'https://accounts.zhudatuan.com',
   'https://console.zhudatuan.com',
-  'https://hbbtzn.com',
+  'https://h5.zhudatuan.com',
   'https://zhudatuan.com',
 ] as const);
 
 const PRODUCTION_RETURN_TARGETS = Object.freeze({
   console: 'https://console.zhudatuan.com',
-  storefront: 'https://hbbtzn.com',
+  storefront: 'https://zhudatuan.com',
   store: 'https://console.zhudatuan.com/entrances/store',
   supplier: 'https://console.zhudatuan.com/entrances/supplier',
 } satisfies AuthReturnTargets);

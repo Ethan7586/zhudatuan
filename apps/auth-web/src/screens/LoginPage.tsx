@@ -16,6 +16,8 @@ import {
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
+  resolveH5LoginOrigin,
+  resolveStorefrontLoginOrigin,
 } from '../services/auth';
 import {
   createCanonicalLoginChallenge,
@@ -56,6 +58,7 @@ export const LoginPage: React.FC = () => {
   const { currentDomain, acceptedTerms, setAcceptedTerms } = useMallContext();
   const isStorefrontEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === 'storefront';
   const isCanonicalConsoleRequest = typeof window === 'undefined' || new URLSearchParams(window.location.search).get('target') !== 'storefront';
+  const storefrontSurface = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('surface') === 'h5' ? 'h5' : 'web';
   const [registrationDeepLink] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('invite')?.trim().slice(0, 255) ?? '';
@@ -164,12 +167,19 @@ export const LoginPage: React.FC = () => {
     setFieldErrors({});
   };
 
+  const storefrontDestination = (webDestination: string): string => {
+    if (storefrontSurface !== 'h5') return webDestination;
+    const configuredOrigin = import.meta.env.VITE_H5_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+    return `${resolveH5LoginOrigin(configuredOrigin, import.meta.env.DEV)}/`;
+  };
+
   const handleLoginModeToggle = () => {
-    const nextIsEnterpriseLogin = !isEnterpriseLogin;
-    setIsEnterpriseLogin(nextIsEnterpriseLogin);
-    if (!nextIsEnterpriseLogin && (activeTab === 'work_weixin' || activeTab === 'sso')) {
-      selectAuthMethod(isCanonicalConsoleRequest ? 'password' : 'otp');
+    if (isEnterpriseLogin) {
+      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
+      window.location.assign(storefrontDestination(resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV)));
+      return;
     }
+    setIsEnterpriseLogin(true);
   };
 
   const fillDevelopmentAccount = (account: string) => {
@@ -329,7 +339,7 @@ export const LoginPage: React.FC = () => {
       });
       if (created.target === 'storefront' && isConsumerRegistration) {
         if (!created.redirectUrl) throw new Error('消费者登录会话未能建立，请重新获取验证码');
-        window.location.replace(created.redirectUrl);
+        window.location.replace(storefrontDestination(created.redirectUrl));
         return;
       }
       setIdentifier(registration.mobile.trim());
@@ -412,7 +422,7 @@ export const LoginPage: React.FC = () => {
         ? await loginCanonicalStorefrontEntryWithOtp(identifier, loginOtp.challengeId, loginOtp.code)
         : await loginCanonicalStorefrontEntry(identifier, password);
       if (result.kind === 'authenticated') {
-        window.location.replace(result.redirectUrl);
+        window.location.replace(storefrontDestination(result.redirectUrl));
         return;
       }
       setPreAuthContext(result.context);
@@ -458,7 +468,7 @@ export const LoginPage: React.FC = () => {
       window.parent.postMessage({ type: 'smart-wing:storefront-login-complete', membershipId }, window.location.origin);
       return;
     }
-    window.location.replace(result.redirectUrl);
+    window.location.replace(storefrontDestination(result.redirectUrl));
   };
 
   const completeAdminLogin = () => {

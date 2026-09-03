@@ -6,6 +6,7 @@ import {
   buildCredentialLoginAction,
   requiresAuthoritativeMembershipSelection,
   resolveAdminLoginOrigin,
+  resolveH5LoginOrigin,
   resolveStorefrontLoginOrigin,
   TEST_ACCOUNT_MEMBERSHIPS,
   verifyStepUp,
@@ -35,7 +36,7 @@ describe('public test authentication fixtures', () => {
   });
 
   it('only permits the canonical storefront origin plus explicit local development', () => {
-    expect(resolveStorefrontLoginOrigin()).toBe('https://hbbtzn.com');
+    expect(resolveStorefrontLoginOrigin()).toBe('https://zhudatuan.com');
     expect(resolveStorefrontLoginOrigin('https://zhudatuan.com')).toBe('https://zhudatuan.com');
     expect(resolveStorefrontLoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
     expect(resolveStorefrontLoginOrigin('https://store.staging.example', false, 'https://store.staging.example')).toBe('https://store.staging.example');
@@ -43,10 +44,16 @@ describe('public test authentication fixtures', () => {
     expect(() => resolveStorefrontLoginOrigin('http://127.0.0.1:3000')).toThrow('不在允许清单');
   });
 
+  it('keeps the H5 storefront on its dedicated zhudatuan hostname', () => {
+    expect(resolveH5LoginOrigin()).toBe('https://h5.zhudatuan.com');
+    expect(resolveH5LoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
+    expect(() => resolveH5LoginOrigin('https://hbbtzn.com')).toThrow('不在允许清单');
+  });
+
   it('builds a credential-free login URL for top-level POST', () => {
     const action = buildCredentialLoginAction(resolveStorefrontLoginOrigin());
 
-    expect(action).toBe('https://hbbtzn.com/api/v1/auth/login?redirect=%2F');
+    expect(action).toBe('https://zhudatuan.com/api/v1/auth/login?redirect=%2F');
     expect(action).not.toContain('username');
     expect(action).not.toContain('password');
   });
