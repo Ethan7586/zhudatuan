@@ -8,7 +8,8 @@ import { Membership } from '../types';
 import { resolveBuildTimeOrigin } from './originPolicy';
 
 const CANONICAL_ADMIN_ORIGIN = 'https://console.zhudatuan.com';
-const CANONICAL_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
+const CANONICAL_STOREFRONT_ORIGIN = 'https://mall.hbbtzn.com';
+const LEGACY_STOREFRONT_ORIGIN = 'https://zhudatuan.com';
 
 function resolveCredentialTargetOrigin(configuredOrigin: string | undefined, canonicalOrigin: string, targetLabel: string,
   allowLocalDevelopment: boolean, stagingOrigin?: string): string {
@@ -27,7 +28,13 @@ export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDev
 }
 
 export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false, stagingOrigin?: string): string {
-  return resolveCredentialTargetOrigin(configuredOrigin, CANONICAL_STOREFRONT_ORIGIN, '商城', allowLocalDevelopment, stagingOrigin);
+  return resolveCredentialTargetOrigin(
+    configuredOrigin,
+    CANONICAL_STOREFRONT_ORIGIN,
+    '商城',
+    allowLocalDevelopment,
+    stagingOrigin ?? LEGACY_STOREFRONT_ORIGIN,
+  );
 }
 
 export function buildCredentialLoginAction(targetOrigin: string): string {

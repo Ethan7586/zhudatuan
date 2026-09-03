@@ -22,6 +22,7 @@ import {
   createCanonicalPasswordResetChallenge,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
+  loginCanonicalStorefront,
   resetCanonicalPassword,
 } from '../services/canonicalIdentity';
 import {
@@ -303,9 +304,6 @@ export const LoginPage: React.FC = () => {
     try {
       const generatedPassword = isConsumerRegistration ? automaticRegistrationPassword() : registration.password;
       const displayName = isConsumerRegistration ? automaticL6DisplayName(mobile) : registration.displayName;
-      const storefrontOrigin = isConsumerRegistration
-        ? resolveStorefrontLoginOrigin(import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined), import.meta.env.DEV)
-        : null;
       const created = await createCanonicalMember({
         subject: registration.mobile,
         password: generatedPassword,
@@ -316,8 +314,9 @@ export const LoginPage: React.FC = () => {
         termsAccepted: registrationTermsAccepted,
         termsHash: registrationInvite.termsHash,
       });
-      if (created.target === 'storefront' && storefrontOrigin !== null) {
-        submitCredentialForm(storefrontOrigin, { username: mobile, password: generatedPassword });
+      if (created.target === 'storefront' && isConsumerRegistration) {
+        const login = await loginCanonicalStorefront(mobile, generatedPassword, created.membership);
+        window.location.replace(login.redirectUrl);
         return;
       }
       setIdentifier(registration.mobile.trim());
