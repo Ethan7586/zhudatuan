@@ -5,14 +5,9 @@ export const OrderFilterSchema = z.object({ order: z.string().check(z.trim(), z.
 
 export const OrderListFilterSchema = z.object({
   order: z.string().check(z.trim(), z.maxLength(255)),
-  placed: z.enum(['', 'today', '7days', '30days']),
-  lifecycle: z.enum(['', 'created', 'active', 'completed', 'cancelled', 'closed']),
-  payment: z.enum(['', 'unpaid', 'authorizing', 'paid', 'partially_refunded', 'refunded', 'failed']),
-  fulfillment: z.enum(['', 'unallocated', 'allocated', 'processing', 'shipped', 'delivered', 'cancelled', 'returned']),
-  mall: z.string().check(z.trim(), z.maxLength(255)),
 });
 
-export const OrderViewSchema = z.enum(['all', 'unpaid', 'unshipped', 'active', 'completed', 'aftersale', 'exception']);
+export const OrderViewSchema = z.enum(['all', 'aftersale']);
 export const OrderDetailTabSchema = z.enum(['overview', 'products', 'payment', 'aftersale', 'operations']);
 
 export const OrderSchema = z.object({

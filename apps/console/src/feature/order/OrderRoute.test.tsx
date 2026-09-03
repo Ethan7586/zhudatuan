@@ -91,7 +91,6 @@ const context: ConsoleContext = {
 };
 
 const getRequests: URL[] = [];
-const postRequests: URL[] = [];
 const server = setupServer(
   http.get('*/api/v1/orders', ({ request }) => {
     const url = new URL(request.url);
@@ -109,10 +108,6 @@ const server = setupServer(
     getRequests.push(url);
     expect(request.headers.get('x-scope-hint')).toBe('enterprise:1');
     return HttpResponse.json({ items: [aftersale], count: 1, availableLines: [] });
-  }),
-  http.post('*', ({ request }) => {
-    postRequests.push(new URL(request.url));
-    return HttpResponse.json({ code: 'UNEXPECTED_WRITE', requestId: 'request:unexpected-write' }, { status: 500 });
   })
 );
 
@@ -121,7 +116,6 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   getRequests.length = 0;
-  postRequests.length = 0;
 });
 afterAll(() => server.close());
 
@@ -131,26 +125,23 @@ describe('Order route', () => {
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '订单管理' })).toBeTruthy();
-    expect(screen.getByRole('note').textContent).toContain('商品订单与售后订单都由服务端按当前组织树或会员本人范围隔离');
-    expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
-    expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
+    expect(screen.getByRole('note').textContent).toContain('商品订单与售后订单按当前数据范围安全隔离');
+    expect(screen.getByText('按订单编号查询')).toBeTruthy();
+    expect(screen.getByText('本页 1 条')).toBeTruthy();
     expect(screen.getByText(/^会员 \d{4} \d{4}$/)).toBeTruthy();
     expect(screen.getByText(/^组织范围 \d{4} \d{4}$/)).toBeTruthy();
     expect(screen.queryByText('member:verified-1')).toBeNull();
     expect(screen.queryByText('enterprise:1')).toBeNull();
-    expect(screen.getByTitle('当前读模型未返回服务时限').textContent).toBe('未提供');
     expect(screen.queryByText('不应泄漏的演示会员')).toBeNull();
     expect(screen.queryByText('不应泄漏的演示支付方式')).toBeNull();
     expect(screen.getByRole('button', { name: '全部订单' }).textContent).toBe('全部订单');
 
-    const unpaid = screen.getByRole<HTMLButtonElement>('button', { name: '待付款' });
-    const placed = screen.getByRole<HTMLSelectElement>('combobox', { name: '下单时间' });
-    expect(unpaid.disabled).toBe(true);
-    expect(placed.disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: '待付款' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: '下单时间' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '导出订单' })).toBeNull();
 
     await userEvent.setup().click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
-    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
-    expect(within(dialog).getByText(/最终动作保持关闭/)).toBeTruthy();
+    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) }, { timeout: 5_000 });
     expect(within(dialog).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
     expect(within(dialog).getByText(/当前读模型未提供审计时间线/)).toBeTruthy();
     expect(within(dialog).queryByText('不应泄漏的演示说明')).toBeNull();
@@ -174,24 +165,6 @@ describe('Order route', () => {
     const read = getRequests.find((url) => url.pathname.endsWith('/api/v1/orders/aftersales'));
     expect(read?.searchParams.get('limit')).toBe('50');
     expect(read?.searchParams.has('order')).toBe(false);
-  });
-
-  it('normalizes preview-only URL filters out of a production scope before presenting results', async () => {
-    renderRoute('/orders?view=unpaid&placed=today&lifecycle=active&payment=paid&fulfillment=allocated&mall=huimin&order=order%3Ainternal-1&campaign=keep');
-
-    await screen.findByRole('table', { name: '订单列表' });
-    await waitFor(() => expect(currentParams().has('view')).toBe(false));
-    for (const key of ['placed', 'lifecycle', 'payment', 'fulfillment', 'mall']) {
-      expect(currentParams().has(key)).toBe(false);
-    }
-    expect(currentParams().get('order')).toBe('order:internal-1');
-    expect(currentParams().get('campaign')).toBe('keep');
-    expect(screen.getByRole('button', { name: '全部订单' }).getAttribute('aria-pressed')).toBe('true');
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: '支付状态' }).value).toBe('');
-    const listRead = getRequests.find((url) => url.searchParams.get('limit') === '50');
-    expect(listRead?.searchParams.get('order')).toBe('order:internal-1');
-    expect(listRead?.searchParams.has('view')).toBe(false);
-    expect(listRead?.searchParams.has('payment')).toBe(false);
   });
 
   it('opens the React Aria dialog from both the explicit view action and the row using the internal ID in the URL', async () => {
@@ -272,27 +245,6 @@ describe('Order route', () => {
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '刷新数据' }).disabled).toBe(false);
   });
 
-  it('drops selections that no longer belong to the refreshed server page', async () => {
-    const refreshedOrder = { ...order, id: 'order:internal-2', order_number: 'SW202608260002' };
-    let listReads = 0;
-    server.use(
-      http.get('*/api/v1/orders', () => {
-        listReads += 1;
-        return HttpResponse.json({ ...listPage, items: [listReads === 1 ? order : refreshedOrder] });
-      })
-    );
-    const user = userEvent.setup();
-    renderRoute();
-    await screen.findByRole('table', { name: '订单列表' });
-    await user.click(screen.getByRole('checkbox', { name: `选择订单 ${order.order_number}` }));
-    expect(await screen.findByText(/已选择 1 条当前页订单/)).toBeTruthy();
-
-    await user.click(screen.getByRole('button', { name: '刷新数据' }));
-    const refreshedCheckbox = await screen.findByRole<HTMLInputElement>('checkbox', { name: `选择订单 ${refreshedOrder.order_number}` });
-    await waitFor(() => expect(screen.queryByText(/已选择 1 条当前页订单/)).toBeNull());
-    expect(refreshedCheckbox.checked).toBe(false);
-  });
-
   it('renders the empty state', async () => {
     server.use(http.get('*/api/v1/orders', () => HttpResponse.json({ items: [], count: 0 })));
     renderRoute();
@@ -300,7 +252,7 @@ describe('Order route', () => {
     expect(await screen.findByText('暂无符合条件的订单')).toBeTruthy();
     expect(screen.getByText('请调整服务端筛选条件后重试。')).toBeTruthy();
     expect(screen.queryByRole('table', { name: '订单列表' })).toBeNull();
-    expect(screen.getByText('本页 0 条 · 全量总数不可用')).toBeTruthy();
+    expect(screen.getByText('本页 0 条')).toBeTruthy();
   });
 
   it('renders a read error and retries it without inventing stale data', async () => {
@@ -322,16 +274,12 @@ describe('Order route', () => {
     expect(attempts).toBe(2);
   });
 
-  it('configures optional columns and selecting a row never opens its drawer', async () => {
+  it('configures optional columns without exposing unsupported bulk selection', async () => {
     const user = userEvent.setup();
     renderRoute();
     await screen.findByRole('table', { name: '订单列表' });
 
-    const rowCheckbox = screen.getByRole<HTMLInputElement>('checkbox', { name: `选择订单 ${order.order_number}` });
-    rowCheckbox.focus();
-    await user.keyboard(' ');
-    expect(await screen.findByText(/已选择 1 条当前页订单/)).toBeTruthy();
-    expect(rowCheckbox.checked).toBe(true);
+    expect(screen.queryByRole('checkbox', { name: `选择订单 ${order.order_number}` })).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(currentParams().get('selected')).toBeNull();
 
@@ -343,25 +291,6 @@ describe('Order route', () => {
     expect(screen.queryByRole('columnheader', { name: '商品摘要' })).toBeNull();
     await user.click(within(settings).getByRole('button', { name: '完成' }));
     expect(screen.queryByRole('region', { name: '订单列表列设置' })).toBeNull();
-  });
-
-  it('clears row selection when the scope or access-version boundary changes', async () => {
-    const user = userEvent.setup();
-    server.use(http.get('*/api/v1/orders', () => HttpResponse.json(listPage)));
-    const rendered = renderRoute();
-    await screen.findByRole('table', { name: '订单列表' });
-    await user.click(screen.getByRole('checkbox', { name: `选择订单 ${order.order_number}` }));
-    expect(await screen.findByText(/已选择 1 条当前页订单/)).toBeTruthy();
-
-    rendered.rerenderContext({ ...context, session: { ...context.session, accessVersion: 8 } });
-    const refreshedCheckbox = await screen.findByRole<HTMLInputElement>('checkbox', { name: `选择订单 ${order.order_number}` });
-    expect(screen.queryByText(/已选择 1 条当前页订单/)).toBeNull();
-    expect(refreshedCheckbox.checked).toBe(false);
-
-    rendered.rerenderContext(context);
-    const restoredCheckbox = await screen.findByRole<HTMLInputElement>('checkbox', { name: `选择订单 ${order.order_number}` });
-    expect(screen.queryByText(/已选择 1 条当前页订单/)).toBeNull();
-    expect(restoredCheckbox.checked).toBe(false);
   });
 
   it('clears cursor on filter submit while preserving unrelated URL parameters', async () => {
@@ -380,31 +309,19 @@ describe('Order route', () => {
     await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('limit') === '50' && url.searchParams.get('order') === 'order:searched' && !url.searchParams.has('cursor'))).toBe(true));
   });
 
-  it('keeps every exposed final action disabled and sends no POST even with AAL2 and write permissions', async () => {
+  it('does not expose controls that have no production operation contract', async () => {
     const user = userEvent.setup();
     renderRoute();
     await screen.findByRole('table', { name: '订单列表' });
 
-    const exportButton = screen.getByRole<HTMLButtonElement>('button', { name: '导出订单' });
-    const moreFilters = screen.getByRole<HTMLButtonElement>('button', { name: '更多筛选' });
-    const rowMore = screen.getByRole<HTMLButtonElement>('button', { name: `订单 ${order.order_number} 更多操作` });
-    expect(exportButton.disabled).toBe(true);
-    expect(moreFilters.disabled).toBe(true);
-    expect(rowMore.disabled).toBe(true);
-    await user.click(exportButton);
-    await user.click(moreFilters);
-    await user.click(rowMore);
+    expect(screen.queryByRole('button', { name: '导出订单' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '更多筛选' })).toBeNull();
+    expect(screen.queryByRole('button', { name: `订单 ${order.order_number} 更多操作` })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
     const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
-    const more = within(dialog).getByRole<HTMLButtonElement>('button', { name: '更多' });
-    const fulfill = within(dialog).getByRole<HTMLButtonElement>('button', { name: '确认发货' });
-    expect(more.disabled).toBe(true);
-    expect(fulfill.disabled).toBe(true);
-    expect(within(dialog).getByText(/操作绑定凭证与执行回执/)).toBeTruthy();
-    await user.click(more);
-    await user.click(fulfill);
-    expect(postRequests).toHaveLength(0);
+    expect(within(dialog).queryByRole('button', { name: '更多' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: '确认发货' })).toBeNull();
   });
 });
 

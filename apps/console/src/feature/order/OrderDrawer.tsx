@@ -128,18 +128,8 @@ export function OrderDrawer({
           </Tabs>
 
           <footer className="orderdrawerfooter">
-            <p id="orderactionboundary" className="sr-only">
-              最终动作缺少权限版本重读、服务端预览、二次验证、操作绑定凭证与执行回执，当前保持关闭。
-            </p>
             <button type="button" onClick={onClose}>
               关闭
-            </button>
-            <button type="button" disabled aria-describedby="orderactionboundary" title="等待最终动作合同">
-              更多
-            </button>
-            <button className="orderconfirmbutton" type="button" disabled aria-describedby="orderactionboundary" title="等待最终动作合同">
-              <OrderIcon name="truck" />
-              确认发货
             </button>
           </footer>
         </AriaDialog>

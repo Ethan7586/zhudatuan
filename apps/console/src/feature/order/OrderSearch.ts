@@ -4,11 +4,6 @@ import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, type Or
 export function readFilter(search: URLSearchParams): OrderListFilter {
   const parsed = OrderListFilterSchema.safeParse({
     order: search.get('order') ?? '',
-    placed: '',
-    lifecycle: '',
-    payment: '',
-    fulfillment: '',
-    mall: '',
   });
   return parsed.success ? parsed.data : emptyOrderFilter;
 }
