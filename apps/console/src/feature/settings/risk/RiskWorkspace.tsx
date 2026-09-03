@@ -1,5 +1,4 @@
 import type { OperationOutputFor } from '@shop/contract';
-import { chineseReference } from '@shop/presentation';
 
 type RiskPage = OperationOutputFor<'risk.center.read'>;
 type RiskItem = RiskPage['items'][number];
@@ -109,7 +108,7 @@ function PolicyCard({ item }: Readonly<{ item: RiskItem }>) {
       <header>
         <div>
           <strong>{item.name ?? '未命名策略'}</strong>
-          <small>{chineseReference('策略', item.id)}</small>
+          <small>{item.status === 'active' ? '当前正在参与实时决策' : '当前不参与实时决策'}</small>
         </div>
         <span data-tone={item.status === 'active' ? 'success' : 'neutral'}>{status}</span>
       </header>
@@ -146,7 +145,7 @@ function CaseCard({ item }: Readonly<{ item: RiskItem }>) {
       <header>
         <div>
           <strong>{item.outcome === null ? '风险事件' : (outcomeLabel[item.outcome] ?? '待识别结果')}</strong>
-          <small>{chineseReference('风险事件', item.id)}</small>
+          <small>系统自动检测并进入复核队列</small>
         </div>
         <span data-tone={item.outcome === 'deny' ? 'danger' : 'warning'}>风险分 {item.score ?? 0}</span>
       </header>
@@ -157,11 +156,16 @@ function CaseCard({ item }: Readonly<{ item: RiskItem }>) {
         </div>
         <div>
           <dt>操作人</dt>
-          <dd>{chineseReference('操作人', item.actor_id)}</dd>
+          <dd>
+            <span className="riskaccount">
+              <strong>{item.actor_display_name ?? '系统任务'}</strong>
+              {item.actor_mobile_masked && item.actor_mobile_masked !== '***' ? <small>手机 {item.actor_mobile_masked}</small> : null}
+            </span>
+          </dd>
         </div>
         <div>
-          <dt>决策记录</dt>
-          <dd>{chineseReference('决策记录', item.decision_id)}</dd>
+          <dt>决策来源</dt>
+          <dd>{item.decision_id === null ? '规则评估' : '自动风控引擎'}</dd>
         </div>
         <div>
           <dt>发生时间</dt>

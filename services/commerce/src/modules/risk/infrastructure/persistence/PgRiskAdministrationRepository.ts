@@ -10,7 +10,8 @@ export class PgRiskAdministrationRepository implements RiskAdministrationReposit
       `select center.id,center.kind,center.name,center.status,
       center.active_version,center.baseline_version,center.rollout_percent,center.rule_hash,center.rule,center.candidate_version,
       center.candidate_rollout,center.candidate_hash,center.candidate_rule,center.replay_state,center.sample_count,center.changed_count,
-      center.false_positive_rate,center.preview,center.decision_id,center.outcome,center.safe_reason,center.actor_id,center.score,
+      center.false_positive_rate,center.preview,center.decision_id,center.outcome,center.safe_reason,center.actor_id,
+      actorprofile.display_name actor_display_name,actorprofile.mobile_masked actor_mobile_masked,center.score,
       center.evidence,center.created_at from (
       select policy.id,'policy' kind,policy.name,policy.status,policy.active_version,policy.baseline_version,active.rollout_percent,
         active.rule_hash,active.rule,candidate.version candidate_version,candidate.rollout_percent candidate_rollout,candidate.rule_hash candidate_hash,
@@ -27,6 +28,7 @@ export class PgRiskAdministrationRepository implements RiskAdministrationReposit
         decision.actor_id,decision.score,jsonb_build_object('decision',decision.evidence,'review',riskcase.review_evidence),riskcase.created_at
       from risk.case riskcase join risk.decision decision on decision.id=riskcase.decision_id
       where risk.scope_allowed(riskcase.scope_id) and $1=current_setting('app.scope_id',true)) center
+      left join member.profile actorprofile on actorprofile.principal_id=center.actor_id
       where ($2::text is null or center.id>$2) order by center.id limit $3`,
       [scope, cursor, fetch]
     );

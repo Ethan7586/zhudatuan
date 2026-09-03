@@ -140,6 +140,43 @@ describe('contract truth', () => {
     expect(() => schema.parse({ items: [withoutIssuer], count: 1 })).toThrow();
   });
 
+  it('requires a readable actor projection on risk-center rows', () => {
+    const row = {
+      id: 'riskcase:one',
+      kind: 'case',
+      name: null,
+      status: null,
+      active_version: null,
+      baseline_version: null,
+      rollout_percent: null,
+      rule_hash: null,
+      rule: null,
+      candidate_version: null,
+      candidate_rollout: null,
+      candidate_hash: null,
+      candidate_rule: null,
+      replay_state: null,
+      sample_count: null,
+      changed_count: null,
+      false_positive_rate: null,
+      preview: null,
+      decision_id: 'riskdecision:one',
+      outcome: 'deny',
+      safe_reason: 'velocity',
+      actor_id: 'principal:one',
+      actor_display_name: '李小明',
+      actor_mobile_masked: '139****0002',
+      score: 90,
+      evidence: {},
+      created_at: '2026-09-03T00:00:00.000Z',
+    } as const;
+    const schema = OPERATION_SCHEMAS['risk.center.read'].output;
+
+    expect(schema.parse({ items: [row], count: 1 })).toEqual({ items: [row], count: 1 });
+    const { actor_display_name: _actor, ...withoutActor } = row;
+    expect(() => schema.parse({ items: [withoutActor], count: 1 })).toThrow();
+  });
+
   it('publishes one strict runtime payload schema for every event', () => {
     const eventTypes = COMMERCE_EVENTS.map(({ type }) => type).sort();
     expect(Object.keys(EVENT_PAYLOAD_SCHEMAS).sort()).toEqual(eventTypes);

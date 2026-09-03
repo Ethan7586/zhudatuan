@@ -33315,7 +33315,27 @@
                     }
                   ]
                 },
+                "actor_display_name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "actor_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "actor_mobile_masked": {
                   "anyOf": [
                     {
                       "type": "string"
@@ -33574,6 +33594,8 @@
                 "outcome",
                 "safe_reason",
                 "actor_id",
+                "actor_display_name",
+                "actor_mobile_masked",
                 "score",
                 "evidence",
                 "created_at"

@@ -203,6 +203,15 @@
   font-size: 0.85rem;
   font-weight: 700;
 }
+.riskaccount {
+  display: grid;
+  gap: 0.2rem;
+}
+.riskaccount small {
+  color: var(--sw-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
 .riskitem > p {
   margin: 0;
   border-top: 0.0625rem solid var(--sw-border);

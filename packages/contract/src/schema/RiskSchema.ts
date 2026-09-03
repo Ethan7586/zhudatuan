@@ -42,6 +42,8 @@ const center = strictObject({
   outcome: nullableText,
   safe_reason: nullableText,
   actor_id: nullableText,
+  actor_display_name: nullableText,
+  actor_mobile_masked: nullableText,
   score: nullableNumber,
   evidence: nullableJson,
   created_at: nullableTime,

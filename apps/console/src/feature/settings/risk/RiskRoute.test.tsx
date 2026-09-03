@@ -54,7 +54,18 @@ describe('system governance route', () => {
         HttpResponse.json({
           items: [
             riskItem({ id: 'riskpolicy:one', kind: 'policy', name: '大额订单策略', status: 'active', active_version: 3, rollout_percent: 100, replay_state: 'passed', sample_count: 120, changed_count: 2, false_positive_rate: 0.01 }),
-            riskItem({ id: 'riskcase:one', kind: 'case', outcome: 'deny', safe_reason: 'velocity', actor_id: 'actor:sensitive-identity', decision_id: 'riskdecision:one', score: 90, created_at: '2026-08-31T08:00:00Z' }),
+            riskItem({
+              id: 'riskcase:one',
+              kind: 'case',
+              outcome: 'deny',
+              safe_reason: 'velocity',
+              actor_id: 'actor:sensitive-identity',
+              actor_display_name: '李小明',
+              actor_mobile_masked: '139****0002',
+              decision_id: 'riskdecision:one',
+              score: 90,
+              created_at: '2026-08-31T08:00:00Z',
+            }),
           ],
           count: 2,
         })
@@ -65,13 +76,15 @@ describe('system governance route', () => {
     expect(screen.getByText('回放通过')).toBeTruthy();
     expect(screen.getByText('已拦截')).toBeTruthy();
     expect(screen.getByText('频次异常')).toBeTruthy();
+    expect(screen.getByText('李小明')).toBeTruthy();
+    expect(screen.getByText('手机 139****0002')).toBeTruthy();
+    expect(screen.getByText('自动风控引擎')).toBeTruthy();
     expect(screen.queryByText('actor:sensitive-identity')).toBeNull();
     expect(screen.queryByText('riskpolicy:one')).toBeNull();
     expect(screen.queryByText('riskcase:one')).toBeNull();
     expect(screen.queryByText('riskdecision:one')).toBeNull();
-    expect(screen.getByText(/^策略 \d{4} \d{4}$/)).toBeTruthy();
-    expect(screen.getByText(/^风险事件 \d{4} \d{4}$/)).toBeTruthy();
-    expect(screen.getByText(/^决策记录 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.getByText('当前正在参与实时决策')).toBeTruthy();
+    expect(screen.getByText('系统自动检测并进入复核队列')).toBeTruthy();
   });
 
   it('turns STEPUP_REQUIRED into a visible Chinese verification action', async () => {
@@ -128,6 +141,8 @@ function riskItem(overrides: Readonly<Record<string, unknown>>) {
     outcome: null,
     safe_reason: null,
     actor_id: null,
+    actor_display_name: null,
+    actor_mobile_masked: null,
     score: null,
     evidence: null,
     created_at: null,
