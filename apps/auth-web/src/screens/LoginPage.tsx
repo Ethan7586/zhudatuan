@@ -107,6 +107,7 @@ export const LoginPage: React.FC = () => {
   const [resetForm, setResetForm] = useState({ mobile: '', code: '', challengeId: '', password: '', confirm: '' });
 
   // UI 视觉交互状态
+  const [isEnterpriseLogin, setIsEnterpriseLogin] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
@@ -211,19 +212,12 @@ export const LoginPage: React.FC = () => {
     setFieldErrors({});
   };
 
-  const storefrontDestination = (webDestination: string): string => {
-    if (storefrontSurface !== 'h5') return webDestination;
-    const configuredOrigin = import.meta.env.VITE_H5_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-    return `${resolveH5LoginOrigin(configuredOrigin, import.meta.env.DEV)}/`;
-  };
-
   const handleLoginModeToggle = () => {
-    if (isEnterpriseLogin) {
-      const configuredOrigin = import.meta.env.VITE_STOREFRONT_ORIGIN || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : undefined);
-      window.location.assign(storefrontDestination(resolveStorefrontLoginOrigin(configuredOrigin, import.meta.env.DEV)));
-      return;
+    const nextIsEnterpriseLogin = !isEnterpriseLogin;
+    setIsEnterpriseLogin(nextIsEnterpriseLogin);
+    if (!nextIsEnterpriseLogin && (activeTab === 'work_weixin' || activeTab === 'sso')) {
+      selectAuthMethod(isCanonicalConsoleRequest ? 'password' : 'otp');
     }
-    setIsEnterpriseLogin(true);
   };
 
   const fillDevelopmentAccount = (account: string) => {
@@ -769,7 +763,10 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : 'min-h-screen bg-slate-50 flex flex-col justify-between'} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}>
+    <div
+      data-login-mode={isEnterpriseLogin ? 'enterprise' : 'consumer'}
+      className={`${isStorefrontEmbed ? 'min-h-screen bg-transparent' : `min-h-screen flex flex-col justify-between transition-colors duration-300 ${isEnterpriseLogin ? 'bg-slate-950' : 'bg-slate-50'}`} overflow-x-hidden selection:bg-blue-100 selection:text-[var(--sw-brand)]`}
+    >
       {import.meta.env.DEV && !isStorefrontEmbed && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900 px-4 py-2 text-xs text-slate-300">
           <div className="flex items-center gap-2">
@@ -793,7 +790,7 @@ export const LoginPage: React.FC = () => {
       {/* 主布局：认证卡片叠压在蓝色品牌底板上（桌面端覆盖约 80%） */}
       <div className={isStorefrontEmbed ? 'flex min-h-screen items-center justify-center overflow-x-hidden bg-transparent p-0' : 'flex-1 flex items-center justify-center overflow-x-hidden p-4 sm:p-6 lg:p-12'}>
         <div
-          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] shadow-xl ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
+          className={`relative w-full ${stage === 2 ? 'max-w-[680px]' : 'max-w-[520px]'} rounded-3xl bg-gradient-to-br shadow-xl transition-colors duration-300 ${isEnterpriseLogin ? 'from-[var(--sw-brand-dark)] to-slate-950' : 'from-[var(--sw-brand)] to-[var(--sw-brand-dark)]'} ${isStorefrontEmbed ? 'overflow-visible p-3' : 'overflow-hidden'}`}
         >
           {isStorefrontEmbed && (
             <button
@@ -870,6 +867,17 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {stage === 1 && (
+                    <button
+                      type="button"
+                      onClick={handleLoginModeToggle}
+                      aria-pressed={isEnterpriseLogin}
+                      className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1.5 text-[11px] font-bold transition-colors ${isEnterpriseLogin ? 'border-[var(--sw-brand-dark)] bg-[var(--sw-brand-dark)] text-white hover:bg-slate-900' : 'border-blue-200 bg-white text-[var(--sw-brand)] hover:bg-blue-50'}`}
+                    >
+                      {isEnterpriseLogin ? <Store className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
+                      {isEnterpriseLogin ? '福利商城' : '企业管理'}
+                    </button>
+                  )}
                   <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-5 w-5 rounded-md" />
                   <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
                     {stage === 1 && '账号认证'}
@@ -909,11 +917,11 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* 消费者仅密码登录；运营后台保留既有多种登录方式。 */}
+                {/* 第一段：普通登录默认两入口；切换企业管理后展示企业入口 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    <div className={`grid ${isCanonicalConsoleRequest ? (isEnterpriseLogin ? 'grid-cols-4' : 'grid-cols-2') : 'grid-cols-1'} gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium`} role="tablist" aria-label="登录方式">
-                      {isCanonicalConsoleRequest && <button
+                    <div className={`grid ${isEnterpriseLogin ? 'grid-cols-4' : 'grid-cols-2'} gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium`} role="tablist" aria-label="登录方式">
+                      <button
                         type="button"
                         onClick={() => selectAuthMethod('otp')}
                         className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'otp' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
@@ -931,24 +939,28 @@ export const LoginPage: React.FC = () => {
                       >
                         密码登录
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('work_weixin')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'work_weixin'}
-                      >
-                        {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => selectAuthMethod('sso')}
-                        className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-                        role="tab"
-                        aria-selected={activeTab === 'sso'}
-                      >
-                        企业 SSO
-                      </button>
+                      {isEnterpriseLogin && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => selectAuthMethod('work_weixin')}
+                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'work_weixin' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                            role="tab"
+                            aria-selected={activeTab === 'work_weixin'}
+                          >
+                            {qrLoginChannel === 'wechat' ? '微信扫码' : '企微扫码'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => selectAuthMethod('sso')}
+                            className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'sso' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                            role="tab"
+                            aria-selected={activeTab === 'sso'}
+                          >
+                            企业 SSO
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     <div id="login-method-panel" role="tabpanel" aria-live="polite">
