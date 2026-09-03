@@ -62,13 +62,33 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     setters.setCatalogSyncStatus('ready');
   };
 
+  const publishPublicStorefront = (storefront: { id: string; name: string }) => {
+    setters.setCurrentMall({
+      id: storefront.id,
+      enterpriseId: storefront.id,
+      enterpriseName: storefront.name,
+      mallName: storefront.name,
+      logoText: storefront.name,
+      badge: '公开商城',
+      welcomeBanner: `欢迎进入${storefront.name}，登录后可购物与查看订单。`,
+    });
+  };
+
   const refreshPublicCatalog = async () => {
     ++syncVersionRef.current;
     setters.setProducts([]);
-    // The canonical backend currently has no anonymous listing operation.
-    // Guest mode therefore stays empty instead of falling back to the retired
-    // same-origin public-catalog facade.
-    setters.setCatalogSyncStatus('idle');
+    setters.setCatalogSyncStatus('syncing');
+    try {
+      const [items, storefront] = await Promise.all([
+        loadCompleteCatalog(productionApi.listProducts),
+        productionApi.getPublicStorefront().catch(() => null),
+      ]);
+      if (syncVersion === syncVersionRef.current) publishCatalog(items);
+      if (syncVersion === syncVersionRef.current && storefront) publishPublicStorefront(storefront);
+    } catch (error) {
+      if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
+      throw error;
+    }
   };
 
   const refreshProductionData = async () => {
@@ -83,7 +103,16 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       if (syncVersion !== syncVersionRef.current) return;
       closeMemberData();
       setters.setSessionStatus('guest');
-      setters.setCatalogSyncStatus('idle');
+      try {
+        const [items, storefront] = await Promise.all([
+          publicCatalogRequest,
+          productionApi.getPublicStorefront().catch(() => null),
+        ]);
+        publisher.commitPublic(items);
+        if (storefront) publishPublicStorefront(storefront);
+      } catch {
+        if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
+      }
       throw error;
     }
     if (syncVersion !== syncVersionRef.current) return;

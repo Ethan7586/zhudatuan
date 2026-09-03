@@ -1,5 +1,5 @@
-import { canonicalCall, canonicalClient, anonymousContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
-import { checkoutWithCanonicalBenefits } from './canonicalCheckout';
+import { canonicalCall, canonicalClient, anonymousContext, anonymousIdempotentContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
+import { checkoutWithCanonicalPayment } from './canonicalCheckout';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
 import { mapCanonicalAccounts, mapCanonicalCart, mapCanonicalLedgers, mapCanonicalOrders } from './canonicalCommerceMapper';
 import { mapCanonicalAddresses, mapCanonicalBootstrap, mapCanonicalSession } from './canonicalIdentityMapper';
@@ -11,6 +11,8 @@ export { ProductionApiError } from './productionApi.error';
 export type { ApiAccount, ApiAccountLedger, ApiActor, ApiAfterSale, ApiBootstrap, ApiCartItem, ApiDeliveryAddress, ApiHomeSnapshot, ApiOrder, ApiProduct, ApiSecurityCenter, CreateOrderRequest, LoginRequest } from './productionApi.types';
 
 type CatalogOptions = { category?: string; cursor?: string; limit?: number };
+
+const DEFAULT_STOREFRONT_APPLICATION = 'zdt-l1-verify';
 
 async function sessionBootstrap(): Promise<ApiBootstrap> {
   const client = canonicalClient();
@@ -66,6 +68,76 @@ async function inventory(skus: readonly string[]): Promise<{ items: unknown[] }>
   throw new ProductionApiError('库存分页超过安全上限', 502, 'INVENTORY_PAGE_LIMIT_EXCEEDED');
 }
 
+async function publicCatalog(options: CatalogOptions): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
+  const query = new URLSearchParams({ limit: String(options.limit ?? 100) });
+  if (options.cursor) query.set('cursor', options.cursor);
+  if (options.category) query.set('category', options.category);
+  const response = await fetch(`/api/v1/catalog/public/products?${query}`, {
+    method: 'GET',
+    headers: { accept: 'application/json' },
+    credentials: 'omit',
+    redirect: 'error',
+  });
+  const value = await response.json().catch(() => null) as unknown;
+  if (!response.ok) {
+    const error = value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+    const code = typeof error.code === 'string' ? error.code : 'PUBLIC_CATALOG_FAILED';
+    throw new ProductionApiError(code, response.status, code, response.headers.get('x-request-id') ?? undefined);
+  }
+  const payload = record(value, 'catalog.public');
+  const items = pageItems(payload, 'catalog.public').map(publicProduct);
+  const pagination = record(payload.pagination, 'catalog.public.pagination');
+  return { items, pagination: { nextCursor: typeof pagination.nextCursor === 'string' && pagination.nextCursor ? pagination.nextCursor : null } };
+}
+
+async function publicStorefront(): Promise<{ id: string; name: string }> {
+  const value = await canonicalCall(() => canonicalClient().identity.storefrontsRead({
+    body: { application: DEFAULT_STOREFRONT_APPLICATION },
+  }, anonymousIdempotentContext()));
+  const payload = record(value, 'identity.storefront');
+  return {
+    id: text(payload.organization_id, 'identity.storefront.organization_id'),
+    name: text(payload.organization_name, 'identity.storefront.organization_name'),
+  };
+}
+
+function publicProduct(item: Record<string, unknown>): ApiProduct {
+  const qualification = record(item.qualification, 'catalog.public.qualification');
+  return {
+    id: text(item.id, 'catalog.public.id'),
+    skuId: text(item.skuId, 'catalog.public.skuId'),
+    name: text(item.name, 'catalog.public.name'),
+    subtitle: optionalText(item.subtitle),
+    categoryCode: text(item.categoryCode, 'catalog.public.categoryCode'),
+    coverUrl: optionalText(item.coverUrl),
+    priceCents: nonNegativeInteger(item.priceCents, 'catalog.public.priceCents'),
+    marketPriceCents: item.marketPriceCents === null || item.marketPriceCents === undefined
+      ? null : nonNegativeInteger(item.marketPriceCents, 'catalog.public.marketPriceCents'),
+    availableStock: nonNegativeInteger(item.availableStock, 'catalog.public.availableStock'),
+    supplierName: text(item.supplierName, 'catalog.public.supplierName'),
+    isTest: boolean(item.isTest),
+    purchasable: boolean(item.purchasable),
+    qualification: {
+      visible: boolean(qualification.visible),
+      purchasable: boolean(qualification.purchasable),
+      visibilityReason: text(qualification.visibilityReason, 'catalog.public.visibilityReason'),
+      purchaseReason: text(qualification.purchaseReason, 'catalog.public.purchaseReason'),
+    },
+  };
+}
+
+async function qualifiedCatalog(options: CatalogOptions): Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }> {
+  const query = { limit: options.limit ?? 100, ...(options.cursor ? { cursor: options.cursor } : {}), ...(options.category ? { category: options.category } : {}) };
+  const listings = await canonicalCall(() => canonicalClient().catalog.listingsRead({ query }, sessionContext()));
+  const skus = pageItems(listings, 'catalog.listings').map((item) => text(item.sku_id, 'catalog.listing.sku_id'));
+  if (skus.length === 0) return { items: [], pagination: { nextCursor: nextCursor(listings) } };
+  const [offerValue, inventoryValue] = await Promise.all([
+    canonicalCall(() => canonicalClient().pricing.offersRead({ query: { sku: skus } }, sessionContext())),
+    inventory(skus),
+  ]);
+  return mapCanonicalProductPage(listings, offerValue, inventoryValue);
+}
+
 export const productionApi = {
   async getSession(): Promise<{ authenticated: true; actor: ApiActor }> {
     const bootstrap = await sessionBootstrap();
@@ -107,6 +179,10 @@ export const productionApi = {
       inventory(skus),
     ]);
     return mapCanonicalProductPage(listings, offerValue, inventoryValue);
+  },
+
+  async getPublicStorefront(): Promise<{ id: string; name: string }> {
+    return publicStorefront();
   },
 
   async listQualifiedProducts(options: CatalogOptions = {}) {

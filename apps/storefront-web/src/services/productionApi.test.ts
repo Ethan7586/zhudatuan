@@ -66,6 +66,17 @@ describe('canonical storefront production API', () => {
     })).toBe('https://merchant.example');
   });
 
+  it('resolves the public L1 storefront name before login', async () => {
+    const fetcher = apiFetch();
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+
+    await expect(productionApi.getPublicStorefront()).resolves.toEqual({
+      id: 'mall:l1-hongtai',
+      name: '宏泰甄选',
+    });
+  });
+
   it('loads identity, profile, benefits, ledgers and orders from api.zhudatuan.com with cookie credentials', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
@@ -182,7 +193,25 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string } = {
     if (path === '/api/v1/members/me') return json(PROFILE);
     if (path === '/api/v1/benefits/accounts') return json(ACCOUNTS);
     if (path === '/api/v1/benefits/ledgers') return json({ items: [] });
-    if (path === '/api/v1/orders' && method === 'GET') return json({ items: [] });
+    if (path === '/api/v1/orders' && method === 'GET') {
+      orderReads += 1;
+      if (orderReads > 1 && options.confirmedOrderPaymentState) {
+        return json({ items: [{ id: 'order:one', payment_state: options.confirmedOrderPaymentState }] });
+      }
+      return json({ items: [] });
+    }
+    if (path === '/api/v1/catalog/public/products') return json({
+      items: [{
+        id: 'listing:one', skuId: 'sku:one', name: '空气炸锅', subtitle: '企业严选', categoryCode: 'welfare', coverUrl: null,
+        priceCents: 21900, marketPriceCents: 25900, availableStock: 6, supplierName: '平台自营', isTest: false,
+        purchasable: false, qualification: { visible: true, purchasable: false, visibilityReason: 'PUBLIC_CATALOG', purchaseReason: 'LOGIN_REQUIRED' },
+      }],
+      pagination: { nextCursor: null },
+    });
+    if (path === '/api/v1/identity/storefronts/resolve') return json({
+      organization_id: 'mall:l1-hongtai',
+      organization_name: '宏泰甄选',
+    });
     if (path === '/api/v1/catalog/listings') return json({ items: [{ id: 'listing:one', sku_id: 'sku:one', title: '空气炸锅', status: 'published', product_type: 'physical', cover_url: null, subtitle: '企业严选' }] });
     if (path === '/api/v1/pricing/offers') return json({ items: [{ sku_id: 'sku:one', amount_minor: 21900, compare_minor: 25900, currency: 'CNY' }] });
     if (path === '/api/v1/inventory/availability') return json({ items: [{ id: 'stock:one', sku_id: 'sku:one', available: 6 }] });
