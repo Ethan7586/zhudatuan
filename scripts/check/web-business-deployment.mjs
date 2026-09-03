@@ -215,7 +215,7 @@ assertExactSet(
   ['APP_ENV', 'AUTH_MODE', 'SERVICE_VERSION', 'API_ALLOWED_ORIGINS', 'DATABASE_API_CONNECTION_REF', 'KMS_ENDPOINT', 'KMS_BEARER_TOKEN', 'SECRET_STORE_ENDPOINT', 'SECRET_STORE_BEARER_TOKEN', 'NODE_EXTRA_CA_CERTS'],
   'WEB_BUSINESS_ENVIRONMENT_KEYS'
 );
-if (!environment.includes('API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://zhudatuan.com')) {
+if (!environment.includes('API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com,https://zhudatuan.com')) {
   throw new Error('WEB_BUSINESS_ORIGIN_ALLOWLIST_INVALID');
 }
 if (!environment.includes('DATABASE_API_CONNECTION_REF=zhudatuan/web-business/database/api') || !environment.includes('NODE_EXTRA_CA_CERTS=/opt/zhudatuan/shared/tls/internal-ca.crt')) {
