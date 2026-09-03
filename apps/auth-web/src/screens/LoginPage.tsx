@@ -60,6 +60,7 @@ export const LoginPage: React.FC = () => {
 
   // 三段式结构沿用确认过的 3003 VI；尚未接通的高风险验证保持关闭。
   const [stage, setStage] = useState<1 | 2 | 3>(1);
+  // 消费者只走账号密码；手机号验证码保留给付款前核验，不能与登录入口混在一起。
   const [activeTab, setActiveTab] = useState<AuthMethod>('password');
   const [qrLoginChannel, setQrLoginChannel] = useState<'work_weixin' | 'wechat'>('work_weixin');
   const [ssoDomain, setSsoDomain] = useState('');
@@ -169,6 +170,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const selectAuthMethod = (method: AuthMethod) => {
+    if (!isCanonicalConsoleRequest && method === 'otp') return;
     setActiveTab(method);
     setFormError('');
     setFormNotice('');
@@ -850,7 +852,7 @@ export const LoginPage: React.FC = () => {
                     {stage === 3 && '管理身份二次验证 (Step-Up)'}
                   </h2>
                   <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-                    {stage === 1 && '请选择适合您的登录方式与身份核验'}
+                    {stage === 1 && (isCanonicalConsoleRequest ? '请选择适合您的登录方式与身份核验' : '使用账号密码登录或注册；首次付款时再验证手机。')}
                     {stage === 2 && '同一账号，可在福利消费与运营管理之间自由切换。'}
                     {stage === 3 && '该高权限身份要求正式二次验证；当前服务尚未接通。'}
                   </p>
@@ -870,11 +872,11 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* 第一段：3003 四入口认证视觉；未接通入口不会模拟成功 */}
+                {/* 消费者仅密码登录；运营后台保留既有多种登录方式。 */}
                 {stage === 1 && (
                   <div className="flex h-[426px] flex-col gap-5">
-                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium" role="tablist" aria-label="登录方式">
-                      <button
+                    <div className={`grid ${isCanonicalConsoleRequest ? (isEnterpriseLogin ? 'grid-cols-4' : 'grid-cols-2') : 'grid-cols-1'} gap-1 rounded-xl bg-slate-100 p-1 text-xs font-medium`} role="tablist" aria-label="登录方式">
+                      {isCanonicalConsoleRequest && <button
                         type="button"
                         onClick={() => selectAuthMethod('otp')}
                         className={`rounded-lg px-1 py-2 text-center transition-all ${activeTab === 'otp' ? 'bg-white font-bold text-[var(--sw-brand)] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
@@ -882,7 +884,7 @@ export const LoginPage: React.FC = () => {
                         aria-selected={activeTab === 'otp'}
                       >
                         手机验证码
-                      </button>
+                      </button>}
                       <button
                         type="button"
                         onClick={() => selectAuthMethod('password')}
@@ -913,7 +915,7 @@ export const LoginPage: React.FC = () => {
                     </div>
 
                     <div id="login-method-panel" role="tabpanel" aria-live="polite">
-                      {activeTab === 'otp' && (
+                      {isCanonicalConsoleRequest && activeTab === 'otp' && (
                         <form onSubmit={handleStage1Submit} className="space-y-4">
                           <div className="space-y-1.5">
                             <label className="flex items-center gap-1 text-xs font-medium text-slate-700">
