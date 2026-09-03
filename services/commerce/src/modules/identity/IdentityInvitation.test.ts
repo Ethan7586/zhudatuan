@@ -145,6 +145,27 @@ describe('operator invitation security boundary', () => {
     expect(inserted?.values[12]).toBe('storefront');
   });
 
+  it('creates a storefront invitation with the independent role owned by a provisioned Mall', async () => {
+    const harness = invitationHarness();
+    const provisionedMall = 'mall:provisioned-l1';
+    const access = managerAccess({
+      scope: { kind: 'mall', id: provisionedMall, tenant: 'tenant-zhudatuan', path: [] },
+    });
+
+    const response = await identityOperations(context(harness.pool)).invoke(createRequest(access));
+
+    expect(response).toMatchObject({ status: 201, body: { target: 'storefront' } });
+    const lookup = harness.queries.find(({ text }) => text.includes('select role.id'));
+    expect(lookup?.values).toEqual([
+      `role-zhudatuan-storefront-member:${provisionedMall}`,
+      provisionedMall,
+      null,
+    ]);
+    const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
+    expect(inserted?.values[1]).toBe(provisionedMall);
+    expect(inserted?.values[7]).toBe(`role-zhudatuan-storefront-member:${provisionedMall}`);
+  });
+
   it('lets a senior administrator create storefront invitations through the same invitation model', async () => {
     const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({

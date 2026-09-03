@@ -120,13 +120,27 @@ const normalizedGovernance = createHash('sha256').update(governanceMigration.rep
 if (normalizedGovernance !== governanceMarker) throw new Error('GOVERNANCE_SCHEMA_NORMALIZED_DIGEST_DRIFT');
 const migrationFiles = (await readdir(resolve(root, 'database/supabase/migrations')))
   .filter((name) => name.endsWith('.sql')).sort();
+const runtimeVersion = runtime.match(/MALL_PROVISIONING_SCHEMA_VERSION = '(\d{14})'/)?.[1];
+const runtimeMigrationFile = runtimeVersion
+  ? migrationFiles.find((name) => name.startsWith(`${runtimeVersion}_`))
+  : undefined;
+const runtimeMigration = runtimeMigrationFile
+  ? await read(`database/supabase/migrations/${runtimeMigrationFile}`)
+  : '';
+const recordedRuntimeMarker = runtimeVersion
+  ? runtimeMigration.match(new RegExp(`values\\('${runtimeVersion}','([a-f0-9]{64})'\\)`))?.[1]
+  : undefined;
+if (!runtimeVersion || !runtimeMigrationFile || !runtimeMarker || runtimeMarker !== recordedRuntimeMarker
+  || createHash('sha256').update(runtimeMigration.replaceAll(runtimeMarker, '0'.repeat(64))).digest('hex') !== runtimeMarker) {
+  throw new Error('MALL_PROVISIONING_RUNTIME_SCHEMA_DRIFT');
+}
 const targetFile = migrationFiles.at(-1);
 const targetVersion = targetFile?.slice(0, 14);
 const targetSource = targetFile ? await read(`database/supabase/migrations/${targetFile}`) : '';
 const targetMarker = targetVersion
   ? targetSource.match(new RegExp(`values\\('${targetVersion}','([a-f0-9]{64})'\\)`))?.[1]
   : undefined;
-if (!targetFile || !targetVersion || !targetMarker || targetMarker === '0'.repeat(64) || runtimeMarker !== targetMarker
+if (!targetFile || !targetVersion || !targetMarker || targetMarker === '0'.repeat(64)
   || !runner.includes(`REGISTRATION_TARGET_VERSION = '${targetVersion}'`)
   || !runner.includes(`REGISTRATION_TARGET_CHECKSUM = '${targetMarker}'`)
   || !runner.includes(`name='${targetFile}'`)) {
