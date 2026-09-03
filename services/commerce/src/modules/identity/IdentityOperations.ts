@@ -410,7 +410,9 @@ function identityCoreOperations(context: ModuleContext, ownedOperations: readonl
           ? governanceLevel === 'senior_administrator'
             ? seniorAdministratorRoleId(invitationScope)
             : 'role-zhudatuan-pending-operator'
-          : 'role-zhudatuan-storefront-member';
+          : invitationScope === 'mall-zhudatuan'
+            ? 'role-zhudatuan-storefront-member'
+            : `role-zhudatuan-storefront-member:${invitationScope}`;
         const role = await database.query<{ id: string }>(`select role.id from access.role role where role.id=$1
         and role.status='active' and role.scope_id=$2
         and ($3::text is distinct from 'administrator' or not exists(

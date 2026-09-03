@@ -18636,7 +18636,7 @@ objects:
   - id: member.invite.zhudatuanidentityapi
     kind: policy
     owner: member
-    source: database/supabase/migrations/20260903106000_governance_invitation_tree_visibility.sql
+    source: database/supabase/migrations/20260903107000_merge_storefront_and_governance_invitation_visibility.sql
   - id: member.invite.zhudatuanidentityapiinsert
     kind: policy
     owner: member
