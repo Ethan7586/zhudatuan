@@ -107,6 +107,130 @@ describe('canonical registration', () => {
     expectCanonicalHeaders(init?.headers);
   });
 
+  it('uses the registration OTP to establish and exchange the new storefront session immediately', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
+      const path = new URL(String(input)).pathname;
+      if (path === '/api/v1/identity/members') {
+        const authorization = JSON.parse(String(init?.body)).authorization;
+        return jsonResponse({
+          ...membership(),
+          authentication: {
+            session: 'session:registration-one',
+            csrf: 'csrf-token-at-least-sixteen-characters',
+            expiresIn: 43_200,
+            membership: 'membership:storefront-one',
+            target: 'storefront',
+            callback: { ticket: 't'.repeat(64), state: authorization.state },
+          },
+        }, 201);
+      }
+      return jsonResponse({
+        returnTarget: {
+          url: 'http://127.0.0.1:3000/',
+          proof: 'signed-return-target-proof',
+          expiresAt: '2099-01-01T00:00:00.000Z',
+        },
+        expiresIn: 43_200,
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await createCanonicalMember({
+      subject: '13800138000',
+      password: 'Generated!Password2',
+      displayName: 'L6消费者8000',
+      inviteCode: 'invitation-secret',
+      challengeId: 'challenge:registration-one',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+      directLogin: true,
+    });
+
+    expect(result).toMatchObject({
+      membership: 'membership:storefront-one',
+      target: 'storefront',
+      redirectUrl: 'http://127.0.0.1:3000/',
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: 'include' });
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+      subject: '+8613800138000',
+      challenge: 'challenge:registration-one',
+      code: '483921',
+      authorization: { state: expect.any(String), nonce: expect.any(String), challenge: expect.any(String) },
+    });
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('http://127.0.0.1:3001/api/v1/identity/tickets/exchange');
+    expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ credentials: 'include' });
+  });
+
+  it('defers L6 phone verification to checkout while creating a password account', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse(membership(), 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember({
+      subject: '13800138000',
+      password: 'Generated!Password2',
+      displayName: 'L6消费者8000',
+      applicationSlug: 'zdt-l1-verify',
+      deferPhoneVerification: true,
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    })).resolves.toMatchObject({ target: 'storefront' });
+
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+      subject: '+8613800138000',
+      application: 'zdt-l1-verify',
+      phoneVerification: 'checkout',
+    });
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).not.toHaveProperty('challenge');
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).not.toHaveProperty('code');
+  });
+
+  it('normalizes a PostgreSQL bigint access version in the registration receipt', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ ...membership(), access_version: '7' }, 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await createCanonicalMember({
+      subject: '+8613800138000',
+      password: 'SecurePassword1!',
+      displayName: 'Ethan',
+      inviteCode: 'invitation-secret',
+      challengeId: 'challenge:registration-one',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    });
+
+    expect(result.accessVersion).toBe(7);
+  });
+
+  it('accepts an operator membership receipt and maps it to Console', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      ...membership(),
+      id: 'membership:operator-one',
+      client: 'operator',
+      governanceLevel: 'senior_administrator',
+    }, 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember({
+      subject: '+8613800138000',
+      password: 'SecurePassword1!',
+      displayName: 'Ethan',
+      inviteCode: 'operator-invitation',
+      challengeId: 'challenge:registration-one',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    })).resolves.toMatchObject({
+      membership: 'membership:operator-one',
+      target: 'console',
+      governanceLevel: 'senior_administrator',
+      status: 'active',
+    });
+  });
+
   it('fails closed before the network when current terms were not accepted', async () => {
     const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetchMock);

@@ -298,22 +298,33 @@ export const LoginPage: React.FC = () => {
 
   const handleRegistrationSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!registrationInvite) return setFormError('请先验证企业邀请码');
-    if (!registration.challengeId || registration.challengeMobile !== registration.mobile.trim()) return setFormError('请为当前手机号重新获取验证码');
-    if (!/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
-    if (!registrationTermsAccepted) return setFormError('请先阅读并同意本次邀请绑定的服务协议与隐私政策');
-    if (!isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
-    if (registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
+    if (!registrationContext) return setFormError(isCanonicalConsoleRequest ? '请先验证企业邀请码' : '商城注册入口尚未就绪');
+    let mobile: string;
+    try {
+      mobile = canonicalRegistrationMobile(registration.mobile);
+    } catch (error) {
+      return setFormError(error instanceof Error ? error.message : '请输入有效的手机号');
+    }
+    if (!isSelfConsumerRegistration && (!registration.challengeId || registration.challengeMobile !== mobile)) return setFormError('请为当前手机号重新获取验证码');
+    if (!isSelfConsumerRegistration && !/^\d{6}$/.test(registration.code.trim())) return setFormError('请输入 6 位短信验证码');
+    if (!registrationTermsAccepted) return setFormError('请先阅读并同意服务协议与隐私政策');
+    if ((!isConsumerRegistration || isSelfConsumerRegistration) && !isStrongRegistrationPassword(registration.password)) return setFormError('密码须为 12–128 位，并同时包含大小写字母、数字和符号');
+    if ((!isConsumerRegistration || isSelfConsumerRegistration) && registration.password !== registration.confirmPassword) return setFormError('两次输入的密码不一致');
     setRegistrationBusy('submit');
     setFormError('');
     try {
-      await createCanonicalMember({
+      const generatedPassword = isConsumerRegistration && !isSelfConsumerRegistration ? automaticRegistrationPassword() : registration.password;
+      const displayName = isConsumerRegistration ? automaticL6DisplayName(mobile) : registration.displayName;
+      const created = await createCanonicalMember({
         subject: registration.mobile,
-        password: registration.password,
-        displayName: registration.displayName,
-        inviteCode: registration.inviteCode,
-        challengeId: registration.challengeId,
-        code: registration.code,
+        password: generatedPassword,
+        displayName,
+        ...(isSelfConsumerRegistration
+          ? { applicationSlug: (registrationContext as CanonicalStorefrontRegistration).applicationSlug }
+          : { inviteCode: registration.inviteCode }),
+        ...(isSelfConsumerRegistration
+          ? { deferPhoneVerification: true }
+          : { challengeId: registration.challengeId, code: registration.code }),
         termsAccepted: registrationTermsAccepted,
         termsHash: registrationInvite.termsHash,
       });
@@ -1239,7 +1250,7 @@ export const LoginPage: React.FC = () => {
                 </div>
               </label>
               <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
-                登录手机号
+                {isSelfConsumerRegistration ? '登录手机号（付款时验证）' : '登录手机号'}
                 <input
                   value={registration.mobile}
                   onChange={(event) => updateRegistration('mobile', event.target.value)}
@@ -1247,11 +1258,11 @@ export const LoginPage: React.FC = () => {
                   required
                   inputMode="tel"
                   autoComplete="tel"
-                  placeholder="用于登录、验证与找回密码"
+                  placeholder={isSelfConsumerRegistration ? '先用于账号登录，首次付款时完成验证' : '用于登录、验证与找回密码'}
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
                 />
               </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
+              {!isSelfConsumerRegistration && <label className="space-y-1.5 text-xs font-medium text-slate-700 sm:col-span-2">
                 手机验证码
                 <div className="flex gap-2">
                   <input
@@ -1273,35 +1284,43 @@ export const LoginPage: React.FC = () => {
                     {registrationBusy === 'code' ? '发送中…' : registrationCodeSeconds > 0 ? `${registrationCodeSeconds}s` : '获取验证码'}
                   </button>
                 </div>
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                设置密码
-                <input
-                  type="password"
-                  value={registration.password}
-                  onChange={(e) => updateRegistration('password', e.target.value)}
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
-                  placeholder="12位以上，含大小写、数字和符号"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs font-medium text-slate-700">
-                确认密码
-                <input
-                  type="password"
-                  value={registration.confirmPassword}
-                  onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
-                  minLength={12}
-                  maxLength={128}
-                  required
-                  autoComplete="new-password"
-                  placeholder="再次输入密码"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
-                />
-              </label>
+              </label>}
+              {(!isQrConsumerRegistration && !isConsumerRegistration || isSelfConsumerRegistration) && (
+                <>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    设置密码
+                    <input
+                      type="password"
+                      value={registration.password}
+                      onChange={(e) => updateRegistration('password', e.target.value)}
+                      minLength={12}
+                      maxLength={128}
+                      required
+                      autoComplete="new-password"
+                      placeholder="12位以上，含大小写、数字和符号"
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-medium text-slate-700">
+                    确认密码
+                    <input
+                      type="password"
+                      value={registration.confirmPassword}
+                      onChange={(e) => updateRegistration('confirmPassword', e.target.value)}
+                      minLength={12}
+                      maxLength={128}
+                      required
+                      autoComplete="new-password"
+                      placeholder="再次输入密码"
+                      aria-invalid={registration.confirmPassword.length > 0 && registration.password !== registration.confirmPassword}
+                      className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--sw-brand)]"
+                    />
+                    {registration.confirmPassword.length > 0
+                      && registration.password !== registration.confirmPassword
+                      ? <span role="alert" className="text-xs text-rose-500">两次输入的密码不一致</span> : null}
+                  </label>
+                </>
+              )}
             </div>
 
             {registrationNotice && <p className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">{registrationNotice}</p>}
@@ -1324,7 +1343,7 @@ export const LoginPage: React.FC = () => {
             </label>
             <button
               type="submit"
-              disabled={registrationBusy !== null || !registrationInvite || !registration.challengeId || !registrationTermsAccepted}
+              disabled={registrationBusy !== null || !registrationContext || (!isSelfConsumerRegistration && !registration.challengeId) || !registrationTermsAccepted}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 disabled:bg-slate-300"
             >
               {registrationBusy === 'submit' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}

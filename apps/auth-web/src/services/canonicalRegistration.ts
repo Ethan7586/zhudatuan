@@ -54,9 +54,11 @@ export interface CanonicalMemberRegistrationInput {
   readonly subject: string;
   readonly password: string;
   readonly displayName: string;
-  readonly inviteCode: string;
-  readonly challengeId: string;
-  readonly code: string;
+  readonly inviteCode?: string;
+  readonly applicationSlug?: string;
+  readonly challengeId?: string;
+  readonly code?: string;
+  readonly deferPhoneVerification?: boolean;
   readonly termsAccepted: boolean;
   readonly termsHash: string;
   readonly wechatToken?: string;
@@ -103,17 +105,38 @@ export async function createCanonicalMember(
   signal?: AbortSignal,
 ): Promise<CanonicalRegisteredMember> {
   if (input.termsAccepted !== true) throw new Error('请先阅读并同意当前注册条款与隐私政策');
-  const output = MembershipSchema.parse(await identityRequest('/api/v1/identity/members', {
-    subject: requiredMobile(input.subject),
-    password: requiredPassword(input.password),
-    displayName: requiredText(input.displayName, '请输入姓名'),
-    invite: requiredText(input.inviteCode, '请输入有效的邀请码'),
-    challenge: requiredText(input.challengeId, '请先获取验证码'),
-    code: requiredText(input.code, '请输入验证码'),
-    termsAccepted: true,
-    termsHash: requiredText(input.termsHash, '注册条款版本无效'),
-    ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
-  }, signal));
+  const authorization = input.directLogin === true ? await beginCanonicalAuthorization() : undefined;
+  const verification = input.deferPhoneVerification === true
+    ? { phoneVerification: 'checkout' }
+    : {
+        challenge: requiredText(input.challengeId, '请先获取验证码'),
+        code: requiredText(input.code, '请输入验证码'),
+      };
+  const output = MembershipSchema.parse(
+    await identityRequest(
+      '/api/v1/identity/members',
+      {
+        subject: canonicalRegistrationMobile(input.subject),
+        password: requiredPassword(input.password),
+        displayName: requiredText(input.displayName, '请输入姓名'),
+        ...memberRegistrationReference(input),
+        ...verification,
+        termsAccepted: true,
+        termsHash: requiredText(input.termsHash, '注册条款版本无效'),
+        ...(authorization === undefined ? {} : { authorization: authorization.request }),
+        ...(input.wechatToken === undefined ? {} : { wechatToken: requiredText(input.wechatToken, '微信授权无效') }),
+      },
+      signal,
+      { credentials: authorization === undefined ? 'omit' : 'include' },
+    )
+  );
+  let redirectUrl: string | undefined;
+  if (authorization !== undefined) {
+    if (!output.authentication || output.authentication.membership !== output.id) {
+      throw new Error('消费者登录会话未能建立，请重新获取验证码');
+    }
+    redirectUrl = await exchangeCanonicalStorefrontSession(output.authentication.callback, authorization.secret, signal);
+  }
   return Object.freeze({
     membership: output.id,
     member: output.member_id,
