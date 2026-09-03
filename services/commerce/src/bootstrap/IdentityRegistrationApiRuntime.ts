@@ -1,7 +1,7 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import { CONTRACT_CHECKSUM, type OperationId } from '@shop/contract';
-import { CONTRACT_SCHEMA_HEAD, TARGET_SCHEMA_HEAD, identityRegistrationApiReturnTargets, type IdentityRegistrationApiEnvironment } from '@shop/config/server';
+import type { OperationId } from '@shop/contract';
+import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, WechatApplicationCatalog, identityRegistrationApiReturnTargets, type IdentityRegistrationApiEnvironment } from '@shop/config/server';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -17,6 +17,8 @@ import { RecordAudit } from '../modules/audit/application/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/infrastructure/persistence/PgAuditRepository';
 import { RETURN_TARGETS } from '../modules/identity/infrastructure/ReturnTargetCatalog';
 import { RiskCheckAdapter } from '../modules/risk/infrastructure/persistence/RiskCheckAdapter';
+import { WECHAT_IDENTITY } from '../modules/identity/application/port/WechatIdentity';
+import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity/infrastructure/adapter/WechatIdentityGateway';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
 import { ExtensionRegistry } from './ExtensionRegistry';
@@ -45,11 +47,16 @@ export async function createIdentityRegistrationApiRuntime(
     required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
   );
-  const [connection, sessionKey, identityKey] = await Promise.all([
+  const [connection, sessionKey, identityKey, applicationSource, wechatIdentitySource] = await Promise.all([
     secrets.read(required(environment.DATABASE_API_CONNECTION_REF, 'DATABASE_API_CONNECTION_REF_MISSING')),
     secrets.read(required(environment.SESSION_KEY_REF, 'SESSION_KEY_REF_MISSING')),
     secrets.read(required(environment.IDENTITY_KEY_REF, 'IDENTITY_KEY_REF_MISSING')),
+    secrets.read(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING')),
+    secrets.read(required(environment.WECHAT_IDENTITY_CONFIG_REF, 'WECHAT_IDENTITY_CONFIG_REF_MISSING')),
   ]);
+  const applications = WechatApplicationCatalog.parse(parseSecret(applicationSource, 'WECHAT_APPLICATION_CONFIG_INVALID'));
+  const wechatIdentity = new WechatIdentityGateway(applications,
+    parseSecret(wechatIdentitySource, 'WECHAT_IDENTITY_CONFIG_INVALID') as unknown as WechatIdentityConfiguration);
   const pool = createPool(connection, 'api');
   try {
     await assertIdentityRegistrationRuntimeCompatibility(pool);
@@ -88,6 +95,7 @@ export async function createIdentityRegistrationApiRuntime(
         required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
         required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
       ));
+      container.bind(WECHAT_IDENTITY, wechatIdentity);
       container.bind(RETURN_TARGETS, identityRegistrationApiReturnTargets(environment));
     },
     async close() {
@@ -126,4 +134,11 @@ export async function assertIdentityRegistrationRuntimeCompatibility(pool: Datab
 function required(value: string | undefined, code: string): string {
   if (!value?.trim()) throw new Error(code);
   return value.trim();
+}
+
+function parseSecret(value: string, code: string): Record<string, unknown> {
+  let parsed: unknown;
+  try { parsed = JSON.parse(value); } catch { throw new Error(code); }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(code);
+  return parsed as Record<string, unknown>;
 }

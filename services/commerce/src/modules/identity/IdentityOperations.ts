@@ -40,7 +40,36 @@ const CORE_OPERATIONS = [
   'identity.mobile.manage',
   'identity.stepup.start',
   'identity.stepup.complete',
-] as const satisfies readonly OperationId[];
+] as const satisfies readonly OperationId[]);
+
+const IDENTITY_REGISTRATION_CORE_OPERATION_IDS = Object.freeze([
+  'identity.sessions.create',
+  'identity.tickets.exchange',
+  'identity.session.read',
+  'identity.session.delete',
+  'identity.challenges.create',
+  'identity.invitations.read',
+  'identity.storefronts.read',
+  'identity.invitations.create',
+  'identity.invitations.revoke',
+  'identity.members.create',
+  'identity.password.reset',
+  'identity.password.verify',
+  'identity.mobile.challenge',
+  'identity.mobile.manage',
+  'identity.stepup.start',
+  'identity.stepup.complete',
+] as const satisfies readonly OperationId[]);
+
+export const IDENTITY_REGISTRATION_OPERATION_IDS = Object.freeze([
+  ...IDENTITY_REGISTRATION_CORE_OPERATION_IDS,
+  'identity.wechat.session',
+  'identity.wechat.bind',
+] as const satisfies readonly OperationId[]);
+
+export function identityRegistrationOperations(context: ModuleContext): OperationUsecase {
+  return identityCoreOperations(context, IDENTITY_REGISTRATION_CORE_OPERATION_IDS, true);
+}
 
 export function identityOperations(context: ModuleContext): OperationUsecase {
   return identityCoreOperations(context, IDENTITY_CORE_OPERATION_IDS, false);
